@@ -39,11 +39,14 @@ from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
 from .energy_contracts import energy_diagnostics, is_energy_collection
 from .firmware_updates import existing_tracker
+from .heat_generator_sensor import heat_generator_diagnostics
 from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
 from .icom_diagnostics import icom_diagnostics
+from .local_only import hybrid_evidence, volume_flow_path
+from .local_setup_history import cloud_sign_in_history, local_setup_history
 from .observations import (
     Observation,
     from_cloud_snapshot,
@@ -100,11 +103,23 @@ from .writes import (
     context_of,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 46
+DIAGNOSTICS_SCHEMA_VERSION = 47
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .managed_entry import ManagedEntry
+
+
+async def _local_setup_attempts(
+    hass: HomeAssistant, entry_id: str, *, cloud: bool = False
+) -> list[dict[str, str | None]]:
+    try:
+        history = (cloud_sign_in_history if cloud else local_setup_history)(
+            hass, entry_id
+        )
+        return await history.async_attempts()
+    except Exception:  # the rest of the report stays available
+        return []
 
 
 async def async_get_config_entry_diagnostics(
@@ -137,6 +152,12 @@ async def async_get_config_entry_diagnostics(
             else 0,
         },
         "update_load": update_load_diagnostics(hass),
+        # Schema 47: the last local setup and cloud sign-in attempts, codes
+        # and times only.
+        "local_setup_attempts": await _local_setup_attempts(hass, entry.entry_id),
+        "cloud_sign_in_attempts": await _local_setup_attempts(
+            hass, entry.entry_id, cloud=True
+        ),
     }
     if isinstance(runtime, ManagedEntry):
         return _managed_diagnostics(base, runtime)
@@ -155,7 +176,7 @@ async def async_get_config_entry_diagnostics(
         _gateway_diagnostics(index, coordinator)
         for index, coordinator in enumerate(runtime.coordinators, start=1)
     ]
-    if any(report["technical_metadata"] for report in gateway_reports):
+    if _contains_technical_values(gateway_reports):
         base["privacy"]["contains_raw_resource_values"] = True
         base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
     return {
@@ -288,7 +309,10 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
     base["config"]["configured_gateway_count"] = sum(
         target.kind == "pointt_object" for target in snapshot.targets.values()
     )
-    if any(report["technical_metadata"] for report in gateways):
+    views = _views_without_cloud(runtime, targets)
+    if _contains_technical_values(gateways) or any(
+        (view.get("heat_generator") or {}).get("modules") for view in views
+    ):
         base["privacy"]["contains_raw_resource_values"] = True
         base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
     return {
@@ -314,7 +338,9 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         "local_plant_view": _local_plant_views(runtime, targets),
         # P49b: systems shown from their local readings alone (count only).
         "local_plant_targets": len(runtime.connections.target_views()),
-        "views_without_cloud": _views_without_cloud(runtime, targets),
+        "views_without_cloud": views,
+        # Schema 47: a detected hybrid system; its volume flows stay unverified.
+        "hybrid_volume_flow": _hybrid_volume_flow(runtime, targets),
         "inventory": {
             "healthy": runtime.inventory.healthy,
             "retained_entity_count": len(runtime.inventory.entities),
@@ -322,6 +348,16 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         "gateways": gateways,
         "wallboxes": wallboxes,
     }
+
+
+def _contains_technical_values(reports: list[dict[str, Any]]) -> bool:
+    """Reviewed technical values or the product names of the heat
+    generator modules (schema 47) are part of the report."""
+    return any(
+        report["technical_metadata"]
+        or (report.get("heat_generator") or {}).get("modules")
+        for report in reports
+    )
 
 
 def _add_counters(
@@ -434,6 +470,56 @@ def _observation_pairs(
     return reports
 
 
+def _hybrid_volume_flow(
+    runtime: ManagedEntry, targets: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Schema 47: whether a system is a hybrid system, per target.
+
+    Its volume flows are shown as reported, never rescaled; on a hybrid
+    system they are marked as unverified until a comparison with the
+    device's own display confirms them. Fixed codes and counts only: no
+    values, paths or identifiers.
+    """
+    state = runtime.connections
+    snapshot = state.snapshot
+    reports = []
+    for target_key, number in targets.items():
+        readings: list[tuple[str, object]] = []
+        for binding_key, binding in snapshot.bindings.items():
+            if binding.target_id != target_key:
+                continue
+            value = state.source_data(binding_key)
+            if isinstance(value, BoschBuderusDataUpdateCoordinator):
+                data = value.data or {}
+                for path, resource in value.resources.items():
+                    current = data[path].resource if path in data else resource
+                    readings.append(
+                        (path, current.value if current.has_value else None)
+                    )
+            elif binding.adapter == "k40_local":
+                local_state = state.local_state(binding_key)
+                if local_state is not None:
+                    readings.extend(
+                        (item.request.path, getattr(item.data, "value", None))
+                        for item in local_state.current_observations
+                    )
+        if not readings:
+            continue
+        evidence = hybrid_evidence(readings)
+        reports.append(
+            {
+                "target": number,
+                "hybrid_detected": bool(evidence),
+                "evidence": list(evidence),
+                "volume_flow_readings": len(
+                    {path for path, _ in readings if volume_flow_path(path)}
+                ),
+                "volume_flow": "unverified" if evidence else "as_reported",
+            }
+        )
+    return reports
+
+
 def _views_without_cloud(
     runtime: ManagedEntry, targets: dict[str, int]
 ) -> list[dict[str, Any]]:
@@ -480,6 +566,12 @@ def _views_without_cloud(
                     "entities": len(shown),
                     "entities_available": available,
                     "active_faults": len(faults.active_faults),
+                    # Schema 47: as in the gateway report.
+                    **(
+                        {"heat_generator": generators}
+                        if (generators := heat_generator_diagnostics(view)) is not None
+                        else {}
+                    ),
                 }
             )
         except Exception:  # the report must stay available
@@ -651,6 +743,14 @@ def _gateway_diagnostics(
                 )
             }
             if (icom := coordinator.icom_profile_diagnostics()) is not None
+            else {}
+        ),
+        # Schema 47: the heat generator modules by role (product names and
+        # hardware types only); iCom gateways follow the same rule, room
+        # controllers get none. Guarded: an error gives a fixed note.
+        **(
+            {"heat_generator": generators}
+            if (generators := heat_generator_diagnostics(coordinator)) is not None
             else {}
         ),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),

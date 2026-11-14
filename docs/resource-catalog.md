@@ -92,7 +92,7 @@ added or marked unavailable after rediscovery. IDs come exclusively from
 PointT references, never from an assumed number sequence.
 
 In the tables, `{hc}`, `{dhw}`, `{hs}`, `{sc}`, `{zone}`, and `{device}`
-represent dynamically discovered IDs. The reference system reported `hc1`,
+represent dynamically discovered IDs. A real installation reported `hc1`,
 `dhw1`, and `hs1`.
 These IDs remain part of the stable entity identifier but do not create
 separate Home Assistant devices.
@@ -223,7 +223,7 @@ PointT codes and app display names for operation mode:
 | `/heatSources` | Available heat sources | R | Internal: dynamic discovery |
 | `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water, and/or frost protection |
 | `/heatSources/actualModulation` | Current modulation | R | Measurement in % |
-| `/heatSources/actualSupplyTemperature` | Supply temperature | R | Temperature sensor |
+| `/heatSources/actualSupplyTemperature` | System supply temperature | R | Temperature sensor; the supply of the heating system (behind a buffer cylinder the heating side's flow), not necessarily the heat pump's own flow (TC1) |
 | `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |
 | `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
 | `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |
@@ -411,7 +411,7 @@ exported. Temporary failures recover automatically; see the
 
 ## Write release policy
 
-The 24 resources reported as writable by the reference system are not exposed
+The 24 resources reported as writable by a real installation are not exposed
 automatically as controls. The first safe release tier includes:
 
 - operation mode for every dynamically discovered heating circuit;

@@ -97,14 +97,13 @@ I also tested the native dialog and the tile above in Home Assistant's browser
 frontend in German and English, including a mobile viewport, mode changes,
 updated readings and closing with Escape.
 
-I subsequently installed this build on my Home Assistant 2026.10.3 instance.
-I checked the native hot-water display on desktop and mobile against the
+This build then ran on a real installation with Home Assistant 2026.10.3.
+The native hot-water display was checked on desktop and mobile against the
 existing temperature sensors, including the read-only target and the offered
 German mode labels. Existing entity identities and customizations were retained.
-I then changed Auto to Off and back to Auto using the native water-heater
-dialog on my appliance. Both the new entity and the original mode select
-confirmed the changes, and I checked both Off and the restored Auto in
-MyBuderus. The original operating mode was restored. A conditional, timed
+Auto was then changed to Off and back to Auto using the native water-heater
+dialog. Both the new entity and the original mode select confirmed the
+changes, and the manufacturer's app showed both Off and the restored Auto. The original operating mode was restored. A conditional, timed
 restore in Home Assistant protected the test independently of the browser.
 Other modes and other appliances remain covered by synthetic tests only.
 
@@ -177,15 +176,14 @@ Zusätzlich habe ich den nativen Dialog und die oben gezeigte Kachel im
 Home-Assistant-Frontend auf Deutsch und Englisch geprüft, einschließlich
 Mobilansicht, Betriebsartenwechsel, aktualisierter Werte und Schließen mit Escape.
 
-Inzwischen habe ich diesen Stand auf meiner Home-Assistant-Instanz 2026.10.3
-installiert. Die native Warmwasseranzeige habe ich auf großem und schmalem
+Danach lief dieser Stand auf einer realen Anlage mit Home Assistant 2026.10.3.
+Die native Warmwasseranzeige habe ich auf großem und schmalem
 Bildschirm mit den vorhandenen Temperatursensoren abgeglichen, einschließlich
 des nur lesbaren Sollwerts und der deutschen Betriebsartenbeschriftungen.
 Bestehende Entitätskennungen und eigene Anpassungen blieben erhalten.
-Anschließend habe ich über den nativen Warmwasserdialog an meiner Anlage von
-Auto auf Aus und wieder zurück auf Auto geschaltet. Sowohl die neue Entität
-als auch das ursprüngliche Auswahlfeld bestätigten die Änderungen. Aus und
-das wiederhergestellte Auto habe ich auch in MyBuderus geprüft. Die ursprüngliche
+Anschließend habe ich über den nativen Warmwasserdialog von Auto auf Aus und wieder zurück auf Auto geschaltet. Sowohl die neue Entität
+als auch das ursprüngliche Auswahlfeld bestätigten die Änderungen. Die
+Hersteller-App zeigte Aus und das wiederhergestellte Auto ebenfalls. Die ursprüngliche
 Betriebsart ist wiederhergestellt. Eine bedingte, zeitgesteuerte Rückstellung
 direkt in Home Assistant sicherte den Test unabhängig vom Browser ab.
 Andere Betriebsarten und andere Anlagen wurden nur mit simulierten Geräten geprüft.

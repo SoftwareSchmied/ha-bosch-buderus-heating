@@ -139,14 +139,23 @@ def test_a_number_the_cloud_declares_an_error_is_never_supplied() -> None:
     }
 
 
-def test_measurement_names_are_catalog_names_without_values() -> None:
+@pytest.mark.parametrize(
+    ("unit", "reason"),
+    [
+        # An unknown unit makes the local value unusable.
+        ("psi", "local_invalid"),
+        # A known pressure unit on a temperature is a different unit.
+        ("kPa", "unit_differs"),
+    ],
+)
+def test_measurement_names_are_catalog_names_without_values(unit, reason) -> None:
     data = {RETURN: cloud(RETURN, 30.0), SETPOINT: cloud(SETPOINT, 21.0)}
     selection = LocalSelection(
-        FakeRuntime([local(RETURN, 30.5, unitOfMeasure="kPa")]), TARGET
+        FakeRuntime([local(RETURN, 30.5, unitOfMeasure=unit)]), TARGET
     )
     summary = selection.summary(data)
     assert summary["cloud_reason_measurements"] == {
-        "local_invalid": ["return_temperature"],
+        reason: ["return_temperature"],
         "local_not_current": ["room_setpoint_current"],
     }
     rendered = repr(summary)

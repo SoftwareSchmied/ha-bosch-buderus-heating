@@ -530,6 +530,20 @@ class LocalSource:
             )
         )
 
+    @property
+    def pause_reason(self) -> str | None:
+        """Why the local access pauses now (a fixed code), None without a pause.
+
+        During the start check the reason is the one noted with the pause.
+        """
+        service = self.service
+        if service is not None:
+            return service.budget.pause_reason
+        if self._condition is LocalCondition.PAUSED and self._changes:
+            reason = self._changes[-1].get("reason")
+            return reason if isinstance(reason, str) else None
+        return None
+
     def retry_start(self) -> bool:
         """B01: try the start check again now, on request of its repair note.
 

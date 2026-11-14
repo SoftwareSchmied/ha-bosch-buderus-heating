@@ -74,9 +74,9 @@ scope of that particular comparison. The pair works in either direction,
 supporting both cloud-first and local-first setups. This module ships no
 global approval matrix for device families.
 
-My local MX400 check confirmed that its locally read gateway ID equals the
+A local MX400 check confirmed that its locally read gateway ID equals the
 PointT ID currently stored in Home Assistant. This is evidence for that
-reference installation. I did not obtain a fresh PointT response in that
+confirmed installation. No fresh PointT response was obtained in that
 check, and it does not establish a universal identity contract.
 
 I subsequently ran this parser against a fresh local MX400 system response.

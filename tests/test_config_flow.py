@@ -66,6 +66,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
+from custom_components.bosch_buderus_heating.pointt.const import OAUTH_SCOPES
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import WriteBusy
 from tests.ha_test_helpers import MockConfigEntry
@@ -551,39 +552,70 @@ async def test_invalid_redirect_stays_in_auth_step(
     assert result["errors"] == {"base": "invalid_redirect"}
 
 
-@pytest.fixture
-def scope_fallback():
-    """Each test starts with the reduced scope set and leaves no fallback."""
-    from custom_components.bosch_buderus_heating.pointt import auth
-
-    auth._ScopeFallback.active = False
-    yield
-    auth._ScopeFallback.active = False
-
-
-def _scope_rejection(result: dict[str, object], brand: Brand) -> str:
+def _link_scopes(result: dict[str, object]) -> list[str]:
     placeholders = result["description_placeholders"]
     assert isinstance(placeholders, dict)
-    state = parse_qs(urlparse(placeholders["authorization_url"]).query)["state"][0]
-    return f"{brand.redirect_uri}?error=invalid_scope&state={state}"
+    query = parse_qs(urlparse(placeholders["authorization_url"]).query)
+    return query["scope"][0].split()
 
 
-async def test_a_rejected_scope_set_asks_to_open_the_new_link(
-    hass: HomeAssistant, enable_custom_integrations: None, scope_fallback
+@pytest.mark.parametrize("brand", list(Brand))
+async def test_new_sign_in_link_asks_for_the_full_scope_set(
+    hass: HomeAssistant, enable_custom_integrations: None, brand: Brand
 ) -> None:
-    """The dialog names the new link, not a wrong address (C, scope rejection)."""
+    """Issue #127: without ``email`` the sign-in service shows an error page."""
+    result = await _start_auth_flow(hass, brand)
+    assert _link_scopes(result) == list(OAUTH_SCOPES)
+    assert {"openid", "email"} <= set(_link_scopes(result))
+
+
+@pytest.mark.parametrize("brand", list(Brand))
+async def test_reauthentication_link_asks_for_the_full_scope_set(
+    hass: HomeAssistant, enable_custom_integrations: None, brand: Brand
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=f"{brand.value}:test",
+        data={
+            CONF_BRAND: brand.value,
+            CONF_GATEWAY_IDS: ["gateway-one"],
+            **tokens_to_data(AuthTokens("access", "refresh", expires_at=1000.0)),
+        },
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
+        data=dict(entry.data),
+    )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["step_id"] == "auth"
+    placeholders = result["description_placeholders"]
+    assert isinstance(placeholders, dict)
+    query = parse_qs(urlparse(placeholders["authorization_url"]).query)
+    assert query["redirect_uri"] == [brand.redirect_uri]
+    assert _link_scopes(result) == list(OAUTH_SCOPES)
+    assert {"openid", "email"} <= set(_link_scopes(result))
+
+
+async def test_a_scope_error_keeps_the_link_of_the_attempt(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    """An OAuth error in the address is a wrong address, not a new link."""
     first = await _start_auth_flow(hass)
+    link = first["description_placeholders"]["authorization_url"]
+    state = parse_qs(urlparse(link).query)["state"][0]
     result = await hass.config_entries.flow.async_configure(
         first["flow_id"],
-        {CONF_REDIRECT_URL: _scope_rejection(first, Brand.BUDERUS)},
+        {
+            CONF_REDIRECT_URL: (
+                f"{Brand.BUDERUS.redirect_uri}?error=invalid_scope&state={state}"
+            )
+        },
     )
-    assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "auth"
-    assert result["errors"] == {"base": "auth_restart"}
-    link = result["description_placeholders"]["authorization_url"]
-    assert link != first["description_placeholders"]["authorization_url"]
-    assert "pointt.gateway.claiming" in parse_qs(urlparse(link).query)["scope"][0]
-    # The new link completes the sign-in.
+    assert result["errors"] == {"base": "invalid_redirect"}
+    assert result["description_placeholders"]["authorization_url"] == link
     exchange = AsyncMock(return_value=AuthTokens("access", "refresh", 4000.0))
     with (
         patch(

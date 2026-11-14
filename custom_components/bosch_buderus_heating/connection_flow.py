@@ -24,6 +24,7 @@ from .configuration import CLOUD_KIND, LOCAL_KIND, ConfigurationError
 from .configuration_management import ConfigurationManagement, ConnectionEdit, section
 from .const import PollingProfile
 from .ha_schema import validation as vol
+from .local_auth import token_management_available
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .local_support import setup_support
 from .options_navigation import BACK, NavigatingOptionsFlow
@@ -148,6 +149,12 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
                     ["local_setup"]
                     if connection.kind == LOCAL_KIND
                     and setup_support(self.hass) is not None
+                    else []
+                ),
+                *(
+                    ["local_tokens"]
+                    if connection.kind == LOCAL_KIND
+                    and token_management_available(connection.to_data())
                     else []
                 ),
                 *(
@@ -452,41 +459,60 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         edit = self._connection_edit
         if edit is None:
             return self.async_abort(reason="configuration_changed")
+        errors: dict[str, str] = {}
         if user_input is not None:
-            if not user_input.get("confirm"):
+            if user_input.get("revoke") is True and not user_input.get("confirm"):
+                # A revocation only comes with the removal: say so instead of
+                # going back without a word. Nothing was sent.
+                errors["base"] = "connection_remove_unconfirmed"
+            elif not user_input.get("confirm"):
                 return await self.async_step_connection()
-            try:
-                management = self._management()
-                if management.edit(edit.connection_id) != edit:
-                    raise ConfigurationError("configuration_changed")
-                if (
-                    management.current().connections[edit.connection_id].kind
-                    == LOCAL_KIND
-                ):
-                    await enrollment_journal(self.hass).remove_access(management, edit)
-                else:
-                    management.remove(edit)
-            except LocalEnrollmentError:
-                # The setup record could not be read or saved; nothing was
-                # removed (FLOW-3).
-                return self.async_abort(reason="local_storage_failed")
-            except ConfigurationError:
-                return self.async_abort(reason="configuration_changed")
-            self._connection_edit = None
-            if not self._management().current().connections:
-                return await self.async_return_to_menu("init", "connection_removed")
-            return await self.async_return_to_menu("connections", "connection_removed")
+            else:
+                return await self._remove_access(edit, "connection_removed")
         stored = self._management().current().connections.get(edit.connection_id)
+        fields: dict[Any, Any] = {
+            vol.Required("confirm", default=False): BooleanSelector()
+        }
+        if (
+            stored is not None
+            and stored.kind == LOCAL_KIND
+            and token_management_available(stored.to_data())
+        ):
+            # Only on this explicit choice is a token of this integration
+            # revoked on the gateway first; otherwise nothing is sent.
+            fields[vol.Optional("revoke", default=False)] = BooleanSelector()
         return self.async_show_form(
             # A cloud access explains what stays after the removal (R1, P49b).
             # An access removed meanwhile is refused when the form is submitted.
             step_id="connection_remove_cloud"
             if stored is not None and stored.kind == CLOUD_KIND
             else "connection_remove",
-            data_schema=vol.Schema(
-                {vol.Required("confirm", default=False): BooleanSelector()}
-            ),
+            data_schema=vol.Schema(fields),
+            errors=errors,
         )
+
+    async def _remove_access(
+        self, edit: ConnectionEdit, reason: str
+    ) -> ConfigFlowResult:
+        """Remove the confirmed access; its menu note names the outcome."""
+        try:
+            management = self._management()
+            if management.edit(edit.connection_id) != edit:
+                raise ConfigurationError("configuration_changed")
+            if management.current().connections[edit.connection_id].kind == LOCAL_KIND:
+                await enrollment_journal(self.hass).remove_access(management, edit)
+            else:
+                management.remove(edit)
+        except LocalEnrollmentError:
+            # The setup record could not be read or saved; nothing was
+            # removed (FLOW-3).
+            return self.async_abort(reason="local_storage_failed")
+        except ConfigurationError:
+            return self.async_abort(reason="configuration_changed")
+        self._connection_edit = None
+        if not self._management().current().connections:
+            return await self.async_return_to_menu("init", reason)
+        return await self.async_return_to_menu("connections", reason)
 
     async def async_step_connection_remove_cloud(
         self, user_input: dict[str, Any] | None = None

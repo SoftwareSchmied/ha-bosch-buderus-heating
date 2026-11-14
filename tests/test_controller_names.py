@@ -3,7 +3,10 @@
 The reference heat pump's controller (MX400, firmware 15.00.01) shows these
 readings in its Info menu with sensor codes such as TL2 or VR4. The entities
 use the same wording, so its display and Home Assistant can be compared line
-by line. Only names and state texts change: the unique IDs depend on the path.
+by line. TR3 and TR4 are the exception since 0.9.1: the display calls them
+condenser temperatures, the API documentation liquid pipe temperatures, which
+is what they measure (the condensing temperature is JR1). Only names and state
+texts change: the unique IDs depend on the path.
 """
 
 from __future__ import annotations
@@ -46,12 +49,12 @@ NAMES = {
         "Air intake temperature (TL2)",
     ),
     HS + "/refrigerant/liquidPipeHeatingTemp": (
-        "Verflüssigertemperatur Heizen (TR3)",
-        "Condenser temperature heating (TR3)",
+        "Temperatur Flüssigkeitsleitung Heizen (TR3)",
+        "Liquid line temperature heating (TR3)",
     ),
     HS + "/refrigerant/liquidPipeCoolingTemp": (
-        "Verflüssigertemperatur Kühlen (TR4)",
-        "Condenser temperature cooling (TR4)",
+        "Temperatur Flüssigkeitsleitung Kühlen (TR4)",
+        "Liquid line temperature cooling (TR4)",
     ),
     HS + "/refrigerant/suctionGasTemp": (
         "Temperatur Saugleitung (TR5)",
@@ -83,7 +86,7 @@ NAMES = {
     ),
     HP1 + "DripPanHeater": ("Kondensatwannenheizung", "Drip pan heater"),
     HP1 + "ExpansionValveActual": ("Expansionsventil VR1", "Expansion valve VR1"),
-    HP1 + "ReceiverValveActual": ("Expansionsventil VR0", "Expansion valve VR0"),
+    HP1 + "ReceiverValveActual": ("Sammlerventil (VR0)", "Receiver valve (VR0)"),
     HP1 + "FourwayValve": ("4-Wege-Ventil (VR4)", "4-way valve (VR4)"),
     HP1 + "DHWValve": (
         "3-Wege-Ventil Warmwasser (VW1)",
@@ -106,11 +109,17 @@ NAMES = {
         "Compressor start delay",
     ),
     # Since 0.9.0 the controller's word "Kompressor" in every German name.
-    "/signals/SRC.CUHP.HMI.CompressorActive": ("Kompressor", "Compressor"),
-    HP1 + "CompressorStatus": ("Kompressor (Status)", "Compressor (status)"),
+    "/signals/SRC.CUHP.HMI.CompressorActive": (
+        "Kompressor läuft (Anzeigesignal)",
+        "Compressor running (display signal)",
+    ),
+    HP1 + "CompressorStatus": (
+        "Kompressor läuft (Wärmepumpensignal)",
+        "Compressor running (heat pump signal)",
+    ),
     HP1 + "CompressorPower": (
-        "Wärmeleistung (Kompressor)",
-        "Heat output (compressor)",
+        "Heizleistung (thermisch)",
+        "Heat output (thermal)",
     ),
     HP1 + "Stats.CompressorDHW": (
         "Kompressorlaufzeit Warmwasser",
@@ -147,7 +156,7 @@ SECOND_SOURCES = {
     HP1 + "CompressorSpeedActual": "Compressor speed (signal)",
     HP1 + "CHPumpSpeed": "Primary heating pump speed (PC0, signal)",
     "/signals/SRC.IntFlowTemp": "Primary supply temperature (TC1, signal)",
-    HP1 + "ReturnTemp": "Return temperature (TC0, signal)",
+    HP1 + "ReturnTemp": "Return to the heat pump (TC0, signal)",
     "/signals/SRC.SystemPumpVolumeFlow": "Primary flow rate (PC0, signal)",
     "/signals/SC.HC1.FlowTempSetp": "Supply setpoint HC1 (signal)",
     "/signals/SRC.HC1.FlowCtrl.ReqFlowTemp": (

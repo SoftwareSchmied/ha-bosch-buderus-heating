@@ -23,7 +23,8 @@ const path = require("node:path");
       localStorage.setItem("selectedLanguage", JSON.stringify(language));
     }, {url: process.env.LOCAL_SETUP_URL, token: process.env.LOCAL_SETUP_TOKEN,
       language: process.env.LOCAL_SETUP_LANGUAGE});
-    const discoveryTitle = de ? "Lokales Gateway (192.0.2.1)" : "Local gateway (192.0.2.1)";
+    // The flow title is the address of the found gateway in every language.
+    const discoveryTitle = "192.0.2.1";
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/dashboard");
     await page.getByText(discoveryTitle, {exact: true}).waitFor();
     if (process.env.LOCAL_SETUP_OUTPUT) await page.screenshot({path:path.join(process.env.LOCAL_SETUP_OUTPUT, `discovery-${de ? "de" : "en"}.png`)});
@@ -58,7 +59,7 @@ const path = require("node:path");
     await page.locator("ha-switch").click();
     assert.equal(await certificate.isChecked(), true);
     await next();
-    await page.getByText(de ? "Diesen lokalen Zugang speichern" : "Save this local connection", {exact:true}).first().waitFor();
+    await page.getByText(de ? "Diesen lokalen Zugang speichern" : "Save this local access", {exact:true}).first().waitFor();
     const save = page.getByRole("switch");
     await save.waitFor();
     assert.equal(await save.isChecked(), false);
@@ -66,7 +67,7 @@ const path = require("node:path");
     await page.locator("ha-switch").click();
     assert.equal(await save.isChecked(), true);
     await next();
-    await page.getByText(de ? "Der lokale Zugang wurde eingerichtet." : "The local access has been set up.", {exact:true}).waitFor();
+    await page.getByText(de ? "Der lokale Zugang wurde eingerichtet." : "The local access has been set up.", {exact:false}).first().waitFor();
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/dashboard");
     await page.getByRole("button", {name: de ? "Integration hinzufügen" : "Add integration", exact: true}).waitFor();
     assert.equal(await page.getByText(discoveryTitle, {exact: true}).count(), 0);

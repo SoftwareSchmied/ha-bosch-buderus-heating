@@ -235,15 +235,46 @@ pauses the local access (see [compatibility](compatibility.md#checked-systems)).
 2. Select the discovered gateway address or enter its IP address or hostname.
 3. Confirm the gateway certificate when Home Assistant asks for it.
 4. Sign in with the device label: enter **Login** and **Pass** from the label
-   on the gateway. Home Assistant does not save them.
-5. When asked, press the buttons on the gateway as described in the dialog to
-   release the local sign-in, then continue within five minutes.
+   on the gateway. The login is shown as you type it; the pass field can be
+   shown with its eye symbol. Spaces and line breaks at the start or end, for
+   example from copying, are removed. Home Assistant does not save them.
+5. Release the local sign-in on the gateway: press the Wi-Fi and wireless
+   buttons together for 1 second, wait for the blue signal and continue within
+   five minutes. After a typo, press the buttons again, because the gateway
+   accepts a sign-in only within five minutes after the release.
+6. Confirm the certificate once more. The gateway has its own certificate for
+   the sign-in port 9442 and for the data port 9443, so this page can appear
+   twice.
+
+If Home Assistant shows more than one "Discovered" card for the gateway, open
+the one of Bosch/Buderus Home Comfort.
 
 The local access only reads. With the first local access of a system,
 **Use local values for existing entities** is switched on, so existing
 entities show the current local readings; a choice saved before stays.
 Without the cloud, local readings are shown whatever this option says. Details
 are in [operation without the cloud](operation-without-cloud.md).
+
+### Keep the gateway's address stable
+
+Many routers hand out a different IP address after a restart. The local access
+then cannot reach its gateway until the address is updated. Give the gateway a
+fixed address in one of two ways:
+
+- **DHCP reservation:** reserve the gateway's current IP address in the
+  router's device list. This works everywhere and is the recommended way.
+- **Host name:** enter the gateway's host name instead of its IP address. The
+  address step offers it when Home Assistant found the gateway in the network.
+  This only helps if the computer running Home Assistant can resolve that name;
+  if in doubt, use the reservation.
+
+While the local access cannot reach its gateway, its status in **Configure →
+Connections** repeats this tip. If the gateway announces itself at a new
+address, the integration checks that address with one TLS handshake, without
+sending the token. Only when the gateway presents exactly the certificate
+confirmed during setup does a repair note offer to use the new address; see
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address). The
+address changes only after you confirm it there.
 
 When Home Assistant finds a gateway in the network, it shows a discovery
 notice. If you select **Ignore**, that notice stays ignored, also after a
@@ -497,8 +528,9 @@ requested a pause: wait, then select **Submit**.
 - Open the official heating app and confirm that the system is online.
 - Confirm that the correct SingleKey ID account was used.
 - Confirm the selected brand.
-- Compare the gateway with the compatibility list in the README. If it is
-  listed, create a bug report as described below.
+- Compare the gateway with the
+  [supported systems](compatibility.md#supported-systems-at-a-glance). If it
+  is listed, create a bug report as described below.
 
 ### A new sign-in does not find every system
 

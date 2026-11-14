@@ -69,6 +69,12 @@ _UNITS: dict[str, tuple[str, SensorDeviceClass | None]] = {
     ),
     "%": (PERCENTAGE, None),
     "bar": (UnitOfPressure.BAR, SensorDeviceClass.PRESSURE),
+    # Pressure spellings of generic signals: the unit is recognized as
+    # reported, the value is never converted.
+    "mbar": (UnitOfPressure.MBAR, SensorDeviceClass.PRESSURE),
+    "hPa": (UnitOfPressure.HPA, SensorDeviceClass.PRESSURE),
+    "kPa": (UnitOfPressure.KPA, SensorDeviceClass.PRESSURE),
+    "Pa": (UnitOfPressure.PA, SensorDeviceClass.PRESSURE),
     "s": (UnitOfTime.SECONDS, SensorDeviceClass.DURATION),
     "min": (UnitOfTime.MINUTES, SensorDeviceClass.DURATION),
     "h": (UnitOfTime.HOURS, SensorDeviceClass.DURATION),
@@ -256,14 +262,17 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.HMI.CompressorActive",
         "compressor_active",
         FLAG,
-        ("Kompressor", "Compressor"),
+        ("Kompressor läuft (Anzeigesignal)", "Compressor running (display signal)"),
         enabled=True,
     ),
     _signal(
         _HP1 + "CompressorStatus",
         "compressor_status",
         FLAG,
-        ("Kompressor (Status)", "Compressor (status)"),
+        (
+            "Kompressor läuft (Wärmepumpensignal)",
+            "Compressor running (heat pump signal)",
+        ),
     ),
     _signal(
         _HP1 + "DHWValve",
@@ -341,7 +350,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.SilentModeActive",
         "silent_mode_active",
         FLAG,
-        ("Leiser Betrieb aktiv", "Low-noise mode active"),
+        ("Flüstermodus aktiv (Signal)", "Silent mode active (signal)"),
         enabled=True,
     ),
     _signal(
@@ -408,7 +417,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "CompressorPower",
         "compressor_output",
         POWER,
-        ("Wärmeleistung (Kompressor)", "Heat output (compressor)"),
+        ("Heizleistung (thermisch)", "Heat output (thermal)"),
         enabled=True,
     ),
     _signal(
@@ -422,7 +431,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "ReceiverValveActual",
         "expansion_valve_vr0",
         PERCENT,
-        ("Expansionsventil VR0", "Expansion valve VR0"),
+        ("Sammlerventil (VR0)", "Receiver valve (VR0)"),
         enabled=True,
     ),
     _signal(
@@ -510,9 +519,11 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             (
                 _HP1 + "ReturnTemp",
                 "return_temperature_signal",
+                # The return into the heat pump, not that of a heating
+                # circuit.
                 (
-                    "Rücklauftemperatur (TC0, Signal)",
-                    "Return temperature (TC0, signal)",
+                    "Rücklauf zur Wärmepumpe (TC0, Signal)",
+                    "Return to the heat pump (TC0, signal)",
                 ),
             ),
             (
@@ -563,6 +574,126 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
                 ),
             ),
         )
+    ),
+    # Controller signals whose meaning follows from their path and the
+    # recorded values (0.9.1): named instead of showing the signal path.
+    # They stay generic, disabled diagnostic entities like every other signal;
+    # only their names change. Signals whose meaning is open (for example the
+    # four "permitted temperature" flags) keep the path as their name.
+    *(
+        _signal(signal, key, GENERIC, names)
+        for signal, key, names in (
+            (
+                "SC.HC1.MaxFlowTempSetp",
+                "circuit_1_max_supply_signal",
+                (
+                    "Maximale Vorlauftemperatur HK1 (Signal)",
+                    "Maximum supply temperature HC1 (signal)",
+                ),
+            ),
+            (
+                "SC.HC1.RTSD.CurrentRoomTempSetp",
+                "circuit_1_room_setpoint_signal",
+                (
+                    "Aktueller Raum-Sollwert HK1 (Signal)",
+                    "Current room setpoint HC1 (signal)",
+                ),
+            ),
+            (
+                "SC.HC1.HolidayMode",
+                "circuit_1_holiday_mode_signal",
+                ("Urlaubsmodus HK1", "Holiday mode HC1"),
+            ),
+            (
+                "SRC.CHPumpModulation",
+                "heating_pump_modulation_signal",
+                (
+                    "Modulation primäre Heizungspumpe (PC0, Signal)",
+                    "Primary heating pump modulation (PC0, signal)",
+                ),
+            ),
+            (
+                _HP1 + "CompressorSpeedMax",
+                "compressor_speed_max_signal",
+                ("Maximale Kompressordrehzahl", "Maximum compressor speed"),
+            ),
+            (
+                "SRC.CUHP.Additional.ExternBlocked",
+                "auxiliary_heater_blocked_signal",
+                ("Zuheizer extern gesperrt", "Auxiliary heater blocked externally"),
+            ),
+            (
+                "SRC.CUHP.CH.ExternBlocked",
+                "heating_blocked_signal",
+                ("Heizen extern gesperrt", "Heating blocked externally"),
+            ),
+            (
+                "SRC.CUHP.DHW.ExternBlocked",
+                "hot_water_blocked_signal",
+                ("Warmwasser extern gesperrt", "Hot water blocked externally"),
+            ),
+            (
+                _HP1 + "CompressorExtBlocked",
+                "compressor_blocked_signal",
+                ("Kompressor extern gesperrt", "Compressor blocked externally"),
+            ),
+            (
+                "SRC.CUHP.HMI.BuzzerActive",
+                "buzzer_active_signal",
+                ("Summer aktiv", "Buzzer active"),
+            ),
+            (
+                "GWEEBUS.Status",
+                "eebus_status_signal",
+                ("EEBus-Status", "EEBus status"),
+            ),
+            (
+                "GWEEBUS.CommissioningStatus",
+                "eebus_commissioning_signal",
+                ("EEBus-Inbetriebnahmestatus", "EEBus commissioning status"),
+            ),
+            (
+                "SRC.CUHP.Stats.ControlUnit",
+                "controller_operating_time_signal",
+                ("Betriebszeit Regler", "Controller operating time"),
+            ),
+            (
+                _HP1 + "BrineTempHeatingLow",
+                "brine_too_cold_signal",
+                ("Soletemperatur zu niedrig", "Brine temperature too low"),
+            ),
+            (
+                _HP1 + "CollectorCircuitPressureSwitch",
+                "collector_pressure_switch_signal",
+                ("Druckschalter Kollektorkreis", "Collector circuit pressure switch"),
+            ),
+            (
+                "SRC.RelayStatus.Fan",
+                "fan_relay_signal",
+                ("Relais Lüfter", "Fan relay"),
+            ),
+            (
+                "SRC.RelayStatus.GasValve1",
+                "gas_valve_1_relay_signal",
+                ("Relais Gasventil 1", "Gas valve 1 relay"),
+            ),
+            (
+                "SRC.RelayStatus.GasValve2",
+                "gas_valve_2_relay_signal",
+                ("Relais Gasventil 2", "Gas valve 2 relay"),
+            ),
+            (
+                _HP1 + "Stats.CompStartsCooling",
+                "compressor_starts_cooling_signal",
+                ("Kompressorstarts Kühlen", "Compressor starts cooling"),
+            ),
+        )
+    ),
+    _define(
+        r"/signals/SC\.HolidayNew\.(\d+)\.State",
+        "holiday_slot_state_signal",
+        GENERIC,
+        ("Urlaubsplatz {} Status", "Holiday slot {} state"),
     ),
     # C7-3: the parts of the installation date (the date itself is derived).
     *(
@@ -879,10 +1010,13 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         options=("active", "inactive"),
     ),
     # The refrigerant circuit temperatures. Since 0.9.0-alpha.6 the ones a
-    # hydraulic view of the heat pump shows are enabled (hot gas TR6,
-    # condenser heating TR3, high and low pressure JR1/JR0, suction line
-    # TR5); the compressor and the condenser cooling temperature stay
-    # disabled.
+    # hydraulic view of the heat pump shows are enabled (hot gas TR6, liquid
+    # line heating TR3, high and low pressure JR1/JR0, suction line TR5); the
+    # compressor and the liquid line cooling temperature stay disabled.
+    # TR3 and TR4 are liquid line temperatures ("liquid pipe" in the API
+    # documentation), not the condensing temperature, which JR1 gives: while
+    # heating, TR3 reads the liquid behind the water-side heat exchanger and
+    # TR4, at the evaporator inlet, about the low-pressure temperature (JR0).
     *(
         _define(REFRIGERANT + "/" + name, key, TEMPERATURE, names, enabled=enabled)
         for name, key, names, enabled in (
@@ -908,8 +1042,8 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                 "liquidPipeCoolingTemp",
                 "liquid_line_cooling",
                 (
-                    "Verflüssigertemperatur Kühlen (TR4)",
-                    "Condenser temperature cooling (TR4)",
+                    "Temperatur Flüssigkeitsleitung Kühlen (TR4)",
+                    "Liquid line temperature cooling (TR4)",
                 ),
                 False,
             ),
@@ -917,8 +1051,8 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                 "liquidPipeHeatingTemp",
                 "liquid_line_heating",
                 (
-                    "Verflüssigertemperatur Heizen (TR3)",
-                    "Condenser temperature heating (TR3)",
+                    "Temperatur Flüssigkeitsleitung Heizen (TR3)",
+                    "Liquid line temperature heating (TR3)",
                 ),
                 True,
             ),
@@ -1161,6 +1295,16 @@ _MAP_TRANSLATIONS = {
     frozenset({"true", "false"}): "signal_true_false",
     frozenset({"off", "on"}): "on_off_state",
 }
+# State texts of named gateway states, by signal path: the EEBus status
+# and commissioning of the gateway and the start-up check of the heat pump,
+# as the reference gateway (firmware 15.00.01) declares them. Only the texts
+# change: the entity keeps its name, unique ID and entity ID, and a state
+# without a text of its own is shown as the gateway reports it.
+_PATH_TRANSLATIONS = {
+    "/signals/GWEEBUS.Status": "signal_eebus_status",
+    "/signals/GWEEBUS.CommissioningStatus": "signal_eebus_commissioning",
+    "/signals/SRC.CUHP.StartUpCheck": "signal_startup_check",
+}
 _TRUE_FALSE = frozenset({"true", "false"})
 _MARKER_STATE = re.compile(
     r"(?:^|_)(?:na|open|short|invalid\d*|overflow|underflow|low_?flow|error)(?:_|$)"
@@ -1217,6 +1361,50 @@ def below_measuring_range(observation: Observation) -> bool:
     )
 
 
+# A hybrid system and its volume flows. Whether a hybrid gateway reports its
+# volume flows in other steps is not established, so they are never
+# rescaled: the diagnostics only tell that a hybrid system was detected and
+# that its volume flows are unverified.
+HYBRID_MANAGER_SIGNALS = "/signals/HYBMAN."
+_HYBRID_RESOURCES = "/heatSources/hybrid/"
+_SYSTEM_TYPE_PATH = "/system/type"
+_HEAT_SOURCE_TYPE = re.compile(r"/heatSources(?:/hs[^/]+)?/type")
+_NOT_LETTER = re.compile(r"[^a-z]")
+
+
+def hybrid_evidence(readings: Iterable[tuple[str, object]]) -> tuple[str, ...]:
+    """Why a system counts as a hybrid system, as fixed codes (sorted).
+
+    Evidence is a hybrid manager's signal, a resource of the hybrid control
+    or a system or heat source type that names a hybrid system; never a
+    product name or a guess from other readings. ``readings`` are paths
+    with their current value (``None`` without one).
+    """
+    found: set[str] = set()
+    for path, value in readings:
+        if path.startswith(HYBRID_MANAGER_SIGNALS):
+            found.add("hybrid_manager_signals")
+        elif path.startswith(_HYBRID_RESOURCES):
+            found.add("hybrid_resources")
+        elif path == _SYSTEM_TYPE_PATH and _hybrid_type(value):
+            found.add("system_type")
+        elif _HEAT_SOURCE_TYPE.fullmatch(path) and _hybrid_type(value):
+            found.add("heat_source_type")
+    return tuple(sorted(found))
+
+
+def _hybrid_type(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    text = _NOT_LETTER.sub("", value.casefold())
+    return "hybrid" in text or text == "hybman"
+
+
+def volume_flow_path(path: str) -> bool:
+    """A volume flow reading (not a low-flow flag such as ``…VolumeFlowLow``)."""
+    return path.rsplit("/", 1)[-1].casefold().endswith("volumeflow")
+
+
 # #76: a setpoint an energy manager uses. While none is connected, the
 # controller reports a placeholder (0 °C) instead of a setpoint.
 ENERGY_MANAGER_STATUS_PATH = "/heatSources/emStatus"
@@ -1233,6 +1421,13 @@ def energy_manager_not_connected(status: object) -> bool:
     return (state_key(status) or "").replace("_", "") == "notconnected"
 
 
+def _state_translation(path: object, keys: tuple[str, ...]) -> str | None:
+    """The state texts of a generic state: by its path, else by its states."""
+    if isinstance(path, str) and (key := _PATH_TRANSLATIONS.get(path)) is not None:
+        return key
+    return _MAP_TRANSLATIONS.get(frozenset(keys))
+
+
 def generic_form(
     definition: LocalOnlyDefinition, observation: object
 ) -> LocalOnlyDefinition | None:
@@ -1245,6 +1440,7 @@ def generic_form(
     whose marker states (for example NA_OPEN) show no value.
     """
     data = getattr(observation, "data", None)
+    path = getattr(getattr(observation, "request", None), "path", None)
     if getattr(observation, "type", None) == "stringValue":
         declared = _declared(getattr(data, "allowed_values", ()))
         if declared and not _TRUE_FALSE.issuperset(declared):
@@ -1252,7 +1448,7 @@ def generic_form(
                 definition,
                 kind=STATE,
                 options=declared,
-                translation_key=_MAP_TRANSLATIONS.get(frozenset(declared)),
+                translation_key=_state_translation(path, declared),
             )
         if declared or state_key(getattr(data, "value", None)) in _TRUE_FALSE:
             # O107: declared or answered true/false is an on/off state; a
@@ -1283,7 +1479,7 @@ def generic_form(
             definition,
             kind=STATE,
             options=keys,
-            translation_key=_MAP_TRANSLATIONS.get(frozenset(keys)),
+            translation_key=_state_translation(path, keys),
         )
     if definition.translation_key is not None:
         # State texts belong to the on/off form only, never to a number.

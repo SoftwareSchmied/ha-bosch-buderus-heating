@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Seoladh an gheata áitiúil",
-        "description": "Roghnaigh seoladh a aimsíodh nó cuir isteach seoladh IP nó óstainm. Ní athraíonn aimsiú aon nasc sábháilte.",
+        "description": "Roghnaigh seoladh a aimsíodh nó cuir isteach seoladh IP nó óstainm. Leid: cuir seoladh an gheata in áirithe sa ródaire (áirithint DHCP) ionas go bhfanfaidh sé mar an gcéanna.",
         "data": {
           "address": "Seoladh IP nó óstainm"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Deimhnigh deimhniú an gheata",
-        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.\n\nMura mbaineann an deimhniú le do gheata, dún an dialóg; ní sheoltar aon rud.",
         "data": {
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
-        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh thart ar dhá shoicind, faoi bhun trí shoicind, agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
+        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Má thógann sé níos mó ná cúig nóiméad botún clóscríofa a cheartú, brúigh na cnaipí arís. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an Pass.",
         "data": {
           "login": "Login ar lipéad an ghléis",
           "password": "Pass ar lipéad an ghléis",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Atosaigh an socrú áitiúil",
-        "description": "Tá iarracht roimhe seo sábháilte. Má fuarthas comhartha, lean ar aghaidh leis an gcomhartha sin. Má cailleadh an freagra, d'fhéadfadh comhartha a bheith ar an ngeata cé nach bhféadfadh Home Assistant é a shábháil. Ní bhaineann an chaitheamh amach ach an chóip áitiúil atá ar feitheamh agus ceadaíonn sé iarracht eile; ní chúlghairtear comharthaí an gheata.\n\nSos fágtha ón bhfreastalaí: {seconds} soicind.",
+        "description": "Tá iarracht roimhe seo sábháilte. Má fuarthas comhartha, lean ar aghaidh leis an gcomhartha sin. Má cailleadh an freagra, d'fhéadfadh comhartha a bheith ar an ngeata cé nach bhféadfadh Home Assistant é a shábháil. Ní bhaineann an chaitheamh amach ach an chóip áitiúil atá ar feitheamh agus ceadaíonn sé iarracht eile; ní chúlghairtear comharthaí an gheata.\n\nSos fágtha den gheata: {seconds} soicind (ciallaíonn 0 gur féidir leat leanúint ar aghaidh anois).",
         "data": {
           "action": "An chéad ghníomh eile",
           "confirm": "Tuigim agus ba mhaith liom an iarracht seo atá ar feitheamh a chaitheamh amach"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Cuir isteach seoladh IP nó óstainm gan URL, cosán ná dintiúir.",
       "local_interface_required": "Teastaíonn comhéadan líonra ar óstríomhaire Home Assistant don seoladh IPv6 seo.",
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
-      "local_invalid_credentials": "Seiceáil Login agus Pass ar lipéad an gheata agus cuir isteach arís iad.",
-      "local_unlock_required": "Scaoil síniú isteach áitiúil ar an ngeata agus deimhnigh an comhartha gorm sula ndéanann tú iarracht arís.",
+      "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
+      "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
+      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
+      "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
       "local_service_unavailable": "Níl seirbhís an gheata ar fáil go sealadach. Fan agus déan iarracht arís.",
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
@@ -198,14 +201,14 @@
       "already_configured": "Tá an cuntas téimh seo nó geata roghnaithe amháin ar a laghad cumraithe cheana in Home Assistant.",
       "invalid_flow": "Tá an seisiún socraithe seo neamhiomlán nó imithe in éag. Dún an dialóg agus cuir Bosch/Buderus Home Comfort leis arís.",
       "no_gateways": "Ní bhfuarthas aon ghléas. Seiceáil go bhfuil an branda roghnaithe agus an cuntas SingleKey ID ag teacht le d'aip. Ní thaispeántar rialaitheoir seomra a bhfuil dochtearraí níos sine air go dtí go mbeidh a dhochtearraí nuashonraithe agus go mbeidh sé socraithe san aip reatha le do SingleKey ID.",
-      "reauth_required": "Níl an t-údarú sábháilte bailí a thuilleadh. Dún an dialóg seo agus roghnaigh Athfhíordheimhnigh do Bosch/Buderus Home Comfort.",
+      "reauth_required": "Níl an síniú isteach sábháilte bailí a thuilleadh. Dún an dialóg seo agus roghnaigh **Athchumraigh** don chomhtháthú seo faoi Socruithe → Feistí & seirbhísí.",
       "reauth_successful": "Athnuadh an síniú isteach go rathúil.",
       "reauth_wrong_account": "Ní hionann an cuntas roghnaithe agus na gléasanna cumraithe. Sínigh isteach leis an gcuntas bunaidh.",
       "reauth_no_targets": "Níl aon chóras ná gléas fágtha ag an rochtain néil seo, agus ní féidir an cuntas lena mbaineann sí a dheimhniú. Coinnítear na dintiúir roimhe seo. Chun cuntas néil a úsáid arís, bain an rochtain néil faoi Cumraigh → Naisc agus ceangail arís í.",
       "reauth_successful_targets_missing": "Athnuadh an síniú isteach. Ní bhfuarthas {count} córas nó gléas casta air sa chuntas; fanann siad cumraithe. Ainmníonn nóta deisiúcháin iad agus míníonn sé conas dearmad a dhéanamh orthu.",
       "reconfigure_successful": "Sábháladh na socruithe. Tá Bosch/Buderus Home Comfort á athlódáil agus á aimsiú gach acmhainn atá ar fáil arís.",
-      "connection_required": "Roghnaigh an nasc faoi Socruithe sula síníonn tú isteach arís.",
-      "connection_settings_required": "Bainistigh an rochtain seo faoi Socruithe agus Naisc.",
+      "connection_required": "Roghnaigh ar dtús faoi **Cumraigh → Naisc** an rochtain a theastaíonn uait síniú isteach uirthi arís.",
+      "connection_settings_required": "Bainistigh an rochtain seo faoi **Cumraigh → Naisc**.",
       "cloud_already_connected": "Tá nasc néil cumraithe cheana. Úsáid a shocruithe nasctha chun tuilleadh gléasanna a roghnú nó chun síniú isteach arís. Ní thacaítear go fóill le dara síniú isteach néil comhthreomhar.",
       "cloud_setup_in_progress": "Tá socrú néil eile oscailte cheana. Críochnaigh nó dún an dialóg sin ar dtús.",
       "cloud_setup_taken_over": "Tá dialóg socraithe néil níos nuaí tar éis an ceann seo a chur ina háit. Dún an dialóg seo agus lean ar aghaidh sa cheann níos nuaí.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Níl socrú áitiúil ar fáil go dtí go mbeidh soláthar rialta sonraí áitiúla réidh.",
       "local_session_changed": "Tá deireadh leis an seisiún socraithe seo nó athraíodh a rogha. Oscail an socrú áitiúil arís chun leanúint ar aghaidh.",
       "local_discovery_invalid": "Ní chuireann an fógra aimsithe seo cur síos ar chríochphointe geata áitiúil tacaithe.",
+      "local_address_moved": "Freagraíonn geata rochtana áitiúla cumraithe ag seoladh nua. Tairgeann nóta deisiúcháin é a úsáid.",
       "local_existing_owner_required": "Socraigh córas gan an néal le “Rochtain áitiúil amháin” agus an comhtháthú á chur leis. Is féidir geata a aimsíodh a chur le socrú atá ann cheana.",
       "local_target_required": "Níl aon tsuiteáil oiriúnach coinnithe ag an socrú seo le haghaidh nasc áitiúil.",
-      "local_setup_complete": "Socraíodh an rochtain áitiúil.",
+      "local_setup_complete": "Socraíodh an rochtain áitiúil. Tá a stádas agus a minicíocht pollála faoi Cumraigh → Naisc.",
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "already_in_progress": "Tá socrú don gheata áitiúil seo ar siúl cheana.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
     },
-    "flow_title": "Geata áitiúil ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Fógraí",
           "holidays": "Bainistigh tréimhsí saoire",
-          "rrc_programs": "Sceidil téimh RRC",
+          "rrc_programs": "Sceidil rialaitheora seomra",
           "switch_programs": "Sceidil téimh agus uisce te",
           "controls": "Oibrigh an trealamh",
           "connections": "Naisc",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Ainm",
           "holiday_start": "Tosú",
-          "holiday_end": "Deireadh (eisiata)",
+          "holiday_end": "Deireadh (gnáthoibriú as seo amach)",
           "holiday_assigned_to": "Bailí do",
           "holiday_heating_mode": "Lárthéamh",
           "holiday_dhw_mode": "Uisce te",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Ainm",
           "holiday_start": "Tosú",
-          "holiday_end": "Deireadh (eisiata)",
+          "holiday_end": "Deireadh (gnáthoibriú as seo amach)",
           "holiday_assigned_to": "Bailí do",
           "holiday_heating_mode": "Lárthéamh",
           "holiday_dhw_mode": "Uisce te",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Ainm",
           "holiday_start": "Tosú",
-          "holiday_end": "Deireadh (eisiata)",
+          "holiday_end": "Deireadh (an chéad lá tar éis na laethanta saoire)",
           "holiday_assigned_to": "Bailí do",
           "holiday_heating_mode": "Lárthéamh",
           "holiday_dhw_mode": "Uisce te",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Ainm",
           "holiday_start": "Tosú",
-          "holiday_end": "Deireadh (eisiata)",
+          "holiday_end": "Deireadh (an chéad lá tar éis na laethanta saoire)",
           "holiday_assigned_to": "Bailí do",
           "holiday_heating_mode": "Lárthéamh",
           "holiday_dhw_mode": "Uisce te",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Oibrigh an trealamh",
-        "description": "Roghnaigh cuid agus coigeartaigh na socruithe. Ní scríobhann Cuir i bhfeidhm ach na hathruithe a rinne tú. Nuair a athraítear roinnt socruithe, deimhnítear gach ceann acu astu féin.",
+        "description": "Roghnaigh cuid agus coigeartaigh na socruithe. Seolann **Cuir i bhfeidhm** na hathruithe a rinne tú amháin, ceann i ndiaidh a chéile, agus seiceálann sé gach ceann trí é a léamh ar ais.",
         "data": {
           "controls": "Rialuithe"
         },
@@ -466,7 +470,7 @@
         "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Tástáil an nasc anois",
-          "connection_enabled": "Cumasaigh nó díchumasaigh rochtain",
+          "connection_enabled": "Cas nó múch rochtain",
           "connection_forget": "Déan dearmad ar chórais dhíroghnaithe",
           "connection_targets": "Úsáid do chórais agus do ghléasanna",
           "connection_reauthenticate": "Sínigh isteach arís",
@@ -474,16 +478,17 @@
           "connection_discover": "Cuardaigh agus roghnaigh gléasanna",
           "connection_polling": "Minicíocht fiosraithe",
           "local_setup": "Athraigh rochtain áitiúil",
+          "local_tokens": "Comharthaí ar an ngeata",
           "local_polling": "Minicíocht fiosraithe áitiúil agus stádas",
           "local_values": "Úsáid luachanna áitiúla d'aonáin atá ann cheana",
           "back": "← Siar"
         }
       },
       "connection_enabled": {
-        "title": "Cumasaigh rochtain",
+        "title": "Cas nó múch rochtain",
         "description": "Ní théann díchumasú i bhfeidhm ach ar an rochtain seo. Leanann naisc eile ar aghaidh ag rith. Coinnítear córais agus aonáin.",
         "data": {
-          "enabled": "Cumasaithe"
+          "enabled": "Rochtain casta"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Bain rochtain",
-        "description": "Bainfear na dintiúir. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach. Gan nasc atá ar fáil, ní féidir le haonáin luachanna reatha a thaispeáint.",
+        "description": "Bainfear na dintiúir de Home Assistant. Fanann an comhartha ar an ngeata mura gcúlghairmeann tú é leis an ticbhosca thíos. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach; gan rochtain atá ar fáil, ní thaispeánann siad luachanna reatha. Fág an ticbhosca uachtarach gan tic chun filleadh gan athruithe.",
         "data": {
-          "confirm": "Bain an rochtain seo"
+          "confirm": "Bain an rochtain seo",
+          "revoke": "Cúlghair comhartha den chomhtháthú seo ar an ngeata ar dtús"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Seoladh an gheata áitiúil",
-        "description": "Roghnaigh seoladh a aimsíodh nó cuir isteach seoladh IP nó óstainm. Ní athraíonn aimsiú aon nasc sábháilte.",
+        "description": "Roghnaigh seoladh a aimsíodh nó cuir isteach seoladh IP nó óstainm. Leid: cuir seoladh an gheata in áirithe sa ródaire (áirithint DHCP) ionas go bhfanfaidh sé mar an gcéanna.",
         "data": {
           "address": "Seoladh IP nó óstainm"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Deimhnigh deimhniú an gheata",
-        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.\n\nMura mbaineann an deimhniú le do gheata, dún an dialóg; ní sheoltar aon rud.",
         "data": {
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
-        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh thart ar dhá shoicind, faoi bhun trí shoicind, agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
+        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Má thógann sé níos mó ná cúig nóiméad botún clóscríofa a cheartú, brúigh na cnaipí arís. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an Pass.",
         "data": {
           "login": "Login ar lipéad an ghléis",
           "password": "Pass ar lipéad an ghléis",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Atosaigh an socrú áitiúil",
-        "description": "Tá iarracht roimhe seo sábháilte. Má fuarthas comhartha, lean ar aghaidh leis an gcomhartha sin. Má cailleadh an freagra, d'fhéadfadh comhartha a bheith ar an ngeata cé nach bhféadfadh Home Assistant é a shábháil. Ní bhaineann an chaitheamh amach ach an chóip áitiúil atá ar feitheamh agus ceadaíonn sé iarracht eile; ní chúlghairtear comharthaí an gheata.\n\nSos fágtha ón bhfreastalaí: {seconds} soicind.",
+        "description": "Tá iarracht roimhe seo sábháilte. Má fuarthas comhartha, lean ar aghaidh leis an gcomhartha sin. Má cailleadh an freagra, d'fhéadfadh comhartha a bheith ar an ngeata cé nach bhféadfadh Home Assistant é a shábháil. Ní bhaineann an chaitheamh amach ach an chóip áitiúil atá ar feitheamh agus ceadaíonn sé iarracht eile; ní chúlghairtear comharthaí an gheata.\n\nSos fágtha den gheata: {seconds} soicind (ciallaíonn 0 gur féidir leat leanúint ar aghaidh anois).",
         "data": {
           "action": "An chéad ghníomh eile",
           "confirm": "Tuigim agus ba mhaith liom an iarracht seo atá ar feitheamh a chaitheamh amach"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Cuardaigh an córas arís",
         "description": "Cuardaíonn sé seo an córas uair amháin eile le haghaidh páirteanna agus léamh, tríd an rochtain néil agus an rochtain áitiúil. Úsáid é tar éis comhpháirteanna a chur leis nó a athrú. Ritheann an cuardach leis an gcéad nuashonrú rialta eile agus laistigh de na teorainneacha is gnách d'iarratais; ní bhaineann sé aonán riamh, agus fanann léamh nach bhfaigheann sé arís mar atá siad."
+      },
+      "local_tokens": {
+        "title": "Comharthaí ar an ngeata",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Gan rogha ní athraíonn aon rud.{note}",
+        "data": {
+          "token": "Comhartha le cúlghairm"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Cúlghair comhartha sula mbaintear é",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, bainfidh **Cuir isteach** an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.{note}",
+        "data": {
+          "token": "Comhartha le cúlghairm"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Gan comhartha le cúlghairm",
+        "description": "Ní liostálann an geata aon chomhartha den chomhtháthú seo is féidir a chúlghairm anseo, nó níorbh fhéidir an liosta a léamh. Níor baineadh an rochtain fós. Roghnaigh ar cheart í a bhaint gan cúlghairm nó í a choinneáil.",
+        "menu_options": {
+          "local_tokens_remove_without": "Bain gan cúlghairm",
+          "local_tokens_remove_cancel": "Cealaigh agus coinnigh an rochtain"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Deimhnigh deimhniú an tsínithe isteach",
+        "description": "Taispeánann an tseirbhís síniú isteach ag **{host}:{port}** deimhniú nár deimhníodh riamh don rochtain seo. Deimhnigh gurb é seo do gheata sula seoltar comhartha na rochtana ann. Ní bhaineann an deimhniú ach leis an dialóg seo.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Deimhním an geata seo agus a dheimhniú"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Cúlghair comhartha",
+        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin. Fág an ticbhosca gan tic chun filleadh gan cúlghairm. {use} Cuir tic sa dara ticbhosca freisin chun é seo a dheimhniú.",
+        "data": {
+          "confirm": "Cúlghair an comhartha seo ar an ngeata",
+          "confirm_end": "Críochnaíonn rochtain áitiúil a úsáideann an comhartha seo"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Roghnaigh am ceathrú uaire le do thoil: nóiméid 00, 15, 30 nó 45.",
       "holiday_time_nonexistent": "Níl an t-am tosaithe nó deiridh roghnaithe ann toisc go dtéann an clog ar aghaidh i gcrios ama an chórais téimh. Roghnaigh am eile.",
       "holiday_time_ambiguous": "Tarlaíonn an t-am tosaithe nó deiridh roghnaithe faoi dhó toisc go dtéann an clog siar i gcrios ama an chórais téimh. Roghnaigh am gan débhrí.",
-      "write_authentication_failed": "Níl síniú isteach an néil bailí a thuilleadh. Athfhíordheimhnigh Bosch/Buderus Home Comfort sula ndéanann tú iarracht arís.",
+      "write_authentication_failed": "Níl síniú isteach an néil bailí a thuilleadh. Sínigh isteach arís faoi Cumraigh → Naisc → rochtain néil → **Sínigh isteach arís**, ansin déan iarracht arís.",
       "write_failed": "Níorbh fhéidir socruithe na saoire a athrú.",
       "write_busy": "Tá an córas téimh á léamh nó tá athrú eile fós ar siúl. Níor seoladh aon rud. Déan iarracht arís i gceann tamaill.",
       "write_not_confirmed": "Níorbh fhéidir an t-athrú a dheimhniú go hiomlán. B'fhéidir go bhfuil roinnt socruithe sábháilte cheana. Oscail an tsaoire arís agus seiceáil a socruithe reatha.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Cuir isteach seoladh IP nó óstainm gan URL, cosán ná dintiúir.",
       "local_interface_required": "Teastaíonn comhéadan líonra ar óstríomhaire Home Assistant don seoladh IPv6 seo.",
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
-      "local_invalid_credentials": "Seiceáil Login agus Pass ar lipéad an gheata agus cuir isteach arís iad.",
-      "local_unlock_required": "Scaoil síniú isteach áitiúil ar an ngeata agus deimhnigh an comhartha gorm sula ndéanann tú iarracht arís.",
+      "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
+      "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
+      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
+      "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
       "local_service_unavailable": "Níl seirbhís an gheata ar fáil go sealadach. Fan agus déan iarracht arís.",
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Ní chuireann an néal agus an rochtain áitiúil cur síos ar an gcóras céanna. Níor sábháladh aon rud. Díroghnaigh an córas seo chun leanúint á úsáid trína rochtain áitiúil amháin.",
       "local_plant_known": "Baineann an geata seo le córas cumraithe cheana. Roghnaigh an córas sin in ionad ceann nua.",
       "auth_expired": "Tá an iarracht shínithe isteach seo imithe in éag. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
-      "auth_restart": "Ní féidir an iarracht shínithe isteach seo a úsáid a thuilleadh. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís."
+      "auth_restart": "Ní féidir an iarracht shínithe isteach seo a úsáid a thuilleadh. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
+      "local_tokens_rejected": "Níor ghlac an geata le comhartha na rochtana seo. Níor athraíodh aon rud.",
+      "local_tokens_forbidden": "Dhiúltaigh seirbhís síniú isteach an gheata don iarratas. Níor athraíodh aon rud.",
+      "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
+      "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
+      "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
+      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Níorbh fhéidir an t-iarratas cruthaithe a dheimhniú. B'fhéidir go bhfuil an tsaoire ann cheana. Seiceáil Bainistigh tréimhsí saoire nó aip an déantóra. Ar feadh na 10 nóiméad eile, seiceálann iarracht eile toradh an iarratais seo gan an dara saoire a chruthú.",
       "holiday_create_adjusted": "Sheol an córas téimh saoire nua ar ais, ach tá a socruithe difriúil ó d'iarratas. An tréimhse iarrtha: {requested}. An tréimhse seolta ar ais: {actual}. Oscail Bainistigh tréimhsí saoire chun an iontráil seo a sheiceáil agus a chur in eagar.",
       "holiday_update_adjusted": "Sheol an córas téimh socruithe ar ais atá difriúil ón athrú a d'iarr tú. An tréimhse iarrtha: {requested}. An tréimhse seolta ar ais: {actual}. Oscail Bainistigh tréimhsí saoire chun an iontráil reatha a sheiceáil agus a chur in eagar.",
-      "no_rrc_schedules": "Níl aon sceideal seachtainiúil RRC reatha tacaithe ar fáil.",
+      "no_rrc_schedules": "Níl aon sceideal seachtainiúil reatha tacaithe de rialaitheoir seomra ar fáil.",
       "no_switch_programs": "Ní féidir aon sceideal reatha de chiorcad téimh nó den uisce te a athrú anseo.",
       "switch_program_changed": "Tá an sceideal athraithe idir an dá linn nó ní féidir é a athrú a thuilleadh. Oscail arís é chun na pointí lasctha reatha a fheiceáil.",
       "switch_program_saved": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Ní thuairiscíonn an trealamh seo aon socruithe is féidir a athrú anseo faoi láthair.",
       "configuration_changed": "Athraíodh na socruithe nasctha cé go raibh an dialóg seo oscailte. Dún í agus déan iarracht arís.",
       "no_connections": "Níl aon rochtain cumraithe. Coinnítear córais agus aonáin atá ann cheana.",
-      "connection_reauth_started": "Iarradh síniú isteach. Oscail an leid fíordheimhnithe don iontráil seo.",
+      "connection_reauth_started": "Tá an síniú isteach nua réidh. Dún an dialóg seo agus roghnaigh **Athchumraigh** don chomhtháthú seo faoi Socruithe → Feistí & seirbhísí, sa chuid **Aird ag teastáil**.",
       "cloud_already_connected": "Tá nasc néil cumraithe cheana. Úsáid a shocruithe nasctha chun tuilleadh gléasanna a roghnú nó chun síniú isteach arís. Ní thacaítear go fóill le dara síniú isteach néil comhthreomhar.",
       "cloud_setup_in_progress": "Tá socrú néil eile oscailte cheana. Críochnaigh nó dún an dialóg sin ar dtús.",
       "cloud_setup_taken_over": "Tá dialóg socraithe néil níos nuaí tar éis an ceann seo a chur ina háit. Dún an dialóg seo agus lean ar aghaidh sa cheann níos nuaí.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Ní chuireann an fógra aimsithe seo cur síos ar chríochphointe geata áitiúil tacaithe.",
       "local_existing_owner_required": "Socraigh córas gan an néal le “Rochtain áitiúil amháin” agus an comhtháthú á chur leis. Is féidir geata a aimsíodh a chur le socrú atá ann cheana.",
       "local_target_required": "Níl aon tsuiteáil oiriúnach coinnithe ag an socrú seo le haghaidh nasc áitiúil.",
-      "local_setup_complete": "Socraíodh an rochtain áitiúil.",
+      "local_setup_complete": "Socraíodh an rochtain áitiúil. Tá a stádas agus a minicíocht pollála faoi Cumraigh → Naisc.",
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
@@ -816,7 +868,17 @@
       "connection_saved": "Sábháladh an t-athrú.",
       "connection_removed": "Baineadh an rochtain.",
       "notifications_saved": "Sábháladh na socruithe fógraí.",
-      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais."
+      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais.",
+      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús.",
+      "local_tokens_changed": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís.",
+      "local_token_revoked": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh.",
+      "local_token_access_ended": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í.",
+      "local_token_revoke_rejected": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta.",
+      "local_token_revoke_unclear": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil.",
+      "local_token_revoked_removed": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain.",
+      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís.",
+      "local_token_old_revoked_removed": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata.",
+      "local_token_access_end_failed": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Athraíodh deimhniú an gheata áitiúil",
-      "description": "Cuireann geata rochtana áitiúla deimhniú difriúil i láthair. Ní ghlacann an comhtháthú leis ar a chonlán féin agus stopann sé de léamh go háitiúil. Má tá a fhios agat cén fáth ar athraigh an deimhniú (mar shampla tar éis nuashonraithe nó athshocraithe geata), oscail roghanna an chomhtháthaithe, roghnaigh an rochtain áitiúil agus roghnaigh “Athraigh rochtain áitiúil”. Deimhníonn tú an deimhniú nua ansin. Moltar síniú isteach nua leis an lipéad gléis; coinnigh an comhartha reatha ach amháin má tá tú cinnte gur le do gheata féin an deimhniú nua."
+      "description": "Cuireann geata rochtana áitiúla deimhniú difriúil i láthair. Ní ghlacann an comhtháthú leis ar a chonlán féin agus stopann sé de léamh go háitiúil. Má tá a fhios agat cén fáth ar athraigh an deimhniú (mar shampla tar éis nuashonraithe nó athshocraithe geata), oscail Cumraigh → Naisc don chomhtháthú, roghnaigh an rochtain LAN agus roghnaigh “Athraigh rochtain áitiúil”. Deimhníonn tú an deimhniú nua ansin. Moltar síniú isteach nua leis an lipéad gléis; coinnigh an comhartha reatha ach amháin má tá tú cinnte gur le do gheata féin an deimhniú nua."
     },
     "local_start_certificate": {
       "title": "Ní féidir leis an rochtain áitiúil nasc go slán",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Níl an iontráil lena mbaineann ann a thuilleadh.",
           "configuration_changed": "Tá an rochtain nó an córas téimh athraithe. Oscail an deisiúchán arís."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Geata áitiúil aimsithe ag seoladh nua",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Úsáid seoladh nua an gheata",
+            "description": "Ní féidir leis an rochtain áitiúil a geata a bhaint amach ag {previous}. Freagraíonn an geata céanna anois ag {address}: taispeánann sé an deimhniú a deimhníodh le linn an tsocraithe. Níor seoladh aon chomhartha chuig an seoladh nua.\n\nDeimhnigh thíos chun an seoladh nua a shábháil. Tosaíonn an rochtain áitiúil arís leis ansin; ní athraítear an comhartha ná an deimhniú deimhnithe. Chun é seo a sheachaint amach anseo, cuir seoladh an gheata in áirithe sa ródaire (áirithint DHCP).\n\nMura mian leat an seoladh a úsáid, dún an dialóg nó roghnaigh **Neamhaird**.",
+            "data": {
+              "confirm": "Úsáid an seoladh nua"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Deimhnigh le leanúint ar aghaidh, le do thoil."
+        },
+        "abort": {
+          "entry_not_found": "Níl an iontráil lena mbaineann den chomhtháthú seo ann a thuilleadh.",
+          "configuration_changed": "Tá an rochtain nó an córas athraithe. Oscail an deisiúchán arís.",
+          "local_address_expired": "Níl an nóta seo cothrom le dáta a thuilleadh, mar shampla tar éis atosaithe. Níor athraíodh aon rud. Beidh sé le feiceáil arís má fhreagraíonn an geata ag seoladh nua arís.",
+          "local_address_recovered": "Baineann an rochtain áitiúil a geata amach arís. Níor athraíodh aon rud.",
+          "local_address_unproven": "Níorbh fhéidir an geata ag an seoladh nua a dheimhniú arís. Níor athraíodh aon rud."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Níl an socrú críochnaithe",
-      "description": "Níl aon rochtain ag an iontráil “{title}” go fóill. Oscail a roghanna cumraíochta agus roghnaigh “Socraigh rochtain áitiúil” (nó cuir rochtain néil leis) chun an socrú a chríochnú."
+      "description": "Níl aon rochtain ag an iontráil “{title}” go fóill. Roghnaigh **Cumraigh** uirthi agus ansin “Socraigh rochtain áitiúil” (nó ceangail rochtain néil)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Seoladh an t-athrú chuig an rialaitheoir seomra, ach níor dheimhnigh sé go fóill é. Is féidir leis an rialaitheoir é a chur i bhfeidhm le moill; nuashonrófar an luach leis an gcéad léamh eile."
     },
     "write_authentication_failed": {
-      "message": "Níl síniú isteach an néil bailí a thuilleadh. Athfhíordheimhnigh Bosch/Buderus Home Comfort sula ndéanann tú iarracht arís."
+      "message": "Níl síniú isteach an néil bailí a thuilleadh. Sínigh isteach arís faoi Cumraigh → Naisc → rochtain néil → Sínigh isteach arís, ansin déan iarracht arís."
     },
     "write_rate_limited": {
       "message": "Tá an néal ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht an t-athrú arís."
@@ -1366,10 +1452,10 @@
         "name": "Teocht sprice an linn snámha"
       },
       "heating_temperature": {
-        "name": "Téamh"
+        "name": "Teocht téimh"
       },
       "reduced_temperature": {
-        "name": "Laghdaithe"
+        "name": "Teocht laghdaithe"
       },
       "extra_hot_water_duration": {
         "name": "Fad an uisce te bhreise"
@@ -1378,13 +1464,13 @@
         "name": "Socphointe an uisce te bhreise"
       },
       "hot_water_eco_plus": {
-        "name": "Teocht tosaithe Eco+"
+        "name": "Tairseach tosaithe Eco+"
       },
       "hot_water_comfort": {
-        "name": "Teocht tosaithe Compord"
+        "name": "Tairseach tosaithe Compord"
       },
       "hot_water_eco": {
-        "name": "Teocht tosaithe Eco"
+        "name": "Tairseach tosaithe Eco"
       },
       "maximum_supply_temperature": {
         "name": "Uasteocht an tsreafa"
@@ -1649,7 +1735,7 @@
         "name": "Teocht lasmuigh"
       },
       "supply_temperature": {
-        "name": "Teocht an tsreafa"
+        "name": "Teocht sreafa an chórais"
       },
       "return_temperature": {
         "name": "Teocht fillte"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Stádas tacaíochta",
+        "name": "Taraif athraitheach – tacaíocht",
         "state": {
           "not_supported": "Gan tacaíocht",
           "supported": "Le tacaíocht",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "An chéad saoire eile"
+      },
+      "heat_generator": {
+        "name": "Foinse teasa"
       },
       "pointt_api_requests_total": {
         "name": "Iarratais chuig an néal san iomlán"
@@ -2220,6 +2309,36 @@
           "idle": "Gan pleanáil",
           "planned": "Pleanáilte",
           "active": "Gníomhach"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Stádas EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Gan coimisiúnú",
+          "no_lan_connection": "Gan nasc líonra",
+          "no_hp_connection": "Gan nasc leis an gcaidéal teasa",
+          "no_updateserver_connection": "Gan nasc leis an bhfreastalaí nuashonraithe",
+          "no_eebus_connection": "Gan nasc EEBus",
+          "no_eebus_no_trust": "Gan nasc EEBus (gan chomhpháirtí iontaofa)",
+          "no_eebus_no_usecase_active": "Gan nasc EEBus (gan chás úsáide gníomhach)",
+          "power_limitation_active": "Teorannú cumhachta gníomhach",
+          "ohpcf_active": "Solúbthacht an chomhbhrúiteora (OHPCF) gníomhach",
+          "internal_error": "Earráid inmheánach"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Coimisiúnú EEBus",
+        "state": {
+          "commissioned": "Coimisiúnaithe",
+          "not_commissioned": "Gan coimisiúnú"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Seiceáil tosaithe",
+        "state": {
+          "startup_completed": "Críochnaithe",
+          "startup_inprogress": "Ar siúl"
         }
       },
       "signal_true_false": {

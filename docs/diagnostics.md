@@ -4,6 +4,55 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in
+`views_without_cloud[]`: the heat generator modules of the module list with
+their product names and hardware types, never serial numbers (see
+[heat generator modules](#heat-generator-modules)). It also adds a second
+section, which holds no values, paths, names or identifiers:
+
+- `hybrid_volume_flow`: one entry per system with cloud or local readings.
+  `hybrid_detected` is `true` when the readings show a hybrid system;
+  `evidence` lists why, as fixed codes: `hybrid_manager_signals` (signals of
+  a hybrid manager), `hybrid_resources` (resources of the hybrid control),
+  `system_type` or `heat_source_type` (the reported type names a hybrid
+  system). Product names and other readings are never used.
+  `volume_flow_readings` counts the volume flow readings of the system.
+  `volume_flow` is `unverified` on a hybrid system and `as_reported`
+  otherwise: volume flows are always shown as reported and never rescaled;
+  on a hybrid system that is not yet confirmed against the device's own
+  display.
+
+Schema 47 also adds `local_setup_attempts`: the last 10 attempts to set up
+or change a local access of this entry, oldest first, kept across restarts
+and deleted with the entry. Each attempt has only `at` (UTC, ISO 8601, to
+the second), `step` (the dialog step, for example `local_auth`), `result`
+(`failed` or `succeeded`) and `error` (the code the dialog showed, for
+example `local_invalid_credentials`, `local_unlock_required`,
+`local_token_database_full` or `local_invalid_address`, and
+`unexpected:<type>` with only the type of an unexpected error; `null` on
+success). A failed attempt can also have `detail`: `http_<status>` when the
+gateway answered with an error status, or `not_sent` when the input check
+stopped it before any request. Login, password, token, address, certificate
+data and gateway identifiers are never part of it. Each failed attempt is also
+logged once at the info level with only its step, its code and this detail.
+
+`cloud_sign_in_attempts` is a separate list in the same form for the cloud
+sign-ins of this entry: a new cloud access in the setup, adding one under
+**Configure → Connections** and signing in again. It also keeps the last
+10 attempts. `step` is `link_created`, `redirect_submitted`,
+`code_exchanged`, `access_checked` or `success`; `error` is the code the
+dialog showed, for example `invalid_redirect`, `state_mismatch`,
+`auth_expired`, `invalid_auth`, `cannot_connect`, `rate_limited`,
+`reauth_wrong_account` or `unexpected:<type>`. A dialog that showed a
+sign-in link and was closed, or got a new link, before an address from it
+was pasted gives `link_created` with `abandoned_after_link`; a dialog closed
+after the sign-in but before its end gives `abandoned_after_sign_in`. A
+sign-in that never reaches the redirect, for example because the sign-in
+page shows an error, can only appear as `abandoned_after_link`. The
+attempts of a first setup are kept only when that setup creates its entry.
+The link, its state and code verifier, the authorization code, tokens,
+e-mail addresses and account or gateway identifiers are never part of it.
+
 Schema 46 (0.9.0) adds fields, again without values, names or identifiers:
 
 - `starts` in each entry under `connections[]` and `sources[]`: why the
@@ -652,6 +701,36 @@ tokens and component type numbers only:
   circuits token 16 hides, with `status: expected_untested`
   (see [older holiday formats](legacy-holidays.md)).
 
+## Heat generator modules
+
+`gateways[].heat_generator` (schema 47) appears for every gateway except
+room controllers, iCom gateways included; a system shown from its local
+readings alone has the same block in `views_without_cloud[]`. It belongs to
+the [heat generator sensor](entities.md#heat-generator-models), names the
+same answer the sensor shows and makes no request. If the block cannot be
+worked out, it only says `error: unavailable` and the rest of the report
+stays complete:
+
+- `table_version`: the version of the model table;
+- `cloud_modules` and `local_modules`: how many modules with a product name
+  the current answer of the cloud (`/system/info`) and of the local access
+  (`/system/basicInfo`) lists, `null` without a current answer;
+- `source`: the access whose list is used (`cloud`, `local` or `null`);
+  `known`: whether the table describes the product of every module;
+- `conflict`: `true` while the two answers list different modules; then
+  `other_source_modules` lists the modules of the other answer;
+- `modules`: `role`, `product_name` and `hardware_type` of each module;
+- `unmapped_modules`: the modules without a table entry for their product.
+  Reporting them lets the model table grow.
+
+Only the product name and the hardware type of a module are read. Serial
+numbers, tokens, versions and type numbers are never included; a name field
+that holds a serial number of the same module, or only digits, is left out.
+Because product names are included, the privacy block then sets
+`contains_raw_resource_values: true` with
+`raw_resource_values_scope: allowlisted_technical_metadata`. The anonymized
+inventory drops this block.
+
 ## RRC program selection
 
 `gateways[].rrc_programs` explains for the zones of an RRC room controller,
@@ -1058,7 +1137,8 @@ and diagnostics.
 - token fingerprints, their key, account names and e-mail addresses;
 - gateway IDs, config-entry IDs, serial numbers, and UUIDs;
 - IP addresses, MAC addresses, SSIDs, and location data;
-- firmware identifiers and complete model names;
+- firmware identifiers and complete model names, except the product names
+  of the heat generator modules (see [heat generator modules](#heat-generator-modules));
 - user-defined heating-circuit, hot-water, and schedule names;
 - current temperatures, setpoints, operating modes, and energy consumption;
 - complete request or response bodies.

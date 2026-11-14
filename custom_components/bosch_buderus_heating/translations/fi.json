@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Paikallisen yhdyskäytävän osoite",
-        "description": "Valitse löydetty osoite tai syötä IP-osoite tai isäntänimi. Etsintä ei muuta mitään tallennettua yhteyttä.",
+        "description": "Valitse löydetty osoite tai syötä IP-osoite tai isäntänimi. Vinkki: varaa yhdyskäytävän osoite reitittimestä (DHCP-varaus), jotta se pysyy samana.",
         "data": {
           "address": "IP-osoite tai isäntänimi"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Vahvista yhdyskäytävän varmenne",
-        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
         "data": {
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
-        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa noin kaksi sekuntia, alle kolme sekuntia, ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
+        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
         "data": {
           "login": "Login laitteen tarrassa",
           "password": "Pass laitteen tarrassa",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Jatka paikallista asennusta",
-        "description": "Edellinen yritys on tallennettu. Jos tunnus saatiin, jatka sillä. Jos vastaus katosi, yhdyskäytävällä voi olla tunnus, vaikka Home Assistant ei voinut tallentaa sitä. Hylkääminen poistaa vain paikallisen keskeneräisen kopion ja sallii uuden yrityksen. Se ei peruuta yhdyskäytävän tunnuksia.\n\nPalvelimen jäljellä oleva tauko: {seconds} sekuntia.",
+        "description": "Edellinen yritys on tallennettu. Jos tunnus saatiin, jatka sillä. Jos vastaus katosi, yhdyskäytävällä voi olla tunnus, vaikka Home Assistant ei voinut tallentaa sitä. Hylkääminen poistaa vain paikallisen keskeneräisen kopion ja sallii uuden yrityksen. Se ei peruuta yhdyskäytävän tunnuksia.\n\nYhdyskäytävän jäljellä oleva tauko: {seconds} sekuntia (0 tarkoittaa, että voit jatkaa heti).",
         "data": {
           "action": "Seuraava toimi",
           "confirm": "Ymmärrän ja haluan hylätä tämän keskeneräisen yrityksen"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Syötä IP-osoite tai isäntänimi ilman URL-osoitetta, polkua tai tunnistetietoja.",
       "local_interface_required": "Tämä IPv6-osoite vaatii verkkoliittymän Home Assistant -isännällä.",
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
-      "local_invalid_credentials": "Tarkista yhdyskäytävän tarran Login ja Pass ja syötä ne uudelleen.",
-      "local_unlock_required": "Vapauta paikallinen kirjautuminen yhdyskäytävällä ja vahvista sininen merkkivalo ennen kuin yrität uudelleen.",
+      "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
+      "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
+      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
+      "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
       "local_service_unavailable": "Yhdyskäytävän palvelu ei ole tilapäisesti käytettävissä. Odota ja yritä uudelleen.",
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
@@ -198,14 +201,14 @@
       "already_configured": "Tämä lämmitystili tai vähintään yksi valittu yhdyskäytävä on jo määritetty Home Assistantissa.",
       "invalid_flow": "Tämä asennusistunto on epätäydellinen tai vanhentunut. Sulje ikkuna ja lisää Bosch/Buderus Home Comfort uudelleen.",
       "no_gateways": "Laitteita ei löytynyt. Tarkista, että valittu merkki ja SingleKey ID -tili vastaavat sovellustasi. Vanhemmalla laiteohjelmistolla varustettu huonesäädin näkyy vasta, kun sen laiteohjelmisto on päivitetty ja se on otettu käyttöön nykyisessä sovelluksessa SingleKey ID:lläsi.",
-      "reauth_required": "Tallennettu valtuutus ei ole enää voimassa. Sulje tämä ikkuna ja valitse Bosch/Buderus Home Comfortille Todenna uudelleen.",
+      "reauth_required": "Tallennettu kirjautuminen ei ole enää voimassa. Sulje tämä ikkuna ja valitse tälle integraatiolle **Määritä uudelleen** kohdassa Asetukset → Laitteet ja palvelut.",
       "reauth_successful": "Kirjautuminen uusittiin onnistuneesti.",
       "reauth_wrong_account": "Valittu tili ei vastaa määritettyjä laitteita. Kirjaudu alkuperäisellä tilillä.",
       "reauth_no_targets": "Tällä pilviyhteydellä ei ole enää järjestelmiä tai laitteita, eikä tiliä, johon se kuuluu, voida vahvistaa. Aiemmat tunnistetiedot säilyvät. Jos haluat käyttää pilvitiliä uudelleen, poista pilviyhteys kohdassa Määritä → Yhteydet ja yhdistä se uudelleen.",
       "reauth_successful_targets_missing": "Kirjautuminen uusittiin. {count} käytössä olevaa järjestelmää tai laitetta ei löytynyt tililtä. Ne pysyvät määritettyinä. Korjausilmoitus nimeää ne ja kertoo, miten ne unohdetaan.",
       "reconfigure_successful": "Asetukset tallennettiin. Bosch/Buderus Home Comfort latautuu uudelleen ja etsii kaikki käytettävissä olevat resurssit uudelleen.",
-      "connection_required": "Valitse yhteys kohdassa Asetukset ennen uutta kirjautumista.",
-      "connection_settings_required": "Hallitse tätä yhteyttä kohdassa Asetukset ja Yhteydet.",
+      "connection_required": "Valitse ensin kohdassa **Määritä → Yhteydet** yhteys, johon haluat kirjautua uudelleen.",
+      "connection_settings_required": "Hallitse tätä yhteyttä kohdassa **Määritä → Yhteydet**.",
       "cloud_already_connected": "Pilviyhteys on jo määritetty. Käytä sen yhteysasetuksia valitaksesi lisää laitteita tai kirjautuaksesi uudelleen. Toista rinnakkaista pilvikirjautumista ei vielä tueta.",
       "cloud_setup_in_progress": "Toinen pilviasennus on jo auki. Viimeistele tai sulje se ikkuna ensin.",
       "cloud_setup_taken_over": "Uudempi pilviasennusikkuna on korvannut tämän. Sulje tämä ikkuna ja jatka uudemmassa.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Paikallinen asennus ei ole käytettävissä, ennen kuin säännöllinen paikallinen tiedonsaanti on valmis.",
       "local_session_changed": "Tämä asennusistunto on päättynyt tai sen valinta muuttui. Avaa paikallinen asennus uudelleen jatkaaksesi.",
       "local_discovery_invalid": "Tämä löytöilmoitus ei kuvaa tuettua paikallista yhdyskäytäväpäätepistettä.",
+      "local_address_moved": "Määritetyn paikallisen yhteyden yhdyskäytävä vastaa uudessa osoitteessa. Korjausilmoitus tarjoaa sen käyttöä.",
       "local_existing_owner_required": "Määritä järjestelmä ilman pilveä valinnalla ”Vain paikallinen yhteys” integraatiota lisättäessä. Löydetyn yhdyskäytävän voi lisätä olemassa olevaan asennukseen.",
       "local_target_required": "Tässä asennuksessa ei ole paikalliseen yhteyteen sopivaa säilytettyä asennusta.",
-      "local_setup_complete": "Paikallinen yhteys on määritetty.",
+      "local_setup_complete": "Paikallinen yhteys on määritetty. Sen tila ja kyselytiheys löytyvät kohdasta Määritä → Yhteydet.",
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "already_in_progress": "Tämän paikallisen yhdyskäytävän asennus on jo käynnissä.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
     },
-    "flow_title": "Paikallinen yhdyskäytävä ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Ilmoitukset",
           "holidays": "Hallitse lomajaksoja",
-          "rrc_programs": "RRC-lämmitysaikaohjelmat",
+          "rrc_programs": "Huonesäätimen aikaohjelmat",
           "switch_programs": "Lämmityksen ja lämpimän käyttöveden aikaohjelmat",
           "controls": "Käytä laitetta",
           "connections": "Yhteydet",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Nimi",
           "holiday_start": "Alku",
-          "holiday_end": "Loppu (ei mukana)",
+          "holiday_end": "Loppu (tästä alkaen normaali käyttö)",
           "holiday_assigned_to": "Käytä kohteille",
           "holiday_heating_mode": "Lämmitys",
           "holiday_dhw_mode": "Lämmin käyttövesi",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Nimi",
           "holiday_start": "Alku",
-          "holiday_end": "Loppu (ei mukana)",
+          "holiday_end": "Loppu (tästä alkaen normaali käyttö)",
           "holiday_assigned_to": "Käytä kohteille",
           "holiday_heating_mode": "Lämmitys",
           "holiday_dhw_mode": "Lämmin käyttövesi",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Nimi",
           "holiday_start": "Alku",
-          "holiday_end": "Loppu (ei mukana)",
+          "holiday_end": "Loppu (loman jälkeinen ensimmäinen päivä)",
           "holiday_assigned_to": "Käytä kohteille",
           "holiday_heating_mode": "Lämmitys",
           "holiday_dhw_mode": "Lämmin käyttövesi",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Nimi",
           "holiday_start": "Alku",
-          "holiday_end": "Loppu (ei mukana)",
+          "holiday_end": "Loppu (loman jälkeinen ensimmäinen päivä)",
           "holiday_assigned_to": "Käytä kohteille",
           "holiday_heating_mode": "Lämmitys",
           "holiday_dhw_mode": "Lämmin käyttövesi",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Käytä laitetta",
-        "description": "Valitse osio ja säädä asetuksia. Käytä-painike kirjoittaa vain tekemäsi muutokset. Kun muutat useita asetuksia, kukin vahvistetaan erikseen.",
+        "description": "Valitse osio ja säädä asetuksia. **Käytä** lähettää vain tekemäsi muutokset yksi kerrallaan ja tarkistaa jokaisen lukemalla sen takaisin.",
         "data": {
           "controls": "Ohjaukset"
         },
@@ -474,16 +478,17 @@
           "connection_discover": "Etsi ja valitse laitteita",
           "connection_polling": "Kyselytiheys",
           "local_setup": "Muuta paikallista yhteyttä",
+          "local_tokens": "Yhdyskäytävän tunnukset",
           "local_polling": "Paikallinen kyselytiheys ja tila",
           "local_values": "Käytä paikallisia arvoja olemassa oleville entiteeteille",
           "back": "← Takaisin"
         }
       },
       "connection_enabled": {
-        "title": "Ota yhteys käyttöön",
+        "title": "Ota yhteys käyttöön tai poista käytöstä",
         "description": "Käytöstä poistaminen koskee vain tätä yhteyttä. Muut yhteydet jatkavat toimintaansa. Järjestelmät ja entiteetit säilyvät.",
         "data": {
-          "enabled": "Käytössä"
+          "enabled": "Yhteys käytössä"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Poista yhteys",
-        "description": "Tunnistetiedot poistetaan. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys. Ilman käytettävissä olevaa yhteyttä entiteetit eivät voi näyttää ajantasaisia arvoja.",
+        "description": "Tunnistetiedot poistetaan Home Assistantista. Tunnus jää yhdyskäytävään, ellet peru sitä alla olevalla valintaruudulla. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys; ilman käytettävissä olevaa yhteyttä ne eivät näytä ajantasaisia arvoja. Jätä ylin valintaruutu tyhjäksi palataksesi ilman muutoksia.",
         "data": {
-          "confirm": "Poista tämä yhteys"
+          "confirm": "Poista tämä yhteys",
+          "revoke": "Peru ensin tämän integraation tunnus yhdyskäytävästä"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Paikallisen yhdyskäytävän osoite",
-        "description": "Valitse löydetty osoite tai syötä IP-osoite tai isäntänimi. Etsintä ei muuta mitään tallennettua yhteyttä.",
+        "description": "Valitse löydetty osoite tai syötä IP-osoite tai isäntänimi. Vinkki: varaa yhdyskäytävän osoite reitittimestä (DHCP-varaus), jotta se pysyy samana.",
         "data": {
           "address": "IP-osoite tai isäntänimi"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Vahvista yhdyskäytävän varmenne",
-        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
         "data": {
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
-        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa noin kaksi sekuntia, alle kolme sekuntia, ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
+        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
         "data": {
           "login": "Login laitteen tarrassa",
           "password": "Pass laitteen tarrassa",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Jatka paikallista asennusta",
-        "description": "Edellinen yritys on tallennettu. Jos tunnus saatiin, jatka sillä. Jos vastaus katosi, yhdyskäytävällä voi olla tunnus, vaikka Home Assistant ei voinut tallentaa sitä. Hylkääminen poistaa vain paikallisen keskeneräisen kopion ja sallii uuden yrityksen. Se ei peruuta yhdyskäytävän tunnuksia.\n\nPalvelimen jäljellä oleva tauko: {seconds} sekuntia.",
+        "description": "Edellinen yritys on tallennettu. Jos tunnus saatiin, jatka sillä. Jos vastaus katosi, yhdyskäytävällä voi olla tunnus, vaikka Home Assistant ei voinut tallentaa sitä. Hylkääminen poistaa vain paikallisen keskeneräisen kopion ja sallii uuden yrityksen. Se ei peruuta yhdyskäytävän tunnuksia.\n\nYhdyskäytävän jäljellä oleva tauko: {seconds} sekuntia (0 tarkoittaa, että voit jatkaa heti).",
         "data": {
           "action": "Seuraava toimi",
           "confirm": "Ymmärrän ja haluan hylätä tämän keskeneräisen yrityksen"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Etsi järjestelmä uudelleen",
         "description": "Etsii järjestelmästä osat ja mittausarvot vielä kerran pilviyhteyden ja paikallisen yhteyden kautta. Käytä tätä komponenttien lisäämisen tai muuttamisen jälkeen. Etsintä suoritetaan seuraavan säännöllisen päivityksen yhteydessä ja pyyntöjen tavanomaisissa rajoissa; se ei koskaan poista entiteettiä, ja mittausarvot, joita se ei löydä uudelleen, pysyvät ennallaan."
+      },
+      "local_tokens": {
+        "title": "Yhdyskäytävän tunnukset",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.{note}",
+        "data": {
+          "token": "Peruttava tunnus"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Peru tunnus ennen poistamista",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.{note}",
+        "data": {
+          "token": "Peruttava tunnus"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ei peruttavaa tunnusta",
+        "description": "Yhdyskäytävä ei luettele tämän integraation tunnusta, jonka voisi perua täällä, tai luetteloa ei voitu lukea. Yhteyttä ei ole vielä poistettu. Valitse, poistetaanko se perumatta vai säilytetäänkö se.",
+        "menu_options": {
+          "local_tokens_remove_without": "Poista perumatta",
+          "local_tokens_remove_cancel": "Keskeytä ja säilytä yhteys"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Vahvista kirjautumispalvelun varmenne",
+        "description": "Kirjautumispalvelu osoitteessa **{host}:{port}** esittää varmenteen, jota ei ole koskaan vahvistettu tälle yhteydelle. Vahvista, että tämä on yhdyskäytäväsi, ennen kuin yhteyden tunnus lähetetään sinne. Vahvistus koskee vain tätä ikkunaa.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Peru tunnus",
+        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä valintaruutu tyhjäksi palataksesi perumatta. {use} Valitse myös toinen valintaruutu vahvistaaksesi tämän.",
+        "data": {
+          "confirm": "Peru tämä tunnus yhdyskäytävästä",
+          "confirm_end": "Tätä tunnusta käyttävä paikallinen yhteys päättyy"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Valitse vartin tarkkuudella oleva aika: minuutit 00, 15, 30 tai 45.",
       "holiday_time_nonexistent": "Valittua alkamis- tai päättymisaikaa ei ole, koska kello siirtyy eteenpäin lämmitysjärjestelmän aikavyöhykkeellä. Valitse toinen aika.",
       "holiday_time_ambiguous": "Valittu alkamis- tai päättymisaika toistuu kahdesti, koska kello siirtyy taaksepäin lämmitysjärjestelmän aikavyöhykkeellä. Valitse yksiselitteinen aika.",
-      "write_authentication_failed": "Pilvikirjautuminen ei ole enää voimassa. Todenna Bosch/Buderus Home Comfort uudelleen ennen kuin yrität uudelleen.",
+      "write_authentication_failed": "Pilvikirjautuminen ei ole enää voimassa. Kirjaudu uudelleen kohdassa Määritä → Yhteydet → pilviyhteys → **Kirjaudu uudelleen** ja yritä sen jälkeen uudelleen.",
       "write_failed": "Lomaasetuksia ei voitu muuttaa.",
       "write_busy": "Lämmitysjärjestelmää luetaan tai toinen muutos on vielä käynnissä. Mitään ei lähetetty. Yritä hetken kuluttua uudelleen.",
       "write_not_confirmed": "Muutosta ei voitu vahvistaa kokonaan. Osa asetuksista on voitu jo tallentaa. Avaa loma uudelleen ja tarkista sen nykyiset asetukset.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Syötä IP-osoite tai isäntänimi ilman URL-osoitetta, polkua tai tunnistetietoja.",
       "local_interface_required": "Tämä IPv6-osoite vaatii verkkoliittymän Home Assistant -isännällä.",
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
-      "local_invalid_credentials": "Tarkista yhdyskäytävän tarran Login ja Pass ja syötä ne uudelleen.",
-      "local_unlock_required": "Vapauta paikallinen kirjautuminen yhdyskäytävällä ja vahvista sininen merkkivalo ennen kuin yrität uudelleen.",
+      "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
+      "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
+      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
+      "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
       "local_service_unavailable": "Yhdyskäytävän palvelu ei ole tilapäisesti käytettävissä. Odota ja yritä uudelleen.",
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Pilvi ja paikallinen yhteys eivät kuvaa samaa järjestelmää. Mitään ei tallennettu. Poista tämän järjestelmän valinta, jos haluat jatkaa sen käyttöä vain paikallisen yhteyden kautta.",
       "local_plant_known": "Tämä yhdyskäytävä kuuluu jo määritettyyn järjestelmään. Valitse kyseinen järjestelmä uuden sijaan.",
       "auth_expired": "Tämä kirjautumisyritys on vanhentunut. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
-      "auth_restart": "Tätä kirjautumisyritystä ei voi enää käyttää. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen."
+      "auth_restart": "Tätä kirjautumisyritystä ei voi enää käyttää. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
+      "local_tokens_rejected": "Yhdyskäytävä ei hyväksynyt tämän yhteyden tunnusta. Mitään ei muutettu.",
+      "local_tokens_forbidden": "Yhdyskäytävän kirjautumispalvelu hylkäsi pyynnön. Mitään ei muutettu.",
+      "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
+      "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
+      "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Valitse myös toinen valintaruutu tai jätä ensimmäinen tyhjäksi palataksesi. Mitään ei lähetetty.",
+      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Luontipyyntöä ei voitu vahvistaa. Loma voi olla jo olemassa. Tarkista Hallitse lomajaksoja tai valmistajan sovellus. Seuraavien 10 minuutin ajan uusi yritys tarkistaa tämän pyynnön tuloksen luomatta toista lomaa.",
       "holiday_create_adjusted": "Lämmitysjärjestelmä palautti uuden loman, mutta sen asetukset poikkeavat pyynnöstäsi. Pyydetty jakso: {requested}. Palautettu jakso: {actual}. Avaa Hallitse lomajaksoja tarkistaaksesi ja muokataksesi tätä merkintää.",
       "holiday_update_adjusted": "Lämmitysjärjestelmä palautti asetukset, jotka poikkeavat pyytämästäsi muutoksesta. Pyydetty jakso: {requested}. Palautettu jakso: {actual}. Avaa Hallitse lomajaksoja tarkistaaksesi ja muokataksesi nykyistä merkintää.",
-      "no_rrc_schedules": "Ajantasaista, tuettua RRC-viikkoaikaohjelmaa ei ole saatavilla.",
+      "no_rrc_schedules": "Huonesäätimen ajantasaista, tuettua viikkoaikaohjelmaa ei ole saatavilla.",
       "no_switch_programs": "Täällä ei voi muuttaa yhtään lämmityspiirin tai lämpimän käyttöveden ajantasaista aikaohjelmaa.",
       "switch_program_changed": "Aikaohjelma on muuttunut sillä välin tai sitä ei voi enää muuttaa. Avaa se uudelleen nähdäksesi nykyiset kytkentäpisteet.",
       "switch_program_saved": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Tämä laite ei tällä hetkellä ilmoita asetuksia, joita voisi muuttaa täällä.",
       "configuration_changed": "Yhteysasetukset muuttuivat tämän ikkunan ollessa auki. Sulje se ja yritä uudelleen.",
       "no_connections": "Yhtään yhteyttä ei ole määritetty. Olemassa olevat järjestelmät ja entiteetit säilyvät.",
-      "connection_reauth_started": "Kirjautumista on pyydetty. Avaa tämän merkinnän todennuskehote.",
+      "connection_reauth_started": "Uusi kirjautuminen on valmisteltu. Sulje tämä ikkuna ja valitse tälle integraatiolle **Määritä uudelleen** kohdassa Asetukset → Laitteet ja palvelut, osiossa **Vaatii huomiota**.",
       "cloud_already_connected": "Pilviyhteys on jo määritetty. Käytä sen yhteysasetuksia valitaksesi lisää laitteita tai kirjautuaksesi uudelleen. Toista rinnakkaista pilvikirjautumista ei vielä tueta.",
       "cloud_setup_in_progress": "Toinen pilviasennus on jo auki. Viimeistele tai sulje se ikkuna ensin.",
       "cloud_setup_taken_over": "Uudempi pilviasennusikkuna on korvannut tämän. Sulje tämä ikkuna ja jatka uudemmassa.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Tämä löytöilmoitus ei kuvaa tuettua paikallista yhdyskäytäväpäätepistettä.",
       "local_existing_owner_required": "Määritä järjestelmä ilman pilveä valinnalla ”Vain paikallinen yhteys” integraatiota lisättäessä. Löydetyn yhdyskäytävän voi lisätä olemassa olevaan asennukseen.",
       "local_target_required": "Tässä asennuksessa ei ole paikalliseen yhteyteen sopivaa säilytettyä asennusta.",
-      "local_setup_complete": "Paikallinen yhteys on määritetty.",
+      "local_setup_complete": "Paikallinen yhteys on määritetty. Sen tila ja kyselytiheys löytyvät kohdasta Määritä → Yhteydet.",
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
@@ -816,7 +868,17 @@
       "connection_saved": "Muutos tallennettiin.",
       "connection_removed": "Yhteys poistettiin.",
       "notifications_saved": "Ilmoitusasetukset tallennettiin.",
-      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin."
+      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin.",
+      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen.",
+      "local_tokens_changed": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen.",
+      "local_token_revoked": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä.",
+      "local_token_access_ended": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se.",
+      "local_token_revoke_rejected": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa.",
+      "local_token_revoke_unclear": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi.",
+      "local_token_revoked_removed": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin.",
+      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen.",
+      "local_token_old_revoked_removed": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä.",
+      "local_token_access_end_failed": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Paikallisen yhdyskäytävän varmenne muuttui",
-      "description": "Paikallisen yhteyden yhdyskäytävä esittää eri varmenteen. Integraatio ei hyväksy sitä itsestään ja lopettaa paikallisen lukemisen. Jos tiedät, miksi varmenne muuttui (esimerkiksi yhdyskäytävän päivityksen tai nollauksen jälkeen), avaa integraation asetukset, valitse paikallinen yhteys ja valitse ”Muuta paikallista yhteyttä”. Vahvistat uuden varmenteen siellä. Uusi kirjautuminen laitteen tarran tiedoilla on suositeltava; säilytä nykyinen tunnus vain, jos olet varma, että uusi varmenne kuuluu omalle yhdyskäytävällesi."
+      "description": "Paikallisen yhteyden yhdyskäytävä esittää eri varmenteen. Integraatio ei hyväksy sitä itsestään ja lopettaa paikallisen lukemisen. Jos tiedät, miksi varmenne muuttui (esimerkiksi yhdyskäytävän päivityksen tai nollauksen jälkeen), avaa integraatiossa Määritä → Yhteydet, valitse LAN-yhteys ja valitse ”Muuta paikallista yhteyttä”. Vahvistat uuden varmenteen siellä. Uusi kirjautuminen laitteen tarran tiedoilla on suositeltava; säilytä nykyinen tunnus vain, jos olet varma, että uusi varmenne kuuluu omalle yhdyskäytävällesi."
     },
     "local_start_certificate": {
       "title": "Paikallinen yhteys ei voi muodostaa suojattua yhteyttä",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Kyseistä merkintää ei enää ole.",
           "configuration_changed": "Yhteys tai lämmitysjärjestelmä on muuttunut. Avaa korjaus uudelleen."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Paikallinen yhdyskäytävä löytyi uudesta osoitteesta",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Käytä yhdyskäytävän uutta osoitetta",
+            "description": "Paikallinen yhteys ei tavoita yhdyskäytäväänsä osoitteessa {previous}. Sama yhdyskäytävä vastaa nyt osoitteessa {address}: se esittää asennuksessa vahvistetun varmenteen. Uuteen osoitteeseen ei lähetetty tunnistetta.\n\nVahvista alla, niin uusi osoite tallennetaan. Paikallinen yhteys käynnistyy sen jälkeen uudelleen sillä; tunniste ja vahvistettu varmenne pysyvät ennallaan. Välttääksesi tämän jatkossa varaa yhdyskäytävän osoite reitittimessä (DHCP-varaus).\n\nJos et halua käyttää osoitetta, sulje ikkuna tai valitse **Ohita**.",
+            "data": {
+              "confirm": "Käytä uutta osoitetta"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Vahvista jatkaaksesi."
+        },
+        "abort": {
+          "entry_not_found": "Tämän integraation kyseistä merkintää ei enää ole.",
+          "configuration_changed": "Yhteys tai järjestelmä on muuttunut. Avaa korjaus uudelleen.",
+          "local_address_expired": "Tämä ilmoitus ei ole enää ajankohtainen, esimerkiksi uudelleenkäynnistyksen jälkeen. Mitään ei muutettu. Se tulee uudelleen näkyviin, jos yhdyskäytävä vastaa jälleen uudesta osoitteesta.",
+          "local_address_recovered": "Paikallinen yhteys tavoittaa yhdyskäytävänsä taas. Mitään ei muutettu.",
+          "local_address_unproven": "Uuden osoitteen yhdyskäytävää ei voitu vahvistaa uudelleen. Mitään ei muutettu."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Asennus ei ole valmis",
-      "description": "Merkinnällä ”{title}” ei ole vielä yhteyttä. Avaa sen asetukset ja valitse ”Määritä paikallinen yhteys” (tai lisää pilviyhteys) viimeistelläksesi asennuksen."
+      "description": "Merkinnällä ”{title}” ei ole vielä yhteyttä. Valitse sen kohdalla **Määritä** ja sen jälkeen ”Määritä paikallinen yhteys” (tai yhdistä pilviyhteys)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Muutos lähetettiin huonesäätimelle, mutta se ei ole vielä vahvistanut sitä. Säädin voi ottaa sen käyttöön viiveellä; arvo päivittyy seuraavalla lukukerralla."
     },
     "write_authentication_failed": {
-      "message": "Pilvikirjautuminen ei ole enää voimassa. Todenna Bosch/Buderus Home Comfort uudelleen ennen kuin yrität uudelleen."
+      "message": "Pilvikirjautuminen ei ole enää voimassa. Kirjaudu uudelleen kohdassa Määritä → Yhteydet → pilviyhteys → Kirjaudu uudelleen ja yritä sen jälkeen uudelleen."
     },
     "write_rate_limited": {
       "message": "Pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen muutoksen yrittämistä uudelleen."
@@ -1366,10 +1452,10 @@
         "name": "Altaan tavoitelämpötila"
       },
       "heating_temperature": {
-        "name": "Lämmitys"
+        "name": "Lämmityslämpötila"
       },
       "reduced_temperature": {
-        "name": "Alennettu"
+        "name": "Alennuslämpötila"
       },
       "extra_hot_water_duration": {
         "name": "Lisälämpimän käyttöveden kesto"
@@ -1378,13 +1464,13 @@
         "name": "Lisälämpimän käyttöveden asetusarvo"
       },
       "hot_water_eco_plus": {
-        "name": "Eco+-käynnistyslämpötila"
+        "name": "Eco+-käynnistysraja"
       },
       "hot_water_comfort": {
-        "name": "Mukavuuden käynnistyslämpötila"
+        "name": "Mukavuuden käynnistysraja"
       },
       "hot_water_eco": {
-        "name": "Eco-käynnistyslämpötila"
+        "name": "Eco-käynnistysraja"
       },
       "maximum_supply_temperature": {
         "name": "Suurin menolämpötila"
@@ -1649,7 +1735,7 @@
         "name": "Ulkolämpötila"
       },
       "supply_temperature": {
-        "name": "Menolämpötila"
+        "name": "Järjestelmän menolämpötila"
       },
       "return_temperature": {
         "name": "Paluulämpötila"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Tuen tila",
+        "name": "Muuttuva tariffi – tuki",
         "state": {
           "not_supported": "Ei tuettu",
           "supported": "Tuettu",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Seuraava loma"
+      },
+      "heat_generator": {
+        "name": "Lämmönlähde"
       },
       "pointt_api_requests_total": {
         "name": "Pilvipyynnöt yhteensä"
@@ -2220,6 +2309,36 @@
           "idle": "Ei suunniteltu",
           "planned": "Suunniteltu",
           "active": "Aktiivinen"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "EEBus-tila",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Ei otettu käyttöön",
+          "no_lan_connection": "Ei verkkoyhteyttä",
+          "no_hp_connection": "Ei yhteyttä lämpöpumppuun",
+          "no_updateserver_connection": "Ei yhteyttä päivityspalvelimeen",
+          "no_eebus_connection": "Ei EEBus-yhteyttä",
+          "no_eebus_no_trust": "Ei EEBus-yhteyttä (ei luotettua kumppania)",
+          "no_eebus_no_usecase_active": "Ei EEBus-yhteyttä (ei aktiivista käyttötapausta)",
+          "power_limitation_active": "Tehonrajoitus aktiivinen",
+          "ohpcf_active": "Kompressorin joustavuus (OHPCF) aktiivinen",
+          "internal_error": "Sisäinen virhe"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-käyttöönotto",
+        "state": {
+          "commissioned": "Otettu käyttöön",
+          "not_commissioned": "Ei otettu käyttöön"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Käynnistystarkistus",
+        "state": {
+          "startup_completed": "Valmis",
+          "startup_inprogress": "Käynnissä"
         }
       },
       "signal_true_false": {

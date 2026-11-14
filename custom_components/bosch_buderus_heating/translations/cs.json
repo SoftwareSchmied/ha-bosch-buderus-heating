@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Adresa místní brány",
-        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Vyhledávání nemění žádné uložené připojení.",
+        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Tip: rezervujte adresu brány v routeru (DHCP rezervace), aby zůstala stejná.",
         "data": {
           "address": "IP adresa nebo název hostitele"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potvrzení certifikátu brány",
-        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
         "data": {
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
-        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Obnovení místního nastavení",
-        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza serveru: {seconds} s.",
+        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza brány: {seconds} s (0 znamená, že můžete pokračovat hned).",
         "data": {
           "action": "Další akce",
           "confirm": "Rozumím a chci tento čekající pokus zahodit"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
       "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
-      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
-      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
+      "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
+      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_rate_limited_wait": "Brána požádala o pauzu. Zkuste to znovu za {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
@@ -198,14 +201,14 @@
       "already_configured": "Tento účet topení nebo alespoň jedna vybraná brána je již v Home Assistantu nakonfigurována.",
       "invalid_flow": "Tato relace nastavení je neúplná nebo vypršela. Zavřete okno a přidejte Bosch/Buderus Home Comfort znovu.",
       "no_gateways": "Nebyla nalezena žádná zařízení. Zkontrolujte, zda vybraná značka a účet SingleKey ID odpovídají vaší aplikaci. Prostorový regulátor se starším firmwarem se zobrazí až po aktualizaci firmwaru a po jeho nastavení v aktuální aplikaci s vaším SingleKey ID.",
-      "reauth_required": "Uložené oprávnění již neplatí. Zavřete toto okno a u Bosch/Buderus Home Comfort vyberte Znovu ověřit.",
+      "reauth_required": "Uložené přihlášení již neplatí. Zavřete toto okno a u této integrace vyberte v Nastavení → Zařízení a služby možnost **Překonfigurovat**.",
       "reauth_successful": "Přihlášení bylo úspěšně obnoveno.",
       "reauth_wrong_account": "Vybraný účet neodpovídá nakonfigurovaným zařízením. Přihlaste se původním účtem.",
       "reauth_no_targets": "Tento cloudový přístup již nemá žádné soustavy ani zařízení a nelze potvrdit účet, ke kterému patří. Předchozí přihlašovací údaje zůstávají zachovány. Chcete-li znovu použít cloudový účet, odstraňte cloudový přístup v Konfigurovat → Připojení a připojte jej znovu.",
       "reauth_successful_targets_missing": "Přihlášení bylo obnoveno. Počet zapnutých soustav nebo zařízení nenalezených v účtu: {count}. Zůstávají nakonfigurovány. Oznámení o opravě je jmenuje a vysvětluje, jak je zapomenout.",
       "reconfigure_successful": "Nastavení bylo uloženo. Bosch/Buderus Home Comfort se znovu načítá a znovu vyhledává všechny dostupné prostředky.",
-      "connection_required": "Před novým přihlášením vyberte připojení v Nastavení.",
-      "connection_settings_required": "Tento přístup spravujte v Nastavení a Připojení.",
+      "connection_required": "Nejprve vyberte přístup, ke kterému se chcete znovu přihlásit, v **Konfigurovat → Připojení**.",
+      "connection_settings_required": "Tento přístup spravujte v **Konfigurovat → Připojení**.",
       "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
       "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
       "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Místní nastavení není dostupné, dokud není připraveno pravidelné zásobování místními daty.",
       "local_session_changed": "Tato relace nastavení skončila nebo se změnil její výběr. Pro pokračování znovu otevřete místní nastavení.",
       "local_discovery_invalid": "Toto oznámení o nalezení nepopisuje podporovaný koncový bod místní brány.",
+      "local_address_moved": "Brána nastaveného místního přístupu odpovídá na nové adrese. Upozornění k opravě nabízí její použití.",
       "local_existing_owner_required": "Soustavu bez cloudu nastavte při přidání integrace pomocí „Pouze místní přístup“. Nalezenou bránu lze přidat k existující konfiguraci.",
       "local_target_required": "Tato konfigurace nemá žádnou vhodnou uchovanou instalaci pro místní připojení.",
-      "local_setup_complete": "Místní přístup byl nastaven.",
+      "local_setup_complete": "Místní přístup byl nastaven. Jeho stav a frekvenci dotazování najdete v Konfigurovat → Připojení.",
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "already_in_progress": "Nastavení této místní brány již probíhá.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
     },
-    "flow_title": "Místní brána ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Oznámení",
           "holidays": "Správa období dovolené",
-          "rrc_programs": "Časové programy topení RRC",
+          "rrc_programs": "Časové programy prostorového regulátoru",
           "switch_programs": "Časové programy topení a teplé vody",
           "controls": "Obsluha spotřebiče",
           "connections": "Připojení",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Název",
           "holiday_start": "Začátek",
-          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_end": "Konec (odtud znovu normální provoz)",
           "holiday_assigned_to": "Použít pro",
           "holiday_heating_mode": "Ústřední topení",
           "holiday_dhw_mode": "Teplá voda",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Název",
           "holiday_start": "Začátek",
-          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_end": "Konec (odtud znovu normální provoz)",
           "holiday_assigned_to": "Použít pro",
           "holiday_heating_mode": "Ústřední topení",
           "holiday_dhw_mode": "Teplá voda",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Název",
           "holiday_start": "Začátek",
-          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_end": "Konec (první den po dovolené)",
           "holiday_assigned_to": "Použít pro",
           "holiday_heating_mode": "Ústřední topení",
           "holiday_dhw_mode": "Teplá voda",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Název",
           "holiday_start": "Začátek",
-          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_end": "Konec (první den po dovolené)",
           "holiday_assigned_to": "Použít pro",
           "holiday_heating_mode": "Ústřední topení",
           "holiday_dhw_mode": "Teplá voda",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Obsluha spotřebiče",
-        "description": "Vyberte sekci a upravte nastavení. Možnost Použít zapíše pouze vaše změny. Při změně více nastavení se každé potvrzuje zvlášť.",
+        "description": "Vyberte sekci a upravte nastavení. **Použít** odešle pouze vaše změny, jednu po druhé, a každou ověří zpětným přečtením.",
         "data": {
           "controls": "Ovládání"
         },
@@ -474,16 +478,17 @@
           "connection_discover": "Vyhledání a výběr zařízení",
           "connection_polling": "Frekvence dotazování",
           "local_setup": "Změna místního přístupu",
+          "local_tokens": "Tokeny na bráně",
           "local_polling": "Frekvence a stav místního dotazování",
           "local_values": "Použít místní hodnoty pro existující entity",
           "back": "← Zpět"
         }
       },
       "connection_enabled": {
-        "title": "Zapnout přístup",
+        "title": "Zapnout nebo vypnout přístup",
         "description": "Vypnutí se týká pouze tohoto přístupu. Ostatní připojení nadále běží. Soustavy a entity zůstávají zachovány.",
         "data": {
-          "enabled": "Zapnuto"
+          "enabled": "Přístup zapnut"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Odstranění přístupu",
-        "description": "Přihlašovací údaje budou odstraněny. Soustavy a entity zůstávají zachovány, i když jde o poslední přístup. Bez dostupného připojení entity nemohou zobrazovat aktuální hodnoty.",
+        "description": "Přihlašovací údaje se odstraní z Home Assistantu. Token zůstane na bráně, pokud ho neodvoláte políčkem níže. Soustavy a entity zůstanou zachovány, i když jde o poslední přístup; bez dostupného přístupu nezobrazují aktuální hodnoty. Nechte horní políčko nezaškrtnuté, chcete-li se vrátit beze změn.",
         "data": {
-          "confirm": "Odstranit tento přístup"
+          "confirm": "Odstranit tento přístup",
+          "revoke": "Nejprve odvolat token této integrace na bráně"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Adresa místní brány",
-        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Vyhledávání nemění žádné uložené připojení.",
+        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Tip: rezervujte adresu brány v routeru (DHCP rezervace), aby zůstala stejná.",
         "data": {
           "address": "IP adresa nebo název hostitele"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potvrzení certifikátu brány",
-        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
         "data": {
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
-        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Obnovení místního nastavení",
-        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza serveru: {seconds} s.",
+        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza brány: {seconds} s (0 znamená, že můžete pokračovat hned).",
         "data": {
           "action": "Další akce",
           "confirm": "Rozumím a chci tento čekající pokus zahodit"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Znovu vyhledat soustavu",
         "description": "Znovu prohledá soustavu kvůli součástem a hodnotám, přes cloudový i místní přístup. Použijte po přidání nebo změně komponent. Vyhledávání proběhne při příští pravidelné aktualizaci a v rámci obvyklých omezení počtu dotazů; nikdy neodstraní žádnou entitu a hodnoty, které znovu nenajde, zůstanou, jak jsou."
+      },
+      "local_tokens": {
+        "title": "Tokeny na bráně",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen a jeho odvoláním místní přístup skončí. Starší tokeny této integrace obvykle zůstávají z dřívějších nastavení. Bez výběru se nic nezmění.{note}",
+        "data": {
+          "token": "Token k odvolání"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Odvolání tokenu před odstraněním",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen. Vyberte token, který se odvolá před odstraněním přístupu. Bez výběru **Odeslat** odstraní přístup, aniž by se cokoli odvolalo. Chcete-li přístup zachovat, zavřete tento dialog.{note}",
+        "data": {
+          "token": "Token k odvolání"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Žádný token k odvolání",
+        "description": "Brána nevypisuje žádný token této integrace, který by šlo tady odvolat, nebo se seznam nepodařilo načíst. Přístup zatím nebyl odstraněn. Vyberte, zda ho odstranit bez odvolání, nebo ponechat.",
+        "menu_options": {
+          "local_tokens_remove_without": "Odstranit bez odvolání",
+          "local_tokens_remove_cancel": "Zrušit a ponechat přístup"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potvrzení certifikátu přihlašovací služby",
+        "description": "Přihlašovací služba na **{host}:{port}** předkládá certifikát, který pro tento přístup nikdy nebyl potvrzen. Než se tam odešle token přístupu, potvrďte, že jde o vaši bránu. Potvrzení platí jen pro tento dialog.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Odvolání tokenu",
+        "description": "Odvolat token této integrace vytvořený {created} na bráně **{host}**?\n\nBrána ho trvale odstraní. Pokud jde o token, který tento přístup používá, místní přístup skončí: přístup se vypne a bude potřebovat nové přihlášení pomocí štítku zařízení. Seznam se těsně předtím načte znovu a požadavek se odešle jen jednou. Nechte políčko nezaškrtnuté, chcete-li se vrátit bez odvolání. {use} Zaškrtněte i druhé políčko, abyste to potvrdili.",
+        "data": {
+          "confirm": "Odvolat tento token na bráně",
+          "confirm_end": "Místní přístup, který tento token používá, skončí"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Zvolte čas po čtvrthodinách: minuty 00, 15, 30 nebo 45.",
       "holiday_time_nonexistent": "Vybraný čas začátku nebo konce neexistuje, protože se v časovém pásmu topné soustavy posouvají hodiny dopředu. Zvolte jiný čas.",
       "holiday_time_ambiguous": "Vybraný čas začátku nebo konce nastává dvakrát, protože se v časovém pásmu topné soustavy posouvají hodiny zpět. Zvolte jednoznačný čas.",
-      "write_authentication_failed": "Cloudové přihlášení již neplatí. Před dalším pokusem u Bosch/Buderus Home Comfort zvolte Znovu ověřit.",
+      "write_authentication_failed": "Cloudové přihlášení již neplatí. Přihlaste se znovu v Konfigurovat → Připojení → cloudový přístup → **Přihlásit se znovu** a zkuste to pak ještě jednou.",
       "write_failed": "Nastavení dovolené se nepodařilo změnit.",
       "write_busy": "Topná soustava se právě čte nebo stále probíhá jiná změna. Nic nebylo odesláno. Zkuste to za chvíli znovu.",
       "write_not_confirmed": "Změnu se nepodařilo plně potvrdit. Některá nastavení již mohla být uložena. Znovu otevřete dovolenou a zkontrolujte její aktuální nastavení.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
       "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
-      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
-      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
+      "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
+      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_rate_limited_wait": "Brána požádala o pauzu. Zkuste to znovu za {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Cloud a místní přístup nepopisují stejnou soustavu. Nic nebylo uloženo. Zrušte výběr této soustavy, chcete-li ji nadále používat pouze přes místní přístup.",
       "local_plant_known": "Tato brána již patří ke konfigurované soustavě. Zvolte tuto soustavu místo nové.",
       "auth_expired": "Platnost tohoto pokusu o přihlášení vypršela. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu.",
-      "auth_restart": "Tento pokus o přihlášení již nelze použít. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu."
+      "auth_restart": "Tento pokus o přihlášení již nelze použít. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu.",
+      "local_tokens_rejected": "Brána nepřijala token tohoto přístupu. Nic se nezměnilo.",
+      "local_tokens_forbidden": "Přihlašovací služba brány požadavek odmítla. Nic se nezměnilo.",
+      "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
+      "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
+      "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zaškrtněte i druhé políčko, nebo nechte první nezaškrtnuté a vraťte se. Nic nebylo odesláno.",
+      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Požadavek na vytvoření se nepodařilo potvrdit. Dovolená již může existovat. Zkontrolujte Správa období dovolené nebo aplikaci výrobce. Následujících 10 minut další pokus ověří výsledek tohoto požadavku, aniž by vytvořil druhou dovolenou.",
       "holiday_create_adjusted": "Topná soustava vrátila novou dovolenou, ale její nastavení se liší od vašeho požadavku. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte tuto položku a upravte ji.",
       "holiday_update_adjusted": "Topná soustava vrátila nastavení, která se liší od vámi požadované změny. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte aktuální položku a upravte ji.",
-      "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program RRC.",
+      "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program prostorového regulátoru.",
       "no_switch_programs": "Zde nelze změnit žádný aktuální časový program topného okruhu ani teplé vody.",
       "switch_program_changed": "Časový program se mezitím změnil nebo jej již nelze měnit. Znovu jej otevřete a podívejte se na aktuální spínací body.",
       "switch_program_saved": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Tento spotřebič momentálně nehlásí žádná nastavení, která by zde šlo měnit.",
       "configuration_changed": "Nastavení připojení se během otevření tohoto okna změnilo. Zavřete je a zkuste to znovu.",
       "no_connections": "Není nakonfigurován žádný přístup. Existující soustavy a entity zůstávají zachovány.",
-      "connection_reauth_started": "Bylo vyžádáno přihlášení. Otevřete výzvu k ověření pro tuto položku.",
+      "connection_reauth_started": "Nové přihlášení je připraveno. Zavřete toto okno a u této integrace vyberte v Nastavení → Zařízení a služby v části **Vyžaduje pozornost** možnost **Překonfigurovat**.",
       "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
       "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
       "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Toto oznámení o nalezení nepopisuje podporovaný koncový bod místní brány.",
       "local_existing_owner_required": "Soustavu bez cloudu nastavte při přidání integrace pomocí „Pouze místní přístup“. Nalezenou bránu lze přidat k existující konfiguraci.",
       "local_target_required": "Tato konfigurace nemá žádnou vhodnou uchovanou instalaci pro místní připojení.",
-      "local_setup_complete": "Místní přístup byl nastaven.",
+      "local_setup_complete": "Místní přístup byl nastaven. Jeho stav a frekvenci dotazování najdete v Konfigurovat → Připojení.",
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
@@ -816,7 +868,17 @@
       "connection_saved": "Změna byla uložena.",
       "connection_removed": "Přístup byl odebrán.",
       "notifications_saved": "Nastavení oznámení bylo uloženo.",
-      "rrc_program_saved": "Spínací bod byl uložen a potvrzen zpětným načtením."
+      "rrc_program_saved": "Spínací bod byl uložen a potvrzen zpětným načtením.",
+      "local_tokens_unavailable": "Tento přístup nemá použitelný uložený token pro seznam tokenů. Nejprve znovu nastavte místní přístup.",
+      "local_tokens_changed": "Seznam tokenů se mezitím změnil. Nic nebylo odvoláno ani odstraněno. Otevřete seznam znovu.",
+      "local_token_revoked": "Token byl odvolán; brána ho už nevede.",
+      "local_token_access_ended": "Byl to token, který tento přístup používal. Místní přístup skončil a přístup byl vypnut. Nastavte ho znovu pomocí štítku zařízení, nebo ho odstraňte.",
+      "local_token_revoke_rejected": "Brána odvolání odmítla; token je stále v seznamu.",
+      "local_token_revoke_unclear": "Brána odvolání nepotvrdila. Nic se neopakovalo. Pro kontrolu otevřete seznam tokenů znovu.",
+      "local_token_revoked_removed": "Token byl na bráně odvolán a přístup byl odstraněn.",
+      "local_token_not_removed": "Odvolání nebylo potvrzeno, proto přístup nebyl odstraněn. Zkontrolujte seznam tokenů a pak přístup odstraňte znovu.",
+      "local_token_old_revoked_removed": "Vybraný token byl na bráně odvolán a přístup byl odstraněn. Token, který tento přístup sám používal, na bráně zůstává.",
+      "local_token_access_end_failed": "Byl to token, který tento přístup používal, takže místní přístup skončil, ale přístup se nepodařilo vypnout. Vypněte ho, odstraňte ho, nebo ho nastavte znovu pomocí štítku zařízení."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Certifikát místní brány se změnil",
-      "description": "Brána místního přístupu předkládá jiný certifikát. Integrace jej sama nepřijme a přestane číst místně. Pokud víte, proč se certifikát změnil (například po aktualizaci nebo obnovení brány), otevřete možnosti integrace, zvolte místní přístup a vyberte „Změna místního přístupu“. Tam nový certifikát potvrdíte. Doporučujeme nové přihlášení pomocí údajů ze štítku zařízení; současný token ponechte jen tehdy, pokud jste si jisti, že nový certifikát patří vaší vlastní bráně."
+      "description": "Brána místního přístupu předkládá jiný certifikát. Integrace jej sama nepřijme a přestane číst místně. Pokud víte, proč se certifikát změnil (například po aktualizaci nebo obnovení brány), otevřete u integrace Konfigurovat → Připojení, zvolte přístup přes LAN a vyberte „Změna místního přístupu“. Tam nový certifikát potvrdíte. Doporučujeme nové přihlášení pomocí údajů ze štítku zařízení; současný token ponechte jen tehdy, pokud jste si jisti, že nový certifikát patří vaší vlastní bráně."
     },
     "local_start_certificate": {
       "title": "Místní přístup se nemůže bezpečně připojit",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Dotčená položka již neexistuje.",
           "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Místní brána nalezena na nové adrese",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Použít novou adresu brány",
+            "description": "Místní přístup nemůže zastihnout svou bránu na adrese {previous}. Stejná brána nyní odpovídá na adrese {address}: předkládá certifikát potvrzený při nastavení. Na novou adresu nebyl odeslán žádný token.\n\nPotvrďte níže, aby se nová adresa uložila. Místní přístup se pak s ní znovu spustí; token a potvrzený certifikát zůstanou beze změny. Abyste tomu příště předešli, rezervujte adresu brány v routeru (rezervace DHCP).\n\nPokud adresu nechcete použít, zavřete okno nebo vyberte **Ignorovat**.",
+            "data": {
+              "confirm": "Použít novou adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Pro pokračování potvrďte."
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka této integrace již neexistuje.",
+          "configuration_changed": "Přístup nebo soustava se změnily. Znovu otevřete opravu.",
+          "local_address_expired": "Toto upozornění již není aktuální, například po restartu. Nic se nezměnilo. Objeví se znovu, pokud brána znovu odpoví na nové adrese.",
+          "local_address_recovered": "Místní přístup opět zastihne svou bránu. Nic nebylo změněno.",
+          "local_address_unproven": "Bránu na nové adrese se nepodařilo znovu ověřit. Nic nebylo změněno."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Nastavení není dokončeno",
-      "description": "Položka „{title}“ zatím nemá žádný přístup. Otevřete její možnosti konfigurace a zvolte „Nastavit místní přístup“ (nebo přidejte cloudový přístup), čímž nastavení dokončíte."
+      "description": "Položka „{title}“ zatím nemá žádný přístup. Vyberte u ní **Konfigurovat** a potom „Nastavit místní přístup“ (nebo připojte cloudový přístup)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Změna byla odeslána do prostorového regulátoru, ten ji však zatím nepotvrdil. Regulátor ji může převzít se zpožděním; hodnota se aktualizuje při příštím čtení."
     },
     "write_authentication_failed": {
-      "message": "Cloudové přihlášení již neplatí. Před dalším pokusem u Bosch/Buderus Home Comfort zvolte Znovu ověřit."
+      "message": "Cloudové přihlášení již neplatí. Přihlaste se znovu v Konfigurovat → Připojení → cloudový přístup → Přihlásit se znovu a zkuste to pak ještě jednou."
     },
     "write_rate_limited": {
       "message": "Cloud momentálně omezuje počet požadavků. Před opakováním změny počkejte."
@@ -1366,10 +1452,10 @@
         "name": "Požadovaná teplota bazénu"
       },
       "heating_temperature": {
-        "name": "Topení"
+        "name": "Teplota topení"
       },
       "reduced_temperature": {
-        "name": "Snížená"
+        "name": "Teplota útlumu"
       },
       "extra_hot_water_duration": {
         "name": "Doba extra ohřevu"
@@ -1378,13 +1464,13 @@
         "name": "Požadovaná hodnota extra ohřevu"
       },
       "hot_water_eco_plus": {
-        "name": "Počáteční teplota Eco+"
+        "name": "Práh spuštění Eco+"
       },
       "hot_water_comfort": {
-        "name": "Počáteční teplota Komfort"
+        "name": "Práh spuštění Komfort"
       },
       "hot_water_eco": {
-        "name": "Počáteční teplota Eco"
+        "name": "Práh spuštění Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximální výstupní teplota"
@@ -1649,7 +1735,7 @@
         "name": "Venkovní teplota"
       },
       "supply_temperature": {
-        "name": "Výstupní teplota"
+        "name": "Výstupní teplota soustavy"
       },
       "return_temperature": {
         "name": "Vratná teplota"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Stav podpory",
+        "name": "Variabilní tarif – podpora",
         "state": {
           "not_supported": "Nepodporováno",
           "supported": "Podporováno",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Další dovolená"
+      },
+      "heat_generator": {
+        "name": "Zdroj tepla"
       },
       "pointt_api_requests_total": {
         "name": "Počet požadavků na cloud celkem"
@@ -2220,6 +2309,36 @@
           "idle": "Neplánováno",
           "planned": "Naplánováno",
           "active": "Aktivní"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Stav EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Neuvedeno do provozu",
+          "no_lan_connection": "Žádné síťové připojení",
+          "no_hp_connection": "Žádné spojení s tepelným čerpadlem",
+          "no_updateserver_connection": "Žádné spojení s aktualizačním serverem",
+          "no_eebus_connection": "Žádné připojení EEBus",
+          "no_eebus_no_trust": "Žádné připojení EEBus (žádný důvěryhodný partner)",
+          "no_eebus_no_usecase_active": "Žádné připojení EEBus (žádný aktivní případ užití)",
+          "power_limitation_active": "Omezení výkonu aktivní",
+          "ohpcf_active": "Flexibilita kompresoru (OHPCF) aktivní",
+          "internal_error": "Interní chyba"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Uvedení EEBus do provozu",
+        "state": {
+          "commissioned": "Uvedeno do provozu",
+          "not_commissioned": "Neuvedeno do provozu"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Kontrola při spuštění",
+        "state": {
+          "startup_completed": "Dokončeno",
+          "startup_inprogress": "Probíhá"
         }
       },
       "signal_true_false": {

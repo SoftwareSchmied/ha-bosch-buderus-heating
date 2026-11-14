@@ -148,7 +148,7 @@ Anlagenwerte, Gerätekennungen oder zusätzliche Anfragen.
 
 Ich habe beide Familien mit synthetischen Daten, den echten
 Home-Assistant-Plattformen und einem lokalen MQTT-Testserver geprüft.
-Geräteprüfungen stehen für beide Familien aus. Mein Konto meldete beim
-vorherigen Verbindungstest keine entsprechenden Geräte. Die tatsächlichen
+Geräteprüfungen stehen für beide Familien aus. Das beim
+vorherigen Verbindungstest genutzte Konto meldete keine entsprechenden Geräte. Die tatsächlichen
 Metadaten, Meldeintervalle, Temperaturen und Schreibwirkungen müssen noch an
 realen Geräten bestätigt werden.

@@ -19,7 +19,8 @@ usual.
 An existing entry with the provider available offers local setup in its
 options and local connection settings. A native Zeroconf announcement first asks
 the user to select an existing owner and installation; it never creates another
-entry there or silently changes a saved address. Without any entry, the notice
+entry there or silently changes a saved address (a moved gateway is offered as a
+repair note instead, see [a new gateway address](#a-new-gateway-address)). Without any entry, the notice
 offers the setup with **Local access only** directly: after the user continues,
 it creates the same entry as that choice and opens its local setup, with the
 found address offered again. Nothing is created before the user continues. If
@@ -58,8 +59,20 @@ The user can supply a local token or sign in with the device label. An imported
 token does not require the authentication port. Label authentication first
 inspects that port's certificate, obtains explicit confirmation and asks for the
 physical release. Device login and password are neither saved nor returned as
-form defaults. A blue-signal checkbox is a user action, not proof that the gateway
-has accepted the physical release.
+form defaults. The login field shows what is typed; the pass field is masked
+with its show switch. Spaces and line breaks at the edges of both are removed
+before the check; a value with other characters a label does not have, such as
+a space inside it, is refused without a request. A blue-signal checkbox is a
+user action, not proof that the gateway has accepted the physical release.
+
+Each case has its own message: input the label cannot have (nothing sent), the
+unticked checkbox (nothing sent), Login and Pass rejected by the gateway (400),
+sign-in not released or the five minutes after the release passed (412, with
+the button instruction of 1 second), a pause the gateway asked for (429, with
+the remaining seconds when the gateway names them) and no answer in time. A
+certificate that changed during the dialog leads back to its check instead of
+repeating the sign-in. The second certificate page is the data port (9443);
+its text says why it appears.
 
 Resource trust is checked separately after credentials exist. Previously stored
 trust applies only to the same address and port role with the exact full leaf
@@ -71,6 +84,47 @@ supply an identity contract for this exact owner, target and gateway. Missing
 evidence is explained; the form has no override field or inferred global contract.
 Confirmation of the result triggers fresh reads and the guarded native handover.
 
+## A new gateway address
+
+After a DHCP change the gateway announces itself at an address the saved local
+access does not know. Names, TXT fields and addresses of an announcement are
+never identity; the only proof is the certificate binding confirmed at setup.
+
+1. Only an announcement whose addresses are all unknown to every configured
+   access is considered, and only while an enabled local access does not reach
+   its gateway (not reachable, certificate changed, or paused after failed
+   connections; not during a pause the gateway asked for, never while it is
+   connected, and not while it is still starting before a first attempt
+   failed). So an access saved with a host name is offered another address
+   only once that name no longer reaches the gateway.
+2. At most two announced IP addresses (IPv4 first) get one TLS handshake each on
+   the data port. Only addresses of a home network are considered: private
+   IPv4 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), IPv4 link-local
+   (169.254.0.0/16), unique local IPv6 (fc00::/7) and IPv6 link-local
+   (fe80::/10); a public address is never contacted. Announced names are not
+   resolved. No HTTP request is sent and
+   no token leaves Home Assistant. Each address is checked at most once in five
+   minutes, all announcements together at most eight times in ten minutes.
+   Completing the handshake shows that the device holds the certificate's key.
+3. Only when the full leaf certificate equals the stored binding of exactly one
+   local access, and that access does not reach its gateway, a repair note
+   offers the new address. Another certificate, a certificate known to several
+   accesses, a switched-off access or one that works leaves the announcement an
+   ordinary discovery notice, as before.
+4. The proven address is kept in memory only. The note is not persistent: it
+   disappears after a restart and as soon as the access reaches its gateway
+   again.
+5. Confirming the note requires a tick. Right before the change the certificate
+   is checked again with a fresh handshake, the access must still not reach its
+   gateway, and its saved address and binding must be unchanged. Only then the
+   host of the access is replaced; the token, both certificate bindings and the
+   stored gateway identity stay. The local access restarts and, as on every
+   start, checks the certificate and the gateway identity before reading. A
+   pause from the failed connections still runs out first.
+
+Without a note, the address can still be changed with **Change local access**,
+which needs a new sign-in or token for a new address.
+
 ## Recovery and cancellation
 
 Pending attempts appear before another token is created. A rejected sign-in
@@ -81,7 +135,10 @@ certificate confirmed for an address and port is accepted again for that address
 and port when its fingerprint is identical, for example after Continue. Received
 tokens can be rechecked; unknown creation outcomes allow only deliberate discard
 or continuing later. Discard requires its own confirmation and removes only the local pending
-copy. Gateway tokens are never automatically revoked.
+copy. Gateway tokens are never automatically revoked. The options of an existing
+local access show the gateway's token list and can revoke an old token of this
+integration after a confirmation; see
+[tokens on the gateway](local-enrollment.md#tokens-on-the-gateway).
 
 Resource and authentication `Retry-After` share the persistent
 [gateway budget](local-budget.md). Closing or reopening the form, acknowledging

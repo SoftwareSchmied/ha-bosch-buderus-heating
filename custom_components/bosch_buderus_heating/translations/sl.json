@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Naslov lokalnega prehoda",
-        "description": "Izberite odkriti naslov ali vnesite naslov IP ali ime gostitelja. Odkrivanje ne spremeni nobene shranjene povezave.",
+        "description": "Izberite odkriti naslov ali vnesite naslov IP ali ime gostitelja. Namig: rezervirajte naslov prehoda v usmerjevalniku (rezervacija DHCP), da ostane enak.",
         "data": {
           "address": "Naslov IP ali ime gostitelja"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potrditev certifikata prehoda",
-        "description": "Home Assistant je dosegel **{host}:{port}**. Pred pošiljanjem poverilnic potrdite, da je to vaš prehod. Prstni odtis sam po sebi ni dokaz identitete.\n\nSHA-256: `{fingerprint}`\n\nPrejšnji prstni odtis: `{previous}`. Znak vprašaja pomeni, da za ta naslov in vrata ni shranjenega certifikata.",
+        "description": "Home Assistant je dosegel **{host}:{port}**. Pred pošiljanjem poverilnic potrdite, da je to vaš prehod. Prstni odtis sam po sebi ni dokaz identitete.\n\nSHA-256: `{fingerprint}`\n\nPrejšnji prstni odtis: `{previous}`. Znak vprašaja pomeni, da za ta naslov in vrata ni shranjenega certifikata.\n\nPrehod ima za vsaka vrata lasten certifikat. Vrata 9442 so vrata za prijavo in se preverijo pred prijavo; vrata 9443 so podatkovna vrata in se preverijo po njej. Zato se lahko ta stran prikaže dvakrat.\n\nČe certifikat ne pripada vašemu prehodu, zaprite pogovorni okvir; nič se ne pošlje.",
         "data": {
           "confirm": "Potrjujem ta prehod in njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava z oznako na napravi",
-        "description": "Vnesite Login in Pass z oznake na prehodu. Za sprostitev lokalne prijave hkrati pritisnite tipki Wi-Fi in brezžično za približno dve sekundi, a manj kot tri sekunde, in ju hkrati spustite. Potrdite kratek modri signal in nadaljujte v petih minutah. Dostop ostane na izbranem naslovu LAN. Odgovor prehoda določa, ali je bila prijava sproščena. Login in geslo se ne shranita.",
+        "description": "Vnesite Login in Pass z oznake na prehodu. Za sprostitev lokalne prijave hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo in ju hkrati spustite. Potrdite kratek modri signal in nadaljujte v petih minutah. Če popravljanje tipkarske napake traja dlje kot pet minut, znova pritisnite tipki. Dostop ostane na izbranem naslovu LAN. Odgovor prehoda določa, ali je bila prijava sproščena. Login in Pass se ne shranita.",
         "data": {
           "login": "Login z oznake na napravi",
           "password": "Pass z oznake na napravi",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Nadaljevanje lokalne nastavitve",
-        "description": "Prejšnji poskus je shranjen. Če je bil žeton prejet, nadaljujte s tem žetonom. Če je bil odgovor izgubljen, na prehodu morda obstaja žeton, čeprav ga Home Assistant ni mogel shraniti. Z zavrženjem se odstrani le lokalna čakajoča kopija in omogoči nov poskus; žetonov na prehodu ne prekliče.\n\nPreostali premor strežnika: {seconds} s.",
+        "description": "Prejšnji poskus je shranjen. Če je bil žeton prejet, nadaljujte s tem žetonom. Če je bil odgovor izgubljen, na prehodu morda obstaja žeton, čeprav ga Home Assistant ni mogel shraniti. Z zavrženjem se odstrani le lokalna čakajoča kopija in omogoči nov poskus; žetonov na prehodu ne prekliče.\n\nPreostali premor prehoda: {seconds} s (0 pomeni, da lahko takoj nadaljujete).",
         "data": {
           "action": "Naslednje dejanje",
           "confirm": "Razumem in želim zavreči ta čakajoči poskus"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Vnesite naslov IP ali ime gostitelja brez URL-ja, poti ali poverilnic.",
       "local_interface_required": "Ta naslov IPv6 potrebuje omrežni vmesnik na gostitelju Home Assistant.",
       "local_invalid_token": "Oblika žetona ni veljavna. Kopirajte celoten žeton brez presledkov.",
-      "local_invalid_credentials": "Preverite Login in Pass na oznaki prehoda in ju znova vnesite.",
-      "local_unlock_required": "Sprostite lokalno prijavo na prehodu in potrdite modri signal, preden poskusite znova.",
+      "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
+      "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
+      "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
+      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
+      "local_rate_limited_wait": "Prehod je zahteval premor. Poskusite znova čez {seconds} s.",
       "local_service_unavailable": "Storitev prehoda je začasno nedosegljiva. Počakajte in poskusite znova.",
       "local_timeout": "Lokalni prehod ni odgovoril pravočasno. Preverite povezavo in poskusite znova.",
       "local_connection_failed": "Home Assistant tega prehoda ni mogel doseči. Preverite njegov naslov in omrežno povezavo.",
@@ -198,14 +201,14 @@
       "already_configured": "Ta račun ogrevanja ali vsaj en izbran prehod je v Home Assistant že nastavljen.",
       "invalid_flow": "Ta seja nastavitve je nepopolna ali potekla. Zaprite pogovorni okvir in znova dodajte Bosch/Buderus Home Comfort.",
       "no_gateways": "Najdena ni bila nobena naprava. Preverite, ali izbrana znamka in račun SingleKey ID ustrezata vaši aplikaciji. Sobni regulator s starejšo vdelano programsko opremo se prikaže šele, ko je njegova vdelana programska oprema posodobljena in je nastavljen v trenutni aplikaciji z vašim računom SingleKey ID.",
-      "reauth_required": "Shranjeno pooblastilo ni več veljavno. Zaprite ta pogovorni okvir in za Bosch/Buderus Home Comfort izberite Ponovna avtentikacija.",
+      "reauth_required": "Shranjena prijava ni več veljavna. Zaprite ta pogovorni okvir in za to integracijo izberite **Znova konfiguriraj** v Nastavitve → Naprave in storitve.",
       "reauth_successful": "Prijava je bila uspešno obnovljena.",
       "reauth_wrong_account": "Izbrani račun ne ustreza nastavljenim napravam. Prijavite se z izvirnim računom.",
       "reauth_no_targets": "Ta dostop prek oblaka nima več sistemov ali naprav, računa, ki mu pripada, pa ni mogoče potrditi. Prejšnje poverilnice so ohranjene. Če želite znova uporabljati račun v oblaku, odstranite dostop prek oblaka v razdelku Konfiguriraj → Povezave in ga znova povežite.",
       "reauth_successful_targets_missing": "Prijava je bila obnovljena. V računu ni bilo najdenih {count} vklopljenih sistemov ali naprav; ostanejo nastavljeni. Opomba o popravilu jih navaja in pojasnjuje, kako jih pozabiti.",
       "reconfigure_successful": "Nastavitve so shranjene. Bosch/Buderus Home Comfort se znova nalaga in znova odkriva vse razpoložljive vire.",
-      "connection_required": "Pred ponovno prijavo izberite povezavo v Nastavitvah.",
-      "connection_settings_required": "Ta dostop upravljajte v Nastavitvah in Povezavah.",
+      "connection_required": "Najprej v **Konfiguriraj → Povezave** izberite dostop, v katerega se želite znova prijaviti.",
+      "connection_settings_required": "Ta dostop upravljajte v **Konfiguriraj → Povezave**.",
       "cloud_already_connected": "Povezava z oblakom je že nastavljena. V njenih nastavitvah povezave izberite več naprav ali se znova prijavite. Druga vzporedna prijava v oblak še ni podprta.",
       "cloud_setup_in_progress": "Druga nastavitev oblaka je že odprta. Najprej dokončajte ali zaprite tisti pogovorni okvir.",
       "cloud_setup_taken_over": "Novejši pogovorni okvir za nastavitev oblaka je nadomestil tega. Zaprite ta pogovorni okvir in nadaljujte v novejšem.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Lokalna nastavitev ni na voljo, dokler redna lokalna oskrba s podatki ni pripravljena.",
       "local_session_changed": "Ta seja nastavitve se je končala ali se je njena izbira spremenila. Za nadaljevanje znova odprite lokalno nastavitev.",
       "local_discovery_invalid": "To obvestilo o odkritju ne opisuje podprte končne točke lokalnega prehoda.",
+      "local_address_moved": "Prehod nastavljenega lokalnega dostopa odgovarja na novem naslovu. Obvestilo o popravilu ponuja njegovo uporabo.",
       "local_existing_owner_required": "Sistem brez oblaka nastavite z možnostjo »Samo lokalni dostop« ob dodajanju integracije. Odkriti prehod je mogoče dodati obstoječi nastavitvi.",
       "local_target_required": "Ta nastavitev nima primerne ohranjene napeljave za lokalno povezavo.",
-      "local_setup_complete": "Lokalni dostop je nastavljen.",
+      "local_setup_complete": "Lokalni dostop je nastavljen. Njegovo stanje in pogostost poizvedb najdete v Konfiguriraj → Povezave.",
       "local_pending_saved": "Čakajoči poskus je ohranjen. Nadaljujete ga lahko v lokalni nastavitvi.",
       "local_storage_failed": "Zasebnega zapisa nastavitve ni bilo mogoče prebrati ali shraniti. Pred nadaljevanjem preverite shrambo Home Assistant.",
       "already_in_progress": "Nastavitev tega lokalnega prehoda je že v teku.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."
     },
-    "flow_title": "Lokalni prehod ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Obvestila",
           "holidays": "Upravljanje obdobij počitnic",
-          "rrc_programs": "Časovni programi ogrevanja RRC",
+          "rrc_programs": "Časovni programi sobnega regulatorja",
           "switch_programs": "Časovni programi ogrevanja in tople vode",
           "controls": "Upravljanje naprave",
           "connections": "Povezave",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Ime",
           "holiday_start": "Začetek",
-          "holiday_end": "Konec (izključno)",
+          "holiday_end": "Konec (od tu naprej običajno delovanje)",
           "holiday_assigned_to": "Uporabi za",
           "holiday_heating_mode": "Centralno ogrevanje",
           "holiday_dhw_mode": "Topla voda",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Ime",
           "holiday_start": "Začetek",
-          "holiday_end": "Konec (izključno)",
+          "holiday_end": "Konec (od tu naprej običajno delovanje)",
           "holiday_assigned_to": "Uporabi za",
           "holiday_heating_mode": "Centralno ogrevanje",
           "holiday_dhw_mode": "Topla voda",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Ime",
           "holiday_start": "Začetek",
-          "holiday_end": "Konec (izključno)",
+          "holiday_end": "Konec (prvi dan po počitnicah)",
           "holiday_assigned_to": "Uporabi za",
           "holiday_heating_mode": "Centralno ogrevanje",
           "holiday_dhw_mode": "Topla voda",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Ime",
           "holiday_start": "Začetek",
-          "holiday_end": "Konec (izključno)",
+          "holiday_end": "Konec (prvi dan po počitnicah)",
           "holiday_assigned_to": "Uporabi za",
           "holiday_heating_mode": "Centralno ogrevanje",
           "holiday_dhw_mode": "Topla voda",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Upravljanje naprave",
-        "description": "Izberite razdelek in prilagodite nastavitve. Uporabi zapiše le vaše spremembe. Pri spreminjanju več nastavitev se vsaka potrdi posebej.",
+        "description": "Izberite razdelek in prilagodite nastavitve. **Uporabi** pošlje le vaše spremembe, eno za drugo, in vsako preveri z ponovnim branjem.",
         "data": {
           "controls": "Upravljanje"
         },
@@ -466,7 +470,7 @@
         "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Preizkusi povezavo zdaj",
-          "connection_enabled": "Omogoči ali onemogoči dostop",
+          "connection_enabled": "Vklopi ali izklopi dostop",
           "connection_forget": "Pozabi neizbrane sisteme",
           "connection_targets": "Uporabi za sisteme in naprave",
           "connection_reauthenticate": "Znova se prijavite",
@@ -474,16 +478,17 @@
           "connection_discover": "Poišči in izberi naprave",
           "connection_polling": "Pogostost poizvedovanja",
           "local_setup": "Spremeni lokalni dostop",
+          "local_tokens": "Žetoni na prehodu",
           "local_polling": "Pogostost lokalnega poizvedovanja in stanje",
           "local_values": "Uporabi lokalne vrednosti za obstoječe entitete",
           "back": "← Nazaj"
         }
       },
       "connection_enabled": {
-        "title": "Omogoči dostop",
+        "title": "Vklopi ali izklopi dostop",
         "description": "Onemogočenje vpliva le na ta dostop. Druge povezave še naprej delujejo. Sistemi in entitete so ohranjeni.",
         "data": {
-          "enabled": "Omogočeno"
+          "enabled": "Dostop vklopljen"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Odstrani dostop",
-        "description": "Poverilnice bodo odstranjene. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop. Brez razpoložljive povezave entitete ne morejo prikazovati trenutnih vrednosti.",
+        "description": "Poverilnice se odstranijo iz Home Assistanta. Žeton ostane na prehodu, razen če ga prekličete s poljem spodaj. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop; brez razpoložljivega dostopa ne prikazujejo trenutnih vrednosti. Zgornje polje pustite neoznačeno, če se želite vrniti brez sprememb.",
         "data": {
-          "confirm": "Odstrani ta dostop"
+          "confirm": "Odstrani ta dostop",
+          "revoke": "Najprej prekliči žeton te integracije na prehodu"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Naslov lokalnega prehoda",
-        "description": "Izberite odkriti naslov ali vnesite naslov IP ali ime gostitelja. Odkrivanje ne spremeni nobene shranjene povezave.",
+        "description": "Izberite odkriti naslov ali vnesite naslov IP ali ime gostitelja. Namig: rezervirajte naslov prehoda v usmerjevalniku (rezervacija DHCP), da ostane enak.",
         "data": {
           "address": "Naslov IP ali ime gostitelja"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potrditev certifikata prehoda",
-        "description": "Home Assistant je dosegel **{host}:{port}**. Pred pošiljanjem poverilnic potrdite, da je to vaš prehod. Prstni odtis sam po sebi ni dokaz identitete.\n\nSHA-256: `{fingerprint}`\n\nPrejšnji prstni odtis: `{previous}`. Znak vprašaja pomeni, da za ta naslov in vrata ni shranjenega certifikata.",
+        "description": "Home Assistant je dosegel **{host}:{port}**. Pred pošiljanjem poverilnic potrdite, da je to vaš prehod. Prstni odtis sam po sebi ni dokaz identitete.\n\nSHA-256: `{fingerprint}`\n\nPrejšnji prstni odtis: `{previous}`. Znak vprašaja pomeni, da za ta naslov in vrata ni shranjenega certifikata.\n\nPrehod ima za vsaka vrata lasten certifikat. Vrata 9442 so vrata za prijavo in se preverijo pred prijavo; vrata 9443 so podatkovna vrata in se preverijo po njej. Zato se lahko ta stran prikaže dvakrat.\n\nČe certifikat ne pripada vašemu prehodu, zaprite pogovorni okvir; nič se ne pošlje.",
         "data": {
           "confirm": "Potrjujem ta prehod in njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava z oznako na napravi",
-        "description": "Vnesite Login in Pass z oznake na prehodu. Za sprostitev lokalne prijave hkrati pritisnite tipki Wi-Fi in brezžično za približno dve sekundi, a manj kot tri sekunde, in ju hkrati spustite. Potrdite kratek modri signal in nadaljujte v petih minutah. Dostop ostane na izbranem naslovu LAN. Odgovor prehoda določa, ali je bila prijava sproščena. Login in geslo se ne shranita.",
+        "description": "Vnesite Login in Pass z oznake na prehodu. Za sprostitev lokalne prijave hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo in ju hkrati spustite. Potrdite kratek modri signal in nadaljujte v petih minutah. Če popravljanje tipkarske napake traja dlje kot pet minut, znova pritisnite tipki. Dostop ostane na izbranem naslovu LAN. Odgovor prehoda določa, ali je bila prijava sproščena. Login in Pass se ne shranita.",
         "data": {
           "login": "Login z oznake na napravi",
           "password": "Pass z oznake na napravi",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Nadaljevanje lokalne nastavitve",
-        "description": "Prejšnji poskus je shranjen. Če je bil žeton prejet, nadaljujte s tem žetonom. Če je bil odgovor izgubljen, na prehodu morda obstaja žeton, čeprav ga Home Assistant ni mogel shraniti. Z zavrženjem se odstrani le lokalna čakajoča kopija in omogoči nov poskus; žetonov na prehodu ne prekliče.\n\nPreostali premor strežnika: {seconds} s.",
+        "description": "Prejšnji poskus je shranjen. Če je bil žeton prejet, nadaljujte s tem žetonom. Če je bil odgovor izgubljen, na prehodu morda obstaja žeton, čeprav ga Home Assistant ni mogel shraniti. Z zavrženjem se odstrani le lokalna čakajoča kopija in omogoči nov poskus; žetonov na prehodu ne prekliče.\n\nPreostali premor prehoda: {seconds} s (0 pomeni, da lahko takoj nadaljujete).",
         "data": {
           "action": "Naslednje dejanje",
           "confirm": "Razumem in želim zavreči ta čakajoči poskus"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Ponovno preišči sistem",
         "description": "Še enkrat preišče sistem za dele in izmerjene vrednosti prek dostopa prek oblaka in lokalnega dostopa. Uporabite po dodajanju ali spreminjanju komponent. Iskanje poteka ob naslednji redni posodobitvi in v običajnih omejitvah zahtev; entitete nikoli ne odstrani, izmerjene vrednosti, ki jih znova ne najde, pa ostanejo take, kot so."
+      },
+      "local_tokens": {
+        "title": "Žetoni na prehodu",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.{note}",
+        "data": {
+          "token": "Žeton za preklic"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Preklic žetona pred odstranitvijo",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.{note}",
+        "data": {
+          "token": "Žeton za preklic"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ni žetona za preklic",
+        "description": "Prehod ne navaja nobenega žetona te integracije, ki bi ga bilo mogoče tu preklicati, ali pa seznama ni bilo mogoče prebrati. Dostop še ni odstranjen. Izberite, ali ga odstranite brez preklica ali obdržite.",
+        "menu_options": {
+          "local_tokens_remove_without": "Odstrani brez preklica",
+          "local_tokens_remove_cancel": "Ne odstrani, obdrži dostop"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potrditev certifikata prijave",
+        "description": "Storitev prijave na **{host}:{port}** prikazuje certifikat, ki za ta dostop ni bil nikoli potrjen. Preden se tja pošlje žeton dostopa, potrdite, da je to vaš prehod. Potrditev velja samo za to pogovorno okno.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potrjujem ta prehod in njegov certifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Preklic žetona",
+        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite potrditveno polje neoznačeno, če se želite vrniti brez preklica. {use} Označite še drugo polje, da to potrdite.",
+        "data": {
+          "confirm": "Prekliči ta žeton na prehodu",
+          "confirm_end": "Lokalni dostop, ki uporablja ta žeton, se konča"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Izberite čas v četrt urah: minute 00, 15, 30 ali 45.",
       "holiday_time_nonexistent": "Izbrani čas začetka ali konca ne obstaja, ker se ura v časovnem pasu ogrevalnega sistema premakne naprej. Izberite drug čas.",
       "holiday_time_ambiguous": "Izbrani čas začetka ali konca se pojavi dvakrat, ker se ura v časovnem pasu ogrevalnega sistema premakne nazaj. Izberite nedvoumen čas.",
-      "write_authentication_failed": "Prijava v oblak ni več veljavna. Pred ponovnim poskusom za Bosch/Buderus Home Comfort opravite ponovno avtentikacijo.",
+      "write_authentication_failed": "Prijava v oblak ni več veljavna. Znova se prijavite v Konfiguriraj → Povezave → dostop prek oblaka → **Znova se prijavite** in poskusite znova.",
       "write_failed": "Nastavitev počitnic ni bilo mogoče spremeniti.",
       "write_busy": "Ogrevalni sistem se bere ali pa še poteka druga sprememba. Nič ni bilo poslano. Poskusite znova čez trenutek.",
       "write_not_confirmed": "Spremembe ni bilo mogoče v celoti potrditi. Nekatere nastavitve so morda že shranjene. Znova odprite počitnice in preverite njihove trenutne nastavitve.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Vnesite naslov IP ali ime gostitelja brez URL-ja, poti ali poverilnic.",
       "local_interface_required": "Ta naslov IPv6 potrebuje omrežni vmesnik na gostitelju Home Assistant.",
       "local_invalid_token": "Oblika žetona ni veljavna. Kopirajte celoten žeton brez presledkov.",
-      "local_invalid_credentials": "Preverite Login in Pass na oznaki prehoda in ju znova vnesite.",
-      "local_unlock_required": "Sprostite lokalno prijavo na prehodu in potrdite modri signal, preden poskusite znova.",
+      "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
+      "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
+      "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
+      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
+      "local_rate_limited_wait": "Prehod je zahteval premor. Poskusite znova čez {seconds} s.",
       "local_service_unavailable": "Storitev prehoda je začasno nedosegljiva. Počakajte in poskusite znova.",
       "local_timeout": "Lokalni prehod ni odgovoril pravočasno. Preverite povezavo in poskusite znova.",
       "local_connection_failed": "Home Assistant tega prehoda ni mogel doseči. Preverite njegov naslov in omrežno povezavo.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Oblak in lokalni dostop ne opisujeta istega sistema. Nič ni bilo shranjeno. Prekličite izbiro tega sistema, da ga še naprej uporabljate samo prek lokalnega dostopa.",
       "local_plant_known": "Ta prehod že pripada nastavljenemu sistemu. Izberite ta sistem namesto novega.",
       "auth_expired": "Ta poskus prijave je potekel. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite.",
-      "auth_restart": "Tega poskusa prijave ni več mogoče uporabiti. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite."
+      "auth_restart": "Tega poskusa prijave ni več mogoče uporabiti. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite.",
+      "local_tokens_rejected": "Prehod ni sprejel žetona tega dostopa. Nič ni bilo spremenjeno.",
+      "local_tokens_forbidden": "Storitev prijave prehoda je zavrnila zahtevo. Nič ni bilo spremenjeno.",
+      "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
+      "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno.",
+      "local_token_end_unconfirmed": "Preklic tega žetona lahko konča lokalni dostop. Označite še drugo polje ali pustite prvo neoznačeno, da se vrnete. Nič ni bilo poslano.",
+      "connection_remove_unconfirmed": "Označite še »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Zahteve za ustvarjanje ni bilo mogoče potrditi. Počitnice morda že obstajajo. Preverite Upravljanje obdobij počitnic ali aplikacijo proizvajalca. Naslednjih 10 minut nov poskus preveri rezultat te zahteve, ne da bi ustvaril drugo počitnico.",
       "holiday_create_adjusted": "Ogrevalni sistem je vrnil nove počitnice, vendar se njihove nastavitve razlikujejo od vaše zahteve. Zahtevano obdobje: {requested}. Vrnjeno obdobje: {actual}. Odprite Upravljanje obdobij počitnic, da ta vnos preverite in uredite.",
       "holiday_update_adjusted": "Ogrevalni sistem je vrnil nastavitve, ki se razlikujejo od vaše zahtevane spremembe. Zahtevano obdobje: {requested}. Vrnjeno obdobje: {actual}. Odprite Upravljanje obdobij počitnic, da trenutni vnos preverite in uredite.",
-      "no_rrc_schedules": "Na voljo ni nobenega trenutnega, podprtega tedenskega časovnega programa RRC.",
+      "no_rrc_schedules": "Na voljo ni nobenega trenutnega, podprtega tedenskega časovnega programa sobnega regulatorja.",
       "no_switch_programs": "Tukaj ni mogoče spremeniti nobenega trenutnega časovnega programa ogrevalnega kroga ali tople vode.",
       "switch_program_changed": "Časovni program se je medtem spremenil ali ga ni več mogoče spreminjati. Znova ga odprite, da vidite trenutne preklopne točke.",
       "switch_program_saved": "Časovni program {program} je bil shranjen in potrjen s ponovnim branjem.\n\nDosedanje preklopne točke spremenjenih dni:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Ta naprava trenutno ne sporoča nobenih nastavitev, ki bi jih bilo mogoče spremeniti tu.",
       "configuration_changed": "Nastavitve povezave so se spremenile, medtem ko je bil ta pogovorni okvir odprt. Zaprite ga in poskusite znova.",
       "no_connections": "Noben dostop ni nastavljen. Obstoječi sistemi in entitete so ohranjeni.",
-      "connection_reauth_started": "Prijava je zahtevana. Odprite poziv za avtentikacijo za ta vnos.",
+      "connection_reauth_started": "Ponovna prijava je pripravljena. Zaprite ta pogovorni okvir in za to integracijo izberite **Znova konfiguriraj** v Nastavitve → Naprave in storitve, v razdelku **Zahteva pozornost**.",
       "cloud_already_connected": "Povezava z oblakom je že nastavljena. V njenih nastavitvah povezave izberite več naprav ali se znova prijavite. Druga vzporedna prijava v oblak še ni podprta.",
       "cloud_setup_in_progress": "Druga nastavitev oblaka je že odprta. Najprej dokončajte ali zaprite tisti pogovorni okvir.",
       "cloud_setup_taken_over": "Novejši pogovorni okvir za nastavitev oblaka je nadomestil tega. Zaprite ta pogovorni okvir in nadaljujte v novejšem.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "To obvestilo o odkritju ne opisuje podprte končne točke lokalnega prehoda.",
       "local_existing_owner_required": "Sistem brez oblaka nastavite z možnostjo »Samo lokalni dostop« ob dodajanju integracije. Odkriti prehod je mogoče dodati obstoječi nastavitvi.",
       "local_target_required": "Ta nastavitev nima primerne ohranjene napeljave za lokalno povezavo.",
-      "local_setup_complete": "Lokalni dostop je nastavljen.",
+      "local_setup_complete": "Lokalni dostop je nastavljen. Njegovo stanje in pogostost poizvedb najdete v Konfiguriraj → Povezave.",
       "local_pending_saved": "Čakajoči poskus je ohranjen. Nadaljujete ga lahko v lokalni nastavitvi.",
       "local_storage_failed": "Zasebnega zapisa nastavitve ni bilo mogoče prebrati ali shraniti. Pred nadaljevanjem preverite shrambo Home Assistant.",
       "cloud_local_first_other_entry": "Ta sistem je že nastavljen prek lokalnega dostopa v drugem vnosu te integracije. Dostop prek oblaka dodajte v tistem vnosu.",
@@ -816,7 +868,17 @@
       "connection_saved": "Sprememba je bila shranjena.",
       "connection_removed": "Dostop je bil odstranjen.",
       "notifications_saved": "Nastavitve obvestil so bile shranjene.",
-      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem."
+      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem.",
+      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop.",
+      "local_tokens_changed": "Seznam žetonov se je medtem spremenil. Nič ni bilo preklicano ali odstranjeno. Znova odprite seznam.",
+      "local_token_revoked": "Žeton je bil preklican; prehod ga ne navaja več.",
+      "local_token_access_ended": "To je bil žeton, ki ga je uporabljal ta dostop. Lokalni dostop se je končal in dostop je bil izklopljen. Znova ga nastavite z oznako na napravi ali ga odstranite.",
+      "local_token_revoke_rejected": "Prehod je zavrnil preklic; žeton je še vedno na seznamu.",
+      "local_token_revoke_unclear": "Prehod ni potrdil preklica. Nič ni bilo ponovljeno. Za preverjanje znova odprite seznam žetonov.",
+      "local_token_revoked_removed": "Žeton je bil na prehodu preklican in dostop je bil odstranjen.",
+      "local_token_not_removed": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop.",
+      "local_token_old_revoked_removed": "Izbrani žeton je bil na prehodu preklican in dostop je bil odstranjen. Žeton, ki ga je ta dostop sam uporabljal, ostaja na prehodu.",
+      "local_token_access_end_failed": "To je bil žeton, ki ga je uporabljal ta dostop, zato se je lokalni dostop končal, vendar dostopa ni bilo mogoče izklopiti. Izklopite ga, odstranite ga ali ga znova nastavite z oznako na napravi."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Certifikat lokalnega prehoda se je spremenil",
-      "description": "Prehod lokalnega dostopa predstavlja drug certifikat. Integracija ga sama ne sprejme in preneha lokalno brati. Če veste, zakaj se je certifikat spremenil (na primer po posodobitvi ali ponastavitvi prehoda), odprite možnosti integracije, izberite lokalni dostop in izberite »Spremeni lokalni dostop«. Tam potrdite nov certifikat. Priporočamo novo prijavo z oznako na napravi; obstoječi žeton obdržite le, če ste prepričani, da novi certifikat pripada vašemu lastnemu prehodu."
+      "description": "Prehod lokalnega dostopa predstavlja drug certifikat. Integracija ga sama ne sprejme in preneha lokalno brati. Če veste, zakaj se je certifikat spremenil (na primer po posodobitvi ali ponastavitvi prehoda), odprite pri integraciji Konfiguriraj → Povezave, izberite dostop LAN in izberite »Spremeni lokalni dostop«. Tam potrdite nov certifikat. Priporočamo novo prijavo z oznako na napravi; obstoječi žeton obdržite le, če ste prepričani, da novi certifikat pripada vašemu lastnemu prehodu."
     },
     "local_start_certificate": {
       "title": "Lokalni dostop se ne more varno povezati",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Prizadeti vnos ne obstaja več.",
           "configuration_changed": "Dostop ali ogrevalni sistem se je spremenil. Znova odprite popravilo."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokalni prehod najden na novem naslovu",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Uporabi nov naslov prehoda",
+            "description": "Lokalni dostop ne doseže svojega prehoda na naslovu {previous}. Isti prehod zdaj odgovarja na naslovu {address}: predstavi potrdilo, potrjeno pri nastavitvi. Na nov naslov ni bil poslan noben žeton.\n\nPotrdite spodaj, da shranite nov naslov. Lokalni dostop se nato znova zažene z njim; žeton in potrjeno potrdilo ostaneta nespremenjena. Da se temu v prihodnje izognete, rezervirajte naslov prehoda v usmerjevalniku (rezervacija DHCP).\n\nČe naslova ne želite uporabiti, zaprite pogovorni okvir ali izberite **Prezri**.",
+            "data": {
+              "confirm": "Uporabi nov naslov"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Potrdite za nadaljevanje."
+        },
+        "abort": {
+          "entry_not_found": "Prizadeti vnos te integracije ne obstaja več.",
+          "configuration_changed": "Dostop ali sistem se je spremenil. Znova odprite popravilo.",
+          "local_address_expired": "To obvestilo ni več aktualno, na primer po ponovnem zagonu. Nič ni bilo spremenjeno. Znova se prikaže, če prehod spet odgovori na novem naslovu.",
+          "local_address_recovered": "Lokalni dostop znova doseže svoj prehod. Nič ni bilo spremenjeno.",
+          "local_address_unproven": "Prehoda na novem naslovu ni bilo mogoče znova potrditi. Nič ni bilo spremenjeno."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Nastavitev ni dokončana",
-      "description": "Vnos »{title}« še nima nobenega dostopa. Odprite njegove možnosti konfiguracije in izberite »Nastavi lokalni dostop« (ali dodajte dostop prek oblaka), da dokončate nastavitev."
+      "description": "Vnos »{title}« še nima nobenega dostopa. Pri njem izberite **Konfiguriraj** in nato »Nastavi lokalni dostop« (ali povežite dostop prek oblaka)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Sprememba je bila poslana sobnemu regulatorju, vendar je ta še ni potrdil. Regulator jo morda uporabi z zamudo; vrednost se posodobi ob naslednjem branju."
     },
     "write_authentication_failed": {
-      "message": "Prijava v oblak ni več veljavna. Pred ponovnim poskusom za Bosch/Buderus Home Comfort opravite ponovno avtentikacijo."
+      "message": "Prijava v oblak ni več veljavna. Znova se prijavite v Konfiguriraj → Povezave → dostop prek oblaka → Znova se prijavite in poskusite znova."
     },
     "write_rate_limited": {
       "message": "Oblak trenutno omejuje zahteve. Počakajte, preden znova poskusite spremembo."
@@ -1366,10 +1452,10 @@
         "name": "Ciljna temperatura bazena"
       },
       "heating_temperature": {
-        "name": "Ogrevanje"
+        "name": "Temperatura ogrevanja"
       },
       "reduced_temperature": {
-        "name": "Znižano"
+        "name": "Znižana temperatura"
       },
       "extra_hot_water_duration": {
         "name": "Trajanje dodatne tople vode"
@@ -1378,13 +1464,13 @@
         "name": "Nastavljena vrednost dodatne tople vode"
       },
       "hot_water_eco_plus": {
-        "name": "Začetna temperatura Eco+"
+        "name": "Prag zagona Eco+"
       },
       "hot_water_comfort": {
-        "name": "Začetna temperatura Udobno"
+        "name": "Prag zagona Udobno"
       },
       "hot_water_eco": {
-        "name": "Začetna temperatura Eco"
+        "name": "Prag zagona Eco"
       },
       "maximum_supply_temperature": {
         "name": "Najvišja temperatura dvižnega voda"
@@ -1649,7 +1735,7 @@
         "name": "Zunanja temperatura"
       },
       "supply_temperature": {
-        "name": "Temperatura dvižnega voda"
+        "name": "Temperatura dvižnega voda sistema"
       },
       "return_temperature": {
         "name": "Temperatura povratnega voda"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Stanje podpore",
+        "name": "Spremenljiva tarifa – podpora",
         "state": {
           "not_supported": "Ni podprto",
           "supported": "Podprto",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Naslednje počitnice"
+      },
+      "heat_generator": {
+        "name": "Vir toplote"
       },
       "pointt_api_requests_total": {
         "name": "Zahteve v oblak skupaj"
@@ -2220,6 +2309,36 @@
           "idle": "Ni načrtovano",
           "planned": "Načrtovano",
           "active": "Aktivno"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Stanje EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Ni zagnano",
+          "no_lan_connection": "Ni omrežne povezave",
+          "no_hp_connection": "Ni povezave s toplotno črpalko",
+          "no_updateserver_connection": "Ni povezave s strežnikom za posodobitve",
+          "no_eebus_connection": "Ni povezave EEBus",
+          "no_eebus_no_trust": "Ni povezave EEBus (ni zaupanja vrednega partnerja)",
+          "no_eebus_no_usecase_active": "Ni povezave EEBus (ni aktivnega primera uporabe)",
+          "power_limitation_active": "Omejitev moči aktivna",
+          "ohpcf_active": "Prilagodljivost kompresorja (OHPCF) aktivna",
+          "internal_error": "Notranja napaka"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Zagon EEBus",
+        "state": {
+          "commissioned": "Zagnano",
+          "not_commissioned": "Ni zagnano"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Preverjanje ob zagonu",
+        "state": {
+          "startup_completed": "Dokončano",
+          "startup_inprogress": "V teku"
         }
       },
       "signal_true_false": {

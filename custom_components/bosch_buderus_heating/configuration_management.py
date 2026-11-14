@@ -424,6 +424,36 @@ class ConfigurationManagement:
         return self._save(data, options)
 
     @callback
+    def set_local_address(
+        self, edit: ConnectionEdit, host: str
+    ) -> ConfigurationSnapshot:
+        """Move a verified local access to a new address of the same gateway.
+
+        Only the host changes. The token, both certificate bindings and the
+        stored read evidence stay, so the running access checks the same
+        certificate and gateway identity at the new address before any
+        token is sent. The caller proves the certificate first.
+        """
+        from .local_credentials import load_local_access
+        from .local_probe import LocalEndpoint
+
+        before = self._checked(edit)
+        connection = before.connections[edit.connection_id]
+        if connection.kind != LOCAL_KIND:
+            raise ConfigurationError("unsupported_connection")
+        try:
+            access = load_local_access(connection.to_data())
+            endpoint = LocalEndpoint(host)
+        except ValueError:
+            raise ConfigurationError("invalid_endpoint") from None
+        if endpoint == access.endpoint:
+            raise ConfigurationError("configuration_changed")
+        data, options = before.to_data(), before.to_options()
+        stored = section(data, "connections")[edit.connection_id]
+        cast(JsonObject, stored["endpoint"])["host"] = endpoint.host
+        return self._save(data, options)
+
+    @callback
     def set_local_values(
         self, edit: ConnectionEdit, enabled: bool
     ) -> ConfigurationSnapshot:

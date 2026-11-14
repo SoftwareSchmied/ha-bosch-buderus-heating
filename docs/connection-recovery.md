@@ -66,14 +66,14 @@ this is not a claim of complete compatibility with an unreleased HA version.
   verifier are only ever sent to the sign-in service itself. Its answer is read
   with a size limit, a refusal across several chunks keeps its OAuth error
   code.
-- A new sign-in first asks only for the permissions the integration uses:
-  `openid`, `offline_access`, `pointt.gateway.list`,
-  `pointt.gateway.resource.dashapp` and `bacon`. If the sign-in service
-  rejects this set (`invalid_scope`), the dialog shows a new link with the full
-  set of permissions, and later sign-ins of the running Home Assistant use it
-  at once. Existing sign-ins keep their permissions until the next
-  sign-in. I have not yet confirmed the reduced set with a real sign-in; this
-  must be tested manually before the release.
+- Every new and every renewed sign-in asks for the same full set of
+  permissions as 0.8.x, for both brands. 0.9.0 asked for a smaller set
+  without `email`; the sign-in service answered that link with its
+  "Misconfigured application" page instead of the sign-in form, so new
+  sign-ins could not be completed
+  ([#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127)).
+  0.9.1 asks for the full set again. A token renewal sends no permissions, so
+  existing sign-ins were not affected.
 - One unreadable entry of the gateway list, for example a new device without
   an ID, is left out and counted (`gateway_list_entries_skipped` in the request
   metrics) instead of making the whole list unusable.
@@ -101,7 +101,13 @@ Settings → Connections lists every access with its state, for example
 request and its polling profile, for the LAN access also the values available
 locally, the target interval and whether local values are used. All of this
 comes from what the running connections already know; opening the dialog never
-starts a request.
+starts a request. While the LAN access cannot reach its gateway (not reachable,
+or pausing after failed connections), the description and a failed test add a
+tip: reserve the gateway's IP address in the router (DHCP reservation) or enter
+its host name, so the address stays the same after a router restart. If the
+gateway announces itself at a new address, a repair note offers to use it after
+a certificate check (see
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address)).
 
 These states, the description and the test result are built on the Home
 Assistant server and therefore use its server language (Settings → System →
@@ -203,15 +209,14 @@ Home-Assistant-Version.
   Code-Verifier gehen so nur an den Anmeldedienst selbst. Seine Antwort wird
   begrenzt gelesen; eine in mehreren Teilen gesendete Ablehnung behält ihren
   OAuth-Fehlercode.
-- Eine neue Anmeldung fragt zuerst nur die Berechtigungen an, die die
-  Integration nutzt: `openid`, `offline_access`, `pointt.gateway.list`,
-  `pointt.gateway.resource.dashapp` und `bacon`. Lehnt der Anmeldedienst diese
-  Auswahl ab (`invalid_scope`), zeigt der Dialog einen neuen Link mit dem
-  vollen Umfang der Berechtigungen, und spätere Anmeldungen des laufenden Home
-  Assistant verwenden ihn sofort. Bestehende Anmeldungen behalten ihre
-  Berechtigungen bis zur nächsten Anmeldung. Mit einer echten Anmeldung habe
-  ich den reduzierten Umfang noch nicht bestätigt; das muss vor dem Release
-  manuell geprüft werden.
+- Jede neue und jede erneute Anmeldung fragt für beide Marken denselben
+  vollen Umfang an Berechtigungen an wie 0.8.x. 0.9.0 fragte einen kleineren
+  Umfang ohne `email` an; der Anmeldedienst beantwortete diesen Link mit
+  seiner Seite „Misconfigured application“ statt mit dem Anmeldeformular,
+  sodass sich neue Anmeldungen nicht abschließen ließen
+  ([#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127)).
+  0.9.1 fragt wieder den vollen Umfang an. Eine Token-Erneuerung sendet keine
+  Berechtigungen; bestehende Anmeldungen waren daher nicht betroffen.
 - Ein unlesbarer Eintrag der Gateway-Liste, etwa ein neues Gerät ohne Kennung,
   wird ausgelassen und gezählt (`gateway_list_entries_skipped` in den
   Anfrage-Metriken), statt die ganze Liste unbrauchbar zu machen.
@@ -240,7 +245,14 @@ Beispiel „Cloud-Zugang (1): verbunden“, „… Anmeldung nötig“, „… p
 stehen die letzte erfolgreiche Abfrage und das Abfrageprofil darüber, beim
 LAN-Zugang zusätzlich die lokal verfügbaren Werte, das Zielintervall und ob
 lokale Werte verwendet werden. Alles stammt aus dem, was die laufenden Zugänge
-bereits wissen; das Öffnen startet keine Abfrage.
+bereits wissen; das Öffnen startet keine Abfrage. Solange der LAN-Zugang sein
+Gateway nicht erreicht (nicht erreichbar oder pausiert nach fehlgeschlagenen
+Verbindungen), ergänzen Beschreibung und ein fehlgeschlagener Test einen Tipp:
+die IP-Adresse des Gateways im Router reservieren (DHCP-Reservierung) oder
+seinen Hostnamen eintragen, damit die Adresse nach einem Router-Neustart gleich
+bleibt. Meldet sich das Gateway unter einer neuen Adresse, bietet eine
+Reparaturmeldung nach einer Zertifikatsprüfung an, sie zu übernehmen (siehe
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address)).
 
 Zustände, Beschreibung und Testergebnis entstehen auf dem Home-Assistant-Server.
 Sie erscheinen deshalb wie Entitätsnamen in der Serversprache (Einstellungen →

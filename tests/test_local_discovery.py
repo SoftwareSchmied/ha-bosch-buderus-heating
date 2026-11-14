@@ -99,7 +99,7 @@ async def test_repeated_hints_share_only_transient_flow_and_can_be_retried(
     assert duplicate["reason"] == "already_in_progress"
     assert hass.config_entries.flow.async_get(first["flow_id"])["context"][
         "title_placeholders"
-    ] == {"host": "192.0.2.1"}
+    ] == {"name": "192.0.2.1"}
     hass.config_entries.flow.async_abort(first["flow_id"])
     assert not hass.data[discovery._FLOWS]
     assert (await discover(hass))["type"] == FlowResultType.FORM

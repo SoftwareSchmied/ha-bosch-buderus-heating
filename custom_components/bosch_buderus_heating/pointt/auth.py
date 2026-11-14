@@ -22,7 +22,6 @@ from .const import (
     OAUTH_AUTHORIZE_URL,
     OAUTH_CLIENT_ID,
     OAUTH_SCOPES,
-    OAUTH_SCOPES_REDUCED,
     OAUTH_TOKEN_URL,
 )
 from .exceptions import (
@@ -31,7 +30,6 @@ from .exceptions import (
     InvalidPayload,
     OAuthFlowExpired,
     OAuthRedirectError,
-    OAuthScopeRejected,
     OAuthStateMismatch,
     RateLimited,
     RefreshRefused,
@@ -81,19 +79,14 @@ def create_pkce_context(*, now: float | None = None) -> PKCEContext:
     )
 
 
-def build_authorization_url(
-    brand: Brand,
-    context: PKCEContext,
-    *,
-    scopes: tuple[str, ...] = OAUTH_SCOPES_REDUCED,
-) -> str:
+def build_authorization_url(brand: Brand, context: PKCEContext) -> str:
     """Build a brand-specific SingleKey ID authorization URL."""
     query = urlencode(
         {
             "client_id": OAUTH_CLIENT_ID,
             "redirect_uri": brand.redirect_uri,
             "response_type": "code",
-            "scope": " ".join(scopes),
+            "scope": " ".join(OAUTH_SCOPES),
             "state": context.state,
             "nonce": context.nonce,
             "code_challenge": context.code_challenge,
@@ -139,21 +132,6 @@ def parse_redirect_url(brand: Brand, redirect_url: str, *, expected_state: str) 
     return code
 
 
-class _ScopeFallback:
-    """Process-wide memory that the sign-in service rejected the reduced set.
-
-    The reduced set is tried first. After one ``invalid_scope`` answer every
-    later attempt of this process asks for the full set at once.
-    """
-
-    active = False
-
-
-def initial_scopes() -> tuple[str, ...]:
-    """Return the scope set a new authorization attempt requests."""
-    return OAUTH_SCOPES if _ScopeFallback.active else OAUTH_SCOPES_REDUCED
-
-
 @dataclass(slots=True)
 class OAuthFlow:
     """One short-lived authorization flow whose redirect is consumed once."""
@@ -161,7 +139,6 @@ class OAuthFlow:
     brand: Brand
     context: PKCEContext
     max_age: float = 600.0
-    scopes: tuple[str, ...] = field(default_factory=initial_scopes)
     _consumed: bool = field(default=False, init=False, repr=False)
 
     @classmethod
@@ -172,7 +149,7 @@ class OAuthFlow:
     @property
     def authorization_url(self) -> str:
         """Return the URL the user should open."""
-        return build_authorization_url(self.brand, self.context, scopes=self.scopes)
+        return build_authorization_url(self.brand, self.context)
 
     def consume_redirect(
         self, redirect_url: str, *, now: float | None = None
@@ -182,34 +159,11 @@ class OAuthFlow:
             raise AuthorizationCodeConsumed("OAuth redirect was already consumed")
         if self.is_expired(now=now):
             raise OAuthFlowExpired("OAuth flow expired")
-        self._fall_back_on_scope_rejection(redirect_url, now=now)
         code = parse_redirect_url(
             self.brand, redirect_url, expected_state=self.context.state
         )
         self._consumed = True
         return AuthorizationGrant(code=code, code_verifier=self.context.code_verifier)
-
-    def _fall_back_on_scope_rejection(
-        self, redirect_url: str, *, now: float | None
-    ) -> None:
-        """Retry once with the full set when the reduced set was rejected.
-
-        Only an ``invalid_scope`` answer of this very attempt (matching state)
-        switches. The flow then shows a fresh link with the full set; later
-        attempts of this process start with it.
-        """
-        if self.scopes == OAUTH_SCOPES:
-            return
-        parameters = _redirect_parameters(self.brand, redirect_url)
-        state = parameters.get("state", [None])[0]
-        if parameters.get("error", [None])[0] != "invalid_scope" or (
-            not secrets.compare_digest(state or "", self.context.state)
-        ):
-            return
-        _ScopeFallback.active = True
-        self.scopes = OAUTH_SCOPES
-        self.context = create_pkce_context(now=now)
-        raise OAuthScopeRejected("Sign-in service rejected the reduced scope set")
 
     def is_expired(self, *, now: float | None = None) -> bool:
         """Return whether this attempt needs a new authorization link."""

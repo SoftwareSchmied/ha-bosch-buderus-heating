@@ -1,6 +1,7 @@
 # API, firmware and specification compatibility
 
-This page records which specification the local access is built on, which
+This page records which systems are supported, which specification the local
+access is built on, which
 real systems and firmware versions were checked, and how the integration
 reacts when the cloud or a gateway reports something different from what it
 knows. It is maintained together with
@@ -13,6 +14,50 @@ The integration requires Home Assistant 2026.5.0 or newer: from that release a
 setup dialog can continue directly with the local access of the new entry. The
 automated checks run the full suite on Home Assistant 2026.5.4, 2026.9.2 and
 the current release.
+
+## Supported systems at a glance
+
+The integration uses the cloud interface shared by the Bosch and Buderus
+heating apps. Compatibility depends on the resources exposed for the specific
+account, gateway, controller and heating system.
+
+| Status | Systems |
+|---|---|
+| In use | Many installations with heat pumps and gas condensing boilers; see [confirmed installations](confirmed-installations.md) |
+| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus |
+| Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
+| Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
+| Room controllers (RRC 2.0) | TC100.2: zone readings and control, programs, temporary setpoint, open window detection, one-day absence, hot water mode, boost, away mode and next switch point confirmed; editing switch points, other absences and hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings untested. CT200: untested. Cloud only, no local access. See [room controllers](room-controllers.md) |
+| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes; see [device families](device-support-plan.md) |
+| Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [checked systems](#checked-systems) |
+| Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
+
+The additional device families use their own adapters and supported Home
+Assistant entity types. Available functions depend on identification,
+reported metadata and explicit device selection.
+
+An unlisted model may still work because discovery is capability based. A
+listed gateway does not by itself guarantee that every entity or control is
+available. Missing capabilities are simply omitted without affecting the rest
+of the integration.
+
+Systems registered in the IVT Anywhere II app, and Junkers, Nefit, Worcester
+or Vulcano systems registered in the Bosch HomeCom Easy app, use the same
+cloud. They should work when you select **Bosch** during setup and sign in
+with the SingleKey ID of that app. The local access also recognises K40/K40RF
+gateways of IVT, Vulcano and Worcester. No IVT, Junkers, Nefit, Worcester or
+Vulcano system has been confirmed yet, neither with the cloud nor with the
+local access; if you use one, please share your experience in
+[Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
+
+Home Assistant shows a uniquely identified MX300/MX400 internet module as the
+system model. K30/K40 is the gateway type that PointT reports for these modules
+and remains visible in diagnostics and the gateway hardware data.
+
+> [!IMPORTANT]
+> The PointT Cloud API is not a publicly guaranteed API. Cloud-side changes may
+> affect the integration. Keep the original Bosch or Buderus app available for
+> commissioning and service work.
 
 ## Specification
 
@@ -96,7 +141,7 @@ The examples are checked against their meaning, not only against the schema
 
 | System | Gateway firmware | Access | Evidence |
 | --- | --- | --- | --- |
-| K40 heat pump gateway (`K40RF_v1`) | 15.00.01 | cloud and local | anonymized cloud capture `tests/fixtures/contracts/captures/k40-cloud-2026-11-05.json`, practical checks on my own system |
+| K40 heat pump gateway (`K40RF_v1`) | 15.00.01 | cloud and local | anonymized cloud capture `tests/fixtures/contracts/captures/k40-cloud-2026-11-05.json`, practical checks on a real installation |
 | Room controller TC100.2 (RRC 2.0) | 05.04.00 | cloud only, no local access | zone readings, manual/schedule mode and manual setpoint confirmed by a user with 0.9.0-alpha.4 (issue 113); program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed by the same user with 0.9.0-alpha.5, and the radio devices with their battery and valve state look right (issue 122); the other room controller functions expected, untested, see [room controllers](room-controllers.md) |
 | Room controller CT200 (RRC 2.0) | – | cloud only, expected, untested, no local access | synthetic fixture `tests/fixtures/contracts/rrc/ct200-shapes.json`; no installation report yet |
 
@@ -106,9 +151,9 @@ cloud. [Room controllers](room-controllers.md) lists every function with
 what is confirmed and what is expected, untested; the discovery details are
 in [room controllers of the RRC 2.0 platform](rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform).
 
-### Local access: checked on my system and not verifiable there
+### Local access: checked on a real system and not verifiable there
 
-Checked in practice on my own system (K40 gateway, firmware 15.00.01):
+Checked in practice on a real installation (K40 gateway, firmware 15.00.01):
 
 - discovery on the network, adding the local access with an existing token,
   identity comparison with the cloud;
@@ -118,7 +163,7 @@ Checked in practice on my own system (K40 gateway, firmware 15.00.01):
   a second fault source (with no active fault), and diagnostics without
   credentials or network data.
 
-Not verifiable on my system, so covered only by tests:
+Not verifiable there, so covered only by tests:
 
 - further heating circuits, solar, ventilation and room zones over the local
   access, radio devices and their zone relations, module or gateway exchange;

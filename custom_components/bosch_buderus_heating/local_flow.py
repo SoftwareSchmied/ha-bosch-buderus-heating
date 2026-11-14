@@ -34,7 +34,8 @@ from .configuration_management import ConfigurationManagement
 from .const import DOMAIN
 from .ha_schema import validation as vol
 from .i18n import localize
-from .local_auth import AuthState, LabelCredentials
+from .local_address import follow_address
+from .local_auth import AuthProblem, AuthState, LabelCredentials, rejection_status
 from .local_budget import LocalReadBudget, local_budget_manager
 from .local_completion import LOCAL_FIRST, RecoveryStatus, ScopedIdentityContract
 from .local_credentials import LocalCredentialError, load_local_access
@@ -58,6 +59,7 @@ from .local_setup import (
     prepare_local_configuration,
     verify_local_setup,
 )
+from .local_setup_history import NOT_SENT, local_setup_history
 from .local_support import setup_support
 from .local_transport import (
     CertificateBinding,
@@ -220,6 +222,14 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     _local_task: asyncio.Task[None] | None = None
     _local_retry: Callable[[], Awaitable[None]] | None = None
     _local_error: str | None = None
+    # The type of the last unexpected error, for the attempt history only.
+    _local_unexpected: str | None = None
+    # A failed stage noted already; the form that shows it adds no attempt.
+    _local_noted: str | None = None
+    # What reached the gateway in the last failed attempt, for the history.
+    _local_detail: str | None = None
+    # Seconds of a pause the gateway asked for, shown with the next form.
+    _local_wait: int | None = None
     _local_address = ""
     _local_choices: tuple[LocalEndpoint, ...] = ()
     _local_discovery: ZeroconfServiceInfo | None = None
@@ -254,6 +264,32 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_session_changed")
         return None
 
+    def _local_reported(self, error: BaseException) -> str:
+        """The shown code of a failed step; keeps an unexpected error's type."""
+        code = reported_local_error(error)
+        self._local_unexpected = (
+            type(error).__name__ if code == "local_unexpected" else None
+        )
+        return code
+
+    def _local_attempt(self, step: str, error: str | None) -> None:
+        """Note an attempt in the entry's history: codes only, never data."""
+        if not self._local_owner_id:
+            return
+        if self.hass.config_entries.async_get_entry(self._local_owner_id) is None:
+            # Removed meanwhile: its deleted history must not come back.
+            return
+        if error == "local_unexpected" and self._local_unexpected:
+            error = f"unexpected:{self._local_unexpected}"
+        self._local_unexpected = None
+        detail, self._local_detail = self._local_detail, None
+        try:
+            local_setup_history(self.hass, self._local_owner_id).add(
+                step, error, detail=detail if error is not None else None
+            )
+        except Exception:  # the history only explains; it never stops a dialog
+            _LOGGER.debug("Local setup attempt not noted")
+
     def _local_form(
         self,
         step: str,
@@ -263,6 +299,12 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         placeholders: dict[str, str] | None = None,
     ) -> ConfigFlowResult:
         self._local_phase = step
+        noted, self._local_noted = self._local_noted, None
+        if errors and step != "local_retry":
+            # The error the dialog shows now: the general one first.
+            code = errors.get("base") or errors[min(errors)]
+            if code != noted:
+                self._local_attempt(step, code)
         return self.async_show_form(
             step_id=step,
             data_schema=schema or vol.Schema({}),
@@ -297,6 +339,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_discovery_invalid")
         if configured_discovery(self.hass, self._local_choices):
             return self.async_abort(reason="already_configured")
+        # A configured gateway at a new address, proven by its certificate:
+        # offered as a repair note, never as another gateway.
+        if owners and await follow_address(self.hass, self._local_choices):
+            return self.async_abort(reason="local_address_moved")
         # Lets the notice be ignored; an ignored announcement stays ignored.
         if await cast(ConfigFlow, self).async_set_unique_id(
             discovery_unique_id(discovery_info)
@@ -304,7 +350,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="already_configured")
         if not track_discovery_flow(self.hass, self.flow_id, self._local_choices):
             return self.async_abort(reason="already_in_progress")
-        self.context["title_placeholders"] = {"host": self._local_choices[0].host}
+        # The one placeholder of the flow title; Home Assistant sets the same
+        # one for a renewed sign-in (the entry title).
+        self.context["title_placeholders"] = {"name": self._local_choices[0].host}
         if not owners:
             self._local_discovery = discovery_info
             return await self.async_step_local_discovered()
@@ -521,7 +569,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 )
                 self._local_address = endpoint.host
             except ValueError as error:
-                errors["address"] = reported_local_error(error)
+                errors["address"] = self._local_reported(error)
             else:
                 self._local_phase = "local_method"
                 return await self.async_step_local_method()
@@ -576,7 +624,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                         is_active=self._local_active,
                     )
                 except (LocalCredentialError, ValueError) as error:
-                    errors["base"] = reported_local_error(error)
+                    errors["base"] = self._local_reported(error)
                 else:
                     return await self._local_start(
                         lambda: self._local_inspect(PortRole.RESOURCES)
@@ -632,6 +680,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         self, operation: Callable[[], Awaitable[None]]
     ) -> ConfigFlowResult:
         self._local_retry = operation
+        origin = self._local_phase
         self._local_phase = "local_progress"
         self._local_error = None
 
@@ -641,8 +690,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except asyncio.CancelledError:
                 raise
             except Exception as error:
-                self._local_error = reported_local_error(error)
+                self._local_error = self._local_reported(error)
                 self._local_phase = "local_retry"
+                self._local_attempt(origin, self._local_error)
+                self._local_noted = self._local_error
 
         self._local_task = self.hass.async_create_task(run(), "local setup stage")
         try:
@@ -749,9 +800,15 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_session_changed")
         if user_input is not None and user_input.get("confirm") is True:
             return await self._local_start(self._local_accept_certificate)
+        errors = {}
+        if user_input is None and self._local_error:
+            # Back here because the certificate changed during the sign-in.
+            errors["base"] = self._local_error
+            self._local_error = None
         return self._local_form(
             "local_certificate",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
+            errors=errors,
             placeholders={
                 "host": markdown_literal(self._local_address),
                 "port": str(observation.role.port),
@@ -786,40 +843,60 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if denied := self._local_guard("local_auth"):
             return denied
         errors = {}
+        placeholders: dict[str, str] | None = None
         if user_input is None and self._local_error:
             # The reason of the rejected attempt before (FLOW-5).
             errors["base"] = self._local_error
             self._local_error = None
+            if errors["base"] == "local_rate_limited" and self._local_wait:
+                errors["base"] = "local_rate_limited_wait"
+                placeholders = {"seconds": str(self._local_wait)}
+            self._local_wait = None
         if user_input is not None:
+            # Spaces and line breaks at the edges come from copying; the label
+            # itself has none. Inside a value nothing is changed.
+            login = str(user_input.get("login", "")).strip()
+            password = str(user_input.get("password", "")).strip()
             if user_input.get("unlocked") is not True:
-                errors["unlocked"] = "local_unlock_required"
+                errors["unlocked"] = "local_unlock_confirm_required"
+                self._local_detail = NOT_SENT
             else:
                 try:
-                    label = LabelCredentials(
-                        user_input.get("login", ""), user_input.get("password", "")
-                    )
+                    label = LabelCredentials(login, password)
                 except ValueError:
-                    errors["base"] = "local_invalid_credentials"
+                    errors["base"] = "local_invalid_label_format"
+                    self._local_detail = NOT_SENT
                 else:
                     # The retry callback never retains device-label credentials.
                     result = await self._local_start(lambda: self._local_create(label))
                     self._local_retry = self._local_resume_pending
                     return result
-        secret = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
         return self._local_form(
             "local_auth",
             vol.Schema(
                 {
-                    vol.Required("login"): secret,
-                    vol.Required("password"): secret,
+                    # The login is visible, so a typo can be seen; the pass
+                    # field has its own show and hide switch.
+                    vol.Required("login"): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.TEXT)
+                    ),
+                    vol.Required("password"): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    ),
                     vol.Required("unlocked", default=False): BooleanSelector(),
                 }
             ),
             errors=errors,
+            placeholders=placeholders,
         )
 
     async def _local_create(self, label: LabelCredentials) -> None:
-        assert self._local_edit is not None and self._local_auth_pin is not None
+        assert self._local_edit is not None
+        if self._local_auth_pin is None:
+            # The sign-in port's certificate is not confirmed (again): check
+            # it first; nothing is sent with the label.
+            await self._local_inspect(PortRole.AUTHENTICATION)
+            return
         journal = enrollment_journal(self.hass)
         self._local_record = await journal.create(
             self._local_edit,
@@ -829,11 +906,23 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             is_active=self._local_active,
         )
         if self._local_record.state != AuthState.RECEIVED:
-            self._local_error = local_error(self._local_record.problem)
+            problem = self._local_record.problem
+            self._local_error = local_error(problem)
+            status = rejection_status(problem)
+            self._local_detail = f"http_{status}" if status is not None else None
+            if problem is AuthProblem.RATE_LIMITED:
+                pause = await journal.remaining_pause(self._local_record)
+                self._local_wait = math.ceil(pause) if pause > 0 else None
             if self._local_record.resolved:
                 # FLOW-5: certainly no token; sign in again right away with
                 # the certificate already confirmed.
                 self._local_record = None
+                if problem in (AuthProblem.CERTIFICATE_CHANGED, AuthProblem.TLS):
+                    # Check the sign-in port again instead of repeating a
+                    # sign-in that cannot work with the old certificate.
+                    self._local_auth_pin = None
+                    await self._local_inspect(PortRole.AUTHENTICATION)
+                    return
                 self._local_phase = "local_auth"
                 return
             self._local_phase = "local_pending"
@@ -858,7 +947,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except LocalCredentialError:
                 errors["token"] = "local_invalid_token"
             except ValueError as error:
-                errors["base"] = reported_local_error(error)
+                errors["base"] = self._local_reported(error)
             else:
                 return await self._local_start(
                     lambda: self._local_inspect(PortRole.RESOURCES)
@@ -887,7 +976,15 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             ),
             None,
         )
-        self._local_phase = "local_pending" if self._local_record else "local_auth"
+        if self._local_record is not None:
+            self._local_phase = "local_pending"
+        elif self._local_auth_pin is None:
+            # After a changed certificate whose new check failed: retrying
+            # means checking the sign-in port again, not a sign-in without
+            # a confirmed certificate.
+            await self._local_inspect(PortRole.AUTHENTICATION)
+        else:
+            self._local_phase = "local_auth"
 
     async def async_step_local_pending(
         self, user_input: dict[str, Any] | None = None
@@ -937,11 +1034,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 elif action not in actions:
                     return self.async_abort(reason="local_session_changed")
         except ValueError as error:
-            return self.async_abort(
-                reason="local_storage_failed"
-                if local_error(error) == "local_storage_failed"
-                else "local_session_changed"
-            )
+            if local_error(error) == "local_storage_failed":
+                self._local_attempt("local_pending", "local_storage_failed")
+                return self.async_abort(reason="local_storage_failed")
+            return self.async_abort(reason="local_session_changed")
         if status == RecoveryStatus.CONFLICT:
             errors["base"] = "local_configuration_changed"
         return self._local_form(
@@ -1047,6 +1143,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 proof,
                 contract=contract,
             )
+            self._local_attempt("local_result", None)
             self._local_phase = "local_done"
             dismiss_configured_discoveries(self.hass)
         else:

@@ -5,6 +5,309 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-14
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - **From 0.9.0:** nothing special is needed. The storage format stays 4,
+>   and existing setups keep their sign-in, entity IDs and settings. Each
+>   gateway that reports its modules gets one new diagnostic sensor **Heat
+>   generator**. Some readings, among them the hot water start thresholds,
+>   show corrected names unless you named them yourself.
+> - **From 0.8.x:** make a full Home Assistant backup first. The first start
+>   moves the configuration entry to storage format 4, which 0.8.x cannot
+>   load; going back is only possible by restoring that backup. Home
+>   Assistant 2026.5.0 or newer is required.
+
+0.9.1 fixes the cloud sign-in of 0.9.0. It also improves the local access,
+names the heat generator models and shows texts for more gateway states.
+
+### Fixed
+
+- **Cloud sign-in:** in 0.9.0, a new sign-in and a renewed sign-in showed
+  the SingleKey ID page "Misconfigured application" instead of the sign-in
+  form, for both brands of the sign-in choice. A new cloud access could
+  therefore not be set up, and an access that needed a new sign-in could
+  not be signed in again. Existing setups with a working sign-in were not
+  affected. The sign-in link had asked for a smaller set of permissions
+  without `email`, which the sign-in service does not accept for this
+  integration. Every sign-in link now asks for the same permissions as
+  0.8.x again; the fallback for a rejected set, which never took effect,
+  was removed. Token renewal is unchanged.
+  - I checked that the links of the fixed version open the SingleKey ID
+    sign-in page for both brands, for a new and a renewed sign-in. A
+    complete renewed sign-in with a real account worked with the fixed
+    version on a real installation.
+  - Thank you, [wt4km8bkkg-ux](https://github.com/wt4km8bkkg-ux), for
+    reporting it in
+    [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
+- **Title of a renewed sign-in:** the title of the integration's dialogs
+  in the list of discovered and pending setups needed the address of a
+  found gateway, so a renewed sign-in could not show it. It now uses the
+  placeholder Home Assistant provides for every flow.
+- **Local readings around a restart:** when Home Assistant stopped, local
+  readings whose unit comes from the gateway (most controller signals and
+  the volume flows) were written once without their device class. Home
+  Assistant then removed the class and the display precision from their
+  entity registry entries until their first reading after the next start,
+  which took up to about four minutes after a slow start. These sensors now
+  keep the class that belongs to their last unit while there is no current
+  reading, and a sensor registered before its first reading takes the class
+  stored in the registry. Units, entity IDs and long-term statistics were
+  not affected: an unavailable sensor has no value, so the statistics saw
+  no change.
+  - Seen on a real installation after an update. With the fixed version
+    running, a restart of that installation left the device class and the
+    display precision of all these sensors in place, also while they had no
+    reading yet. The update to 0.9.1 can still show it once, because the
+    previous version writes these entries when it stops.
+  - Unchanged by design: after a start, a local sensor stays unavailable
+    until its reading has been read once, and after a timeout the local
+    access waits a minute before it reads on.
+
+### Local access
+
+- **Tokens on the gateway:** the settings of a local access have a new entry
+  that shows the gateway's token list: how many tokens it holds, which
+  client created each one and when. This helps when a new sign-in fails
+  because the token list is full. The list is read only when you open it;
+  token values are never part of it, and nothing of it is saved, logged or
+  included in diagnostics.
+  - The token list of firmware 15.00.01 is read: it sends the creation
+    time as a text with a time zone instead of the number the
+    documentation shows. An entry that cannot be read is listed as not
+    readable and never offered for revocation. Reading the list in this
+    format worked on a real gateway with firmware 15.00.01.
+- **Revoking an old token:** from that list, an old token of this
+  integration can be revoked, one at a time and only after a confirmation.
+  Tokens of other apps are never offered. Right before the revocation the
+  list is read again, the request is sent exactly once, and the list is
+  read once more to confirm the result. If the revoked token was the one
+  the access used, the access is switched off; a new sign-in with the
+  device label sets it up again. **Remove access** can revoke a token of
+  this integration first if you tick that choice; otherwise removing still
+  never revokes anything.
+  - The list marks the token this access most likely uses: the token of this
+    integration created last before the access was set up. Tokens that
+    another local access of this integration to the same gateway most
+    likely uses are marked "used by another access". These marks remain an
+    assumption (the clocks may differ, another Home Assistant may use the
+    gateway), so revoking any token of this integration needs a second
+    confirmation that a local access using it ends, and the dialog says
+    whose token it most likely is. If a token is newer than the setup and
+    no other access explains it, nothing is marked for this access.
+  - If the access cannot be switched off after its own token was revoked,
+    the dialog now says so instead of reporting it as switched off.
+  - **Remove access:** ticking only the revoke choice without "Remove this
+    access" now shows a message instead of going back without a word. When
+    an older token was revoked while the access still worked, the message
+    says that the access's own token stays on the gateway.
+  - For an access whose token was entered by hand, the gateway's list does
+    not show which entry is that token. A short note below the list now says
+    so: no entry is marked, and the token usually appears under other apps,
+    which are never offered for revocation. The case was seen on a real
+    gateway, and the note appeared there in the token list.
+  - If you tick the revoke choice when removing an access but there is no
+    token of this integration to offer, or the list cannot be read, I no
+    longer remove the access silently: you choose between removing it
+    without revoking and keeping it.
+  - I tested the revocation against a synthetic gateway only. How a real
+    gateway answers a revocation, and how it counts several tokens, is
+    still unconfirmed.
+- **Sign-in with the device label:** the login is now visible while you
+  type it, and the pass field has its show switch. Spaces and line breaks at
+  the start or end, for example from copying, are removed; inside a value
+  nothing is changed, because the official documentation only names the
+  hyphens of the pass as removable. Each problem has its own message:
+  input a label cannot have (nothing is sent), the unticked box, Login and
+  Pass rejected by the gateway, sign-in not released or the five minutes
+  after the release passed (with the button instruction), a pause the
+  gateway asked for (with the remaining seconds) and no answer in time. The
+  button instruction now says 1 second, as the official documentation does,
+  instead of about two. A certificate that changed during the dialog leads
+  back to its check instead of repeating the same error, also when that
+  check fails once and is tried again, and the second
+  certificate page explains why it appears (data port 9443). Each failed
+  attempt is logged once at the info level with its step, its code and the
+  HTTP status or "not sent".
+  - I tested this with a synthetic gateway in the automated tests, not yet
+    with a real gateway.
+  - Texts that the integration composes itself in the options dialog, such
+    as the list of connections, still follow the server language: Home
+    Assistant does not tell an options dialog the profile language of its
+    user.
+- **New gateway address after a DHCP change:** when the local access can no
+  longer reach its gateway and the gateway announces itself at a new
+  private or link-local address, the integration checks that address with
+  one TLS handshake, without the token and without any request; a public
+  address is never contacted. Only if the gateway presents exactly the
+  certificate confirmed during setup, a repair note under **Settings →
+  System → Repairs** offers the new address. It is saved only after you
+  confirm it, and the certificate is checked once more right before. The
+  token and the certificate stay, so no new sign-in is needed. Nothing is
+  offered while the access is still starting and has not failed yet, so an
+  access saved with a host name only gets another address once that name
+  no longer reaches the gateway.
+  - I tested this with synthetic gateways: the same and a different
+    certificate at the new address, two gateways, a forged announcement and
+    an announcement during normal operation. On a real gateway I only
+    checked, with one handshake and without the token, that it presents the
+    certificate confirmed at setup. A real address change has not been
+    tested yet; reports are welcome.
+- **Tip for a fixed address:** while the local access cannot reach its
+  gateway, its status under **Configure → Connections** and a failed **Test
+  connection now** suggest a DHCP reservation in the router or the
+  gateway's host name.
+- **Setup attempts in the diagnostics:** the diagnostics list the last 10
+  attempts to set up or change the local access of an entry, and in a
+  separate list the last 10 cloud sign-ins (new, added under **Configure →
+  Connections**, or signing in again). Each attempt has the time, the
+  dialog step and the error the dialog showed, for example a rejected
+  device label, a gateway that was not unlocked or a pasted address that
+  did not belong to the sign-in, and for the local access whether the
+  gateway answered with an error status or nothing was sent. Login,
+  password, token, address,
+  certificate data, sign-in links and codes, e-mail addresses and account
+  or gateway identifiers are never part of it. This helps to find out why a
+  setup needed several tries.
+  - A sign-in that never gets back from the sign-in page, as in #127, can
+    only show as a link that was not used. Attempts of a first setup are
+    kept only when it creates its entry.
+  - Removing an entry deletes both lists, also if one of them cannot be
+    deleted, and a sign-in dialog still open at that moment no longer
+    creates its list again.
+  - On a real installation, the list of cloud sign-ins showed an
+    abandoned link and the following successful renewed sign-in. The list
+    of local setup attempts is tested with automated tests of the dialogs
+    only.
+
+### Heat generator models
+
+- **Heat generator sensor:** every gateway with a module list gets one new
+  diagnostic sensor **Heat generator**, enabled by default. Its state is
+  the product name of the main heat generator; its attributes list each
+  heat generator module by role (indoor unit, outdoor unit, boiler, hybrid
+  manager, further cascade stages) with family, construction and power
+  class, and give `primary` (with `outdoor_power_kw`, the power class of
+  the outdoor unit), `outdoor_unit`, `source`, `table_version` and `known`.
+  Dashboard cards can choose a matching drawing from it. See
+  [heat generator models](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/docs/entities.md#heat-generator-models).
+  - The sensor sends no request of its own; it uses the module lists the
+    cloud and the local access already read. Serial numbers are never read,
+    shown or stored.
+  - Its state is written only when the modules change: when the cloud and
+    the local access report the same modules in turn, the source shown
+    first stays, instead of writing the same state with every answer. The
+    diagnostics name the same answer as the sensor, and an error in their
+    heat generator part no longer stops the rest of the report.
+  - Family, construction and power come only from a model table whose
+    entries are observed in a real module list or documented by the
+    manufacturer; nothing is guessed from a name. It knows the Logatherm
+    WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR (10 kW), as
+    seen in a real module list, and, from the manufacturers' documents, the
+    WLW176i/WLW186i indoor units with the WLW MB AR outdoor units, the
+    CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T outdoor units and
+    the outdoor units of the CS3800i AW and CS8800i AW. For the WLW176i and
+    WLW186i indoor units the construction comes from the system
+    documentation, which names the monobloc WLW MB AR as their only outdoor
+    unit.
+  - If your model shows `known: false`, the diagnostics list it under
+    `heat_generator.unmapped_modules`, without serial numbers. Please post
+    that part in an issue; one new table entry is then enough.
+  - On a real installation the sensor showed the indoor and the outdoor
+    unit with family, construction and power class as described. Other
+    models, the module names of iCom gateways and two disagreeing sources
+    are tested with automated tests only. Room controllers and gateways
+    without a named module get no such sensor.
+
+### Gateway signals and names
+
+- **Texts for gateway states:** the EEBus status, the EEBus commissioning
+  and the start-up check of the heat pump show texts instead of keys such
+  as `not_commissioned` or `startup_inprogress`. The states are those a
+  real gateway declares; any other state is still shown as reported.
+- **Pressure units:** a controller signal in `mbar`, `hPa`, `kPa` or `Pa`
+  now shows its value with that unit as a pressure; the value is never
+  converted. This is tested with synthetic answers only.
+- **Volume flow on hybrid systems:** volume flows are still shown as the
+  gateway reports them. The diagnostics now tell when a system is detected
+  as a hybrid system and mark its volume flows as unverified. If you have a
+  hybrid system, please compare the volume flow in Home Assistant with the
+  display of your device and let me know; a correction will only follow
+  such a comparison.
+- **Corrected names:** *System supply temperature* (before *Supply
+  temperature*) for `/heatSources/actualSupplyTemperature`, which on a heat
+  pump with a buffer cylinder is the heating side's flow behind the buffer,
+  and *Liquid line temperature heating (TR3)* / *cooling (TR4)* (before
+  *Condenser temperature heating/cooling*), as the API documentation calls
+  them. The return temperature of the heat sources is now *Return to the
+  heat source* and its controller signal *Return to the heat pump (TC0,
+  signal)* (before *Return temperature*): it is the return into the heat
+  source, not that of a heating circuit. Entity IDs, unique IDs and names
+  you set yourself stay. The
+  readings were compared on a real heat pump while it was heating; the
+  cooling mode is untested. After the update, a real installation showed
+  the corrected names, while the entity IDs and the names set by hand
+  stayed.
+  - More names after going through the entities of a real installation:
+    *Heat source active* (before *Burner status*; the reading also exists on
+    boilers, so it does not say compressor), *Heating temperature* and
+    *Setback temperature* for the heating circuit sensors (before *Heating*
+    and *Reduced*), *Heat output (thermal)* (before *Heat output
+    (compressor)*, because it is the thermal and not the electric power),
+    *Receiver valve (VR0)* (before *Expansion valve VR0*; the reading is the
+    signal `ReceiverValveActual`), *Gateway ID* (before *Gateway UUID*; the
+    value is the gateway number), *Software family* (before *Sw Prefix*),
+    *Variable tariff – support* (before *Support status*), *iSRC
+    installation status* (before *Installation status*) and *Heat source
+    type* next to *System type*. The silent mode and the season switching
+    each have one name now (*Silent mode*, *Season switching*), and the two
+    copies of the compressor state say where they come from (*Compressor
+    running (display signal)* and *(heat pump signal)*).
+  - About 20 controller signals that still showed their signal path have
+    names, among them the EEBus status and commissioning, the four external
+    blocks, the buzzer, the relays of fan and gas valves, the holiday
+    slots and the maximum compressor speed. I only named signals whose
+    meaning follows from their path and the values I recorded; the four
+    "permitted temperature" flags and a few others keep the path until I
+    know what they report. Their entity IDs, unique IDs and activation
+    stay, and so does every name you set yourself. The names are checked by
+    automated tests; new names in other languages are drafts.
+- **Hot water start thresholds:** the three hot water temperatures of the
+  Eco+, Eco and Comfort levels are the thresholds below which a charge
+  starts, so the sensors and number controls are now named *Start threshold
+  Eco+*, *Start threshold Eco* and *Start threshold Comfort* (before *…
+  start temperature*). The sensor of the off level, before only *Off*, is
+  now *Setpoint level off*. Entity IDs and unique IDs stay.
+- **Defaults for new installations:** A review of the entities found
+  these superfluous: the total starts and the total run time of a single
+  heat source, the pool starts, the three parts of the installation date,
+  the relays of the gas valves, the software update details, the permitted
+  pressure limits (including the *Low system pressure* of 0.0 bar) and the
+  fourth heating stage are already created disabled since 0.9.0. I changed
+  nothing there and pinned it with tests; existing entities keep their
+  state either way.
+- **Installation date:** a date that lies in the future or does not exist
+  shows as unknown now. One gateway reports the placeholder year 60,
+  which showed as 2060-08-01. The three parts it is built from are
+  unchanged.
+- The new texts are drafts in every language except English and German.
+
+### Dialogs
+
+- **Clearer dialog texts:** I reworded several texts in the setup and
+  Configure dialogs. In German the button is now called **OK** instead of
+  "Senden". The messages after a sign-in failure now say how to sign in
+  again and where to find it in Home Assistant. The room controller
+  schedules menu no longer uses the abbreviation, and the holiday end
+  fields say what happens at the end date. The certificate page and the
+  note about a moved gateway address now say what to do if you do not want
+  to accept them, and the local address page has a tip to reserve the
+  address in the router. I only checked the texts in the translation tests;
+  I have not looked at them in the Home Assistant interface. The texts in
+  the other languages are drafts.
+
 ### Documentation
 
 - **Confirmed:** changing the hot water schedule (program A) in the
@@ -16,6 +319,15 @@ Versioning after its first tagged preview.
 - **Confirmed installations:** a Logamax plus GBH192i.2-25 H gas condensing
   boiler with an MX300 was added, and the table was simplified. Thank you,
   Alex79, for the report in the Home Assistant community.
+- **Stable address:** the setup guide explains how to keep the gateway's
+  address stable.
+- **Shorter README:** the README is now an overview with links to the
+  documentation: a table of which systems work with the cloud, the local
+  access or both, examples of heating systems, where the accesses are
+  configured and how to give feedback on 0.9.x. The compatibility table
+  moved to [compatibility](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/docs/compatibility.md)
+  and the development commands to
+  [CONTRIBUTING](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/CONTRIBUTING.md).
 
 ## [0.9.0] - 2026-11-13
 

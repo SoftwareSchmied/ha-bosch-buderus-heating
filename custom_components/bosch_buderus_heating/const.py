@@ -39,6 +39,8 @@ FIRMWARE_ISSUE_PREFIX: Final = "incompatible_firmware_"
 GATEWAY_EXCHANGE_ISSUE_PREFIX: Final = "gateway_exchange_"
 # B01: the local start check keeps failing on an unusable answer.
 LOCAL_START_ISSUE_PREFIX: Final = "local_start_failed_"
+# The gateway of a local access answers at a new address (after a DHCP change).
+LOCAL_ADDRESS_ISSUE_PREFIX: Final = "local_address_moved_"
 
 
 def polling_profile_from_options(options: Mapping[str, Any]) -> PollingProfile:

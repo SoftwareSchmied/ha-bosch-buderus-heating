@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Adresa lokalnog pristupnika",
-        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Otkrivanje ne mijenja nijednu spremljenu vezu.",
+        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Savjet: rezervirajte adresu pristupnika u usmjerivaču (DHCP rezervacija) kako bi ostala ista.",
         "data": {
           "address": "IP adresa ili naziv hosta"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potvrda certifikata pristupnika",
-        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.\n\nAko certifikat ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
         "data": {
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
-        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Ako ispravljanje pogreške pri unosu traje dulje od pet minuta, ponovno pritisnite tipke. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i Pass se ne spremaju.",
         "data": {
           "login": "Login s oznake uređaja",
           "password": "Pass s oznake uređaja",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Nastavak lokalne konfiguracije",
-        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka poslužitelja: {seconds} s.",
+        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka pristupnika: {seconds} s (0 znači da možete odmah nastaviti).",
         "data": {
           "action": "Sljedeća radnja",
           "confirm": "Razumijem i želim odbaciti ovaj pokušaj na čekanju"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
       "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
-      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
-      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
+      "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
+      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_rate_limited_wait": "Pristupnik je zatražio stanku. Pokušajte ponovno za {seconds} s.",
       "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
@@ -198,14 +201,14 @@
       "already_configured": "Ovaj račun za grijanje ili barem jedan odabrani pristupnik već je konfiguriran u Home Assistantu.",
       "invalid_flow": "Ova sesija konfiguracije je nepotpuna ili je istekla. Zatvorite dijalog i ponovno dodajte Bosch/Buderus Home Comfort.",
       "no_gateways": "Nije pronađen nijedan uređaj. Provjerite podudaraju li se odabrana marka i račun SingleKey ID s vašom aplikacijom. Sobni regulator sa starijim firmverom pojavljuje se tek nakon što se njegov firmver ažurira i nakon što se postavi u trenutačnoj aplikaciji s vašim računom SingleKey ID.",
-      "reauth_required": "Spremljeno ovlaštenje više nije valjano. Zatvorite ovaj dijalog i odaberite Ponovna autentifikacija za Bosch/Buderus Home Comfort.",
+      "reauth_required": "Spremljena prijava više nije valjana. Zatvorite ovaj dijalog i za ovu integraciju odaberite **Ponovno konfiguriraj** u Postavke → Uređaji i usluge.",
       "reauth_successful": "Prijava je uspješno obnovljena.",
       "reauth_wrong_account": "Odabrani račun ne odgovara konfiguriranim uređajima. Prijavite se izvornim računom.",
       "reauth_no_targets": "Ovaj pristup putem oblaka nema više sustava ni uređaja, a račun kojem pripada ne može se potvrditi. Prethodni podaci za prijavu su zadržani. Da biste ponovno koristili račun u oblaku, uklonite pristup putem oblaka pod Konfiguriraj → Veze i ponovno ga povežite.",
       "reauth_successful_targets_missing": "Prijava je obnovljena. Sustavi ili uređaji koji su uključeni ({count}) nisu pronađeni na računu; ostaju konfigurirani. Popravak ih imenuje i objašnjava kako ih zaboraviti.",
       "reconfigure_successful": "Postavke su spremljene. Bosch/Buderus Home Comfort se ponovno učitava i ponovno otkriva sve dostupne resurse.",
-      "connection_required": "Prije ponovne prijave odaberite vezu u Postavkama.",
-      "connection_settings_required": "Upravljajte ovim pristupom u Postavkama i Vezama.",
+      "connection_required": "Prvo u **Konfiguriraj → Veze** odaberite pristup na koji se želite ponovno prijaviti.",
+      "connection_settings_required": "Upravljajte ovim pristupom u **Konfiguriraj → Veze**.",
       "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
       "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
       "cloud_setup_taken_over": "Noviji dijalog za konfiguraciju oblaka zamijenio je ovaj. Zatvorite ovaj dijalog i nastavite u novijem.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Lokalna konfiguracija nije dostupna dok redovita opskrba lokalnim podacima nije spremna.",
       "local_session_changed": "Ova sesija konfiguracije je završila ili se njezin odabir promijenio. Ponovno otvorite lokalnu konfiguraciju za nastavak.",
       "local_discovery_invalid": "Ova objava otkrivanja ne opisuje podržanu krajnju točku lokalnog pristupnika.",
+      "local_address_moved": "Pristupnik konfiguriranog lokalnog pristupa odgovara na novoj adresi. Obavijest o popravku nudi njezino korištenje.",
       "local_existing_owner_required": "Sustav bez oblaka postavite pomoću „Samo lokalni pristup” pri dodavanju integracije. Otkriveni pristupnik može se dodati u postojeću konfiguraciju.",
       "local_target_required": "Ova konfiguracija nema prikladnu zadržanu instalaciju za lokalnu vezu.",
-      "local_setup_complete": "Lokalni pristup je postavljen.",
+      "local_setup_complete": "Lokalni pristup je postavljen. Njegov status i učestalost upita nalaze se u Konfiguriraj → Veze.",
       "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
       "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
       "already_in_progress": "Konfiguracija ovog lokalnog pristupnika već je u tijeku.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."
     },
-    "flow_title": "Lokalni pristupnik ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Obavijesti",
           "holidays": "Upravljanje razdobljima odmora",
-          "rrc_programs": "RRC vremenski programi grijanja",
+          "rrc_programs": "Vremenski programi sobnog regulatora",
           "switch_programs": "Vremenski programi grijanja i tople vode",
           "controls": "Upravljanje uređajem",
           "connections": "Veze",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Naziv",
           "holiday_start": "Početak",
-          "holiday_end": "Kraj (isključivo)",
+          "holiday_end": "Kraj (od ovdje opet normalan rad)",
           "holiday_assigned_to": "Primijeni na",
           "holiday_heating_mode": "Središnje grijanje",
           "holiday_dhw_mode": "Topla voda",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Naziv",
           "holiday_start": "Početak",
-          "holiday_end": "Kraj (isključivo)",
+          "holiday_end": "Kraj (od ovdje opet normalan rad)",
           "holiday_assigned_to": "Primijeni na",
           "holiday_heating_mode": "Središnje grijanje",
           "holiday_dhw_mode": "Topla voda",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Naziv",
           "holiday_start": "Početak",
-          "holiday_end": "Kraj (isključivo)",
+          "holiday_end": "Kraj (prvi dan nakon odmora)",
           "holiday_assigned_to": "Primijeni na",
           "holiday_heating_mode": "Središnje grijanje",
           "holiday_dhw_mode": "Topla voda",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Naziv",
           "holiday_start": "Početak",
-          "holiday_end": "Kraj (isključivo)",
+          "holiday_end": "Kraj (prvi dan nakon odmora)",
           "holiday_assigned_to": "Primijeni na",
           "holiday_heating_mode": "Središnje grijanje",
           "holiday_dhw_mode": "Topla voda",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Upravljanje uređajem",
-        "description": "Odaberite odjeljak i prilagodite postavke. Primijeni zapisuje samo vaše promjene. Pri promjeni više postavki svaka se potvrđuje zasebno.",
+        "description": "Odaberite odjeljak i prilagodite postavke. **Primijeni** šalje samo vaše promjene, jednu za drugom, i provjerava svaku ponovnim čitanjem.",
         "data": {
           "controls": "Upravljanje"
         },
@@ -474,16 +478,17 @@
           "connection_discover": "Pretraži i odaberi uređaje",
           "connection_polling": "Učestalost dohvaćanja",
           "local_setup": "Promjena lokalnog pristupa",
+          "local_tokens": "Tokeni na pristupniku",
           "local_polling": "Učestalost lokalnog dohvaćanja i stanje",
           "local_values": "Koristi lokalne vrijednosti za postojeće entitete",
           "back": "← Natrag"
         }
       },
       "connection_enabled": {
-        "title": "Uključivanje pristupa",
+        "title": "Uključi ili isključi pristup",
         "description": "Isključivanje utječe samo na ovaj pristup. Ostale veze nastavljaju raditi. Sustavi i entiteti se zadržavaju.",
         "data": {
-          "enabled": "Uključeno"
+          "enabled": "Pristup uključen"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Ukloni pristup",
-        "description": "Podaci za prijavu bit će uklonjeni. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup. Bez dostupne veze entiteti ne mogu prikazivati trenutne vrijednosti.",
+        "description": "Podaci za prijavu uklanjaju se iz Home Assistanta. Token ostaje na pristupniku osim ako ga ne opozovete kvačicom u nastavku. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup; bez dostupnog pristupa ne prikazuju trenutne vrijednosti. Ostavite gornju kvačicu neoznačenom da se vratite bez promjena.",
         "data": {
-          "confirm": "Ukloni ovaj pristup"
+          "confirm": "Ukloni ovaj pristup",
+          "revoke": "Najprije opozovi token ove integracije na pristupniku"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Adresa lokalnog pristupnika",
-        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Otkrivanje ne mijenja nijednu spremljenu vezu.",
+        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Savjet: rezervirajte adresu pristupnika u usmjerivaču (DHCP rezervacija) kako bi ostala ista.",
         "data": {
           "address": "IP adresa ili naziv hosta"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potvrda certifikata pristupnika",
-        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.\n\nAko certifikat ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
         "data": {
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
-        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Ako ispravljanje pogreške pri unosu traje dulje od pet minuta, ponovno pritisnite tipke. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i Pass se ne spremaju.",
         "data": {
           "login": "Login s oznake uređaja",
           "password": "Pass s oznake uređaja",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Nastavak lokalne konfiguracije",
-        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka poslužitelja: {seconds} s.",
+        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka pristupnika: {seconds} s (0 znači da možete odmah nastaviti).",
         "data": {
           "action": "Sljedeća radnja",
           "confirm": "Razumijem i želim odbaciti ovaj pokušaj na čekanju"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Ponovno pretraživanje sustava",
         "description": "Još jednom pretražuje sustav u potrazi za dijelovima i mjernim vrijednostima, putem pristupa putem oblaka i lokalnog pristupa. Koristite to nakon dodavanja ili promjene komponenti. Pretraživanje se izvodi pri sljedećem redovitom ažuriranju i unutar uobičajenih ograničenja zahtjeva; nikada ne uklanja entitet, a mjerne vrijednosti koje ponovno ne pronađe ostaju kakve jesu."
+      },
+      "local_tokens": {
+        "title": "Tokeni na pristupniku",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Bez odabira ništa se ne mijenja.{note}",
+        "data": {
+          "token": "Token za opoziv"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Opoziv tokena prije uklanjanja",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira **Podnijeti** uklanja pristup bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.{note}",
+        "data": {
+          "token": "Token za opoziv"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Nema tokena za opoziv",
+        "description": "Pristupnik ne navodi nijedan token ove integracije koji se ovdje može opozvati ili se popis nije mogao pročitati. Pristup još nije uklonjen. Odaberite hoćete li ga ukloniti bez opoziva ili zadržati.",
+        "menu_options": {
+          "local_tokens_remove_without": "Ukloni bez opoziva",
+          "local_tokens_remove_cancel": "Odustani i zadrži pristup"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potvrda certifikata prijave",
+        "description": "Usluga prijave na **{host}:{port}** prikazuje certifikat koji za ovaj pristup nikada nije potvrđen. Potvrdite da je to vaš pristupnik prije nego što se onamo pošalje token pristupa. Potvrda vrijedi samo za ovaj dijalog.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Opoziv tokena",
+        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite kvačicu neoznačenom da se vratite bez opoziva. {use} Označite i drugu kvačicu kako biste to potvrdili.",
+        "data": {
+          "confirm": "Opozovi ovaj token na pristupniku",
+          "confirm_end": "Lokalni pristup koji koristi ovaj token završava"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Odaberite vrijeme u razmacima od četvrt sata: minute 00, 15, 30 ili 45.",
       "holiday_time_nonexistent": "Odabrano vrijeme početka ili završetka ne postoji jer se sat u vremenskoj zoni sustava grijanja pomiče unaprijed. Odaberite drugo vrijeme.",
       "holiday_time_ambiguous": "Odabrano vrijeme početka ili završetka pojavljuje se dvaput jer se sat u vremenskoj zoni sustava grijanja pomiče unatrag. Odaberite jednoznačno vrijeme.",
-      "write_authentication_failed": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja.",
+      "write_authentication_failed": "Prijava u oblak više nije valjana. Ponovno se prijavite u Konfiguriraj → Veze → pristup putem oblaka → **Ponovna prijava**, pa pokušajte ponovno.",
       "write_failed": "Postavke odmora nisu se mogle promijeniti.",
       "write_busy": "Sustav grijanja se čita ili je u tijeku druga promjena. Ništa nije poslano. Pokušajte ponovno za trenutak.",
       "write_not_confirmed": "Promjena se nije mogla u potpunosti potvrditi. Neke postavke možda su već spremljene. Ponovno otvorite odmor i provjerite njegove trenutne postavke.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
       "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
-      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
-      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
+      "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
+      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_rate_limited_wait": "Pristupnik je zatražio stanku. Pokušajte ponovno za {seconds} s.",
       "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Oblak i lokalni pristup ne opisuju isti sustav. Ništa nije spremljeno. Poništite odabir ovog sustava kako biste ga i dalje koristili samo putem lokalnog pristupa.",
       "local_plant_known": "Ovaj pristupnik već pripada konfiguriranom sustavu. Odaberite taj sustav umjesto novog.",
       "auth_expired": "Ovaj pokušaj prijave je istekao. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
-      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno."
+      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
+      "local_tokens_rejected": "Pristupnik nije prihvatio token ovog pristupa. Ništa nije promijenjeno.",
+      "local_tokens_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Ništa nije promijenjeno.",
+      "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
+      "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
+      "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Označite i drugu kvačicu ili ostavite prvu neoznačenom da se vratite. Ništa nije poslano.",
+      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Zahtjev za stvaranje nije se mogao potvrditi. Odmor možda već postoji. Provjerite Upravljanje razdobljima odmora ili aplikaciju proizvođača. Sljedećih 10 minuta novi pokušaj provjerava ishod ovog zahtjeva bez stvaranja drugog odmora.",
       "holiday_create_adjusted": "Sustav grijanja vratio je novi odmor, ali se njegove postavke razlikuju od vašeg zahtjeva. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili ovaj unos.",
       "holiday_update_adjusted": "Sustav grijanja vratio je postavke koje se razlikuju od vaše tražene promjene. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili trenutni unos.",
-      "no_rrc_schedules": "Nije dostupan nijedan aktualni, podržani RRC tjedni vremenski program.",
+      "no_rrc_schedules": "Nije dostupan nijedan aktualni, podržani tjedni vremenski program sobnog regulatora.",
       "no_switch_programs": "Ovdje se ne može promijeniti nijedan aktualni vremenski program kruga grijanja ni tople vode.",
       "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
       "switch_program_saved": "Vremenski program {program} spremljen je i potvrđen ponovnim čitanjem.\n\nDosadašnje točke uklapanja promijenjenih dana:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Ovaj uređaj trenutno ne prijavljuje postavke koje se ovdje mogu mijenjati.",
       "configuration_changed": "Postavke veze promijenile su se dok je ovaj dijalog bio otvoren. Zatvorite ga i pokušajte ponovno.",
       "no_connections": "Nije konfiguriran nijedan pristup. Postojeći sustavi i entiteti se zadržavaju.",
-      "connection_reauth_started": "Prijava je zatražena. Otvorite upit za autentifikaciju za ovaj unos.",
+      "connection_reauth_started": "Ponovna prijava je pripremljena. Zatvorite ovaj dijalog i za ovu integraciju odaberite **Ponovno konfiguriraj** u Postavke → Uređaji i usluge, u odjeljku **Potrebna pažnja**.",
       "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
       "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
       "cloud_setup_taken_over": "Noviji dijalog za konfiguraciju oblaka zamijenio je ovaj. Zatvorite ovaj dijalog i nastavite u novijem.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Ova objava otkrivanja ne opisuje podržanu krajnju točku lokalnog pristupnika.",
       "local_existing_owner_required": "Sustav bez oblaka postavite pomoću „Samo lokalni pristup” pri dodavanju integracije. Otkriveni pristupnik može se dodati u postojeću konfiguraciju.",
       "local_target_required": "Ova konfiguracija nema prikladnu zadržanu instalaciju za lokalnu vezu.",
-      "local_setup_complete": "Lokalni pristup je postavljen.",
+      "local_setup_complete": "Lokalni pristup je postavljen. Njegov status i učestalost upita nalaze se u Konfiguriraj → Veze.",
       "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
       "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
       "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
@@ -816,7 +868,17 @@
       "connection_saved": "Promjena je spremljena.",
       "connection_removed": "Pristup je uklonjen.",
       "notifications_saved": "Postavke obavijesti su spremljene.",
-      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem."
+      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem.",
+      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup.",
+      "local_tokens_changed": "Popis tokena u međuvremenu se promijenio. Ništa nije opozvano ni uklonjeno. Ponovno otvorite popis.",
+      "local_token_revoked": "Token je opozvan; pristupnik ga više ne navodi.",
+      "local_token_access_ended": "To je bio token koji je koristio ovaj pristup. Lokalni pristup je završio i pristup je isključen. Ponovno ga postavite s oznakom uređaja ili ga uklonite.",
+      "local_token_revoke_rejected": "Pristupnik je odbio opoziv; token je i dalje na popisu.",
+      "local_token_revoke_unclear": "Pristupnik nije potvrdio opoziv. Ništa nije ponovljeno. Ponovno otvorite popis tokena radi provjere.",
+      "local_token_revoked_removed": "Token je opozvan na pristupniku i pristup je uklonjen.",
+      "local_token_not_removed": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup.",
+      "local_token_old_revoked_removed": "Odabrani token je opozvan na pristupniku i pristup je uklonjen. Token koji je sam ovaj pristup koristio ostaje na pristupniku.",
+      "local_token_access_end_failed": "To je bio token koji je koristio ovaj pristup, pa je lokalni pristup završio, ali pristup nije bilo moguće isključiti. Isključite ga, uklonite ga ili ga ponovno postavite s oznakom uređaja."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Certifikat lokalnog pristupnika se promijenio",
-      "description": "Pristupnik lokalnog pristupa predočuje drugi certifikat. Integracija ga sama ne prihvaća i prestaje lokalno čitati. Ako znate zašto se certifikat promijenio (na primjer nakon ažuriranja ili resetiranja pristupnika), otvorite opcije integracije, odaberite lokalni pristup i odaberite „Promjena lokalnog pristupa”. Ondje potvrđujete novi certifikat. Preporučuje se nova prijava s oznakom uređaja; trenutni token zadržite samo ako ste sigurni da novi certifikat pripada vašem vlastitom pristupniku."
+      "description": "Pristupnik lokalnog pristupa predočuje drugi certifikat. Integracija ga sama ne prihvaća i prestaje lokalno čitati. Ako znate zašto se certifikat promijenio (na primjer nakon ažuriranja ili resetiranja pristupnika), otvorite Konfiguriraj → Veze za integraciju, odaberite LAN pristup i odaberite „Promjena lokalnog pristupa”. Ondje potvrđujete novi certifikat. Preporučuje se nova prijava s oznakom uređaja; trenutni token zadržite samo ako ste sigurni da novi certifikat pripada vašem vlastitom pristupniku."
     },
     "local_start_certificate": {
       "title": "Lokalni pristup se ne može sigurno povezati",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Zahvaćeni unos više ne postoji.",
           "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokalni pristupnik pronađen na novoj adresi",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Koristi novu adresu pristupnika",
+            "description": "Lokalni pristup ne može doseći svoj pristupnik na adresi {previous}. Isti pristupnik sada odgovara na adresi {address}: prikazuje certifikat potvrđen pri postavljanju. Na novu adresu nije poslan nijedan token.\n\nPotvrdite u nastavku da biste spremili novu adresu. Lokalni pristup zatim se ponovno pokreće s njom; token i potvrđeni certifikat ostaju nepromijenjeni. Da biste to ubuduće izbjegli, rezervirajte adresu pristupnika u usmjerivaču (DHCP rezervacija).\n\nAko ne želite upotrijebiti adresu, zatvorite dijalog ili odaberite **Zanemari**.",
+            "data": {
+              "confirm": "Koristi novu adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Potvrdite za nastavak."
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos ove integracije više ne postoji.",
+          "configuration_changed": "Pristup ili sustav se promijenio. Ponovno otvorite popravak.",
+          "local_address_expired": "Ova napomena više nije aktualna, na primjer nakon ponovnog pokretanja. Ništa nije promijenjeno. Pojavit će se ponovno ako pristupnik opet odgovori na novoj adresi.",
+          "local_address_recovered": "Lokalni pristup ponovno doseže svoj pristupnik. Ništa nije promijenjeno.",
+          "local_address_unproven": "Pristupnik na novoj adresi nije bilo moguće ponovno potvrditi. Ništa nije promijenjeno."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Konfiguracija nije dovršena",
-      "description": "Unos „{title}” još nema pristup. Otvorite njegove opcije konfiguracije i odaberite „Postavljanje lokalnog pristupa” (ili dodajte pristup putem oblaka) kako biste dovršili konfiguraciju."
+      "description": "Unos „{title}” još nema pristup. Odaberite na njemu **Konfiguriraj**, a zatim „Postavljanje lokalnog pristupa” (ili povežite pristup putem oblaka)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Promjena je poslana sobnom regulatoru, ali ju on još nije potvrdio. Regulator je možda primjenjuje s odgodom; vrijednost se ažurira pri sljedećem očitanju."
     },
     "write_authentication_failed": {
-      "message": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja."
+      "message": "Prijava u oblak više nije valjana. Ponovno se prijavite u Konfiguriraj → Veze → pristup putem oblaka → Ponovna prijava, pa pokušajte ponovno."
     },
     "write_rate_limited": {
       "message": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja promjene."
@@ -1366,10 +1452,10 @@
         "name": "Ciljna temperatura bazena"
       },
       "heating_temperature": {
-        "name": "Grijanje"
+        "name": "Temperatura grijanja"
       },
       "reduced_temperature": {
-        "name": "Smanjeno"
+        "name": "Temperatura snižavanja"
       },
       "extra_hot_water_duration": {
         "name": "Trajanje dodatne tople vode"
@@ -1378,13 +1464,13 @@
         "name": "Zadana vrijednost dodatne tople vode"
       },
       "hot_water_eco_plus": {
-        "name": "Početna temperatura Eco+"
+        "name": "Prag pokretanja Eco+"
       },
       "hot_water_comfort": {
-        "name": "Početna temperatura Komfor"
+        "name": "Prag pokretanja Komfor"
       },
       "hot_water_eco": {
-        "name": "Početna temperatura Eco"
+        "name": "Prag pokretanja Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maksimalna temperatura polaznog voda"
@@ -1649,7 +1735,7 @@
         "name": "Vanjska temperatura"
       },
       "supply_temperature": {
-        "name": "Temperatura polaznog voda"
+        "name": "Temperatura polaznog voda sustava"
       },
       "return_temperature": {
         "name": "Temperatura povratnog voda"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Stanje podrške",
+        "name": "Promjenjiva tarifa – podrška",
         "state": {
           "not_supported": "Nije podržano",
           "supported": "Podržano",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Sljedeći odmor"
+      },
+      "heat_generator": {
+        "name": "Izvor topline"
       },
       "pointt_api_requests_total": {
         "name": "Ukupno zahtjeva prema oblaku"
@@ -2220,6 +2309,36 @@
           "idle": "Nije planirano",
           "planned": "Planirano",
           "active": "Aktivno"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Status EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Nije pušteno u rad",
+          "no_lan_connection": "Nema mrežne veze",
+          "no_hp_connection": "Nema veze s dizalicom topline",
+          "no_updateserver_connection": "Nema veze s poslužiteljem za ažuriranja",
+          "no_eebus_connection": "Nema EEBus veze",
+          "no_eebus_no_trust": "Nema EEBus veze (nema pouzdanog partnera)",
+          "no_eebus_no_usecase_active": "Nema EEBus veze (nema aktivnog slučaja upotrebe)",
+          "power_limitation_active": "Ograničenje snage aktivno",
+          "ohpcf_active": "Fleksibilnost kompresora (OHPCF) aktivna",
+          "internal_error": "Interna pogreška"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Puštanje EEBus u rad",
+        "state": {
+          "commissioned": "Pušteno u rad",
+          "not_commissioned": "Nije pušteno u rad"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Provjera pri pokretanju",
+        "state": {
+          "startup_completed": "Dovršeno",
+          "startup_inprogress": "U tijeku"
         }
       },
       "signal_true_false": {

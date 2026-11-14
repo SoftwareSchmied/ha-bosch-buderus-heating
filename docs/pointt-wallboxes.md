@@ -71,7 +71,7 @@ do not constitute a comparison with a physical wallbox.
 
 ### Remaining work
 
-I have no wallbox in my account. The implementation has synthetic protocol,
+Not yet tested with a real wallbox. The implementation has synthetic protocol,
 HTTP and Home Assistant tests; it has not been compared with a physical
 wallbox. Model compatibility, displayed values, cloud response freshness and
 energy resets require that comparison.
@@ -142,7 +142,7 @@ Software erscheinen ausschließlich in der gewöhnlichen HA-Geräteinformation.
 
 ### Noch offen
 
-In meinem Konto ist keine Wallbox eingerichtet. Protokoll, HTTP-Zugang und
+Mit einer echten Wallbox ist das noch nicht geprüft. Protokoll, HTTP-Zugang und
 HA-Einbindung werden mit synthetischen Antworten geprüft. Ein Geräteabgleich
 hat nicht stattgefunden. Modellkompatibilität, Anzeigen, Aktualität der
 Cloud-Antworten und Rücksetzungen der Energie benötigen Praxisbestätigung.

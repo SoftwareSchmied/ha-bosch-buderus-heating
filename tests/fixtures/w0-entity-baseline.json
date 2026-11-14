@@ -5611,7 +5611,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Eco+ start temperature",
+     "original_name": "DHW 1: Start threshold Eco+",
      "translation_key": "hot_water_eco_plus",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco:control",
      "unit": "\u00b0C"
@@ -5628,7 +5628,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Comfort start temperature",
+     "original_name": "DHW 1: Start threshold Comfort",
      "translation_key": "hot_water_comfort",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high:control",
      "unit": "\u00b0C"
@@ -5645,7 +5645,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Eco start temperature",
+     "original_name": "DHW 1: Start threshold Eco",
      "translation_key": "hot_water_eco",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control",
      "unit": "\u00b0C"
@@ -5787,7 +5787,7 @@
      "domain": "select",
      "entity_category": "config",
      "original_icon": "mdi:sun-snowflake",
-     "original_name": "System: Season mode",
+     "original_name": "System: Season switching",
      "translation_key": "season_switching",
      "unique_id": "gateway-one:system:seasonOptimizer:mode:control",
      "unit": null
@@ -6057,7 +6057,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Eco+ start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Eco+",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco",
      "unit": "\u00b0C"
@@ -6071,7 +6071,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Comfort start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Comfort",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high",
      "unit": "\u00b0C"
@@ -6085,7 +6085,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Eco start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Eco",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low",
      "unit": "\u00b0C"
@@ -6099,7 +6099,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Off",
+     "original_name": "Hot water 1 \u2013 Setpoint level off",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:off",
      "unit": "\u00b0C"
@@ -6321,7 +6321,7 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Return temperature",
+     "original_name": "Heat pump \u2013 Return to the heat source",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:return_temperature",
      "unit": "\u00b0C"
@@ -6347,7 +6347,7 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Supply temperature",
+     "original_name": "Heat pump \u2013 System supply temperature",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:supply_temperature",
      "unit": "\u00b0C"
@@ -6359,7 +6359,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Gateway \u2013 Sw Prefix",
+     "original_name": "Gateway \u2013 Software family",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:swPrefix",
      "unit": null
@@ -6492,7 +6492,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Gateway \u2013 Gateway UUID",
+     "original_name": "Gateway \u2013 Gateway ID",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:uuid",
      "unit": null
@@ -6757,7 +6757,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Burner status",
+     "original_name": "Heat pump \u2013 Heat source active",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:heatSources:flameStatus",
      "unit": null
@@ -6882,7 +6882,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heat pump \u2013 System type",
+     "original_name": "Heat pump \u2013 Heat source type",
      "translation_key": "heat_source_type",
      "unique_id": "gateway-one:heatSources:hs1:type",
      "unit": null
@@ -7054,6 +7054,18 @@
      "translation_key": null,
      "unique_id": "gateway-one:heatSources:workingTime:totalSystem",
      "unit": "h"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:heat-pump-outline",
+     "original_name": "Heat generator",
+     "translation_key": "heat_generator",
+     "unique_id": "gateway-one:heat_generator",
+     "unit": null
     },
     {
      "capabilities": null,
@@ -7295,7 +7307,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heating circuit 1 \u2013 Heating",
+     "original_name": "Heating circuit 1 \u2013 Heating temperature",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2",
      "unit": "\u00b0C"
@@ -7309,7 +7321,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heating circuit 1 \u2013 Reduced",
+     "original_name": "Heating circuit 1 \u2013 Setback temperature",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:eco",
      "unit": "\u00b0C"
@@ -7415,7 +7427,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "System \u2013 Installation status",
+     "original_name": "System \u2013 iSRC installation status",
      "translation_key": "isrc_installation_status",
      "unique_id": "gateway-one:system:iSRC:installationStatus",
      "unit": null
@@ -7567,7 +7579,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "System \u2013 Support status",
+     "original_name": "System \u2013 Variable tariff \u2013 support",
      "translation_key": "support_status",
      "unique_id": "gateway-one:system:variableTariff:supportStatus:values",
      "unit": null

@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Dirección de la pasarela local",
-        "description": "Elige una dirección detectada o introduce una dirección IP o un nombre de host. La detección no modifica ninguna conexión guardada.",
+        "description": "Elige una dirección detectada o introduce una dirección IP o un nombre de host. Consejo: reserva la dirección de la pasarela en el router (reserva DHCP) para que siga siendo la misma.",
         "data": {
           "address": "Dirección IP o nombre de host"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmar el certificado de la pasarela",
-        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
         "data": {
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
-        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante unos dos segundos, menos de tres, y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
+        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
         "data": {
           "login": "Login de la etiqueta del dispositivo",
           "password": "Pass de la etiqueta del dispositivo",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Reanudar la configuración local",
-        "description": "Hay un intento anterior guardado. Si se recibió un token, continúa con ese token. Si se perdió la respuesta, puede que exista un token en la pasarela aunque Home Assistant no pudiera guardarlo. Descartar solo elimina la copia local pendiente y permite otro intento; no revoca los tokens de la pasarela.\n\nPausa restante del servidor: {seconds} segundos.",
+        "description": "Hay un intento anterior guardado. Si se recibió un token, continúa con ese token. Si se perdió la respuesta, puede que exista un token en la pasarela aunque Home Assistant no pudiera guardarlo. Descartar solo elimina la copia local pendiente y permite otro intento; no revoca los tokens de la pasarela.\n\nPausa restante de la pasarela: {seconds} segundos (0 significa que puedes continuar ya).",
         "data": {
           "action": "Siguiente acción",
           "confirm": "Lo entiendo y quiero descartar este intento pendiente"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Introduce una dirección IP o un nombre de host sin URL, ruta ni credenciales.",
       "local_interface_required": "Esta dirección IPv6 necesita la interfaz de red del host de Home Assistant.",
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
-      "local_invalid_credentials": "Comprueba el Login y el Pass de la etiqueta de la pasarela e introdúcelos de nuevo.",
-      "local_unlock_required": "Habilita el inicio de sesión local en la pasarela y confirma la señal azul antes de volver a intentarlo.",
+      "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
+      "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
+      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
+      "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
       "local_service_unavailable": "El servicio de la pasarela no está disponible temporalmente. Espera e inténtalo de nuevo.",
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
@@ -198,14 +201,14 @@
       "already_configured": "Esta cuenta de calefacción o al menos una pasarela seleccionada ya está configurada en Home Assistant.",
       "invalid_flow": "Esta sesión de configuración está incompleta o ha caducado. Cierra el cuadro de diálogo y vuelve a añadir Bosch/Buderus Home Comfort.",
       "no_gateways": "No se encontró ningún dispositivo. Comprueba que la marca seleccionada y la cuenta de SingleKey ID coinciden con tu aplicación. Un regulador de ambiente con un firmware antiguo solo aparece cuando su firmware se ha actualizado y se ha configurado en la aplicación actual con tu SingleKey ID.",
-      "reauth_required": "La autorización guardada ya no es válida. Cierra este cuadro de diálogo y selecciona Volver a autenticarse para Bosch/Buderus Home Comfort.",
+      "reauth_required": "El inicio de sesión guardado ya no es válido. Cierra este cuadro de diálogo y selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios.",
       "reauth_successful": "El inicio de sesión se ha renovado correctamente.",
       "reauth_wrong_account": "La cuenta seleccionada no coincide con los dispositivos configurados. Inicia sesión con la cuenta original.",
       "reauth_no_targets": "Este acceso a la nube ya no tiene instalaciones ni dispositivos, y no se puede confirmar la cuenta a la que pertenece. Se conservan las credenciales anteriores. Para volver a usar una cuenta en la nube, elimina el acceso a la nube en Configurar → Conexiones y vuelve a conectarlo.",
       "reauth_successful_targets_missing": "El inicio de sesión se ha renovado. {count} instalaciones o dispositivos activados no se encontraron en la cuenta; siguen configurados. Una nota de reparación los nombra y explica cómo olvidarlos.",
       "reconfigure_successful": "Los ajustes se han guardado. Bosch/Buderus Home Comfort se está volviendo a cargar y está detectando de nuevo todos los recursos disponibles.",
-      "connection_required": "Selecciona la conexión en Ajustes antes de volver a iniciar sesión.",
-      "connection_settings_required": "Gestiona este acceso en Ajustes y Conexiones.",
+      "connection_required": "Elige primero en **Configurar → Conexiones** el acceso en el que quieres volver a iniciar sesión.",
+      "connection_settings_required": "Gestiona este acceso en **Configurar → Conexiones**.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_setup_taken_over": "Un cuadro de diálogo de configuración de la nube más reciente ha sustituido a este. Cierra este cuadro de diálogo y continúa en el más reciente.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "La configuración local no está disponible hasta que el suministro regular de datos locales esté listo.",
       "local_session_changed": "Esta sesión de configuración ha terminado o ha cambiado su selección. Vuelve a abrir la configuración local para continuar.",
       "local_discovery_invalid": "Este anuncio de detección no describe un punto de acceso de pasarela local compatible.",
+      "local_address_moved": "La pasarela de un acceso local configurado responde en una dirección nueva. Un aviso de reparación ofrece usarla.",
       "local_existing_owner_required": "Configura una instalación sin la nube con «Solo acceso local» al añadir la integración. Una pasarela detectada se puede añadir a una configuración existente.",
       "local_target_required": "Esta configuración no tiene ninguna instalación conservada adecuada para una conexión local.",
-      "local_setup_complete": "El acceso local se ha configurado.",
+      "local_setup_complete": "El acceso local se ha configurado. Su estado y la frecuencia de consulta están en Configurar → Conexiones.",
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "already_in_progress": "La configuración de esta pasarela local ya está en curso.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
     },
-    "flow_title": "Pasarela local ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Notificaciones",
           "holidays": "Gestionar períodos de vacaciones",
-          "rrc_programs": "Programas horarios de calefacción RRC",
+          "rrc_programs": "Programas horarios del regulador de ambiente",
           "switch_programs": "Programas horarios de calefacción y agua caliente",
           "controls": "Manejar el equipo",
           "connections": "Conexiones",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Nombre",
           "holiday_start": "Inicio",
-          "holiday_end": "Fin (excluido)",
+          "holiday_end": "Fin (desde aquí, funcionamiento normal)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Calefacción central",
           "holiday_dhw_mode": "Agua caliente",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Nombre",
           "holiday_start": "Inicio",
-          "holiday_end": "Fin (excluido)",
+          "holiday_end": "Fin (desde aquí, funcionamiento normal)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Calefacción central",
           "holiday_dhw_mode": "Agua caliente",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Nombre",
           "holiday_start": "Inicio",
-          "holiday_end": "Fin (excluido)",
+          "holiday_end": "Fin (primer día después de las vacaciones)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Calefacción central",
           "holiday_dhw_mode": "Agua caliente",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Nombre",
           "holiday_start": "Inicio",
-          "holiday_end": "Fin (excluido)",
+          "holiday_end": "Fin (primer día después de las vacaciones)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Calefacción central",
           "holiday_dhw_mode": "Agua caliente",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Manejar el equipo",
-        "description": "Elige una sección y ajusta los valores. Aplicar escribe solo tus cambios. Si cambias varios ajustes, cada uno se confirma por separado.",
+        "description": "Elige una sección y ajusta los valores. **Aplicar** envía solo tus cambios, uno tras otro, y comprueba cada uno volviendo a leerlo.",
         "data": {
           "controls": "Controles"
         },
@@ -474,16 +478,17 @@
           "connection_discover": "Buscar y seleccionar dispositivos",
           "connection_polling": "Frecuencia de consulta",
           "local_setup": "Cambiar el acceso local",
+          "local_tokens": "Tokens en la pasarela",
           "local_polling": "Frecuencia de consulta local y estado",
           "local_values": "Usar valores locales para las entidades existentes",
           "back": "← Atrás"
         }
       },
       "connection_enabled": {
-        "title": "Activar el acceso",
+        "title": "Activar o desactivar el acceso",
         "description": "Desactivarlo afecta solo a este acceso. Las demás conexiones siguen funcionando. Se conservan las instalaciones y las entidades.",
         "data": {
-          "enabled": "Activado"
+          "enabled": "Acceso activado"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Eliminar el acceso",
-        "description": "Se eliminarán las credenciales. Se conservan las instalaciones y las entidades, incluso si este es el último acceso. Sin una conexión disponible, las entidades no pueden mostrar valores actuales.",
+        "description": "Las credenciales se eliminan de Home Assistant. El token permanece en la pasarela, salvo que lo revoques con la casilla de abajo. Se conservan las instalaciones y las entidades, incluso si este es el último acceso; sin un acceso disponible no muestran valores actuales. Deja la casilla superior sin marcar para volver sin cambios.",
         "data": {
-          "confirm": "Eliminar este acceso"
+          "confirm": "Eliminar este acceso",
+          "revoke": "Revocar antes un token de esta integración en la pasarela"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Dirección de la pasarela local",
-        "description": "Elige una dirección detectada o introduce una dirección IP o un nombre de host. La detección no modifica ninguna conexión guardada.",
+        "description": "Elige una dirección detectada o introduce una dirección IP o un nombre de host. Consejo: reserva la dirección de la pasarela en el router (reserva DHCP) para que siga siendo la misma.",
         "data": {
           "address": "Dirección IP o nombre de host"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmar el certificado de la pasarela",
-        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
         "data": {
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
-        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante unos dos segundos, menos de tres, y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
+        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
         "data": {
           "login": "Login de la etiqueta del dispositivo",
           "password": "Pass de la etiqueta del dispositivo",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Reanudar la configuración local",
-        "description": "Hay un intento anterior guardado. Si se recibió un token, continúa con ese token. Si se perdió la respuesta, puede que exista un token en la pasarela aunque Home Assistant no pudiera guardarlo. Descartar solo elimina la copia local pendiente y permite otro intento; no revoca los tokens de la pasarela.\n\nPausa restante del servidor: {seconds} segundos.",
+        "description": "Hay un intento anterior guardado. Si se recibió un token, continúa con ese token. Si se perdió la respuesta, puede que exista un token en la pasarela aunque Home Assistant no pudiera guardarlo. Descartar solo elimina la copia local pendiente y permite otro intento; no revoca los tokens de la pasarela.\n\nPausa restante de la pasarela: {seconds} segundos (0 significa que puedes continuar ya).",
         "data": {
           "action": "Siguiente acción",
           "confirm": "Lo entiendo y quiero descartar este intento pendiente"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Volver a buscar en la instalación",
         "description": "Vuelve a buscar en la instalación componentes y valores, a través del acceso a la nube y del acceso local. Úsalo después de añadir o cambiar componentes. La búsqueda se ejecuta con la siguiente actualización periódica y dentro de los límites habituales de consultas; nunca elimina una entidad y los valores que no vuelva a encontrar se quedan como están."
+      },
+      "local_tokens": {
+        "title": "Tokens en la pasarela",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. Los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Sin elección no cambia nada.{note}",
+        "data": {
+          "token": "Token que se revocará"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revocar un token antes de eliminar",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.{note}",
+        "data": {
+          "token": "Token que se revocará"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ningún token que revocar",
+        "description": "La pasarela no lista ningún token de esta integración que se pueda revocar aquí, o no se pudo leer la lista. El acceso todavía no se ha eliminado. Elige si lo eliminas sin revocar o si lo conservas.",
+        "menu_options": {
+          "local_tokens_remove_without": "Eliminar sin revocar",
+          "local_tokens_remove_cancel": "Cancelar y conservar el acceso"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Confirmar el certificado del inicio de sesión",
+        "description": "El servicio de inicio de sesión en **{host}:{port}** presenta un certificado que nunca se confirmó para este acceso. Confirma que es tu pasarela antes de enviar allí el token del acceso. La confirmación solo vale para este diálogo.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revocar token",
+        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja la casilla sin marcar para volver sin revocar. {use} Marca también la segunda casilla para confirmarlo.",
+        "data": {
+          "confirm": "Revocar este token en la pasarela",
+          "confirm_end": "Un acceso local que use este token termina"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Elige una hora en cuartos de hora: minutos 00, 15, 30 o 45.",
       "holiday_time_nonexistent": "La hora de inicio o de fin seleccionada no existe porque el reloj se adelanta en la zona horaria de la instalación de calefacción. Elige otra hora.",
       "holiday_time_ambiguous": "La hora de inicio o de fin seleccionada se produce dos veces porque el reloj se atrasa en la zona horaria de la instalación de calefacción. Elige una hora inequívoca.",
-      "write_authentication_failed": "El inicio de sesión en la nube ya no es válido. Vuelve a autenticar Bosch/Buderus Home Comfort antes de volver a intentarlo.",
+      "write_authentication_failed": "El inicio de sesión en la nube ya no es válido. Vuelve a iniciar sesión en Configurar → Conexiones → acceso a la nube → **Volver a iniciar sesión** y vuelve a intentarlo.",
       "write_failed": "No se pudieron cambiar los ajustes de las vacaciones.",
       "write_busy": "Se está leyendo la instalación de calefacción o todavía hay otro cambio en curso. No se envió nada. Inténtalo de nuevo dentro de un momento.",
       "write_not_confirmed": "No se pudo confirmar el cambio por completo. Puede que algunos ajustes ya se hayan guardado. Vuelve a abrir las vacaciones y comprueba sus ajustes actuales.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Introduce una dirección IP o un nombre de host sin URL, ruta ni credenciales.",
       "local_interface_required": "Esta dirección IPv6 necesita la interfaz de red del host de Home Assistant.",
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
-      "local_invalid_credentials": "Comprueba el Login y el Pass de la etiqueta de la pasarela e introdúcelos de nuevo.",
-      "local_unlock_required": "Habilita el inicio de sesión local en la pasarela y confirma la señal azul antes de volver a intentarlo.",
+      "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
+      "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
+      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
+      "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
       "local_service_unavailable": "El servicio de la pasarela no está disponible temporalmente. Espera e inténtalo de nuevo.",
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "La nube y el acceso local no describen la misma instalación. No se guardó nada. Desmarca esta instalación para seguir usándola solo a través de su acceso local.",
       "local_plant_known": "Esta pasarela ya pertenece a una instalación configurada. Elige esa instalación en lugar de una nueva.",
       "auth_expired": "Este intento de inicio de sesión ha caducado. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
-      "auth_restart": "Este intento de inicio de sesión ya no se puede usar. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo."
+      "auth_restart": "Este intento de inicio de sesión ya no se puede usar. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
+      "local_tokens_rejected": "La pasarela no aceptó el token de este acceso. No se ha cambiado nada.",
+      "local_tokens_forbidden": "El servicio de inicio de sesión de la pasarela rechazó la solicitud. No se ha cambiado nada.",
+      "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
+      "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
+      "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Marca también la segunda casilla o deja la primera sin marcar para volver. No se ha enviado nada.",
+      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "No se pudo confirmar la solicitud de creación. Puede que las vacaciones ya existan. Comprueba Gestionar períodos de vacaciones o la aplicación del fabricante. Durante los próximos 10 minutos, otro intento comprobará el resultado de esta solicitud sin crear unas segundas vacaciones.",
       "holiday_create_adjusted": "La instalación de calefacción devolvió unas vacaciones nuevas, pero sus ajustes difieren de tu solicitud. Período solicitado: {requested}. Período devuelto: {actual}. Abre Gestionar períodos de vacaciones para comprobar y editar esta entrada.",
       "holiday_update_adjusted": "La instalación de calefacción devolvió ajustes que difieren del cambio que solicitaste. Período solicitado: {requested}. Período devuelto: {actual}. Abre Gestionar períodos de vacaciones para comprobar y editar la entrada actual.",
-      "no_rrc_schedules": "No hay ningún programa semanal RRC actual y compatible disponible.",
+      "no_rrc_schedules": "No hay ningún programa semanal actual y compatible de un regulador de ambiente disponible.",
       "no_switch_programs": "Aquí no se puede cambiar ningún programa horario actual de un circuito de calefacción ni del agua caliente.",
       "switch_program_changed": "El programa horario ha cambiado entretanto o ya no se puede cambiar. Vuelve a abrirlo para ver los puntos de conmutación actuales.",
       "switch_program_saved": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Este equipo no informa actualmente de ningún ajuste que se pueda cambiar aquí.",
       "configuration_changed": "Los ajustes de conexión cambiaron mientras este cuadro de diálogo estaba abierto. Ciérralo e inténtalo de nuevo.",
       "no_connections": "No hay ningún acceso configurado. Se conservan las instalaciones y las entidades existentes.",
-      "connection_reauth_started": "Se ha solicitado el inicio de sesión. Abre el aviso de autenticación de esta entrada.",
+      "connection_reauth_started": "El nuevo inicio de sesión está preparado. Cierra este cuadro de diálogo y selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios, en la sección **Requiere atención**.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_setup_taken_over": "Un cuadro de diálogo de configuración de la nube más reciente ha sustituido a este. Cierra este cuadro de diálogo y continúa en el más reciente.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Este anuncio de detección no describe un punto de acceso de pasarela local compatible.",
       "local_existing_owner_required": "Configura una instalación sin la nube con «Solo acceso local» al añadir la integración. Una pasarela detectada se puede añadir a una configuración existente.",
       "local_target_required": "Esta configuración no tiene ninguna instalación conservada adecuada para una conexión local.",
-      "local_setup_complete": "El acceso local se ha configurado.",
+      "local_setup_complete": "El acceso local se ha configurado. Su estado y la frecuencia de consulta están en Configurar → Conexiones.",
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
@@ -816,7 +868,17 @@
       "connection_saved": "El cambio se guardó.",
       "connection_removed": "El acceso se eliminó.",
       "notifications_saved": "Los ajustes de notificaciones se guardaron.",
-      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo."
+      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo.",
+      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local.",
+      "local_tokens_changed": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo.",
+      "local_token_revoked": "El token se ha revocado; la pasarela ya no lo muestra.",
+      "local_token_access_ended": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo.",
+      "local_token_revoke_rejected": "La pasarela rechazó la revocación; el token sigue en la lista.",
+      "local_token_revoke_unclear": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo.",
+      "local_token_revoked_removed": "El token se revocó en la pasarela y el acceso se eliminó.",
+      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso.",
+      "local_token_old_revoked_removed": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela.",
+      "local_token_access_end_failed": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "El certificado de la pasarela local ha cambiado",
-      "description": "La pasarela de un acceso local presenta un certificado diferente. La integración no lo acepta por sí sola y deja de leer de forma local. Si sabes por qué cambió el certificado (por ejemplo, tras una actualización o un restablecimiento de la pasarela), abre las opciones de la integración, elige el acceso local y selecciona «Cambiar el acceso local». Allí confirmas el nuevo certificado. Se recomienda un nuevo inicio de sesión con la etiqueta del dispositivo; conserva el token actual solo si estás seguro de que el nuevo certificado pertenece a tu propia pasarela."
+      "description": "La pasarela de un acceso local presenta un certificado diferente. La integración no lo acepta por sí sola y deja de leer de forma local. Si sabes por qué cambió el certificado (por ejemplo, tras una actualización o un restablecimiento de la pasarela), abre Configurar → Conexiones en la integración, elige el acceso LAN y selecciona «Cambiar el acceso local». Allí confirmas el nuevo certificado. Se recomienda un nuevo inicio de sesión con la etiqueta del dispositivo; conserva el token actual solo si estás seguro de que el nuevo certificado pertenece a tu propia pasarela."
     },
     "local_start_certificate": {
       "title": "El acceso local no puede conectarse de forma segura",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "La entrada afectada ya no existe.",
           "configuration_changed": "El acceso o la instalación de calefacción ha cambiado. Vuelve a abrir la reparación."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Pasarela local encontrada en una dirección nueva",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usar la nueva dirección de la pasarela",
+            "description": "El acceso local no puede alcanzar su pasarela en {previous}. La misma pasarela responde ahora en {address}: presenta el certificado confirmado durante la configuración. No se ha enviado ningún token a la nueva dirección.\n\nConfirme abajo para guardar la nueva dirección. Después, el acceso local se reinicia con ella; el token y el certificado confirmado no cambian. Para evitarlo en el futuro, reserve la dirección de la pasarela en el router (reserva DHCP).\n\nSi no quieres usar la dirección, cierra el cuadro de diálogo o selecciona **Ignorar**.",
+            "data": {
+              "confirm": "Usar la nueva dirección"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Confirma para continuar."
+        },
+        "abort": {
+          "entry_not_found": "La entrada afectada de esta integración ya no existe.",
+          "configuration_changed": "El acceso o la instalación ha cambiado. Vuelve a abrir la reparación.",
+          "local_address_expired": "Este aviso ya no está vigente, por ejemplo tras un reinicio. No se ha cambiado nada. Volverá a aparecer si la pasarela vuelve a responder en una dirección nueva.",
+          "local_address_recovered": "El acceso local vuelve a alcanzar su pasarela. No se ha cambiado nada.",
+          "local_address_unproven": "No se ha podido confirmar de nuevo la pasarela en la nueva dirección. No se ha cambiado nada."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Configuración sin terminar",
-      "description": "La entrada «{title}» aún no tiene ningún acceso. Abre sus opciones de configuración y elige «Configurar el acceso local» (o añade un acceso a la nube) para terminar la configuración."
+      "description": "La entrada «{title}» aún no tiene ningún acceso. Selecciona **Configurar** en ella y después «Configurar el acceso local» (o conecta un acceso a la nube)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "El cambio se envió al regulador de ambiente, pero este aún no lo ha confirmado. Es posible que lo aplique con retraso; el valor se actualizará en la próxima lectura."
     },
     "write_authentication_failed": {
-      "message": "El inicio de sesión en la nube ya no es válido. Vuelve a autenticar Bosch/Buderus Home Comfort antes de volver a intentarlo."
+      "message": "El inicio de sesión en la nube ya no es válido. Vuelve a iniciar sesión en Configurar → Conexiones → acceso a la nube → Volver a iniciar sesión y vuelve a intentarlo."
     },
     "write_rate_limited": {
       "message": "La nube está limitando las solicitudes en este momento. Espera antes de volver a intentar el cambio."
@@ -1366,10 +1452,10 @@
         "name": "Temperatura deseada de la piscina"
       },
       "heating_temperature": {
-        "name": "Calefacción"
+        "name": "Temperatura de calefacción"
       },
       "reduced_temperature": {
-        "name": "Reducida"
+        "name": "Temperatura de reducción"
       },
       "extra_hot_water_duration": {
         "name": "Duración del agua caliente extra"
@@ -1378,13 +1464,13 @@
         "name": "Consigna del agua caliente extra"
       },
       "hot_water_eco_plus": {
-        "name": "Temperatura de arranque Eco+"
+        "name": "Umbral de arranque Eco+"
       },
       "hot_water_comfort": {
-        "name": "Temperatura de arranque Confort"
+        "name": "Umbral de arranque Confort"
       },
       "hot_water_eco": {
-        "name": "Temperatura de arranque Eco"
+        "name": "Umbral de arranque Eco"
       },
       "maximum_supply_temperature": {
         "name": "Temperatura de impulsión máxima"
@@ -1649,7 +1735,7 @@
         "name": "Temperatura exterior"
       },
       "supply_temperature": {
-        "name": "Temperatura de impulsión"
+        "name": "Temperatura de impulsión de la instalación"
       },
       "return_temperature": {
         "name": "Temperatura de retorno"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Estado de compatibilidad",
+        "name": "Tarifa variable – compatibilidad",
         "state": {
           "not_supported": "No compatible",
           "supported": "Compatible",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Próximas vacaciones"
+      },
+      "heat_generator": {
+        "name": "Generador de calor"
       },
       "pointt_api_requests_total": {
         "name": "Solicitudes a la nube en total"
@@ -2220,6 +2309,36 @@
           "idle": "No planificado",
           "planned": "Planificado",
           "active": "Activo"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Estado EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Sin puesta en marcha",
+          "no_lan_connection": "Sin conexión de red",
+          "no_hp_connection": "Sin conexión con la bomba de calor",
+          "no_updateserver_connection": "Sin conexión con el servidor de actualizaciones",
+          "no_eebus_connection": "Sin conexión EEBus",
+          "no_eebus_no_trust": "Sin conexión EEBus (ningún socio de confianza)",
+          "no_eebus_no_usecase_active": "Sin conexión EEBus (ningún caso de uso activo)",
+          "power_limitation_active": "Limitación de potencia activa",
+          "ohpcf_active": "Flexibilidad del compresor (OHPCF) activa",
+          "internal_error": "Error interno"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Puesta en marcha EEBus",
+        "state": {
+          "commissioned": "Puesto en marcha",
+          "not_commissioned": "Sin puesta en marcha"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Comprobación de arranque",
+        "state": {
+          "startup_completed": "Completada",
+          "startup_inprogress": "En curso"
         }
       },
       "signal_true_false": {

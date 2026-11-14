@@ -171,11 +171,11 @@ when the heating circuit has no individual status resource.
 Automated tests include a complete Home Assistant browser flow against a
 simulated gateway, covering repeated applies, retained invalid drafts,
 uncertain writes and recovery through regular polling.
-I installed this build locally on Home Assistant 2026.10.3 and tested my first
-heating circuit in manual mode. Applying 19.0 to 18.5 °C in the controls dialog
+I installed this build on Home Assistant 2026.10.3 and tested the first
+heating circuit of a real installation in manual mode. Applying 19.0 to 18.5 °C in the controls dialog
 was confirmed by appliance read-back and both the number and climate entities.
 In the repeated test, I used the native climate dialog's plus button to restore
-19.0 °C. I confirmed both 18.5 °C and the restored 19.0 °C in MyBuderus.
+19.0 °C. The manufacturer's app showed both 18.5 °C and the restored 19.0 °C.
 A conditional, timed restore in Home Assistant also protected both tests
 independently of the browser; it restored the value during the first test.
 This does not confirm mode changes, other circuits or other appliances.
@@ -220,7 +220,7 @@ The selection **Active schedule** switches between programs A and B. It
 appears only when the gateway allows both, the current one among them, and
 both programs can be read and are valid. The options are `a` and `b`; the
 reported names are in the attributes `program_names` and `program_name`.
-With a single program, as on my heat pump, there is no selection.
+With a single program, as on some heat pumps, there is no selection.
 
 Changing hot water program A was confirmed on a Logatherm WLW186i-12 E with
 an MX400: a switch point changed in Home Assistant showed up in the
@@ -356,13 +356,13 @@ Die automatisierten Tests enthalten einen vollständigen Browserdurchlauf
 mit Home Assistant und einer simulierten Anlage. Dabei werden wiederholtes
 Übernehmen, der Erhalt fehlerhafter Eingaben, unbestätigte Schreibversuche
 und die Wiederherstellung durch reguläre Abfragen geprüft.
-Ich habe diesen Stand lokal auf Home Assistant 2026.10.3 installiert und meinen
-ersten Heizkreis im manuellen Betrieb geprüft. Die Änderung von 19,0 auf 18,5 °C
+Ich habe diesen Stand auf Home Assistant 2026.10.3 installiert und den ersten
+Heizkreis einer realen Anlage im manuellen Betrieb geprüft. Die Änderung von 19,0 auf 18,5 °C
 im Bedienungsdialog wurde durch Rücklesen an der Anlage sowie durch Einzelregler
 und Klimaentität bestätigt. Bei der Wiederholung habe ich über die
 Plus-Schaltfläche der nativen Klimaentität wieder 19,0 °C eingestellt.
-Sowohl 18,5 °C als auch die wiederhergestellten 19,0 °C habe ich in MyBuderus
-bestätigt. Eine zusätzliche bedingte Rückstellung direkt in Home Assistant
+Die Hersteller-App zeigte sowohl 18,5 °C als auch die wiederhergestellten
+19,0 °C. Eine zusätzliche bedingte Rückstellung direkt in Home Assistant
 sicherte beide Tests unabhängig vom Browser ab; beim ersten Test stellte sie
 den Wert zurück. Betriebsartenwechsel, andere Kreise und andere Anlagen sind
 damit nicht praktisch bestätigt.
@@ -411,7 +411,7 @@ Die Auswahl **Aktives Zeitprogramm** wechselt zwischen den Programmen A und
 B. Sie entsteht nur, wenn das Gateway beide erlaubt, das aktuelle darunter
 ist und beide Programme lesbar und gültig sind. Die Optionen sind `a` und
 `b`; die gemeldeten Namen stehen in den Attributen `program_names` und
-`program_name`. Mit nur einem Programm, wie an meiner Wärmepumpe, gibt es
+`program_name`. Mit nur einem Programm, wie an manchen Wärmepumpen, gibt es
 keine Auswahl.
 
 Das Ändern des Warmwasserprogramms A ist an einer Logatherm WLW186i-12 E

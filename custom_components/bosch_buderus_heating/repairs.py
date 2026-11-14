@@ -23,6 +23,7 @@ from .const import (
     DOMAIN,
     FIRMWARE_ISSUE_PREFIX,
     GATEWAY_EXCHANGE_ISSUE_PREFIX,
+    LOCAL_ADDRESS_ISSUE_PREFIX,
     LOCAL_START_ISSUE_PREFIX,
     RATE_LIMIT_ISSUE_PREFIX,
     PollingProfile,
@@ -80,6 +81,14 @@ async def async_create_fix_flow(
             ):
                 return InvalidRepairFlow()
             return LocalStartRepairFlow(entry_id, binding, problem)
+        if issue_id.startswith(LOCAL_ADDRESS_ISSUE_PREFIX):
+            if (
+                not isinstance(connection, str)
+                or binding is not None
+                or issue_id != repair_id(LOCAL_ADDRESS_ISSUE_PREFIX, entry, connection)
+            ):
+                return InvalidRepairFlow()
+            return LocalAddressRepairFlow(issue_id)
         firmware = issue_id.startswith(FIRMWARE_ISSUE_PREFIX)
         prefix = FIRMWARE_ISSUE_PREFIX if firmware else RATE_LIMIT_ISSUE_PREFIX
         if (
@@ -222,6 +231,52 @@ class LocalStartRepairFlow(RepairsFlow):
         if not source.retry_start():
             return self.async_abort(reason="configuration_changed")
         return self.async_create_entry(data={})
+
+
+class LocalAddressRepairFlow(RepairsFlow):
+    """Save the new address of a moved gateway after explicit confirmation.
+
+    The address was proven by the certificate confirmed at setup; it is
+    proven once more right before the change. Nothing is sent with a token.
+    """
+
+    def __init__(self, issue_id: str) -> None:
+        self._issue_id = issue_id
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        return await self.async_step_confirm()
+
+    async def async_step_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        from . import local_address
+
+        item = local_address.candidate(self.hass, self._issue_id)
+        if item is None:
+            # Kept in memory only, for example gone after a restart.
+            local_address.withdraw(self.hass, self._issue_id)
+            return self.async_abort(reason="local_address_expired")
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if user_input.get("confirm") is True:
+                outcome = await local_address.apply_address(self.hass, self._issue_id)
+                if outcome == "applied":
+                    return self.async_create_entry(data={})
+                return self.async_abort(reason=outcome)
+            errors["base"] = "confirmation_required"
+        return self.async_show_form(
+            step_id="confirm",
+            data_schema=vol.Schema(
+                {vol.Required("confirm", default=False): BooleanSelector()}
+            ),
+            description_placeholders={
+                "previous": item.previous.host,
+                "address": item.endpoint.host,
+            },
+            errors=errors,
+        )
 
 
 class RateLimitRepairFlow(RepairsFlow):

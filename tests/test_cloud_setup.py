@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from homeassistant.config_entries import SOURCE_USER, ConfigEntryDisabler
@@ -41,12 +41,9 @@ from custom_components.bosch_buderus_heating.pointt import (
     RateLimited,
     ServiceUnavailable,
 )
+from custom_components.bosch_buderus_heating.pointt.const import OAUTH_SCOPES
 from tests.ha_test_helpers import MockConfigEntry
-from tests.test_config_flow import (
-    _redirect_from_result,
-    _scope_rejection,
-)
-from tests.test_config_flow import scope_fallback as scope_fallback
+from tests.test_config_flow import _link_scopes, _redirect_from_result
 from tests.test_configuration import legacy
 from tests.test_connection_runtime import entry_for
 from tests.test_managed_connections import choose_connection
@@ -1075,25 +1072,20 @@ async def test_options_sign_in_keeps_its_link_after_a_paste_mistake(hass, backen
     backend.oauth.assert_awaited_once()
 
 
-async def test_options_sign_in_asks_to_open_the_new_link_after_a_scope_rejection(
-    hass, backend, scope_fallback
-):
-    """C: a rejected scope set shows the new link, not a wrong address."""
+async def test_options_sign_in_link_asks_for_the_full_scope_set(hass, backend):
+    """Issue #127: the sign-in under Connections asks for the full set."""
     entry = empty_entry(hass)
     first = await connect_dialog(hass, entry, authenticate=False)
+    assert _link_scopes(first) == list(OAUTH_SCOPES)
+    assert {"openid", "email"} <= set(_link_scopes(first))
+    state = parse_qs(urlparse(_link(first)).query)["state"][0]
+    rejected = f"{Brand.BUDERUS.redirect_uri}?error=invalid_scope&state={state}"
     manager = hass.config_entries.options
-    result = await manager.async_configure(
-        first["flow_id"], {"redirect_url": _scope_rejection(first, Brand.BUDERUS)}
-    )
+    result = await manager.async_configure(first["flow_id"], {"redirect_url": rejected})
     assert result["step_id"] == "cloud_auth"
-    assert result["errors"] == {"base": "auth_restart"}
-    assert _link(result) != _link(first)
-    assert "pointt.gateway.claiming" in _link(result)
+    assert result["errors"] == {"base": "invalid_redirect"}
+    assert _link(result) == _link(first)
     backend.oauth.assert_not_awaited()
-    good = _redirect_from_result(result, Brand.BUDERUS)
-    result = await manager.async_configure(first["flow_id"], {"redirect_url": good})
-    assert result["step_id"] == "cloud_select"
-    backend.oauth.assert_awaited_once()
 
 
 @pytest.mark.parametrize("submit", [False, True])

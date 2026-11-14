@@ -12,7 +12,7 @@ write rights: controls keep using the cloud metadata of the access that writes.
 Two readings are only treated as the same measurement if a versioned catalog
 lists their pair. Version 1 contains only identical paths that the official
 local API documents and that returned the same type, unit and value through both
-interfaces on my installation. Templates such as `{hc}`, `{dhw}` and `{hs}`
+interfaces on a real installation. Templates such as `{hc}`, `{dhw}` and `{hs}`
 apply the same rule to every reported circuit; readings are only paired for the
 same reported identifier.
 

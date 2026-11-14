@@ -83,6 +83,13 @@ _TEXTS: dict[str, dict[str, str]] = {
             "oder gestoppt)."
         ),
         "test_error": "Fehler beim Test: {kind}.",
+        "address_hint": (
+            "Tipp: Ändert sich die Adresse des Gateways, etwa nach einem "
+            "Neustart des Routers, hilft eine feste Adresse: die IP-Adresse im "
+            "Router reservieren (DHCP-Reservierung) oder den Hostnamen des "
+            "Gateways eintragen. Meldet sich das Gateway unter einer neuen "
+            "Adresse, bietet eine Reparaturmeldung an, sie zu übernehmen."
+        ),
     },
     "en": {
         "connected": "connected",
@@ -142,6 +149,12 @@ _TEXTS: dict[str, dict[str, str]] = {
             "or stopped)."
         ),
         "test_error": "Test failed: {kind}.",
+        "address_hint": (
+            "Tip: if the gateway's address changes, for example after a router "
+            "restart, a fixed address helps: reserve its IP address in the router "
+            "(DHCP reservation) or enter the gateway's host name. If the gateway "
+            "announces itself at a new address, a repair note offers to use it."
+        ),
     },
 }
 
@@ -318,6 +331,34 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
     )
 
 
+def local_pause_reasons(entry: ConfigEntry[Any], connection_id: str) -> frozenset[str]:
+    """Why the sources of a LAN access pause now (fixed codes), if they pause."""
+    connections = _runtime(entry)
+    if connections is None:
+        return frozenset()
+    reasons: set[str] = set()
+    for key, binding in connections.snapshot.bindings.items():
+        if binding.connection_id != connection_id:
+            continue
+        reason = getattr(connections.source_driver(key), "pause_reason", None)
+        if isinstance(reason, str):
+            reasons.add(reason)
+    return frozenset(reasons)
+
+
+def local_unreachable(
+    entry: ConfigEntry[Any], connection_id: str, status: AccessStatus | None = None
+) -> bool:
+    """The LAN access does not reach its gateway: not reachable, or pausing
+    after failed connections rather than on the gateway's own request."""
+    status = status or access_status(entry, connection_id)
+    if status.state == "unreachable":
+        return True
+    return status.state == "paused" and "connection" in local_pause_reasons(
+        entry, connection_id
+    )
+
+
 def _state_text(texts: dict[str, str], status: AccessStatus) -> str:
     if status.state == "paused" and status.until is not None:
         return texts["paused_until"].format(until=_clock(status.until))
@@ -382,6 +423,8 @@ def connection_description(
         parts.append(
             texts["local_values"].format(value=texts["on" if enabled else "off"])
         )
+        if local_unreachable(entry, key, status):
+            parts.append(texts["address_hint"])
     return " ".join(parts)
 
 
@@ -462,8 +505,11 @@ async def test_connection(
         if result == "paused":
             return _paused_text(texts, access_status(entry, key).until)
         if result == "not_running" and status.state == "unreachable":
-            return texts["test_unreachable"].format(ms=millis)
-        return texts.get(f"test_{result}", texts["test_error"]).format(
+            result = "unreachable"
+        text = texts.get(f"test_{result}", texts["test_error"]).format(
             ms=millis, kind=result
         )
+        if result == "unreachable":
+            text += " " + texts["address_hint"]
+        return text
     return texts["test_not_running"]

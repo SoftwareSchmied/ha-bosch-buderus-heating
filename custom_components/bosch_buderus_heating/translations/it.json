@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Indirizzo del gateway locale",
-        "description": "Scegli un indirizzo rilevato oppure inserisci un indirizzo IP o un nome host. Il rilevamento non modifica nessuna connessione salvata.",
+        "description": "Scegli un indirizzo rilevato oppure inserisci un indirizzo IP o un nome host. Suggerimento: riserva l'indirizzo del gateway nel router (prenotazione DHCP) in modo che resti lo stesso.",
         "data": {
           "address": "Indirizzo IP o nome host"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Conferma il certificato del gateway",
-        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.",
+        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.\n\nIl gateway ha un proprio certificato per ogni porta. La porta 9442 è la porta di login e viene verificata prima del login; la porta 9443 è la porta dati e viene verificata dopo. Per questo motivo questa pagina può comparire due volte.\n\nSe il certificato non appartiene al tuo gateway, chiudi la finestra; non viene inviato nulla.",
         "data": {
           "confirm": "Confermo questo gateway e il suo certificato"
         }
       },
       "local_auth": {
         "title": "Login con l'etichetta del dispositivo",
-        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per circa due secondi, meno di tre, e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
+        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per 1 secondo e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. Se correggere un errore di digitazione richiede più di cinque minuti, premi di nuovo i pulsanti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e Pass non vengono salvati.",
         "data": {
           "login": "Login sull'etichetta del dispositivo",
           "password": "Pass sull'etichetta del dispositivo",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Riprendi la configurazione locale",
-        "description": "È salvato un tentativo precedente. Se è stato ricevuto un token, continua con quel token. Se la risposta è andata persa, sul gateway potrebbe esistere un token anche se Home Assistant non ha potuto salvarlo. Scartare rimuove solo la copia locale in sospeso e consente un nuovo tentativo; non revoca i token del gateway.\n\nPausa residua del server: {seconds} secondi.",
+        "description": "È salvato un tentativo precedente. Se è stato ricevuto un token, continua con quel token. Se la risposta è andata persa, sul gateway potrebbe esistere un token anche se Home Assistant non ha potuto salvarlo. Scartare rimuove solo la copia locale in sospeso e consente un nuovo tentativo; non revoca i token del gateway.\n\nPausa residua del gateway: {seconds} secondi (0 significa che puoi continuare subito).",
         "data": {
           "action": "Azione successiva",
           "confirm": "Ho capito e voglio scartare questo tentativo in sospeso"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Inserisci un indirizzo IP o un nome host senza URL, percorso o credenziali.",
       "local_interface_required": "Questo indirizzo IPv6 richiede l'interfaccia di rete sull'host di Home Assistant.",
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
-      "local_invalid_credentials": "Controlla Login e Pass sull'etichetta del gateway e inseriscili di nuovo.",
-      "local_unlock_required": "Sblocca il login locale sul gateway e conferma il segnale blu prima di riprovare.",
+      "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
+      "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
+      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti.",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
+      "local_rate_limited_wait": "Il gateway ha richiesto una pausa. Riprova tra {seconds} secondi.",
       "local_service_unavailable": "Il servizio del gateway è temporaneamente non disponibile. Attendi e riprova.",
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
@@ -198,14 +201,14 @@
       "already_configured": "Questo account di riscaldamento o almeno un gateway selezionato è già configurato in Home Assistant.",
       "invalid_flow": "Questa sessione di configurazione è incompleta o scaduta. Chiudi la finestra e aggiungi di nuovo Bosch/Buderus Home Comfort.",
       "no_gateways": "Non è stato trovato nessun dispositivo. Controlla che la marca selezionata e l'account SingleKey ID corrispondano alla tua app. Un regolatore ambiente con un firmware meno recente compare solo dopo che il suo firmware è stato aggiornato ed è stato configurato nell'app attuale con il tuo SingleKey ID.",
-      "reauth_required": "L'autorizzazione salvata non è più valida. Chiudi questa finestra e seleziona Autenticati di nuovo per Bosch/Buderus Home Comfort.",
+      "reauth_required": "L'accesso salvato non è più valido. Chiudi questa finestra e seleziona **Riconfigura** per questa integrazione in Impostazioni → Dispositivi e servizi.",
       "reauth_successful": "Il login è stato rinnovato correttamente.",
       "reauth_wrong_account": "L'account selezionato non corrisponde ai dispositivi configurati. Effettua il login con l'account originale.",
       "reauth_no_targets": "Questo accesso cloud non ha più impianti o dispositivi e non è possibile confermare l'account a cui appartiene. Le credenziali precedenti vengono mantenute. Per usare di nuovo un account cloud, rimuovi l'accesso cloud in Configura → Connessioni e collegalo di nuovo.",
       "reauth_successful_targets_missing": "Il login è stato rinnovato. {count} impianti o dispositivi attivi non sono stati trovati nell'account; restano configurati. Una nota di riparazione li elenca e spiega come dimenticarli.",
       "reconfigure_successful": "Le impostazioni sono state salvate. Bosch/Buderus Home Comfort si sta ricaricando e rileva di nuovo tutte le risorse disponibili.",
-      "connection_required": "Seleziona la connessione in Impostazioni prima di effettuare di nuovo il login.",
-      "connection_settings_required": "Gestisci questo accesso in Impostazioni e Connessioni.",
+      "connection_required": "Scegli prima in **Configura → Connessioni** l'accesso a cui vuoi accedere di nuovo.",
+      "connection_settings_required": "Gestisci questo accesso in **Configura → Connessioni**.",
       "cloud_already_connected": "Una connessione cloud è già configurata. Usa le sue impostazioni di connessione per selezionare altri dispositivi o accedere di nuovo. Un secondo login cloud in parallelo non è ancora supportato.",
       "cloud_setup_in_progress": "È già aperta un'altra configurazione cloud. Concludi o chiudi prima quella finestra.",
       "cloud_setup_taken_over": "Una finestra di configurazione cloud più recente ha sostituito questa. Chiudi questa finestra e continua in quella più recente.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "La configurazione locale non è disponibile finché la fornitura regolare dei dati locali non è pronta.",
       "local_session_changed": "Questa sessione di configurazione è terminata o la sua selezione è cambiata. Riapri la configurazione locale per continuare.",
       "local_discovery_invalid": "Questo annuncio di rilevamento non descrive un endpoint di gateway locale supportato.",
+      "local_address_moved": "Il gateway di un accesso locale configurato risponde a un nuovo indirizzo. Una notifica di riparazione propone di usarlo.",
       "local_existing_owner_required": "Configura un impianto senza il cloud con \"Solo accesso locale\" quando aggiungi l'integrazione. Un gateway rilevato può essere aggiunto a una configurazione esistente.",
       "local_target_required": "Questa configurazione non ha nessuna installazione conservata adatta a una connessione locale.",
-      "local_setup_complete": "L'accesso locale è stato configurato.",
+      "local_setup_complete": "L'accesso locale è stato configurato. Stato e frequenza di interrogazione si trovano in Configura → Connessioni.",
       "local_pending_saved": "Il tentativo in sospeso è conservato. Puoi riprenderlo dalla configurazione locale.",
       "local_storage_failed": "Non è stato possibile leggere o salvare il record privato della configurazione. Controlla l'archiviazione di Home Assistant prima di continuare.",
       "already_in_progress": "La configurazione di questo gateway locale è già in corso.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."
     },
-    "flow_title": "Gateway locale ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Notifiche",
           "holidays": "Gestisci i periodi di vacanza",
-          "rrc_programs": "Programmi orari di riscaldamento RRC",
+          "rrc_programs": "Programmi orari del regolatore ambiente",
           "switch_programs": "Programmi orari di riscaldamento e acqua calda",
           "controls": "Comanda l'apparecchio",
           "connections": "Connessioni",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Inizio",
-          "holiday_end": "Fine (esclusa)",
+          "holiday_end": "Fine (da qui di nuovo funzionamento normale)",
           "holiday_assigned_to": "Applica a",
           "holiday_heating_mode": "Riscaldamento",
           "holiday_dhw_mode": "Acqua calda",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Inizio",
-          "holiday_end": "Fine (esclusa)",
+          "holiday_end": "Fine (da qui di nuovo funzionamento normale)",
           "holiday_assigned_to": "Applica a",
           "holiday_heating_mode": "Riscaldamento",
           "holiday_dhw_mode": "Acqua calda",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Inizio",
-          "holiday_end": "Fine (esclusa)",
+          "holiday_end": "Fine (primo giorno dopo le vacanze)",
           "holiday_assigned_to": "Applica a",
           "holiday_heating_mode": "Riscaldamento",
           "holiday_dhw_mode": "Acqua calda",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Inizio",
-          "holiday_end": "Fine (esclusa)",
+          "holiday_end": "Fine (primo giorno dopo le vacanze)",
           "holiday_assigned_to": "Applica a",
           "holiday_heating_mode": "Riscaldamento",
           "holiday_dhw_mode": "Acqua calda",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Comanda l'apparecchio",
-        "description": "Scegli una sezione e regola le impostazioni. Applica scrive solo le tue modifiche. Se modifichi più impostazioni, ognuna viene confermata singolarmente.",
+        "description": "Scegli una sezione e regola le impostazioni. **Applica** invia solo le tue modifiche, una dopo l'altra, e verifica ciascuna rileggendola.",
         "data": {
           "controls": "Comandi"
         },
@@ -474,16 +478,17 @@
           "connection_discover": "Cerca e seleziona i dispositivi",
           "connection_polling": "Frequenza di interrogazione",
           "local_setup": "Modifica accesso locale",
+          "local_tokens": "Token sul gateway",
           "local_polling": "Frequenza di interrogazione locale e stato",
           "local_values": "Usa i valori locali per le entità esistenti",
           "back": "← Indietro"
         }
       },
       "connection_enabled": {
-        "title": "Abilita accesso",
+        "title": "Abilita o disabilita l'accesso",
         "description": "La disabilitazione riguarda solo questo accesso. Le altre connessioni continuano a funzionare. Impianti ed entità vengono conservati.",
         "data": {
-          "enabled": "Abilitato"
+          "enabled": "Accesso abilitato"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Rimuovi accesso",
-        "description": "Le credenziali verranno rimosse. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso. Senza una connessione disponibile, le entità non possono mostrare valori aggiornati.",
+        "description": "Le credenziali vengono rimosse da Home Assistant. Il token resta sul gateway, a meno che tu non lo revochi con la casella qui sotto. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso; senza un accesso disponibile non mostrano valori aggiornati. Lascia deselezionata la casella in alto per tornare indietro senza modifiche.",
         "data": {
-          "confirm": "Rimuovi questo accesso"
+          "confirm": "Rimuovi questo accesso",
+          "revoke": "Revoca prima un token di questa integrazione sul gateway"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Indirizzo del gateway locale",
-        "description": "Scegli un indirizzo rilevato oppure inserisci un indirizzo IP o un nome host. Il rilevamento non modifica nessuna connessione salvata.",
+        "description": "Scegli un indirizzo rilevato oppure inserisci un indirizzo IP o un nome host. Suggerimento: riserva l'indirizzo del gateway nel router (prenotazione DHCP) in modo che resti lo stesso.",
         "data": {
           "address": "Indirizzo IP o nome host"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Conferma il certificato del gateway",
-        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.",
+        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.\n\nIl gateway ha un proprio certificato per ogni porta. La porta 9442 è la porta di login e viene verificata prima del login; la porta 9443 è la porta dati e viene verificata dopo. Per questo motivo questa pagina può comparire due volte.\n\nSe il certificato non appartiene al tuo gateway, chiudi la finestra; non viene inviato nulla.",
         "data": {
           "confirm": "Confermo questo gateway e il suo certificato"
         }
       },
       "local_auth": {
         "title": "Login con l'etichetta del dispositivo",
-        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per circa due secondi, meno di tre, e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
+        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per 1 secondo e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. Se correggere un errore di digitazione richiede più di cinque minuti, premi di nuovo i pulsanti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e Pass non vengono salvati.",
         "data": {
           "login": "Login sull'etichetta del dispositivo",
           "password": "Pass sull'etichetta del dispositivo",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Riprendi la configurazione locale",
-        "description": "È salvato un tentativo precedente. Se è stato ricevuto un token, continua con quel token. Se la risposta è andata persa, sul gateway potrebbe esistere un token anche se Home Assistant non ha potuto salvarlo. Scartare rimuove solo la copia locale in sospeso e consente un nuovo tentativo; non revoca i token del gateway.\n\nPausa residua del server: {seconds} secondi.",
+        "description": "È salvato un tentativo precedente. Se è stato ricevuto un token, continua con quel token. Se la risposta è andata persa, sul gateway potrebbe esistere un token anche se Home Assistant non ha potuto salvarlo. Scartare rimuove solo la copia locale in sospeso e consente un nuovo tentativo; non revoca i token del gateway.\n\nPausa residua del gateway: {seconds} secondi (0 significa che puoi continuare subito).",
         "data": {
           "action": "Azione successiva",
           "confirm": "Ho capito e voglio scartare questo tentativo in sospeso"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Cerca di nuovo nell'impianto",
         "description": "Cerca ancora una volta nell'impianto componenti e valori, tramite l'accesso cloud e l'accesso locale. Usalo dopo aver aggiunto o modificato dei componenti. La ricerca viene eseguita con il prossimo aggiornamento regolare e nei limiti consueti per le richieste; non rimuove mai un'entità e i valori che non vengono ritrovati restano come sono."
+      },
+      "local_tokens": {
+        "title": "Token sul gateway",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. I token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Senza una scelta non cambia nulla.{note}",
+        "data": {
+          "token": "Token da revocare"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revoca un token prima della rimozione",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta, **Invia** rimuove l'accesso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.{note}",
+        "data": {
+          "token": "Token da revocare"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Nessun token da revocare",
+        "description": "Il gateway non elenca alcun token di questa integrazione che si possa revocare qui, oppure l'elenco non è stato letto. L'accesso non è ancora stato rimosso. Scegli se rimuoverlo senza revocare o mantenerlo.",
+        "menu_options": {
+          "local_tokens_remove_without": "Rimuovi senza revocare",
+          "local_tokens_remove_cancel": "Annulla e mantieni l'accesso"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Conferma il certificato del login",
+        "description": "Il servizio di login su **{host}:{port}** presenta un certificato mai confermato per questo accesso. Conferma che si tratta del tuo gateway prima che vi venga inviato il token dell'accesso. La conferma vale solo per questa finestra.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Confermo questo gateway e il suo certificato"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revoca token",
+        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia la casella deselezionata per tornare indietro senza revocare. {use} Seleziona anche la seconda casella per confermarlo.",
+        "data": {
+          "confirm": "Revoca questo token sul gateway",
+          "confirm_end": "Un accesso locale che usa questo token termina"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Scegli un orario al quarto d'ora: minuti 00, 15, 30 o 45.",
       "holiday_time_nonexistent": "L'orario di inizio o di fine selezionato non esiste perché nel fuso orario dell'impianto di riscaldamento l'orologio avanza. Scegli un altro orario.",
       "holiday_time_ambiguous": "L'orario di inizio o di fine selezionato si presenta due volte perché nel fuso orario dell'impianto di riscaldamento l'orologio torna indietro. Scegli un orario univoco.",
-      "write_authentication_failed": "Il login al cloud non è più valido. Autenticati di nuovo in Bosch/Buderus Home Comfort prima di riprovare.",
+      "write_authentication_failed": "Il login al cloud non è più valido. Accedi di nuovo in Configura → Connessioni → accesso cloud → **Accedi di nuovo**, poi riprova.",
       "write_failed": "Non è stato possibile modificare le impostazioni della vacanza.",
       "write_busy": "L'impianto di riscaldamento è in lettura oppure è ancora in corso un'altra modifica. Non è stato inviato nulla. Riprova tra un momento.",
       "write_not_confirmed": "Non è stato possibile confermare completamente la modifica. Alcune impostazioni potrebbero essere già state salvate. Riapri la vacanza e controlla le impostazioni attuali.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Inserisci un indirizzo IP o un nome host senza URL, percorso o credenziali.",
       "local_interface_required": "Questo indirizzo IPv6 richiede l'interfaccia di rete sull'host di Home Assistant.",
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
-      "local_invalid_credentials": "Controlla Login e Pass sull'etichetta del gateway e inseriscili di nuovo.",
-      "local_unlock_required": "Sblocca il login locale sul gateway e conferma il segnale blu prima di riprovare.",
+      "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
+      "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
+      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti.",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
+      "local_rate_limited_wait": "Il gateway ha richiesto una pausa. Riprova tra {seconds} secondi.",
       "local_service_unavailable": "Il servizio del gateway è temporaneamente non disponibile. Attendi e riprova.",
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Il cloud e l'accesso locale non descrivono lo stesso impianto. Non è stato salvato nulla. Deseleziona questo impianto per continuare a usarlo solo tramite il suo accesso locale.",
       "local_plant_known": "Questo gateway appartiene già a un impianto configurato. Scegli quell'impianto invece di uno nuovo.",
       "auth_expired": "Questo tentativo di login è scaduto. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
-      "auth_restart": "Questo tentativo di login non può più essere usato. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login."
+      "auth_restart": "Questo tentativo di login non può più essere usato. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
+      "local_tokens_rejected": "Il gateway non ha accettato il token di questo accesso. Non è stato modificato nulla.",
+      "local_tokens_forbidden": "Il servizio di login del gateway ha rifiutato la richiesta. Non è stato modificato nulla.",
+      "local_tokens_unsupported": "Questo gateway non fornisce un elenco dei token. Non è stato modificato nulla.",
+      "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla.",
+      "local_token_end_unconfirmed": "Revocare questo token può terminare un accesso locale. Seleziona anche la seconda casella oppure lascia la prima deselezionata per tornare indietro. Non è stato inviato nulla.",
+      "connection_remove_unconfirmed": "Seleziona anche «Rimuovi questo accesso»: un token viene revocato solo insieme alla rimozione dell'accesso. Non è stato inviato né rimosso nulla."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Non è stato possibile confermare la richiesta di creazione. La vacanza potrebbe già esistere. Controlla Gestisci i periodi di vacanza o l'app del produttore. Per i prossimi 10 minuti un altro tentativo controlla il risultato di questa richiesta senza creare una seconda vacanza.",
       "holiday_create_adjusted": "L'impianto di riscaldamento ha restituito una nuova vacanza, ma le sue impostazioni differiscono dalla tua richiesta. Periodo richiesto: {requested}. Periodo restituito: {actual}. Apri Gestisci i periodi di vacanza per controllare e modificare questa voce.",
       "holiday_update_adjusted": "L'impianto di riscaldamento ha restituito impostazioni che differiscono dalla modifica richiesta. Periodo richiesto: {requested}. Periodo restituito: {actual}. Apri Gestisci i periodi di vacanza per controllare e modificare la voce attuale.",
-      "no_rrc_schedules": "Non è disponibile nessun programma settimanale RRC attuale e supportato.",
+      "no_rrc_schedules": "Non è disponibile nessun programma settimanale attuale e supportato di un regolatore ambiente.",
       "no_switch_programs": "Qui non è possibile modificare nessun programma orario attuale di un circuito di riscaldamento o dell'acqua calda.",
       "switch_program_changed": "Il programma orario è cambiato nel frattempo o non può più essere modificato. Riaprilo per vedere i punti di commutazione attuali.",
       "switch_program_saved": "Il programma orario {program} è stato salvato e confermato rileggendolo.\n\nPunti di commutazione precedenti dei giorni modificati:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Questo apparecchio al momento non segnala impostazioni modificabili qui.",
       "configuration_changed": "Le impostazioni di connessione sono cambiate mentre questa finestra era aperta. Chiudila e riprova.",
       "no_connections": "Nessun accesso configurato. Impianti ed entità esistenti vengono conservati.",
-      "connection_reauth_started": "È stato richiesto il login. Apri la richiesta di autenticazione per questa voce.",
+      "connection_reauth_started": "Il nuovo accesso è pronto. Chiudi questa finestra e seleziona **Riconfigura** per questa integrazione in Impostazioni → Dispositivi e servizi, nella sezione **Richiede attenzione**.",
       "cloud_already_connected": "Una connessione cloud è già configurata. Usa le sue impostazioni di connessione per selezionare altri dispositivi o accedere di nuovo. Un secondo login cloud in parallelo non è ancora supportato.",
       "cloud_setup_in_progress": "È già aperta un'altra configurazione cloud. Concludi o chiudi prima quella finestra.",
       "cloud_setup_taken_over": "Una finestra di configurazione cloud più recente ha sostituito questa. Chiudi questa finestra e continua in quella più recente.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Questo annuncio di rilevamento non descrive un endpoint di gateway locale supportato.",
       "local_existing_owner_required": "Configura un impianto senza il cloud con \"Solo accesso locale\" quando aggiungi l'integrazione. Un gateway rilevato può essere aggiunto a una configurazione esistente.",
       "local_target_required": "Questa configurazione non ha nessuna installazione conservata adatta a una connessione locale.",
-      "local_setup_complete": "L'accesso locale è stato configurato.",
+      "local_setup_complete": "L'accesso locale è stato configurato. Stato e frequenza di interrogazione si trovano in Configura → Connessioni.",
       "local_pending_saved": "Il tentativo in sospeso è conservato. Puoi riprenderlo dalla configurazione locale.",
       "local_storage_failed": "Non è stato possibile leggere o salvare il record privato della configurazione. Controlla l'archiviazione di Home Assistant prima di continuare.",
       "cloud_local_first_other_entry": "Questo impianto è già configurato tramite il suo accesso locale in un'altra voce di questa integrazione. Aggiungi l'accesso cloud in quella voce.",
@@ -816,7 +868,17 @@
       "connection_saved": "La modifica è stata salvata.",
       "connection_removed": "L'accesso è stato rimosso.",
       "notifications_saved": "Le impostazioni delle notifiche sono state salvate.",
-      "rrc_program_saved": "Il punto di commutazione è stato salvato e confermato rileggendolo."
+      "rrc_program_saved": "Il punto di commutazione è stato salvato e confermato rileggendolo.",
+      "local_tokens_unavailable": "Questo accesso non ha un token salvato utilizzabile per l'elenco dei token. Configura prima di nuovo l'accesso locale.",
+      "local_tokens_changed": "Nel frattempo l'elenco dei token è cambiato. Non è stato revocato né rimosso nulla. Apri di nuovo l'elenco.",
+      "local_token_revoked": "Il token è stato revocato; il gateway non lo elenca più.",
+      "local_token_access_ended": "Era il token usato da questo accesso. L'accesso locale è terminato e l'accesso è stato disattivato. Configuralo di nuovo con l'etichetta del dispositivo oppure rimuovilo.",
+      "local_token_revoke_rejected": "Il gateway ha rifiutato la revoca; il token è ancora elencato.",
+      "local_token_revoke_unclear": "Il gateway non ha confermato la revoca. Non è stato ripetuto nulla. Apri di nuovo l'elenco dei token per verificare.",
+      "local_token_revoked_removed": "Il token è stato revocato sul gateway e l'accesso è stato rimosso.",
+      "local_token_not_removed": "La revoca non è stata confermata, quindi l'accesso non è stato rimosso. Controlla l'elenco dei token, poi rimuovi di nuovo l'accesso.",
+      "local_token_old_revoked_removed": "Il token scelto è stato revocato sul gateway e l'accesso è stato rimosso. Il token usato da questo accesso resta sul gateway.",
+      "local_token_access_end_failed": "Era il token usato da questo accesso, quindi l'accesso locale è terminato, ma non è stato possibile disattivare l'accesso. Disattivalo, rimuovilo oppure configuralo di nuovo con l'etichetta del dispositivo."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Certificato del gateway locale cambiato",
-      "description": "Il gateway di un accesso locale presenta un certificato diverso. L'integrazione non lo accetta da sola e interrompe la lettura locale. Se sai perché il certificato è cambiato (ad esempio dopo un aggiornamento o un ripristino del gateway), apri le opzioni dell'integrazione, scegli l'accesso locale e seleziona \"Modifica accesso locale\". Lì confermi il nuovo certificato. Si consiglia un nuovo login con l'etichetta del dispositivo; mantieni il token attuale solo se sei sicuro che il nuovo certificato appartiene al tuo gateway."
+      "description": "Il gateway di un accesso locale presenta un certificato diverso. L'integrazione non lo accetta da sola e interrompe la lettura locale. Se sai perché il certificato è cambiato (ad esempio dopo un aggiornamento o un ripristino del gateway), apri Configura → Connessioni per l'integrazione, scegli l'accesso LAN e seleziona \"Modifica accesso locale\". Lì confermi il nuovo certificato. Si consiglia un nuovo login con l'etichetta del dispositivo; mantieni il token attuale solo se sei sicuro che il nuovo certificato appartiene al tuo gateway."
     },
     "local_start_certificate": {
       "title": "L'accesso locale non riesce a connettersi in modo sicuro",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "La voce interessata non esiste più.",
           "configuration_changed": "L'accesso o l'impianto di riscaldamento è cambiato. Apri di nuovo la riparazione."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Gateway locale trovato a un nuovo indirizzo",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usa il nuovo indirizzo del gateway",
+            "description": "L'accesso locale non raggiunge il suo gateway all'indirizzo {previous}. Lo stesso gateway ora risponde all'indirizzo {address}: presenta il certificato confermato durante la configurazione. Nessun token è stato inviato al nuovo indirizzo.\n\nConferma qui sotto per salvare il nuovo indirizzo. L'accesso locale riparte poi con esso; il token e il certificato confermato restano invariati. Per evitarlo in futuro, riserva l'indirizzo del gateway nel router (prenotazione DHCP).\n\nSe non vuoi usare l'indirizzo, chiudi la finestra oppure seleziona **Ignora**.",
+            "data": {
+              "confirm": "Usa il nuovo indirizzo"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Conferma per continuare."
+        },
+        "abort": {
+          "entry_not_found": "La voce di questa integrazione interessata non esiste più.",
+          "configuration_changed": "L'accesso o l'impianto è cambiato. Apri di nuovo la riparazione.",
+          "local_address_expired": "Questa nota non è più attuale, per esempio dopo un riavvio. Non è stato modificato nulla. Riappare se il gateway risponde di nuovo a un nuovo indirizzo.",
+          "local_address_recovered": "L'accesso locale raggiunge di nuovo il suo gateway. Non è stato modificato nulla.",
+          "local_address_unproven": "Non è stato possibile confermare di nuovo il gateway al nuovo indirizzo. Non è stato modificato nulla."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Configurazione non terminata",
-      "description": "La voce \"{title}\" non ha ancora nessun accesso. Apri le sue opzioni di configurazione e scegli \"Configura l'accesso locale\" (oppure aggiungi un accesso cloud) per terminare la configurazione."
+      "description": "La voce \"{title}\" non ha ancora nessun accesso. Seleziona **Configura** su di essa e poi \"Configura l'accesso locale\" (oppure collega un accesso cloud)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "La modifica è stata inviata al regolatore ambiente, ma questo non l'ha ancora confermata. Il regolatore potrebbe applicarla con ritardo; il valore verrà aggiornato alla prossima lettura."
     },
     "write_authentication_failed": {
-      "message": "Il login al cloud non è più valido. Autenticati di nuovo in Bosch/Buderus Home Comfort prima di riprovare."
+      "message": "Il login al cloud non è più valido. Accedi di nuovo in Configura → Connessioni → accesso cloud → Accedi di nuovo, poi riprova."
     },
     "write_rate_limited": {
       "message": "Il cloud sta attualmente limitando le richieste. Attendi prima di riprovare la modifica."
@@ -1366,10 +1452,10 @@
         "name": "Temperatura desiderata piscina"
       },
       "heating_temperature": {
-        "name": "Riscaldamento"
+        "name": "Temperatura di riscaldamento"
       },
       "reduced_temperature": {
-        "name": "Ridotta"
+        "name": "Temperatura di abbassamento"
       },
       "extra_hot_water_duration": {
         "name": "Durata acqua calda extra"
@@ -1378,13 +1464,13 @@
         "name": "Setpoint acqua calda extra"
       },
       "hot_water_eco_plus": {
-        "name": "Temperatura di avvio Eco+"
+        "name": "Soglia di avvio Eco+"
       },
       "hot_water_comfort": {
-        "name": "Temperatura di avvio Comfort"
+        "name": "Soglia di avvio Comfort"
       },
       "hot_water_eco": {
-        "name": "Temperatura di avvio Eco"
+        "name": "Soglia di avvio Eco"
       },
       "maximum_supply_temperature": {
         "name": "Temperatura di mandata massima"
@@ -1649,7 +1735,7 @@
         "name": "Temperatura esterna"
       },
       "supply_temperature": {
-        "name": "Temperatura di mandata"
+        "name": "Temperatura di mandata dell'impianto"
       },
       "return_temperature": {
         "name": "Temperatura di ritorno"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Stato del supporto",
+        "name": "Tariffa variabile – supporto",
         "state": {
           "not_supported": "Non supportato",
           "supported": "Supportato",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Prossima vacanza"
+      },
+      "heat_generator": {
+        "name": "Generatore di calore"
       },
       "pointt_api_requests_total": {
         "name": "Richieste al cloud totali"
@@ -2220,6 +2309,36 @@
           "idle": "Non pianificato",
           "planned": "Pianificato",
           "active": "Attivo"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "Stato EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Non messo in servizio",
+          "no_lan_connection": "Nessuna connessione di rete",
+          "no_hp_connection": "Nessuna connessione alla pompa di calore",
+          "no_updateserver_connection": "Nessuna connessione al server di aggiornamento",
+          "no_eebus_connection": "Nessuna connessione EEBus",
+          "no_eebus_no_trust": "Nessuna connessione EEBus (nessun partner attendibile)",
+          "no_eebus_no_usecase_active": "Nessuna connessione EEBus (nessun caso d'uso attivo)",
+          "power_limitation_active": "Limitazione di potenza attiva",
+          "ohpcf_active": "Flessibilità del compressore (OHPCF) attiva",
+          "internal_error": "Errore interno"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Messa in servizio EEBus",
+        "state": {
+          "commissioned": "Messo in servizio",
+          "not_commissioned": "Non messo in servizio"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Controllo di avvio",
+        "state": {
+          "startup_completed": "Completato",
+          "startup_inprogress": "In corso"
         }
       },
       "signal_true_false": {

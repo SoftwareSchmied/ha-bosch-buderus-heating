@@ -83,6 +83,14 @@ def view_of(owner):
     return owner.connections.target_views().get(target_of(owner))
 
 
+def startup_finished(backend) -> bool:
+    """Every gateway read at the start has had its fault read."""
+    gateways = {call[1] for call in backend.calls if call[0] == "bulk"}
+    return bool(gateways) and all(
+        ("bulk", gateway, ("/notifications",)) in backend.calls for gateway in gateways
+    )
+
+
 def remove_cloud(owner, cloud):
     management = owner.connections.management
     management.remove(management.edit(cloud))
@@ -133,6 +141,10 @@ async def test_removing_a_running_cloud_keeps_the_local_entities(hass) -> None:
         device_id = er.async_get(hass).async_get(entity_id).device_id
         before = devices.async_get(device_id)
         old = source_for(owner, GATEWAY)
+        # The start ends with one fault read per gateway; under load the last
+        # one can still be running here. Count only after it.
+        await eventually(lambda: startup_finished(backend))
+        await settle(hass)
         calls = len(backend.calls)
         remove_cloud(owner, cloud)
         await eventually(lambda: isinstance(view_of(owner), LocalPlantCoordinator))

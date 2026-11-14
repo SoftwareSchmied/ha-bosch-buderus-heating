@@ -6,9 +6,9 @@ contact_links:
   - name: Ideas and feature requests
     url: https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/categories/ideas-and-requests
     about: Discuss a feature idea and explain how it would help with your system.
-  - name: 0.9 alpha feedback
+  - name: 0.9.x feedback
     url: https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111
-    about: Tell me how the 0.9 alpha pre-releases work on your system.
+    about: Tell me how 0.9.x works on your system; after a few hours, please attach the diagnostics.
   - name: Share your installation
     url: https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81
     about: Tell me which system you use, which readings work and which controls you have tested.

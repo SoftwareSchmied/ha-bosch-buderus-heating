@@ -155,9 +155,9 @@ def test_all_released_numeric_controls_are_discovered() -> None:
         if item.resource_path.startswith("/dhwCircuits/")
         and "/temperatureLevels/" in item.resource_path
     } == {
-        "Eco+ Starttemperatur",
-        "Komfort Starttemperatur",
-        "Eco Starttemperatur",
+        "Startschwelle Eco+",
+        "Startschwelle Komfort",
+        "Startschwelle Eco",
     }
     assert all(
         item.native_step == 1.0

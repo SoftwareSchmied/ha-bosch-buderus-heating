@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Lokal gateway-adresse",
-        "description": "Velg en funnet adresse eller skriv inn en IP-adresse eller et vertsnavn. Søket endrer ingen lagret tilkobling.",
+        "description": "Velg en funnet adresse eller skriv inn en IP-adresse eller et vertsnavn. Tips: Reserver gatewayens adresse i ruteren (DHCP-reservasjon), så den forblir den samme.",
         "data": {
           "address": "IP-adresse eller vertsnavn"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Bekreft gateway-sertifikatet",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
         "data": {
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
-        "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i omtrent to sekunder, under tre sekunder, og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og passord lagres ikke.",
+        "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Gjenoppta lokalt oppsett",
-        "description": "Et tidligere forsøk er lagret. Hvis en token ble mottatt, fortsetter du med den. Hvis svaret gikk tapt, kan det finnes en token på gatewayen selv om Home Assistant ikke kunne lagre den. Forkasting fjerner bare den lokale ventende kopien og tillater et nytt forsøk; det tilbakekaller ikke gateway-tokens.\n\nGjenstående serverpause: {seconds} sekunder.",
+        "description": "Et tidligere forsøk er lagret. Hvis en token ble mottatt, fortsetter du med den. Hvis svaret gikk tapt, kan det finnes en token på gatewayen selv om Home Assistant ikke kunne lagre den. Forkasting fjerner bare den lokale ventende kopien og tillater et nytt forsøk; det tilbakekaller ikke gateway-tokens.\n\nGjenstående pause for gatewayen: {seconds} sekunder (0 betyr at du kan fortsette med en gang).",
         "data": {
           "action": "Neste handling",
           "confirm": "Jeg forstår dette og vil forkaste det ventende forsøket"
@@ -161,10 +161,13 @@
       "local_invalid_address": "Skriv inn en IP-adresse eller et vertsnavn uten URL, bane eller påloggingsopplysninger.",
       "local_interface_required": "Denne IPv6-adressen trenger nettverksgrensesnittet på Home Assistant-verten.",
       "local_invalid_token": "Token-formatet er ugyldig. Kopier hele tokenen uten mellomrom.",
-      "local_invalid_credentials": "Sjekk Login og Pass på gateway-etiketten og skriv dem inn på nytt.",
-      "local_unlock_required": "Frigi lokal pålogging på gatewayen og bekreft det blå signalet før du prøver igjen.",
+      "local_invalid_credentials": "Gatewayen avviste Login og Pass. Sjekk begge på gateway-etiketten og skriv dem inn på nytt.",
+      "local_invalid_label_format": "Login eller Pass inneholder tegn som en enhetsetikett ikke har, for eksempel et mellomrom inne i verdien. Ingenting ble sendt til gatewayen. Sjekk inndataene og skriv dem inn på nytt.",
+      "local_unlock_confirm_required": "Kryss av her når du har frigitt lokal pålogging på gatewayen og sett det blå signalet.",
+      "local_unlock_required": "Gatewayen har ikke frigitt lokal pålogging, eller de fem minuttene etter frigivelsen har gått. Trykk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signalet og prøv igjen innen fem minutter.",
       "local_token_database_full": "Token-databasen på gatewayen er full. Gå gjennom de eksisterende tokenene før du oppretter en ny. Ingen tokens ble slettet.",
       "local_rate_limited": "Gatewayen ba om en pause. Vent til den viste tiden er gått.",
+      "local_rate_limited_wait": "Gatewayen ba om en pause. Prøv igjen om {seconds} sekunder.",
       "local_service_unavailable": "Gateway-tjenesten er midlertidig utilgjengelig. Vent og prøv igjen.",
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
@@ -198,14 +201,14 @@
       "already_configured": "Denne varmekontoen eller minst én valgt gateway er allerede konfigurert i Home Assistant.",
       "invalid_flow": "Denne oppsettsøkten er ufullstendig eller utløpt. Lukk dialogen og legg til Bosch/Buderus Home Comfort på nytt.",
       "no_gateways": "Ingen enheter ble funnet. Sjekk at det valgte merket og SingleKey ID-kontoen samsvarer med appen din. En romregulator med eldre fastvare vises først når fastvaren er oppdatert og den er satt opp i den nåværende appen med din SingleKey ID.",
-      "reauth_required": "Den lagrede autorisasjonen er ikke lenger gyldig. Lukk denne dialogen og velg Autentiser på nytt for Bosch/Buderus Home Comfort.",
+      "reauth_required": "Den lagrede påloggingen er ikke lenger gyldig. Lukk denne dialogen og velg **Konfigurer på nytt** for denne integrasjonen under Innstillinger → Enheter og tjenester.",
       "reauth_successful": "Påloggingen ble fornyet.",
       "reauth_wrong_account": "Den valgte kontoen samsvarer ikke med de konfigurerte enhetene. Logg på med den opprinnelige kontoen.",
       "reauth_no_targets": "Denne skytilgangen har ingen anlegg eller enheter igjen, og kontoen den hører til kan ikke bekreftes. De tidligere påloggingsopplysningene beholdes. For å bruke en skykonto igjen fjerner du skytilgangen under Konfigurer → Tilkoblinger og kobler den til på nytt.",
       "reauth_successful_targets_missing": "Påloggingen ble fornyet. {count} påslåtte anlegg eller enheter ble ikke funnet i kontoen; de forblir konfigurert. En reparasjonsmelding nevner dem og forklarer hvordan du glemmer dem.",
       "reconfigure_successful": "Innstillingene ble lagret. Bosch/Buderus Home Comfort lastes på nytt og søker etter alle tilgjengelige ressurser igjen.",
-      "connection_required": "Velg tilkoblingen under Innstillinger før du logger på igjen.",
-      "connection_settings_required": "Administrer denne tilgangen under Innstillinger og Tilkoblinger.",
+      "connection_required": "Velg først under **Konfigurer → Tilkoblinger** tilgangen du vil logge på igjen.",
+      "connection_settings_required": "Administrer denne tilgangen under **Konfigurer → Tilkoblinger**.",
       "cloud_already_connected": "Det er allerede konfigurert en skytilkobling. Bruk tilkoblingsinnstillingene til å velge flere enheter eller logge på igjen. En andre parallell skypålogging støttes ikke ennå.",
       "cloud_setup_in_progress": "Et annet skyoppsett er allerede åpent. Fullfør eller lukk den dialogen først.",
       "cloud_setup_taken_over": "En nyere skyoppsettsdialog har erstattet denne. Lukk denne dialogen og fortsett i den nyere.",
@@ -217,9 +220,10 @@
       "local_setup_unavailable": "Lokalt oppsett er ikke tilgjengelig før den vanlige lokale datatilførselen er klar.",
       "local_session_changed": "Denne oppsettsøkten er avsluttet, eller valget endret seg. Åpne lokalt oppsett på nytt for å fortsette.",
       "local_discovery_invalid": "Denne oppdagelsesmeldingen beskriver ikke et støttet lokalt gateway-endepunkt.",
+      "local_address_moved": "Gatewayen til en konfigurert lokal tilgang svarer på en ny adresse. En reparasjonsmelding tilbyr å bruke den.",
       "local_existing_owner_required": "Sett opp et anlegg uten skyen med «Bare lokal tilgang» når du legger til integrasjonen. En funnet gateway kan legges til i et eksisterende oppsett.",
       "local_target_required": "Dette oppsettet har ikke noe egnet lagret anlegg for en lokal tilkobling.",
-      "local_setup_complete": "Den lokale tilgangen er satt opp.",
+      "local_setup_complete": "Den lokale tilgangen er satt opp. Status og avspørringshyppighet finner du under Konfigurer → Tilkoblinger.",
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "already_in_progress": "Oppsettet for denne lokale gatewayen pågår allerede.",
@@ -228,7 +232,7 @@
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."
     },
-    "flow_title": "Lokal gateway ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {
@@ -238,7 +242,7 @@
         "menu_options": {
           "notifications": "Varsler",
           "holidays": "Administrer ferieperioder",
-          "rrc_programs": "RRC-tidsprogrammer for oppvarming",
+          "rrc_programs": "Tidsprogrammer for romregulator",
           "switch_programs": "Tidsprogrammer for oppvarming og varmtvann",
           "controls": "Betjen apparatet",
           "connections": "Tilkoblinger",
@@ -275,7 +279,7 @@
         "data": {
           "holiday_name": "Navn",
           "holiday_start": "Start",
-          "holiday_end": "Slutt (eksklusiv)",
+          "holiday_end": "Slutt (herfra normal drift igjen)",
           "holiday_assigned_to": "Gjelder for",
           "holiday_heating_mode": "Sentralvarme",
           "holiday_dhw_mode": "Varmtvann",
@@ -298,7 +302,7 @@
         "data": {
           "holiday_name": "Navn",
           "holiday_start": "Start",
-          "holiday_end": "Slutt (eksklusiv)",
+          "holiday_end": "Slutt (herfra normal drift igjen)",
           "holiday_assigned_to": "Gjelder for",
           "holiday_heating_mode": "Sentralvarme",
           "holiday_dhw_mode": "Varmtvann",
@@ -313,7 +317,7 @@
         "data": {
           "holiday_name": "Navn",
           "holiday_start": "Start",
-          "holiday_end": "Slutt (eksklusiv)",
+          "holiday_end": "Slutt (første dag etter ferien)",
           "holiday_assigned_to": "Gjelder for",
           "holiday_heating_mode": "Sentralvarme",
           "holiday_dhw_mode": "Varmtvann",
@@ -329,7 +333,7 @@
         "data": {
           "holiday_name": "Navn",
           "holiday_start": "Start",
-          "holiday_end": "Slutt (eksklusiv)",
+          "holiday_end": "Slutt (første dag etter ferien)",
           "holiday_assigned_to": "Gjelder for",
           "holiday_heating_mode": "Sentralvarme",
           "holiday_dhw_mode": "Varmtvann",
@@ -444,7 +448,7 @@
       },
       "operate": {
         "title": "Betjen apparatet",
-        "description": "Velg en seksjon og juster innstillingene. Bruk skriver bare endringene dine. Når du endrer flere innstillinger, bekreftes hver av dem for seg.",
+        "description": "Velg en seksjon og juster innstillingene. **Bruk** sender bare endringene dine, én etter én, og kontrollerer hver av dem ved å lese den tilbake.",
         "data": {
           "controls": "Betjening"
         },
@@ -466,7 +470,7 @@
         "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Test tilkoblingen nå",
-          "connection_enabled": "Aktiver eller deaktiver tilgang",
+          "connection_enabled": "Slå tilgang på eller av",
           "connection_forget": "Glem fravalgte anlegg",
           "connection_targets": "Bruk for anlegg og enheter",
           "connection_reauthenticate": "Logg på igjen",
@@ -474,16 +478,17 @@
           "connection_discover": "Søk etter og velg enheter",
           "connection_polling": "Forespørselsfrekvens",
           "local_setup": "Endre lokal tilgang",
+          "local_tokens": "Tokens på gatewayen",
           "local_polling": "Lokal forespørselsfrekvens og status",
           "local_values": "Bruk lokale verdier for eksisterende entiteter",
           "back": "← Tilbake"
         }
       },
       "connection_enabled": {
-        "title": "Aktiver tilgang",
+        "title": "Slå tilgang på eller av",
         "description": "Deaktivering gjelder bare denne tilgangen. Andre tilkoblinger fortsetter å kjøre. Anlegg og entiteter beholdes.",
         "data": {
-          "enabled": "Aktivert"
+          "enabled": "Tilgang slått på"
         }
       },
       "connection_forget": {
@@ -509,9 +514,10 @@
       },
       "connection_remove": {
         "title": "Fjern tilgang",
-        "description": "Påloggingsopplysningene fjernes. Anlegg og entiteter beholdes, selv om dette er den siste tilgangen. Uten en tilgjengelig tilkobling kan ikke entitetene vise gjeldende verdier.",
+        "description": "Påloggingsopplysningene fjernes fra Home Assistant. Tokenen blir værende på gatewayen, med mindre du tilbakekaller den med boksen under. Anlegg og entiteter beholdes, selv om dette er den siste tilgangen; uten en tilgjengelig tilgang viser de ingen gjeldende verdier. La den øverste boksen stå tom for å gå tilbake uten endringer.",
         "data": {
-          "confirm": "Fjern denne tilgangen"
+          "confirm": "Fjern denne tilgangen",
+          "revoke": "Tilbakekall først en token fra denne integrasjonen på gatewayen"
         }
       },
       "connection_polling": {
@@ -575,7 +581,7 @@
       },
       "local_address": {
         "title": "Lokal gateway-adresse",
-        "description": "Velg en funnet adresse eller skriv inn en IP-adresse eller et vertsnavn. Søket endrer ingen lagret tilkobling.",
+        "description": "Velg en funnet adresse eller skriv inn en IP-adresse eller et vertsnavn. Tips: Reserver gatewayens adresse i ruteren (DHCP-reservasjon), så den forblir den samme.",
         "data": {
           "address": "IP-adresse eller vertsnavn"
         }
@@ -596,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Bekreft gateway-sertifikatet",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
         "data": {
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
-        "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i omtrent to sekunder, under tre sekunder, og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og passord lagres ikke.",
+        "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -619,7 +625,7 @@
       },
       "local_pending": {
         "title": "Gjenoppta lokalt oppsett",
-        "description": "Et tidligere forsøk er lagret. Hvis en token ble mottatt, fortsetter du med den. Hvis svaret gikk tapt, kan det finnes en token på gatewayen selv om Home Assistant ikke kunne lagre den. Forkasting fjerner bare den lokale ventende kopien og tillater et nytt forsøk; det tilbakekaller ikke gateway-tokens.\n\nGjenstående serverpause: {seconds} sekunder.",
+        "description": "Et tidligere forsøk er lagret. Hvis en token ble mottatt, fortsetter du med den. Hvis svaret gikk tapt, kan det finnes en token på gatewayen selv om Home Assistant ikke kunne lagre den. Forkasting fjerner bare den lokale ventende kopien og tillater et nytt forsøk; det tilbakekaller ikke gateway-tokens.\n\nGjenstående pause for gatewayen: {seconds} sekunder (0 betyr at du kan fortsette med en gang).",
         "data": {
           "action": "Neste handling",
           "confirm": "Jeg forstår dette og vil forkaste det ventende forsøket"
@@ -653,6 +659,43 @@
       "rescan": {
         "title": "Søk i anlegget på nytt",
         "description": "Søker i anlegget en gang til etter deler og måleverdier, via skytilgangen og den lokale tilgangen. Bruk det etter at du har lagt til eller endret komponenter. Søket kjøres ved neste vanlige oppdatering og innenfor de vanlige grensene for forespørsler; det fjerner aldri en entitet, og måleverdier som ikke finnes igjen, blir som de er."
+      },
+      "local_tokens": {
+        "title": "Tokens på gatewayen",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Uten et valg endres ingenting.{note}",
+        "data": {
+          "token": "Token som skal tilbakekalles"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Tilbakekall en token før fjerning",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjerner **Send** tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.{note}",
+        "data": {
+          "token": "Token som skal tilbakekalles"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ingen token å tilbakekalle",
+        "description": "Gatewayen viser ingen token fra denne integrasjonen som kan tilbakekalles her, eller listen kunne ikke leses. Tilgangen er ikke fjernet ennå. Velg om den skal fjernes uten tilbakekalling eller beholdes.",
+        "menu_options": {
+          "local_tokens_remove_without": "Fjern uten tilbakekalling",
+          "local_tokens_remove_cancel": "Avbryt og behold tilgangen"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Bekreft påloggingssertifikatet",
+        "description": "Påloggingstjenesten på **{host}:{port}** viser et sertifikat som aldri er bekreftet for denne tilgangen. Bekreft at dette er gatewayen din før tilgangens token sendes dit. Bekreftelsen gjelder bare for denne dialogen.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Tilbakekall token",
+        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang. La boksen stå tom for å gå tilbake uten tilbakekalling. {use} Merk også den andre boksen for å bekrefte det.",
+        "data": {
+          "confirm": "Tilbakekall denne tokenen på gatewayen",
+          "confirm_end": "En lokal tilgang som bruker denne tokenen, avsluttes"
+        }
       }
     },
     "error": {
@@ -663,7 +706,7 @@
       "holiday_time_step": "Velg et tidspunkt i kvarters trinn: minutt 00, 15, 30 eller 45.",
       "holiday_time_nonexistent": "Det valgte start- eller sluttidspunktet finnes ikke fordi klokken stilles frem i varmeanleggets tidssone. Velg et annet tidspunkt.",
       "holiday_time_ambiguous": "Det valgte start- eller sluttidspunktet forekommer to ganger fordi klokken stilles tilbake i varmeanleggets tidssone. Velg et entydig tidspunkt.",
-      "write_authentication_failed": "Skypåloggingen er ikke lenger gyldig. Autentiser Bosch/Buderus Home Comfort på nytt før du prøver igjen.",
+      "write_authentication_failed": "Skypåloggingen er ikke lenger gyldig. Logg på igjen under Konfigurer → Tilkoblinger → skytilgang → **Logg på igjen**, og prøv deretter på nytt.",
       "write_failed": "Ferieinnstillingene kunne ikke endres.",
       "write_busy": "Varmeanlegget leses av, eller en annen endring pågår fortsatt. Ingenting ble sendt. Prøv igjen om et øyeblikk.",
       "write_not_confirmed": "Endringen kunne ikke bekreftes fullstendig. Noen innstillinger kan allerede være lagret. Åpne ferien på nytt og sjekk de gjeldende innstillingene.",
@@ -720,10 +763,13 @@
       "local_invalid_address": "Skriv inn en IP-adresse eller et vertsnavn uten URL, bane eller påloggingsopplysninger.",
       "local_interface_required": "Denne IPv6-adressen trenger nettverksgrensesnittet på Home Assistant-verten.",
       "local_invalid_token": "Token-formatet er ugyldig. Kopier hele tokenen uten mellomrom.",
-      "local_invalid_credentials": "Sjekk Login og Pass på gateway-etiketten og skriv dem inn på nytt.",
-      "local_unlock_required": "Frigi lokal pålogging på gatewayen og bekreft det blå signalet før du prøver igjen.",
+      "local_invalid_credentials": "Gatewayen avviste Login og Pass. Sjekk begge på gateway-etiketten og skriv dem inn på nytt.",
+      "local_invalid_label_format": "Login eller Pass inneholder tegn som en enhetsetikett ikke har, for eksempel et mellomrom inne i verdien. Ingenting ble sendt til gatewayen. Sjekk inndataene og skriv dem inn på nytt.",
+      "local_unlock_confirm_required": "Kryss av her når du har frigitt lokal pålogging på gatewayen og sett det blå signalet.",
+      "local_unlock_required": "Gatewayen har ikke frigitt lokal pålogging, eller de fem minuttene etter frigivelsen har gått. Trykk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signalet og prøv igjen innen fem minutter.",
       "local_token_database_full": "Token-databasen på gatewayen er full. Gå gjennom de eksisterende tokenene før du oppretter en ny. Ingen tokens ble slettet.",
       "local_rate_limited": "Gatewayen ba om en pause. Vent til den viste tiden er gått.",
+      "local_rate_limited_wait": "Gatewayen ba om en pause. Prøv igjen om {seconds} sekunder.",
       "local_service_unavailable": "Gateway-tjenesten er midlertidig utilgjengelig. Vent og prøv igjen.",
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
@@ -759,7 +805,13 @@
       "cloud_local_first_conflict": "Skyen og den lokale tilgangen beskriver ikke det samme anlegget. Ingenting ble lagret. Fjern valget av dette anlegget for å fortsette å bruke det bare via lokal tilgang.",
       "local_plant_known": "Denne gatewayen hører allerede til et konfigurert anlegg. Velg det anlegget i stedet for et nytt.",
       "auth_expired": "Dette påloggingsforsøket er utløpt. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
-      "auth_restart": "Dette påloggingsforsøket kan ikke brukes lenger. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen."
+      "auth_restart": "Dette påloggingsforsøket kan ikke brukes lenger. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
+      "local_tokens_rejected": "Gatewayen godtok ikke tokenen for denne tilgangen. Ingenting ble endret.",
+      "local_tokens_forbidden": "Påloggingstjenesten på gatewayen avviste forespørselen. Ingenting ble endret.",
+      "local_tokens_unsupported": "Denne gatewayen tilbyr ingen tokenliste. Ingenting ble endret.",
+      "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret.",
+      "local_token_end_unconfirmed": "Å tilbakekalle denne tokenen kan avslutte en lokal tilgang. Merk også den andre boksen, eller la den første stå tom for å gå tilbake. Ingenting ble sendt.",
+      "connection_remove_unconfirmed": "Merk også «Fjern denne tilgangen»: en token tilbakekalles bare sammen med at tilgangen fjernes. Ingenting ble sendt eller fjernet."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
@@ -776,7 +828,7 @@
       "holiday_create_unconfirmed": "Opprettingsforespørselen kunne ikke bekreftes. Ferien kan allerede finnes. Sjekk Administrer ferieperioder eller produsentens app. De neste 10 minuttene sjekker et nytt forsøk resultatet av denne forespørselen uten å opprette en ny ferie.",
       "holiday_create_adjusted": "Varmeanlegget returnerte en ny ferie, men innstillingene avviker fra forespørselen din. Forespurt periode: {requested}. Returnert periode: {actual}. Åpne Administrer ferieperioder for å sjekke og redigere denne oppføringen.",
       "holiday_update_adjusted": "Varmeanlegget returnerte innstillinger som avviker fra den forespurte endringen. Forespurt periode: {requested}. Returnert periode: {actual}. Åpne Administrer ferieperioder for å sjekke og redigere den gjeldende oppføringen.",
-      "no_rrc_schedules": "Det finnes ingen gjeldende RRC-ukeprogram som støttes.",
+      "no_rrc_schedules": "Det finnes ikke noe gjeldende, støttet ukeprogram for en romregulator.",
       "no_switch_programs": "Det finnes ikke noe gjeldende tidsprogram for en varmekrets eller for varmtvannet som kan endres her.",
       "switch_program_changed": "Tidsprogrammet er endret i mellomtiden eller kan ikke lenger endres. Åpne det på nytt for å se de gjeldende koblingspunktene.",
       "switch_program_saved": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}",
@@ -790,7 +842,7 @@
       "controls_none": "Dette apparatet melder for øyeblikket ingen innstillinger som kan endres her.",
       "configuration_changed": "Tilkoblingsinnstillingene endret seg mens denne dialogen var åpen. Lukk den og prøv igjen.",
       "no_connections": "Ingen tilgang er konfigurert. Eksisterende anlegg og entiteter beholdes.",
-      "connection_reauth_started": "Pålogging er forespurt. Åpne autentiseringsforespørselen for denne oppføringen.",
+      "connection_reauth_started": "Den nye påloggingen er klargjort. Lukk denne dialogen og velg **Konfigurer på nytt** for denne integrasjonen under Innstillinger → Enheter og tjenester, i delen **Krever oppmerksomhet**.",
       "cloud_already_connected": "Det er allerede konfigurert en skytilkobling. Bruk tilkoblingsinnstillingene til å velge flere enheter eller logge på igjen. En andre parallell skypålogging støttes ikke ennå.",
       "cloud_setup_in_progress": "Et annet skyoppsett er allerede åpent. Fullfør eller lukk den dialogen først.",
       "cloud_setup_taken_over": "En nyere skyoppsettsdialog har erstattet denne. Lukk denne dialogen og fortsett i den nyere.",
@@ -804,7 +856,7 @@
       "local_discovery_invalid": "Denne oppdagelsesmeldingen beskriver ikke et støttet lokalt gateway-endepunkt.",
       "local_existing_owner_required": "Sett opp et anlegg uten skyen med «Bare lokal tilgang» når du legger til integrasjonen. En funnet gateway kan legges til i et eksisterende oppsett.",
       "local_target_required": "Dette oppsettet har ikke noe egnet lagret anlegg for en lokal tilkobling.",
-      "local_setup_complete": "Den lokale tilgangen er satt opp.",
+      "local_setup_complete": "Den lokale tilgangen er satt opp. Status og avspørringshyppighet finner du under Konfigurer → Tilkoblinger.",
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet.",
@@ -816,7 +868,17 @@
       "connection_saved": "Endringen ble lagret.",
       "connection_removed": "Tilgangen ble fjernet.",
       "notifications_saved": "Varslingsinnstillingene ble lagret.",
-      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing."
+      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing.",
+      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først.",
+      "local_tokens_changed": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt.",
+      "local_token_revoked": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger.",
+      "local_token_access_ended": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den.",
+      "local_token_revoke_rejected": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen.",
+      "local_token_revoke_unclear": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere.",
+      "local_token_revoked_removed": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet.",
+      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt.",
+      "local_token_old_revoked_removed": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen.",
+      "local_token_access_end_failed": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."
@@ -887,7 +949,7 @@
     },
     "local_certificate_changed": {
       "title": "Sertifikatet til den lokale gatewayen har endret seg",
-      "description": "Gatewayen til en lokal tilgang viser et annet sertifikat. Integrasjonen godtar det ikke på egen hånd og slutter å lese lokalt. Hvis du vet hvorfor sertifikatet endret seg (for eksempel etter en gateway-oppdatering eller tilbakestilling), åpner du integrasjonsinnstillingene, velger den lokale tilgangen og velger «Endre lokal tilgang». Der bekrefter du det nye sertifikatet. En ny pålogging med enhetsetiketten anbefales; behold den gjeldende tokenen bare hvis du er sikker på at det nye sertifikatet tilhører din egen gateway."
+      "description": "Gatewayen til en lokal tilgang viser et annet sertifikat. Integrasjonen godtar det ikke på egen hånd og slutter å lese lokalt. Hvis du vet hvorfor sertifikatet endret seg (for eksempel etter en gateway-oppdatering eller tilbakestilling), åpner du Konfigurer → Tilkoblinger for integrasjonen, velger LAN-tilgangen og velger «Endre lokal tilgang». Der bekrefter du det nye sertifikatet. En ny pålogging med enhetsetiketten anbefales; behold den gjeldende tokenen bare hvis du er sikker på at det nye sertifikatet tilhører din egen gateway."
     },
     "local_start_certificate": {
       "title": "Lokal tilgang kan ikke koble til sikkert",
@@ -946,6 +1008,30 @@
         "abort": {
           "entry_not_found": "Den berørte oppføringen finnes ikke lenger.",
           "configuration_changed": "Tilgangen eller varmeanlegget har endret seg. Åpne reparasjonen på nytt."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokal gateway funnet på en ny adresse",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Bruk gatewayens nye adresse",
+            "description": "Den lokale tilgangen når ikke gatewayen sin på {previous}. Den samme gatewayen svarer nå på {address}: den viser sertifikatet som ble bekreftet under oppsettet. Ingen token ble sendt til den nye adressen.\n\nBekreft nedenfor for å lagre den nye adressen. Den lokale tilgangen starter deretter på nytt med den; token og bekreftet sertifikat forblir uendret. For å unngå dette senere kan du reservere gatewayens adresse i ruteren (DHCP-reservasjon).\n\nHvis du ikke vil bruke adressen, lukker du dialogen eller velger **Ignorer**.",
+            "data": {
+              "confirm": "Bruk den nye adressen"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bekreft for å fortsette."
+        },
+        "abort": {
+          "entry_not_found": "Den berørte oppføringen i denne integrasjonen finnes ikke lenger.",
+          "configuration_changed": "Tilgangen eller anlegget har endret seg. Åpne reparasjonen på nytt.",
+          "local_address_expired": "Dette varselet er ikke lenger aktuelt, for eksempel etter en omstart. Ingenting ble endret. Det vises igjen hvis gatewayen svarer på en ny adresse igjen.",
+          "local_address_recovered": "Den lokale tilgangen når gatewayen sin igjen. Ingenting ble endret.",
+          "local_address_unproven": "Gatewayen på den nye adressen kunne ikke bekreftes på nytt. Ingenting ble endret."
         }
       }
     },
@@ -1022,7 +1108,7 @@
     },
     "setup_unfinished": {
       "title": "Oppsettet er ikke fullført",
-      "description": "Oppføringen «{title}» har ingen tilgang ennå. Åpne konfigurasjonsinnstillingene og velg «Sett opp lokal tilgang» (eller legg til en skytilgang) for å fullføre oppsettet."
+      "description": "Oppføringen «{title}» har ingen tilgang ennå. Velg **Konfigurer** på den og deretter «Sett opp lokal tilgang» (eller koble til en skytilgang)."
     }
   },
   "exceptions": {
@@ -1108,7 +1194,7 @@
       "message": "Endringen ble sendt til romregulatoren, men den har ikke bekreftet den ennå. Regulatoren kan ta den i bruk med forsinkelse; verdien oppdateres ved neste avlesning."
     },
     "write_authentication_failed": {
-      "message": "Skypåloggingen er ikke lenger gyldig. Autentiser Bosch/Buderus Home Comfort på nytt før du prøver igjen."
+      "message": "Skypåloggingen er ikke lenger gyldig. Logg på igjen under Konfigurer → Tilkoblinger → skytilgang → Logg på igjen, og prøv deretter på nytt."
     },
     "write_rate_limited": {
       "message": "Skyen begrenser forespørsler akkurat nå. Vent før du prøver endringen igjen."
@@ -1366,10 +1452,10 @@
         "name": "Ønsket bassengtemperatur"
       },
       "heating_temperature": {
-        "name": "Oppvarming"
+        "name": "Oppvarmingstemperatur"
       },
       "reduced_temperature": {
-        "name": "Redusert"
+        "name": "Senkingstemperatur"
       },
       "extra_hot_water_duration": {
         "name": "Varighet for ekstra varmtvann"
@@ -1378,13 +1464,13 @@
         "name": "Settpunkt for ekstra varmtvann"
       },
       "hot_water_eco_plus": {
-        "name": "Starttemperatur Eco+"
+        "name": "Startterskel Eco+"
       },
       "hot_water_comfort": {
-        "name": "Starttemperatur Komfort"
+        "name": "Startterskel Komfort"
       },
       "hot_water_eco": {
-        "name": "Starttemperatur Eco"
+        "name": "Startterskel Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maksimal turtemperatur"
@@ -1649,7 +1735,7 @@
         "name": "Utetemperatur"
       },
       "supply_temperature": {
-        "name": "Turtemperatur"
+        "name": "Turtemperatur anlegg"
       },
       "return_temperature": {
         "name": "Returtemperatur"
@@ -2036,7 +2122,7 @@
         }
       },
       "support_status": {
-        "name": "Støttestatus",
+        "name": "Variabel tariff – støtte",
         "state": {
           "not_supported": "Støttes ikke",
           "supported": "Støttes",
@@ -2070,6 +2156,9 @@
       },
       "next_holiday": {
         "name": "Neste ferie"
+      },
+      "heat_generator": {
+        "name": "Varmekilde"
       },
       "pointt_api_requests_total": {
         "name": "Forespørsler til skyen totalt"
@@ -2220,6 +2309,36 @@
           "idle": "Ikke planlagt",
           "planned": "Planlagt",
           "active": "Aktiv"
+        }
+      },
+      "signal_eebus_status": {
+        "name": "EEBus-status",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Ikke satt i drift",
+          "no_lan_connection": "Ingen nettverkstilkobling",
+          "no_hp_connection": "Ingen tilkobling til varmepumpen",
+          "no_updateserver_connection": "Ingen tilkobling til oppdateringsserveren",
+          "no_eebus_connection": "Ingen EEBus-tilkobling",
+          "no_eebus_no_trust": "Ingen EEBus-tilkobling (ingen klarert partner)",
+          "no_eebus_no_usecase_active": "Ingen EEBus-tilkobling (ingen aktiv brukssak)",
+          "power_limitation_active": "Effektbegrensning aktiv",
+          "ohpcf_active": "Kompressorfleksibilitet (OHPCF) aktiv",
+          "internal_error": "Intern feil"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-idriftsettelse",
+        "state": {
+          "commissioned": "Satt i drift",
+          "not_commissioned": "Ikke satt i drift"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Oppstartskontroll",
+        "state": {
+          "startup_completed": "Fullført",
+          "startup_inprogress": "Pågår"
         }
       },
       "signal_true_false": {

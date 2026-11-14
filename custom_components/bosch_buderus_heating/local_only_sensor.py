@@ -20,6 +20,7 @@ from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
@@ -114,6 +115,13 @@ class BoschBuderusLocalOnlySensor(
     _attr_has_entity_name = True
     # O30: the native unit of the last reading, kept while there is none.
     _held_unit: str | None = None
+    # The device class that goes with that unit, kept the same way. Without
+    # it a reading that is missing for a while (Home Assistant stopping, a
+    # pause after a timeout, the first minutes after a start) would write the
+    # entity without its class, and Home Assistant would drop the class and
+    # the display precision from the registry until the next reading.
+    _held_class: SensorDeviceClass | None = None
+    _class_held = False
 
     def __init__(
         self,
@@ -275,10 +283,36 @@ class BoschBuderusLocalOnlySensor(
     def device_class(self) -> SensorDeviceClass | None:
         if self._definition.kind in ENUM_KINDS:
             return SensorDeviceClass.ENUM
+        fixed = static_unit(self._definition)[1]
         shape = self._shape()
-        if shape is not None and shape[2] is not None:
-            return shape[2]
-        return static_unit(self._definition)[1]
+        if shape is not None:
+            if shape[1] is not None:
+                # Held together with the unit (see native_unit_of_measurement).
+                self._held_class, self._class_held = shape[2], True
+            return shape[2] if shape[2] is not None else fixed
+        if fixed is not None:
+            return fixed
+        if not self._class_held:
+            # Before the first reading after a restart: the class the registry
+            # kept from the last state write, like the stored unit.
+            return self._registered_class()
+        return self._held_class
+
+    def _registered_class(self) -> SensorDeviceClass | None:
+        entry = self.registry_entry
+        if entry is None and self.hass is not None and self.unique_id is not None:
+            # While Home Assistant registers the entity it has no entry yet.
+            platform = getattr(getattr(self, "platform", None), "platform_name", None)
+            registry = er.async_get(self.hass)
+            entity_id = registry.async_get_entity_id(
+                "sensor", platform or DOMAIN, self.unique_id
+            )
+            entry = registry.async_get(entity_id) if entity_id is not None else None
+        stored = entry.original_device_class if entry is not None else None
+        try:
+            return SensorDeviceClass(stored) if stored else None
+        except ValueError:
+            return None
 
     async def async_update(self) -> None:
         """Local readings arrive by themselves; never start a cloud poll (P40)."""
@@ -339,8 +373,9 @@ class BoschBuderusInstallationDateSensor(
 ):
     """C7-3: the installation date, from its three local signals.
 
-    The year counts from 2000. Unknown while a part is missing, reports a
-    declared marker (for example INVALID) or the parts give no real date.
+    The year counts from 2000. Unavailable while a part is missing or reports
+    a declared marker (for example INVALID); unknown when the parts give no
+    real date or a date in the future.
     """
 
     _attr_has_entity_name = True
@@ -390,13 +425,18 @@ class BoschBuderusInstallationDateSensor(
         if day is None or month is None or year is None or not 0 <= year <= 99:
             return None
         try:
-            return date(2000 + year, month, day)
+            installed = date(2000 + year, month, day)
         except ValueError:
             return None
+        # A controller that was never given a date reports a placeholder
+        # (for example year 60); a date after today is no installation date.
+        return None if installed > dt_util.now().date() else installed
 
     @property
     def available(self) -> bool:
-        return self.native_value is not None
+        # Readable parts that give no plausible date show as unknown; only
+        # missing parts or a declared marker make the entity unavailable.
+        return all(self._part(name) is not None for name in ("Day", "Month", "Year"))
 
     async def async_update(self) -> None:
         """Local readings arrive by themselves; never start a cloud poll."""

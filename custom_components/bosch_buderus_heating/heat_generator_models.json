@@ -1,0 +1,366 @@
+{
+  "schema": 1,
+  "table_version": 1,
+  "constructions": [
+    "monobloc",
+    "split",
+    "compact"
+  ],
+  "brand_families": [
+    "bosch_group"
+  ],
+  "documented_sources": [
+    "bosch-homecomfort.com",
+    "bosch-thermotechnology.com",
+    "buderus.com",
+    "buderus.de",
+    "junkers.com",
+    "worcester-bosch.co.uk",
+    "ivt.se",
+    "elmleblanc.fr",
+    "vulcano.pt",
+    "github.com/bosch-home-comfort"
+  ],
+  "entries": [
+    {
+      "match": {
+        "product_name": "Logatherm WLW176i-12 TP70"
+      },
+      "family": "wlw176i",
+      "construction": "monobloc",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "Logatherm WLW176i-12 TP70",
+          "hardware_type": "XCU_THH"
+        }
+      ],
+      "evidence": {
+        "kind": "observed",
+        "note": "Observed in a real module list: indoor unit of an air-to-water heat pump with a monobloc outdoor unit; read on 2026-11-13. The construction monobloc is taken from the system documentation, not stated for the indoor unit itself."
+      }
+    },
+    {
+      "match": {
+        "product_name": "WLW-10 MB AR"
+      },
+      "construction": "monobloc",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "WLW-10 MB AR",
+          "hardware_type": "XCU_SRH"
+        }
+      ],
+      "evidence": {
+        "kind": "observed",
+        "note": "Observed in a real module list: monobloc outdoor unit; read on 2026-11-13."
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW176i-12 (E|TP70)"
+      },
+      "family": "wlw176i",
+      "construction": "monobloc",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "Logatherm WLW176i-12 TP70",
+          "hardware_type": "XCU_THH"
+        },
+        {
+          "product_name": "WLW176i-12 E"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): indoor units WLW176i-12 E and WLW176i-12 TP70 (technical data p. 21-22). The construction monobloc is taken from the system documentation: the systems use the monobloc outdoor unit WLW MB AR as their only outdoor unit (p. 6, p. 23).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW186i-12 (E|TP70)"
+      },
+      "family": "wlw186i",
+      "construction": "monobloc",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "Logatherm WLW186i-12 E",
+          "hardware_type": "XCU_THH"
+        },
+        {
+          "product_name": "WLW186i-12 TP70"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): indoor units WLW186i-12 E and WLW186i-12 TP70 (technical data p. 21-22). The construction monobloc is taken from the system documentation: the systems use the monobloc outdoor unit WLW MB AR as their only outdoor unit (p. 6, p. 23).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW-5 MB AR"
+      },
+      "family": "wlw_mb_ar",
+      "construction": "monobloc",
+      "power_kw": 5,
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "WLW-5 MB AR",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "Logatherm WLW-5 MB AR"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): monobloc outdoor unit WLW MB AR in the power classes 5, 7, 10 and 12 kW (p. 6, p. 23); WLW-5 MB AR in the technical data (p. 21).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW-7 MB AR"
+      },
+      "family": "wlw_mb_ar",
+      "construction": "monobloc",
+      "power_kw": 7,
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "WLW-7 MB AR",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "Logatherm WLW-7 MB AR"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): monobloc outdoor unit WLW MB AR in the power classes 5, 7, 10 and 12 kW (p. 6, p. 23); WLW-7 MB AR in the technical data (p. 21).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW-10 MB AR"
+      },
+      "family": "wlw_mb_ar",
+      "construction": "monobloc",
+      "power_kw": 10,
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "WLW-10 MB AR",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "Logatherm WLW-10 MB AR"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): monobloc outdoor unit WLW MB AR in the power classes 5, 7, 10 and 12 kW (p. 6, p. 23); WLW-10 MB AR in the technical data (p. 21).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Logatherm )?WLW-12 MB AR"
+      },
+      "family": "wlw_mb_ar",
+      "construction": "monobloc",
+      "power_kw": 12,
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "WLW-12 MB AR",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "Logatherm WLW-12 MB AR"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Brochure Logatherm WLW186i AR / WLW176i AR (8737807367, 2023/10): monobloc outdoor unit WLW MB AR in the power classes 5, 7, 10 and 12 kW (p. 6, p. 23); WLW-12 MB AR in the technical data (p. 21).",
+        "source": "https://www.buderus.com/ocsmedia/optimized/full/o544963v272_BR_Logatherm_WLW176i_186i_AR_DE.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Compress )?CS5800i ?AW 12 (E|M|MB)"
+      },
+      "family": "cs5800i_aw",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "CS5800iAW 12 E"
+        },
+        {
+          "product_name": "CS5800i AW 12 MB"
+        },
+        {
+          "product_name": "Compress CS5800iAW 12 M"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Product page Compress 5800i AW, variant comparison: CS5800iAW 12 E, CS5800iAW 12 M, CS5800i AW 12 MB.",
+        "source": "https://www.bosch-homecomfort.com/de/de/ocs/wohngebaeude/compress-5800i-aw-19312694-p/"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Compress )?CS6800i ?AW 12 (E|M|MB)"
+      },
+      "family": "cs6800i_aw",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "Compress CS6800iAW 12 E",
+          "hardware_type": "XCU_THH"
+        },
+        {
+          "product_name": "CS6800i AW 12 MB"
+        },
+        {
+          "product_name": "CS6800iAW 12 M"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Product page Compress 6800i AW, variant comparison: CS6800iAW 12 E, CS6800iAW 12 M, CS6800i AW 12 MB.",
+        "source": "https://www.bosch-homecomfort.com/de/de/ocs/wohngebaeude/compress-6800i-aw-19312695-p/"
+      }
+    },
+    {
+      "match": {
+        "product_name": "AW (4|5|7) OR-S|AW 12 OR-T"
+      },
+      "family": "aw_or",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "AW 4 OR-S",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "AW 7 OR-S"
+        },
+        {
+          "product_name": "AW 12 OR-T"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Product pages Compress 5800i AW and 6800i AW: outdoor units AW 4 OR-S, AW 5 OR-S, AW 7 OR-S, AW 10 OR-T and AW 12 OR-T for both lines; no power class stated for these units.",
+        "source": "https://www.bosch-homecomfort.com/de/de/ocs/wohngebaeude/compress-6800i-aw-19312695-p/"
+      }
+    },
+    {
+      "match": {
+        "product_name": "AW 10 OR-T"
+      },
+      "family": "aw_or",
+      "power_kw": 10,
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "AW 10 OR-T"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Product pages Compress 5800i AW and 6800i AW, technical data of AW 10 OR-T: nominal heat output (average climate) 10 kW.",
+        "source": "https://www.bosch-homecomfort.com/de/de/ocs/wohngebaeude/compress-5800i-aw-19312694-p/"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Compress )?CS3800i ?AW ((4|6|7) O-S|(10|13) O-T)"
+      },
+      "family": "cs3800i_aw",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "CS3800i AW 4 O-S"
+        },
+        {
+          "product_name": "CS3800i AW 13 O-T"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Offer insert Compress 3800i AW, technical data: outdoor units CS3800i AW 4 O-S, 6 O-S, 7 O-S, 10 O-T and 13 O-T (heating output only, no power class).",
+        "source": "https://www.bosch-homecomfort.com/ocsmedia/optimized/full/o626413v272_Angebotsbeileger_3800_final.pdf"
+      }
+    },
+    {
+      "match": {
+        "product_name": "(Compress )?CS8800i ?AW (11|13|15) O-T( \\(B\\))?"
+      },
+      "family": "cs8800i_aw",
+      "brand_family": "bosch_group",
+      "examples": [
+        {
+          "product_name": "CS8800i AW 11 O-T (B)"
+        },
+        {
+          "product_name": "CS8800i AW 15 O-T"
+        }
+      ],
+      "evidence": {
+        "kind": "documented",
+        "note": "Offer insert Compress 8800i AW, technical data: outdoor units CS8800i AW 11 O-T (B), 13 O-T (B) and 15 O-T (B) (heating output only, no power class).",
+        "source": "https://www.bosch-homecomfort.com/ocsmedia/optimized/full/o626414v272_Angebotsbeileger_8800_final.pdf"
+      }
+    },
+    {
+      "match": {
+        "hardware_type": "XCU_THH"
+      },
+      "role": "heat_source",
+      "examples": [
+        {
+          "product_name": "Logatherm WLW176i-12 TP70",
+          "hardware_type": "XCU_THH"
+        },
+        {
+          "product_name": "Compress CS6800iAW 12 E",
+          "hardware_type": "XCU_THH"
+        }
+      ],
+      "evidence": {
+        "kind": "observed",
+        "note": "Indoor unit observed in a real module list; the example of the official local API documentation shows the same."
+      }
+    },
+    {
+      "match": {
+        "hardware_type": "XCU_SRH"
+      },
+      "role": "outdoor_unit",
+      "examples": [
+        {
+          "product_name": "WLW-10 MB AR",
+          "hardware_type": "XCU_SRH"
+        },
+        {
+          "product_name": "AW 4 OR-S",
+          "hardware_type": "XCU_SRH"
+        }
+      ],
+      "evidence": {
+        "kind": "observed",
+        "note": "Outdoor unit observed in a real module list; the example of the official local API documentation shows the same."
+      }
+    }
+  ]
+}

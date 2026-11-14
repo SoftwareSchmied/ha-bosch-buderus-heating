@@ -559,8 +559,8 @@ def test_dhw_names_keep_start_temperature_semantics(path):
         control_label,
     )
 
-    assert "Starttemperatur" in control_label(path, "fallback", "de")
-    assert "start temperature" in control_label(path, "fallback", "en")
+    assert "Startschwelle" in control_label(path, "fallback", "de")
+    assert "Start threshold" in control_label(path, "fallback", "en")
 
 
 async def test_frontend_registration_for_both_modules(hass):

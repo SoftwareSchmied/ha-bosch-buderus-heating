@@ -228,7 +228,7 @@ batches. Each path keeps its group's interval; only the minute within it
 moves, and a path read early is not read again before its group's deadline.
 A wake-up without a batch never gets one this way, and when no minute has room
 the deadline itself is used, as before. Small plants therefore keep their
-previous timing. With the anonymized cloud inventory of my heat pump (20 live
+previous timing. With the anonymized cloud inventory of a heat pump (20 live
 values, 32 paths every 5 minutes, 16 every 15 minutes and 9 hourly paths) a
 simulated hour needs 60 batches instead of 76, with the same 1,657 path reads.
 If a group cannot complete because a batch with another of its paths keeps
@@ -324,7 +324,7 @@ interval, the next one starts later instead of running in parallel.
 I measured the actual coordinator, client and slot limit against a local server
 with fixed response times of 20 and 50 ms. The table scales the measured cycle
 length at 50 ms, in multiples of one response time, to the average response
-time of 0.56 seconds observed on my installation and to a pessimistic 2 seconds:
+time of 0.56 seconds observed on a real installation and to a pessimistic 2 seconds:
 
 | Systems × operating values | Batches per minute | Cycle at 0.56 s | Cycle at 2 s |
 | --- | ---: | ---: | ---: |

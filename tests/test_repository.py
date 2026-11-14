@@ -32,7 +32,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Home Comfort"
-    assert manifest["version"] == "0.9.0"
+    assert manifest["version"] == "0.9.1"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == ["aiomqtt==2.5.1"]
     assert set(manifest["requirements"]).issubset(project["project"]["dependencies"])
@@ -219,16 +219,16 @@ def test_holiday_options_are_translated_and_structurally_aligned() -> None:
         "auto_sat": "Wie Samstag",
         "fix_temperature": "Konstante Temperatur",
         "fix_temp": "Konstante Temperatur",
-        "off": "AUS",
+        "off": "Aus",
         "eco": "Absenken",
     }
     assert german["selector"]["holiday_dhw_mode"]["options"]["off_td"] == (
-        "AUS bei thermischer Desinfektion"
+        "Aus bei thermischer Desinfektion"
     )
     assert german["options"]["step"]["holiday"]["data"] == {
         "holiday_name": "Name",
         "holiday_start": "Beginn",
-        "holiday_end": "Ende (exklusiv)",
+        "holiday_end": "Ende (ab hier wieder Normalbetrieb)",
         "holiday_assigned_to": "Anwenden auf",
         "holiday_heating_mode": "Heizung",
         "holiday_dhw_mode": "Warmwasser",

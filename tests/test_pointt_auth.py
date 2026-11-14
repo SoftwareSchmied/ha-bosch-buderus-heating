@@ -20,7 +20,6 @@ from custom_components.bosch_buderus_heating.pointt import (
     OAuthClient,
     OAuthFlow,
     OAuthRedirectError,
-    OAuthScopeRejected,
     OAuthStateMismatch,
     RateLimited,
     RefreshRefused,
@@ -32,10 +31,8 @@ from custom_components.bosch_buderus_heating.pointt import (
     create_pkce_context,
     parse_redirect_url,
 )
-from custom_components.bosch_buderus_heating.pointt.const import (
-    OAUTH_SCOPES,
-    OAUTH_SCOPES_REDUCED,
-)
+from custom_components.bosch_buderus_heating.pointt import const as pointt_const
+from custom_components.bosch_buderus_heating.pointt.const import OAUTH_SCOPES
 
 pytestmark = pytest.mark.usefixtures("socket_enabled")
 
@@ -498,89 +495,69 @@ async def test_invalid_refresh_lifetime_is_ignored(value: object) -> None:
     assert refreshed.refresh_expires_in is None
 
 
-# --- C72/SEC-1: reduced scopes with a one-time fallback to the full set ---
+# --- Issue #127: every sign-in asks for the full scope set ---
 
-
-@pytest.fixture
-def scope_fallback():
-    """Each test starts with the reduced set and leaves no fallback behind."""
-    from custom_components.bosch_buderus_heating.pointt import auth
-
-    auth._ScopeFallback.active = False
-    yield auth._ScopeFallback
-    auth._ScopeFallback.active = False
+# The set of 0.8.x. SingleKey ID shows its "misconfigured application" page
+# for this client when ``email`` is missing (checked against the live
+# authorize page for both brands); written out so that a change of the
+# constant cannot pass unnoticed.
+SIGN_IN_SCOPES = [
+    "openid",
+    "email",
+    "profile",
+    "offline_access",
+    "pointt.gateway.claiming",
+    "pointt.gateway.removal",
+    "pointt.gateway.list",
+    "pointt.gateway.users",
+    "pointt.gateway.resource.dashapp",
+    "pointt.castt.flow.token-exchange",
+    "bacon",
+    "hcc.tariff.read",
+]
 
 
 def _scopes(flow: OAuthFlow) -> list[str]:
     return parse_qs(urlparse(flow.authorization_url).query)["scope"][0].split()
 
 
-def test_sign_in_asks_for_the_reduced_scope_set_first(scope_fallback) -> None:
-    flow = OAuthFlow.create(Brand.BOSCH, now=100.0)
-    assert _scopes(flow) == list(OAUTH_SCOPES_REDUCED)
-    for unused in (
-        "pointt.gateway.claiming",
-        "pointt.gateway.removal",
-        "pointt.gateway.users",
-        "pointt.castt.flow.token-exchange",
-        "hcc.tariff.read",
-    ):
-        assert unused not in _scopes(flow)
-    assert set(OAUTH_SCOPES_REDUCED) < set(OAUTH_SCOPES)
+@pytest.mark.parametrize("brand", list(Brand))
+def test_sign_in_link_asks_for_the_full_scope_set(brand: Brand) -> None:
+    flow = OAuthFlow.create(brand, now=100.0)
+    assert {"openid", "email"} <= set(_scopes(flow))
+    assert _scopes(flow) == SIGN_IN_SCOPES == list(OAUTH_SCOPES)
+    query = parse_qs(urlparse(flow.authorization_url).query)
+    assert query["scope"] == [" ".join(SIGN_IN_SCOPES)]
 
 
-def test_rejected_reduced_scopes_fall_back_once_to_the_full_set(
-    scope_fallback,
-) -> None:
+def test_no_reduced_scope_set_or_fallback_is_left() -> None:
+    from custom_components.bosch_buderus_heating import pointt
+    from custom_components.bosch_buderus_heating.pointt import auth
+
+    assert [name for name in dir(pointt_const) if name.startswith("OAUTH_SCOPES")] == [
+        "OAUTH_SCOPES"
+    ]
+    for name in ("_ScopeFallback", "initial_scopes", "OAuthScopeRejected"):
+        assert not hasattr(auth, name)
+        assert not hasattr(pointt, name)
+    assert not hasattr(OAuthFlow, "scopes")
+
+
+def test_a_scope_error_is_an_ordinary_oauth_error() -> None:
+    """No second link: the attempt and its link stay as they are."""
     flow = OAuthFlow.create(Brand.BOSCH, now=100.0)
-    old_state = flow.context.state
-    rejected = f"{Brand.BOSCH.redirect_uri}?error=invalid_scope&state={old_state}"
-    with pytest.raises(OAuthScopeRejected):
-        flow.consume_redirect(rejected, now=101.0)
-    # The same dialog now shows a fresh link with the full set.
-    assert flow.scopes == OAUTH_SCOPES
-    assert _scopes(flow) == list(OAUTH_SCOPES)
-    assert flow.context.state != old_state
-    assert not flow.is_expired(now=102.0)
-    # The old attempt cannot be used any more; the new one can.
-    with pytest.raises(OAuthStateMismatch):
+    link = flow.authorization_url
+    with pytest.raises(OAuthRedirectError, match="OAuth error"):
         flow.consume_redirect(
-            f"{Brand.BOSCH.redirect_uri}?code=c&state={old_state}", now=102.0
+            f"{Brand.BOSCH.redirect_uri}?error=invalid_scope"
+            f"&state={flow.context.state}",
+            now=101.0,
         )
+    assert flow.authorization_url == link
     grant = flow.consume_redirect(
-        f"{Brand.BOSCH.redirect_uri}?code=c&state={flow.context.state}", now=103.0
+        f"{Brand.BOSCH.redirect_uri}?code=c&state={flow.context.state}", now=102.0
     )
     assert grant.code == "c"
-    # Later attempts of this process start with the full set at once.
-    later = OAuthFlow.create(Brand.BUDERUS, now=200.0)
-    assert _scopes(later) == list(OAUTH_SCOPES)
-    # Only once: a rejection of the full set is an ordinary OAuth error.
-    with pytest.raises(OAuthRedirectError) as caught:
-        later.consume_redirect(
-            f"{Brand.BUDERUS.redirect_uri}?error=invalid_scope"
-            f"&state={later.context.state}",
-            now=201.0,
-        )
-    assert not isinstance(caught.value, OAuthScopeRejected)
-
-
-@pytest.mark.parametrize(
-    "query",
-    ["error=invalid_scope&state=foreign", "error=access_denied&state={state}"],
-)
-def test_other_errors_or_foreign_attempts_keep_the_reduced_set(
-    scope_fallback, query: str
-) -> None:
-    flow = OAuthFlow.create(Brand.BOSCH, now=100.0)
-    state = flow.context.state
-    redirect = f"{Brand.BOSCH.redirect_uri}?{query.format(state=state)}"
-    with pytest.raises(OAuthRedirectError) as caught:
-        flow.consume_redirect(redirect, now=101.0)
-    assert not isinstance(caught.value, OAuthScopeRejected)
-    assert flow.scopes == OAUTH_SCOPES_REDUCED
-    assert flow.context.state == state
-    assert not scope_fallback.active
-    assert _scopes(OAuthFlow.create(Brand.BOSCH)) == list(OAUTH_SCOPES_REDUCED)
 
 
 # --- C74/SEC-3: a malformed redirect is an invalid redirect, not a crash ---
