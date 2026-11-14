@@ -30,18 +30,16 @@
 
 ## What's new in 0.9
 
-- **Local access:** reads K40/K40RF gateways (for example the MX300 or MX400 internet module) directly in your home network. It only reads; changes still go through the cloud. Confirmed on my own heat pump and on two further Logatherm WLW186i heat pumps with an MX400.
+- **Local access:** reads K40/K40RF gateways (for example the MX300 or MX400 internet module) directly in your home network. It only reads; changes still go through the cloud. Confirmed on real heat pumps with an MX400 (see [confirmed installations](#confirmed-installations)).
 - **More and fresher readings:** many values update more often, and some are only available locally (for example refrigerant circuit, compressor and pump values).
 - **Works without the cloud:** with a local access, your readings stay available when the cloud is not.
 - **Cloud and local access in one entry:** **Configure → Connections** shows, tests, signs in again, switches off or removes each access.
 - **Fewer cloud requests:** while an entity shows the value of the local access, its cloud copy is read at most every 15 minutes, as a whole multiple of its normal interval and only for readings polled every 7.5 minutes or more often; counters, values that can be changed and values that a control or a calculated entity reads keep their normal interval.
 - **Less load on Home Assistant, without losing any functionality:** entities write a new state only when their value, availability or source changes. My measurements are in the [release checks](docs/release.md#load-measurement-for-090-alpha2).
 - **More robust:** cloud outages at start-up, missing parts, firmware updates, rate-limit pauses and an exchanged gateway no longer need a restart, and readings stay shown within their validity during short outages.
-- **Room controllers:** room controllers of the RRC 2.0 platform (TC100.2, CT200) get their zone climates, programs, absences, hot water, heating circuit and radio devices. On a TC100.2 the zone climates, program selection, temporary setpoint, open window detection, a one-day absence, hot water mode, boost, away mode and advancing the next switch point are confirmed; the other room controller functions and the CT200 are expected to work but untested on a real controller.
-- **Schedules, iCom and firmware:** the weekly heating and hot water schedules of EMS and iCom gateways can be changed in the Configure dialog, iCom gateways get a cloud-friendly load profile, and each cloud gateway shows its firmware and offered updates. A heating circuit without a room controller that offers a temporary setpoint takes a target in automatic mode as well. Changing the hot water schedule was confirmed on a Logatherm WLW186i-12 E with an MX400; the other functions are tested with simulated data only and are expected to work but untested on a real device.
+- **Room controllers:** room controllers of the RRC 2.0 platform (TC100.2, CT200) get their zone climates, programs, absences, hot water, heating circuit and radio devices. The main TC100.2 functions are confirmed; the rest and the CT200 are untested on a real controller (see [room controllers](docs/room-controllers.md)).
+- **Schedules, iCom and firmware:** the weekly heating and hot water schedules of EMS and iCom gateways can be changed in the Configure dialog, iCom gateways get a cloud-friendly load profile, and each cloud gateway shows its firmware and offered updates. A heating circuit without a room controller that offers a temporary setpoint takes a target in automatic mode as well. Only changing the hot water schedule is confirmed on a real device; the other functions are tested with simulated data.
 - **Faults and languages:** fault and maintenance notifications are clearer, and the texts come in 19 languages.
-
-**Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems, and the [confirmed installations](#confirmed-installations).
 
 **Feedback:** please share your experience in the [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
@@ -69,13 +67,9 @@ See [Heating controls](docs/heating-controls.md),
 [PointT hot water](docs/pointt-hot-water.md) and
 [Connection recovery](docs/connection-recovery.md).
 
-On my Buderus installation, I confirmed a manual heating target change and
-restoration through the dialog and climate entity, plus Auto to Off and back
-to Auto through the hot-water entity. I checked both directions in MyBuderus
-and restored all changed settings. This confirms those paths on my appliance;
-other devices and failure scenarios still need their own field checks.
-The [project status](docs/specification-status.md) records the release checks
-and remaining field validation.
+Manual heating target changes and the hot-water mode are confirmed on a real
+installation; other devices and failure scenarios still need field checks. See
+the [project status](docs/specification-status.md).
 
 ## Built for real heating systems
 
@@ -109,11 +103,6 @@ Reliability is designed into the complete data path:
   `Heating circuit 1 – Operation mode` that remain clear on larger
   installations. The [language guide](docs/resource-names-and-languages.md)
   explains system-language names, profile-language dialogs and custom names.
-
-The result is an integration that aims to remain predictable not only during
-initial setup, but also when the cloud is slow, a resource is unavailable, or
-the installation exposes a combination of capabilities that has not been seen
-before.
 
 ## Cloud access and local access
 
@@ -204,10 +193,9 @@ on Home Assistant 2026.5.4, 2026.9.2 and the current release.
 |---|---|
 | In use | Many installations with heat pumps and gas condensing boilers |
 | Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus |
-| Tested on my system | Buderus heat pump with a Logamatic BC400 controller and an MX400 internet module (K40/K40RF gateway), cloud and local access |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
-| Room controllers (RRC 2.0) | TC100.2: zone readings, manual/schedule mode and manual setpoint confirmed with 0.9.0-alpha.4; program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed with 0.9.0-alpha.5; advancing the next switch point confirmed with 0.9.0-alpha.6; the system and radio device readings look right. Editing switch points, other absence changes, the other hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings: expected, untested. CT200: expected, untested. Cloud only, no local access. See [room controllers](docs/room-controllers.md) |
+| Room controllers (RRC 2.0) | TC100.2: zone readings and control, programs, temporary setpoint, open window detection, one-day absence, hot water mode, boost, away mode and next switch point confirmed; editing switch points, other absences and hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings untested. CT200: untested. Cloud only, no local access. See [room controllers](docs/room-controllers.md) |
 | Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
@@ -242,7 +230,7 @@ and remains visible in diagnostics and the gateway hardware data.
 
 ### Confirmed installations
 
-Users' reports and my own reference installation confirm the integration on
+Users' reports confirm the integration on
 these heaters. A feature that is not listed was not reported, which does not
 mean it does not work. The same list is also available as
 [Confirmed installations](docs/confirmed-installations.md).
@@ -257,8 +245,7 @@ mean it does not work. The same list is also available as
 | Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, room controller zones (setpoints, modes, schedules, open window detection, absences), hot water mode, boost, away mode, radiator thermostats |
 | Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
 
-The Logatherm WLW176i is my own reference installation. "–" means not stated
-in the report.
+"–" means not stated in the report.
 
 Is your system missing, or have you checked further features? Please post your
 heater, controller, gateway and the features you checked in
@@ -321,8 +308,8 @@ together even when several circuits exist. Examples include:
 - `Heat pump – System pressure`
 - `Total – Electricity consumption`
 
-The [entity and polling catalog](docs/entities.md) documents every entity in
-the reference installation, its PointT resource, write status, default state,
+The [entity and polling catalog](docs/entities.md) documents every entity,
+its PointT resource, write status, default state,
 and polling interval.
 
 For a hydraulic view of the heat pump on a dashboard, the
@@ -371,9 +358,8 @@ device page. Multiple configured periods are shown individually. Date-only value
 timestamps, gateway time zones, empty lists, and incomplete entries are handled
 without affecting the rest of the integration.
 
-Holiday mode is not the same as the existing **Away mode** switch. Holiday
-periods may contain separate behavior for heating, hot water, and ventilation;
-Away mode is a different PointT setting.
+Holiday mode is not the same as the **Away mode** switch, which is a different
+PointT setting.
 
 If the gateway advertises a current and complete holiday schema, the standard
 Home Assistant calendar dialog also allows you to create, move, rename, and
@@ -399,11 +385,9 @@ thermal-disinfection setting, and constant temperature. Only settings
 supported by the connected system are shown.
 
 When creating a holiday here, start and end times default to **08:00** and
-remain editable. Both dates must be selected explicitly. Existing holidays
-retain their saved times when opened for editing. Creating and editing use
-the same form with supported settings together. Each date has its clock
-directly beside it. The clock fields omit seconds. An end before or equal to the start produces
-a clear message at the end field, while the entered values remain available.
+remain editable; both dates must be selected explicitly. Existing holidays
+keep their saved times. An end before or equal to the start produces a clear
+message at the end field, while the entered values remain available.
 
 The form saves directly. For an existing holiday, the red **Delete holiday
 period completely** button at the bottom opens confirmation without saving
@@ -415,11 +399,8 @@ periods. Every change is read back from PointT before Home Assistant accepts
 it as successful. Notification settings remain accessible from the
 integration's configuration dialog.
 
-Midnight remains 00:00 on the selected date, without conversion to 24:00 or
-rounding. If the system returns different settings, the actual holiday appears
-immediately and the dialog shows the requested and returned periods. An
-unresolved creation is checked again without sending another creation request
-during the same loaded session.
+If the system returns different settings, the actual holiday appears
+immediately and the dialog shows the requested and returned periods.
 
 The step-by-step [holiday-period guide](docs/holiday-periods.md) shows how to
 create, configure, move, rename, and delete a period and explains every
@@ -465,7 +446,7 @@ restart; previously undiscovered paths still require rediscovery.
 
 Numeric increments are UI hints. The observed PointT metadata does not establish
 a write step, so a valid target inside the advertised bounds is not rejected
-because it differs from an increment used on a reference installation. Legacy
+because it differs from the increment shown in the interface. Legacy
 switch IDs remain stable; variants with additional or fewer options also receive
 a separate selection control.
 
@@ -482,17 +463,10 @@ The coordinator groups resources by how quickly they need to change:
 | Starts and operating hours | 15 minutes |
 | Static device information | At startup |
 
-Reviewed supplementary metadata now has a separate phase after functional
-discovery, with one shared 30-second entry budget. Valid read-only product
-names and installed refrigerant-circuit counts then stop repeating. Failed
-reads remain eligible for bounded recovery; existing sensor identities are
-preserved. The unused license document is not requested. See
+Supplementary metadata (product names, refrigerant-circuit counts) is read in a
+separate phase after discovery and then stops repeating. See
 [Request behavior and recovery](docs/request-behavior.md) for the exact paths,
 retry delays, cache lifetime, limits and measured request savings.
-
-Group deadlines allow up to one second of timer-rounding tolerance so a slightly
-early Home Assistant callback does not skip the next read. Resource pauses and
-rate-limit deadlines retain their full duration.
 
 Reads are batched where possible. Rate-limit responses trigger bounded
 backoff, and temporary failures do not replace the last confirmed value with
