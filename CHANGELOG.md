@@ -5,6 +5,29 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.2-beta.1] - 2026-11-14
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - This is a pre-release for testing; 0.9.1 stays the stable release.
+> - **From 0.9.x:** nothing special is needed.
+
+### Fixed
+
+- **Local setup with a gateway that does not name its brand:** a K40
+  gateway of a heat pump of another brand answers `unknown` for its brand,
+  and the local setup stopped with "This gateway brand is not supported".
+  An unknown, empty or unrecognized brand now counts as not reported and no
+  longer stops the setup or the start of the local access. The identity,
+  the certificate check and the firmware check stay required; an answer in
+  the wrong format is still rejected. The diagnostics show for each local
+  system whether its gateway reported a known brand, never the reported
+  text. Thank you to stalar for the report in
+  [#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132).
+  I tested it with automated tests and a synthetic gateway answering
+  `unknown`; it is not yet confirmed on a real gateway.
+
 ## [0.9.1] - 2026-11-14
 
 > [!IMPORTANT]

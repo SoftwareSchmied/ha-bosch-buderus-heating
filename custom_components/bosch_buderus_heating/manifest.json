@@ -11,6 +11,6 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues",
   "requirements": ["aiomqtt==2.5.1"],
-  "version": "0.9.1",
+  "version": "0.9.2-beta.1",
   "zeroconf": ["_hvac-open-api._tcp.local."]
 }

@@ -46,6 +46,7 @@ from .holidays import (
 )
 from .icom_diagnostics import icom_diagnostics
 from .local_only import hybrid_evidence, volume_flow_path
+from .local_probe import GatewayBrand
 from .local_setup_history import cloud_sign_in_history, local_setup_history
 from .observations import (
     Observation,
@@ -329,6 +330,13 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
                 else "unsupported",
                 "binding_count": sum(
                     item.target_id == key for item in snapshot.bindings.values()
+                ),
+                # The brand the gateway reported at the local setup, or that
+                # it reported none the integration knows.
+                **(
+                    {"gateway_brand": _local_brand(snapshot.targets[key])}
+                    if snapshot.targets[key].kind == "local_installation"
+                    else {}
                 ),
             }
             for key, number in targets.items()
@@ -1521,6 +1529,18 @@ def _value_shape(resource: Resource) -> str:
     if isinstance(value, list):
         return "array"
     return "object"
+
+
+def _local_brand(target: Any) -> str:
+    """A known brand token or ``not_reported``; never the reported text."""
+    try:
+        details = target.to_data().get("local_details")
+    except Exception:  # the rest of the report stays available
+        details = None
+    brand = details.get("brand") if isinstance(details, dict) else None
+    if isinstance(brand, str) and brand in tuple(GatewayBrand):
+        return brand
+    return "not_reported"
 
 
 def _safe_token(value: object) -> str:

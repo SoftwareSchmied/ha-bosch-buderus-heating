@@ -22,7 +22,7 @@ from scripts.build_release import (
 from scripts.release_notes import CHANGELOG, extract_release_notes
 from scripts.release_tag import ReleaseTag, check_release_tag
 
-RELEASE_VERSION = "0.9.1"
+RELEASE_VERSION = "0.9.2-beta.1"
 # The last section written before release notes had to stand on their own.
 LAST_SECTION_WITH_CROSS_REFERENCES = "0.9.0-alpha.6"
 

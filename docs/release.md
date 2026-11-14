@@ -4,6 +4,31 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.2-beta.1 verification
+
+I am preparing **0.9.2-beta.1 as a pre-release** for testing; **0.9.1 stays
+Stable/Latest**. It lets the local setup continue when the gateway answers
+`unknown`, an empty text or an unrecognized brand
+([#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132)).
+The identity, the certificate check and the firmware check stay required.
+Storage format 4 and Home Assistant 2026.5.0 as the minimum stay; updating
+from 0.9.x needs no new setup.
+
+Automated checks on the release state (2026-11-14, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite, current version | Home Assistant 2026.11.0, local, four parallel workers | 11245 passed, 1 skipped (the box test of stable release notes) |
+| Strict Mypy on the changed modules, Ruff lint and formatting | local | Mypy without findings; Ruff clean |
+| Release tests | local | @@REL@@ |
+| Release archive and SHA-256 | local build on a clean clone | @@ARCH@@ |
+| GitHub checks | PR and release workflow | pending; the minimum version and the other compatibility jobs run there |
+
+Tested with automated tests and a synthetic gateway answering `unknown`;
+not yet confirmed on a real gateway. A pre-release tag may come from the
+feature branch; the release workflow marks it as a pre-release, so HACS
+offers it only with **Show beta versions**.
+
 ## 0.9.1 verification
 
 I am preparing **0.9.1 as a stable release**. It fixes the cloud sign-in of

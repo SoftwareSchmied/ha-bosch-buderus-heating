@@ -50,7 +50,7 @@ This context is provenance, not a substitute for a certificate trust binding.
 
 | Resource | Validation |
 | --- | --- |
-| `/gateway/brand` | Matching resource ID, read-only string envelope and one of the five documented brands. |
+| `/gateway/brand` | Matching resource ID and read-only string envelope. One of the five documented brands is kept; `unknown`, an empty text or any other brand counts as not reported and does not stop the setup. |
 | `/gateway/versionFirmware` | Matching string envelope and numeric version at least 15.00.01. |
 | `/system/basicInfo` | Existing strict local identity parser, including completed status and an exact string gateway ID. |
 

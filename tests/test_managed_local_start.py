@@ -73,7 +73,9 @@ def answer(context, gateway, kind):
             rows.append(replace(row, status=None, body=b"", failure=failure))
             break
         elif kind == "brand" and path is ProbePath.BRAND:
-            row = response(path, context=context, value="")
+            row = response(path, context=context, value=1)
+        elif kind == "unknown_brand" and path is ProbePath.BRAND:
+            row = response(path, context=context, value="unknown")
         elif kind == "old_firmware" and path is ProbePath.FIRMWARE:
             row = response(path, context=context, value="14.00.01")
         elif kind == "brand_and_old" and path is not ProbePath.SYSTEM:
@@ -139,7 +141,7 @@ async def running(hass, p):
         ("html", "invalid_json"),
         ("http_error", "http_error"),
         ("untrusted", "certificate_untrusted"),
-        ("brand", "unsupported_brand"),
+        ("brand", "invalid_response"),
     ],
 )
 async def test_a_transient_start_problem_is_retried_until_the_start_succeeds(
@@ -164,13 +166,22 @@ async def test_a_transient_start_problem_is_retried_until_the_start_succeeds(
     assert changes.count("unavailable") == 2 and changes[-1] == "ready"
 
 
+async def test_a_gateway_that_reports_no_known_brand_starts_at_once(hass, start):
+    p = start
+    p.plan = ["unknown_brand"]
+    p.runtime.start()
+    await running(hass, p)
+    assert len(p.probes) == 1 and len(p.clients) == 1
+    assert p.waits == [] and p.issue() is None
+
+
 @pytest.mark.parametrize(
     "kind,condition,problem",
     [
         ("auth", LocalCondition.AUTH_REQUIRED, "auth_required"),
         ("changed", LocalCondition.CERTIFICATE_CHANGED, "certificate_changed"),
         ("old_firmware", LocalCondition.UNAVAILABLE, "firmware_update_required"),
-        # Too old firmware decides over an unrecognized brand of the same check.
+        # An unrecognized brand does not hide too old firmware.
         ("brand_and_old", LocalCondition.UNAVAILABLE, "firmware_update_required"),
         ("other_gateway", LocalCondition.UNAVAILABLE, "local_identity_conflict"),
     ],
