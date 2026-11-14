@@ -56,7 +56,6 @@ class BoschBuderusNotificationEvent(
 
     _attr_has_entity_name = True
     _attr_translation_key = "system_notifications"
-    _attr_icon = "mdi:alert-circle-outline"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)

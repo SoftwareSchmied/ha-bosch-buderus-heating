@@ -751,9 +751,7 @@ def clear_button_descriptions(
             descriptions.append(
                 TemporaryClearDescription(
                     key=match[1],
-                    entity_registry_enabled_default=not clear_outside_limits(
-                        resource
-                    ),
+                    entity_registry_enabled_default=not clear_outside_limits(resource),
                 )
             )
     return tuple(descriptions)
@@ -789,7 +787,6 @@ class HeatingCircuitTemporaryClearButton(
 
     _attr_has_entity_name = True
     _attr_translation_key = "heating_temporary_setpoint_clear"
-    _attr_icon = "mdi:timer-off-outline"
 
     def __init__(
         self,

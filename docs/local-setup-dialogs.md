@@ -25,7 +25,11 @@ offers the setup with **Local access only** directly: after the user continues,
 it creates the same entry as that choice and opens its local setup, with the
 found address offered again. Nothing is created before the user continues. If
 an entry was added while the notice was open, continuing asks for the owner
-instead. An ignored notice stays ignored.
+instead. An ignored notice stays ignored. An entry whose update to the
+current version failed (it stays at an older version) is no owner for local
+access, but it still counts as an entry: the notice then ends with "Local
+setup is not available" instead of offering a second entry for the same
+plant, also when such an entry appears while the notice is open.
 
 Adding the integration offers three choices: cloud access, cloud and local
 access, and local access only. With cloud and local access, the new entry's

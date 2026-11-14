@@ -1,0 +1,257 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "cloud_control": {
+        "default": "mdi:remote",
+        "state": {
+          "off": "mdi:remote-off"
+        }
+      },
+      "holiday_active": {
+        "default": "mdi:palm-tree"
+      },
+      "system_fault": {
+        "default": "mdi:alert-circle",
+        "state": {
+          "off": "mdi:check-circle-outline"
+        }
+      }
+    },
+    "button": {
+      "heating_temporary_setpoint_clear": {
+        "default": "mdi:timer-off-outline"
+      },
+      "rrc_override_advance": {
+        "default": "mdi:skip-next-outline"
+      },
+      "rrc_override_clear": {
+        "default": "mdi:timer-off-outline"
+      },
+      "softener_start_regeneration": {
+        "default": "mdi:water-sync"
+      }
+    },
+    "calendar": {
+      "holiday_periods": {
+        "default": "mdi:calendar-account"
+      },
+      "rrc_events": {
+        "default": "mdi:calendar-account"
+      }
+    },
+    "event": {
+      "system_notifications": {
+        "default": "mdi:alert-circle-outline"
+      }
+    },
+    "select": {
+      "active_switch_program": {
+        "default": "mdi:calendar-clock"
+      },
+      "auxiliary_heater_operation_mode": {
+        "default": "mdi:radiator",
+        "state": {
+          "auto": "mdi:calendar-clock",
+          "manual": "mdi:hand-back-right",
+          "off": "mdi:radiator-off"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "default": "mdi:radiator",
+        "state": {
+          "auto": "mdi:calendar-clock",
+          "manual": "mdi:hand-back-right",
+          "off": "mdi:radiator-off"
+        }
+      },
+      "hot_water_operation_mode": {
+        "default": "mdi:water-boiler",
+        "state": {
+          "eco": "mdi:leaf",
+          "off": "mdi:water-boiler-off",
+          "ownprogram": "mdi:calendar-clock"
+        }
+      },
+      "season_switching": {
+        "default": "mdi:sun-snowflake",
+        "state": {
+          "forced_cool": "mdi:snowflake",
+          "forced_heat": "mdi:fire"
+        }
+      },
+      "silent_mode": {
+        "default": "mdi:volume-low",
+        "state": {
+          "auto": "mdi:volume-medium",
+          "off": "mdi:volume-high"
+        }
+      },
+      "ventilation_exhaust_fan_level": {
+        "default": "mdi:fan",
+        "state": {
+          "dem": "mdi:fan-auto",
+          "max": "mdi:fan-speed-3",
+          "min": "mdi:fan-speed-1",
+          "nom": "mdi:fan-speed-2",
+          "off": "mdi:fan-off",
+          "red": "mdi:fan-speed-1"
+        }
+      }
+    },
+    "sensor": {
+      "active_faults": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "active_notifications": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "compressor_status": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "alarm": "mdi:alert-circle",
+          "cooling": "mdi:snowflake",
+          "defrost": "mdi:snowflake-melt",
+          "dhw": "mdi:water-boiler",
+          "heating": "mdi:fire",
+          "pool": "mdi:pool",
+          "pool_heat": "mdi:pool"
+        }
+      },
+      "dhw_switch_program": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "eco": "mdi:leaf",
+          "eco_plus": "mdi:leaf",
+          "off": "mdi:water-boiler-off"
+        }
+      },
+      "dhw_valve_position": {
+        "default": "mdi:valve"
+      },
+      "electric_auxiliary_heater_status": {
+        "default": "mdi:heating-coil",
+        "state": {
+          "alarm": "mdi:alert-circle",
+          "defrost": "mdi:snowflake-melt"
+        }
+      },
+      "four_way_valve_position": {
+        "default": "mdi:valve"
+      },
+      "heat_demand": {
+        "default": "mdi:fire",
+        "state": {
+          "dhw": "mdi:water-boiler",
+          "frost": "mdi:snowflake",
+          "none": "mdi:fire-off"
+        }
+      },
+      "heat_generator": {
+        "default": "mdi:heat-pump-outline"
+      },
+      "heating_circuit_operation_mode": {
+        "default": "mdi:radiator",
+        "state": {
+          "auto": "mdi:calendar-clock",
+          "manual": "mdi:hand-back-right",
+          "off": "mdi:radiator-off"
+        }
+      },
+      "heating_circuit_summer_winter_mode": {
+        "default": "mdi:sun-snowflake-variant",
+        "state": {
+          "cooling": "mdi:snowflake",
+          "forced": "mdi:fire",
+          "off": "mdi:radiator-off"
+        }
+      },
+      "heating_switch_program": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "eco": "mdi:leaf",
+          "off": "mdi:radiator-off"
+        }
+      },
+      "hot_water_operation_mode": {
+        "default": "mdi:water-boiler",
+        "state": {
+          "eco": "mdi:leaf",
+          "follow_heating_program": "mdi:calendar-clock",
+          "off": "mdi:water-boiler-off",
+          "ownprogram": "mdi:calendar-clock"
+        }
+      },
+      "next_holiday": {
+        "default": "mdi:calendar-clock"
+      },
+      "pointt_api_requests_last_hour": {
+        "default": "mdi:cloud-sync-outline"
+      },
+      "pointt_api_requests_total": {
+        "default": "mdi:counter"
+      },
+      "pointt_api_response_time_last_hour": {
+        "default": "mdi:timer-outline"
+      },
+      "pressure_status": {
+        "default": "mdi:gauge",
+        "state": {
+          "critical_high": "mdi:gauge-full",
+          "critical_low": "mdi:gauge-empty",
+          "high": "mdi:gauge-full",
+          "low": "mdi:gauge-low"
+        }
+      },
+      "refrigerant_status": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "alarm": "mdi:alert-circle",
+          "cooling": "mdi:snowflake",
+          "defrost": "mdi:snowflake-melt",
+          "dhw": "mdi:water-boiler",
+          "heating": "mdi:fire",
+          "passive_defrost": "mdi:snowflake-melt",
+          "pool": "mdi:pool",
+          "pool_heat": "mdi:pool"
+        }
+      },
+      "season_optimizer_mode": {
+        "default": "mdi:sun-snowflake-variant",
+        "state": {
+          "cooling": "mdi:snowflake",
+          "forced_cool": "mdi:snowflake",
+          "forced_heat": "mdi:fire",
+          "heating": "mdi:fire"
+        }
+      },
+      "ventilation_fan_level": {
+        "default": "mdi:fan",
+        "state": {
+          "dem": "mdi:fan-auto",
+          "max": "mdi:fan-speed-3",
+          "min": "mdi:fan-speed-1",
+          "nom": "mdi:fan-speed-2",
+          "off": "mdi:fan-off",
+          "red": "mdi:fan-speed-1"
+        }
+      },
+      "wallbox_state": {
+        "default": "mdi:ev-station",
+        "state": {
+          "charging": "mdi:battery-charging",
+          "faulted": "mdi:alert-circle",
+          "locked": "mdi:lock"
+        }
+      }
+    },
+    "water_heater": {
+      "pointt_dhw": {
+        "default": "mdi:water-boiler",
+        "state": {
+          "eco": "mdi:leaf",
+          "off": "mdi:water-boiler-off"
+        }
+      }
+    }
+  }
+}

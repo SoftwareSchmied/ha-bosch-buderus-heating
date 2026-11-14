@@ -161,7 +161,8 @@ async def test_a_circuit_without_a_control_type_writes_as_before(hass):
 
 @pytest.mark.parametrize("mode", ["auto", "manual"])
 async def test_a_control_type_without_a_current_reading_refuses(hass, mode):
-    """Reported, but its last request failed: nothing is written."""
+    """Reported, but its last request failed: refused by the climate itself,
+    before the write transaction; nothing is written."""
     coordinator, entity, cloud = _with_control_type(hass, mode=mode)
     snapshot = coordinator.data[CONTROL_TYPE]
     coordinator.data[CONTROL_TYPE] = replace(
@@ -170,8 +171,9 @@ async def test_a_control_type_without_a_current_reading_refuses(hass, mode):
         freshness=Freshness.STALE,
         last_error_category="http_504",
     )
-    with pytest.raises(ServiceValidationError):
+    with pytest.raises(ServiceValidationError) as error:
         await entity.async_set_temperature(temperature=21.5)
+    assert error.value.translation_key == "heating_climate_command"
     assert cloud.puts == []
     assert cloud.bulk_calls == []
 
@@ -356,9 +358,7 @@ def test_not_writable_gives_no_clear_button(hass):
 @pytest.mark.parametrize(
     ("mode", "control"), [("auto", "constants"), ("manual", None), ("off", None)]
 )
-async def test_clear_outside_the_limits_keeps_the_other_conditions(
-    hass, mode, control
-):
+async def test_clear_outside_the_limits_keeps_the_other_conditions(hass, mode, control):
     """APP03-T12: a constant control type, or a mode other than auto."""
     coordinator, _, cloud = _circuit(hass, mode=mode, temporary=_temporary(21.0))
     if control is not None:
@@ -429,9 +429,7 @@ def _silent(**flags: Any):
 
 
 def _level(**flags: Any):
-    return _flagged(
-        LEVEL, 55.0, unitOfMeasure="C", minValue=40, maxValue=60, **flags
-    )
+    return _flagged(LEVEL, 55.0, unitOfMeasure="C", minValue=40, maxValue=60, **flags)
 
 
 @pytest.mark.parametrize("build", [_silent, _level])

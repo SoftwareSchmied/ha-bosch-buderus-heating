@@ -171,7 +171,6 @@ _REQUEST_METRIC_DESCRIPTIONS = (
     SensorEntityDescription(
         key="pointt_api_requests_total",
         translation_key="pointt_api_requests_total",
-        icon="mdi:counter",
         native_unit_of_measurement="requests",
         # O104: counts from the start of the integration (``last_reset``).
         state_class=SensorStateClass.TOTAL,
@@ -181,7 +180,6 @@ _REQUEST_METRIC_DESCRIPTIONS = (
     SensorEntityDescription(
         key="pointt_api_requests_last_hour",
         translation_key="pointt_api_requests_last_hour",
-        icon="mdi:cloud-sync-outline",
         native_unit_of_measurement="requests",
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -190,7 +188,6 @@ _REQUEST_METRIC_DESCRIPTIONS = (
     SensorEntityDescription(
         key="pointt_api_response_time_last_hour",
         translation_key="pointt_api_response_time_last_hour",
-        icon="mdi:timer-outline",
         native_unit_of_measurement=UnitOfTime.MILLISECONDS,
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
@@ -934,7 +931,6 @@ class BoschBuderusNextHolidaySensor(
     _attr_has_entity_name = True
     _attr_translation_key = "next_holiday"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
-    _attr_icon = "mdi:calendar-clock"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -993,7 +989,6 @@ class _BoschBuderusFaultCountSensor(
     """Common behavior for bounded fault and notification counters."""
 
     _attr_has_entity_name = True
-    _attr_icon = "mdi:alert-circle-outline"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -1351,7 +1346,6 @@ def _switch_program_description(
         options=_switch_program_options(resource),
         translation_key=translation_key,
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:calendar-clock",
     )
 
 
