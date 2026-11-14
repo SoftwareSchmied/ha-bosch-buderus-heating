@@ -759,7 +759,13 @@ polling plan, so they cause no additional requests. They become their own
 sensors, but only for paths the local access of this system could actually
 read and only when the cloud offers no resource for the same path. They stay
 unavailable without a current local reading; there is no cloud value to fall
-back to. A device state such as an open sensor or too little flow is shown as
+back to. Meanwhile they keep the unit and device class of their last reading
+(after a restart those stored with their entity), so stopping Home Assistant
+or a pause of the local access does not change their entity registry entries
+or display precision. After a start, a local sensor becomes available when its
+reading has been read once; the local access reads one resource after the
+other and, after a timeout, waits a minute before it reads on, so this can take
+a few minutes. A device state such as an open sensor or too little flow is shown as
 unknown, never as a number. A reading the local access reports as a number is
 offered for that reason, also while it reports an error marker; its value is
 then unknown. The same rules apply with and without the cloud. The setting **Use local values for existing

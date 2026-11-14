@@ -46,6 +46,25 @@ names the heat generator models and shows texts for more gateway states.
   in the list of discovered and pending setups needed the address of a
   found gateway, so a renewed sign-in could not show it. It now uses the
   placeholder Home Assistant provides for every flow.
+- **Local readings around a restart:** when Home Assistant stopped, local
+  readings whose unit comes from the gateway (most controller signals and
+  the volume flows) were written once without their device class. Home
+  Assistant then removed the class and the display precision from their
+  entity registry entries until their first reading after the next start,
+  which took up to about four minutes after a slow start. These sensors now
+  keep the class that belongs to their last unit while there is no current
+  reading, and a sensor registered before its first reading takes the class
+  stored in the registry. Units, entity IDs and long-term statistics were
+  not affected: an unavailable sensor has no value, so the statistics saw
+  no change.
+  - Seen on a real installation after an update. The fix is tested with
+    automated tests (readings withdrawn, then a start with stored registry
+    entries) and not yet on a running installation. The update to 0.9.1 can
+    still show it once, because the previous version writes these entries
+    when it stops.
+  - Unchanged by design: after a start, a local sensor stays unavailable
+    until its reading has been read once, and after a timeout the local
+    access waits a minute before it reads on.
 
 ### Local access
 
