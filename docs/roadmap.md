@@ -69,7 +69,7 @@ customizations. The dialog uses drafts; native and individual entity controls
 write immediately with confirmation.
 
 I confirmed the manual heating target and hot-water mode round trips in
-Home Assistant and MyBuderus on my Buderus installation and restored the
+Home Assistant and MyBuderus on a real Buderus installation and restored the
 original settings. This validates those operations on that system. It does
 not replace testing on other devices or during real connection failures.
 

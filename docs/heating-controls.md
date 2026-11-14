@@ -220,7 +220,7 @@ The selection **Active schedule** switches between programs A and B. It
 appears only when the gateway allows both, the current one among them, and
 both programs can be read and are valid. The options are `a` and `b`; the
 reported names are in the attributes `program_names` and `program_name`.
-With a single program, as on my heat pump, there is no selection.
+With a single program, as on some heat pumps, there is no selection.
 
 Changing hot water program A was confirmed on a Logatherm WLW186i-12 E with
 an MX400: a switch point changed in Home Assistant showed up in the
@@ -411,7 +411,7 @@ Die Auswahl **Aktives Zeitprogramm** wechselt zwischen den Programmen A und
 B. Sie entsteht nur, wenn das Gateway beide erlaubt, das aktuelle darunter
 ist und beide Programme lesbar und gültig sind. Die Optionen sind `a` und
 `b`; die gemeldeten Namen stehen in den Attributen `program_names` und
-`program_name`. Mit nur einem Programm, wie an meiner Wärmepumpe, gibt es
+`program_name`. Mit nur einem Programm, wie an manchen Wärmepumpen, gibt es
 keine Auswahl.
 
 Das Ändern des Warmwasserprogramms A ist an einer Logatherm WLW186i-12 E

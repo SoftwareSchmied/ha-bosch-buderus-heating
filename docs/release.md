@@ -113,8 +113,8 @@ On a real room controller, a TC100.2 has confirmed the functions the
 CHANGELOG names as confirmed. The schedule editor, the iCom changes, the
 firmware entity and most fixes were tested with simulated data only; the
 CHANGELOG names them. The readings of the local access now enabled by default
-show plausible values on my own heat pump; nothing of this release was
-installed on my system before the release.
+show plausible values on a real heat pump; nothing of this release was
+installed on a real system before the release.
 
 ## 0.9.0-alpha.5 verification
 
@@ -197,7 +197,7 @@ Automated checks on the release state (2026-11-09, run locally):
 | GitHub checks | PR and release workflow | the release workflow published only after its Python checks, both older Home Assistant versions, hassfest and HACS passed; the browser tests ran only on the PR and were not a required check at the time |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks on my own system (heat pump with BC400 controller and MX400 internet module, K40RF gateway,
+Checks on a real system (heat pump with BC400 controller and MX400 internet module, K40RF gateway,
 firmware 15.00.01, Home Assistant 2026.10.4, cloud and local access). On
 2026-11-09 I installed a build of this state after a full Home Assistant
 backup; apart from the version number, its files are identical to this
@@ -211,7 +211,7 @@ release.
 | Cloud requests and items per hour, compared with alpha.2 | 76 → 60 requests, about 1,660 → 930 items |
 | CPU load of Home Assistant, compared with alpha.2 | about 17 % → 7 % of one core |
 | Warnings and errors from the integration | none |
-| Signals the gateway stops listing | 16 signals disappeared from my gateway's signal list; their entities became unavailable and the reads stopped after two list checks, as intended |
+| Signals the gateway stops listing | 16 signals disappeared from a gateway's signal list; their entities became unavailable and the reads stopped after two list checks, as intended |
 
 A longer run and any check on other gateways, firmware versions and device
 families are still pending.
@@ -244,16 +244,16 @@ Checks of the performance and load changes:
 | Check | Environment | Result |
 |---|---|---|
 | Entity updates only after real changes of value, availability or source; caches give the same results as before (diagnostics, schema keys, catalog lookups) | full suites above | passed |
-| Request-count sensors: at most one state write per minute, unrecorded attributes, total count with state class `total` and `last_reset` | full suites above; recorder on my own system | automated: passed; my own system: pending |
+| Request-count sensors: at most one state write per minute, unrecorded attributes, total count with state class `total` and `last_reset` | full suites above; recorder on a real system | automated: passed; real system: pending |
 | Units, options and limits kept while an entity is unavailable; climate entity within the validity limit | full suites above | passed |
-| Fewer requests: settled cloud values, hourly containers, weekly re-check of missing local paths, hourly local system metadata, daily installation date, no serial numbers | full suites above; request counts on my own system over one day | automated: passed; my own system: pending |
-| One-time restart of the local search after the update | my own system | pending |
+| Fewer requests: settled cloud values, hourly containers, weekly re-check of missing local paths, hourly local system metadata, daily installation date, no serial numbers | full suites above; request counts on a real system over one day | automated: passed; real system: pending |
+| One-time restart of the local search after the update | real system | pending |
 | Storage: compact files (older files still load), parallel loading, hourly "still seen" confirmations, 60-second counter-source delay, private atomic connection inventory, token renewal 2 minutes before expiry | full suites above | passed |
-| Log messages: one warning per cloud outage, info lines on recovery, hand-over warning once per path | full suites above; cloud switched off on my own system | automated: passed; my own system: pending |
-| Diagnostics schema 42 | full suites above; download on my own system | automated: passed; my own system: pending |
-| Working time of a heat source from the local access; "Heat output (compressor)"; statistics of signal measurements; translated and on/off states | full suites above; my own system | automated: passed; my own system: pending |
+| Log messages: one warning per cloud outage, info lines on recovery, hand-over warning once per path | full suites above; cloud switched off on a real system | automated: passed; real system: pending |
+| Diagnostics schema 42 | full suites above; download on a real system | automated: passed; real system: pending |
+| Working time of a heat source from the local access; "Heat output (compressor)"; statistics of signal measurements; translated and on/off states | full suites above; real system | automated: passed; real system: pending |
 
-On 2026-11-08 I installed a development build of this state on my own system
+On 2026-11-08 I installed a development build of this state on a real system
 (heat pump with BC400 controller and MX400 internet module, K40RF gateway, Home Assistant 2026.10.4,
 cloud and local access) after a full Home Assistant backup. Apart from the
 version number, its files are identical to this release. It started without
@@ -266,7 +266,7 @@ were still pending at that time.
 
 ## Load measurement for 0.9.0-alpha.2
 
-I measured the load of Home Assistant on my own system (heat pump with BC400
+I measured the load of Home Assistant on a real system (heat pump with BC400
 controller and MX400 internet module, K40RF gateway, cloud and local access)
 with the same read-only script for 60 minutes each: before, a development
 build of the 0.9.0-alpha.1 line shortly before 0.9.0-alpha.2; after, the
@@ -311,7 +311,7 @@ Automated checks on the release state (2026-11-08, run locally; all GitHub check
 | Browser test of **Search the system again** in the options | Chromium, English and German | passed |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks I performed on my own system (heat pump with BC400 controller, MX400 internet module and
+Checks on a real system (heat pump with BC400 controller, MX400 internet module and
 K40RF gateway, Home Assistant 2026.10.4, cloud and local access) with
 development builds of this state:
 
@@ -324,11 +324,11 @@ development builds of this state:
   request while it was pending was refused.
 - An overnight run with all entities enabled passed without a pause of the
   local access.
-- I reviewed every entity of my system (names, duplicates, signals and default
+- Every entity was reviewed (names, duplicates, signals and default
   activation); the resulting changes are part of this release.
 
 Not tested in practice: bell notifications without the cloud, because no fault
-was active on my system during these checks; automated tests cover them. I
+was active during these checks; automated tests cover them. I
 have not installed the published alpha archive yet. Hybrid HM200 signals and
 other device families remain unverified on a real system.
 
@@ -513,10 +513,10 @@ notice. This integration release does not patch HACS. **0.8.1 remains Stable/Lat
   `15b1dc3d484da3fc4ffbb7acfaa04552662e1a35944b36e6dc854509ba041b6b`.
 
 The [project status](specification-status.md#added-in-beta7) records the actual
-appliance tests. On my Buderus system with Home Assistant 2026.10.3, I confirmed
+appliance tests. On a real Buderus system with Home Assistant 2026.10.3,
 manual heating 19.0 to 18.5 to 19.0 °C and hot water Auto to Off to Auto through
-the new controls. I checked both directions in MyBuderus and restored all changed
-settings. This does not confirm other devices, modes or real outage recovery.
+the new controls were confirmed. Both directions were checked in MyBuderus and all changed
+settings were restored. This does not confirm other devices, modes or real outage recovery.
 The automatic sign-in helper is deferred to a later beta and is not included.
 
 Publication uses the protected main branch after the dependent PRs and final
@@ -972,8 +972,8 @@ appeared to work. Apart from the version number, the integration code and
 packaged assets match beta.3. The release includes all changes from the
 three 0.8.0 betas, including the maintenance updates.
 
-I have tested the notification feature extensively on my own installation
-and closed #36 as implemented and tested locally.
+The notification feature was tested extensively on a real installation
+and #36 was closed as implemented and tested locally.
 
 A 48-hour connection test and preservation of the expected solar entities
 after restart and reload on the affected installation still need specific
@@ -981,7 +981,7 @@ confirmation.
 The original cause of the connection loss in #49 has not been established.
 Issues #48 and #49 remain open for that feedback.
 
-I tested beta.1 on my installation: notifications appeared when faults
+Beta.1 was tested on a real installation: notifications appeared when faults
 occurred and changed to resolved when they cleared. Retained details are
 kept only for the visible message and are cleared on dismissal, disabling
 notifications, unloading or restart. Solar entities belong to the gateway

@@ -57,9 +57,8 @@ names the heat generator models and shows texts for more gateway states.
   included in diagnostics. The gateway's token list format of firmware
   15.00.01 is supported: it sends the creation time as a text with a time
   zone instead of the number the documentation shows. An entry that cannot
-  be read is listed as not readable and never offered for revocation. I
-  found this when I read the list of my own gateway once; the revocation
-  itself is still untested on a real gateway.
+  be read is listed as not readable and never offered for revocation. The
+  revocation itself is still untested on a real gateway.
 - **Revoking an old token:** from that list, an old token of this
   integration can be revoked, one at a time and only after a confirmation.
   Tokens of other apps are never offered. Right before the revocation the
@@ -111,7 +110,7 @@ names the heat generator models and shows texts for more gateway states.
   token and the certificate stay, so no new sign-in is needed.
   - I tested this with synthetic gateways: the same and a different
     certificate at the new address, two gateways, a forged announcement and
-    an announcement during normal operation. On my own gateway I only
+    an announcement during normal operation. On a real gateway I only
     checked, with one handshake and without the token, that it presents the
     certificate confirmed at setup. A real address change has not been
     tested yet; reports are welcome.
@@ -152,8 +151,8 @@ names the heat generator models and shows texts for more gateway states.
     shown or stored.
   - Family, construction and power come only from a model table whose
     entries are observed in a real module list or documented by the
-    manufacturer; nothing is guessed from a name. It knows my own
-    installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
+    manufacturer; nothing is guessed from a name. It knows a
+    confirmed installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
     WLW-10 MB AR, 10 kW) and, from the manufacturers' documents, the
     WLW176i/WLW186i indoor units with the WLW MB AR outdoor units, the
     CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T outdoor units and
@@ -172,12 +171,11 @@ names the heat generator models and shows texts for more gateway states.
 
 - **Texts for gateway states:** the EEBus status, the EEBus commissioning
   and the start-up check of the heat pump show texts instead of keys such
-  as `not_commissioned` or `startup_inprogress`. The states are those my
-  own gateway declares; any other state is still shown as reported.
+  as `not_commissioned` or `startup_inprogress`. The states are those a
+  real gateway declares; any other state is still shown as reported.
 - **Pressure units:** a controller signal in `mbar`, `hPa`, `kPa` or `Pa`
   now shows its value with that unit as a pressure; the value is never
-  converted. My own system has no such signal, so this is tested with
-  synthetic answers only.
+  converted. This is tested with synthetic answers only.
 - **Volume flow on hybrid systems:** volume flows are still shown as the
   gateway reports them. The diagnostics now tell when a system is detected
   as a hybrid system and mark its volume flows as unverified. If you have a
@@ -185,14 +183,14 @@ names the heat generator models and shows texts for more gateway states.
   display of your device and let me know; a correction will only follow
   such a comparison.
 - **Corrected names:** *System supply temperature* (before *Supply
-  temperature*) for `/heatSources/actualSupplyTemperature`, which on my heat
+  temperature*) for `/heatSources/actualSupplyTemperature`, which on a heat
   pump with a buffer cylinder is the heating side's flow behind the buffer,
   and *Liquid line temperature heating (TR3)* / *cooling (TR4)* (before
   *Condenser temperature heating/cooling*), as the API documentation calls
-  them. Entity IDs, unique IDs and names you set yourself stay. I compared
-  the readings on my heat pump while it was heating; the cooling mode is
-  untested.
-  - More names after I went through the entities of my own system:
+  them. Entity IDs, unique IDs and names you set yourself stay. The
+  readings were compared on a real heat pump while it was heating; the
+  cooling mode is untested.
+  - More names after going through the entities of a real installation:
     *Heat source active* (before *Burner status*; the reading also exists on
     boilers, so it does not say compressor), *Heating temperature* and
     *Setback temperature* for the heating circuit sensors (before *Heating*
@@ -222,8 +220,8 @@ names the heat generator models and shows texts for more gateway states.
   Eco+*, *Start threshold Eco* and *Start threshold Comfort* (before *…
   start temperature*). The sensor of the off level, before only *Off*, is
   now *Setpoint level off*. Entity IDs and unique IDs stay.
-- **Defaults for new installations:** I went through the entities my review
-  found superfluous. The total starts and the total run time of a single
+- **Defaults for new installations:** A review of the entities found
+  these superfluous: the total starts and the total run time of a single
   heat source, the pool starts, the three parts of the installation date,
   the relays of the gas valves, the software update details, the permitted
   pressure limits (including the *Low system pressure* of 0.0 bar) and the
@@ -231,7 +229,7 @@ names the heat generator models and shows texts for more gateway states.
   nothing there and pinned it with tests; existing entities keep their
   state either way.
 - **Installation date:** a date that lies in the future or does not exist
-  shows as unknown now. My own gateway reports the placeholder year 60,
+  shows as unknown now. One gateway reports the placeholder year 60,
   which showed as 2060-08-01. The three parts it is built from are
   unchanged.
 - The new texts are drafts in every language except English and German.

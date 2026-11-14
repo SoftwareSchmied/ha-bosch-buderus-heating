@@ -96,7 +96,7 @@ The examples are checked against their meaning, not only against the schema
 
 | System | Gateway firmware | Access | Evidence |
 | --- | --- | --- | --- |
-| K40 heat pump gateway (`K40RF_v1`) | 15.00.01 | cloud and local | anonymized cloud capture `tests/fixtures/contracts/captures/k40-cloud-2026-11-05.json`, practical checks on my own system |
+| K40 heat pump gateway (`K40RF_v1`) | 15.00.01 | cloud and local | anonymized cloud capture `tests/fixtures/contracts/captures/k40-cloud-2026-11-05.json`, practical checks on a real installation |
 | Room controller TC100.2 (RRC 2.0) | 05.04.00 | cloud only, no local access | zone readings, manual/schedule mode and manual setpoint confirmed by a user with 0.9.0-alpha.4 (issue 113); program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed by the same user with 0.9.0-alpha.5, and the radio devices with their battery and valve state look right (issue 122); the other room controller functions expected, untested, see [room controllers](room-controllers.md) |
 | Room controller CT200 (RRC 2.0) | – | cloud only, expected, untested, no local access | synthetic fixture `tests/fixtures/contracts/rrc/ct200-shapes.json`; no installation report yet |
 
@@ -106,9 +106,9 @@ cloud. [Room controllers](room-controllers.md) lists every function with
 what is confirmed and what is expected, untested; the discovery details are
 in [room controllers of the RRC 2.0 platform](rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform).
 
-### Local access: checked on my system and not verifiable there
+### Local access: checked on a real system and not verifiable there
 
-Checked in practice on my own system (K40 gateway, firmware 15.00.01):
+Checked in practice on a real installation (K40 gateway, firmware 15.00.01):
 
 - discovery on the network, adding the local access with an existing token,
   identity comparison with the cloud;
@@ -118,7 +118,7 @@ Checked in practice on my own system (K40 gateway, firmware 15.00.01):
   a second fault source (with no active fault), and diagnostics without
   credentials or network data.
 
-Not verifiable on my system, so covered only by tests:
+Not verifiable there, so covered only by tests:
 
 - further heating circuits, solar, ventilation and room zones over the local
   access, radio devices and their zone relations, module or gateway exchange;

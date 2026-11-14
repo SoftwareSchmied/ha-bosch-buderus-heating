@@ -97,12 +97,12 @@ I also tested the native dialog and the tile above in Home Assistant's browser
 frontend in German and English, including a mobile viewport, mode changes,
 updated readings and closing with Escape.
 
-I subsequently installed this build on my Home Assistant 2026.10.3 instance.
+I subsequently installed this build on a Home Assistant 2026.10.3 instance.
 I checked the native hot-water display on desktop and mobile against the
 existing temperature sensors, including the read-only target and the offered
 German mode labels. Existing entity identities and customizations were retained.
 I then changed Auto to Off and back to Auto using the native water-heater
-dialog on my appliance. Both the new entity and the original mode select
+dialog on a real appliance. Both the new entity and the original mode select
 confirmed the changes, and I checked both Off and the restored Auto in
 MyBuderus. The original operating mode was restored. A conditional, timed
 restore in Home Assistant protected the test independently of the browser.
@@ -182,7 +182,7 @@ installiert. Die native Warmwasseranzeige habe ich auf großem und schmalem
 Bildschirm mit den vorhandenen Temperatursensoren abgeglichen, einschließlich
 des nur lesbaren Sollwerts und der deutschen Betriebsartenbeschriftungen.
 Bestehende Entitätskennungen und eigene Anpassungen blieben erhalten.
-Anschließend habe ich über den nativen Warmwasserdialog an meiner Anlage von
+Anschließend habe ich über den nativen Warmwasserdialog an einer realen Anlage von
 Auto auf Aus und wieder zurück auf Auto geschaltet. Sowohl die neue Entität
 als auch das ursprüngliche Auswahlfeld bestätigten die Änderungen. Aus und
 das wiederhergestellte Auto habe ich auch in MyBuderus geprüft. Die ursprüngliche

@@ -103,7 +103,7 @@ or new records. Existing identities, user names, disabled and hidden entities,
 aliases, polling preferences and unknown options remain intact. The transition
 does not rewrite registry or fault-store files and performs no transport requests.
 
-I also replayed a private snapshot of my installation with real credential
+I also replayed a private snapshot of a real installation with real credential
 strings replaced before export. Both offline starts and removal of the last
 connection retained its 138 entities, device assignments and local fault stores.
 This checks the captured configuration and local lifecycle, not fresh readings

@@ -72,15 +72,15 @@ Home Assistant browser tests. All GitHub checks passed. The test count includes
 parameterized cases. The preceding Beta.6 release passed 3,036 cases with
 96.83% coverage; those figures remain a separate historical checkpoint.
 
-I installed the development build on my Buderus system with Home Assistant
-2026.10.3. On 2026-10-24, I confirmed 19.0 to 18.5 to 19.0 °C through the controls
+The development build was installed on a real Buderus system with Home Assistant
+2026.10.3. On 2026-10-24, 19.0 to 18.5 to 19.0 °C through the controls
 dialog and native climate, and hot water Auto to Off to Auto through the native
-water-heater entity. I checked both directions in MyBuderus and restored all
-changed settings. All 135 previous entities retained their IDs and user settings;
+water-heater entity were confirmed. Both directions were checked in MyBuderus and all
+changed settings were restored. All 135 previous entities retained their IDs and user settings;
 one new PointT hot-water entity was added. Regular polling restored its displayed
 active target after the mode change.
 
-This confirms those operations on my installation. It does not confirm other
+This confirms those operations on that installation. It does not confirm other
 devices, every operating mode, physical outage recovery or long-term stability.
 Issue #49 and the WE800i field checks in issue #60 retain their separate scope.
 
@@ -132,8 +132,8 @@ Both deviations are accepted for this project.
 | Energy | mostly implemented | Direct counters, calculated environmental energy, and reset detection are implemented; long-term testing remains open |
 | Diagnostics and support export | implemented | Understandable HTTP and capability success counters are available; observe additional real support cases |
 | Reconfiguration and repairs | implemented | Gateway selection, brand changes, rediscovery, polling profiles, rate-limit repair, and firmware-schema repair are available |
-| Write service and controls | mostly implemented | Safe user controls are released dynamically and were tested selectively on the reference installation; additional installation profiles remain open |
-| Everyday controls dialog and PointT combined entities | included in Beta.7; selected operations confirmed on my Buderus system | Additional modes, circuits and installations; see [heating controls](heating-controls.md) and [PointT hot water](pointt-hot-water.md) |
+| Write service and controls | mostly implemented | Safe user controls are released dynamically and were tested selectively on a real installation; additional installation profiles remain open |
+| Everyday controls dialog and PointT combined entities | included in Beta.7; selected operations confirmed on a real Buderus system | Additional modes, circuits and installations; see [heating controls](heating-controls.md) and [PointT hot water](pointt-hot-water.md) |
 | Developer CLI | mostly implemented | Anonymized inventory export from Home Assistant diagnostics is available; automated contract-fixture generation can follow if needed |
 | Preview gate 0.1.0 | implemented and released | Continue field validation |
 | Release gate 1.0 | open | Multiple profiles, Bosch, endurance testing, and additional real write tests |

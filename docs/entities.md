@@ -29,9 +29,9 @@ a draft until Apply. Individual device-page controls write immediately.
 The [PointT hot-water guide](pointt-hot-water.md) distinguishes the read-only
 active target from the separate Eco, Eco+ and Comfort start temperatures.
 
-On my reference installation, I confirmed a manual target change from 19.0 to
+On a real installation, a manual target change from 19.0 to
 18.5 °C and back through the controls dialog and native climate, and Auto to Off
-and back through the native hot-water entity. Both directions were checked in
+and back through the native hot-water entity were confirmed. Both directions were checked in
 MyBuderus. Other modes, circuits and appliances are not confirmed by those tests.
 
 ## Published device families and reference inventory
@@ -50,7 +50,7 @@ device. Measurements and controls depend on the implemented family adapter.
 Beta.6 also includes the [Air-family fans](bacon-air-purifiers.md) and
 [Dry-family dehumidifiers](bacon-dehumidifiers.md); physical checks remain open.
 
-This list documents the state observed on the reference system on August 16,
+This list documents the state observed on a real installation on August 16,
 2026. The integration creates entities dynamically, so other systems may expose
 more, fewer, or different entities.
 
@@ -92,7 +92,7 @@ Cumulative energy entities use the Home Assistant state class
 heat or cooling, which use `total`. The environmental energy may decrease when
 the source counters update at different times. The produced heat falls briefly
 while the heat pump defrosts, because defrosting takes heat back from the
-heating water; I observed drops of up to about 1 kWh within a few minutes on my
+heating water; I observed drops of up to about 1 kWh within a few minutes on a real
 installation, through the cloud and the local access alike. Such a decrease
 must not start a new meter cycle, and Home Assistant records it as a small
 negative amount: the energy dashboard can show small negative hourly values of
@@ -117,7 +117,7 @@ decreases of the produced heat during defrosting appear apart as
   user setting is exposed as a control only when path, data type, write flag,
   and advertised enum options or numeric limits form a valid contract.
   Different devices and circuits can expose different subsets and new codes.
-- The reference system reports 24 writable resources. Twenty are represented
+- The confirmed installation reports 24 writable resources. Twenty are represented
   as readable entities. Sixteen settings have an explicitly validated Home
   Assistant control; administrative values remain locked.
 
@@ -131,8 +131,8 @@ decreases of the produced heat during defrosting appear apart as
 | `write_verified` | Write and read-back confirmed on real equipment | Control entity; default activation follows user relevance |
 
 Heating-circuit operation mode, Silent Mode, auxiliary-heater operation mode,
-and maximum supply temperature have been write-confirmed on the reference
-system. Other released controls use the same tested write/read-back service and
+and maximum supply temperature have been write-confirmed on a real
+installation. Other released controls use the same tested write/read-back service and
 are additionally constrained by current gateway metadata. Their individual
 effects have not all been tested on physical equipment.
 
@@ -178,7 +178,7 @@ an integration update.
 
 ## Polling rules
 
-| Group | Frequency | Content on the reference system |
+| Group | Frequency | Content on the confirmed installation |
 |---|---:|---:|
 | Live values | 60 seconds | Dynamic operating states and measurements |
 | Notifications | 5 minutes normally; 60 seconds while active | 4 aggregate entities when supported |
@@ -374,7 +374,7 @@ raw values need the new ones.
 The **system supply temperature** (`/heatSources/actualSupplyTemperature`,
 "system supply flow temperature" in the API documentation) is the supply
 temperature of the heating system, not necessarily the heat pump's own
-flow. On my heat pump with a buffer cylinder it is the flow of the heating
+flow. On a heat pump with a buffer cylinder it is the flow of the heating
 side behind the buffer: during a hot water charge it stayed at about 21 °C
 while the heat pump's flow (TC1, *Primary supply temperature (TC1)*) was at
 about 52 °C, and in heating it reads a few tenths of a kelvin below TC1. The
@@ -546,7 +546,7 @@ the entire Home Assistant session.
 
 ## Heating circuits
 
-The reference system creates 14 core entities. Optional app capabilities add
+The confirmed installation creates 14 core entities. Optional app capabilities add
 entities only when the gateway returns them. An empty optional name produces
 no entity; a configured name is added dynamically.
 
@@ -656,7 +656,7 @@ range: −30 to 100 °C (converted for °F and K) for temperatures and 0 to 2,88
 minutes for durations. The range only rejects corrupt metadata, such as a
 placeholder maximum of 6,553.5 °C; it prescribes no reference-device limits.
 Heating-circuit setpoints use the 0.5 °C step
-confirmed on the reference system. PointT reports no step for hot-water
+confirmed on a real installation. PointT reports no step for hot-water
 temperatures; a physical test with 0.5 °C was not confirmed initially and later
 appeared rounded to the next whole degree. All hot-water temperature controls
 therefore use a 1 °C step. Because the gateway rounds these Celsius setpoints,
@@ -667,7 +667,7 @@ within the gateway's limits.
 
 The maximum-supply-temperature control adopts the minimum and maximum reported
 by each individual gateway instead of assuming the 30–60 °C range observed on
-the reference system. The broad plausibility range above only rejects
+a real installation. The broad plausibility range above only rejects
 obviously corrupt metadata. The control uses whole-degree steps and is disabled
 by default because it is an installer-level limit rather than an everyday
 setpoint.
@@ -686,11 +686,11 @@ controller calls it the start temperature, and its stop temperature is not
 available. Since 0.9.1 they are named *Start threshold Eco+*, *Start
 threshold Eco* and *Start threshold Comfort* (before *… start temperature*);
 the sensor of the `off` level is *Setpoint level off* (before *Off*), the
-value set for that level (0 °C on my heat pump). On my heat pump the Eco+ start
+value set for that level (0 °C on a WLW176i heat pump). On that heat pump the Eco+ start
 temperature is the lowest (40 °C), Eco and Comfort follow (51 °C and
 53 °C). Home Assistant drops the "+" when it builds an entity ID, so the
 Eco+ and the Eco start temperature get the same base ID: one ends in
-`…_eco_start_temperature`, the other in `…_eco_start_temperature_2`. On my
+`…_eco_start_temperature`, the other in `…_eco_start_temperature_2`. On that
 installation the first one is Eco+ and the second one Eco. The names always
 show the right level; if in doubt, the unique ID ends in
 `temperatureLevels:eco` (Eco+) or `temperatureLevels:low` (Eco).
@@ -748,7 +748,7 @@ paths are probed only for IDs actually reported below `/heatSources`.
 
 Every reading the local access offers becomes an entity. Readings that are not
 needed in everyday operation are only disabled by default, never left out:
-other systems may report values where the reference system shows none.
+other systems may report values where the confirmed installation shows none.
 Identifiers, addresses, network and privacy data are never entities, nor are
 structures without a single value that feed other features (for example the
 zone configuration or the device lists).
@@ -805,7 +805,7 @@ drip pan and crankcase heaters, primary heating pump (PC0), cooling, silent
 mode (signal), low heating volume flow and an overheated inverter are enabled. The hot
 water 3-way valve (VW1) and the 4-way valve (VR4) are enabled too and show the
 position instead of on/off: VW1 *Heating* or *Hot water*, VR4 *Heating* or
-*Cooling/defrost*. On the reference heat pump (it does not cool) this matched
+*Cooling/defrost*. On a real heat pump (it does not cool) this matched
 the recorded history of several days: VR4 was on during every defrost, also
 during a defrost within a hot water charge, and off otherwise; VW1 was on
 during every hot water charge and for the last one to three minutes of each
@@ -814,7 +814,7 @@ on states of other outdoor units are not confirmed. A second compressor status, 
 heating circuit pump HC1 (PC1) are disabled. The hot water heat-up
 (`SRC.IntDHW.HeatUpActive`) is an on/off state from 0.9.0, disabled: the
 controller declares it as off, heat and post-heat, and both heat and
-post-heat show *On*. On the reference heat pump it was on during every hot
+post-heat show *On*. On a real heat pump it was on during every hot
 water charge and off while the heat pump defrosted; post-heat was not seen.
 Signals that declare named states without a unit are states; the current
 heating/cooling status (signal), the heating/cooling state and the smart grid
@@ -844,8 +844,8 @@ inputs and the room controller assignment are disabled states.
 From 0.9.1 a signal reported in a pressure unit (`mbar`, `hPa`, `kPa` or
 `Pa`, for example a pressure difference) shows its value with that unit as a
 pressure, like one in `bar`. The value is shown as reported and never
-converted; another spelling still shows the number without a unit. The
-reference system has no such signal, so this is not verified on a real
+converted; another spelling still shows the number without a unit. This is tested with synthetic
+answers only and not verified on a real
 system.
 
 From 0.9.1 three gateway states have texts in every language: the EEBus
@@ -922,13 +922,13 @@ evaporating temperature the low-pressure temperature (JR0).
 - *Liquid line temperature heating (TR3)* / *Temperatur Flüssigkeitsleitung
   Heizen (TR3)* (before *Condenser temperature heating (TR3)* /
   *Verflüssigertemperatur Heizen (TR3)*): the liquid refrigerant behind the
-  water-side heat exchanger while heating. On my heat pump it reads a little
+  water-side heat exchanger while heating. On a real heat pump it reads a little
   below JR1 and the condenser outlet water temperature (TC3).
 - *Liquid line temperature cooling (TR4)* / *Temperatur Flüssigkeitsleitung
   Kühlen (TR4)* (before *Condenser temperature cooling (TR4)* /
   *Verflüssigertemperatur Kühlen (TR4)*): the liquid line of the cooling
-  mode. While heating, the sensor sits at the evaporator inlet; on my heat
-  pump, which does not cool, it then reads about the low-pressure
+  mode. While heating, the sensor sits at the evaporator inlet; on a heat
+  pump that does not cool, it then reads about the low-pressure
   temperature (JR0), below the air intake temperature (TL2).
 - The system supply temperature, see [Gateway and system](#gateway-and-system).
 
@@ -1016,8 +1016,8 @@ names, entity IDs and the language do not matter. The preset in the card's
 current release uses only cloud entities. An updated preset is proposed in
 [the card's pull request #408](https://github.com/Sturmi77/heatpump-hydraulic-card/pull/408);
 once it is accepted, it covers installations with only the cloud,
-with the cloud and a local access, and with only a local access. On my
-installation I compared the updated preset live while the heat pump was
+with the cloud and a local access, and with only a local access. The
+updated preset was compared live on a real installation while the heat pump was
 heating, and with recorded states for defrost, hot water and standby. With
 only a local access it is untested on a real installation.
 
@@ -1176,7 +1176,7 @@ a Home Assistant control. Controls require a separate allowlist, safe limits,
 an exact value mapping, and a successful write/read-back test.
 
 Three optional resources are released as controls after their live contracts
-were confirmed on the K40 reference system. Silent Mode requires the complete
+were confirmed on a real K40 installation. Silent Mode requires the complete
 `off`, `auto`, `on` value set. Auxiliary-heater operation mode requires
 `off`, `manual`, `auto`. Maximum supply temperature requires complete numeric
 PointT limits within the broad plausibility range of number controls. Matching read-only sensors remain available as disabled
