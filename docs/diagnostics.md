@@ -704,10 +704,12 @@ tokens and component type numbers only:
 ## Heat generator modules
 
 `gateways[].heat_generator` (schema 47) appears for every gateway except
-room controllers; a system shown from its local readings
-alone has the same block in `views_without_cloud[]`. It belongs to the
-[heat generator sensor](entities.md#heat-generator-models) and makes no
-request:
+room controllers, iCom gateways included; a system shown from its local
+readings alone has the same block in `views_without_cloud[]`. It belongs to
+the [heat generator sensor](entities.md#heat-generator-models), names the
+same answer the sensor shows and makes no request. If the block cannot be
+worked out, it only says `error: unavailable` and the rest of the report
+stays complete:
 
 - `table_version`: the version of the model table;
 - `cloud_modules` and `local_modules`: how many modules with a product name

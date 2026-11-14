@@ -598,15 +598,21 @@ def choose(
 ) -> tuple[HeatGenerators | None, bool]:
     """The heat generators to show, and whether the two sources disagree.
 
-    One source alone is shown as it is. When both agree, the newer answer
-    names the source. When they disagree, the answer that matches the last
-    shown one stays; without such an answer the newer one is shown. Without
-    any answer the last shown one stays.
+    One source alone is shown as it is. When both agree, the source shown
+    last keeps naming them, so answers of the two sources in turn change
+    nothing; otherwise the newer answer names the source. When they
+    disagree, the answer that matches the last shown one stays; without such
+    an answer the newer one is shown. Without any answer the last shown one
+    stays.
     """
     if cloud is None or local is None:
         return (cloud or local or last), False
     newer, older = (local, cloud) if _newer(local, cloud) else (cloud, local)
     if cloud.same_modules(local):
+        if last is not None and last.same_modules(newer):
+            for candidate in (newer, older):
+                if candidate.source == last.source:
+                    return candidate, False
         return newer, False
     if last is not None:
         for candidate in (newer, older):
@@ -624,10 +630,15 @@ def _newer(first: HeatGenerators, second: HeatGenerators) -> bool:
 
 
 def diagnostics(
-    cloud: HeatGenerators | None, local: HeatGenerators | None
+    cloud: HeatGenerators | None,
+    local: HeatGenerators | None,
+    shown: HeatGenerators | None = None,
 ) -> dict[str, Any]:
-    """Product names, hardware types and roles only; no serial numbers."""
-    chosen, conflict = choose(cloud, local, None)
+    """Product names, hardware types and roles only; no serial numbers.
+
+    ``shown``: what the sensor shows, so the report names the same answer.
+    """
+    chosen, conflict = choose(cloud, local, shown)
 
     def modules(item: HeatGenerators | None) -> list[dict[str, object]]:
         if item is None:

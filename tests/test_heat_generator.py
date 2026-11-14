@@ -76,7 +76,7 @@ SERIALS = (
     "SERIAL-GATEWAY",
     "uuid-gateway",
 )
-# The reference installation as the cloud reports it (synthetic serials).
+# A real module list as the cloud reports it (synthetic serials).
 OWN_CLOUD = (
     {
         "ModuleSerialNumber": "SERIAL-INDOOR-1",
@@ -1267,3 +1267,85 @@ def test_the_anonymized_inventory_drops_the_heat_generators() -> None:
     serialized = json.dumps(build_anonymized_inventory(diagnostics))
     assert INDOOR not in serialized
     assert "XCU_THH" not in serialized
+
+
+# ------------------------------------------- both sources in turn, diagnostics
+
+
+MODULES = [local_module(INDOOR, "XCU_THH"), local_module(OUTDOOR, "XCU_SRH")]
+
+
+async def test_answers_of_both_sources_in_turn_write_nothing(hass) -> None:
+    # The cloud and the local access report the same modules at different
+    # times: the source shown first keeps naming them, nothing is written.
+    coordinator = coordinator_for(hass, OWN_CLOUD)
+    runtime = FakeRuntime(
+        [local_system(MODULES, observed_at=NOW + timedelta(minutes=1))]
+    )
+    coordinator.local_selection = LocalSelection(runtime, TARGET)
+    entity = await added(hass, coordinator)
+    assert shown(hass, entity).attributes["source"] == "local"
+    with patch.object(entity, "async_write_ha_state") as write:
+        for step in range(1, 7):
+            when = NOW + timedelta(minutes=2 * step)
+            if step % 2:
+                set_cloud(coordinator, copy.deepcopy(OWN_CLOUD), when)
+            else:
+                runtime.observations = [local_system(MODULES, observed_at=when)]
+            coordinator.async_update_listeners()
+        assert write.call_count == 0
+    assert entity._shown is not None and entity._shown.source == "local"
+    await coordinator.async_shutdown()
+
+
+def test_agreeing_answers_keep_the_shown_source() -> None:
+    cloud = interpret(rows_from_cloud(OWN_CLOUD), "cloud", observed_at=NOW)
+    local = interpret(
+        rows_from_cloud(OWN_CLOUD), "local", observed_at=NOW + timedelta(minutes=1)
+    )
+    assert choose(cloud, local, None) == (local, False)
+    assert choose(cloud, local, cloud) == (cloud, False)
+    assert choose(cloud, local, local) == (local, False)
+    # Other modules shown last: the newer answer names the source.
+    other = interpret(rows(("Example 1", "XCU_THH")), "cloud", observed_at=NOW)
+    assert choose(cloud, local, other) == (local, False)
+
+
+async def test_the_diagnostics_name_what_the_sensor_shows(hass) -> None:
+    runtime = FakeRuntime([read(DOCUMENTED)])
+    coordinator = coordinator_for(hass)
+    coordinator.local_selection = LocalSelection(runtime, TARGET)
+    entity = await added(hass, coordinator)
+    assert shown(hass, entity).attributes["source"] == "local"
+    # A newer, disagreeing cloud answer: the sensor keeps the local one, and
+    # the diagnostics say the same.
+    set_cloud(coordinator, OWN_CLOUD, NOW + timedelta(days=1))
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    assert entity._shown is not None and entity._shown.source == "local"
+    report = _gateway_diagnostics(1, coordinator)["heat_generator"]
+    assert report["conflict"] is True and report["source"] == "local"
+    assert {item["product_name"] for item in report["other_source_modules"]} == {
+        INDOOR,
+        OUTDOOR,
+    }
+    # Without the sensor the report falls back to the newer answer.
+    await entity.async_remove()
+    report = _gateway_diagnostics(1, coordinator)["heat_generator"]
+    assert report["source"] == "cloud"
+    await coordinator.async_shutdown()
+
+
+async def test_a_failing_heat_generator_block_keeps_the_report(
+    hass, monkeypatch
+) -> None:
+    coordinator = coordinator_for(hass, OWN_CLOUD)
+
+    def broken(self):
+        raise RuntimeError("unexpected")
+
+    monkeypatch.setattr(HeatGeneratorInputs, "local", broken)
+    report = _gateway_diagnostics(1, coordinator)
+    assert report["heat_generator"] == {"error": "unavailable"}
+    assert "firmware_changes" in report and "startup_inventory" in report
+    await coordinator.async_shutdown()

@@ -746,7 +746,8 @@ def _gateway_diagnostics(
             else {}
         ),
         # Schema 47: the heat generator modules by role (product names and
-        # hardware types only); not for iCom gateways and room controllers.
+        # hardware types only); iCom gateways follow the same rule, room
+        # controllers get none. Guarded: an error gives a fixed note.
         **(
             {"heat_generator": generators}
             if (generators := heat_generator_diagnostics(coordinator)) is not None

@@ -14,9 +14,11 @@ gets the entity. The state is written only when what it shows changes.
 
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self
+from weakref import WeakKeyDictionary
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
@@ -50,6 +52,8 @@ if TYPE_CHECKING:
 CLOUD_PATH = "/system/info"
 LOCAL_PATH = "/system/basicInfo"
 _STORED_KEY = "heat_generators"
+# What the sensor of a gateway shows, so the diagnostics name the same answer.
+_SHOWN: WeakKeyDictionary[object, HeatGenerators] = WeakKeyDictionary()
 
 
 def heat_generator_unique_id(gateway_id: str) -> str:
@@ -118,11 +122,26 @@ class HeatGeneratorInputs:
 def heat_generator_diagnostics(
     coordinator: BoschBuderusDataUpdateCoordinator,
 ) -> dict[str, Any] | None:
-    """The diagnostics block; ``None`` for room controllers."""
-    if not supported(coordinator):
+    """The diagnostics block; ``None`` for room controllers.
+
+    Never fails: an unexpected error gives a fixed note, and the rest of the
+    report stays available.
+    """
+    try:
+        if not supported(coordinator):
+            return None
+        inputs = HeatGeneratorInputs(coordinator)
+        return diagnostics(inputs.cloud(), inputs.local(), shown_by(coordinator))
+    except Exception:  # the report must stay available
+        return {"error": "unavailable"}
+
+
+def shown_by(coordinator: object) -> HeatGenerators | None:
+    """What the sensor of this gateway shows, if it exists."""
+    try:
+        return _SHOWN.get(coordinator)
+    except TypeError:  # not weakly referable
         return None
-    inputs = HeatGeneratorInputs(coordinator)
-    return diagnostics(inputs.cloud(), inputs.local())
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,6 +203,7 @@ class BoschBuderusHeatGeneratorSensor(
         if (stored := await self.async_get_last_extra_data()) is not None:
             # Worked out again with the table of this version.
             self._shown = from_data(_Stored.from_dict(stored.as_dict()).data)
+            self._remember()
         self._refresh()
 
     def _refresh(self) -> bool:
@@ -194,7 +214,21 @@ class BoschBuderusHeatGeneratorSensor(
         if chosen is None or chosen == self._shown:
             return False
         self._shown = chosen
+        self._remember()
         return True
+
+    def _remember(self) -> None:
+        """Let the diagnostics name what this sensor shows."""
+        with suppress(TypeError):  # not weakly referable
+            if self._shown is None:
+                _SHOWN.pop(self.coordinator, None)
+            else:
+                _SHOWN[self.coordinator] = self._shown
+
+    async def async_will_remove_from_hass(self) -> None:
+        await super().async_will_remove_from_hass()
+        with suppress(TypeError):  # not weakly referable
+            _SHOWN.pop(self.coordinator, None)
 
     @callback
     def _handle_coordinator_update(self) -> None:
