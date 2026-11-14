@@ -34,6 +34,10 @@ type ValueCheck = Callable[[Resource, JsonScalar, Mapping[str, Resource]], str |
 # value. Returns a token (the translation key) that ends the read-back as
 # not confirmed, or ``None`` to go on.
 type ReadBackCheck = Callable[[Resource, JsonScalar], str | None]
+# A confirmation rule: a read value and the requested wire value. True when
+# the reading shows the request in effect although it is not equal to it
+# (for example any negative reading after writing the clear value -1).
+type ConfirmCheck = Callable[[object, JsonScalar], bool]
 
 
 def _no_equivalents() -> Mapping[str, frozenset[str]]:
@@ -131,6 +135,12 @@ class EnumWritePolicy:
     # (``current_option_not_advertised``), instead of a selection without a
     # current option.
     current_required: bool = False
+    # The same flag rule for a policy outside the contracts: ``available``
+    # false gives no control, ``used`` false refuses every write unsent
+    # (``ControlUnused``), malformed flags give no control; missing flags
+    # change nothing. Off only for controls with flag rules of their own
+    # (the zones of a room controller).
+    honor_flags: bool = True
 
     @property
     def switch_values(self) -> tuple[str, str] | None:
@@ -179,6 +189,15 @@ class NumberWritePolicy:
     read_back_check: ReadBackCheck | None = None
     # As ``EnumWritePolicy.unused_writable``.
     unused_writable: bool = False
+    # As ``EnumWritePolicy.honor_flags``.
+    honor_flags: bool = True
+    # A command value the gateway takes although it lies outside the
+    # advertised limits (the clear value -1 of a temporary setpoint). Only
+    # this exact value passes without the limit and grid checks, and only
+    # while it lies outside the limits; within them the normal checks apply.
+    sentinel_value: float | None = None
+    # Readings that confirm a write besides the equal one.
+    confirm_if: ConfirmCheck | None = None
 
 
 type WritePolicy = EnumWritePolicy | NumberWritePolicy

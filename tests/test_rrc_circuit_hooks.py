@@ -175,6 +175,7 @@ def test_p41_needs_a_contract_policy_and_an_rrc_plant() -> None:
             "available": "false",
         }
     )
-    # The generic policy of the path (the absence contract, W2, owns it now).
+    # The generic policy of the path (the absence contract, W2, owns it
+    # now) follows the generic flag rule: not available, no control.
     with w0_state():
-        assert assess_control(away, RRC_CONTEXT).eligible
+        assert assess_control(away, RRC_CONTEXT).rejection_reason == "not_available"

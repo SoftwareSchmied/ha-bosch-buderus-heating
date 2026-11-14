@@ -321,6 +321,17 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             if entry.version == 4
         }
 
+    def _local_unmigrated_entries(self) -> bool:
+        """Whether an entry of another version exists (for example one whose
+        update to the current version failed). It is no owner for local
+        access, but the system is not new either: no new entry is offered."""
+        return any(
+            entry.version != 4
+            for entry in self.hass.config_entries.async_entries(
+                DOMAIN, include_ignore=False
+            )
+        )
+
     async def _local_new_entry(self) -> ConfigFlowResult:
         """Create an entry without any access; only the config flow can."""
         return self.async_abort(reason="local_existing_owner_required")
@@ -331,7 +342,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         # Without any entry the integration is not set up yet, so the local
         # runtime cannot be ready: the new entry's own local setup checks it.
         owners = self._local_owner_entries()
-        if owners and not self.local_available():
+        if (owners and not self.local_available()) or (
+            not owners and self._local_unmigrated_entries()
+        ):
             return self.async_abort(reason="local_setup_unavailable")
         try:
             self._local_choices = remember_discovery(self.hass, discovery_info)
@@ -377,6 +390,8 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 return self.async_abort(reason="local_setup_unavailable")
             self._local_phase = ""
             return await self.async_step_local_setup()
+        if self._local_unmigrated_entries():
+            return self.async_abort(reason="local_setup_unavailable")
         if self._local_discovery is not None:
             # The notice may be older than the hint; the address step of the
             # new entry offers the found address again.

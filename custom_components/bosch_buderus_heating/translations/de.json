@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Das Funkgerät nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
     },
+    "control_unused": {
+      "message": "Die Anlage nutzt diese Einstellung gerade nicht. Diese Änderung wurde nicht gesendet."
+    },
     "rrc_setting_unused": {
       "message": "Der Raumregler nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
     },

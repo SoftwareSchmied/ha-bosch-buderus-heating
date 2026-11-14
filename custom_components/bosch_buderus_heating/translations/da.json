@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Radioenheden bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
     },
+    "control_unused": {
+      "message": "Apparatet bruger ikke denne indstilling i øjeblikket. Denne ændring blev ikke sendt."
+    },
     "rrc_setting_unused": {
       "message": "Rumregulatoren bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
     },

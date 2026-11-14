@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Radiolaite ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
     },
+    "control_unused": {
+      "message": "Laite ei käytä tätä asetusta tällä hetkellä. Tätä muutosta ei lähetetty."
+    },
     "rrc_setting_unused": {
       "message": "Huonesäädin ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
     },

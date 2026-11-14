@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "O dispositivo de rádio não utiliza esta definição de momento, por isso não foi alterada."
     },
+    "control_unused": {
+      "message": "O equipamento não utiliza esta definição de momento. Esta alteração não foi enviada."
+    },
     "rrc_setting_unused": {
       "message": "O regulador de ambiente não utiliza esta definição de momento, por isso não foi alterada."
     },

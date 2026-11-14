@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "L'appareil radio n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
     },
+    "control_unused": {
+      "message": "L'appareil n'utilise actuellement pas ce réglage. Cette modification n'a pas été envoyée."
+    },
     "rrc_setting_unused": {
       "message": "Le régulateur d'ambiance n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
     },

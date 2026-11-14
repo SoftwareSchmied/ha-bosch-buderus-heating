@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Rádiové zařízení toto nastavení momentálně nepoužívá, proto nebylo změněno."
     },
+    "control_unused": {
+      "message": "Spotřebič toto nastavení momentálně nepoužívá. Tato změna nebyla odeslána."
+    },
     "rrc_setting_unused": {
       "message": "Prostorový regulátor toto nastavení momentálně nepoužívá, proto nebylo změněno."
     },

@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Het radioapparaat gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
     },
+    "control_unused": {
+      "message": "Het apparaat gebruikt deze instelling op dit moment niet. Deze wijziging is niet verzonden."
+    },
     "rrc_setting_unused": {
       "message": "De kamerregelaar gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
     },
