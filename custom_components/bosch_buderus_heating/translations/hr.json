@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Postavke",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Obavijesti",
           "holidays": "Upravljanje razdobljima odmora",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Veze",
-        "description": "{result}Odaberite pristup kojim želite upravljati.",
+        "description": "Odaberite pristup kojim želite upravljati.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Postavljanje lokalnog pristupa",
           "back": "← Natrag"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Test veze",
-        "description": "{result}"
+        "description": "U redu, odgovor nakon {ms} ms. Postavke ostaju nepromijenjene."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Test veze",
+        "description": "U redu, odgovor nakon {ms} ms; pristupnika na računu: {count}. Postavke ostaju nepromijenjene."
+      },
+      "connection_test_not_running": {
+        "title": "Test veze",
+        "description": "Nije testirano: pristup trenutno ne radi (onemogućen, pokreće se ili zaustavljen)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Test veze",
+        "description": "Potrebna prijava: ponovno se prijavite putem „Ponovna prijava”."
+      },
+      "connection_test_auth_local": {
+        "title": "Test veze",
+        "description": "Potrebna prijava: ponovno postavite lokalni pristup putem „Promjena lokalnog pristupa”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Test veze",
+        "description": "Certifikat uređaja se promijenio: ponovno postavite lokalni pristup putem „Promjena lokalnog pristupa”."
+      },
+      "connection_test_paused": {
+        "title": "Test veze",
+        "description": "Nije testirano: zahtjevi su pauzirani do {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Test veze",
+        "description": "Nije testirano: zahtjevi su trenutno pauzirani."
+      },
+      "connection_test_busy": {
+        "title": "Test veze",
+        "description": "Nije testirano: pristup je trenutno zauzet. Pokušajte ponovno za kratko vrijeme."
+      },
+      "connection_test_unreachable": {
+        "title": "Test veze",
+        "description": "Nije dostupno: nema odgovora ({ms} ms). Provjerite mrežu i uređaj."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Test veze",
+        "description": "Nije dostupno: nema odgovora ({ms} ms). Provjerite mrežu i uređaj. Savjet: ako se adresa pristupnika mijenja, na primjer nakon ponovnog pokretanja usmjerivača, pomaže fiksna adresa: rezervirajte njegovu IP adresu u usmjerivaču (DHCP rezervacija) ili unesite naziv hosta pristupnika. Ako se pristupnik javi na novoj adresi, obavijest o popravku nudi njezino korištenje."
+      },
+      "connection_test_other_gateway": {
+        "title": "Test veze",
+        "description": "Na ovoj adresi odgovara drugi pristupnik. Ponovno postavite lokalni pristup."
+      },
+      "connection_test_error": {
+        "title": "Test veze",
+        "description": "Test nije uspio: {kind}."
       },
       "connection": {
         "title": "Upravljanje vezom",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Testiraj vezu sada",
           "connection_enabled": "Uključi ili isključi pristup",
@@ -697,6 +757,98 @@
           "confirm": "Opozovi ovaj token na pristupniku",
           "confirm_end": "Lokalni pristup koji koristi ovaj token završava"
         }
+      },
+      "result_connection_removed": {
+        "title": "Rezultat",
+        "description": "Pristup je uklonjen."
+      },
+      "result_connection_saved": {
+        "title": "Rezultat",
+        "description": "Promjena je spremljena."
+      },
+      "result_holiday_created": {
+        "title": "Rezultat",
+        "description": "Odmor je stvoren i potvrđen ponovnim čitanjem."
+      },
+      "result_holiday_deleted": {
+        "title": "Rezultat",
+        "description": "Odmor je obrisan i njegovo uklanjanje potvrdio je sustav grijanja."
+      },
+      "result_holiday_unchanged": {
+        "title": "Rezultat",
+        "description": "Ništa nije promijenjeno, pa ništa nije poslano sustavu grijanja."
+      },
+      "result_holiday_updated": {
+        "title": "Rezultat",
+        "description": "Postavke odmora su spremljene i potvrđene od strane sustava grijanja."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Rezultat",
+        "description": "To je bio token koji je koristio ovaj pristup, pa je lokalni pristup završio, ali pristup nije bilo moguće isključiti. Isključite ga, uklonite ga ili ga ponovno postavite s oznakom uređaja."
+      },
+      "result_local_token_access_ended": {
+        "title": "Rezultat",
+        "description": "To je bio token koji je koristio ovaj pristup. Lokalni pristup je završio i pristup je isključen. Ponovno ga postavite s oznakom uređaja ili ga uklonite."
+      },
+      "result_local_token_not_removed": {
+        "title": "Rezultat",
+        "description": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Rezultat",
+        "description": "Odabrani token je opozvan na pristupniku i pristup je uklonjen. Token koji je sam ovaj pristup koristio ostaje na pristupniku."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Rezultat",
+        "description": "Pristupnik je odbio opoziv; token je i dalje na popisu."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Rezultat",
+        "description": "Pristupnik nije potvrdio opoziv. Ništa nije ponovljeno. Ponovno otvorite popis tokena radi provjere."
+      },
+      "result_local_token_revoked": {
+        "title": "Rezultat",
+        "description": "Token je opozvan; pristupnik ga više ne navodi."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Rezultat",
+        "description": "Token je opozvan na pristupniku i pristup je uklonjen."
+      },
+      "result_local_tokens_changed": {
+        "title": "Rezultat",
+        "description": "Popis tokena u međuvremenu se promijenio. Ništa nije opozvano ni uklonjeno. Ponovno otvorite popis."
+      },
+      "result_notifications_saved": {
+        "title": "Rezultat",
+        "description": "Postavke obavijesti su spremljene."
+      },
+      "result_rescan_partial": {
+        "title": "Rezultat",
+        "description": "Pretraživanje je zakazano za dijelove koji su spremni i izvodi se pri sljedećem redovitom ažuriranju. Dijelovi koji su trenutno pauzirani preskočeni su; za njih pokušajte ponovno kasnije."
+      },
+      "result_rescan_paused": {
+        "title": "Rezultat",
+        "description": "Pretraživanje nije pokrenuto: zahtjevi su trenutno pauzirani (na primjer nakon što je oblak zatražio stanku). Pokušajte ponovno kasnije."
+      },
+      "result_rescan_planned": {
+        "title": "Rezultat",
+        "description": "Pretraživanje je zakazano i izvodi se pri sljedećem redovitom ažuriranju; novi dijelovi pojavljuju se čim budu pronađeni."
+      },
+      "result_rescan_running": {
+        "title": "Rezultat",
+        "description": "Pretraživanje se već izvodi ili je zakazano. Pričekajte da završi."
+      },
+      "result_rescan_unavailable": {
+        "title": "Rezultat",
+        "description": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu."
+      },
+      "result_rrc_program_saved": {
+        "title": "Rezultat",
+        "description": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem."
+      },
+      "result_switch_program_saved": {
+        "title": "Rezultat",
+        "description": "Vremenski program {program} spremljen je i potvrđen ponovnim čitanjem.\n\nDosadašnje točke uklapanja promijenjenih dana:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
       "notification_gateways_changed": "Odabir instalacije se promijenio. Ponovno otvorite postavke.",
       "holiday_changed": "Odabrani odmor se promijenio ili se više ne može uređivati. Ponovno otvorite odmor kako biste pregledali njegove trenutne podatke.",
-      "holiday_updated": "Postavke odmora su spremljene i potvrđene od strane sustava grijanja.",
-      "holiday_unchanged": "Ništa nije promijenjeno, pa ništa nije poslano sustavu grijanja.",
       "no_writable_holidays": "Upravljanje odmorima trenutno nije dostupno. Pričekajte dok instalacija ne pruži svoje postavke odmora.",
-      "holiday_deleted": "Odmor je obrisan i njegovo uklanjanje potvrdio je sustav grijanja.",
       "not_loaded": "Bosch/Buderus Home Comfort mora biti učitan prije nego što se odmor može konfigurirati.",
-      "holiday_created": "Odmor je stvoren i potvrđen ponovnim čitanjem.",
       "holiday_previous_request_found": "Raniji neriješeni zahtjev sada je potvrđen. Vaši novi unosi nisu poslani. Prvo provjerite postojeći odmor pod Upravljanje razdobljima odmora.",
       "holiday_already_exists": "Odmor s ovim početkom i odabirom krugova već postoji. Nije stvoren dodatni odmor. Otvorite Upravljanje razdobljima odmora i uredite postojeći unos.",
       "holiday_create_unconfirmed": "Zahtjev za stvaranje nije se mogao potvrditi. Odmor možda već postoji. Provjerite Upravljanje razdobljima odmora ili aplikaciju proizvođača. Sljedećih 10 minuta novi pokušaj provjerava ishod ovog zahtjeva bez stvaranja drugog odmora.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Nije dostupan nijedan aktualni, podržani tjedni vremenski program sobnog regulatora.",
       "no_switch_programs": "Ovdje se ne može promijeniti nijedan aktualni vremenski program kruga grijanja ni tople vode.",
       "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
-      "switch_program_saved": "Vremenski program {program} spremljen je i potvrđen ponovnim čitanjem.\n\nDosadašnje točke uklapanja promijenjenih dana:\n\n{before}",
       "controls_not_loaded": "Upravljanje je dostupno samo putem pristupa putem oblaka; lokalni pristup samo čita. Povežite pristup putem oblaka ili pričekajte da se učita.",
       "controls_auth_required": "Upravljanje nije dostupno: pristup putem oblaka treba novu prijavu. Mjerne vrijednosti ostaju vidljive.",
       "controls_cloud_stopped": "Upravljanje nije dostupno: pristup putem oblaka je zaustavljen ili se ponovno pokreće. Mjerne vrijednosti ostaju vidljive.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
       "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
       "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
-      "rescan_planned": "Pretraživanje je zakazano i izvodi se pri sljedećem redovitom ažuriranju; novi dijelovi pojavljuju se čim budu pronađeni.",
-      "rescan_paused": "Pretraživanje nije pokrenuto: zahtjevi su trenutno pauzirani (na primjer nakon što je oblak zatražio stanku). Pokušajte ponovno kasnije.",
-      "rescan_running": "Pretraživanje se već izvodi ili je zakazano. Pričekajte da završi.",
-      "rescan_partial": "Pretraživanje je zakazano za dijelove koji su spremni i izvodi se pri sljedećem redovitom ažuriranju. Dijelovi koji su trenutno pauzirani preskočeni su; za njih pokušajte ponovno kasnije.",
       "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu.",
-      "connection_saved": "Promjena je spremljena.",
-      "connection_removed": "Pristup je uklonjen.",
-      "notifications_saved": "Postavke obavijesti su spremljene.",
-      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem.",
-      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup.",
-      "local_tokens_changed": "Popis tokena u međuvremenu se promijenio. Ništa nije opozvano ni uklonjeno. Ponovno otvorite popis.",
-      "local_token_revoked": "Token je opozvan; pristupnik ga više ne navodi.",
-      "local_token_access_ended": "To je bio token koji je koristio ovaj pristup. Lokalni pristup je završio i pristup je isključen. Ponovno ga postavite s oznakom uređaja ili ga uklonite.",
-      "local_token_revoke_rejected": "Pristupnik je odbio opoziv; token je i dalje na popisu.",
-      "local_token_revoke_unclear": "Pristupnik nije potvrdio opoziv. Ništa nije ponovljeno. Ponovno otvorite popis tokena radi provjere.",
-      "local_token_revoked_removed": "Token je opozvan na pristupniku i pristup je uklonjen.",
-      "local_token_not_removed": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup.",
-      "local_token_old_revoked_removed": "Odabrani token je opozvan na pristupniku i pristup je uklonjen. Token koji je sam ovaj pristup koristio ostaje na pristupniku.",
-      "local_token_access_end_failed": "To je bio token koji je koristio ovaj pristup, pa je lokalni pristup završio, ali pristup nije bilo moguće isključiti. Isključite ga, uklonite ga ili ga ponovno postavite s oznakom uređaja."
+      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."

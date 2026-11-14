@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Instellingen",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaties",
           "holidays": "Vakantieperiodes beheren",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Verbindingen",
-        "description": "{result}Kies de toegang die je wilt beheren.",
+        "description": "Kies de toegang die je wilt beheren.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Lokale toegang instellen",
           "back": "← Terug"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Verbindingstest",
-        "description": "{result}"
+        "description": "OK, antwoord na {ms} ms. De instellingen blijven ongewijzigd."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Verbindingstest",
+        "description": "OK, antwoord na {ms} ms; {count} gateway(s) in het account. De instellingen blijven ongewijzigd."
+      },
+      "connection_test_not_running": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: de toegang draait nu niet (uitgeschakeld, wordt gestart of gestopt)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Verbindingstest",
+        "description": "Aanmelding vereist: meld je opnieuw aan via “Opnieuw aanmelden”."
+      },
+      "connection_test_auth_local": {
+        "title": "Verbindingstest",
+        "description": "Aanmelding vereist: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Verbindingstest",
+        "description": "Het certificaat van het apparaat is gewijzigd: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
+      },
+      "connection_test_paused": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: verzoeken zijn gepauzeerd tot {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: verzoeken zijn nu gepauzeerd."
+      },
+      "connection_test_busy": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: de toegang is nu bezet. Probeer het zo meteen opnieuw."
+      },
+      "connection_test_unreachable": {
+        "title": "Verbindingstest",
+        "description": "Niet bereikbaar: geen antwoord ({ms} ms). Controleer het netwerk en het apparaat."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Verbindingstest",
+        "description": "Niet bereikbaar: geen antwoord ({ms} ms). Controleer het netwerk en het apparaat. Tip: als het adres van de gateway verandert, bijvoorbeeld na een herstart van de router, helpt een vast adres: reserveer het IP-adres in de router (DHCP-reservering) of voer de hostnaam van de gateway in. Meldt de gateway zich op een nieuw adres, dan biedt een reparatiemelding aan dit te gebruiken."
+      },
+      "connection_test_other_gateway": {
+        "title": "Verbindingstest",
+        "description": "Op dit adres antwoordt een andere gateway. Stel de lokale toegang opnieuw in."
+      },
+      "connection_test_error": {
+        "title": "Verbindingstest",
+        "description": "Test mislukt: {kind}."
       },
       "connection": {
         "title": "Verbinding beheren",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Verbinding nu testen",
           "connection_enabled": "Toegang in- of uitschakelen",
@@ -697,6 +757,98 @@
           "confirm": "Dit token op de gateway intrekken",
           "confirm_end": "Een lokale toegang die dit token gebruikt, eindigt"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultaat",
+        "description": "De toegang is verwijderd."
+      },
+      "result_connection_saved": {
+        "title": "Resultaat",
+        "description": "De wijziging is opgeslagen."
+      },
+      "result_holiday_created": {
+        "title": "Resultaat",
+        "description": "De vakantie is aangemaakt en bevestigd door haar terug te lezen."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultaat",
+        "description": "De vakantie is verwijderd en het verwijderen is door de verwarmingsinstallatie bevestigd."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultaat",
+        "description": "Er is niets gewijzigd, dus er is niets naar de verwarmingsinstallatie verzonden."
+      },
+      "result_holiday_updated": {
+        "title": "Resultaat",
+        "description": "De vakantie-instellingen zijn opgeslagen en door de verwarmingsinstallatie bevestigd."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultaat",
+        "description": "Het was het token dat deze toegang gebruikte, dus de lokale toegang is beëindigd, maar de toegang kon niet worden uitgeschakeld. Schakel hem uit, verwijder hem of stel hem opnieuw in met het label op het apparaat."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultaat",
+        "description": "Het was het token dat deze toegang gebruikte. De lokale toegang is beëindigd en de toegang is uitgeschakeld. Stel hem opnieuw in met het label op het apparaat of verwijder hem."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultaat",
+        "description": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultaat",
+        "description": "Het gekozen token is op de gateway ingetrokken en de toegang is verwijderd. Het token dat deze toegang zelf gebruikte, staat nog op de gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultaat",
+        "description": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultaat",
+        "description": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultaat",
+        "description": "Het token is ingetrokken; de gateway vermeldt het niet meer."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultaat",
+        "description": "Het token is op de gateway ingetrokken en de toegang is verwijderd."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultaat",
+        "description": "De tokenlijst is intussen gewijzigd. Er is niets ingetrokken of verwijderd. Open de lijst opnieuw."
+      },
+      "result_notifications_saved": {
+        "title": "Resultaat",
+        "description": "De meldingsinstellingen zijn opgeslagen."
+      },
+      "result_rescan_partial": {
+        "title": "Resultaat",
+        "description": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen."
+      },
+      "result_rescan_paused": {
+        "title": "Resultaat",
+        "description": "Het zoeken is niet gestart: verzoeken zijn nu gepauzeerd (bijvoorbeeld nadat de cloud om een pauze vroeg). Probeer het later opnieuw."
+      },
+      "result_rescan_planned": {
+        "title": "Resultaat",
+        "description": "Het zoeken is gepland en wordt uitgevoerd bij de volgende reguliere update; nieuwe onderdelen verschijnen zodra ze zijn gevonden."
+      },
+      "result_rescan_running": {
+        "title": "Resultaat",
+        "description": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultaat",
+        "description": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultaat",
+        "description": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultaat",
+        "description": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
       "notification_gateways_changed": "De selectie van installaties is gewijzigd. Open de instellingen opnieuw.",
       "holiday_changed": "De geselecteerde vakantie is gewijzigd of kan niet meer worden bewerkt. Open de vakantie opnieuw om de huidige gegevens te bekijken.",
-      "holiday_updated": "De vakantie-instellingen zijn opgeslagen en door de verwarmingsinstallatie bevestigd.",
-      "holiday_unchanged": "Er is niets gewijzigd, dus er is niets naar de verwarmingsinstallatie verzonden.",
       "no_writable_holidays": "Vakantiebeheer is momenteel niet beschikbaar. Wacht tot de installatie haar vakantie-instellingen heeft geleverd.",
-      "holiday_deleted": "De vakantie is verwijderd en het verwijderen is door de verwarmingsinstallatie bevestigd.",
       "not_loaded": "Bosch/Buderus Home Comfort moet zijn geladen voordat een vakantie kan worden geconfigureerd.",
-      "holiday_created": "De vakantie is aangemaakt en bevestigd door haar terug te lezen.",
       "holiday_previous_request_found": "Het eerdere onopgeloste verzoek is nu bevestigd. Je nieuwe invoer is niet verzonden. Controleer eerst de bestaande vakantie onder Vakantieperiodes beheren.",
       "holiday_already_exists": "Er bestaat al een vakantie met dit begin en deze circuitselectie. Er is geen extra vakantie aangemaakt. Open Vakantieperiodes beheren en bewerk de bestaande invoer.",
       "holiday_create_unconfirmed": "Het aanmaakverzoek kon niet worden bevestigd. De vakantie bestaat mogelijk al. Controleer Vakantieperiodes beheren of de app van de fabrikant. Een nieuwe poging controleert de komende 10 minuten het resultaat van dit verzoek zonder een tweede vakantie aan te maken.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Er is geen actueel, ondersteund weektijdprogramma van een kamerregelaar beschikbaar.",
       "no_switch_programs": "Hier kan geen actueel tijdprogramma van een verwarmingscircuit of van het warm water worden gewijzigd.",
       "switch_program_changed": "Het tijdprogramma is intussen gewijzigd of kan niet meer worden gewijzigd. Open het opnieuw om de huidige schakelpunten te zien.",
-      "switch_program_saved": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}",
       "controls_not_loaded": "Bediening is alleen beschikbaar via de cloudtoegang; de lokale toegang leest alleen. Verbind een cloudtoegang of wacht tot die is geladen.",
       "controls_auth_required": "Bediening is niet beschikbaar: de cloudtoegang vereist een nieuwe aanmelding. Meetwaarden blijven zichtbaar.",
       "controls_cloud_stopped": "Bediening is niet beschikbaar: de cloudtoegang is gestopt of wordt opnieuw gestart. Meetwaarden blijven zichtbaar.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
-      "rescan_planned": "Het zoeken is gepland en wordt uitgevoerd bij de volgende reguliere update; nieuwe onderdelen verschijnen zodra ze zijn gevonden.",
-      "rescan_paused": "Het zoeken is niet gestart: verzoeken zijn nu gepauzeerd (bijvoorbeeld nadat de cloud om een pauze vroeg). Probeer het later opnieuw.",
-      "rescan_running": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is.",
-      "rescan_partial": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen.",
       "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed.",
-      "connection_saved": "De wijziging is opgeslagen.",
-      "connection_removed": "De toegang is verwijderd.",
-      "notifications_saved": "De meldingsinstellingen zijn opgeslagen.",
-      "rrc_program_saved": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen.",
-      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in.",
-      "local_tokens_changed": "De tokenlijst is intussen gewijzigd. Er is niets ingetrokken of verwijderd. Open de lijst opnieuw.",
-      "local_token_revoked": "Het token is ingetrokken; de gateway vermeldt het niet meer.",
-      "local_token_access_ended": "Het was het token dat deze toegang gebruikte. De lokale toegang is beëindigd en de toegang is uitgeschakeld. Stel hem opnieuw in met het label op het apparaat of verwijder hem.",
-      "local_token_revoke_rejected": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst.",
-      "local_token_revoke_unclear": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren.",
-      "local_token_revoked_removed": "Het token is op de gateway ingetrokken en de toegang is verwijderd.",
-      "local_token_not_removed": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw.",
-      "local_token_old_revoked_removed": "Het gekozen token is op de gateway ingetrokken en de toegang is verwijderd. Het token dat deze toegang zelf gebruikte, staat nog op de gateway.",
-      "local_token_access_end_failed": "Het was het token dat deze toegang gebruikte, dus de lokale toegang is beëindigd, maar de toegang kon niet worden uitgeschakeld. Schakel hem uit, verwijder hem of stel hem opnieuw in met het label op het apparaat."
+      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."

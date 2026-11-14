@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Nastavení",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Oznámení",
           "holidays": "Správa období dovolené",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Připojení",
-        "description": "{result}Vyberte přístup, který chcete spravovat.",
+        "description": "Vyberte přístup, který chcete spravovat.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Nastavit místní přístup",
           "back": "← Zpět"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Test připojení",
-        "description": "{result}"
+        "description": "OK, odpověď po {ms} ms. Nastavení zůstávají beze změny."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Test připojení",
+        "description": "OK, odpověď po {ms} ms; počet bran v účtu: {count}. Nastavení zůstávají beze změny."
+      },
+      "connection_test_not_running": {
+        "title": "Test připojení",
+        "description": "Netestováno: přístup právě neběží (je vypnutý, spouští se nebo je zastaven)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Test připojení",
+        "description": "Vyžadováno přihlášení: přihlaste se prosím znovu pomocí „Přihlásit se znovu“."
+      },
+      "connection_test_auth_local": {
+        "title": "Test připojení",
+        "description": "Vyžadováno přihlášení: nastavte prosím místní přístup znovu pomocí „Změna místního přístupu“."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Test připojení",
+        "description": "Certifikát zařízení se změnil: nastavte prosím místní přístup znovu pomocí „Změna místního přístupu“."
+      },
+      "connection_test_paused": {
+        "title": "Test připojení",
+        "description": "Netestováno: dotazy jsou pozastaveny do {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Test připojení",
+        "description": "Netestováno: dotazy jsou právě pozastaveny."
+      },
+      "connection_test_busy": {
+        "title": "Test připojení",
+        "description": "Netestováno: přístup je právě zaneprázdněn. Zkuste to za chvíli znovu."
+      },
+      "connection_test_unreachable": {
+        "title": "Test připojení",
+        "description": "Nedosažitelné: žádná odpověď ({ms} ms). Zkontrolujte síť a zařízení."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Test připojení",
+        "description": "Nedosažitelné: žádná odpověď ({ms} ms). Zkontrolujte síť a zařízení. Tip: pokud se adresa brány mění, například po restartu routeru, pomůže pevná adresa: rezervujte její IP adresu v routeru (rezervace DHCP) nebo zadejte název hostitele brány. Pokud se brána ohlásí na nové adrese, upozornění k opravě nabídne její použití."
+      },
+      "connection_test_other_gateway": {
+        "title": "Test připojení",
+        "description": "Na této adrese odpovídá jiná brána. Nastavte místní přístup znovu."
+      },
+      "connection_test_error": {
+        "title": "Test připojení",
+        "description": "Test selhal: {kind}."
       },
       "connection": {
         "title": "Správa připojení",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Otestovat připojení nyní",
           "connection_enabled": "Zapnout nebo vypnout přístup",
@@ -697,6 +757,98 @@
           "confirm": "Odvolat tento token na bráně",
           "confirm_end": "Místní přístup, který tento token používá, skončí"
         }
+      },
+      "result_connection_removed": {
+        "title": "Výsledek",
+        "description": "Přístup byl odebrán."
+      },
+      "result_connection_saved": {
+        "title": "Výsledek",
+        "description": "Změna byla uložena."
+      },
+      "result_holiday_created": {
+        "title": "Výsledek",
+        "description": "Dovolená byla vytvořena a potvrzena zpětným načtením."
+      },
+      "result_holiday_deleted": {
+        "title": "Výsledek",
+        "description": "Dovolená byla odstraněna a její odstranění potvrdila topná soustava."
+      },
+      "result_holiday_unchanged": {
+        "title": "Výsledek",
+        "description": "Nic se nezměnilo, proto nebylo topné soustavě nic odesláno."
+      },
+      "result_holiday_updated": {
+        "title": "Výsledek",
+        "description": "Nastavení dovolené bylo uloženo a potvrzeno topnou soustavou."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Výsledek",
+        "description": "Byl to token, který tento přístup používal, takže místní přístup skončil, ale přístup se nepodařilo vypnout. Vypněte ho, odstraňte ho, nebo ho nastavte znovu pomocí štítku zařízení."
+      },
+      "result_local_token_access_ended": {
+        "title": "Výsledek",
+        "description": "Byl to token, který tento přístup používal. Místní přístup skončil a přístup byl vypnut. Nastavte ho znovu pomocí štítku zařízení, nebo ho odstraňte."
+      },
+      "result_local_token_not_removed": {
+        "title": "Výsledek",
+        "description": "Odvolání nebylo potvrzeno, proto přístup nebyl odstraněn. Zkontrolujte seznam tokenů a pak přístup odstraňte znovu."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Výsledek",
+        "description": "Vybraný token byl na bráně odvolán a přístup byl odstraněn. Token, který tento přístup sám používal, na bráně zůstává."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Výsledek",
+        "description": "Brána odvolání odmítla; token je stále v seznamu."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Výsledek",
+        "description": "Brána odvolání nepotvrdila. Nic se neopakovalo. Pro kontrolu otevřete seznam tokenů znovu."
+      },
+      "result_local_token_revoked": {
+        "title": "Výsledek",
+        "description": "Token byl odvolán; brána ho už nevede."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Výsledek",
+        "description": "Token byl na bráně odvolán a přístup byl odstraněn."
+      },
+      "result_local_tokens_changed": {
+        "title": "Výsledek",
+        "description": "Seznam tokenů se mezitím změnil. Nic nebylo odvoláno ani odstraněno. Otevřete seznam znovu."
+      },
+      "result_notifications_saved": {
+        "title": "Výsledek",
+        "description": "Nastavení oznámení bylo uloženo."
+      },
+      "result_rescan_partial": {
+        "title": "Výsledek",
+        "description": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu."
+      },
+      "result_rescan_paused": {
+        "title": "Výsledek",
+        "description": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu."
+      },
+      "result_rescan_planned": {
+        "title": "Výsledek",
+        "description": "Vyhledávání je naplánováno a proběhne při příští pravidelné aktualizaci; nové součásti se objeví, jakmile budou nalezeny."
+      },
+      "result_rescan_running": {
+        "title": "Výsledek",
+        "description": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí."
+      },
+      "result_rescan_unavailable": {
+        "title": "Výsledek",
+        "description": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven."
+      },
+      "result_rrc_program_saved": {
+        "title": "Výsledek",
+        "description": "Spínací bod byl uložen a potvrzen zpětným načtením."
+      },
+      "result_switch_program_saved": {
+        "title": "Výsledek",
+        "description": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
       "notification_gateways_changed": "Výběr instalace se změnil. Znovu otevřete nastavení.",
       "holiday_changed": "Vybraná dovolená se změnila nebo ji již nelze upravovat. Znovu otevřete dovolenou a zkontrolujte její aktuální údaje.",
-      "holiday_updated": "Nastavení dovolené bylo uloženo a potvrzeno topnou soustavou.",
-      "holiday_unchanged": "Nic se nezměnilo, proto nebylo topné soustavě nic odesláno.",
       "no_writable_holidays": "Správa dovolené momentálně není dostupná. Počkejte, až instalace poskytne svá nastavení dovolené.",
-      "holiday_deleted": "Dovolená byla odstraněna a její odstranění potvrdila topná soustava.",
       "not_loaded": "Před nastavením dovolené musí být Bosch/Buderus Home Comfort načten.",
-      "holiday_created": "Dovolená byla vytvořena a potvrzena zpětným načtením.",
       "holiday_previous_request_found": "Dřívější nevyřešený požadavek je nyní potvrzen. Vaše nové vstupy nebyly odeslány. Nejprve zkontrolujte existující dovolenou v části Správa období dovolené.",
       "holiday_already_exists": "Dovolená se stejným začátkem a výběrem okruhů již existuje. Nebyla vytvořena žádná další dovolená. Otevřete Správa období dovolené a upravte existující položku.",
       "holiday_create_unconfirmed": "Požadavek na vytvoření se nepodařilo potvrdit. Dovolená již může existovat. Zkontrolujte Správa období dovolené nebo aplikaci výrobce. Následujících 10 minut další pokus ověří výsledek tohoto požadavku, aniž by vytvořil druhou dovolenou.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program prostorového regulátoru.",
       "no_switch_programs": "Zde nelze změnit žádný aktuální časový program topného okruhu ani teplé vody.",
       "switch_program_changed": "Časový program se mezitím změnil nebo jej již nelze měnit. Znovu jej otevřete a podívejte se na aktuální spínací body.",
-      "switch_program_saved": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}",
       "controls_not_loaded": "Ovládání je dostupné pouze přes cloudový přístup; místní přístup pouze čte. Připojte cloudový přístup nebo počkejte, až se načte.",
       "controls_auth_required": "Ovládání není dostupné: cloudový přístup vyžaduje nové přihlášení. Hodnoty zůstávají viditelné.",
       "controls_cloud_stopped": "Ovládání není dostupné: cloudový přístup je zastaven nebo se restartuje. Hodnoty zůstávají viditelné.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
-      "rescan_planned": "Vyhledávání je naplánováno a proběhne při příští pravidelné aktualizaci; nové součásti se objeví, jakmile budou nalezeny.",
-      "rescan_paused": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu.",
-      "rescan_running": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí.",
-      "rescan_partial": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu.",
       "rescan_unavailable": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven.",
-      "connection_saved": "Změna byla uložena.",
-      "connection_removed": "Přístup byl odebrán.",
-      "notifications_saved": "Nastavení oznámení bylo uloženo.",
-      "rrc_program_saved": "Spínací bod byl uložen a potvrzen zpětným načtením.",
-      "local_tokens_unavailable": "Tento přístup nemá použitelný uložený token pro seznam tokenů. Nejprve znovu nastavte místní přístup.",
-      "local_tokens_changed": "Seznam tokenů se mezitím změnil. Nic nebylo odvoláno ani odstraněno. Otevřete seznam znovu.",
-      "local_token_revoked": "Token byl odvolán; brána ho už nevede.",
-      "local_token_access_ended": "Byl to token, který tento přístup používal. Místní přístup skončil a přístup byl vypnut. Nastavte ho znovu pomocí štítku zařízení, nebo ho odstraňte.",
-      "local_token_revoke_rejected": "Brána odvolání odmítla; token je stále v seznamu.",
-      "local_token_revoke_unclear": "Brána odvolání nepotvrdila. Nic se neopakovalo. Pro kontrolu otevřete seznam tokenů znovu.",
-      "local_token_revoked_removed": "Token byl na bráně odvolán a přístup byl odstraněn.",
-      "local_token_not_removed": "Odvolání nebylo potvrzeno, proto přístup nebyl odstraněn. Zkontrolujte seznam tokenů a pak přístup odstraňte znovu.",
-      "local_token_old_revoked_removed": "Vybraný token byl na bráně odvolán a přístup byl odstraněn. Token, který tento přístup sám používal, na bráně zůstává.",
-      "local_token_access_end_failed": "Byl to token, který tento přístup používal, takže místní přístup skončil, ale přístup se nepodařilo vypnout. Vypněte ho, odstraňte ho, nebo ho nastavte znovu pomocí štítku zařízení."
+      "local_tokens_unavailable": "Tento přístup nemá použitelný uložený token pro seznam tokenů. Nejprve znovu nastavte místní přístup."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."

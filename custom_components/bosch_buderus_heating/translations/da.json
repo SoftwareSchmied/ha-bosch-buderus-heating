@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Indstillinger",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notifikationer",
           "holidays": "Administrer ferieperioder",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Forbindelser",
-        "description": "{result}Vælg den adgang, du vil administrere.",
+        "description": "Vælg den adgang, du vil administrere.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Opsæt lokal adgang",
           "back": "← Tilbage"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Forbindelsestest",
-        "description": "{result}"
+        "description": "OK, svar efter {ms} ms. Indstillingerne forbliver uændrede."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Forbindelsestest",
+        "description": "OK, svar efter {ms} ms; {count} gateway(s) på kontoen. Indstillingerne forbliver uændrede."
+      },
+      "connection_test_not_running": {
+        "title": "Forbindelsestest",
+        "description": "Ikke testet: adgangen kører ikke lige nu (deaktiveret, starter eller stoppet)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Forbindelsestest",
+        "description": "Login påkrævet: log ind igen via “Log ind igen”."
+      },
+      "connection_test_auth_local": {
+        "title": "Forbindelsestest",
+        "description": "Login påkrævet: sæt den lokale adgang op igen via “Skift lokal adgang”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Forbindelsestest",
+        "description": "Enhedens certifikat er ændret: sæt den lokale adgang op igen via “Skift lokal adgang”."
+      },
+      "connection_test_paused": {
+        "title": "Forbindelsestest",
+        "description": "Ikke testet: forespørgsler er sat på pause indtil {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Forbindelsestest",
+        "description": "Ikke testet: forespørgsler er sat på pause lige nu."
+      },
+      "connection_test_busy": {
+        "title": "Forbindelsestest",
+        "description": "Ikke testet: adgangen er optaget lige nu. Prøv igen om lidt."
+      },
+      "connection_test_unreachable": {
+        "title": "Forbindelsestest",
+        "description": "Ikke tilgængelig: intet svar ({ms} ms). Kontrollér netværket og enheden."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Forbindelsestest",
+        "description": "Ikke tilgængelig: intet svar ({ms} ms). Kontrollér netværket og enheden. Tip: hvis gatewayens adresse ændrer sig, for eksempel efter en genstart af routeren, hjælper en fast adresse: reservér dens IP-adresse i routeren (DHCP-reservation), eller angiv gatewayens værtsnavn. Hvis gatewayen melder sig på en ny adresse, tilbyder en reparationsmeddelelse at bruge den."
+      },
+      "connection_test_other_gateway": {
+        "title": "Forbindelsestest",
+        "description": "En anden gateway svarer på denne adresse. Sæt den lokale adgang op igen."
+      },
+      "connection_test_error": {
+        "title": "Forbindelsestest",
+        "description": "Test mislykkedes: {kind}."
       },
       "connection": {
         "title": "Administrer forbindelse",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Test forbindelsen nu",
           "connection_enabled": "Tænd eller sluk for adgang",
@@ -697,6 +757,98 @@
           "confirm": "Tilbagekald dette token på gatewayen",
           "confirm_end": "En lokal adgang, der bruger dette token, ophører"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultat",
+        "description": "Adgangen blev fjernet."
+      },
+      "result_connection_saved": {
+        "title": "Resultat",
+        "description": "Ændringen blev gemt."
+      },
+      "result_holiday_created": {
+        "title": "Resultat",
+        "description": "Ferien blev oprettet og bekræftet ved at læse den tilbage."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultat",
+        "description": "Ferien blev slettet, og fjernelsen blev bekræftet af varmeanlægget."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultat",
+        "description": "Der blev ikke ændret noget, så der blev ikke sendt noget til varmeanlægget."
+      },
+      "result_holiday_updated": {
+        "title": "Resultat",
+        "description": "Ferieindstillingerne blev gemt og bekræftet af varmeanlægget."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultat",
+        "description": "Det var det token, denne adgang brugte, så den lokale adgang er ophørt, men adgangen kunne ikke slås fra. Slå den fra, fjern den, eller sæt den op igen med enhedsmærkaten."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultat",
+        "description": "Det var det token, denne adgang brugte. Den lokale adgang er ophørt, og adgangen blev slået fra. Sæt den op igen med enhedsmærkaten, eller fjern den."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultat",
+        "description": "Tilbagekaldelsen blev ikke bekræftet, så adgangen blev ikke fjernet. Kontrollér tokenlisten, og fjern derefter adgangen igen."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultat",
+        "description": "Det valgte token blev tilbagekaldt på gatewayen, og adgangen blev fjernet. Det token, denne adgang selv brugte, er stadig på gatewayen."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultat",
+        "description": "Gatewayen afviste tilbagekaldelsen; tokenet står stadig på listen."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultat",
+        "description": "Gatewayen bekræftede ikke tilbagekaldelsen. Intet blev gentaget. Åbn tokenlisten igen for at kontrollere."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultat",
+        "description": "Tokenet blev tilbagekaldt; gatewayen viser det ikke længere."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultat",
+        "description": "Tokenet blev tilbagekaldt på gatewayen, og adgangen blev fjernet."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultat",
+        "description": "Tokenlisten er ændret i mellemtiden. Intet blev tilbagekaldt eller fjernet. Åbn listen igen."
+      },
+      "result_notifications_saved": {
+        "title": "Resultat",
+        "description": "Indstillingerne for notifikationer blev gemt."
+      },
+      "result_rescan_partial": {
+        "title": "Resultat",
+        "description": "Søgningen er planlagt for de dele, der er klar, og kører ved næste almindelige opdatering. Dele, der er sat på pause lige nu, blev sprunget over; prøv igen senere for dem."
+      },
+      "result_rescan_paused": {
+        "title": "Resultat",
+        "description": "Søgningen blev ikke startet: forespørgsler er sat på pause lige nu (f.eks. efter at cloud'en har bedt om en pause). Prøv igen senere."
+      },
+      "result_rescan_planned": {
+        "title": "Resultat",
+        "description": "Søgningen er planlagt og kører ved næste almindelige opdatering; nye dele vises, så snart de er fundet."
+      },
+      "result_rescan_running": {
+        "title": "Resultat",
+        "description": "En søgning kører allerede eller er planlagt. Vent, til den er færdig."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultat",
+        "description": "Søgningen blev ikke startet: ingen adgang til anlægget er klar lige nu."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultat",
+        "description": "Skiftepunktet blev gemt og bekræftet ved tilbagelæsning."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultat",
+        "description": "Tidsprogrammet {program} blev gemt og bekræftet ved at læse det igen.\n\nTidligere koblingspunkter for de ændrede dage:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Der er ikke konfigureret noget varmeanlæg.",
       "notification_gateways_changed": "Valget af anlæg er ændret. Åbn indstillingerne igen.",
       "holiday_changed": "Den valgte ferie er ændret eller kan ikke længere redigeres. Åbn ferien igen for at gennemgå dens aktuelle detaljer.",
-      "holiday_updated": "Ferieindstillingerne blev gemt og bekræftet af varmeanlægget.",
-      "holiday_unchanged": "Der blev ikke ændret noget, så der blev ikke sendt noget til varmeanlægget.",
       "no_writable_holidays": "Ferieadministration er ikke tilgængelig lige nu. Vent, til anlægget har leveret sine ferieindstillinger.",
-      "holiday_deleted": "Ferien blev slettet, og fjernelsen blev bekræftet af varmeanlægget.",
       "not_loaded": "Bosch/Buderus Home Comfort skal være indlæst, før en ferie kan konfigureres.",
-      "holiday_created": "Ferien blev oprettet og bekræftet ved at læse den tilbage.",
       "holiday_previous_request_found": "Den tidligere uafklarede forespørgsel er nu bekræftet. Dine nye indtastninger blev ikke sendt. Kontrollér først den eksisterende ferie under Administrer ferieperioder.",
       "holiday_already_exists": "Der findes allerede en ferie med dette start og dette kredsvalg. Der blev ikke oprettet endnu en ferie. Åbn Administrer ferieperioder, og redigér den eksisterende post.",
       "holiday_create_unconfirmed": "Oprettelsesforespørgslen kunne ikke bekræftes. Ferien findes muligvis allerede. Kontrollér Administrer ferieperioder eller producentens app. I de næste 10 minutter kontrollerer et nyt forsøg resultatet af denne forespørgsel uden at oprette endnu en ferie.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Der findes intet aktuelt, understøttet ugeprogram for en rumregulator.",
       "no_switch_programs": "Der er ikke noget aktuelt tidsprogram for en varmekreds eller for det varme brugsvand, der kan ændres her.",
       "switch_program_changed": "Tidsprogrammet er ændret i mellemtiden eller kan ikke længere ændres. Åbn det igen for at se de aktuelle koblingspunkter.",
-      "switch_program_saved": "Tidsprogrammet {program} blev gemt og bekræftet ved at læse det igen.\n\nTidligere koblingspunkter for de ændrede dage:\n\n{before}",
       "controls_not_loaded": "Styring er kun tilgængelig via cloudadgangen; den lokale adgang kan kun læse. Forbind en cloudadgang, eller vent, til den er indlæst.",
       "controls_auth_required": "Styring er ikke tilgængelig: cloudadgangen kræver et nyt login. Måleværdierne forbliver synlige.",
       "controls_cloud_stopped": "Styring er ikke tilgængelig: cloudadgangen er stoppet eller bliver genstartet. Måleværdierne forbliver synlige.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Det ventende forsøg er bevaret. Du kan genoptage det fra den lokale opsætning.",
       "local_storage_failed": "Den private opsætningspost kunne ikke læses eller gemmes. Kontrollér Home Assistants lagring, før du fortsætter.",
       "cloud_local_first_other_entry": "Dette anlæg er allerede sat op via sin lokale adgang i en anden post i denne integration. Tilføj cloudadgangen i den post i stedet.",
-      "rescan_planned": "Søgningen er planlagt og kører ved næste almindelige opdatering; nye dele vises, så snart de er fundet.",
-      "rescan_paused": "Søgningen blev ikke startet: forespørgsler er sat på pause lige nu (f.eks. efter at cloud'en har bedt om en pause). Prøv igen senere.",
-      "rescan_running": "En søgning kører allerede eller er planlagt. Vent, til den er færdig.",
-      "rescan_partial": "Søgningen er planlagt for de dele, der er klar, og kører ved næste almindelige opdatering. Dele, der er sat på pause lige nu, blev sprunget over; prøv igen senere for dem.",
       "rescan_unavailable": "Søgningen blev ikke startet: ingen adgang til anlægget er klar lige nu.",
-      "connection_saved": "Ændringen blev gemt.",
-      "connection_removed": "Adgangen blev fjernet.",
-      "notifications_saved": "Indstillingerne for notifikationer blev gemt.",
-      "rrc_program_saved": "Skiftepunktet blev gemt og bekræftet ved tilbagelæsning.",
-      "local_tokens_unavailable": "Denne adgang har intet brugbart gemt token til tokenlisten. Sæt først den lokale adgang op igen.",
-      "local_tokens_changed": "Tokenlisten er ændret i mellemtiden. Intet blev tilbagekaldt eller fjernet. Åbn listen igen.",
-      "local_token_revoked": "Tokenet blev tilbagekaldt; gatewayen viser det ikke længere.",
-      "local_token_access_ended": "Det var det token, denne adgang brugte. Den lokale adgang er ophørt, og adgangen blev slået fra. Sæt den op igen med enhedsmærkaten, eller fjern den.",
-      "local_token_revoke_rejected": "Gatewayen afviste tilbagekaldelsen; tokenet står stadig på listen.",
-      "local_token_revoke_unclear": "Gatewayen bekræftede ikke tilbagekaldelsen. Intet blev gentaget. Åbn tokenlisten igen for at kontrollere.",
-      "local_token_revoked_removed": "Tokenet blev tilbagekaldt på gatewayen, og adgangen blev fjernet.",
-      "local_token_not_removed": "Tilbagekaldelsen blev ikke bekræftet, så adgangen blev ikke fjernet. Kontrollér tokenlisten, og fjern derefter adgangen igen.",
-      "local_token_old_revoked_removed": "Det valgte token blev tilbagekaldt på gatewayen, og adgangen blev fjernet. Det token, denne adgang selv brugte, er stadig på gatewayen.",
-      "local_token_access_end_failed": "Det var det token, denne adgang brugte, så den lokale adgang er ophørt, men adgangen kunne ikke slås fra. Slå den fra, fjern den, eller sæt den op igen med enhedsmærkaten."
+      "local_tokens_unavailable": "Denne adgang har intet brugbart gemt token til tokenlisten. Sæt først den lokale adgang op igen."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale forbindelse. Vent venligst."

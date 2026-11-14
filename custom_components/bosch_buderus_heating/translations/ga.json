@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Socruithe",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Fógraí",
           "holidays": "Bainistigh tréimhsí saoire",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Naisc",
-        "description": "{result}Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
+        "description": "Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Socraigh rochtain áitiúil",
           "back": "← Siar"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Tástáil naisc",
-        "description": "{result}"
+        "description": "OK, freagra tar éis {ms} ms. Fanann na socruithe gan athrú."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Tástáil naisc",
+        "description": "OK, freagra tar éis {ms} ms; {count} geata sa chuntas. Fanann na socruithe gan athrú."
+      },
+      "connection_test_not_running": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: níl an rochtain ag rith faoi láthair (díchumasaithe, ag tosú nó stoptha)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Tástáil naisc",
+        "description": "Síniú isteach ag teastáil: sínigh isteach arís trí “Sínigh isteach arís”."
+      },
+      "connection_test_auth_local": {
+        "title": "Tástáil naisc",
+        "description": "Síniú isteach ag teastáil: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Tástáil naisc",
+        "description": "Tá deimhniú an ghléis athraithe: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
+      },
+      "connection_test_paused": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá iarratais ar sos go dtí {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá iarratais ar sos faoi láthair."
+      },
+      "connection_test_busy": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá an rochtain gnóthach faoi láthair. Déan iarracht arís i gceann tamaill."
+      },
+      "connection_test_unreachable": {
+        "title": "Tástáil naisc",
+        "description": "Neamh-inrochtana: gan freagra ({ms} ms). Seiceáil an líonra agus an gléas."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Tástáil naisc",
+        "description": "Neamh-inrochtana: gan freagra ({ms} ms). Seiceáil an líonra agus an gléas. Leid: má athraíonn seoladh an gheata, mar shampla tar éis don ródaire atosú, cabhraíonn seoladh seasta: cuir a sheoladh IP in áirithe sa ródaire (áirithint DHCP) nó cuir isteach ainm óstach an gheata. Má fhógraíonn an geata é féin ag seoladh nua, tairgeann nóta deisiúcháin é a úsáid."
+      },
+      "connection_test_other_gateway": {
+        "title": "Tástáil naisc",
+        "description": "Freagraíonn geata eile ag an seoladh seo. Socraigh an rochtain áitiúil arís."
+      },
+      "connection_test_error": {
+        "title": "Tástáil naisc",
+        "description": "Theip ar an tástáil: {kind}."
       },
       "connection": {
         "title": "Bainistigh an nasc",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Tástáil an nasc anois",
           "connection_enabled": "Cas nó múch rochtain",
@@ -697,6 +757,98 @@
           "confirm": "Cúlghair an comhartha seo ar an ngeata",
           "confirm_end": "Críochnaíonn rochtain áitiúil a úsáideann an comhartha seo"
         }
+      },
+      "result_connection_removed": {
+        "title": "Toradh",
+        "description": "Baineadh an rochtain."
+      },
+      "result_connection_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an t-athrú."
+      },
+      "result_holiday_created": {
+        "title": "Toradh",
+        "description": "Cruthaíodh an tsaoire agus deimhníodh í trí í a léamh ar ais."
+      },
+      "result_holiday_deleted": {
+        "title": "Toradh",
+        "description": "Scriosadh an tsaoire agus dheimhnigh an córas téimh a baint."
+      },
+      "result_holiday_unchanged": {
+        "title": "Toradh",
+        "description": "Níor athraíodh aon rud, mar sin níor seoladh aon rud chuig an gcóras téimh."
+      },
+      "result_holiday_updated": {
+        "title": "Toradh",
+        "description": "Sábháladh socruithe na saoire agus dheimhnigh an córas téimh iad."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Toradh",
+        "description": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
+      },
+      "result_local_token_access_ended": {
+        "title": "Toradh",
+        "description": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í."
+      },
+      "result_local_token_not_removed": {
+        "title": "Toradh",
+        "description": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Toradh",
+        "description": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Toradh",
+        "description": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil."
+      },
+      "result_local_token_revoked": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain."
+      },
+      "result_local_tokens_changed": {
+        "title": "Toradh",
+        "description": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís."
+      },
+      "result_notifications_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh na socruithe fógraí."
+      },
+      "result_rescan_partial": {
+        "title": "Toradh",
+        "description": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd."
+      },
+      "result_rescan_paused": {
+        "title": "Toradh",
+        "description": "Níor tosaíodh an cuardach: tá iarratais curtha ar sos faoi láthair (mar shampla tar éis don néal sos a iarraidh). Déan iarracht arís níos déanaí."
+      },
+      "result_rescan_planned": {
+        "title": "Toradh",
+        "description": "Tá an cuardach pleanáilte agus ritheann sé leis an gcéad nuashonrú rialta eile; taispeántar páirteanna nua a luaithe a aimsítear iad."
+      },
+      "result_rescan_running": {
+        "title": "Toradh",
+        "description": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe."
+      },
+      "result_rescan_unavailable": {
+        "title": "Toradh",
+        "description": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair."
+      },
+      "result_rrc_program_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais."
+      },
+      "result_switch_program_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
       "notification_gateways_changed": "Athraíodh rogha na suiteála. Oscail na socruithe arís.",
       "holiday_changed": "Athraíodh an tsaoire roghnaithe nó níl sí ar fáil le cur in eagar a thuilleadh. Oscail an tsaoire arís chun a sonraí reatha a athbhreithniú.",
-      "holiday_updated": "Sábháladh socruithe na saoire agus dheimhnigh an córas téimh iad.",
-      "holiday_unchanged": "Níor athraíodh aon rud, mar sin níor seoladh aon rud chuig an gcóras téimh.",
       "no_writable_holidays": "Níl bainistiú saoire ar fáil faoi láthair. Fan go mbeidh socruithe saoire curtha ar fáil ag an tsuiteáil.",
-      "holiday_deleted": "Scriosadh an tsaoire agus dheimhnigh an córas téimh a baint.",
       "not_loaded": "Caithfear Bosch/Buderus Home Comfort a luchtú sula bhféadfar saoire a chumrú.",
-      "holiday_created": "Cruthaíodh an tsaoire agus deimhníodh í trí í a léamh ar ais.",
       "holiday_previous_request_found": "Tá an t-iarratas gan réiteach roimhe seo deimhnithe anois. Níor seoladh d'ionchuir nua. Seiceáil an tsaoire atá ann cheana faoi Bainistigh tréimhsí saoire ar dtús.",
       "holiday_already_exists": "Tá saoire leis an tosú agus an rogha ciorcad seo ann cheana. Níor cruthaíodh saoire bhreise. Oscail Bainistigh tréimhsí saoire agus cuir an iontráil atá ann cheana in eagar.",
       "holiday_create_unconfirmed": "Níorbh fhéidir an t-iarratas cruthaithe a dheimhniú. B'fhéidir go bhfuil an tsaoire ann cheana. Seiceáil Bainistigh tréimhsí saoire nó aip an déantóra. Ar feadh na 10 nóiméad eile, seiceálann iarracht eile toradh an iarratais seo gan an dara saoire a chruthú.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Níl aon sceideal seachtainiúil reatha tacaithe de rialaitheoir seomra ar fáil.",
       "no_switch_programs": "Ní féidir aon sceideal reatha de chiorcad téimh nó den uisce te a athrú anseo.",
       "switch_program_changed": "Tá an sceideal athraithe idir an dá linn nó ní féidir é a athrú a thuilleadh. Oscail arís é chun na pointí lasctha reatha a fheiceáil.",
-      "switch_program_saved": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}",
       "controls_not_loaded": "Níl rialuithe ar fáil ach tríd an rochtain néil; ní dhéanann an rochtain áitiúil ach léamh. Ceangail rochtain néil nó fan go mbeidh sí luchtaithe.",
       "controls_auth_required": "Níl rialuithe ar fáil: teastaíonn síniú isteach nua don rochtain néil. Fanann léamh le feiceáil.",
       "controls_cloud_stopped": "Níl rialuithe ar fáil: tá an rochtain néil stoptha nó á hatosú. Fanann léamh le feiceáil.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
-      "rescan_planned": "Tá an cuardach pleanáilte agus ritheann sé leis an gcéad nuashonrú rialta eile; taispeántar páirteanna nua a luaithe a aimsítear iad.",
-      "rescan_paused": "Níor tosaíodh an cuardach: tá iarratais curtha ar sos faoi láthair (mar shampla tar éis don néal sos a iarraidh). Déan iarracht arís níos déanaí.",
-      "rescan_running": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe.",
-      "rescan_partial": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd.",
       "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair.",
-      "connection_saved": "Sábháladh an t-athrú.",
-      "connection_removed": "Baineadh an rochtain.",
-      "notifications_saved": "Sábháladh na socruithe fógraí.",
-      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais.",
-      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús.",
-      "local_tokens_changed": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís.",
-      "local_token_revoked": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh.",
-      "local_token_access_ended": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í.",
-      "local_token_revoke_rejected": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta.",
-      "local_token_revoke_unclear": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil.",
-      "local_token_revoked_removed": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain.",
-      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís.",
-      "local_token_old_revoked_removed": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata.",
-      "local_token_access_end_failed": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
+      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."

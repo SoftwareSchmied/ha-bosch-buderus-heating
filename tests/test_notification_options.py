@@ -63,7 +63,6 @@ async def test_offline_options_preserve_existing_settings(
             result["flow_id"], {CONF_FAULT_NOTIFICATIONS: enabled}
         )
         await hass.async_block_till_done()
-        assert result["type"] is FlowResultType.MENU
         assert await outcome(hass, result) == "notifications_saved"
         assert entry.options[CONF_POLLING_PROFILE] == "cloud_friendly"
         assert entry.options["future_setting"] == "new"
@@ -94,7 +93,6 @@ async def test_multiple_installations_are_independent_and_user_names_are_used(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_FAULT_NOTIFICATIONS: [gateway_notification_key("two")]}
     )
-    assert result["type"] is FlowResultType.MENU
     assert await outcome(hass, result) == "notifications_saved"
     assert notification_policy(entry.options, "one") == (False, 0)
     assert notification_policy(entry.options, "two") == (True, 0)
@@ -184,7 +182,6 @@ async def test_warnings_and_maintenance_option_is_kept_and_shown_again(
         result["flow_id"],
         {CONF_FAULT_NOTIFICATIONS: [], CONF_NOTIFY_NOTICES: True},
     )
-    assert result["type"] is FlowResultType.MENU
     assert await outcome(hass, result) == "notifications_saved"
     assert entry.options[CONF_NOTIFY_NOTICES] is True
     result = await _start(hass, entry)

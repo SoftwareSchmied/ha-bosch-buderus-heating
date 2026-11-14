@@ -1031,8 +1031,6 @@ class BoschBuderusOptionsFlow(
             return await self.async_step_local_setup()
         return self.async_show_menu(
             step_id="init",
-            # The note of a finished action, see ``options_navigation``.
-            description_placeholders={"result": self.take_result_note()},
             menu_options=[
                 *(["connections"] if self._entry.version == 4 else []),
                 *(

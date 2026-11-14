@@ -419,7 +419,6 @@ async def test_legacy_native_dialog_has_dates_no_clock_or_name_and_saves(
     draft.update(holiday_start="2030-11-01", holiday_end="2030-11-04")
     result = await hass.config_entries.options.async_configure(result["flow_id"], draft)
     # Back in the main menu with the note of the saved holiday.
-    assert result["type"] is FlowResultType.MENU
     assert await outcome(hass, result) == (
         "holiday_created" if creating else "holiday_updated"
     )

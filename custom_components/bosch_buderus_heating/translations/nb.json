@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Innstillinger",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Varsler",
           "holidays": "Administrer ferieperioder",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Tilkoblinger",
-        "description": "{result}Velg tilgangen du vil administrere.",
+        "description": "Velg tilgangen du vil administrere.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Sett opp lokal tilgang",
           "back": "← Tilbake"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Tilkoblingstest",
-        "description": "{result}"
+        "description": "OK, svar etter {ms} ms. Innstillingene forblir uendret."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Tilkoblingstest",
+        "description": "OK, svar etter {ms} ms; {count} gateway(er) i kontoen. Innstillingene forblir uendret."
+      },
+      "connection_test_not_running": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: tilgangen kjører ikke akkurat nå (deaktivert, starter eller stoppet)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Tilkoblingstest",
+        "description": "Pålogging kreves: logg på igjen via «Logg på igjen»."
+      },
+      "connection_test_auth_local": {
+        "title": "Tilkoblingstest",
+        "description": "Pålogging kreves: sett opp den lokale tilgangen på nytt via «Endre lokal tilgang»."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Tilkoblingstest",
+        "description": "Enhetens sertifikat har endret seg: sett opp den lokale tilgangen på nytt via «Endre lokal tilgang»."
+      },
+      "connection_test_paused": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: forespørsler er satt på pause til {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: forespørsler er satt på pause akkurat nå."
+      },
+      "connection_test_busy": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: tilgangen er opptatt akkurat nå. Prøv igjen om litt."
+      },
+      "connection_test_unreachable": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke tilgjengelig: ingen svar ({ms} ms). Sjekk nettverket og enheten."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke tilgjengelig: ingen svar ({ms} ms). Sjekk nettverket og enheten. Tips: hvis gatewayens adresse endrer seg, for eksempel etter en omstart av ruteren, hjelper en fast adresse: reserver IP-adressen i ruteren (DHCP-reservasjon) eller angi gatewayens vertsnavn. Hvis gatewayen melder seg på en ny adresse, tilbyr en reparasjonsmelding å bruke den."
+      },
+      "connection_test_other_gateway": {
+        "title": "Tilkoblingstest",
+        "description": "En annen gateway svarer på denne adressen. Sett opp den lokale tilgangen på nytt."
+      },
+      "connection_test_error": {
+        "title": "Tilkoblingstest",
+        "description": "Testen mislyktes: {kind}."
       },
       "connection": {
         "title": "Administrer tilkobling",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Test tilkoblingen nå",
           "connection_enabled": "Slå tilgang på eller av",
@@ -697,6 +757,98 @@
           "confirm": "Tilbakekall denne tokenen på gatewayen",
           "confirm_end": "En lokal tilgang som bruker denne tokenen, avsluttes"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultat",
+        "description": "Tilgangen ble fjernet."
+      },
+      "result_connection_saved": {
+        "title": "Resultat",
+        "description": "Endringen ble lagret."
+      },
+      "result_holiday_created": {
+        "title": "Resultat",
+        "description": "Ferien ble opprettet og bekreftet ved å lese den tilbake."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultat",
+        "description": "Ferien ble slettet, og fjerningen ble bekreftet av varmeanlegget."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultat",
+        "description": "Ingenting ble endret, så ingenting ble sendt til varmeanlegget."
+      },
+      "result_holiday_updated": {
+        "title": "Resultat",
+        "description": "Ferieinnstillingene ble lagret og bekreftet av varmeanlegget."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultat",
+        "description": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultat",
+        "description": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultat",
+        "description": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultat",
+        "description": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultat",
+        "description": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultat",
+        "description": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultat",
+        "description": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultat",
+        "description": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultat",
+        "description": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt."
+      },
+      "result_notifications_saved": {
+        "title": "Resultat",
+        "description": "Varslingsinnstillingene ble lagret."
+      },
+      "result_rescan_partial": {
+        "title": "Resultat",
+        "description": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem."
+      },
+      "result_rescan_paused": {
+        "title": "Resultat",
+        "description": "Søket ble ikke startet: forespørsler er satt på pause akkurat nå (for eksempel etter at skyen ba om en pause). Prøv igjen senere."
+      },
+      "result_rescan_planned": {
+        "title": "Resultat",
+        "description": "Søket er planlagt og kjøres ved neste vanlige oppdatering; nye deler vises så snart de er funnet."
+      },
+      "result_rescan_running": {
+        "title": "Resultat",
+        "description": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultat",
+        "description": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultat",
+        "description": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultat",
+        "description": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
       "notification_gateways_changed": "Anleggsvalget endret seg. Åpne innstillingene på nytt.",
       "holiday_changed": "Den valgte ferien har endret seg eller kan ikke lenger redigeres. Åpne ferien på nytt for å se de gjeldende detaljene.",
-      "holiday_updated": "Ferieinnstillingene ble lagret og bekreftet av varmeanlegget.",
-      "holiday_unchanged": "Ingenting ble endret, så ingenting ble sendt til varmeanlegget.",
       "no_writable_holidays": "Feriehåndtering er ikke tilgjengelig akkurat nå. Vent til anlegget har levert ferieinnstillingene sine.",
-      "holiday_deleted": "Ferien ble slettet, og fjerningen ble bekreftet av varmeanlegget.",
       "not_loaded": "Bosch/Buderus Home Comfort må være lastet før en ferie kan konfigureres.",
-      "holiday_created": "Ferien ble opprettet og bekreftet ved å lese den tilbake.",
       "holiday_previous_request_found": "Den tidligere uavklarte forespørselen er nå bekreftet. De nye opplysningene dine ble ikke sendt. Sjekk den eksisterende ferien under Administrer ferieperioder først.",
       "holiday_already_exists": "Det finnes allerede en ferie med denne starten og dette kretsvalget. Ingen ekstra ferie ble opprettet. Åpne Administrer ferieperioder og rediger den eksisterende oppføringen.",
       "holiday_create_unconfirmed": "Opprettingsforespørselen kunne ikke bekreftes. Ferien kan allerede finnes. Sjekk Administrer ferieperioder eller produsentens app. De neste 10 minuttene sjekker et nytt forsøk resultatet av denne forespørselen uten å opprette en ny ferie.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Det finnes ikke noe gjeldende, støttet ukeprogram for en romregulator.",
       "no_switch_programs": "Det finnes ikke noe gjeldende tidsprogram for en varmekrets eller for varmtvannet som kan endres her.",
       "switch_program_changed": "Tidsprogrammet er endret i mellomtiden eller kan ikke lenger endres. Åpne det på nytt for å se de gjeldende koblingspunktene.",
-      "switch_program_saved": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}",
       "controls_not_loaded": "Styring er bare tilgjengelig via skytilgangen; den lokale tilgangen kan bare lese. Koble til en skytilgang eller vent til den er lastet.",
       "controls_auth_required": "Styring er ikke tilgjengelig: skytilgangen trenger en ny pålogging. Måleverdiene forblir synlige.",
       "controls_cloud_stopped": "Styring er ikke tilgjengelig: skytilgangen er stoppet eller startes på nytt. Måleverdiene forblir synlige.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet.",
-      "rescan_planned": "Søket er planlagt og kjøres ved neste vanlige oppdatering; nye deler vises så snart de er funnet.",
-      "rescan_paused": "Søket ble ikke startet: forespørsler er satt på pause akkurat nå (for eksempel etter at skyen ba om en pause). Prøv igjen senere.",
-      "rescan_running": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig.",
-      "rescan_partial": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem.",
       "rescan_unavailable": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå.",
-      "connection_saved": "Endringen ble lagret.",
-      "connection_removed": "Tilgangen ble fjernet.",
-      "notifications_saved": "Varslingsinnstillingene ble lagret.",
-      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing.",
-      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først.",
-      "local_tokens_changed": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt.",
-      "local_token_revoked": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger.",
-      "local_token_access_ended": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den.",
-      "local_token_revoke_rejected": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen.",
-      "local_token_revoke_unclear": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere.",
-      "local_token_revoked_removed": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet.",
-      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt.",
-      "local_token_old_revoked_removed": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen.",
-      "local_token_access_end_failed": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
+      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."

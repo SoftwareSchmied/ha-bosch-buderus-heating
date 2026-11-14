@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
 from typing import Any, cast
 
 from homeassistant.config_entries import (
@@ -32,6 +31,10 @@ from .options_navigation import BACK, NavigatingOptionsFlow
 # The menu entry of the n-th connection (the menu lists them with their
 # labels; the entries name no identifier).
 _OPEN_PREFIX = "connection_open_"
+# Entries with a translation of their own (only the placeholder of their
+# label), so the menu, its "Back" included, follows the profile language.
+# A longer list is shown with built labels instead.
+MAX_LISTED = 12
 
 
 class ConnectionOptionsFlow(NavigatingOptionsFlow):
@@ -43,22 +46,6 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
 
     def _management(self) -> ConfigurationManagement:
         return ConfigurationManagement(self.hass, self._entry)
-
-    def __getattr__(self, name: str) -> Any:
-        """The step of one connection entry of the connections menu."""
-        step = name.removeprefix("async_step_")
-        choices = self.__dict__.get("_connection_choices") or {}
-        if name.startswith("async_step_" + _OPEN_PREFIX) and step in choices:
-            connection_id = choices[step]
-
-            async def open_connection(
-                user_input: dict[str, Any] | None = None,
-            ) -> ConfigFlowResult:
-                return await self._open_connection(connection_id)
-
-            step_method: Callable[..., Awaitable[ConfigFlowResult]] = open_connection
-            return step_method
-        raise AttributeError(name)
 
     async def _open_connection(self, connection_id: str) -> ConfigFlowResult:
         try:
@@ -80,23 +67,57 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
             return self.async_abort(reason="no_connections")
         from .connection_status import connection_label
 
-        menu: dict[str, str] = {}
+        labels: dict[str, str] = {}
         choices: dict[str, str] = {}
         for number, (key, connection) in enumerate(snapshot.connections.items(), 1):
             # Kind, number and current state from existing data; never a brand.
             step = f"{_OPEN_PREFIX}{number}"
             choices[step] = key
-            menu[step] = connection_label(
+            labels[step] = connection_label(
                 self.hass, self._entry, key, connection, number
             )
-        menu[BACK] = await self.back_label("connections")
+            self.add_page_step(step, self._opener(key))
         self._connection_choices = choices
         self._connection_edit = None
         self._back_target = "init"
+        # Another local access is added here as well (to a plant without one or
+        # as a new plant without the cloud).
+        extra = ["local_setup"] if setup_support(self.hass) is not None else []
+        if len(labels) <= MAX_LISTED:
+            return self.async_show_menu(
+                step_id="connections",
+                menu_options=[*labels, *extra, BACK],
+                description_placeholders=labels,
+            )
+        # Beyond the translated entries: labels as built (server language).
         return self.async_show_menu(
             step_id="connections",
-            menu_options=menu,
-            description_placeholders={"result": self.take_result_note()},
+            menu_options={
+                **labels,
+                **{item: await self._menu_label(item) for item in extra},
+                BACK: await self._menu_label(BACK),
+            },
+        )
+
+    def _opener(self, connection_id: str) -> Any:
+        async def open_connection(
+            user_input: dict[str, Any] | None = None,
+        ) -> ConfigFlowResult:
+            return await self._open_connection(connection_id)
+
+        return open_connection
+
+    async def _menu_label(self, option: str) -> str:
+        from homeassistant.helpers.translation import async_get_translations
+
+        from .const import DOMAIN
+
+        translations = await async_get_translations(
+            self.hass, self.hass.config.language, "options", {DOMAIN}
+        )
+        return translations.get(
+            f"component.{DOMAIN}.options.step.connections.menu_options.{option}",
+            option,
         )
 
     async def _connection_saved(self) -> ConfigFlowResult:
@@ -134,7 +155,6 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         return self.async_show_menu(
             step_id="connection",
             description_placeholders={
-                "result": self.take_result_note(),
                 "status": connection_description(
                     self.hass, self._entry, edit.connection_id
                 ),
@@ -186,14 +206,9 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         edit = self._connection_edit
         if edit is None:
             return self.async_abort(reason="configuration_changed")
-        if user_input is not None:
-            return await self.async_step_connection()
-        result = await test_connection(self.hass, self._entry, edit.connection_id)
-        return self.async_show_form(
-            step_id="connection_test",
-            data_schema=vol.Schema({}),
-            description_placeholders={"result": result},
-        )
+        code, values = await test_connection(self.hass, self._entry, edit.connection_id)
+        # The outcome as a page of its own, in the profile language.
+        return self.show_page(f"connection_test_{code}", "connection", values)
 
     async def async_step_connection_enabled(
         self, user_input: dict[str, Any] | None = None

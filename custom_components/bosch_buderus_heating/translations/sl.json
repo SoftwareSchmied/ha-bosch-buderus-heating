@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Nastavitve",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Obvestila",
           "holidays": "Upravljanje obdobij počitnic",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Povezave",
-        "description": "{result}Izberite dostop, ki ga želite upravljati.",
+        "description": "Izberite dostop, ki ga želite upravljati.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Nastavi lokalni dostop",
           "back": "← Nazaj"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Preizkus povezave",
-        "description": "{result}"
+        "description": "V redu, odgovor po {ms} ms. Nastavitve ostanejo nespremenjene."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Preizkus povezave",
+        "description": "V redu, odgovor po {ms} ms; prehodov v računu: {count}. Nastavitve ostanejo nespremenjene."
+      },
+      "connection_test_not_running": {
+        "title": "Preizkus povezave",
+        "description": "Ni preizkušeno: dostop trenutno ne deluje (onemogočen, se zaganja ali ustavljen)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Preizkus povezave",
+        "description": "Zahtevana prijava: znova se prijavite prek »Znova se prijavite«."
+      },
+      "connection_test_auth_local": {
+        "title": "Preizkus povezave",
+        "description": "Zahtevana prijava: znova nastavite lokalni dostop prek »Spremeni lokalni dostop«."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Preizkus povezave",
+        "description": "Certifikat naprave se je spremenil: znova nastavite lokalni dostop prek »Spremeni lokalni dostop«."
+      },
+      "connection_test_paused": {
+        "title": "Preizkus povezave",
+        "description": "Ni preizkušeno: zahteve so v premoru do {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Preizkus povezave",
+        "description": "Ni preizkušeno: zahteve so trenutno v premoru."
+      },
+      "connection_test_busy": {
+        "title": "Preizkus povezave",
+        "description": "Ni preizkušeno: dostop je trenutno zaseden. Poskusite znova čez trenutek."
+      },
+      "connection_test_unreachable": {
+        "title": "Preizkus povezave",
+        "description": "Ni dosegljivo: ni odgovora ({ms} ms). Preverite omrežje in napravo."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Preizkus povezave",
+        "description": "Ni dosegljivo: ni odgovora ({ms} ms). Preverite omrežje in napravo. Namig: če se naslov prehoda spreminja, na primer po ponovnem zagonu usmerjevalnika, pomaga stalen naslov: rezervirajte njegov naslov IP v usmerjevalniku (rezervacija DHCP) ali vnesite ime gostitelja prehoda. Če se prehod oglasi na novem naslovu, obvestilo o popravilu ponudi njegovo uporabo."
+      },
+      "connection_test_other_gateway": {
+        "title": "Preizkus povezave",
+        "description": "Na tem naslovu odgovarja drug prehod. Znova nastavite lokalni dostop."
+      },
+      "connection_test_error": {
+        "title": "Preizkus povezave",
+        "description": "Preizkus ni uspel: {kind}."
       },
       "connection": {
         "title": "Upravljanje povezave",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Preizkusi povezavo zdaj",
           "connection_enabled": "Vklopi ali izklopi dostop",
@@ -697,6 +757,98 @@
           "confirm": "Prekliči ta žeton na prehodu",
           "confirm_end": "Lokalni dostop, ki uporablja ta žeton, se konča"
         }
+      },
+      "result_connection_removed": {
+        "title": "Rezultat",
+        "description": "Dostop je bil odstranjen."
+      },
+      "result_connection_saved": {
+        "title": "Rezultat",
+        "description": "Sprememba je bila shranjena."
+      },
+      "result_holiday_created": {
+        "title": "Rezultat",
+        "description": "Počitnice so ustvarjene in potrjene z ponovnim branjem."
+      },
+      "result_holiday_deleted": {
+        "title": "Rezultat",
+        "description": "Počitnice so izbrisane, odstranitev pa je potrdil ogrevalni sistem."
+      },
+      "result_holiday_unchanged": {
+        "title": "Rezultat",
+        "description": "Nič ni bilo spremenjeno, zato ogrevalnemu sistemu ni bilo poslano nič."
+      },
+      "result_holiday_updated": {
+        "title": "Rezultat",
+        "description": "Nastavitve počitnic so shranjene in jih je potrdil ogrevalni sistem."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Rezultat",
+        "description": "To je bil žeton, ki ga je uporabljal ta dostop, zato se je lokalni dostop končal, vendar dostopa ni bilo mogoče izklopiti. Izklopite ga, odstranite ga ali ga znova nastavite z oznako na napravi."
+      },
+      "result_local_token_access_ended": {
+        "title": "Rezultat",
+        "description": "To je bil žeton, ki ga je uporabljal ta dostop. Lokalni dostop se je končal in dostop je bil izklopljen. Znova ga nastavite z oznako na napravi ali ga odstranite."
+      },
+      "result_local_token_not_removed": {
+        "title": "Rezultat",
+        "description": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Rezultat",
+        "description": "Izbrani žeton je bil na prehodu preklican in dostop je bil odstranjen. Žeton, ki ga je ta dostop sam uporabljal, ostaja na prehodu."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Rezultat",
+        "description": "Prehod je zavrnil preklic; žeton je še vedno na seznamu."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Rezultat",
+        "description": "Prehod ni potrdil preklica. Nič ni bilo ponovljeno. Za preverjanje znova odprite seznam žetonov."
+      },
+      "result_local_token_revoked": {
+        "title": "Rezultat",
+        "description": "Žeton je bil preklican; prehod ga ne navaja več."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Rezultat",
+        "description": "Žeton je bil na prehodu preklican in dostop je bil odstranjen."
+      },
+      "result_local_tokens_changed": {
+        "title": "Rezultat",
+        "description": "Seznam žetonov se je medtem spremenil. Nič ni bilo preklicano ali odstranjeno. Znova odprite seznam."
+      },
+      "result_notifications_saved": {
+        "title": "Rezultat",
+        "description": "Nastavitve obvestil so bile shranjene."
+      },
+      "result_rescan_partial": {
+        "title": "Rezultat",
+        "description": "Iskanje je načrtovano za dele, ki so pripravljeni, in poteka ob naslednji redni posodobitvi. Deli, ki so trenutno v premoru, so bili preskočeni; zanje poskusite znova pozneje."
+      },
+      "result_rescan_paused": {
+        "title": "Rezultat",
+        "description": "Iskanje ni bilo zagnano: zahteve so trenutno v premoru (na primer potem, ko je oblak zahteval premor). Poskusite znova pozneje."
+      },
+      "result_rescan_planned": {
+        "title": "Rezultat",
+        "description": "Iskanje je načrtovano in poteka ob naslednji redni posodobitvi; novi deli se prikažejo takoj, ko so najdeni."
+      },
+      "result_rescan_running": {
+        "title": "Rezultat",
+        "description": "Iskanje že poteka ali je načrtovano. Počakajte, da se konča."
+      },
+      "result_rescan_unavailable": {
+        "title": "Rezultat",
+        "description": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen."
+      },
+      "result_rrc_program_saved": {
+        "title": "Rezultat",
+        "description": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem."
+      },
+      "result_switch_program_saved": {
+        "title": "Rezultat",
+        "description": "Časovni program {program} je bil shranjen in potrjen s ponovnim branjem.\n\nDosedanje preklopne točke spremenjenih dni:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
       "notification_gateways_changed": "Izbira napeljav se je spremenila. Znova odprite nastavitve.",
       "holiday_changed": "Izbrane počitnice so se spremenile ali jih ni več mogoče urejati. Znova odprite počitnice in preglejte njihove trenutne podatke.",
-      "holiday_updated": "Nastavitve počitnic so shranjene in jih je potrdil ogrevalni sistem.",
-      "holiday_unchanged": "Nič ni bilo spremenjeno, zato ogrevalnemu sistemu ni bilo poslano nič.",
       "no_writable_holidays": "Upravljanje počitnic trenutno ni na voljo. Počakajte, da napeljava sporoči svoje nastavitve počitnic.",
-      "holiday_deleted": "Počitnice so izbrisane, odstranitev pa je potrdil ogrevalni sistem.",
       "not_loaded": "Bosch/Buderus Home Comfort mora biti naložen, preden je mogoče nastaviti počitnice.",
-      "holiday_created": "Počitnice so ustvarjene in potrjene z ponovnim branjem.",
       "holiday_previous_request_found": "Prejšnja nerešena zahteva je zdaj potrjena. Vaši novi vnosi niso bili poslani. Najprej preverite obstoječe počitnice v razdelku Upravljanje obdobij počitnic.",
       "holiday_already_exists": "Počitnice s tem začetkom in izbiro kroga že obstajajo. Dodatne počitnice niso bile ustvarjene. Odprite Upravljanje obdobij počitnic in uredite obstoječi vnos.",
       "holiday_create_unconfirmed": "Zahteve za ustvarjanje ni bilo mogoče potrditi. Počitnice morda že obstajajo. Preverite Upravljanje obdobij počitnic ali aplikacijo proizvajalca. Naslednjih 10 minut nov poskus preveri rezultat te zahteve, ne da bi ustvaril drugo počitnico.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Na voljo ni nobenega trenutnega, podprtega tedenskega časovnega programa sobnega regulatorja.",
       "no_switch_programs": "Tukaj ni mogoče spremeniti nobenega trenutnega časovnega programa ogrevalnega kroga ali tople vode.",
       "switch_program_changed": "Časovni program se je medtem spremenil ali ga ni več mogoče spreminjati. Znova ga odprite, da vidite trenutne preklopne točke.",
-      "switch_program_saved": "Časovni program {program} je bil shranjen in potrjen s ponovnim branjem.\n\nDosedanje preklopne točke spremenjenih dni:\n\n{before}",
       "controls_not_loaded": "Upravljanje je mogoče le prek dostopa prek oblaka; lokalni dostop samo bere. Povežite dostop prek oblaka ali počakajte, da se naloži.",
       "controls_auth_required": "Upravljanje ni na voljo: dostop prek oblaka potrebuje novo prijavo. Izmerjene vrednosti ostanejo vidne.",
       "controls_cloud_stopped": "Upravljanje ni na voljo: dostop prek oblaka je ustavljen ali se znova zaganja. Izmerjene vrednosti ostanejo vidne.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Čakajoči poskus je ohranjen. Nadaljujete ga lahko v lokalni nastavitvi.",
       "local_storage_failed": "Zasebnega zapisa nastavitve ni bilo mogoče prebrati ali shraniti. Pred nadaljevanjem preverite shrambo Home Assistant.",
       "cloud_local_first_other_entry": "Ta sistem je že nastavljen prek lokalnega dostopa v drugem vnosu te integracije. Dostop prek oblaka dodajte v tistem vnosu.",
-      "rescan_planned": "Iskanje je načrtovano in poteka ob naslednji redni posodobitvi; novi deli se prikažejo takoj, ko so najdeni.",
-      "rescan_paused": "Iskanje ni bilo zagnano: zahteve so trenutno v premoru (na primer potem, ko je oblak zahteval premor). Poskusite znova pozneje.",
-      "rescan_running": "Iskanje že poteka ali je načrtovano. Počakajte, da se konča.",
-      "rescan_partial": "Iskanje je načrtovano za dele, ki so pripravljeni, in poteka ob naslednji redni posodobitvi. Deli, ki so trenutno v premoru, so bili preskočeni; zanje poskusite znova pozneje.",
       "rescan_unavailable": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen.",
-      "connection_saved": "Sprememba je bila shranjena.",
-      "connection_removed": "Dostop je bil odstranjen.",
-      "notifications_saved": "Nastavitve obvestil so bile shranjene.",
-      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem.",
-      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop.",
-      "local_tokens_changed": "Seznam žetonov se je medtem spremenil. Nič ni bilo preklicano ali odstranjeno. Znova odprite seznam.",
-      "local_token_revoked": "Žeton je bil preklican; prehod ga ne navaja več.",
-      "local_token_access_ended": "To je bil žeton, ki ga je uporabljal ta dostop. Lokalni dostop se je končal in dostop je bil izklopljen. Znova ga nastavite z oznako na napravi ali ga odstranite.",
-      "local_token_revoke_rejected": "Prehod je zavrnil preklic; žeton je še vedno na seznamu.",
-      "local_token_revoke_unclear": "Prehod ni potrdil preklica. Nič ni bilo ponovljeno. Za preverjanje znova odprite seznam žetonov.",
-      "local_token_revoked_removed": "Žeton je bil na prehodu preklican in dostop je bil odstranjen.",
-      "local_token_not_removed": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop.",
-      "local_token_old_revoked_removed": "Izbrani žeton je bil na prehodu preklican in dostop je bil odstranjen. Žeton, ki ga je ta dostop sam uporabljal, ostaja na prehodu.",
-      "local_token_access_end_failed": "To je bil žeton, ki ga je uporabljal ta dostop, zato se je lokalni dostop končal, vendar dostopa ni bilo mogoče izklopiti. Izklopite ga, odstranite ga ali ga znova nastavite z oznako na napravi."
+      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."

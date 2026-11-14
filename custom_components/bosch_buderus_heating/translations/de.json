@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Einstellungen",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Benachrichtigungen",
           "holidays": "Urlaubszeiten verwalten",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Verbindungen",
-        "description": "{result}Wähle den Zugang, den du verwalten möchtest.",
+        "description": "Wähle den Zugang, den du verwalten möchtest.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Lokalen Zugang einrichten",
           "back": "← Zurück"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Verbindungstest",
-        "description": "{result}"
+        "description": "In Ordnung, Antwort nach {ms} ms. Einstellungen bleiben unverändert."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Verbindungstest",
+        "description": "In Ordnung, Antwort nach {ms} ms; {count} Gateway(s) im Konto. Einstellungen bleiben unverändert."
+      },
+      "connection_test_not_running": {
+        "title": "Verbindungstest",
+        "description": "Nicht getestet: Der Zugang läuft gerade nicht (deaktiviert, startet oder gestoppt)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Verbindungstest",
+        "description": "Anmeldung nötig: Bitte über „Erneut anmelden“ neu anmelden."
+      },
+      "connection_test_auth_local": {
+        "title": "Verbindungstest",
+        "description": "Anmeldung nötig: Bitte den lokalen Zugang über „Lokalen Zugang ändern“ neu einrichten."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Verbindungstest",
+        "description": "Das Zertifikat des Geräts hat sich geändert: Bitte den lokalen Zugang über „Lokalen Zugang ändern“ neu einrichten."
+      },
+      "connection_test_paused": {
+        "title": "Verbindungstest",
+        "description": "Nicht getestet: Abfragen sind pausiert bis {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Verbindungstest",
+        "description": "Nicht getestet: Abfragen sind gerade pausiert."
+      },
+      "connection_test_busy": {
+        "title": "Verbindungstest",
+        "description": "Nicht getestet: Der Zugang ist gerade beschäftigt. Bitte gleich erneut versuchen."
+      },
+      "connection_test_unreachable": {
+        "title": "Verbindungstest",
+        "description": "Nicht erreichbar: Keine Antwort ({ms} ms). Netzwerk und Gerät prüfen."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Verbindungstest",
+        "description": "Nicht erreichbar: Keine Antwort ({ms} ms). Netzwerk und Gerät prüfen. Tipp: Ändert sich die Adresse des Gateways, etwa nach einem Neustart des Routers, hilft eine feste Adresse: die IP-Adresse im Router reservieren (DHCP-Reservierung) oder den Hostnamen des Gateways eintragen. Meldet sich das Gateway unter einer neuen Adresse, bietet eine Reparaturmeldung an, sie zu übernehmen."
+      },
+      "connection_test_other_gateway": {
+        "title": "Verbindungstest",
+        "description": "Unter dieser Adresse antwortet ein anderes Gateway. Lokalen Zugang neu einrichten."
+      },
+      "connection_test_error": {
+        "title": "Verbindungstest",
+        "description": "Fehler beim Test: {kind}."
       },
       "connection": {
         "title": "Zugang verwalten",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Verbindung jetzt testen",
           "connection_enabled": "Zugang ein- oder ausschalten",
@@ -697,6 +757,98 @@
           "confirm": "Diesen Token auf dem Gateway widerrufen",
           "confirm_end": "Ein lokaler Zugang, der diesen Token nutzt, endet"
         }
+      },
+      "result_connection_removed": {
+        "title": "Ergebnis",
+        "description": "Der Zugang wurde entfernt."
+      },
+      "result_connection_saved": {
+        "title": "Ergebnis",
+        "description": "Die Änderung wurde gespeichert."
+      },
+      "result_holiday_created": {
+        "title": "Ergebnis",
+        "description": "Die Urlaubszeit wurde angelegt und durch Rücklesen bestätigt."
+      },
+      "result_holiday_deleted": {
+        "title": "Ergebnis",
+        "description": "Die Urlaubszeit wurde gelöscht. Die Heizungsanlage hat das Entfernen bestätigt."
+      },
+      "result_holiday_unchanged": {
+        "title": "Ergebnis",
+        "description": "Es wurde nichts geändert, daher wurde nichts an die Heizungsanlage gesendet."
+      },
+      "result_holiday_updated": {
+        "title": "Ergebnis",
+        "description": "Die Urlaubseinstellungen wurden gespeichert und von der Heizungsanlage bestätigt."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Ergebnis",
+        "description": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist damit beendet, er konnte aber nicht ausgeschaltet werden. Schalte ihn aus, entferne ihn oder richte ihn mit dem Geräteaufkleber neu ein."
+      },
+      "result_local_token_access_ended": {
+        "title": "Ergebnis",
+        "description": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist beendet und wurde ausgeschaltet. Richte ihn mit dem Geräteaufkleber neu ein oder entferne ihn."
+      },
+      "result_local_token_not_removed": {
+        "title": "Ergebnis",
+        "description": "Der Widerruf wurde nicht bestätigt, daher wurde der Zugang nicht entfernt. Prüfe die Token-Liste und entferne den Zugang dann erneut."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Ergebnis",
+        "description": "Der gewählte Token wurde auf dem Gateway widerrufen und der Zugang entfernt. Der Token, den dieser Zugang selbst genutzt hat, bleibt auf dem Gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Ergebnis",
+        "description": "Das Gateway hat den Widerruf abgelehnt; der Token ist weiter aufgeführt."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Ergebnis",
+        "description": "Das Gateway hat den Widerruf nicht bestätigt. Es wurde nichts wiederholt. Öffne die Token-Liste erneut, um es zu prüfen."
+      },
+      "result_local_token_revoked": {
+        "title": "Ergebnis",
+        "description": "Der Token wurde widerrufen; das Gateway führt ihn nicht mehr."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Ergebnis",
+        "description": "Der Token wurde auf dem Gateway widerrufen und der Zugang entfernt."
+      },
+      "result_local_tokens_changed": {
+        "title": "Ergebnis",
+        "description": "Die Token-Liste hat sich inzwischen geändert. Es wurde nichts widerrufen oder entfernt. Öffne die Liste erneut."
+      },
+      "result_notifications_saved": {
+        "title": "Ergebnis",
+        "description": "Die Benachrichtigungseinstellungen wurden gespeichert."
+      },
+      "result_rescan_partial": {
+        "title": "Ergebnis",
+        "description": "Die Suche ist für die bereiten Teile geplant und läuft mit der nächsten regulären Aktualisierung. Gerade pausierte Teile wurden übersprungen; bitte versuche es für sie später erneut."
+      },
+      "result_rescan_paused": {
+        "title": "Ergebnis",
+        "description": "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert (zum Beispiel, weil die Cloud um eine Pause gebeten hat). Bitte versuche es später erneut."
+      },
+      "result_rescan_planned": {
+        "title": "Ergebnis",
+        "description": "Die Suche ist geplant und läuft mit der nächsten regulären Aktualisierung; neue Bauteile erscheinen, sobald sie gefunden sind."
+      },
+      "result_rescan_running": {
+        "title": "Ergebnis",
+        "description": "Eine Suche läuft bereits oder ist geplant. Bitte warte, bis sie abgeschlossen ist."
+      },
+      "result_rescan_unavailable": {
+        "title": "Ergebnis",
+        "description": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit."
+      },
+      "result_rrc_program_saved": {
+        "title": "Ergebnis",
+        "description": "Der Schaltpunkt wurde gespeichert und durch Zurücklesen bestätigt."
+      },
+      "result_switch_program_saved": {
+        "title": "Ergebnis",
+        "description": "Das Zeitprogramm {program} wurde gespeichert und durch Zurücklesen bestätigt.\n\nBisherige Schaltpunkte der geänderten Tage:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
       "notification_gateways_changed": "Die Anlagenauswahl wurde geändert. Öffne die Einstellungen erneut.",
       "holiday_changed": "Der ausgewählte Urlaub wurde inzwischen geändert oder kann nicht mehr bearbeitet werden. Öffne ihn erneut, um die aktuellen Angaben zu prüfen.",
-      "holiday_updated": "Die Urlaubseinstellungen wurden gespeichert und von der Heizungsanlage bestätigt.",
-      "holiday_unchanged": "Es wurde nichts geändert, daher wurde nichts an die Heizungsanlage gesendet.",
       "no_writable_holidays": "Die Urlaubsverwaltung ist gerade nicht verfügbar. Warte bitte, bis die Anlage ihre Urlaubseinstellungen bereitgestellt hat.",
-      "holiday_deleted": "Die Urlaubszeit wurde gelöscht. Die Heizungsanlage hat das Entfernen bestätigt.",
       "not_loaded": "Bosch/Buderus Home Comfort muss geladen sein, bevor ein Urlaub konfiguriert werden kann.",
-      "holiday_created": "Die Urlaubszeit wurde angelegt und durch Rücklesen bestätigt.",
       "holiday_previous_request_found": "Der zuvor ungeklärte Auftrag ist jetzt bestätigt. Deine neuen Eingaben wurden nicht gesendet. Prüfe zuerst die vorhandene Urlaubszeit unter Urlaubszeiten verwalten.",
       "holiday_already_exists": "Eine Urlaubszeit mit diesem Beginn und dieser Kreisauswahl ist bereits vorhanden. Es wurde keine weitere angelegt. Öffne Urlaubszeiten verwalten und bearbeite den vorhandenen Eintrag.",
       "holiday_create_unconfirmed": "Das Anlegen konnte nicht bestätigt werden. Die Urlaubszeit kann bereits vorhanden sein. Prüfe Urlaubszeiten verwalten oder die Hersteller-App. In den nächsten 10 Minuten prüft ein weiterer Versuch das Ergebnis dieses Auftrags, ohne eine zweite Urlaubszeit anzulegen.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Es ist kein aktuelles, unterstütztes Wochenprogramm eines Raumreglers verfügbar.",
       "no_switch_programs": "Es gibt hier kein aktuelles, änderbares Zeitprogramm eines Heizkreises oder des Warmwassers.",
       "switch_program_changed": "Das Zeitprogramm wurde inzwischen geändert oder ist nicht mehr änderbar. Öffne es erneut, um die aktuellen Schaltpunkte zu sehen.",
-      "switch_program_saved": "Das Zeitprogramm {program} wurde gespeichert und durch Zurücklesen bestätigt.\n\nBisherige Schaltpunkte der geänderten Tage:\n\n{before}",
       "controls_not_loaded": "Bedienung ist nur über den Cloud-Zugang möglich; der lokale Zugang liest nur. Verbinde einen Cloud-Zugang oder warte, bis er geladen ist.",
       "controls_auth_required": "Bedienung nicht möglich: Der Cloud-Zugang braucht eine neue Anmeldung. Messwerte bleiben sichtbar.",
       "controls_cloud_stopped": "Bedienung nicht möglich: Der Cloud-Zugang ist angehalten oder startet neu. Messwerte bleiben sichtbar.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Der offene Versuch bleibt gespeichert. Du kannst ihn über die lokale Einrichtung fortsetzen.",
       "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
       "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu.",
-      "rescan_planned": "Die Suche ist geplant und läuft mit der nächsten regulären Aktualisierung; neue Bauteile erscheinen, sobald sie gefunden sind.",
-      "rescan_paused": "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert (zum Beispiel, weil die Cloud um eine Pause gebeten hat). Bitte versuche es später erneut.",
-      "rescan_running": "Eine Suche läuft bereits oder ist geplant. Bitte warte, bis sie abgeschlossen ist.",
-      "rescan_partial": "Die Suche ist für die bereiten Teile geplant und läuft mit der nächsten regulären Aktualisierung. Gerade pausierte Teile wurden übersprungen; bitte versuche es für sie später erneut.",
       "rescan_unavailable": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit.",
-      "connection_saved": "Die Änderung wurde gespeichert.",
-      "connection_removed": "Der Zugang wurde entfernt.",
-      "notifications_saved": "Die Benachrichtigungseinstellungen wurden gespeichert.",
-      "rrc_program_saved": "Der Schaltpunkt wurde gespeichert und durch Zurücklesen bestätigt.",
-      "local_tokens_unavailable": "Dieser Zugang hat keinen nutzbaren gespeicherten Token für die Token-Liste. Richte den lokalen Zugang zuerst neu ein.",
-      "local_tokens_changed": "Die Token-Liste hat sich inzwischen geändert. Es wurde nichts widerrufen oder entfernt. Öffne die Liste erneut.",
-      "local_token_revoked": "Der Token wurde widerrufen; das Gateway führt ihn nicht mehr.",
-      "local_token_access_ended": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist beendet und wurde ausgeschaltet. Richte ihn mit dem Geräteaufkleber neu ein oder entferne ihn.",
-      "local_token_revoke_rejected": "Das Gateway hat den Widerruf abgelehnt; der Token ist weiter aufgeführt.",
-      "local_token_revoke_unclear": "Das Gateway hat den Widerruf nicht bestätigt. Es wurde nichts wiederholt. Öffne die Token-Liste erneut, um es zu prüfen.",
-      "local_token_revoked_removed": "Der Token wurde auf dem Gateway widerrufen und der Zugang entfernt.",
-      "local_token_not_removed": "Der Widerruf wurde nicht bestätigt, daher wurde der Zugang nicht entfernt. Prüfe die Token-Liste und entferne den Zugang dann erneut.",
-      "local_token_old_revoked_removed": "Der gewählte Token wurde auf dem Gateway widerrufen und der Zugang entfernt. Der Token, den dieser Zugang selbst genutzt hat, bleibt auf dem Gateway.",
-      "local_token_access_end_failed": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist damit beendet, er konnte aber nicht ausgeschaltet werden. Schalte ihn aus, entferne ihn oder richte ihn mit dem Geräteaufkleber neu ein."
+      "local_tokens_unavailable": "Dieser Zugang hat keinen nutzbaren gespeicherten Token für die Token-Liste. Richte den lokalen Zugang zuerst neu ein."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."

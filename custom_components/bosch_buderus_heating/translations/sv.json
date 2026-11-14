@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Inställningar",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Aviseringar",
           "holidays": "Hantera semesterperioder",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Anslutningar",
-        "description": "{result}Välj den åtkomst du vill hantera.",
+        "description": "Välj den åtkomst du vill hantera.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Konfigurera lokal åtkomst",
           "back": "← Tillbaka"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Anslutningstest",
-        "description": "{result}"
+        "description": "OK, svar efter {ms} ms. Inställningarna förblir oförändrade."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Anslutningstest",
+        "description": "OK, svar efter {ms} ms. {count} gateway(s) i kontot. Inställningarna förblir oförändrade."
+      },
+      "connection_test_not_running": {
+        "title": "Anslutningstest",
+        "description": "Inte testad: åtkomsten körs inte just nu (inaktiverad, startar eller stoppad)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Anslutningstest",
+        "description": "Inloggning krävs: logga in igen via “Logga in igen”."
+      },
+      "connection_test_auth_local": {
+        "title": "Anslutningstest",
+        "description": "Inloggning krävs: konfigurera den lokala åtkomsten igen via “Ändra lokal åtkomst”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Anslutningstest",
+        "description": "Enhetens certifikat har ändrats: konfigurera den lokala åtkomsten igen via “Ändra lokal åtkomst”."
+      },
+      "connection_test_paused": {
+        "title": "Anslutningstest",
+        "description": "Inte testad: förfrågningar är pausade till {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Anslutningstest",
+        "description": "Inte testad: förfrågningar är pausade just nu."
+      },
+      "connection_test_busy": {
+        "title": "Anslutningstest",
+        "description": "Inte testad: åtkomsten är upptagen just nu. Försök igen om en stund."
+      },
+      "connection_test_unreachable": {
+        "title": "Anslutningstest",
+        "description": "Onåbar: inget svar ({ms} ms). Kontrollera nätverket och enheten."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Anslutningstest",
+        "description": "Onåbar: inget svar ({ms} ms). Kontrollera nätverket och enheten. Tips: om gatewayens adress ändras, till exempel efter en omstart av routern, hjälper en fast adress: reservera dess IP-adress i routern (DHCP-reservation) eller ange gatewayens värdnamn. Om gatewayen anmäler sig på en ny adress erbjuder ett reparationsmeddelande att använda den."
+      },
+      "connection_test_other_gateway": {
+        "title": "Anslutningstest",
+        "description": "En annan gateway svarar på den här adressen. Konfigurera den lokala åtkomsten igen."
+      },
+      "connection_test_error": {
+        "title": "Anslutningstest",
+        "description": "Testet misslyckades: {kind}."
       },
       "connection": {
         "title": "Hantera anslutning",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Testa anslutningen nu",
           "connection_enabled": "Slå på eller av åtkomst",
@@ -697,6 +757,98 @@
           "confirm": "Återkalla den här token på gatewayen",
           "confirm_end": "En lokal åtkomst som använder denna token upphör"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultat",
+        "description": "Åtkomsten togs bort."
+      },
+      "result_connection_saved": {
+        "title": "Resultat",
+        "description": "Ändringen sparades."
+      },
+      "result_holiday_created": {
+        "title": "Resultat",
+        "description": "Semestern skapades och bekräftades genom att läsas tillbaka."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultat",
+        "description": "Semestern togs bort och borttagningen bekräftades av värmesystemet."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultat",
+        "description": "Inget ändrades, så inget skickades till värmesystemet."
+      },
+      "result_holiday_updated": {
+        "title": "Resultat",
+        "description": "Semesterinställningarna sparades och bekräftades av värmesystemet."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultat",
+        "description": "Det var den token som den här åtkomsten använde, så den lokala åtkomsten har upphört, men åtkomsten kunde inte stängas av. Stäng av den, ta bort den eller konfigurera den igen med enhetsetiketten."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultat",
+        "description": "Det var den token som den här åtkomsten använde. Den lokala åtkomsten har upphört och åtkomsten stängdes av. Konfigurera den igen med enhetsetiketten, eller ta bort den."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultat",
+        "description": "Återkallelsen bekräftades inte, så åtkomsten togs inte bort. Kontrollera tokenlistan och ta sedan bort åtkomsten igen."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultat",
+        "description": "Den valda token återkallades på gatewayen och åtkomsten togs bort. Den token som den här åtkomsten själv använde finns kvar på gatewayen."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultat",
+        "description": "Gatewayen avvisade återkallelsen; token finns kvar i listan."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultat",
+        "description": "Gatewayen bekräftade inte återkallelsen. Ingenting upprepades. Öppna tokenlistan igen för att kontrollera."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultat",
+        "description": "Token återkallades; gatewayen visar den inte längre."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultat",
+        "description": "Token återkallades på gatewayen och åtkomsten togs bort."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultat",
+        "description": "Tokenlistan har ändrats under tiden. Ingenting återkallades eller togs bort. Öppna listan igen."
+      },
+      "result_notifications_saved": {
+        "title": "Resultat",
+        "description": "Aviseringsinställningarna sparades."
+      },
+      "result_rescan_partial": {
+        "title": "Resultat",
+        "description": "Sökningen är planerad för de delar som är redo och körs vid nästa regelbundna uppdatering. Delar som är pausade just nu hoppades över. Försök igen senare för dem."
+      },
+      "result_rescan_paused": {
+        "title": "Resultat",
+        "description": "Sökningen startades inte: förfrågningar är pausade just nu (till exempel efter att molnet begärt en paus). Försök igen senare."
+      },
+      "result_rescan_planned": {
+        "title": "Resultat",
+        "description": "Sökningen är planerad och körs vid nästa regelbundna uppdatering. Nya delar visas så fort de hittas."
+      },
+      "result_rescan_running": {
+        "title": "Resultat",
+        "description": "En sökning pågår redan eller är planerad. Vänta tills den är klar."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultat",
+        "description": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultat",
+        "description": "Kopplingspunkten sparades och bekräftades genom återläsning."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultat",
+        "description": "Tidsprogrammet {program} sparades och bekräftades genom att läsas tillbaka.\n\nTidigare växlingspunkter för de ändrade dagarna:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
       "notification_gateways_changed": "Valet av installation ändrades. Öppna inställningarna igen.",
       "holiday_changed": "Den valda semestern har ändrats eller kan inte längre redigeras. Öppna semestern igen för att granska dess aktuella uppgifter.",
-      "holiday_updated": "Semesterinställningarna sparades och bekräftades av värmesystemet.",
-      "holiday_unchanged": "Inget ändrades, så inget skickades till värmesystemet.",
       "no_writable_holidays": "Semesterhanteringen är inte tillgänglig just nu. Vänta tills installationen har levererat sina semesterinställningar.",
-      "holiday_deleted": "Semestern togs bort och borttagningen bekräftades av värmesystemet.",
       "not_loaded": "Bosch/Buderus Home Comfort måste vara inläst innan en semester kan konfigureras.",
-      "holiday_created": "Semestern skapades och bekräftades genom att läsas tillbaka.",
       "holiday_previous_request_found": "Den tidigare olösta förfrågan är nu bekräftad. Dina nya uppgifter skickades inte. Kontrollera först den befintliga semestern under Hantera semesterperioder.",
       "holiday_already_exists": "Det finns redan en semester med den här starten och kretsvalet. Ingen ytterligare semester skapades. Öppna Hantera semesterperioder och redigera den befintliga posten.",
       "holiday_create_unconfirmed": "Skapandeförfrågan kunde inte bekräftas. Semestern kan redan finnas. Kontrollera Hantera semesterperioder eller tillverkarens app. Under de närmaste 10 minuterna kontrollerar ett nytt försök resultatet av den här förfrågan utan att skapa en andra semester.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Inget aktuellt, stött veckoprogram för en rumsregulator är tillgängligt.",
       "no_switch_programs": "Det finns inget aktuellt tidsprogram för en värmekrets eller för varmvattnet som kan ändras här.",
       "switch_program_changed": "Tidsprogrammet har ändrats under tiden eller kan inte längre ändras. Öppna det igen för att se de aktuella växlingspunkterna.",
-      "switch_program_saved": "Tidsprogrammet {program} sparades och bekräftades genom att läsas tillbaka.\n\nTidigare växlingspunkter för de ändrade dagarna:\n\n{before}",
       "controls_not_loaded": "Styrning är bara tillgänglig via molnåtkomsten. Den lokala åtkomsten kan bara läsa. Anslut en molnåtkomst eller vänta tills den har lästs in.",
       "controls_auth_required": "Styrning är inte tillgänglig: molnåtkomsten behöver en ny inloggning. Mätvärdena förblir synliga.",
       "controls_cloud_stopped": "Styrning är inte tillgänglig: molnåtkomsten är stoppad eller håller på att startas om. Mätvärdena förblir synliga.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Det väntande försöket är sparat. Du kan återuppta det från den lokala konfigurationen.",
       "local_storage_failed": "Den privata konfigurationsposten kunde inte läsas eller sparas. Kontrollera Home Assistants lagring innan du fortsätter.",
       "cloud_local_first_other_entry": "Den här anläggningen är redan konfigurerad via sin lokala åtkomst i en annan post för den här integrationen. Lägg till molnåtkomsten i den posten i stället.",
-      "rescan_planned": "Sökningen är planerad och körs vid nästa regelbundna uppdatering. Nya delar visas så fort de hittas.",
-      "rescan_paused": "Sökningen startades inte: förfrågningar är pausade just nu (till exempel efter att molnet begärt en paus). Försök igen senare.",
-      "rescan_running": "En sökning pågår redan eller är planerad. Vänta tills den är klar.",
-      "rescan_partial": "Sökningen är planerad för de delar som är redo och körs vid nästa regelbundna uppdatering. Delar som är pausade just nu hoppades över. Försök igen senare för dem.",
       "rescan_unavailable": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu.",
-      "connection_saved": "Ändringen sparades.",
-      "connection_removed": "Åtkomsten togs bort.",
-      "notifications_saved": "Aviseringsinställningarna sparades.",
-      "rrc_program_saved": "Kopplingspunkten sparades och bekräftades genom återläsning.",
-      "local_tokens_unavailable": "Den här åtkomsten har ingen användbar sparad token för tokenlistan. Konfigurera den lokala åtkomsten igen först.",
-      "local_tokens_changed": "Tokenlistan har ändrats under tiden. Ingenting återkallades eller togs bort. Öppna listan igen.",
-      "local_token_revoked": "Token återkallades; gatewayen visar den inte längre.",
-      "local_token_access_ended": "Det var den token som den här åtkomsten använde. Den lokala åtkomsten har upphört och åtkomsten stängdes av. Konfigurera den igen med enhetsetiketten, eller ta bort den.",
-      "local_token_revoke_rejected": "Gatewayen avvisade återkallelsen; token finns kvar i listan.",
-      "local_token_revoke_unclear": "Gatewayen bekräftade inte återkallelsen. Ingenting upprepades. Öppna tokenlistan igen för att kontrollera.",
-      "local_token_revoked_removed": "Token återkallades på gatewayen och åtkomsten togs bort.",
-      "local_token_not_removed": "Återkallelsen bekräftades inte, så åtkomsten togs inte bort. Kontrollera tokenlistan och ta sedan bort åtkomsten igen.",
-      "local_token_old_revoked_removed": "Den valda token återkallades på gatewayen och åtkomsten togs bort. Den token som den här åtkomsten själv använde finns kvar på gatewayen.",
-      "local_token_access_end_failed": "Det var den token som den här åtkomsten använde, så den lokala åtkomsten har upphört, men åtkomsten kunde inte stängas av. Stäng av den, ta bort den eller konfigurera den igen med enhetsetiketten."
+      "local_tokens_unavailable": "Den här åtkomsten har ingen användbar sparad token för tokenlistan. Konfigurera den lokala åtkomsten igen först."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."

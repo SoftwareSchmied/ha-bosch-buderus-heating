@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Asetukset",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Ilmoitukset",
           "holidays": "Hallitse lomajaksoja",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Yhteydet",
-        "description": "{result}Valitse yhteys, jota haluat hallita.",
+        "description": "Valitse yhteys, jota haluat hallita.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Määritä paikallinen yhteys",
           "back": "← Takaisin"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Yhteystesti",
-        "description": "{result}"
+        "description": "OK, vastaus {ms} ms:n kuluttua. Asetukset pysyvät ennallaan."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Yhteystesti",
+        "description": "OK, vastaus {ms} ms:n kuluttua; yhdyskäytäviä tilillä: {count}. Asetukset pysyvät ennallaan."
+      },
+      "connection_test_not_running": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: yhteys ei ole tällä hetkellä käynnissä (ei käytössä, käynnistyy tai pysäytetty)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen vaaditaan: kirjaudu uudelleen valinnalla “Kirjaudu uudelleen”."
+      },
+      "connection_test_auth_local": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen vaaditaan: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Yhteystesti",
+        "description": "Laitteen varmenne on muuttunut: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
+      },
+      "connection_test_paused": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: pyynnöt ovat tauolla ajankohtaan {until} asti."
+      },
+      "connection_test_paused_open": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: pyynnöt ovat tällä hetkellä tauolla."
+      },
+      "connection_test_busy": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: yhteys on tällä hetkellä varattu. Yritä hetken kuluttua uudelleen."
+      },
+      "connection_test_unreachable": {
+        "title": "Yhteystesti",
+        "description": "Ei tavoitettavissa: ei vastausta ({ms} ms). Tarkista verkko ja laite."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Yhteystesti",
+        "description": "Ei tavoitettavissa: ei vastausta ({ms} ms). Tarkista verkko ja laite. Vinkki: jos yhdyskäytävän osoite vaihtuu esimerkiksi reitittimen uudelleenkäynnistyksen jälkeen, kiinteä osoite auttaa: varaa sen IP-osoite reitittimessä (DHCP-varaus) tai anna yhdyskäytävän isäntänimi. Jos yhdyskäytävä ilmoittautuu uudessa osoitteessa, korjausilmoitus tarjoaa sen käyttöä."
+      },
+      "connection_test_other_gateway": {
+        "title": "Yhteystesti",
+        "description": "Tässä osoitteessa vastaa eri yhdyskäytävä. Määritä paikallinen yhteys uudelleen."
+      },
+      "connection_test_error": {
+        "title": "Yhteystesti",
+        "description": "Testi epäonnistui: {kind}."
       },
       "connection": {
         "title": "Hallitse yhteyttä",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Testaa yhteys nyt",
           "connection_enabled": "Ota yhteys käyttöön tai poista käytöstä",
@@ -697,6 +757,98 @@
           "confirm": "Peru tämä tunnus yhdyskäytävästä",
           "confirm_end": "Tätä tunnusta käyttävä paikallinen yhteys päättyy"
         }
+      },
+      "result_connection_removed": {
+        "title": "Tulos",
+        "description": "Yhteys poistettiin."
+      },
+      "result_connection_saved": {
+        "title": "Tulos",
+        "description": "Muutos tallennettiin."
+      },
+      "result_holiday_created": {
+        "title": "Tulos",
+        "description": "Loma luotiin ja vahvistettiin lukemalla se takaisin."
+      },
+      "result_holiday_deleted": {
+        "title": "Tulos",
+        "description": "Loma poistettiin, ja lämmitysjärjestelmä vahvisti sen poiston."
+      },
+      "result_holiday_unchanged": {
+        "title": "Tulos",
+        "description": "Mitään ei muutettu, joten lämmitysjärjestelmälle ei lähetetty mitään."
+      },
+      "result_holiday_updated": {
+        "title": "Tulos",
+        "description": "Lomaasetukset tallennettiin, ja lämmitysjärjestelmä vahvisti ne."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Tulos",
+        "description": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
+      },
+      "result_local_token_access_ended": {
+        "title": "Tulos",
+        "description": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se."
+      },
+      "result_local_token_not_removed": {
+        "title": "Tulos",
+        "description": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Tulos",
+        "description": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Tulos",
+        "description": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Tulos",
+        "description": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi."
+      },
+      "result_local_token_revoked": {
+        "title": "Tulos",
+        "description": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Tulos",
+        "description": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin."
+      },
+      "result_local_tokens_changed": {
+        "title": "Tulos",
+        "description": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen."
+      },
+      "result_notifications_saved": {
+        "title": "Tulos",
+        "description": "Ilmoitusasetukset tallennettiin."
+      },
+      "result_rescan_partial": {
+        "title": "Tulos",
+        "description": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen."
+      },
+      "result_rescan_paused": {
+        "title": "Tulos",
+        "description": "Etsintää ei aloitettu: pyynnöt ovat tällä hetkellä tauolla (esimerkiksi kun pilvi on pyytänyt taukoa). Yritä myöhemmin uudelleen."
+      },
+      "result_rescan_planned": {
+        "title": "Tulos",
+        "description": "Etsintä on ajoitettu ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä; uudet osat ilmestyvät heti, kun ne löytyvät."
+      },
+      "result_rescan_running": {
+        "title": "Tulos",
+        "description": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis."
+      },
+      "result_rescan_unavailable": {
+        "title": "Tulos",
+        "description": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis."
+      },
+      "result_rrc_program_saved": {
+        "title": "Tulos",
+        "description": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin."
+      },
+      "result_switch_program_saved": {
+        "title": "Tulos",
+        "description": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
       "notification_gateways_changed": "Asennusvalinta muuttui. Avaa asetukset uudelleen.",
       "holiday_changed": "Valittu loma on muuttunut tai sitä ei voi enää muokata. Avaa loma uudelleen nähdäksesi sen nykyiset tiedot.",
-      "holiday_updated": "Lomaasetukset tallennettiin, ja lämmitysjärjestelmä vahvisti ne.",
-      "holiday_unchanged": "Mitään ei muutettu, joten lämmitysjärjestelmälle ei lähetetty mitään.",
       "no_writable_holidays": "Lomien hallinta ei ole tällä hetkellä käytettävissä. Odota, kunnes asennus on antanut lomaasetuksensa.",
-      "holiday_deleted": "Loma poistettiin, ja lämmitysjärjestelmä vahvisti sen poiston.",
       "not_loaded": "Bosch/Buderus Home Comfort on oltava ladattuna, ennen kuin lomaa voi määrittää.",
-      "holiday_created": "Loma luotiin ja vahvistettiin lukemalla se takaisin.",
       "holiday_previous_request_found": "Aiempi ratkaisematon pyyntö on nyt vahvistettu. Uusia syötteitäsi ei lähetetty. Tarkista ensin olemassa oleva loma kohdassa Hallitse lomajaksoja.",
       "holiday_already_exists": "Loma tällä alkamisajalla ja piirivalinnalla on jo olemassa. Lisälomaa ei luotu. Avaa Hallitse lomajaksoja ja muokkaa olemassa olevaa merkintää.",
       "holiday_create_unconfirmed": "Luontipyyntöä ei voitu vahvistaa. Loma voi olla jo olemassa. Tarkista Hallitse lomajaksoja tai valmistajan sovellus. Seuraavien 10 minuutin ajan uusi yritys tarkistaa tämän pyynnön tuloksen luomatta toista lomaa.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Huonesäätimen ajantasaista, tuettua viikkoaikaohjelmaa ei ole saatavilla.",
       "no_switch_programs": "Täällä ei voi muuttaa yhtään lämmityspiirin tai lämpimän käyttöveden ajantasaista aikaohjelmaa.",
       "switch_program_changed": "Aikaohjelma on muuttunut sillä välin tai sitä ei voi enää muuttaa. Avaa se uudelleen nähdäksesi nykyiset kytkentäpisteet.",
-      "switch_program_saved": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}",
       "controls_not_loaded": "Ohjaukset ovat käytettävissä vain pilviyhteyden kautta; paikallinen yhteys vain lukee. Yhdistä pilviyhteys tai odota, kunnes se on latautunut.",
       "controls_auth_required": "Ohjaukset eivät ole käytettävissä: pilviyhteys tarvitsee uuden kirjautumisen. Mittausarvot pysyvät näkyvissä.",
       "controls_cloud_stopped": "Ohjaukset eivät ole käytettävissä: pilviyhteys on pysäytetty tai käynnistyy uudelleen. Mittausarvot pysyvät näkyvissä.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
-      "rescan_planned": "Etsintä on ajoitettu ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä; uudet osat ilmestyvät heti, kun ne löytyvät.",
-      "rescan_paused": "Etsintää ei aloitettu: pyynnöt ovat tällä hetkellä tauolla (esimerkiksi kun pilvi on pyytänyt taukoa). Yritä myöhemmin uudelleen.",
-      "rescan_running": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis.",
-      "rescan_partial": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen.",
       "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis.",
-      "connection_saved": "Muutos tallennettiin.",
-      "connection_removed": "Yhteys poistettiin.",
-      "notifications_saved": "Ilmoitusasetukset tallennettiin.",
-      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin.",
-      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen.",
-      "local_tokens_changed": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen.",
-      "local_token_revoked": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä.",
-      "local_token_access_ended": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se.",
-      "local_token_revoke_rejected": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa.",
-      "local_token_revoke_unclear": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi.",
-      "local_token_revoked_removed": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin.",
-      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen.",
-      "local_token_old_revoked_removed": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä.",
-      "local_token_access_end_failed": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
+      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."

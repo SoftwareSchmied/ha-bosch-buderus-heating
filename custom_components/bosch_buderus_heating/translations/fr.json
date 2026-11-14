@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Paramètres",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Gérer les périodes de vacances",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Connexions",
-        "description": "{result}Choisissez l'accès que vous souhaitez gérer.",
+        "description": "Choisissez l'accès que vous souhaitez gérer.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Configurer l'accès local",
           "back": "← Retour"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Test de connexion",
-        "description": "{result}"
+        "description": "OK, réponse après {ms} ms. Les réglages restent inchangés."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Test de connexion",
+        "description": "OK, réponse après {ms} ms ; {count} passerelle(s) dans le compte. Les réglages restent inchangés."
+      },
+      "connection_test_not_running": {
+        "title": "Test de connexion",
+        "description": "Non testé : l'accès n'est pas en cours d'exécution (désactivé, en démarrage ou arrêté)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Test de connexion",
+        "description": "Connexion au compte requise : veuillez vous reconnecter via « Se reconnecter »."
+      },
+      "connection_test_auth_local": {
+        "title": "Test de connexion",
+        "description": "Connexion au compte requise : veuillez reconfigurer l'accès local via « Modifier l'accès local »."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Test de connexion",
+        "description": "Le certificat de l'appareil a changé : veuillez reconfigurer l'accès local via « Modifier l'accès local »."
+      },
+      "connection_test_paused": {
+        "title": "Test de connexion",
+        "description": "Non testé : les requêtes sont en pause jusqu'à {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Test de connexion",
+        "description": "Non testé : les requêtes sont actuellement en pause."
+      },
+      "connection_test_busy": {
+        "title": "Test de connexion",
+        "description": "Non testé : l'accès est actuellement occupé. Veuillez réessayer dans un instant."
+      },
+      "connection_test_unreachable": {
+        "title": "Test de connexion",
+        "description": "Inaccessible : aucune réponse ({ms} ms). Vérifiez le réseau et l'appareil."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Test de connexion",
+        "description": "Inaccessible : aucune réponse ({ms} ms). Vérifiez le réseau et l'appareil. Conseil : si l'adresse de la passerelle change, par exemple après un redémarrage du routeur, une adresse fixe aide : réservez son adresse IP dans le routeur (réservation DHCP) ou saisissez le nom d'hôte de la passerelle. Si la passerelle s'annonce à une nouvelle adresse, une note de réparation propose de l'utiliser."
+      },
+      "connection_test_other_gateway": {
+        "title": "Test de connexion",
+        "description": "Une autre passerelle répond à cette adresse. Configurez à nouveau l'accès local."
+      },
+      "connection_test_error": {
+        "title": "Test de connexion",
+        "description": "Échec du test : {kind}."
       },
       "connection": {
         "title": "Gérer la connexion",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Tester la connexion maintenant",
           "connection_enabled": "Activer ou désactiver l'accès",
@@ -697,6 +757,98 @@
           "confirm": "Révoquer ce jeton sur la passerelle",
           "confirm_end": "Un accès local qui utilise ce jeton prend fin"
         }
+      },
+      "result_connection_removed": {
+        "title": "Résultat",
+        "description": "L'accès a été supprimé."
+      },
+      "result_connection_saved": {
+        "title": "Résultat",
+        "description": "La modification a été enregistrée."
+      },
+      "result_holiday_created": {
+        "title": "Résultat",
+        "description": "Les vacances ont été créées et confirmées par relecture."
+      },
+      "result_holiday_deleted": {
+        "title": "Résultat",
+        "description": "Les vacances ont été supprimées et leur suppression a été confirmée par l'installation de chauffage."
+      },
+      "result_holiday_unchanged": {
+        "title": "Résultat",
+        "description": "Rien n'a été modifié, donc rien n'a été envoyé à l'installation de chauffage."
+      },
+      "result_holiday_updated": {
+        "title": "Résultat",
+        "description": "Les réglages des vacances ont été enregistrés et confirmés par l'installation de chauffage."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Résultat",
+        "description": "C'était le jeton utilisé par cet accès : l'accès local a donc pris fin, mais l'accès n'a pas pu être désactivé. Désactivez-le, supprimez-le ou configurez-le à nouveau avec l'étiquette de l'appareil."
+      },
+      "result_local_token_access_ended": {
+        "title": "Résultat",
+        "description": "C'était le jeton utilisé par cet accès. L'accès local a pris fin et l'accès a été désactivé. Configurez-le à nouveau avec l'étiquette de l'appareil ou supprimez-le."
+      },
+      "result_local_token_not_removed": {
+        "title": "Résultat",
+        "description": "La révocation n'a pas été confirmée ; l'accès n'a donc pas été supprimé. Vérifiez la liste de jetons, puis supprimez à nouveau l'accès."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Résultat",
+        "description": "Le jeton choisi a été révoqué sur la passerelle et l'accès a été supprimé. Le jeton qu'utilisait cet accès reste sur la passerelle."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Résultat",
+        "description": "La passerelle a refusé la révocation ; le jeton figure toujours dans la liste."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Résultat",
+        "description": "La passerelle n'a pas confirmé la révocation. Rien n'a été répété. Ouvrez à nouveau la liste de jetons pour vérifier."
+      },
+      "result_local_token_revoked": {
+        "title": "Résultat",
+        "description": "Le jeton a été révoqué ; la passerelle ne le répertorie plus."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Résultat",
+        "description": "Le jeton a été révoqué sur la passerelle et l'accès a été supprimé."
+      },
+      "result_local_tokens_changed": {
+        "title": "Résultat",
+        "description": "La liste de jetons a changé entre-temps. Rien n'a été révoqué ni supprimé. Ouvrez à nouveau la liste."
+      },
+      "result_notifications_saved": {
+        "title": "Résultat",
+        "description": "Les paramètres de notification ont été enregistrés."
+      },
+      "result_rescan_partial": {
+        "title": "Résultat",
+        "description": "La recherche est planifiée pour les composants prêts et s'exécute lors de la prochaine mise à jour régulière. Les composants actuellement en pause ont été ignorés ; réessayez plus tard pour eux."
+      },
+      "result_rescan_paused": {
+        "title": "Résultat",
+        "description": "La recherche n'a pas été lancée : les requêtes sont actuellement en pause (par exemple après une demande de pause du cloud). Veuillez réessayer plus tard."
+      },
+      "result_rescan_planned": {
+        "title": "Résultat",
+        "description": "La recherche est planifiée et s'exécute lors de la prochaine mise à jour régulière ; les nouveaux composants apparaissent dès qu'ils sont trouvés."
+      },
+      "result_rescan_running": {
+        "title": "Résultat",
+        "description": "Une recherche est déjà en cours ou planifiée. Veuillez attendre qu'elle soit terminée."
+      },
+      "result_rescan_unavailable": {
+        "title": "Résultat",
+        "description": "La recherche n'a pas été lancée : aucun accès à l'installation n'est prêt pour le moment."
+      },
+      "result_rrc_program_saved": {
+        "title": "Résultat",
+        "description": "Le point de commutation a été enregistré et confirmé par relecture."
+      },
+      "result_switch_program_saved": {
+        "title": "Résultat",
+        "description": "Le programme horaire {program} a été enregistré et confirmé par relecture.\n\nPoints de commutation précédents des jours modifiés :\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",
       "notification_gateways_changed": "La sélection des installations a changé. Ouvrez à nouveau les paramètres.",
       "holiday_changed": "Les vacances sélectionnées ont changé ou ne sont plus modifiables. Rouvrez les vacances pour consulter leurs détails actuels.",
-      "holiday_updated": "Les réglages des vacances ont été enregistrés et confirmés par l'installation de chauffage.",
-      "holiday_unchanged": "Rien n'a été modifié, donc rien n'a été envoyé à l'installation de chauffage.",
       "no_writable_holidays": "La gestion des vacances est actuellement indisponible. Attendez que l'installation ait fourni ses réglages de vacances.",
-      "holiday_deleted": "Les vacances ont été supprimées et leur suppression a été confirmée par l'installation de chauffage.",
       "not_loaded": "Bosch/Buderus Home Comfort doit être chargé avant de pouvoir configurer des vacances.",
-      "holiday_created": "Les vacances ont été créées et confirmées par relecture.",
       "holiday_previous_request_found": "La requête précédente restée sans réponse est désormais confirmée. Vos nouvelles saisies n'ont pas été envoyées. Vérifiez d'abord les vacances existantes sous Gérer les périodes de vacances.",
       "holiday_already_exists": "Des vacances avec ce début et cette sélection de circuits existent déjà. Aucune vacance supplémentaire n'a été créée. Ouvrez Gérer les périodes de vacances et modifiez l'entrée existante.",
       "holiday_create_unconfirmed": "La requête de création n'a pas pu être confirmée. Les vacances existent peut-être déjà. Vérifiez Gérer les périodes de vacances ou l'application du fabricant. Pendant les 10 minutes suivantes, une nouvelle tentative vérifie le résultat de cette requête sans créer de seconde période de vacances.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Aucun programme hebdomadaire actuel et pris en charge d'un régulateur d'ambiance n'est disponible.",
       "no_switch_programs": "Aucun programme horaire actuel d'un circuit de chauffage ou de l'eau chaude ne peut être modifié ici.",
       "switch_program_changed": "Le programme horaire a changé entre-temps ou ne peut plus être modifié. Rouvrez-le pour voir les points de commutation actuels.",
-      "switch_program_saved": "Le programme horaire {program} a été enregistré et confirmé par relecture.\n\nPoints de commutation précédents des jours modifiés :\n\n{before}",
       "controls_not_loaded": "Les commandes ne sont disponibles que via l'accès cloud ; l'accès local est en lecture seule. Connectez un accès cloud ou attendez qu'il soit chargé.",
       "controls_auth_required": "Les commandes ne sont pas disponibles : l'accès cloud nécessite une nouvelle connexion. Les valeurs restent visibles.",
       "controls_cloud_stopped": "Les commandes ne sont pas disponibles : l'accès cloud est arrêté ou en cours de redémarrage. Les valeurs restent visibles.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "La tentative en attente est conservée. Vous pouvez la reprendre depuis la configuration locale.",
       "local_storage_failed": "L'enregistrement privé de la configuration n'a pas pu être lu ou enregistré. Vérifiez le stockage de Home Assistant avant de continuer.",
       "cloud_local_first_other_entry": "Cette installation est déjà configurée via son accès local dans une autre entrée de cette intégration. Ajoutez plutôt l'accès cloud dans cette entrée.",
-      "rescan_planned": "La recherche est planifiée et s'exécute lors de la prochaine mise à jour régulière ; les nouveaux composants apparaissent dès qu'ils sont trouvés.",
-      "rescan_paused": "La recherche n'a pas été lancée : les requêtes sont actuellement en pause (par exemple après une demande de pause du cloud). Veuillez réessayer plus tard.",
-      "rescan_running": "Une recherche est déjà en cours ou planifiée. Veuillez attendre qu'elle soit terminée.",
-      "rescan_partial": "La recherche est planifiée pour les composants prêts et s'exécute lors de la prochaine mise à jour régulière. Les composants actuellement en pause ont été ignorés ; réessayez plus tard pour eux.",
       "rescan_unavailable": "La recherche n'a pas été lancée : aucun accès à l'installation n'est prêt pour le moment.",
-      "connection_saved": "La modification a été enregistrée.",
-      "connection_removed": "L'accès a été supprimé.",
-      "notifications_saved": "Les paramètres de notification ont été enregistrés.",
-      "rrc_program_saved": "Le point de commutation a été enregistré et confirmé par relecture.",
-      "local_tokens_unavailable": "Cet accès n'a pas de jeton enregistré utilisable pour la liste de jetons. Configurez d'abord à nouveau l'accès local.",
-      "local_tokens_changed": "La liste de jetons a changé entre-temps. Rien n'a été révoqué ni supprimé. Ouvrez à nouveau la liste.",
-      "local_token_revoked": "Le jeton a été révoqué ; la passerelle ne le répertorie plus.",
-      "local_token_access_ended": "C'était le jeton utilisé par cet accès. L'accès local a pris fin et l'accès a été désactivé. Configurez-le à nouveau avec l'étiquette de l'appareil ou supprimez-le.",
-      "local_token_revoke_rejected": "La passerelle a refusé la révocation ; le jeton figure toujours dans la liste.",
-      "local_token_revoke_unclear": "La passerelle n'a pas confirmé la révocation. Rien n'a été répété. Ouvrez à nouveau la liste de jetons pour vérifier.",
-      "local_token_revoked_removed": "Le jeton a été révoqué sur la passerelle et l'accès a été supprimé.",
-      "local_token_not_removed": "La révocation n'a pas été confirmée ; l'accès n'a donc pas été supprimé. Vérifiez la liste de jetons, puis supprimez à nouveau l'accès.",
-      "local_token_old_revoked_removed": "Le jeton choisi a été révoqué sur la passerelle et l'accès a été supprimé. Le jeton qu'utilisait cet accès reste sur la passerelle.",
-      "local_token_access_end_failed": "C'était le jeton utilisé par cet accès : l'accès local a donc pris fin, mais l'accès n'a pas pu être désactivé. Désactivez-le, supprimez-le ou configurez-le à nouveau avec l'étiquette de l'appareil."
+      "local_tokens_unavailable": "Cet accès n'a pas de jeton enregistré utilisable pour la liste de jetons. Configurez d'abord à nouveau l'accès local."
     },
     "progress": {
       "local_work": "Vérification de la connexion locale. Veuillez patienter."

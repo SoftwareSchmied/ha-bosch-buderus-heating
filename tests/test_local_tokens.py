@@ -43,7 +43,7 @@ from custom_components.bosch_buderus_heating.local_transport import (
     CertificateBinding,
     PortRole,
 )
-from tests.helpers.options_menu import outcome
+from tests.helpers.options_menu import leave_page, outcome
 from tests.test_local_auth import auth_gateway as auth_gateway
 from tests.test_local_probe import CONTEXT
 from tests.test_local_transport import certificates as certificates
@@ -596,8 +596,8 @@ async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog)
     )
     result = await hass.config_entries.options.async_configure(flow, {"token": oldest})
     result = await hass.config_entries.options.async_configure(flow, BOTH)
-    assert result["step_id"] == "connection"
     assert await outcome(hass, result) == "local_token_revoked"
+    assert (await leave_page(hass, result))["step_id"] == "connection"
     ((_, form),) = gateway.posts
     assert form["token_id"] == ["tid-own-old"]
     assert [path[0] for path in _paths(requests)] == [
@@ -646,7 +646,7 @@ async def test_revoking_the_used_token_switches_the_access_off(hass, dialog):
         flow, {"confirm": True, "confirm_end": True}
     )
     assert await outcome(hass, result) == "local_token_access_ended"
-    assert result["step_id"] == "connection"
+    assert (await leave_page(hass, result))["step_id"] == "connection"
     assert entry.options["connections"]["local"]["enabled"] is False
     assert "local" in entry.data["connections"] and len(gateway.posts) == 1
 

@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Settings",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Connections",
-        "description": "{result}Choose the access you want to manage.",
+        "description": "Choose the access you want to manage.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Set up local access",
           "back": "← Back"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Connection test",
-        "description": "{result}"
+        "description": "OK, answer after {ms} ms. Settings stay unchanged."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Connection test",
+        "description": "OK, answer after {ms} ms; {count} gateway(s) in the account. Settings stay unchanged."
+      },
+      "connection_test_not_running": {
+        "title": "Connection test",
+        "description": "Not tested: the access is not running right now (disabled, starting or stopped)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Connection test",
+        "description": "Sign-in required: please sign in again via “Sign in again”."
+      },
+      "connection_test_auth_local": {
+        "title": "Connection test",
+        "description": "Sign-in required: please set up the local access again via “Change local access”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Connection test",
+        "description": "The device certificate has changed: please set up the local access again via “Change local access”."
+      },
+      "connection_test_paused": {
+        "title": "Connection test",
+        "description": "Not tested: requests are paused until {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Connection test",
+        "description": "Not tested: requests are paused right now."
+      },
+      "connection_test_busy": {
+        "title": "Connection test",
+        "description": "Not tested: the access is busy right now. Please try again shortly."
+      },
+      "connection_test_unreachable": {
+        "title": "Connection test",
+        "description": "Not reachable: no answer ({ms} ms). Check the network and the device."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Connection test",
+        "description": "Not reachable: no answer ({ms} ms). Check the network and the device. Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it."
+      },
+      "connection_test_other_gateway": {
+        "title": "Connection test",
+        "description": "A different gateway answers at this address. Set up the local access again."
+      },
+      "connection_test_error": {
+        "title": "Connection test",
+        "description": "Test failed: {kind}."
       },
       "connection": {
         "title": "Manage access",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Test connection now",
           "connection_enabled": "Switch access on or off",
@@ -697,6 +757,98 @@
           "confirm": "Revoke this token on the gateway",
           "confirm_end": "A local access using this token ends"
         }
+      },
+      "result_connection_removed": {
+        "title": "Result",
+        "description": "The access was removed."
+      },
+      "result_connection_saved": {
+        "title": "Result",
+        "description": "The change was saved."
+      },
+      "result_holiday_created": {
+        "title": "Result",
+        "description": "The holiday was created and confirmed by reading it back."
+      },
+      "result_holiday_deleted": {
+        "title": "Result",
+        "description": "The holiday was deleted and its removal was confirmed by the heating system."
+      },
+      "result_holiday_unchanged": {
+        "title": "Result",
+        "description": "Nothing was changed, so nothing was sent to the heating system."
+      },
+      "result_holiday_updated": {
+        "title": "Result",
+        "description": "The holiday settings were saved and confirmed by the heating system."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Result",
+        "description": "It was the token this access used, so local access has ended, but the access could not be switched off. Switch it off or remove it, or set it up again with the device label."
+      },
+      "result_local_token_access_ended": {
+        "title": "Result",
+        "description": "It was the token this access used. Local access has ended and the access was switched off. Set it up again with the device label, or remove it."
+      },
+      "result_local_token_not_removed": {
+        "title": "Result",
+        "description": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Result",
+        "description": "The chosen token was revoked on the gateway and the access was removed. The token this access itself used is still on the gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Result",
+        "description": "The gateway refused the revocation; the token is still listed."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Result",
+        "description": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check."
+      },
+      "result_local_token_revoked": {
+        "title": "Result",
+        "description": "The token was revoked; the gateway no longer lists it."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Result",
+        "description": "The token was revoked on the gateway and the access was removed."
+      },
+      "result_local_tokens_changed": {
+        "title": "Result",
+        "description": "The token list changed in the meantime. Nothing was revoked or removed. Open the list again."
+      },
+      "result_notifications_saved": {
+        "title": "Result",
+        "description": "The notification settings were saved."
+      },
+      "result_rescan_partial": {
+        "title": "Result",
+        "description": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them."
+      },
+      "result_rescan_paused": {
+        "title": "Result",
+        "description": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later."
+      },
+      "result_rescan_planned": {
+        "title": "Result",
+        "description": "The search is planned and runs with the next regular update; new parts appear as soon as they are found."
+      },
+      "result_rescan_running": {
+        "title": "Result",
+        "description": "A search is already running or planned. Please wait until it has finished."
+      },
+      "result_rescan_unavailable": {
+        "title": "Result",
+        "description": "The search was not started: no access to the system is ready right now."
+      },
+      "result_rrc_program_saved": {
+        "title": "Result",
+        "description": "The switch point was saved and confirmed by reading it back."
+      },
+      "result_switch_program_saved": {
+        "title": "Result",
+        "description": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "No heating system is configured.",
       "notification_gateways_changed": "The installation selection changed. Open the settings again.",
       "holiday_changed": "The selected holiday has changed or is no longer available for editing. Open the holiday again to review its current details.",
-      "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
-      "holiday_unchanged": "Nothing was changed, so nothing was sent to the heating system.",
       "no_writable_holidays": "Holiday management is currently unavailable. Wait until the installation has provided its holiday settings.",
-      "holiday_deleted": "The holiday was deleted and its removal was confirmed by the heating system.",
       "not_loaded": "Bosch/Buderus Home Comfort must be loaded before a holiday can be configured.",
-      "holiday_created": "The holiday was created and confirmed by reading it back.",
       "holiday_previous_request_found": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Manage holiday periods first.",
       "holiday_already_exists": "A holiday with this start and circuit selection already exists. No additional holiday was created. Open Manage holiday periods and edit the existing entry.",
       "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the result of this request without creating a second holiday.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "No current, supported weekly schedule of a room controller is available.",
       "no_switch_programs": "No current schedule of a heating circuit or of the hot water can be changed here.",
       "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Reopen it to see the current switch points.",
-      "switch_program_saved": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}",
       "controls_not_loaded": "Controls are only available through the cloud access; the local access only reads. Connect a cloud access or wait until it has loaded.",
       "controls_auth_required": "Controls are not available: the cloud access needs a new sign-in. Readings stay visible.",
       "controls_cloud_stopped": "Controls are not available: the cloud access is stopped or being restarted. Readings stay visible.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
-      "rescan_planned": "The search is planned and runs with the next regular update; new parts appear as soon as they are found.",
-      "rescan_paused": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later.",
-      "rescan_running": "A search is already running or planned. Please wait until it has finished.",
-      "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
       "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
-      "connection_saved": "The change was saved.",
-      "connection_removed": "The access was removed.",
-      "notifications_saved": "The notification settings were saved.",
-      "rrc_program_saved": "The switch point was saved and confirmed by reading it back.",
-      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first.",
-      "local_tokens_changed": "The token list changed in the meantime. Nothing was revoked or removed. Open the list again.",
-      "local_token_revoked": "The token was revoked; the gateway no longer lists it.",
-      "local_token_access_ended": "It was the token this access used. Local access has ended and the access was switched off. Set it up again with the device label, or remove it.",
-      "local_token_revoke_rejected": "The gateway refused the revocation; the token is still listed.",
-      "local_token_revoke_unclear": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check.",
-      "local_token_revoked_removed": "The token was revoked on the gateway and the access was removed.",
-      "local_token_not_removed": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again.",
-      "local_token_old_revoked_removed": "The chosen token was revoked on the gateway and the access was removed. The token this access itself used is still on the gateway.",
-      "local_token_access_end_failed": "It was the token this access used, so local access has ended, but the access could not be switched off. Switch it off or remove it, or set it up again with the device label."
+      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."

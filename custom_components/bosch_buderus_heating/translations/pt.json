@@ -239,7 +239,6 @@
     "step": {
       "init": {
         "title": "Definições",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notificações",
           "holidays": "Gerir períodos de férias",
@@ -457,18 +456,79 @@
       },
       "connections": {
         "title": "Ligações",
-        "description": "{result}Escolha o acesso que pretende gerir.",
+        "description": "Escolha o acesso que pretende gerir.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Configurar o acesso local",
           "back": "← Voltar"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Teste de ligação",
-        "description": "{result}"
+        "description": "OK, resposta após {ms} ms. As definições mantêm-se inalteradas."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Teste de ligação",
+        "description": "OK, resposta após {ms} ms; {count} gateway(s) na conta. As definições mantêm-se inalteradas."
+      },
+      "connection_test_not_running": {
+        "title": "Teste de ligação",
+        "description": "Não testado: o acesso não está atualmente em execução (desativado, a arrancar ou parado)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Teste de ligação",
+        "description": "Início de sessão necessário: inicie sessão novamente através de “Iniciar sessão novamente”."
+      },
+      "connection_test_auth_local": {
+        "title": "Teste de ligação",
+        "description": "Início de sessão necessário: configure novamente o acesso local através de “Alterar acesso local”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Teste de ligação",
+        "description": "O certificado do dispositivo foi alterado: configure novamente o acesso local através de “Alterar acesso local”."
+      },
+      "connection_test_paused": {
+        "title": "Teste de ligação",
+        "description": "Não testado: os pedidos estão em pausa até {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Teste de ligação",
+        "description": "Não testado: os pedidos estão atualmente em pausa."
+      },
+      "connection_test_busy": {
+        "title": "Teste de ligação",
+        "description": "Não testado: o acesso está atualmente ocupado. Tente novamente dentro de instantes."
+      },
+      "connection_test_unreachable": {
+        "title": "Teste de ligação",
+        "description": "Inacessível: sem resposta ({ms} ms). Verifique a rede e o dispositivo."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Teste de ligação",
+        "description": "Inacessível: sem resposta ({ms} ms). Verifique a rede e o dispositivo. Dica: se o endereço do gateway mudar, por exemplo após reiniciar o router, um endereço fixo ajuda: reserve o seu endereço IP no router (reserva DHCP) ou introduza o nome de anfitrião do gateway. Se o gateway se anunciar num novo endereço, uma nota de reparação propõe utilizá-lo."
+      },
+      "connection_test_other_gateway": {
+        "title": "Teste de ligação",
+        "description": "Outro gateway responde neste endereço. Configure novamente o acesso local."
+      },
+      "connection_test_error": {
+        "title": "Teste de ligação",
+        "description": "O teste falhou: {kind}."
       },
       "connection": {
         "title": "Gerir ligação",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Testar ligação agora",
           "connection_enabled": "Ativar ou desativar o acesso",
@@ -697,6 +757,98 @@
           "confirm": "Revogar este token no gateway",
           "confirm_end": "Um acesso local que use este token termina"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultado",
+        "description": "O acesso foi removido."
+      },
+      "result_connection_saved": {
+        "title": "Resultado",
+        "description": "A alteração foi guardada."
+      },
+      "result_holiday_created": {
+        "title": "Resultado",
+        "description": "O período de férias foi criado e confirmado por leitura posterior."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultado",
+        "description": "O período de férias foi eliminado e a sua remoção foi confirmada pelo sistema de aquecimento."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultado",
+        "description": "Nada foi alterado, por isso nada foi enviado para o sistema de aquecimento."
+      },
+      "result_holiday_updated": {
+        "title": "Resultado",
+        "description": "As definições de férias foram guardadas e confirmadas pelo sistema de aquecimento."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultado",
+        "description": "Era o token que este acesso usava, por isso o acesso local terminou, mas não foi possível desligar o acesso. Desligue-o, remova-o ou configure-o de novo com a etiqueta do dispositivo."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultado",
+        "description": "Era o token que este acesso usava. O acesso local terminou e o acesso foi desligado. Configure-o de novo com a etiqueta do dispositivo ou remova-o."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultado",
+        "description": "A revogação não foi confirmada, por isso o acesso não foi removido. Verifique a lista de tokens e depois remova o acesso de novo."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultado",
+        "description": "O token escolhido foi revogado no gateway e o acesso foi removido. O token que este acesso usava continua no gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultado",
+        "description": "O gateway recusou a revogação; o token continua na lista."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultado",
+        "description": "O gateway não confirmou a revogação. Nada foi repetido. Abra de novo a lista de tokens para verificar."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultado",
+        "description": "O token foi revogado; o gateway já não o lista."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultado",
+        "description": "O token foi revogado no gateway e o acesso foi removido."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultado",
+        "description": "A lista de tokens mudou entretanto. Nada foi revogado nem removido. Abra a lista de novo."
+      },
+      "result_notifications_saved": {
+        "title": "Resultado",
+        "description": "As definições de notificações foram guardadas."
+      },
+      "result_rescan_partial": {
+        "title": "Resultado",
+        "description": "A pesquisa está planeada para os componentes que estão prontos e decorre na próxima atualização regular. Os componentes que estão atualmente em pausa foram ignorados; tente novamente mais tarde para esses."
+      },
+      "result_rescan_paused": {
+        "title": "Resultado",
+        "description": "A pesquisa não foi iniciada: os pedidos estão atualmente em pausa (por exemplo, depois de a cloud ter solicitado uma pausa). Tente novamente mais tarde."
+      },
+      "result_rescan_planned": {
+        "title": "Resultado",
+        "description": "A pesquisa está planeada e decorre na próxima atualização regular; os novos componentes aparecem assim que forem encontrados."
+      },
+      "result_rescan_running": {
+        "title": "Resultado",
+        "description": "Já está em curso ou planeada uma pesquisa. Aguarde até que termine."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultado",
+        "description": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultado",
+        "description": "O ponto de comutação foi guardado e confirmado por releitura."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultado",
+        "description": "O programa horário {program} foi guardado e confirmado por nova leitura.\n\nPontos de comutação anteriores dos dias alterados:\n\n{before}"
       }
     },
     "error": {
@@ -819,12 +971,8 @@
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
       "notification_gateways_changed": "A seleção da instalação foi alterada. Abra novamente as definições.",
       "holiday_changed": "O período de férias selecionado foi alterado ou já não está disponível para edição. Abra novamente o período de férias para rever os detalhes atuais.",
-      "holiday_updated": "As definições de férias foram guardadas e confirmadas pelo sistema de aquecimento.",
-      "holiday_unchanged": "Nada foi alterado, por isso nada foi enviado para o sistema de aquecimento.",
       "no_writable_holidays": "A gestão de férias não está disponível de momento. Aguarde até que a instalação tenha fornecido as suas definições de férias.",
-      "holiday_deleted": "O período de férias foi eliminado e a sua remoção foi confirmada pelo sistema de aquecimento.",
       "not_loaded": "O Bosch/Buderus Home Comfort tem de estar carregado antes de ser possível configurar um período de férias.",
-      "holiday_created": "O período de férias foi criado e confirmado por leitura posterior.",
       "holiday_previous_request_found": "O pedido anterior por resolver está agora confirmado. As suas novas entradas não foram enviadas. Verifique primeiro o período de férias existente em Gerir períodos de férias.",
       "holiday_already_exists": "Já existe um período de férias com este início e esta seleção de circuitos. Não foi criado nenhum período de férias adicional. Abra Gerir períodos de férias e edite a entrada existente.",
       "holiday_create_unconfirmed": "Não foi possível confirmar o pedido de criação. O período de férias pode já existir. Verifique Gerir períodos de férias ou a aplicação do fabricante. Durante os próximos 10 minutos, uma nova tentativa verifica o resultado deste pedido sem criar um segundo período de férias.",
@@ -833,7 +981,6 @@
       "no_rrc_schedules": "Não existe nenhum programa horário semanal atual e suportado de um regulador de ambiente disponível.",
       "no_switch_programs": "Aqui não é possível alterar nenhum programa horário atual de um circuito de aquecimento ou da água quente.",
       "switch_program_changed": "O programa horário foi alterado entretanto ou já não pode ser alterado. Abra-o novamente para ver os pontos de comutação atuais.",
-      "switch_program_saved": "O programa horário {program} foi guardado e confirmado por nova leitura.\n\nPontos de comutação anteriores dos dias alterados:\n\n{before}",
       "controls_not_loaded": "Os controlos só estão disponíveis através do acesso à cloud; o acesso local apenas lê. Ligue um acesso à cloud ou aguarde até este estar carregado.",
       "controls_auth_required": "Os controlos não estão disponíveis: o acesso à cloud necessita de um novo início de sessão. Os valores continuam visíveis.",
       "controls_cloud_stopped": "Os controlos não estão disponíveis: o acesso à cloud está parado ou a ser reiniciado. Os valores continuam visíveis.",
@@ -862,25 +1009,8 @@
       "local_pending_saved": "A tentativa pendente foi mantida. Pode retomá-la a partir da configuração local.",
       "local_storage_failed": "Não foi possível ler ou guardar o registo privado da configuração. Verifique o armazenamento do Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalação já está configurada através do respetivo acesso local noutra entrada desta integração. Adicione o acesso à cloud nessa entrada.",
-      "rescan_planned": "A pesquisa está planeada e decorre na próxima atualização regular; os novos componentes aparecem assim que forem encontrados.",
-      "rescan_paused": "A pesquisa não foi iniciada: os pedidos estão atualmente em pausa (por exemplo, depois de a cloud ter solicitado uma pausa). Tente novamente mais tarde.",
-      "rescan_running": "Já está em curso ou planeada uma pesquisa. Aguarde até que termine.",
-      "rescan_partial": "A pesquisa está planeada para os componentes que estão prontos e decorre na próxima atualização regular. Os componentes que estão atualmente em pausa foram ignorados; tente novamente mais tarde para esses.",
       "rescan_unavailable": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação.",
-      "connection_saved": "A alteração foi guardada.",
-      "connection_removed": "O acesso foi removido.",
-      "notifications_saved": "As definições de notificações foram guardadas.",
-      "rrc_program_saved": "O ponto de comutação foi guardado e confirmado por releitura.",
-      "local_tokens_unavailable": "Este acesso não tem um token guardado utilizável para a lista de tokens. Configure primeiro de novo o acesso local.",
-      "local_tokens_changed": "A lista de tokens mudou entretanto. Nada foi revogado nem removido. Abra a lista de novo.",
-      "local_token_revoked": "O token foi revogado; o gateway já não o lista.",
-      "local_token_access_ended": "Era o token que este acesso usava. O acesso local terminou e o acesso foi desligado. Configure-o de novo com a etiqueta do dispositivo ou remova-o.",
-      "local_token_revoke_rejected": "O gateway recusou a revogação; o token continua na lista.",
-      "local_token_revoke_unclear": "O gateway não confirmou a revogação. Nada foi repetido. Abra de novo a lista de tokens para verificar.",
-      "local_token_revoked_removed": "O token foi revogado no gateway e o acesso foi removido.",
-      "local_token_not_removed": "A revogação não foi confirmada, por isso o acesso não foi removido. Verifique a lista de tokens e depois remova o acesso de novo.",
-      "local_token_old_revoked_removed": "O token escolhido foi revogado no gateway e o acesso foi removido. O token que este acesso usava continua no gateway.",
-      "local_token_access_end_failed": "Era o token que este acesso usava, por isso o acesso local terminou, mas não foi possível desligar o acesso. Desligue-o, remova-o ou configure-o de novo com a etiqueta do dispositivo."
+      "local_tokens_unavailable": "Este acesso não tem um token guardado utilizável para a lista de tokens. Configure primeiro de novo o acesso local."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."
