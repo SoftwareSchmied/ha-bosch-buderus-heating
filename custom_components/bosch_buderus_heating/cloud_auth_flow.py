@@ -60,6 +60,21 @@ def _service_code(error: PointTError) -> str:
     return f"unexpected:{type(error).__name__}"
 
 
+def is_sign_in_page(address: object) -> bool:
+    """A pasted address of the SingleKey ID web page instead of the app address.
+
+    After the sign-in the browser shows a page of the sign-in service (for
+    example ``…/redirection?f=…``); its address carries no code. It is easy
+    to copy from the address bar by mistake.
+    """
+    try:
+        host = urlparse(str(address).strip()).hostname or ""
+    except ValueError:
+        return False
+    host = host.rstrip(".").casefold()
+    return host == "singlekey-id.com" or host.endswith(".singlekey-id.com")
+
+
 REDIRECT_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_REDIRECT_URL): TextSelector(
@@ -253,6 +268,12 @@ class CloudAuthorizationFlow(ConfigEntryBaseFlow):
             return self._show_auth_form()
         self._auth_link_open = False
         step = REDIRECT_SUBMITTED
+        if is_sign_in_page(user_input.get(CONF_REDIRECT_URL)):
+            # The page of the sign-in service, not the app address: nothing
+            # is consumed, the link stays valid (#127).
+            self._auth_note(step, "singlekey_page")
+            self._auth_link_open = True
+            return self._show_auth_form(error="singlekey_page")
         try:
             try:
                 grant = self._oauth_flow.consume_redirect(user_input[CONF_REDIRECT_URL])
