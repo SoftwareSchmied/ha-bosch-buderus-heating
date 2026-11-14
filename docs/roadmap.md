@@ -2,7 +2,7 @@
 
 ## Published releases
 
-Since 2026-11-13, **0.9.1 is Stable/Latest**. It fixes the cloud sign-in of
+Since 2026-11-14, **0.9.1 is Stable/Latest**. It fixes the cloud sign-in of
 0.9.0 ([#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127)),
 shows and revokes old tokens on a local gateway, follows a gateway to a new
 address and names the heat generator models. 0.9.0 adds the local access to

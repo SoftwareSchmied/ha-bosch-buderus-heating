@@ -706,7 +706,7 @@ def test_repeated_lookups_do_not_rescan_the_catalog() -> None:
 
 def test_the_local_working_time_continues_the_unitless_cloud_counter() -> None:
     """O90: the cloud reports the heat source working time without a unit,
-    in seconds like the local access (checked on a reference installation)."""
+    in seconds like the local access (checked on a real installation)."""
     path = "/heatSources/hs1/workingTime"
     parts = [{"ch": 1318928}, {"dhw": 116031}, {"cooling": 0}, {"total": 1434959}]
     snapshot = ResourceSnapshot(

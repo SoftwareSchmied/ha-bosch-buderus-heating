@@ -30,15 +30,35 @@ Automated checks on the release state (2026-11-14, run locally):
 | Release archive and SHA-256 | local build on a clean tree | built for version 0.9.1 with 271 files (1,823,862 bytes) under Linux, without tests or bytecode; SHA-256 `26d1fc2017381d6845a501bd2cc083b3256d8dea82080ad786cc496b4a4aff2e`; the release notes come from this version's CHANGELOG section |
 | GitHub checks | PR and release workflow | pending: all required checks of the PR must pass before the merge |
 
-Not yet confirmed on a real installation: a complete cloud sign-in with a
-real account on 0.9.1, the token list and the revocation on a real gateway,
-a real change of the gateway's address, and the heat generator sensor on a
-running installation.
+Checks on a real installation with builds of the release candidate (Home
+Assistant 2026.11, installed after a full Home Assistant backup, without
+changes to the heating system):
+
+- A complete renewed cloud sign-in with the fixed link worked; the
+  diagnostics listed the abandoned link before it and the success.
+- The gateway's token list was read in the format of firmware 15.00.01.
+- The heat generator sensor showed the indoor and the outdoor unit with
+  family, construction and power class.
+- The corrected names appeared, while entity IDs, unique IDs and names set
+  by hand stayed.
+- After a restart with the fixed version, the local sensors kept their
+  device class and display precision, also before their first reading.
+- For an access with a token entered by hand, the token list showed the
+  note that explains why no entry is marked.
+
+Not yet confirmed on a real installation: revoking a token on a real
+gateway, a real change of the gateway's address, pressure units, volume
+flows of hybrid systems, the cooling mode (TR3/TR4) and the module names of
+iCom gateways.
 
 ### 0.9.1 release checklist
 
 1. All required checks of the PR are green (quality, dependency audit,
    hassfest, HACS, analyze, compatibility, frontend, minimum version).
+   The release date 2026-11-14 stands in the CHANGELOG heading,
+   `docs/roadmap.md`, `docs/specification-status.md` and the link of the
+   release notes; if the release is published on another day, change it in
+   all four places first.
 2. Squash-merge the PR into `main`.
 3. Create the annotated tag `v0.9.1` on the squash commit in `main`, not on
    the feature branch; the release workflow refuses a tag that is not on
@@ -197,11 +217,9 @@ Automated checks on the release state (2026-11-09, run locally):
 | GitHub checks | PR and release workflow | the release workflow published only after its Python checks, both older Home Assistant versions, hassfest and HACS passed; the browser tests ran only on the PR and were not a required check at the time |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks on a real system (heat pump with BC400 controller and MX400 internet module, K40RF gateway,
-firmware 15.00.01, Home Assistant 2026.10.4, cloud and local access). On
-2026-11-09 I installed a build of this state after a full Home Assistant
-backup; apart from the version number, its files are identical to this
-release.
+Checks on a real installation (Home Assistant 2026.10.4). On 2026-11-09 a
+build of this state was installed there after a full Home Assistant backup;
+apart from the version number, its files are identical to this release.
 
 | Check | Result after about 2.5 hours |
 |---|---|
@@ -253,9 +271,9 @@ Checks of the performance and load changes:
 | Diagnostics schema 42 | full suites above; download on a real system | automated: passed; real system: pending |
 | Working time of a heat source from the local access; "Heat output (compressor)"; statistics of signal measurements; translated and on/off states | full suites above; real system | automated: passed; real system: pending |
 
-On 2026-11-08 I installed a development build of this state on a real system
-(heat pump with BC400 controller and MX400 internet module, K40RF gateway, Home Assistant 2026.10.4,
-cloud and local access) after a full Home Assistant backup. Apart from the
+On 2026-11-08 a development build of this state was installed on a real
+installation (Home Assistant 2026.10.4) after a full Home Assistant backup.
+Apart from the
 version number, its files are identical to this release. It started without
 warnings or errors from the integration, and the climate and water heater
 entities kept their states and attributes. I measured the load and the
@@ -266,12 +284,11 @@ were still pending at that time.
 
 ## Load measurement for 0.9.0-alpha.2
 
-I measured the load of Home Assistant on a real system (heat pump with BC400
-controller and MX400 internet module, K40RF gateway, cloud and local access)
-with the same read-only script for 60 minutes each: before, a development
+I measured the load of Home Assistant on a real installation with the same
+read-only script for 60 minutes each: before, a development
 build of the 0.9.0-alpha.1 line shortly before 0.9.0-alpha.2; after, the
 0.9.0-alpha.2 state, starting
-about 20 minutes after I installed it on 2026-11-08. The numbers compare these
+about 20 minutes after its installation on 2026-11-08. The numbers compare these
 two 0.9 pre-release states only. I did not measure 0.8.3 this way, so they say
 nothing about the change from 0.8.3.
 
@@ -311,11 +328,10 @@ Automated checks on the release state (2026-11-08, run locally; all GitHub check
 | Browser test of **Search the system again** in the options | Chromium, English and German | passed |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks on a real system (heat pump with BC400 controller, MX400 internet module and
-K40RF gateway, Home Assistant 2026.10.4, cloud and local access) with
-development builds of this state:
+Checks on a real installation (Home Assistant 2026.10.4) with development
+builds of this state:
 
-- I installed the last two development builds, each after a full Home
+- The last two development builds were installed, each after a full Home
   Assistant backup.
 - I switched the cloud access off and on again while Home Assistant was
   running. Without the cloud, the fault display came from the gateway's local

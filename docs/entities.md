@@ -440,10 +440,10 @@ evidence: `observed` (seen in the module list of a real installation) or
 manufacturer; the entry keeps the address, and only the manufacturer sites
 listed in the table are accepted). In 0.9.1 the table holds:
 
-- observed: the modules of one installation (Logatherm WLW176i-12 TP70 with
-  the monobloc outdoor unit WLW-10 MB AR) and the hardware types `XCU_THH`
-  (indoor unit) and `XCU_SRH` (outdoor unit), which the official local API
-  documentation shows as well;
+- observed: Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
+  WLW-10 MB AR, as seen together in a real module list, and the hardware
+  types `XCU_THH` (indoor unit) and `XCU_SRH` (outdoor unit), which the
+  official local API documentation shows as well;
 - documented: the indoor units WLW176i-12 E/TP70 and WLW186i-12 E/TP70 and
   the monobloc outdoor units WLW-5/7/10/12 MB AR with their power classes,
   the indoor units CS5800i AW 12 and CS6800i AW 12 (E, M, MB), the outdoor
@@ -467,7 +467,8 @@ test; the entity, its keys and the structure stay as they are. Modules
 without a table entry for their product are listed in the diagnostics under
 `heat_generator.unmapped_modules`; such a report lets the table grow.
 
-Example of the installation above:
+Example: an installation with a Logatherm WLW176i-12 TP70 and a WLW-10 MB AR
+reports:
 
 ```yaml
 state: Logatherm WLW176i-12 TP70
@@ -496,8 +497,9 @@ table_version: 1
 known: true
 ```
 
-With the cloud and the local access, the newer list is shown when both
-agree. When they disagree, the list shown last stays, and the diagnostics
+With the cloud and the local access, a list that both agree on keeps the
+source it was shown with, so an answer of the other access alone writes no
+new state. When they disagree, the list shown last stays, and the diagnostics
 report the disagreement (`heat_generator.conflict`). Every gateway follows
 the same rules, iCom gateways included; a module whose hardware type has no
 table entry gets the role `other`. Without a module with a product name (an

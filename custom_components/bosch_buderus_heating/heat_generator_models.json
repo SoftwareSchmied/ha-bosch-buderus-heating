@@ -37,7 +37,7 @@
       ],
       "evidence": {
         "kind": "observed",
-        "note": "Reference installation: indoor unit of an air-to-water heat pump with a monobloc outdoor unit; module list read on 2026-11-13. The construction monobloc is taken from the system documentation, not stated for the indoor unit itself."
+        "note": "Observed in a real module list: indoor unit of an air-to-water heat pump with a monobloc outdoor unit; read on 2026-11-13. The construction monobloc is taken from the system documentation, not stated for the indoor unit itself."
       }
     },
     {
@@ -54,7 +54,7 @@
       ],
       "evidence": {
         "kind": "observed",
-        "note": "Reference installation: monobloc outdoor unit; module list read on 2026-11-13."
+        "note": "Observed in a real module list: monobloc outdoor unit; read on 2026-11-13."
       }
     },
     {
@@ -339,7 +339,7 @@
       ],
       "evidence": {
         "kind": "observed",
-        "note": "Indoor unit in the module list of the reference installation; the example of the official local API documentation shows the same."
+        "note": "Indoor unit observed in a real module list; the example of the official local API documentation shows the same."
       }
     },
     {
@@ -359,7 +359,7 @@
       ],
       "evidence": {
         "kind": "observed",
-        "note": "Outdoor unit in the module list of the reference installation; the example of the official local API documentation shows the same."
+        "note": "Outdoor unit observed in a real module list; the example of the official local API documentation shows the same."
       }
     }
   ]

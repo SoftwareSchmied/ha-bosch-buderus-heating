@@ -120,7 +120,7 @@ class Observation:
 PAIR_CATALOG_VERSION = 1
 _EVIDENCE = (
     "official local OpenAPI k-40-rf at commit 78e36b3: same documented path",
-    "PointT and local responses on the reference installation: same path, type, "
+    "PointT and local responses on a real installation: same path, type, "
     "unit and value",
 )
 
@@ -435,7 +435,7 @@ def is_working_time(path: str) -> bool:
     """The working time of one heat source (``/heatSources/{hs}/workingTime``).
 
     Its cloud value has no unit and counts seconds, the local value reports
-    ``s``: the pair agreed in scale on a reference installation (O90).
+    ``s``: the pair agreed in scale on a real installation (O90).
     """
     pair = pair_for_path(path)
     return pair is not None and pair.measurement == WORKING_TIME_MEASUREMENT

@@ -83,8 +83,9 @@ before they were sent do not count. With the cloud-friendly profile already in
 use, the notification is not created, because the repair would change
 nothing; the pauses themselves still apply.
 
-Invalid credentials are not treated as a rate limit. Home Assistant uses the
-separate **Reauthenticate** flow for that condition.
+Invalid credentials are not treated as a rate limit. Home Assistant then
+shows the entry under **Attention required** with **Reconfigure**, which
+starts the separate sign-in again.
 
 When the gateway of a local access answers at a new address (for example after
 a router restart), a note **Local gateway found at a new address** offers to use

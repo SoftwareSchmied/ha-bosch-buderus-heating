@@ -37,8 +37,8 @@ names the heat generator models and shows texts for more gateway states.
   was removed. Token renewal is unchanged.
   - I checked that the links of the fixed version open the SingleKey ID
     sign-in page for both brands, for a new and a renewed sign-in. A
-    complete sign-in with a real account on this version is still to be
-    confirmed.
+    complete renewed sign-in with a real account worked with the fixed
+    version on a real installation.
   - Thank you, [wt4km8bkkg-ux](https://github.com/wt4km8bkkg-ux), for
     reporting it in
     [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
@@ -57,11 +57,11 @@ names the heat generator models and shows texts for more gateway states.
   stored in the registry. Units, entity IDs and long-term statistics were
   not affected: an unavailable sensor has no value, so the statistics saw
   no change.
-  - Seen on a real installation after an update. The fix is tested with
-    automated tests (readings withdrawn, then a start with stored registry
-    entries) and not yet on a running installation. The update to 0.9.1 can
-    still show it once, because the previous version writes these entries
-    when it stops.
+  - Seen on a real installation after an update. With the fixed version
+    running, a restart of that installation left the device class and the
+    display precision of all these sensors in place, also while they had no
+    reading yet. The update to 0.9.1 can still show it once, because the
+    previous version writes these entries when it stops.
   - Unchanged by design: after a start, a local sensor stays unavailable
     until its reading has been read once, and after a timeout the local
     access waits a minute before it reads on.
@@ -73,11 +73,12 @@ names the heat generator models and shows texts for more gateway states.
   client created each one and when. This helps when a new sign-in fails
   because the token list is full. The list is read only when you open it;
   token values are never part of it, and nothing of it is saved, logged or
-  included in diagnostics. The gateway's token list format of firmware
-  15.00.01 is supported: it sends the creation time as a text with a time
-  zone instead of the number the documentation shows. An entry that cannot
-  be read is listed as not readable and never offered for revocation. The
-  revocation itself is still untested on a real gateway.
+  included in diagnostics.
+  - The token list of firmware 15.00.01 is read: it sends the creation
+    time as a text with a time zone instead of the number the
+    documentation shows. An entry that cannot be read is listed as not
+    readable and never offered for revocation. Reading the list in this
+    format worked on a real gateway with firmware 15.00.01.
 - **Revoking an old token:** from that list, an old token of this
   integration can be revoked, one at a time and only after a confirmation.
   Tokens of other apps are never offered. Right before the revocation the
@@ -88,20 +89,32 @@ names the heat generator models and shows texts for more gateway states.
   this integration first if you tick that choice; otherwise removing still
   never revokes anything.
   - The list marks the token this access most likely uses: the token of this
-    integration created last before the access was set up. Revoking that
-    token needs a second confirmation ("This ends the local access").
+    integration created last before the access was set up. Tokens that
+    another local access of this integration to the same gateway most
+    likely uses are marked "used by another access". These marks remain an
+    assumption (the clocks may differ, another Home Assistant may use the
+    gateway), so revoking any token of this integration needs a second
+    confirmation that a local access using it ends, and the dialog says
+    whose token it most likely is. If a token is newer than the setup and
+    no other access explains it, nothing is marked for this access.
+  - If the access cannot be switched off after its own token was revoked,
+    the dialog now says so instead of reporting it as switched off.
+  - **Remove access:** ticking only the revoke choice without "Remove this
+    access" now shows a message instead of going back without a word. When
+    an older token was revoked while the access still worked, the message
+    says that the access's own token stays on the gateway.
   - For an access whose token was entered by hand, the gateway's list does
     not show which entry is that token. A short note below the list now says
     so: no entry is marked, and the token usually appears under other apps,
     which are never offered for revocation. The case was seen on a real
-    gateway; the note is tested with a synthetic gateway.
+    gateway, and the note appeared there in the token list.
   - If you tick the revoke choice when removing an access but there is no
     token of this integration to offer, or the list cannot be read, I no
     longer remove the access silently: you choose between removing it
     without revoking and keeping it.
-  - I tested the list and the revocation against a synthetic gateway only.
-    How a real gateway counts its tokens and answers a revocation is still
-    unconfirmed.
+  - I tested the revocation against a synthetic gateway only. How a real
+    gateway answers a revocation, and how it counts several tokens, is
+    still unconfirmed.
 - **Sign-in with the device label:** the login is now visible while you
   type it, and the pass field has its show switch. Spaces and line breaks at
   the start or end, for example from copying, are removed; inside a value
@@ -113,7 +126,8 @@ names the heat generator models and shows texts for more gateway states.
   gateway asked for (with the remaining seconds) and no answer in time. The
   button instruction now says 1 second, as the official documentation does,
   instead of about two. A certificate that changed during the dialog leads
-  back to its check instead of repeating the same error, and the second
+  back to its check instead of repeating the same error, also when that
+  check fails once and is tried again, and the second
   certificate page explains why it appears (data port 9443). Each failed
   attempt is logged once at the info level with its step, its code and the
   HTTP status or "not sent".
@@ -131,7 +145,10 @@ names the heat generator models and shows texts for more gateway states.
   certificate confirmed during setup, a repair note under **Settings →
   System → Repairs** offers the new address. It is saved only after you
   confirm it, and the certificate is checked once more right before. The
-  token and the certificate stay, so no new sign-in is needed.
+  token and the certificate stay, so no new sign-in is needed. Nothing is
+  offered while the access is still starting and has not failed yet, so an
+  access saved with a host name only gets another address once that name
+  no longer reaches the gateway.
   - I tested this with synthetic gateways: the same and a different
     certificate at the new address, two gateways, a forged announcement and
     an announcement during normal operation. On a real gateway I only
@@ -157,7 +174,13 @@ names the heat generator models and shows texts for more gateway states.
   - A sign-in that never gets back from the sign-in page, as in #127, can
     only show as a link that was not used. Attempts of a first setup are
     kept only when it creates its entry.
-  - Tested with automated tests of the dialogs only.
+  - Removing an entry deletes both lists, also if one of them cannot be
+    deleted, and a sign-in dialog still open at that moment no longer
+    creates its list again.
+  - On a real installation, the list of cloud sign-ins showed an
+    abandoned link and the following successful renewed sign-in. The list
+    of local setup attempts is tested with automated tests of the dialogs
+    only.
 
 ### Heat generator models
 
@@ -173,11 +196,16 @@ names the heat generator models and shows texts for more gateway states.
   - The sensor sends no request of its own; it uses the module lists the
     cloud and the local access already read. Serial numbers are never read,
     shown or stored.
+  - Its state is written only when the modules change: when the cloud and
+    the local access report the same modules in turn, the source shown
+    first stays, instead of writing the same state with every answer. The
+    diagnostics name the same answer as the sensor, and an error in their
+    heat generator part no longer stops the rest of the report.
   - Family, construction and power come only from a model table whose
     entries are observed in a real module list or documented by the
-    manufacturer; nothing is guessed from a name. It knows a
-    confirmed installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
-    WLW-10 MB AR, 10 kW) and, from the manufacturers' documents, the
+    manufacturer; nothing is guessed from a name. It knows the Logatherm
+    WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR (10 kW), as
+    seen in a real module list, and, from the manufacturers' documents, the
     WLW176i/WLW186i indoor units with the WLW MB AR outdoor units, the
     CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T outdoor units and
     the outdoor units of the CS3800i AW and CS8800i AW. For the WLW176i and
@@ -187,9 +215,11 @@ names the heat generator models and shows texts for more gateway states.
   - If your model shows `known: false`, the diagnostics list it under
     `heat_generator.unmapped_modules`, without serial numbers. Please post
     that part in an issue; one new table entry is then enough.
-  - Tested with automated tests only, not yet on a running installation.
-    Room controllers and gateways without a named module get no such
-    sensor.
+  - On a real installation the sensor showed the indoor and the outdoor
+    unit with family, construction and power class as described. Other
+    models, the module names of iCom gateways and two disagreeing sources
+    are tested with automated tests only. Room controllers and gateways
+    without a named module get no such sensor.
 
 ### Gateway signals and names
 
@@ -211,9 +241,15 @@ names the heat generator models and shows texts for more gateway states.
   pump with a buffer cylinder is the heating side's flow behind the buffer,
   and *Liquid line temperature heating (TR3)* / *cooling (TR4)* (before
   *Condenser temperature heating/cooling*), as the API documentation calls
-  them. Entity IDs, unique IDs and names you set yourself stay. The
+  them. The return temperature of the heat sources is now *Return to the
+  heat source* and its controller signal *Return to the heat pump (TC0,
+  signal)* (before *Return temperature*): it is the return into the heat
+  source, not that of a heating circuit. Entity IDs, unique IDs and names
+  you set yourself stay. The
   readings were compared on a real heat pump while it was heating; the
-  cooling mode is untested.
+  cooling mode is untested. After the update, a real installation showed
+  the corrected names, while the entity IDs and the names set by hand
+  stayed.
   - More names after going through the entities of a real installation:
     *Heat source active* (before *Burner status*; the reading also exists on
     boilers, so it does not say compressor), *Heating temperature* and
@@ -285,6 +321,13 @@ names the heat generator models and shows texts for more gateway states.
   Alex79, for the report in the Home Assistant community.
 - **Stable address:** the setup guide explains how to keep the gateway's
   address stable.
+- **Shorter README:** the README is now an overview with links to the
+  documentation: a table of which systems work with the cloud, the local
+  access or both, examples of heating systems, where the accesses are
+  configured and how to give feedback on 0.9.x. The compatibility table
+  moved to [compatibility](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/docs/compatibility.md)
+  and the development commands to
+  [CONTRIBUTING](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/CONTRIBUTING.md).
 
 ## [0.9.0] - 2026-11-13
 
