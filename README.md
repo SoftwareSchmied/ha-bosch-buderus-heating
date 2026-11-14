@@ -115,6 +115,11 @@ The illustrated [setup guide](docs/setup.md) shows every step, including the
 [local access](docs/setup.md#set-up-the-local-access). Never share the return
 address of the sign-in; it contains a one-time code.
 
+To add, test, sign in again or remove a cloud or local access later, open the gear
+icon (**Configure**) of the entry and choose **Connections**.
+
+![Integration page with the gear icon (Configure) of the entry highlighted](docs/images/setup/configure-connections.png)
+
 ## Entities and dashboards
 
 Entity names start with the part of the system, for example
