@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "O equipamento não utiliza esta definição de momento. Esta alteração não foi enviada."
     },
+    "circuit_room_controller": {
+      "message": "Este circuito de aquecimento é controlado por um regulador ambiente. A definição só pode ser alterada aí. Esta alteração não foi enviada."
+    },
+    "circuit_constant_control": {
+      "message": "Este circuito de aquecimento funciona com valores constantes. Os seus níveis de temperatura não podem ser alterados de momento. Esta alteração não foi enviada."
+    },
+    "cooling_not_offered": {
+      "message": "Este circuito de aquecimento não oferece arrefecimento de momento. Esta alteração não foi enviada."
+    },
     "rrc_setting_unused": {
       "message": "O regulador de ambiente não utiliza esta definição de momento, por isso não foi alterada."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Temperatura de ida máxima"
       },
+      "summer_winter_threshold": {
+        "name": "Fim do aquecimento à temperatura exterior"
+      },
+      "cooling_room_setpoint": {
+        "name": "Arrefecimento: valor de referência ambiente"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Iniciar arrefecimento à temperatura exterior"
+      },
+      "away_temperature": {
+        "name": "Temperatura de ausência"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura de arrefecimento"
+      },
       "softener_salt_threshold": {
         "name": "Limite de alerta do sal"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Nível de ventilação 3",
           "max": "Nível de ventilação 4",
           "dem": "Conforme necessário"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Comutação verão/inverno",
+        "state": {
+          "automatic": "Automática",
+          "forced": "Apenas aquecimento",
+          "cooling": "Apenas arrefecimento",
+          "off": "Desligada"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Energia de arrefecimento produzida"
+      },
+      "tariff_id": {
+        "name": "ID da tarifa"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Caudal do circuito de aquecimento 1 abaixo do intervalo de medição (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Tarifa variável ativa"
       }
     },
     "calendar": {

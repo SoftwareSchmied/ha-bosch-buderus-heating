@@ -639,6 +639,7 @@
     "used by another access": "utilisé par un autre accès",
     "It is most likely the token this access uses: revoking it ends this local access.": "C'est très probablement le jeton qu'utilise cet accès : le révoquer met fin à cet accès local.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "C'est très probablement le jeton d'un autre accès local à cette passerelle : le révoquer met fin à cet accès-là.",
-    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Le jeton qu'utilise un accès ne peut pas être déterminé avec certitude, par exemple quand un autre Home Assistant utilise cette passerelle. Révoquer un jeton en service met fin à l'accès local qui l'utilise."
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Le jeton qu'utilise un accès ne peut pas être déterminé avec certitude, par exemple quand un autre Home Assistant utilise cette passerelle. Révoquer un jeton en service met fin à l'accès local qui l'utilise.",
+    "Cooling temperature": "Température de refroidissement"
   }
 }

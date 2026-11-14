@@ -16,6 +16,7 @@ TRANSLATED_SELECT_ICONS: Final = frozenset(
         "hot_water_operation_mode",
         "season_switching",
         "silent_mode",
+        "summer_winter_switching",
         "ventilation_exhaust_fan_level",
     }
 )

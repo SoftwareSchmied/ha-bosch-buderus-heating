@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "Naprava te nastavitve trenutno ne uporablja. Ta sprememba ni bila poslana."
     },
+    "circuit_room_controller": {
+      "message": "Ta ogrevalni krog upravlja sobni regulator. Nastavitev je mogoče spremeniti samo tam. Ta sprememba ni bila poslana."
+    },
+    "circuit_constant_control": {
+      "message": "Ta ogrevalni krog deluje s stalnimi vrednostmi. Njegovih temperaturnih ravni trenutno ni mogoče spremeniti. Ta sprememba ni bila poslana."
+    },
+    "cooling_not_offered": {
+      "message": "Ta ogrevalni krog trenutno ne ponuja hlajenja. Ta sprememba ni bila poslana."
+    },
     "rrc_setting_unused": {
       "message": "Sobni regulator te nastavitve trenutno ne uporablja, zato ni bila spremenjena."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Najvišja temperatura dvižnega voda"
       },
+      "summer_winter_threshold": {
+        "name": "Ustavi ogrevanje pri zunanji temperaturi"
+      },
+      "cooling_room_setpoint": {
+        "name": "Hlajenje: Sobna nastavljena vrednost"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Začetek hlajenja pri zunanji temperaturi"
+      },
+      "away_temperature": {
+        "name": "Temperatura odsotnosti"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura hlajenja"
+      },
       "softener_salt_threshold": {
         "name": "Prag opozorila za sol"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Stopnja ventilatorja 3",
           "max": "Stopnja ventilatorja 4",
           "dem": "Po potrebi"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Poletno/zimsko preklapljanje",
+        "state": {
+          "automatic": "Samodejno",
+          "forced": "Samo ogrevanje",
+          "cooling": "Samo hlajenje",
+          "off": "Izklopljeno"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Proizvedena energija hlajenja"
+      },
+      "tariff_id": {
+        "name": "ID tarife"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Pretok ogrevalnega kroga 1 pod merilnim območjem (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Spremenljiva tarifa aktivna"
       }
     },
     "calendar": {

@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "Zariadenie toto nastavenie momentálne nepoužíva. Táto zmena sa neodoslala."
     },
+    "circuit_room_controller": {
+      "message": "Tento vykurovací okruh je riadený priestorovým regulátorom. Nastavenie je možné zmeniť iba tam. Táto zmena sa neodoslala."
+    },
+    "circuit_constant_control": {
+      "message": "Tento vykurovací okruh beží s konštantnými hodnotami. Jeho teplotné úrovne momentálne nie je možné zmeniť. Táto zmena sa neodoslala."
+    },
+    "cooling_not_offered": {
+      "message": "Tento vykurovací okruh momentálne neponúka chladenie. Táto zmena sa neodoslala."
+    },
     "rrc_setting_unused": {
       "message": "Izbový regulátor toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Maximálna výstupná teplota"
       },
+      "summer_winter_threshold": {
+        "name": "Zastaviť vykurovanie pri vonkajšej teplote"
+      },
+      "cooling_room_setpoint": {
+        "name": "Chladenie: požadovaná hodnota v miestnosti"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Spustiť chladenie pri vonkajšej teplote"
+      },
+      "away_temperature": {
+        "name": "Teplota pri neprítomnosti"
+      },
+      "cooling_temperature": {
+        "name": "Teplota chladenia"
+      },
       "softener_salt_threshold": {
         "name": "Prah upozornenia na soľ"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Stupeň ventilátora 3",
           "max": "Stupeň ventilátora 4",
           "dem": "Podľa potreby"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Letné/zimné prepínanie",
+        "state": {
+          "automatic": "Automaticky",
+          "forced": "Iba vykurovanie",
+          "cooling": "Iba chladenie",
+          "off": "Vypnuté"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Vyrobená energia chladenia"
+      },
+      "tariff_id": {
+        "name": "ID tarify"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Prietok vykurovacieho okruhu 1 pod rozsahom merania (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Premenlivá tarifa aktívna"
       }
     },
     "calendar": {

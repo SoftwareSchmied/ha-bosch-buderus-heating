@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from functools import lru_cache
 
-from . import rrc, rrc_contract_zone, rrc_contracts
+from . import circuit_controls, rrc, rrc_contract_zone, rrc_contracts
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
     InvalidPayload,
@@ -262,12 +262,8 @@ NUMBER_WRITE_POLICIES = (
         1.0,
         enabled_by_default=False,
     ),
-    NumberWritePolicy(
-        r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
-        "C",
-        0.5,
-        write_grid=True,
-    ),
+    # The heating and setback levels, with the level rules of the circuit.
+    circuit_controls.HEATING_LEVEL_POLICY,
     NumberWritePolicy(r"^/dhwCircuits/[^/]+/chargeDuration$", "mins", 15),
     NumberWritePolicy(
         r"^/dhwCircuits/[^/]+/(?:singleChargeSetpoint|temperatureLevels/(?:eco|high|low))$",
@@ -276,6 +272,8 @@ NUMBER_WRITE_POLICIES = (
         write_grid=True,
     ),
     POOL_SETPOINT_POLICY,
+    # Heating circuit settings besides the climate entity (0.9.2).
+    *circuit_controls.NUMBER_POLICIES,
 )
 
 
@@ -1041,6 +1039,9 @@ def assess_control(
         )
     except ContractConflict:
         return ControlAssessment(None, "rrc_contract_conflict")
+    if policy in circuit_controls.GENERIC_ONLY_POLICIES and _context(context).rrc_plant:
+        # A room controller's circuit settings follow its contracts only.
+        return ControlAssessment(None, "room_controller_contract_only")
     if policy is not None:
         schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):
@@ -1111,6 +1112,8 @@ _ENUM_POLICIES = (
     # Z1: the active weekly program of a heating circuit (A/B).
     ACTIVE_SWITCH_PROGRAM_POLICY,
     *STRING_SWITCH_POLICIES,
+    # The summer/winter switching of a heating circuit (0.9.2).
+    *circuit_controls.ENUM_POLICIES,
 )
 
 

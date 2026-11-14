@@ -639,6 +639,7 @@
     "used by another access": "in úsáid ag rochtain eile",
     "It is most likely the token this access uses: revoking it ends this local access.": "Is dóichí gurb é seo an comhartha a úsáideann an rochtain seo: cuireann a chúlghairm deireadh leis an rochtain áitiúil seo.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Is dóichí gurb é seo comhartha rochtana áitiúla eile chuig an ngeata seo: cuireann a chúlghairm deireadh leis an rochtain sin.",
-    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ní féidir a rá go cinnte cén comhartha a úsáideann rochtain, mar shampla nuair a úsáideann Home Assistant eile an geata seo. Cuireann cúlghairm comhartha atá in úsáid deireadh leis an rochtain áitiúil a úsáideann é."
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ní féidir a rá go cinnte cén comhartha a úsáideann rochtain, mar shampla nuair a úsáideann Home Assistant eile an geata seo. Cuireann cúlghairm comhartha atá in úsáid deireadh leis an rochtain áitiúil a úsáideann é.",
+    "Cooling temperature": "Teocht fuaraithe"
   }
 }

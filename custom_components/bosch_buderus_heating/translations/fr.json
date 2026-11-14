@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "L'appareil n'utilise actuellement pas ce réglage. Cette modification n'a pas été envoyée."
     },
+    "circuit_room_controller": {
+      "message": "Ce circuit de chauffage est commandé par un régulateur d'ambiance. Le réglage ne peut être modifié que sur celui-ci. Cette modification n'a pas été envoyée."
+    },
+    "circuit_constant_control": {
+      "message": "Ce circuit de chauffage fonctionne avec des valeurs constantes. Ses niveaux de température ne peuvent pas être modifiés pour le moment. Cette modification n'a pas été envoyée."
+    },
+    "cooling_not_offered": {
+      "message": "Ce circuit de chauffage ne propose pas de refroidissement pour le moment. Cette modification n'a pas été envoyée."
+    },
     "rrc_setting_unused": {
       "message": "Le régulateur d'ambiance n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Température de départ maximale"
       },
+      "summer_winter_threshold": {
+        "name": "Arrêt du chauffage à la température extérieure"
+      },
+      "cooling_room_setpoint": {
+        "name": "Rafraîchissement : consigne ambiante"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Démarrer le rafraîchissement à la température extérieure"
+      },
+      "away_temperature": {
+        "name": "Température d'absence"
+      },
+      "cooling_temperature": {
+        "name": "Température de refroidissement"
+      },
       "softener_salt_threshold": {
         "name": "Seuil d'alerte de sel"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Niveau de ventilation 3",
           "max": "Niveau de ventilation 4",
           "dem": "Selon la demande"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Commutation été/hiver",
+        "state": {
+          "automatic": "Automatique",
+          "forced": "Chauffage uniquement",
+          "cooling": "Rafraîchissement uniquement",
+          "off": "Arrêt"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Énergie de rafraîchissement produite"
+      },
+      "tariff_id": {
+        "name": "ID du tarif"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Débit du circuit de chauffage 1 sous la plage de mesure (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Tarif variable actif"
       }
     },
     "calendar": {

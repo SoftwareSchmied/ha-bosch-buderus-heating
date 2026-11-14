@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "Laite ei käytä tätä asetusta tällä hetkellä. Tätä muutosta ei lähetetty."
     },
+    "circuit_room_controller": {
+      "message": "Tätä lämmityspiiriä ohjaa huonesäädin. Asetusta voi muuttaa vain siellä. Tätä muutosta ei lähetetty."
+    },
+    "circuit_constant_control": {
+      "message": "Tämä lämmityspiiri toimii vakioarvoilla. Sen lämpötilatasoja ei voi muuttaa tällä hetkellä. Tätä muutosta ei lähetetty."
+    },
+    "cooling_not_offered": {
+      "message": "Tämä lämmityspiiri ei tarjoa jäähdytystä tällä hetkellä. Tätä muutosta ei lähetetty."
+    },
     "rrc_setting_unused": {
       "message": "Huonesäädin ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Suurin menolämpötila"
       },
+      "summer_winter_threshold": {
+        "name": "Lopeta lämmitys ulkolämpötilassa"
+      },
+      "cooling_room_setpoint": {
+        "name": "Jäähdytys: huoneen asetusarvo"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "away_temperature": {
+        "name": "Poissaolon lämpötila"
+      },
+      "cooling_temperature": {
+        "name": "Jäähdytyslämpötila"
+      },
       "softener_salt_threshold": {
         "name": "Suolahälytysraja"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Puhallintaso 3",
           "max": "Puhallintaso 4",
           "dem": "Tarvepohjainen"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Kesä-/talvivaihto",
+        "state": {
+          "automatic": "Automaattinen",
+          "forced": "Vain lämmitys",
+          "cooling": "Vain jäähdytys",
+          "off": "Pois"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Tuotettu jäähdytysenergia"
+      },
+      "tariff_id": {
+        "name": "Tariffitunnus"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Lämmityspiirin 1 virtaama mittausalueen alapuolella (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Vaihtuva tariffi käytössä"
       }
     },
     "calendar": {

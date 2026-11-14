@@ -1469,6 +1469,15 @@
     "control_unused": {
       "message": "Urządzenie w tej chwili nie korzysta z tego ustawienia. Ta zmiana nie została wysłana."
     },
+    "circuit_room_controller": {
+      "message": "Ten obieg grzewczy jest sterowany przez regulator pokojowy. Ustawienie można zmienić tylko tam. Ta zmiana nie została wysłana."
+    },
+    "circuit_constant_control": {
+      "message": "Ten obieg grzewczy pracuje ze stałymi wartościami. Jego poziomów temperatury nie można teraz zmienić. Ta zmiana nie została wysłana."
+    },
+    "cooling_not_offered": {
+      "message": "Ten obieg grzewczy obecnie nie oferuje chłodzenia. Ta zmiana nie została wysłana."
+    },
     "rrc_setting_unused": {
       "message": "Regulator pokojowy w tej chwili nie korzysta z tego ustawienia, więc nie zostało ono zmienione."
     },
@@ -1686,6 +1695,21 @@
       "maximum_supply_temperature": {
         "name": "Maksymalna temperatura zasilania"
       },
+      "summer_winter_threshold": {
+        "name": "Zakończ grzanie przy temperaturze zewnętrznej"
+      },
+      "cooling_room_setpoint": {
+        "name": "Chłodzenie: wartość zadana pomieszczenia"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Start chłodzenia przy temperaturze zewnętrznej"
+      },
+      "away_temperature": {
+        "name": "Temperatura nieobecności"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura chłodzenia"
+      },
       "softener_salt_threshold": {
         "name": "Próg alarmu soli"
       },
@@ -1805,6 +1829,15 @@
           "nom": "Bieg wentylatora 3",
           "max": "Bieg wentylatora 4",
           "dem": "Na żądanie"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Przełączanie lato/zima",
+        "state": {
+          "automatic": "Automatyczne",
+          "forced": "Tylko grzanie",
+          "cooling": "Tylko chłodzenie",
+          "off": "Wyłączony"
         }
       },
       "rrc_user_mode": {
@@ -2851,6 +2884,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Wytworzona energia chłodnicza"
+      },
+      "tariff_id": {
+        "name": "Identyfikator taryfy"
       }
     },
     "binary_sensor": {
@@ -2941,6 +2977,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Przepływ w obiegu grzewczym 1 poniżej zakresu pomiarowego (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Taryfa zmienna aktywna"
       }
     },
     "calendar": {

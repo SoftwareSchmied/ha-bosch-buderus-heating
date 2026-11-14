@@ -25,6 +25,7 @@ from . import (
 )
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
+from .circuit_control_writes import circuit_control_diagnostics
 from .cloud_pauses import cloud_pause_store
 from .configuration import CLOUD_KIND, LOCAL_KIND
 from .configuration_access import EntryConfiguration
@@ -769,6 +770,8 @@ def _gateway_diagnostics(
         ),
         # The calculated defrost: states and counts only, no readings.
         "calculated_values": calculated_diagnostics(coordinator),
+        # Heating circuit settings and the iCom tariff: counts and types only.
+        "circuit_controls": circuit_control_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         # F1: the firmware update list (read-only); no gateway ID, no links.

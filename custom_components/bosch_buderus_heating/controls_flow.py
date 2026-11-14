@@ -17,6 +17,8 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.translation import async_get_translations
 
 from . import rrc_contracts
+from .circuit_control_writes import offered_on, write_guards
+from .circuit_controls import display_minimum
 from .const import DOMAIN
 from .control import pause_end_text
 from .control_presentation import control_category, control_icon, control_label
@@ -159,6 +161,8 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
             and assessment.current_value_issue is None
             and assessment.platform != "button"
             and _dialog_policy(assessment.policy)
+            # The cooling threshold only while the circuit offers cooling.
+            and offered_on(coordinator, path)
         ):
             result[path] = resource
     return result
@@ -234,7 +238,9 @@ def _refusal_error(err: WriteValidationError) -> str | None:
 
 
 def _guards(
-    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    path: str,
+    policy: EnumWritePolicy | NumberWritePolicy | None = None,
 ) -> tuple[Resource, ...] | None:
     """S5: the readings a heating circuit setting is checked against (the
     limits it is ordered against, the control strategy), read again with it
@@ -246,7 +252,9 @@ def _guards(
     entity refuses it the same way) instead of checking without that limit.
     """
     if not context_of(coordinator).rrc_plant:
-        return ()
+        # A heating circuit setting: its control type and the settings it
+        # depends on (``circuit_controls``); none for the others.
+        return write_guards(coordinator, path, policy, include_target=False)
     snapshots = coordinator.data or {}
     guards: list[Resource] = []
     for item in guard_paths(path):
@@ -343,6 +351,8 @@ def _translation_key(path: str) -> str:
         return "silent_mode"
     if "/seasonOptimizer/" in path:
         return "season_switching"
+    if path.startswith("/heatingCircuits/") and path.endswith("/suWiSwitchMode"):
+        return "summer_winter_switching"
     return ""
 
 
@@ -510,7 +520,7 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                             continue
                         policy = assess_control(before, context_of(coordinator)).policy
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
-                        guards = _guards(coordinator, path)
+                        guards = _guards(coordinator, path, policy)
                         if guards is None:
                             # A limit it is ordered against has no current
                             # reading: nothing is sent.
@@ -654,7 +664,11 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                     else assessment.platform,
                     "value": value,
                     "options": options,
-                    "minimum": assessment.minimum,
+                    "minimum": display_minimum(
+                        assessment.policy, assessment.minimum, assessment.ui_step
+                    )
+                    if assessment.minimum is not None
+                    else None,
                     "maximum": assessment.maximum,
                     "step": assessment.ui_step,
                     "unit": {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
