@@ -15,6 +15,11 @@ purpose, without a request of its own, and corrected the name of its system
 supply temperature (before "Supply temperature"); its unique ID stays.
 0.9.2 moves fixed icons to ``icons.json`` on purpose: those entities record
 no icon of their own any more (``original_icon`` empty); nothing else changes.
+0.9.2 also adds the calculated activity, defrost, net heat and run time
+entities of the K40 heat pump on purpose (new unique IDs only), and its
+setup reads the known children of the empty ``/ventilation/zone1`` directory
+once directly (15 setup requests in one more bulk call, none found); the
+regular cycle stays the same.
 """
 
 from __future__ import annotations

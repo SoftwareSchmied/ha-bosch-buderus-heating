@@ -5493,6 +5493,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "running",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Defrost active (calculated)",
+     "translation_key": "calculated_defrost_active",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_active",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": null,
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -5546,6 +5558,22 @@
      "original_name": "Heating circuit 1",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "event_types": [
+       "defrost_finished"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "event",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Defrost (calculated)",
+     "translation_key": "calculated_defrost",
+     "unique_id": "gateway-one:heatSources:calculated_defrost",
      "unit": null
     },
     {
@@ -6587,6 +6615,74 @@
     },
     {
      "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Number of defrosts (calculated)",
+     "translation_key": "calculated_defrost_count",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_count",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total defrost time (calculated)",
+     "translation_key": "calculated_defrost_duration",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_duration",
+     "unit": "min"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Electricity during defrosting (calculated)",
+     "translation_key": "calculated_defrost_electricity",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_electricity",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heat withdrawn by defrosting (calculated)",
+     "translation_key": "calculated_defrost_heat_withdrawn",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_heat_withdrawn",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": null,
+     "device_class": "timestamp",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Last defrost (calculated)",
+     "translation_key": "calculated_last_defrost",
+     "unique_id": "gateway-one:heatSources:calculated_last_defrost",
+     "unit": null
+    },
+    {
+     "capabilities": {
       "options": [
        "off",
        "heating",
@@ -6630,6 +6726,20 @@
      "translation_key": "energy_management_status",
      "unique_id": "gateway-one:heatSources:emStatus",
      "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat heating (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_net_heat",
+     "unit": "kWh"
     },
     {
      "capabilities": {
@@ -6692,6 +6802,20 @@
       "state_class": "total_increasing"
      },
      "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat hot water (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_net_heat",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
@@ -6713,6 +6837,20 @@
      "original_name": "Heat pump \u2013 Hot water \u2013 Electric auxiliary heater consumption",
      "translation_key": null,
      "unique_id": "gateway-one:heatSources:emon:dhwConsumption:eheater",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat total (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_net_heat",
      "unit": "kWh"
     },
     {
@@ -6761,6 +6899,20 @@
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:heatSources:flameStatus",
      "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "duration",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Average run time per start, heating (calculated)",
+     "translation_key": "calculated_run_time_per_start_heating",
+     "unique_id": "gateway-one:heatSources:hs1:calculated_run_time_per_start_heating",
+     "unit": "min"
     },
     {
      "capabilities": {
@@ -7103,6 +7255,26 @@
      "original_name": "Heating circuit 1 \u2013 Boost",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:boostMode",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "heating",
+       "cooling",
+       "defrosting",
+       "idle",
+       "off"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heating circuit 1 \u2013 Activity (calculated)",
+     "translation_key": "calculated_activity",
+     "unique_id": "gateway-one:heatingCircuits:hc1:calculated_activity",
      "unit": null
     },
     {
@@ -7662,7 +7834,7 @@
     }
    ],
    "setup_calls": {
-    "bulk": 15,
+    "bulk": 16,
     "single": 0
    },
    "setup_requests": [
@@ -7988,13 +8160,28 @@
     "/ventilation",
     "/ventilation/operationModes/manual/fanSetpoint",
     "/ventilation/zone1",
+    "/ventilation/zone1/applianceRunTime",
+    "/ventilation/zone1/elAuxHeaterPower",
+    "/ventilation/zone1/electricalAuxHeaterPower",
     "/ventilation/zone1/exhaustFanLevel",
+    "/ventilation/zone1/exhaustFanPower",
+    "/ventilation/zone1/exhaustFanSpeed",
     "/ventilation/zone1/filter/maxRunTime",
     "/ventilation/zone1/filter/remainingTime",
     "/ventilation/zone1/maxIndoorAirQuality",
     "/ventilation/zone1/maxRelativeHumidity",
     "/ventilation/zone1/operationMode",
+    "/ventilation/zone1/sensors/exhaustTemp",
+    "/ventilation/zone1/sensors/externalAirQuality",
+    "/ventilation/zone1/sensors/externalHumidity",
+    "/ventilation/zone1/sensors/extractTemp",
+    "/ventilation/zone1/sensors/internalAirQuality",
+    "/ventilation/zone1/sensors/internalHumidity",
+    "/ventilation/zone1/sensors/outdoorTemp",
+    "/ventilation/zone1/sensors/supplyFanRotation",
     "/ventilation/zone1/sensors/supplyTemp",
+    "/ventilation/zone1/summerBypass/flapPower",
+    "/ventilation/zone1/supplyFanPower",
     "/ventilation/zone1/ventilationLevels",
     "/zones",
     "/zones/configuration",

@@ -5,203 +5,6 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-### Changed
-
-- **Safer heating-circuit writes:**
-  - Before every write of a heating-circuit climate (mode, target,
-    temporary setpoint) and of the button "Clear temporary setpoint", I now
-    also read the circuit's control type on the appliance, together with
-    the mode and the heating context. If it changed since it was shown,
-    nothing is sent. A circuit whose control type has no current reading
-    takes no change.
-  - With the control type `ISRC`, a circuit takes no temporary setpoint and
-    offers no clearing, as in the manufacturer's app. The manual setpoint
-    stays.
-  - The lower limit of the temporary target, taken from the manual
-    setpoint, stays shown while the last reading of the manual setpoint is
-    still valid. One missed reading no longer hides the target in
-    automatic mode; a change still needs a current reading.
-  - I tested this with automated tests and simulated data only; it is
-    expected, untested on a real installation.
-- **Clearing a temporary setpoint outside the reported limits:** some
-  gateways report limits such as 5 to 30 for the temporary setpoint and use
-  -1 to end it, as the manufacturer's app does. The button "Clear temporary
-  setpoint" is now created for them as well, disabled by default. It sends
-  -1 exactly once, and any negative reading afterwards confirms that no
-  temporary setpoint is active. Only this one value is allowed outside the
-  limits. This is expected, untested on a real installation; I welcome
-  reports.
-- **Flags of every setting:** all controls now follow the `used` and
-  `available` flags when the appliance reports them, not only those of
-  room controllers. A setting reported as not available gets no control; a
-  setting reported as not used keeps its control, and a change is refused
-  before anything is sent, with a general message. Without flags nothing
-  changes. The zone controls of room controllers keep their own rules. I
-  tested this with automated tests only.
-- **Icons per state:** icons of many entities now come from Home
-  Assistant's icon translations, among them operating modes, compressor and
-  refrigerant status, heat demand, pressure status and fan levels, with an
-  icon per state where it helps. Entities that had a fixed icon keep it.
-  Entity IDs, names and settings stay as they are; an icon you chose
-  yourself stays.
-#### Setup and settings dialogs
-
-I tested the following changes with the automated tests and simulated data
-only; I have not yet checked them in the browser or on a real installation.
-
-- **Outcomes in the language of your profile:** a finished action (a saved
-  setting, a holiday, a schedule, a planned search) and a connection test now
-  show their outcome on a page of their own, with a fixed text in the
-  language of your user profile. **OK** returns to the menu. Before, the
-  outcome was a note in the menu, built in the language of the server. The
-  **Back** entries and fixed choices such as a new system without the cloud
-  follow the profile language as well. The list of accesses with their
-  state, the status line of an access and the overviews of a schedule still
-  use the server language; Home Assistant gives a dialog no access to the
-  profile language for texts built from current data.
-- **Sign in again in the dialog:** **Configure → Connections → cloud access →
-  Sign in again** now opens the SingleKey ID sign-in right there, instead of
-  ending with a hint to look under **Attention required**. The account is
-  checked as before; another account is refused and the previous sign-in is
-  kept. A device search that finds the sign-in expired continues with the
-  same sign-in page.
-- **Local access from the connections menu:** **Configure → Connections**
-  now offers **Set up local access** as well.
-- **A way back from selection forms:** the lists of holiday periods,
-  schedules, room controller schedules, systems to operate and gateway tokens
-  start with **← Back**; before, only X helped, and it closed the whole
-  dialog.
-- **"Next" on intermediate steps:** forms after which another form follows
-  now show **Next**.
-- **A shorter local setup:** the last page saves with **OK**, without an
-  extra box. Not confirming a certificate shows a note instead of the same
-  page again; nothing is sent. The second certificate page, for the data
-  port, has its own title.
-- **Shorter descriptions:** the pages for local values, local polling, the
-  cloud polling profile and reconfiguring say what matters in two or three
-  sentences; the details moved to the new
-  [settings dialog](docs/dialogs.md) page.
-- **Names instead of identifiers:** the systems of an access and the targets
-  of a local setup are listed by their device name. Room controller programs
-  show their name without the program number, and with several gateways the
-  schedules name their system instead of a model and a number. Two systems
-  with the same name keep their identifier.
-- **Room controller switch points with before and after:** a changed switch
-  point is shown before and after the change first, as for the heating
-  schedules; it is sent only after **OK**.
-- **A found gateway as a new entry:** when Home Assistant finds a gateway
-  and entries exist already, the notice can also set it up as a new entry
-  with local access only. Its address is preselected in the local setup when
-  it is the only gateway found.
-
-### Fixed
-
-- **Second heating circuit without name and without target in Auto:** some
-  controllers refuse the directory of a heating circuit while its values stay
-  readable one by one. The integration then never requested the values it
-  only learns from that directory, among them the circuit's name, its current
-  room setpoint, status, summer/winter state and time program. The circuit
-  showed the generic name "Heating circuit 2" and no target temperature in
-  Auto.
-  - Discovery now reads the known children of such a container directly: the
-    children a readable sibling of the same kind lists and the children known
-    for that kind. This works for every advertised heating circuit, hot-water
-    circuit, heat source, solar circuit, ventilation zone and zone, also for
-    refused directories below them such as a time program directory, and for
-    empty directories or lists shorter than a sibling's.
-  - Nothing is requested for a circuit the controller does not advertise or
-    a container it answers with "not found". The extra reads happen only
-    during discovery, at most 256 of them, within its usual budget.
-  - The diagnostics list each container that was read this way, why, and how
-    many of its values were found.
-  - Thank you to markus1783 for the report and the diagnostics in
-    [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
-    I tested it with automated tests in the shape of that report; it is not
-    yet confirmed on a real installation.
-- **Discovery next to an entry whose update failed:** when an existing entry
-  stays at an older version because its update failed, a discovered
-  gateway no longer offers a new local-only entry for the same plant; the
-  notice ends with "Local setup is not available". I tested this with
-  automated tests.
-- **Energy manager setpoints:** the used lower and upper supply setpoints of
-  the energy manager showed "unknown" most of the time although the
-  controller reports 0. The cause was a rule of 0.9.0 that hid the 0 while
-  the energy management status reported "not connected". The reported value
-  is now shown, 0 included. No other signal used that rule. I checked it with
-  automated tests; it is not yet confirmed on a real installation.
-- **Sign-in with the address of the SingleKey ID page:** pasting the address
-  of a SingleKey ID page (for example `…/redirection?f=…`) instead of the app
-  address now shows a specific hint: copy the `com.bosch…://` or
-  `com.buderus…://` address from the **Failed to launch** message in the
-  Chrome console. The sign-in link stays valid. Thank you to xmaka for the
-  report in
-  [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
-  - The hint, the sign-in guide in the dialog and the
-    [setup guide](docs/setup.md) also cover a SingleKey ID page that
-    announces a redirect that never happens: select the link or button on
-    that page first.
-  - I tested it with automated tests; it is not yet confirmed with a real
-    sign-in.
-
-### Local access: signals
-
-- **Names for more controller signals:** 36 signals of the local access that
-  showed *Signal …* have names in every language, for example *Compressor
-  start-up sequence*, *Pump PC0 connected to LIN bus*, *Hot water holiday
-  mode*, *Heating stopped: outdoor temperature too low*, *Energy management
-  lower supply setpoint* and, from a brine-to-water heat pump, *High-pressure
-  switch*, *Summary alarm* and the digital inputs. The brine pump speed is
-  *Brine pump speed* instead of *Pump Speed*.
-  - The names follow the manufacturer's manuals, the state names the gateway
-    declares and readings I recorded on a real installation; where only the
-    signal name speaks for a meaning, the name says no more than that.
-    Signals whose meaning stays open keep the signal path.
-  - Only names change, and only for entities without a name of your own:
-    entity IDs, unique IDs and the activation stay; the signals stay
-    disabled diagnostic entities.
-  - The hot water holiday mode shows texts for its states. The texts in the
-    languages other than English and German are written like the existing
-    ones.
-- **Permitted range flags:** the four *Permitted* signals of the heat pump
-  are on/off states in every form of the answer, never a temperature. Two of
-  them are named *Outdoor temperature above/below permitted range (heat
-  pump)*; the other two keep the signal path.
-- **Frost range:** the current heat demand shows `frost` as *Frost range*
-  instead of *Frost protection*. On a real installation the heat pump reported
-  it during normal heating below about 6.5 °C outdoor temperature; what the
-  manufacturer means by it is not documented.
-
-### Entities
-
-- **Flow below the measuring range:** a flow reading that reports its
-  low-flow state (65535) still shows "unknown", now with the additional
-  attribute `reported_state: low_flow` next to `measuring_range: below`. A
-  measured 0 stays 0.
-  - Two new diagnostic binary sensors, disabled by default, show it as
-    on/off: *Primary flow below measuring range* and *Heating circuit 1 flow
-    below measuring range (PC1)*. They are created only where the flow
-    reading exists on the plant and send no request of their own.
-  - Tested with automated tests and readings in the form a real gateway
-    sends; the binary sensors are not yet confirmed on a real installation.
-- **Outdoor unit software version:** a new diagnostic sensor shows the
-  software version of the outdoor unit from the module lists the integration
-  already reads (cloud or local), with the product name and hardware type as
-  attributes. Only a module the heat generator model table names as an
-  outdoor unit counts; serial numbers are never read. The version was found
-  in the module list of a real installation; the sensor itself is tested with
-  automated tests. A pressure setpoint of the heating circuit pump is not
-  available through the interface.
-
-### Translations
-
-- **Composed name parts as translation keys:** the names of the room
-  controller zone readings and their controls, the energy history statistics
-  and some cloud readings (for example the hot water start thresholds and
-  the energy counters) are now translation keys in the translation files of
-  all 19 languages instead of German and English text in the code. The names
-  stay the same in every language; like all composed names they follow the
-  Home Assistant system language.
-
 ### Added
 
 - **What a heating circuit is doing:** each heating circuit has a new sensor
@@ -274,7 +77,210 @@ only; I have not yet checked them in the browser or on a real installation.
     recordings of gas, hybrid, solar, pool and ventilation systems are
     tested with automated tests only and not yet confirmed on a real
     installation.
+- **Flow below the measuring range:** a flow reading that reports its
+  low-flow state (65535) still shows "unknown", now with the additional
+  attribute `reported_state: low_flow` next to `measuring_range: below`. A
+  measured 0 stays 0.
+  - Two new diagnostic binary sensors, disabled by default, show it as
+    on/off: *Primary flow below measuring range* and *Heating circuit 1 flow
+    below measuring range (PC1)*. They are created only where the flow
+    reading exists on the plant and send no request of their own.
+  - Tested with automated tests and readings in the form a real gateway
+    sends; the binary sensors are not yet confirmed on a real installation.
+- **Outdoor unit software version:** a new diagnostic sensor shows the
+  software version of the outdoor unit from the module lists the integration
+  already reads (cloud or local), with the product name and hardware type as
+  attributes. Only a module the heat generator model table names as an
+  outdoor unit counts; serial numbers are never read. The version was found
+  in the module list of a real installation; the sensor itself is tested with
+  automated tests. A pressure setpoint of the heating circuit pump is not
+  available through the interface.
 
+### Changed
+
+- **Safer heating-circuit writes:**
+  - Before every write of a heating-circuit climate (mode, target,
+    temporary setpoint) and of the button "Clear temporary setpoint", I now
+    also read the circuit's control type on the appliance, together with
+    the mode and the heating context. If it changed since it was shown,
+    nothing is sent. A circuit whose control type has no current reading
+    takes no change.
+  - With the control type `ISRC`, a circuit takes no temporary setpoint and
+    offers no clearing, as in the manufacturer's app. The manual setpoint
+    stays.
+  - The lower limit of the temporary target, taken from the manual
+    setpoint, stays shown while the last reading of the manual setpoint is
+    still valid. One missed reading no longer hides the target in
+    automatic mode; a change still needs a current reading.
+  - I tested this with automated tests and simulated data only; it is
+    expected, untested on a real installation.
+- **Clearing a temporary setpoint outside the reported limits:** some
+  gateways report limits such as 5 to 30 for the temporary setpoint and use
+  -1 to end it, as the manufacturer's app does. The button "Clear temporary
+  setpoint" is now created for them as well, disabled by default. It sends
+  -1 exactly once, and any negative reading afterwards confirms that no
+  temporary setpoint is active. Only this one value is allowed outside the
+  limits. This is expected, untested on a real installation; I welcome
+  reports.
+- **Flags of every setting:** all controls now follow the `used` and
+  `available` flags when the appliance reports them, not only those of
+  room controllers. A setting reported as not available gets no control; a
+  setting reported as not used keeps its control, and a change is refused
+  before anything is sent, with a general message. Without flags nothing
+  changes. The zone controls of room controllers keep their own rules. I
+  tested this with automated tests only.
+- **Icons per state:** icons of many entities now come from Home
+  Assistant's icon translations, among them operating modes, compressor and
+  refrigerant status, heat demand, pressure status and fan levels, with an
+  icon per state where it helps. Entities that had a fixed icon keep it.
+  Entity IDs, names and settings stay as they are; an icon you chose
+  yourself stays.
+
+#### Setup and settings dialogs
+
+I tested the following changes with the automated tests and simulated data
+only; I have not yet checked them in the browser or on a real installation.
+
+- **Outcomes in the language of your profile:** a finished action (a saved
+  setting, a holiday, a schedule, a planned search) and a connection test now
+  show their outcome on a page of their own, with a fixed text in the
+  language of your user profile. **OK** returns to the menu. Before, the
+  outcome was a note in the menu, built in the language of the server. The
+  **Back** entries and fixed choices such as a new system without the cloud
+  follow the profile language as well. The list of accesses with their
+  state, the status line of an access and the overviews of a schedule still
+  use the server language; Home Assistant gives a dialog no access to the
+  profile language for texts built from current data.
+- **Sign in again in the dialog:** **Configure → Connections → cloud access →
+  Sign in again** now opens the SingleKey ID sign-in right there, instead of
+  ending with a hint to look under **Attention required**. The account is
+  checked as before; another account is refused and the previous sign-in is
+  kept. A device search that finds the sign-in expired continues with the
+  same sign-in page.
+- **Local access from the connections menu:** **Configure → Connections**
+  now offers **Set up local access** as well.
+- **A way back from selection forms:** the lists of holiday periods,
+  schedules, room controller schedules, systems to operate and gateway tokens
+  start with **← Back**; before, only X helped, and it closed the whole
+  dialog.
+- **"Next" on intermediate steps:** forms after which another form follows
+  now show **Next**.
+- **A shorter local setup:** the last page saves with **OK**, without an
+  extra box. Not confirming a certificate shows a note instead of the same
+  page again; nothing is sent. The second certificate page, for the data
+  port, has its own title.
+- **Shorter descriptions:** the pages for local values, local polling, the
+  cloud polling profile and reconfiguring say what matters in two or three
+  sentences; the details moved to the new
+  [settings dialog](docs/dialogs.md) page.
+- **Names instead of identifiers:** the systems of an access and the targets
+  of a local setup are listed by their device name. Room controller programs
+  show their name without the program number, and with several gateways the
+  schedules name their system instead of a model and a number. Two systems
+  with the same name keep their identifier.
+- **Room controller switch points with before and after:** a changed switch
+  point is shown before and after the change first, as for the heating
+  schedules; it is sent only after **OK**.
+- **A found gateway as a new entry:** when Home Assistant finds a gateway
+  and entries exist already, the notice can also set it up as a new entry
+  with local access only. Its address is preselected in the local setup when
+  it is the only gateway found.
+
+### Local access: signals
+
+- **Names for more controller signals:** 36 signals of the local access that
+  showed *Signal …* have names in every language, for example *Compressor
+  start-up sequence*, *Pump PC0 connected to LIN bus*, *Hot water holiday
+  mode*, *Heating stopped: outdoor temperature too low*, *Energy management
+  lower supply setpoint* and, from a brine-to-water heat pump, *High-pressure
+  switch*, *Summary alarm* and the digital inputs. The brine pump speed is
+  *Brine pump speed* instead of *Pump Speed*.
+  - The names follow the manufacturer's manuals, the state names the gateway
+    declares and readings I recorded on a real installation; where only the
+    signal name speaks for a meaning, the name says no more than that.
+    Signals whose meaning stays open keep the signal path.
+  - Only names change, and only for entities without a name of your own:
+    entity IDs, unique IDs and the activation stay; the signals stay
+    disabled diagnostic entities.
+  - The hot water holiday mode shows texts for its states. The texts in the
+    languages other than English and German are written like the existing
+    ones.
+- **Permitted range flags:** the four *Permitted* signals of the heat pump
+  are on/off states in every form of the answer, never a temperature. Two of
+  them are named *Outdoor temperature above/below permitted range (heat
+  pump)*; the other two keep the signal path.
+- **Frost range:** the current heat demand shows `frost` as *Frost range*
+  instead of *Frost protection*. On a real installation the heat pump reported
+  it during normal heating below about 6.5 °C outdoor temperature; what the
+  manufacturer means by it is not documented.
+
+### Fixed
+
+- **Second heating circuit without name and without target in Auto:** some
+  controllers refuse the directory of a heating circuit while its values stay
+  readable one by one. The integration then never requested the values it
+  only learns from that directory, among them the circuit's name, its current
+  room setpoint, status, summer/winter state and time program. The circuit
+  showed the generic name "Heating circuit 2" and no target temperature in
+  Auto.
+  - Discovery now reads the known children of such a container directly: the
+    children a readable sibling of the same kind lists and the children known
+    for that kind. This works for every advertised heating circuit, hot-water
+    circuit, heat source, solar circuit, ventilation zone and zone, also for
+    refused directories below them such as a time program directory, and for
+    empty directories or lists shorter than a sibling's.
+  - Nothing is requested for a circuit the controller does not advertise or
+    a container it answers with "not found". The extra reads happen only
+    during discovery, at most 256 of them, within its usual budget.
+  - The diagnostics list each container that was read this way, why, and how
+    many of its values were found.
+  - Thank you to markus1783 for the report and the diagnostics in
+    [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
+    I tested it with automated tests in the shape of that report; it is not
+    yet confirmed on a real installation.
+- **Discovery next to an entry whose update failed:** when an existing entry
+  stays at an older version because its update failed, a discovered
+  gateway no longer offers a new local-only entry for the same plant; the
+  notice ends with "Local setup is not available". I tested this with
+  automated tests.
+- **Energy manager setpoints:** the used lower and upper supply setpoints of
+  the energy manager showed "unknown" most of the time although the
+  controller reports 0. The cause was a rule of 0.9.0 that hid the 0 while
+  the energy management status reported "not connected". The reported value
+  is now shown, 0 included. No other signal used that rule. I checked it with
+  automated tests; it is not yet confirmed on a real installation.
+- **Sign-in with the address of the SingleKey ID page:** pasting the address
+  of a SingleKey ID page (for example `…/redirection?f=…`) instead of the app
+  address now shows a specific hint: copy the `com.bosch…://` or
+  `com.buderus…://` address from the **Failed to launch** message in the
+  Chrome console. The sign-in link stays valid. Thank you to xmaka for the
+  report in
+  [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
+  - The hint, the sign-in guide in the dialog and the
+    [setup guide](docs/setup.md) also cover a SingleKey ID page that
+    announces a redirect that never happens: select the link or button on
+    that page first.
+  - I tested it with automated tests; it is not yet confirmed with a real
+    sign-in.
+
+### Translations
+
+- **Composed name parts as translation keys:** the names of the room
+  controller zone readings and their controls, the energy history statistics
+  and some cloud readings (for example the hot water start thresholds and
+  the energy counters) are now translation keys in the translation files of
+  all 19 languages instead of German and English text in the code. The names
+  stay the same in every language; like all composed names they follow the
+  Home Assistant system language.
+
+### Diagnostics
+
+- **Diagnostics schema 48:** the diagnostics gain the sections
+  `calculated_values` (the defrost detection) and `recordings` (the reads
+  of the plant recordings and the import), the heat source type and its
+  evidence in `heat_generator`, and the counters of the containers that
+  discovery read directly. They hold no readings, names or identifiers; see
+  [diagnostics](docs/diagnostics.md).
 
 ## [0.9.2-beta.1] - 2026-11-14
 
