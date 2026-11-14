@@ -23,7 +23,8 @@ const path = require("node:path");
       localStorage.setItem("selectedLanguage", JSON.stringify(language));
     }, {url: process.env.LOCAL_SETUP_URL, token: process.env.LOCAL_SETUP_TOKEN,
       language: process.env.LOCAL_SETUP_LANGUAGE});
-    const discoveryTitle = de ? "Lokales Gateway (192.0.2.1)" : "Local gateway (192.0.2.1)";
+    // The flow title is the address of the found gateway in every language.
+    const discoveryTitle = "192.0.2.1";
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/dashboard");
     await page.getByText(discoveryTitle, {exact: true}).waitFor();
     if (process.env.LOCAL_SETUP_OUTPUT) await page.screenshot({path:path.join(process.env.LOCAL_SETUP_OUTPUT, `discovery-${de ? "de" : "en"}.png`)});
