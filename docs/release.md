@@ -22,8 +22,8 @@ Automated checks on the release state (2026-11-14, run locally):
 
 | Check | Environment | Result |
 |---|---|---|
-| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11171 passed; coverage 95.99 % |
-| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11169 passed, 2 skipped (version-dependent) |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11180 passed; coverage 95.99 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11178 passed, 2 skipped (version-dependent) |
 | Repeated runs of the request count after removing the cloud | Home Assistant 2026.11.0 and 2026.5.4, under extra CPU load | 500 of 500 passed on each version |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 613 files formatted |
 | Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
