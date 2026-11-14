@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from . import (
     BoschBuderusConfigEntry,
+    recordings,
     rrc,
     rrc_boost,
     rrc_confirmations,
@@ -728,6 +729,10 @@ def _gateway_diagnostics(
         if rrc.profile_evidence(coordinator.gateway.device_type, coordinator.resources)
         else "generic",
         "rrc_profile": _rrc_profile_diagnostics(coordinator),
+        # The plant's recordings: reads, series and import, without values.
+        "recordings": recordings.diagnostics(
+            coordinator.hass, coordinator.gateway.gateway_id
+        ),
         "softener_entities": _softener_entity_registration(coordinator),
         "runtime": {
             **coordinator.diagnostics_summary(),

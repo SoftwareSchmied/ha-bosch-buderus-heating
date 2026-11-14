@@ -5,6 +5,35 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Added
+
+- **Plant recordings:** the heat pump records its heat, compressor and
+  heater electricity, starts, working time and the outdoor and supply
+  temperature per hour, day and month. The integration now reads these
+  recordings, from the local data port when a local access is set up and
+  otherwise from the cloud, and shows them for yesterday, the previous and
+  current month and the previous and current year. Total heat produced and
+  total electricity of yesterday are enabled; all other period entities are
+  created disabled. See [Plant recordings](docs/recordings.md).
+  - The electricity is the sum of compressor and heater. The heat per mode
+    (heating, hot water) comes from the integration's counters first,
+    because the plant gives an hour in which it switches between the modes
+    to both of them; every energy value has a disabled companion with the
+    other method for comparison.
+  - A past period changes only after a read that confirms the finished
+    day, month or year; the attributes name the period and the source.
+  - Optionally, in the options under **Plant recordings**, the hourly
+    values become statistics of their own (energy dashboard, statistics
+    cards), back to the first recorded day: hourly where the plant still
+    has hours, before that by day and by month. Off by default; it can be
+    switched off again and the imported statistics can be deleted.
+  - I compared the local and the cloud answers with each other and with
+    the counters on a real installation. The reads over days, the import,
+    the switch between local and cloud, the change of summer time and the
+    recordings of gas, hybrid, solar, pool and ventilation systems are
+    tested with automated tests only and not yet confirmed on a real
+    installation.
+
 ## [0.9.2-beta.1] - 2026-11-14
 
 > [!IMPORTANT]

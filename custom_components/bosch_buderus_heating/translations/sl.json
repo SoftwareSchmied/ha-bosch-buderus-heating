@@ -248,7 +248,8 @@
           "connections": "Povezave",
           "connection_add_cloud": "Poveži dostop prek oblaka",
           "local_setup": "Nastavi lokalni dostop",
-          "rescan": "Ponovno preišči sistem"
+          "rescan": "Ponovno preišči sistem",
+          "recordings": "Zapisi sistema"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Ponovno preišči sistem",
         "description": "Še enkrat preišče sistem za dele in izmerjene vrednosti prek dostopa prek oblaka in lokalnega dostopa. Uporabite po dodajanju ali spreminjanju komponent. Iskanje poteka ob naslednji redni posodobitvi in v običajnih omejitvah zahtev; entitete nikoli ne odstrani, izmerjene vrednosti, ki jih znova ne najde, pa ostanejo take, kot so."
       },
+      "recordings": {
+        "title": "Zapisi sistema",
+        "description": "Toplotna črpalka beleži energijo, zagone in čas delovanja po urah. Integracija jih prikazuje kot entitete in lahko urne vrednosti prenese v dolgoročno statistiko (energijska nadzorna plošča, kartice statistike). Najdeni nizi: {series}, preneseni: {imported}.",
+        "data": {
+          "recordings_import": "Prenesi urne vrednosti v dolgoročno statistiko",
+          "delete_statistics": "Izbriši preneseno statistiko"
+        },
+        "data_description": {
+          "recordings_import": "Na energijski nadzorni plošči uporabite to statistiko ali entitete števcev, ne obojega. Ob izklopu preneseno ostane.",
+          "delete_statistics": "Naslednja stran zahteva potrditev."
+        }
+      },
+      "recordings_delete": {
+        "title": "Izbriši preneseno statistiko",
+        "description": "Izbriše vso statistiko, preneseno iz zapisov sistema tega vnosa, in izklopi prenos. Entitete in lastni zapisi sistema ostanejo. Tega ni mogoče razveljaviti.",
+        "data": {
+          "confirm": "Da, izbriši preneseno statistiko"
+        }
+      },
       "local_tokens": {
         "title": "Žetoni na prehodu",
         "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Iskanje že poteka ali je načrtovano. Počakajte, da se konča.",
       "rescan_partial": "Iskanje je načrtovano za dele, ki so pripravljeni, in poteka ob naslednji redni posodobitvi. Deli, ki so trenutno v premoru, so bili preskočeni; zanje poskusite znova pozneje.",
       "rescan_unavailable": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen.",
+      "recordings_import_on": "Prenos zapisov sistema je vklopljen; prve vrednosti sledijo v nekaj minutah.",
+      "recordings_import_off": "Prenos zapisov sistema je izklopljen; prenesene vrednosti ostanejo.",
+      "recordings_deleted": "Izbrisane prenesene statistike: {count}. Prenos je izklopljen.",
+      "recordings_delete_kept": "Nič ni bilo izbrisano.",
       "connection_saved": "Sprememba je bila shranjena.",
       "connection_removed": "Dostop je bil odstranjen.",
       "notifications_saved": "Nastavitve obvestil so bile shranjene.",

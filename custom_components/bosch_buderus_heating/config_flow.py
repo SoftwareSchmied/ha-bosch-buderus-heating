@@ -134,6 +134,8 @@ from .pointt import (
     WriteValidationError,
 )
 from .pointt.retry_after import bounded_cloud_pause
+from .recordings.manager import managers_of
+from .recordings_flow import RecordingsOptionsFlow
 from .rrc import GATEWAY_DEVICE_TYPE
 from .rrc_devices import CONTROLLER_TYPE, TYPE_LABELS
 from .rrc_flow import RrcScheduleOptionsFlow
@@ -984,6 +986,7 @@ class BoschBuderusOptionsFlow(
     ControlsOptionsFlow,
     RrcScheduleOptionsFlow,
     SwitchProgramOptionsFlow,
+    RecordingsOptionsFlow,
     CloudOptionsFlow,
 ):
     """Manage holidays and installation-specific notification settings."""
@@ -1051,6 +1054,11 @@ class BoschBuderusOptionsFlow(
                 "holidays",
                 *(["switch_programs"] if self._switch_program_choices() else []),
                 *(["rrc_programs"] if self._rrc_choices() else []),
+                *(
+                    ["recordings"]
+                    if managers_of(self.hass, self._entry.entry_id)
+                    else []
+                ),
             ],
         )
 

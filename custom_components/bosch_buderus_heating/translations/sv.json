@@ -248,7 +248,8 @@
           "connections": "Anslutningar",
           "connection_add_cloud": "Anslut molnåtkomst",
           "local_setup": "Konfigurera lokal åtkomst",
-          "rescan": "Sök igen i anläggningen"
+          "rescan": "Sök igen i anläggningen",
+          "recordings": "Anläggningens registrering"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Sök igen i anläggningen",
         "description": "Söker i anläggningen en gång till efter delar och mätvärden, via molnåtkomsten och den lokala åtkomsten. Använd den efter att du har lagt till eller ändrat komponenter. Sökningen körs vid nästa regelbundna uppdatering och inom de vanliga gränserna för förfrågningar. Den tar aldrig bort en entitet, och mätvärden som den inte hittar igen förblir som de är."
       },
+      "recordings": {
+        "title": "Anläggningens registrering",
+        "description": "Värmepumpen registrerar energi, starter och drifttid per timme. Integrationen visar dem som entiteter och kan överföra timvärdena till långtidsstatistiken (energipanel, statistikkort). Hittade serier: {series}, överförda: {imported}.",
+        "data": {
+          "recordings_import": "Överför timvärdena till långtidsstatistiken",
+          "delete_statistics": "Radera den överförda statistiken"
+        },
+        "data_description": {
+          "recordings_import": "Använd antingen denna statistik eller räknarentiteterna i energipanelen, inte båda. När den stängs av finns det överförda kvar.",
+          "delete_statistics": "Nästa sida ber om en bekräftelse."
+        }
+      },
+      "recordings_delete": {
+        "title": "Radera den överförda statistiken",
+        "description": "Raderar all statistik som överförts från anläggningens registrering för denna post och stänger av överföringen. Entiteterna och anläggningens egen registrering finns kvar. Det går inte att ångra.",
+        "data": {
+          "confirm": "Ja, radera den överförda statistiken"
+        }
+      },
       "local_tokens": {
         "title": "Tokens på gatewayen",
         "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan, och återkallar du den upphör den lokala åtkomsten. Äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Utan ett val ändras ingenting.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "En sökning pågår redan eller är planerad. Vänta tills den är klar.",
       "rescan_partial": "Sökningen är planerad för de delar som är redo och körs vid nästa regelbundna uppdatering. Delar som är pausade just nu hoppades över. Försök igen senare för dem.",
       "rescan_unavailable": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu.",
+      "recordings_import_on": "Överföringen av anläggningens registrering är påslagen; de första värdena följer inom några minuter.",
+      "recordings_import_off": "Överföringen av anläggningens registrering är avstängd; överförda värden finns kvar.",
+      "recordings_deleted": "Raderade överförda statistiker: {count}. Överföringen är avstängd.",
+      "recordings_delete_kept": "Inget raderades.",
       "connection_saved": "Ändringen sparades.",
       "connection_removed": "Åtkomsten togs bort.",
       "notifications_saved": "Aviseringsinställningarna sparades.",

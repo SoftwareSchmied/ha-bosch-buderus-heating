@@ -248,7 +248,8 @@
           "connections": "Verbindingen",
           "connection_add_cloud": "Cloudtoegang verbinden",
           "local_setup": "Lokale toegang instellen",
-          "rescan": "De installatie opnieuw zoeken"
+          "rescan": "De installatie opnieuw zoeken",
+          "recordings": "Registraties van de installatie"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "De installatie opnieuw zoeken",
         "description": "Zoekt de installatie nog eens naar onderdelen en meetwaarden, via de cloudtoegang en de lokale toegang. Gebruik dit na het toevoegen of wijzigen van componenten. Het zoeken gebeurt bij de volgende reguliere update en binnen de gebruikelijke limieten voor verzoeken; er wordt nooit een entiteit verwijderd en meetwaarden die niet opnieuw worden gevonden, blijven zoals ze zijn."
       },
+      "recordings": {
+        "title": "Registraties van de installatie",
+        "description": "De warmtepomp registreert energie, starts en bedrijfstijd per uur. De integratie toont ze als entiteiten en kan de uurwaarden in de langetermijnstatistieken overnemen (energiedashboard, statistiekkaarten). Gevonden reeksen: {series}, overgenomen: {imported}.",
+        "data": {
+          "recordings_import": "Uurwaarden in de langetermijnstatistieken overnemen",
+          "delete_statistics": "Overgenomen statistieken verwijderen"
+        },
+        "data_description": {
+          "recordings_import": "Gebruik in het energiedashboard deze statistieken of de entiteiten van de tellers, niet allebei. Bij uitschakelen blijft het overgenomene behouden.",
+          "delete_statistics": "De volgende pagina vraagt om een bevestiging."
+        }
+      },
+      "recordings_delete": {
+        "title": "Overgenomen statistieken verwijderen",
+        "description": "Verwijdert alle statistieken die uit de registraties van de installatie van deze vermelding zijn overgenomen en schakelt het overnemen uit. De entiteiten en de eigen registraties van de installatie blijven. Dit kan niet ongedaan worden gemaakt.",
+        "data": {
+          "confirm": "Ja, overgenomen statistieken verwijderen"
+        }
+      },
       "local_tokens": {
         "title": "Tokens op de gateway",
         "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd en als je het intrekt, eindigt de lokale toegang. Oudere tokens van deze integratie zijn meestal over van eerdere instellingen. Zonder keuze verandert er niets.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is.",
       "rescan_partial": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen.",
       "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed.",
+      "recordings_import_on": "Het overnemen van de registraties van de installatie is ingeschakeld; de eerste waarden volgen binnen enkele minuten.",
+      "recordings_import_off": "Het overnemen van de registraties van de installatie is uitgeschakeld; overgenomen waarden blijven.",
+      "recordings_deleted": "Verwijderde overgenomen statistieken: {count}. Het overnemen is uitgeschakeld.",
+      "recordings_delete_kept": "Er is niets verwijderd.",
       "connection_saved": "De wijziging is opgeslagen.",
       "connection_removed": "De toegang is verwijderd.",
       "notifications_saved": "De meldingsinstellingen zijn opgeslagen.",

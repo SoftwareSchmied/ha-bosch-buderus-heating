@@ -248,7 +248,8 @@
           "connections": "Tilkoblinger",
           "connection_add_cloud": "Koble til skytilgang",
           "local_setup": "Sett opp lokal tilgang",
-          "rescan": "Søk i anlegget på nytt"
+          "rescan": "Søk i anlegget på nytt",
+          "recordings": "Anleggets registrering"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Søk i anlegget på nytt",
         "description": "Søker i anlegget en gang til etter deler og måleverdier, via skytilgangen og den lokale tilgangen. Bruk det etter at du har lagt til eller endret komponenter. Søket kjøres ved neste vanlige oppdatering og innenfor de vanlige grensene for forespørsler; det fjerner aldri en entitet, og måleverdier som ikke finnes igjen, blir som de er."
       },
+      "recordings": {
+        "title": "Anleggets registrering",
+        "description": "Varmepumpen registrerer energi, starter og driftstid per time. Integrasjonen viser dem som entiteter og kan overføre timeverdiene til langtidsstatistikken (energidashbord, statistikkort). Serier funnet: {series}, overført: {imported}.",
+        "data": {
+          "recordings_import": "Overfør timeverdiene til langtidsstatistikken",
+          "delete_statistics": "Slett den overførte statistikken"
+        },
+        "data_description": {
+          "recordings_import": "Bruk enten denne statistikken eller telleentitetene i energidashbordet, ikke begge. Når den slås av, beholdes det som er overført.",
+          "delete_statistics": "Neste side ber om en bekreftelse."
+        }
+      },
+      "recordings_delete": {
+        "title": "Slett den overførte statistikken",
+        "description": "Sletter all statistikk som er overført fra anleggets registrering for denne oppføringen, og slår av overføringen. Entitetene og anleggets egen registrering beholdes. Dette kan ikke angres.",
+        "data": {
+          "confirm": "Ja, slett den overførte statistikken"
+        }
+      },
       "local_tokens": {
         "title": "Tokens på gatewayen",
         "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Uten et valg endres ingenting.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig.",
       "rescan_partial": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem.",
       "rescan_unavailable": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå.",
+      "recordings_import_on": "Overføringen av anleggets registrering er slått på; de første verdiene kommer i løpet av noen minutter.",
+      "recordings_import_off": "Overføringen av anleggets registrering er slått av; overførte verdier beholdes.",
+      "recordings_deleted": "Slettede overførte statistikker: {count}. Overføringen er slått av.",
+      "recordings_delete_kept": "Ingenting ble slettet.",
       "connection_saved": "Endringen ble lagret.",
       "connection_removed": "Tilgangen ble fjernet.",
       "notifications_saved": "Varslingsinnstillingene ble lagret.",

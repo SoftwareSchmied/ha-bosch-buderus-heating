@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from collections.abc import Callable, Mapping, Sequence
+from datetime import date
 from typing import Literal, Protocol
 from urllib.parse import quote, urlencode
 
@@ -279,6 +281,29 @@ class PointTClient:
         )
         return parse_resource(payload, path=normalized)
 
+    async def get_recording(
+        self, gateway_id: str, path: str, interval: str
+    ) -> JsonValue:
+        """Read one recording of the plant for a day, month or year.
+
+        ``path`` must be a ``/recordings/...`` path and ``interval`` a
+        calendar day (``2026-11-13``), month (``2026-11``) or year
+        (``2026``). The answer is returned as read: its ``recording`` list
+        is not part of a resource. Errors, metrics and logs name the path
+        without its query.
+        """
+        normalized = normalize_resource_path(path)
+        if not normalized.startswith("/recordings/") or not _valid_interval(interval):
+            raise ValueError("Invalid PointT recording request")
+        gateway = self._encode_gateway(gateway_id)
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}"
+            f"?{urlencode({'interval': interval})}",
+            retryable=True,
+            resource_path=normalized,
+        )
+
     async def put_icom_holiday_assignments(
         self, gateway_id: str, slot: int, circuits: tuple[str, ...]
     ) -> None:
@@ -488,3 +513,22 @@ def _validate_holiday_id(holiday_id: int) -> int:
     ):
         raise ValueError("Holiday ID must be a non-negative 32-bit integer")
     return holiday_id
+
+
+_INTERVAL = re.compile(r"[0-9]{4}(?:-[0-9]{2}(?:-[0-9]{2})?)?")
+
+
+def _valid_interval(value: object) -> bool:
+    """A real calendar day, month or year, nothing else (no other query)."""
+    if not isinstance(value, str) or _INTERVAL.fullmatch(value) is None:
+        return False
+    parts = [int(part) for part in value.split("-")]
+    try:
+        date(
+            parts[0],
+            parts[1] if len(parts) > 1 else 1,
+            parts[2] if len(parts) > 2 else 1,
+        )
+    except ValueError:
+        return False
+    return parts[0] >= 2000

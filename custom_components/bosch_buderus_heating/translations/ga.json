@@ -248,7 +248,8 @@
           "connections": "Naisc",
           "connection_add_cloud": "Ceangail rochtain néil",
           "local_setup": "Socraigh rochtain áitiúil",
-          "rescan": "Cuardaigh an córas arís"
+          "rescan": "Cuardaigh an córas arís",
+          "recordings": "Taifeadtaí an chórais"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Cuardaigh an córas arís",
         "description": "Cuardaíonn sé seo an córas uair amháin eile le haghaidh páirteanna agus léamh, tríd an rochtain néil agus an rochtain áitiúil. Úsáid é tar éis comhpháirteanna a chur leis nó a athrú. Ritheann an cuardach leis an gcéad nuashonrú rialta eile agus laistigh de na teorainneacha is gnách d'iarratais; ní bhaineann sé aonán riamh, agus fanann léamh nach bhfaigheann sé arís mar atá siad."
       },
+      "recordings": {
+        "title": "Taifeadtaí an chórais",
+        "description": "Taifeadann an teaschaidéal an fuinneamh, na tosuithe agus an t-am oibríochta in aghaidh na huaire. Taispeánann an comhtháthú iad mar aonáin agus is féidir leis na luachanna in aghaidh na huaire a iompórtáil isteach sna staitisticí fadtéarmacha (painéal fuinnimh, cártaí staitisticí). Sraitheanna aimsithe: {series}, iompórtáilte: {imported}.",
+        "data": {
+          "recordings_import": "Iompórtáil na luachanna in aghaidh na huaire isteach sna staitisticí fadtéarmacha",
+          "delete_statistics": "Scrios na staitisticí iompórtáilte"
+        },
+        "data_description": {
+          "recordings_import": "Úsáid na staitisticí seo nó aonáin na n-áiritheoirí sa phainéal fuinnimh, ní an dá rud. Nuair a mhúchtar é, fanann an méid a iompórtáladh.",
+          "delete_statistics": "Iarrann an chéad leathanach eile dearbhú."
+        }
+      },
+      "recordings_delete": {
+        "title": "Scrios na staitisticí iompórtáilte",
+        "description": "Scriosann sé gach staitistic a iompórtáladh ó thaifeadtaí an chórais don iontráil seo agus múchann sé an t-iompórtáil. Fanann na haonáin agus taifeadtaí an chórais féin. Ní féidir é seo a chealú.",
+        "data": {
+          "confirm": "Is ea, scrios na staitisticí iompórtáilte"
+        }
+      },
       "local_tokens": {
         "title": "Comharthaí ar an ngeata",
         "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Gan rogha ní athraíonn aon rud.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe.",
       "rescan_partial": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd.",
       "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair.",
+      "recordings_import_on": "Tá iompórtáil thaifeadtaí an chórais ar siúl; tagann na chéad luachanna laistigh de chúpla nóiméad.",
+      "recordings_import_off": "Tá iompórtáil thaifeadtaí an chórais múchta; fanann na luachanna iompórtáilte.",
+      "recordings_deleted": "Staitisticí iompórtáilte scriosta: {count}. Tá an t-iompórtáil múchta.",
+      "recordings_delete_kept": "Níor scriosadh aon rud.",
       "connection_saved": "Sábháladh an t-athrú.",
       "connection_removed": "Baineadh an rochtain.",
       "notifications_saved": "Sábháladh na socruithe fógraí.",
