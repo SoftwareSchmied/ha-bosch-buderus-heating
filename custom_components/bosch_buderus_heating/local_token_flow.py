@@ -58,6 +58,7 @@ from .local_transport import (
     inspect_local_certificate,
 )
 from .markdown_text import markdown_literal
+from .options_navigation import BACK, BACK_CHOICE, NAVIGATION
 
 # Lines of one group shown in the description; the rest is counted.
 MAX_SHOWN_TOKENS = 32
@@ -507,8 +508,12 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         self._token_choices = choices
         schema: dict[Any, Any] = {}
         if options:
+            # "Back" leaves the list without any change, also before a
+            # removal; without an offered token, OK alone does that.
             schema[vol.Optional("token")] = SelectSelector(
-                SelectSelectorConfig(options=options)
+                SelectSelectorConfig(
+                    options=[BACK_CHOICE, *options], translation_key=NAVIGATION
+                )
             )
         return self.async_show_form(
             step_id="local_tokens_remove" if self._token_removal else "local_tokens",
@@ -579,6 +584,9 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         ):
             return self.async_abort(reason="configuration_changed")
         choice = user_input.get("token")
+        if choice == BACK:
+            self._token_reset()
+            return await self.async_step_connection()
         if not choice:
             access = self._token_access
             self._token_reset()

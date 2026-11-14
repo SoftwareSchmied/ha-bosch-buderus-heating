@@ -27,7 +27,7 @@ from custom_components.bosch_buderus_heating.recordings.manager import (
     START_DELAY,
     managers_of,
 )
-from tests.helpers.options_menu import outcome
+from tests.helpers.options_menu import menu_note, outcome
 from tests.helpers.rrc_cloud import RrcCloud, load_tree
 from tests.test_rrc_energy_statistics import (
     GW,
@@ -121,6 +121,9 @@ async def test_entities_options_and_diagnostics(
                     form["flow_id"], {OPTION_IMPORT: True, "delete_statistics": False}
                 )
                 assert await outcome(hass, result) == "recordings_import_on"
+                assert "switched on" in await menu_note(
+                    hass, result, "recordings_import_on"
+                )
                 assert entry.options[OPTION_IMPORT] is True
                 result = await hass.config_entries.options.async_configure(
                     result["flow_id"], {"next_step_id": "recordings"}
@@ -133,6 +136,7 @@ async def test_entities_options_and_diagnostics(
                     result["flow_id"], {"confirm": False}
                 )
                 assert await outcome(hass, kept) == "recordings_delete_kept"
+                await menu_note(hass, kept, "recordings_delete_kept")
                 assert entry.options[OPTION_IMPORT] is True
                 result = await hass.config_entries.options.async_configure(
                     kept["flow_id"], {"next_step_id": "recordings"}
@@ -144,6 +148,8 @@ async def test_entities_options_and_diagnostics(
                     result["flow_id"], {"confirm": True}
                 )
                 assert await outcome(hass, done) == "recordings_deleted"
+                assert done["description_placeholders"]["count"] != ""
+                await menu_note(hass, done, "recordings_deleted")
                 assert entry.options[OPTION_IMPORT] is False
                 scheduled.assert_not_called()
             assert managers_of(hass, entry.entry_id)

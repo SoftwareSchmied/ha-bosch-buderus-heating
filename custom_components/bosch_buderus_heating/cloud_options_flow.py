@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+from contextlib import suppress
 from typing import Any, ClassVar, cast, override
 
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import SOURCE_REAUTH, ConfigFlowResult
+from homeassistant.data_entry_flow import UnknownFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .auth_lifecycle import async_wait_for_entry_refresh
@@ -32,7 +34,9 @@ from .configuration import (
     JsonObject,
 )
 from .configuration_access import EntryConfiguration
+from .configuration_management import ConnectionEdit, not_found_bindings
 from .connection_flow import ConnectionOptionsFlow
+from .const import CONF_BRAND, DOMAIN
 from .local_identity import verify_local_first_merges
 from .pointt import (
     AuthenticationError,
@@ -71,6 +75,8 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
     _cloud_discovery: CloudDiscovery | None = None
     _selection_discovery: CloudDiscovery | None = None
     _cloud_backoff: RateLimitBackoff | None = None
+    # A new sign-in of this cloud access, started in this dialog.
+    _cloud_reauth: ConnectionEdit | None = None
 
     def cloud_add_available(self) -> bool:
         try:
@@ -130,7 +136,10 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
         if user_input is None:
             return None
         try:
-            check_new_cloud(self.hass, self.flow_id)
+            if self._cloud_reauth is None:
+                check_new_cloud(self.hass, self.flow_id)
+            else:
+                ensure_active_cloud_flow(self.hass, self.flow_id)
             self._cloud_backoff.raise_if_active()
         except ConfigurationError as error:
             return self._claim_abort(error)
@@ -157,7 +166,120 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
     @override
     async def _auth_succeeded(self, tokens: AuthTokens) -> ConfigFlowResult:
         self._cloud_tokens = tokens
+        if self._cloud_reauth is not None:
+            return await self._finish_reauthentication()
         return await self._discover_new_cloud()
+
+    async def async_step_connection_reauthenticate(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Sign in again here: the same sign-in page as for a new access."""
+        return await self._begin_reauthentication()
+
+    async def _begin_reauthentication(
+        self, *, error: str | None = None
+    ) -> ConfigFlowResult:
+        """The sign-in page for this access; error says why it is needed."""
+        edit = self._connection_edit
+        try:
+            if edit is None or self._management().edit(edit.connection_id) != edit:
+                return self.async_abort(reason="configuration_changed")
+            kind = self._management().current().connections[edit.connection_id].kind
+            if kind != CLOUD_KIND:
+                return self.async_abort(reason="configuration_changed")
+            brand = Brand(
+                EntryConfiguration(self._entry, edit.connection_id).cloud_data()[
+                    CONF_BRAND
+                ]
+            )
+        except ConfigurationError, KeyError, ValueError:
+            return self.async_abort(reason="configuration_changed")
+        self._cloud_reauth = edit
+        self._cloud_brand = brand
+        self._cloud_tokens = None
+        self._cloud_backoff = RateLimitBackoff()
+        if error is not None:
+            return self._restart_authorization(error=error)
+        return self._start_authorization()
+
+    async def _finish_reauthentication(self) -> ConfigFlowResult:
+        """Store the new sign-in once the account is confirmed, as the
+        renewed sign-in under "Attention required" does."""
+        edit, tokens = self._cloud_reauth, self._cloud_tokens
+        assert edit is not None and tokens is not None
+        try:
+            await self._management().async_reauthenticate(
+                edit,
+                tokens,
+                request_guard=lambda: ensure_active_cloud_flow(self.hass, self.flow_id),
+            )
+        except ConfigurationError as error:
+            if str(error) in ("reauth_wrong_account", "reauth_no_targets"):
+                return self.async_abort(reason=str(error))
+            if str(error) in ("reauth_targets_missing", "unverifiable_targets"):
+                # The same tokens cannot change the result; only a new
+                # sign-in, possibly with the right account, can.
+                self._cloud_tokens = None
+                return self._restart_authorization(error="reauth_targets_missing")
+            return self.async_abort(reason="configuration_changed")
+        except AuthenticationError:
+            self._cloud_tokens = None
+            return self._restart_authorization(error="invalid_auth")
+        except BaconError as error:
+            if error.category in {"authentication", "account_changed"}:
+                self._cloud_tokens = None
+                return self._restart_authorization(error="invalid_auth")
+            return self.async_show_form(
+                step_id="cloud_retry",
+                errors={
+                    "base": "cloud_rate_limited"
+                    if error.category == "rate_limited"
+                    else "cannot_connect"
+                },
+            )
+        except RateLimited:
+            # A cloud pause; retrying after it keeps this sign-in.
+            return self.async_show_form(
+                step_id="cloud_retry", errors={"base": "cloud_rate_limited"}
+            )
+        except PointTError:
+            return self.async_show_form(
+                step_id="cloud_retry", errors={"base": "cannot_connect"}
+            )
+        self._cloud_reauth = None
+        self._cloud_tokens = None
+        from .managed_entry import ManagedEntry
+
+        runtime = getattr(self._entry, "runtime_data", None)
+        if isinstance(runtime, ManagedEntry):
+            self.hass.loop.call_soon(runtime.schedule_reauthentication)
+        self._end_pending_reauth(edit.connection_id)
+        missing = not_found_bindings(self.hass, self._entry, edit.connection_id)
+        menu = "connection"
+        try:
+            self._connection_edit = self._management().edit(edit.connection_id)
+        except ConfigurationError, KeyError, ValueError:
+            self._connection_edit = None
+            menu = "connections"
+        if missing:
+            # Renewed; a repair note names the systems that were not found.
+            return await self.async_return_to_menu(
+                menu, "reauth_successful_targets_missing", {"count": str(len(missing))}
+            )
+        return await self.async_return_to_menu(menu, "reauth_successful")
+
+    def _end_pending_reauth(self, connection_id: str) -> None:
+        """A renewed sign-in waiting under "Attention required" is done."""
+        flows = self.hass.config_entries.flow
+        for flow in flows.async_progress_by_handler(DOMAIN):
+            context = flow.get("context", {})
+            if (
+                context.get("source") == SOURCE_REAUTH
+                and context.get("entry_id") == self._entry.entry_id
+                and context.get("connection_id") in (connection_id, None)
+            ):
+                with suppress(UnknownFlow):
+                    flows.async_abort(flow["flow_id"])
 
     async def async_step_cloud_retry(
         self, user_input: dict[str, Any] | None = None
@@ -174,6 +296,8 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
             )
         if self._cloud_tokens is None:
             return self._show_or_start_authorization()
+        if self._cloud_reauth is not None:
+            return await self._finish_reauthentication()
         return await self._discover_new_cloud()
 
     async def _discover_new_cloud(self) -> ConfigFlowResult:
@@ -393,12 +517,12 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
                 )
             return self.async_abort(reason="configuration_changed")
         except AuthenticationError:
-            return await self.async_step_connection_reauthenticate()
+            return await self._begin_reauthentication(error="invalid_auth")
         except RateLimited as error:
             return self._discover_paused(error)
         except BaconError as error:
             if error.category in {"authentication", "account_changed"}:
-                return await self.async_step_connection_reauthenticate()
+                return await self._begin_reauthentication(error="invalid_auth")
             return self.async_show_form(
                 step_id="connection_discover_retry", errors={"base": "cannot_connect"}
             )

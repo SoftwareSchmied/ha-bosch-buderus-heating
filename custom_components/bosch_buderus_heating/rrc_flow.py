@@ -25,7 +25,13 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .markdown_text import markdown_literal
-from .options_navigation import NavigatingOptionsFlow
+from .notifications import installation_name
+from .options_navigation import (
+    BACK,
+    BACK_CHOICE,
+    NAVIGATION,
+    NavigatingOptionsFlow,
+)
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -79,6 +85,8 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
     _rrc_point: int | None = None
     _rrc_day: str | None = None
     _rrc_offered: dict[str, ScheduleChoice] | None = None
+    # The checked change (minute, temperature) shown before it is sent.
+    _rrc_pending: tuple[int, float] | None = None
 
     def _rrc_choices(self) -> dict[str, ScheduleChoice]:
         coordinators = pointt_coordinators(self._entry)
@@ -101,13 +109,24 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                 # The controller's program name, as in the zone's program
                 # select; the number without one. Shown as plain text in
                 # the dialog descriptions (markdown_literal there).
+                # The name alone; its number only without a name or when
+                # another program has the same one.
                 name = names.get(int(match[1]))
-                label = f"{name} (#{match[1]})" if name else f"#{match[1]}"
+                if not name:
+                    label = f"#{match[1]}"
+                elif list(names.values()).count(name) > 1:
+                    label = f"{name} (#{match[1]})"
+                else:
+                    label = name
                 if len(coordinators) > 1:
-                    label = (
-                        f"{coordinator.gateway.model or self._entry.title} "
-                        f"[{number}] / {label}"
+                    # The system by the name the user knows.
+                    system = installation_name(
+                        self.hass,
+                        self._entry.entry_id,
+                        coordinator.gateway.gateway_id,
+                        number,
                     )
+                    label = f"{system} / {label}"
                 result[f"{number}:{path}"] = ScheduleChoice(
                     coordinator, snapshot.resource, schedule, label
                 )
@@ -120,6 +139,8 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
         if not choices:
             return self.async_abort(reason="no_rrc_schedules")
         if user_input is not None:
+            if user_input.get("program") == BACK:
+                return await self._show_menu("init")
             offered = self._rrc_offered or choices
             choice = offered.get(str(user_input.get("program", "")))
             if choice is None or not any(
@@ -138,10 +159,14 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                     vol.Required("program"): SelectSelector(
                         SelectSelectorConfig(
                             options=[
-                                SelectOptionDict(value=key, label=choice.label)
-                                for key, choice in choices.items()
+                                BACK_CHOICE,
+                                *(
+                                    SelectOptionDict(value=key, label=choice.label)
+                                    for key, choice in choices.items()
+                                ),
                             ],
                             mode=SelectSelectorMode.DROPDOWN,
+                            translation_key=NAVIGATION,
                         )
                     ),
                 }
@@ -279,27 +304,19 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                 except WriteValidationError:
                     errors["base"] = "rrc_point_invalid"
                 if not errors:
-                    try:
-                        await choice.coordinator.async_edit_rrc_program(
-                            choice.resource, index, minute, temperature
-                        )
-                    except RateLimited:
-                        errors["base"] = "write_rate_limited"
-                    except AuthenticationError:
-                        errors["base"] = "write_authentication_failed"
-                    except WriteValidationError:
-                        errors["base"] = _refused_error(choice.coordinator)
-                    except WriteNotConfirmed:
-                        errors["base"] = "rrc_not_confirmed"
-                    except WriteBusy:
-                        errors["base"] = "write_busy"
-                    except PointTError:
-                        errors["base"] = "rrc_failed"
-                    else:
-                        self._rrc_choice = None
-                        return await self.async_return_to_menu(
-                            "init", "rrc_program_saved"
-                        )
+                    # Before and after first, as for the heating schedules;
+                    # nothing is sent before it is confirmed.
+                    self._rrc_pending = (minute, float(temperature))
+                    return self._rrc_confirm_form(choice, original)
+        return self._rrc_point_form(choice, original, errors, user_input)
+
+    def _rrc_point_form(
+        self,
+        choice: ScheduleChoice,
+        original: SwitchPoint,
+        errors: dict[str, str],
+        user_input: dict[str, Any] | None,
+    ) -> ConfigFlowResult:
         schema = vol.Schema(
             {
                 vol.Required(
@@ -324,7 +341,65 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
             data_schema=self.add_suggested_values_to_schema(schema, user_input),
             errors=errors,
             description_placeholders={"program": markdown_literal(choice.label)},
+            last_step=False,
         )
+
+    def _rrc_confirm_form(
+        self, choice: ScheduleChoice, original: SwitchPoint
+    ) -> ConfigFlowResult:
+        assert self._rrc_pending is not None
+        minute, temperature = self._rrc_pending
+        after = SwitchPoint(original.day, minute, temperature)
+        return self.async_show_form(
+            step_id="rrc_confirm",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "program": markdown_literal(choice.label),
+                "before": _point_label(original),
+                "after": _point_label(after),
+            },
+            last_step=True,
+        )
+
+    async def async_step_rrc_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Send the confirmed change once; a refusal goes back to the point."""
+        choice, index, pending = self._rrc_choice, self._rrc_point, self._rrc_pending
+        if choice is None or index is None or pending is None:
+            return await self.async_step_rrc_programs()
+        if choice.coordinator not in (pointt_coordinators(self._entry) or ()):
+            return self.async_abort(reason="no_rrc_schedules")
+        original = choice.schedule.points[index]
+        if user_input is None:
+            return self._rrc_confirm_form(choice, original)
+        minute, temperature = pending
+        self._rrc_pending = None
+        errors: dict[str, str] = {}
+        try:
+            await choice.coordinator.async_edit_rrc_program(
+                choice.resource, index, minute, temperature
+            )
+        except RateLimited:
+            errors["base"] = "write_rate_limited"
+        except AuthenticationError:
+            errors["base"] = "write_authentication_failed"
+        except WriteValidationError:
+            errors["base"] = _refused_error(choice.coordinator)
+        except WriteNotConfirmed:
+            errors["base"] = "rrc_not_confirmed"
+        except WriteBusy:
+            errors["base"] = "write_busy"
+        except PointTError:
+            errors["base"] = "rrc_failed"
+        else:
+            self._rrc_choice = None
+            return await self.async_return_to_menu("init", "rrc_program_saved")
+        entered = {
+            "time": f"{minute // 60:02d}:{minute % 60:02d}",
+            "temperature": temperature,
+        }
+        return self._rrc_point_form(choice, original, errors, entered)
 
 
 _PROGRAM_NAME = re.compile(rf"^/programs/pg({rrc.RRC_ID})/name$")

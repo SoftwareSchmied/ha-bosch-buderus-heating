@@ -96,7 +96,7 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
     result = await submit(hass, manager, result, {"interval": 61})
     assert result["errors"] == {"interval": "local_invalid_interval"}
     result = await submit(hass, manager, result, {"interval": 300})
-    assert result["type"] == "menu"
+    assert result["step_id"] == "result_connection_saved"
     await eventually(lambda: len(probes) == 4, timeout=SLOW)
 
     # Existing entities may display paired local readings after explicit opt-in.
@@ -127,7 +127,7 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
     result = await submit(hass, manager, result, {"next_step_id": "local_values"})
     assert result["data_schema"]({})["enabled"] is True
     result = await submit(hass, manager, result, {"enabled": False})
-    assert result["type"] == "menu"
+    assert result["step_id"] == "result_connection_saved"
     await eventually(lambda: not coordinator.local_selection.enabled, timeout=SLOW)
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
@@ -137,7 +137,7 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
     result = await submit(hass, manager, result, {"next_step_id": "local_values"})
     assert result["step_id"] == "local_values"
     result = await submit(hass, manager, result, {"enabled": True})
-    assert result["type"] == "menu"
+    assert result["step_id"] == "result_connection_saved"
     target_options = management.current().to_options()["targets"]
     assert any(item.get("local_values") is True for item in target_options.values())
     await eventually(lambda: coordinator.local_selection.enabled, timeout=SLOW)

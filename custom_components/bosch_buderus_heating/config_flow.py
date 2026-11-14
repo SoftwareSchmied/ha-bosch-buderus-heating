@@ -118,6 +118,7 @@ from .notifications import (
     notification_includes_notices,
     notification_policy,
 )
+from .options_navigation import BACK, BACK_CHOICE
 from .pointt import (
     AuthenticationError,
     AuthTokens,
@@ -169,6 +170,17 @@ _LOGGER = logging.getLogger(__name__)
 
 # P49b step 7: the marker that opens an options flow at the local setup.
 LOCAL_FIRST_START = "local_first_start"
+# Setup forms that always lead to another form ("Next").
+_CONFIG_NEXT_STEPS = frozenset(
+    {
+        "auth_wait",
+        "cloud",
+        "reauth_confirm",
+        "reconfigure_retry",
+        "retry",
+        "selection_expired",
+    }
+)
 
 
 class BoschBuderusConfigFlow(
@@ -207,6 +219,13 @@ class BoschBuderusConfigFlow(
 
     # P49b step 7: continue with the local setup of the new entry.
     _then_local = False
+
+    @override
+    def async_show_form(self, **kwargs: Any) -> ConfigFlowResult:
+        """An intermediate form says "Next" (its own choice stays)."""
+        if kwargs.get("step_id") in _CONFIG_NEXT_STEPS:
+            kwargs.setdefault("last_step", False)
+        return super().async_show_form(**kwargs)
 
     @override
     async def async_step_user(
@@ -1034,8 +1053,6 @@ class BoschBuderusOptionsFlow(
             return await self.async_step_local_setup()
         return self.async_show_menu(
             step_id="init",
-            # The note of a finished action, see ``options_navigation``.
-            description_placeholders={"result": self.take_result_note()},
             menu_options=[
                 *(["connections"] if self._entry.version == 4 else []),
                 *(
@@ -1196,6 +1213,8 @@ class BoschBuderusOptionsFlow(
             return await self.async_step_holiday_mode()
         if user_input is not None:
             selected = user_input.get(CONF_HOLIDAY_PERIOD)
+            if selected == BACK:
+                return await self.async_step_init()
             if isinstance(selected, str) and selected in mode_choices:
                 self._selected_key = selected
                 return await self.async_step_holiday_mode()
@@ -1727,9 +1746,12 @@ class BoschBuderusOptionsFlow(
                     vol.Required(CONF_HOLIDAY_PERIOD): SelectSelector(
                         SelectSelectorConfig(
                             options=[
-                                SelectOptionDict(value=key, label=choice.label)
-                                for key, choice in choices.items()
-                                if not key.startswith("create:")
+                                BACK_CHOICE,
+                                *(
+                                    SelectOptionDict(value=key, label=choice.label)
+                                    for key, choice in choices.items()
+                                    if not key.startswith("create:")
+                                ),
                             ]
                             + (
                                 [SelectOptionDict(value="create", label="New holiday")]

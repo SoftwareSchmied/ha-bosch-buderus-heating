@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Sign in with SingleKey ID",
-        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
+        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address. If SingleKey ID shows a page announcing a redirect and nothing happens, select the link or button on that page.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
         "data": {
           "redirect_url": "Complete redirect address"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Reconfigure and rediscover",
-        "description": "Choose the app brand, gateways, and polling profile. Saving reloads the integration and performs a complete resource discovery. Use this after a firmware update or when circuits, hot water systems, heat sources, or gateways have changed. **Standard** reads current operating values every minute. **Cloud-friendly** reduces cloud traffic by reading them every two minutes and all other changing values less often. Changing the app brand requires a new SingleKey ID sign-in.",
+        "description": "Choose the app brand, gateways and polling profile. Saving reloads the integration and searches all resources again, for example after a firmware update or a changed system. Changing the app brand needs a new SingleKey ID sign-in.",
         "data": {
           "brand": "App brand",
           "gateway_ids": "Gateways",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Choose the existing setup",
-        "description": "Select the setup this local gateway belongs to. This will not create another installation.",
+        "description": "Select the setup this local gateway belongs to, or set it up as a new setup with local access only.",
         "data": {
-          "owner": "Existing setup"
+          "owner": "Setup"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "I confirm this gateway and its certificate"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirm the data port certificate",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.\n\nIf the certificate does not belong to your gateway, close the dialog; nothing is sent.",
+        "data": {
+          "confirm": "I confirm this gateway and its certificate"
+        }
+      },
       "local_auth": {
         "title": "Sign in with the device label",
         "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. If correcting a typo takes longer than five minutes, press the buttons again. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and Pass are not saved.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Confirm the local access",
-        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
-        "data": {
-          "confirm": "Save this local access"
-        }
+        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup. To save nothing, close the dialog instead."
       },
       "local_retry": {
         "title": "Local check could not finish",
@@ -151,6 +155,7 @@
       "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
+      "singlekey_page": "This is the address of the SingleKey ID page, not the app address. If that page says you will be redirected and nothing happens, select its link or button. Then copy the `{redirect_scheme}://` address from the red **Failed to launch** message in the Chrome console.",
       "gateway_changed": "The gateway list changed while this dialog was open. Close the dialog and open Reconfigure again.",
       "select_gateway": "Select at least one device from the list before continuing.",
       "unknown": "An unexpected error occurred in the cloud access. Wait a moment and try again.",
@@ -172,6 +177,7 @@
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
       "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
+      "local_certificate_unconfirmed": "Tick the box to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
       "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
       "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
       "local_missing_resource": "The gateway does not provide a required setup resource.",
@@ -238,7 +244,6 @@
     "step": {
       "init": {
         "title": "Settings",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
@@ -376,6 +381,10 @@
           "temperature": "Temperature"
         }
       },
+      "rrc_confirm": {
+        "title": "Save switch point",
+        "description": "**{program}**\n\n**Before:** {before}\n\n**After:** {after}\n\nThe change is sent once and then read back. It applies to all assigned zones."
+      },
       "rrc_day": {
         "title": "Choose switch point",
         "description": "**{program}**",
@@ -457,18 +466,79 @@
       },
       "connections": {
         "title": "Connections",
-        "description": "{result}Choose the access you want to manage.",
+        "description": "Choose the access you want to manage.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Set up local access",
           "back": "← Back"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Connection test",
-        "description": "{result}"
+        "description": "OK, answer after {ms} ms. Settings stay unchanged."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Connection test",
+        "description": "OK, answer after {ms} ms; {count} gateway(s) in the account. Settings stay unchanged."
+      },
+      "connection_test_not_running": {
+        "title": "Connection test",
+        "description": "Not tested: the access is not running right now (disabled, starting or stopped)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Connection test",
+        "description": "Sign-in required: please sign in again via “Sign in again”."
+      },
+      "connection_test_auth_local": {
+        "title": "Connection test",
+        "description": "Sign-in required: please set up the local access again via “Change local access”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Connection test",
+        "description": "The device certificate has changed: please set up the local access again via “Change local access”."
+      },
+      "connection_test_paused": {
+        "title": "Connection test",
+        "description": "Not tested: requests are paused until {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Connection test",
+        "description": "Not tested: requests are paused right now."
+      },
+      "connection_test_busy": {
+        "title": "Connection test",
+        "description": "Not tested: the access is busy right now. Please try again shortly."
+      },
+      "connection_test_unreachable": {
+        "title": "Connection test",
+        "description": "Not reachable: no answer ({ms} ms). Check the network and the device."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Connection test",
+        "description": "Not reachable: no answer ({ms} ms). Check the network and the device. Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it."
+      },
+      "connection_test_other_gateway": {
+        "title": "Connection test",
+        "description": "A different gateway answers at this address. Set up the local access again."
+      },
+      "connection_test_error": {
+        "title": "Connection test",
+        "description": "Test failed: {kind}."
       },
       "connection": {
         "title": "Manage access",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Test connection now",
           "connection_enabled": "Switch access on or off",
@@ -523,7 +593,7 @@
       },
       "connection_polling": {
         "title": "Polling frequency",
-        "description": "Standard reads current heating operating values every minute, settings and energy values every 5 minutes and slower information every 15 minutes. Cloud-friendly doubles these intervals. Active faults are checked every minute in both profiles. The profile applies to the heating and wallbox polling of the selected cloud connection; additional cloud devices report changes as messages. Sign-in, device checks and the confirmation after a change can add requests outside this schedule. If a polling cycle takes longer than its interval, the next one starts later.",
+        "description": "**Standard** reads current operating values every minute and settings and energy values every 5 minutes. **Cloud-friendly** doubles these intervals. Active faults are checked every minute in both profiles.",
         "data": {
           "polling_profile": "Polling profile"
         }
@@ -537,7 +607,7 @@
       },
       "cloud_auth": {
         "title": "Sign in with SingleKey ID",
-        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
+        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address. If SingleKey ID shows a page announcing a redirect and nothing happens, select the link or button on that page.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
         "data": {
           "redirect_url": "Complete redirect address"
         }
@@ -568,9 +638,9 @@
       },
       "local_owner": {
         "title": "Choose the existing setup",
-        "description": "Select the setup this local gateway belongs to. This will not create another installation.",
+        "description": "Select the setup this local gateway belongs to, or set it up as a new setup with local access only.",
         "data": {
-          "owner": "Existing setup"
+          "owner": "Setup"
         }
       },
       "local_target": {
@@ -608,6 +678,13 @@
           "confirm": "I confirm this gateway and its certificate"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirm the data port certificate",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.\n\nIf the certificate does not belong to your gateway, close the dialog; nothing is sent.",
+        "data": {
+          "confirm": "I confirm this gateway and its certificate"
+        }
+      },
       "local_auth": {
         "title": "Sign in with the device label",
         "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. If correcting a typo takes longer than five minutes, press the buttons again. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and Pass are not saved.",
@@ -634,10 +711,7 @@
       },
       "local_result": {
         "title": "Confirm the local access",
-        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
-        "data": {
-          "confirm": "Save this local access"
-        }
+        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup. To save nothing, close the dialog instead."
       },
       "local_retry": {
         "title": "Local check could not finish",
@@ -645,14 +719,14 @@
       },
       "local_polling": {
         "title": "Local polling",
-        "description": "Confirmed resources: {known}. Currently available: {available}. These counts show the state when this dialog was opened. The interval is the target for live values. Settings, energy values and diagnostics are read every 5 minutes and counters every 15 minutes, or at this interval if it is longer; static details are read daily. A value becomes unavailable after three missed intervals. Large resource sets can take longer. Cloud polling remains independent. Readings that the cloud also provides are read locally at least as often as in the cloud.",
+        "description": "Confirmed resources: {known}, available now: {available}. The interval is the target for live values; slower values are read less often. The documentation describes the exact timing.",
         "data": {
           "interval": "Target interval for live values"
         }
       },
       "local_values": {
         "title": "Local values for existing entities",
-        "description": "While the cloud is running, this option decides whether existing sensors use the local value of a reading that both accesses provide under the same documented resource. Without the cloud (switched off, sign-in required, paused, limited or unreachable), local values are always used. The option is on by default for new setups with cloud and local access.\n\nWhen enabled, the local value is used as long as it is current. If the local value is outdated or missing, the current cloud value is used; if both are outdated, the sensor becomes unavailable. Energy, start and operating-time counters use the local value too, but only change their source when every shown count is at least the last shown count, so a source change never makes them count backwards. Adjustable settings keep using the cloud. Entity IDs, names and history stay unchanged. Controls and changes are still sent through the cloud.",
+        "description": "While the cloud runs, this decides whether existing sensors use the local value of a reading that both accesses provide. Without the cloud, local values are always used; settings and controls keep using the cloud. Entity IDs, names and history stay unchanged.",
         "data": {
           "enabled": "Use local values"
         }
@@ -716,6 +790,122 @@
           "confirm": "Revoke this token on the gateway",
           "confirm_end": "A local access using this token ends"
         }
+      },
+      "result_connection_removed": {
+        "title": "Result",
+        "description": "The access was removed."
+      },
+      "result_connection_saved": {
+        "title": "Result",
+        "description": "The change was saved."
+      },
+      "result_holiday_created": {
+        "title": "Result",
+        "description": "The holiday was created and confirmed by reading it back."
+      },
+      "result_holiday_deleted": {
+        "title": "Result",
+        "description": "The holiday was deleted and its removal was confirmed by the heating system."
+      },
+      "result_holiday_unchanged": {
+        "title": "Result",
+        "description": "Nothing was changed, so nothing was sent to the heating system."
+      },
+      "result_holiday_updated": {
+        "title": "Result",
+        "description": "The holiday settings were saved and confirmed by the heating system."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Result",
+        "description": "It was the token this access used, so local access has ended, but the access could not be switched off. Switch it off or remove it, or set it up again with the device label."
+      },
+      "result_local_token_access_ended": {
+        "title": "Result",
+        "description": "It was the token this access used. Local access has ended and the access was switched off. Set it up again with the device label, or remove it."
+      },
+      "result_local_token_not_removed": {
+        "title": "Result",
+        "description": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Result",
+        "description": "The chosen token was revoked on the gateway and the access was removed. The token this access itself used is still on the gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Result",
+        "description": "The gateway refused the revocation; the token is still listed."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Result",
+        "description": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check."
+      },
+      "result_local_token_revoked": {
+        "title": "Result",
+        "description": "The token was revoked; the gateway no longer lists it."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Result",
+        "description": "The token was revoked on the gateway and the access was removed."
+      },
+      "result_local_tokens_changed": {
+        "title": "Result",
+        "description": "The token list changed in the meantime. Nothing was revoked or removed. Open the list again."
+      },
+      "result_notifications_saved": {
+        "title": "Result",
+        "description": "The notification settings were saved."
+      },
+      "result_rescan_partial": {
+        "title": "Result",
+        "description": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them."
+      },
+      "result_rescan_paused": {
+        "title": "Result",
+        "description": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later."
+      },
+      "result_rescan_planned": {
+        "title": "Result",
+        "description": "The search is planned and runs with the next regular update; new parts appear as soon as they are found."
+      },
+      "result_rescan_running": {
+        "title": "Result",
+        "description": "A search is already running or planned. Please wait until it has finished."
+      },
+      "result_rescan_unavailable": {
+        "title": "Result",
+        "description": "The search was not started: no access to the system is ready right now."
+      },
+      "result_rrc_program_saved": {
+        "title": "Result",
+        "description": "The switch point was saved and confirmed by reading it back."
+      },
+      "result_switch_program_saved": {
+        "title": "Result",
+        "description": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Result",
+        "description": "Sign-in was renewed successfully."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Result",
+        "description": "Sign-in was renewed. {count} switched-on systems or devices were not found in the account; they stay configured. A repair note names them and explains how to forget them."
+      },
+      "result_recordings_import_on": {
+        "title": "Result",
+        "description": "The import of the plant recordings is switched on; the first values follow within a few minutes."
+      },
+      "result_recordings_import_off": {
+        "title": "Result",
+        "description": "The import of the plant recordings is switched off; imported values stay."
+      },
+      "result_recordings_deleted": {
+        "title": "Result",
+        "description": "Imported statistics deleted: {count}. The import is switched off."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Result",
+        "description": "Nothing was deleted."
       }
     },
     "error": {
@@ -776,7 +966,9 @@
       "cloud_connection_disabled": "Enable this cloud connection before searching for devices.",
       "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
+      "reauth_targets_missing": "This sign-in found none of the switched-on systems and devices. The previous credentials are kept. Check that you signed in with the same account as before. If the systems were removed from the account, open Configure → Connections → the cloud access: switch on a system that is still in the account under **Use for systems and devices**, or switch the removed ones off and remove them with **Forget deselected systems**. If none is left, remove the cloud access and connect it again.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
+      "singlekey_page": "This is the address of the SingleKey ID page, not the app address. If that page says you will be redirected and nothing happens, select its link or button. Then copy the `{redirect_scheme}://` address from the red **Failed to launch** message in the Chrome console.",
       "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
       "select_gateway": "Select at least one device from the list before continuing.",
       "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app. A room controller with older firmware only appears once its firmware has been updated and it has been set up in the current app with your SingleKey ID.",
@@ -794,6 +986,7 @@
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
       "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
+      "local_certificate_unconfirmed": "Tick the box to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
       "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
       "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
       "local_missing_resource": "The gateway does not provide a required setup resource.",
@@ -837,12 +1030,8 @@
       "no_notification_gateways": "No heating system is configured.",
       "notification_gateways_changed": "The installation selection changed. Open the settings again.",
       "holiday_changed": "The selected holiday has changed or is no longer available for editing. Open the holiday again to review its current details.",
-      "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
-      "holiday_unchanged": "Nothing was changed, so nothing was sent to the heating system.",
       "no_writable_holidays": "Holiday management is currently unavailable. Wait until the installation has provided its holiday settings.",
-      "holiday_deleted": "The holiday was deleted and its removal was confirmed by the heating system.",
       "not_loaded": "Bosch/Buderus Home Comfort must be loaded before a holiday can be configured.",
-      "holiday_created": "The holiday was created and confirmed by reading it back.",
       "holiday_previous_request_found": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Manage holiday periods first.",
       "holiday_already_exists": "A holiday with this start and circuit selection already exists. No additional holiday was created. Open Manage holiday periods and edit the existing entry.",
       "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the result of this request without creating a second holiday.",
@@ -851,7 +1040,6 @@
       "no_rrc_schedules": "No current, supported weekly schedule of a room controller is available.",
       "no_switch_programs": "No current schedule of a heating circuit or of the hot water can be changed here.",
       "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Reopen it to see the current switch points.",
-      "switch_program_saved": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}",
       "controls_not_loaded": "Controls are only available through the cloud access; the local access only reads. Connect a cloud access or wait until it has loaded.",
       "controls_auth_required": "Controls are not available: the cloud access needs a new sign-in. Readings stay visible.",
       "controls_cloud_stopped": "Controls are not available: the cloud access is stopped or being restarted. Readings stay visible.",
@@ -861,8 +1049,9 @@
       "controls_not_current": "Controls are not available yet: the cloud has not delivered current values. Try again in a moment.",
       "controls_none": "This appliance currently reports no settings that can be changed here.",
       "configuration_changed": "The connection settings changed while this dialog was open. Please close it and try again.",
+      "reauth_wrong_account": "The selected account does not match the configured devices. Sign in with the original account.",
+      "reauth_no_targets": "This cloud access has no systems or devices left, and the account it belongs to cannot be confirmed. The previous credentials are kept. To use a cloud account again, remove the cloud access under Configure → Connections and connect it again.",
       "no_connections": "No access is configured. Existing systems and entities are retained.",
-      "connection_reauth_started": "Signing in again is prepared. Close this dialog and select **Reconfigure** for this integration under Settings → Devices & services, in the **Attention required** section.",
       "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
       "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
       "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",
@@ -880,29 +1069,8 @@
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
-      "rescan_planned": "The search is planned and runs with the next regular update; new parts appear as soon as they are found.",
-      "rescan_paused": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later.",
-      "rescan_running": "A search is already running or planned. Please wait until it has finished.",
-      "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
       "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
-      "recordings_import_on": "The import of the plant recordings is switched on; the first values follow within a few minutes.",
-      "recordings_import_off": "The import of the plant recordings is switched off; imported values stay.",
-      "recordings_deleted": "Imported statistics deleted: {count}. The import is switched off.",
-      "recordings_delete_kept": "Nothing was deleted.",
-      "connection_saved": "The change was saved.",
-      "connection_removed": "The access was removed.",
-      "notifications_saved": "The notification settings were saved.",
-      "rrc_program_saved": "The switch point was saved and confirmed by reading it back.",
-      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first.",
-      "local_tokens_changed": "The token list changed in the meantime. Nothing was revoked or removed. Open the list again.",
-      "local_token_revoked": "The token was revoked; the gateway no longer lists it.",
-      "local_token_access_ended": "It was the token this access used. Local access has ended and the access was switched off. Set it up again with the device label, or remove it.",
-      "local_token_revoke_rejected": "The gateway refused the revocation; the token is still listed.",
-      "local_token_revoke_unclear": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check.",
-      "local_token_revoked_removed": "The token was revoked on the gateway and the access was removed.",
-      "local_token_not_removed": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again.",
-      "local_token_old_revoked_removed": "The chosen token was revoked on the gateway and the access was removed. The token this access itself used is still on the gateway.",
-      "local_token_access_end_failed": "It was the token this access used, so local access has ended, but the access could not be switched off. Switch it off or remove it, or set it up again with the device label."
+      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."
@@ -1377,6 +1545,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Back",
         "create": "New holiday"
       }
     },
@@ -1467,6 +1636,21 @@
         "continue": "Continue with saved token",
         "discard": "Discard pending attempt",
         "later": "Continue later"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "New system (local only)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "New setup (local access only)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Back"
       }
     }
   },

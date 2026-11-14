@@ -43,7 +43,7 @@ from custom_components.bosch_buderus_heating.local_transport import (
     CertificateBinding,
     PortRole,
 )
-from tests.helpers.options_menu import outcome
+from tests.helpers.options_menu import leave_page, outcome
 from tests.test_local_auth import auth_gateway as auth_gateway
 from tests.test_local_probe import CONTEXT
 from tests.test_local_transport import certificates as certificates
@@ -539,10 +539,10 @@ def _choices(result):
     schema = result["data_schema"].schema
     for key, selector in schema.items():
         if str(key) == "token":
-            return {
-                option["label"]: option["value"]
-                for option in selector.config["options"]
-            }
+            # The tokens offered; the first choice ("back") leads back.
+            options = selector.config["options"]
+            assert options[0]["value"] == "back"
+            return {option["label"]: option["value"] for option in options[1:]}
     return {}
 
 
@@ -596,8 +596,8 @@ async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog)
     )
     result = await hass.config_entries.options.async_configure(flow, {"token": oldest})
     result = await hass.config_entries.options.async_configure(flow, BOTH)
-    assert result["step_id"] == "connection"
     assert await outcome(hass, result) == "local_token_revoked"
+    assert (await leave_page(hass, result))["step_id"] == "connection"
     ((_, form),) = gateway.posts
     assert form["token_id"] == ["tid-own-old"]
     assert [path[0] for path in _paths(requests)] == [
@@ -646,7 +646,7 @@ async def test_revoking_the_used_token_switches_the_access_off(hass, dialog):
         flow, {"confirm": True, "confirm_end": True}
     )
     assert await outcome(hass, result) == "local_token_access_ended"
-    assert result["step_id"] == "connection"
+    assert (await leave_page(hass, result))["step_id"] == "connection"
     assert entry.options["connections"]["local"]["enabled"] is False
     assert "local" in entry.data["connections"] and len(gateway.posts) == 1
 
@@ -933,7 +933,7 @@ async def test_tokens_with_the_same_time_get_distinct_labels(hass, dialog):
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     (selector,) = result["data_schema"].schema.values()
-    labels = [option["label"] for option in selector.config["options"]]
+    labels = [option["label"] for option in selector.config["options"]][1:]
     assert len(set(labels)) == 3 and labels[1] == labels[0] + " (2)"
 
 

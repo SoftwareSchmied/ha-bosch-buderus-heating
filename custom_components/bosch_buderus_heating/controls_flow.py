@@ -27,7 +27,12 @@ from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
 from .i18n import LANGUAGES, dialog_config
 from .notifications import gateway_notification_key, installation_name
-from .options_navigation import NavigatingOptionsFlow
+from .options_navigation import (
+    BACK,
+    BACK_CHOICE,
+    NAVIGATION,
+    NavigatingOptionsFlow,
+)
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -368,26 +373,39 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
             self._control_gateway = next(iter(gateways))
             self._control_displayed = None
             return await self.async_step_operate()
+        if user_input is not None and user_input.get("installation") == BACK:
+            return await self._show_menu("init")
         if user_input is not None and user_input.get("installation") in gateways:
             self._control_gateway = user_input["installation"]
             self._control_displayed = None
             return await self.async_step_operate()
-        choices = [
-            SelectOptionDict(
-                value=key,
-                label=installation_name(
-                    self.hass, self._entry.entry_id, item.gateway.gateway_id, index
-                )
-                + f" ({index})",
+        names = [
+            installation_name(
+                self.hass, self._entry.entry_id, item.gateway.gateway_id, index
             )
-            for index, (key, item) in enumerate(gateways.items(), 1)
+            for index, item in enumerate(gateways.values(), 1)
+        ]
+        # The number only where two systems have the same name.
+        choices = [
+            BACK_CHOICE,
+            *(
+                SelectOptionDict(
+                    value=key,
+                    label=f"{name} ({index})" if names.count(name) > 1 else name,
+                )
+                for index, (key, name) in enumerate(
+                    zip(gateways, names, strict=True), 1
+                )
+            ),
         ]
         return self.async_show_form(
             step_id="controls",
             data_schema=vol.Schema(
                 {
                     vol.Required("installation"): SelectSelector(
-                        SelectSelectorConfig(options=choices)
+                        SelectSelectorConfig(
+                            options=choices, translation_key=NAVIGATION
+                        )
                     )
                 }
             ),

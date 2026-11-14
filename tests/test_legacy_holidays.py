@@ -9,7 +9,6 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from homeassistant.components.calendar.const import CalendarEntityFeature
-from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusHolidayActiveBinarySensor,
@@ -395,7 +394,7 @@ async def test_legacy_native_dialog_has_dates_no_clock_or_name_and_saves(
         else next(
             option["value"]
             for option in options
-            if option["value"] not in ("create",)
+            if option["value"] not in ("create", "back")
             and not option["value"].startswith("mode:")
         )
     )
@@ -419,7 +418,6 @@ async def test_legacy_native_dialog_has_dates_no_clock_or_name_and_saves(
     draft.update(holiday_start="2030-11-01", holiday_end="2030-11-04")
     result = await hass.config_entries.options.async_configure(result["flow_id"], draft)
     # Back in the main menu with the note of the saved holiday.
-    assert result["type"] is FlowResultType.MENU
     assert await outcome(hass, result) == (
         "holiday_created" if creating else "holiday_updated"
     )
@@ -699,7 +697,8 @@ async def test_full_slots_have_no_create_action_but_remain_editable(
     entry, _coordinator = flow_entry(hass, resources)
     result = await _start_holiday_options(hass, entry)
     options = next(iter(result["data_schema"].schema.values())).config["options"]
-    assert len(options) == 1 and options[0]["value"] != "create"
+    assert options[0]["value"] == "back"
+    assert len(options) == 2 and options[1]["value"] != "create"
 
 
 async def test_legacy_calendar_uid_capacity_and_exclusive_dates(environment):

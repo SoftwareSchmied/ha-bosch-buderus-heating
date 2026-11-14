@@ -88,6 +88,9 @@ async def settle(hass, manager, result):
 
 
 async def submit(hass, manager, result, data):
+    if result.get("step_id") == "local_result" and data == {"confirm": True}:
+        # Since 0.9.2 the page has no box: OK alone saves.
+        data = {}
     return await settle(
         hass, manager, await manager.async_configure(result["flow_id"], data)
     )
@@ -143,7 +146,7 @@ async def test_options_import_to_completion_preserves_owner_and_reads_twice(
     before = management.current()
     manager = hass.config_entries.options
     result = await imported(hass, entry, target)
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert result["type"] == FlowResultType.FORM
     assert supported[0] == [PortRole.RESOURCES] and not supported[1]
     assert result["data_schema"]({})["confirm"] is False
@@ -217,7 +220,7 @@ async def test_a_kept_token_is_sent_only_after_the_new_certificate_is_confirmed(
     assert selector.config["options"] == ["label", "keep", "token"]
     assert result["data_schema"]({})["method"] == "label"
     result = await submit(hass, manager, result, {"method": "keep"})
-    assert result["step_id"] == "local_certificate", result.get("errors")
+    assert result["step_id"] == "local_certificate_data", result.get("errors")
     assert len(reads) == sent  # nothing sent with the token yet
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result"
@@ -339,7 +342,7 @@ async def test_an_ignored_discovery_stays_ignored(hass, supported, journal):
     )
     assert other["step_id"] == "local_owner"
     owners = next(iter(other["data_schema"].schema.values())).config["options"]
-    assert [item["value"] for item in owners] == [entry.entry_id]
+    assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
     assert entry.unique_id == entry.entry_id  # existing entries keep theirs
 
 
@@ -440,7 +443,7 @@ async def test_an_entry_added_meanwhile_turns_the_notice_into_an_owner_choice(
     result = await manager.async_configure(result["flow_id"], {})
     assert result["step_id"] == "local_owner"
     owners = next(iter(result["data_schema"].schema.values())).config["options"]
-    assert [item["value"] for item in owners] == [entry.entry_id]
+    assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
@@ -469,7 +472,7 @@ async def test_close_after_token_import_resumes_without_auth_post(
     result = await start(hass, entry, target)
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert (await journal.records())[0].credentials == record.credentials
     assert supported[0] == [PortRole.RESOURCES, PortRole.RESOURCES]
 
@@ -651,7 +654,7 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
         and LABEL.password not in journal._path.read_text()
     )
     if status == 200:
-        assert result["step_id"] == "local_certificate"
+        assert result["step_id"] == "local_certificate_data"
         assert inspections == [PortRole.AUTHENTICATION, PortRole.RESOURCES]
         result = await submit(hass, manager, result, {"confirm": True})
         assert result["step_id"] == "local_result"
@@ -719,7 +722,7 @@ async def test_rejected_label_sign_in_retries_without_new_confirmations(
     assert result["errors"] == {"base": "local_invalid_credentials"}
     result = await submit(hass, manager, result, values)
     assert len(calls) == 2 and not statuses
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert inspections == [PortRole.AUTHENTICATION, PortRole.RESOURCES]
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result"
@@ -753,13 +756,13 @@ async def test_continue_after_a_temporary_error_keeps_the_confirmed_certificate(
     monkeypatch.setattr(setup, "read_local_probe", flaky)
     manager = hass.config_entries.options
     result = await imported(hass, entry, target)
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
     assert inspections == [PortRole.RESOURCES, PortRole.RESOURCES]
     assert result["step_id"] == (
-        "local_result" if certificate == "same" else "local_certificate"
+        "local_result" if certificate == "same" else "local_certificate_data"
     )
     assert management.current().minor_version == 1
 
@@ -847,7 +850,7 @@ async def test_saved_certificate_is_reused_only_when_exactly_equal(
     monkeypatch.setattr(flow, "inspect_local_certificate", inspect)
     result = await imported(hass, entry, target)
     assert result["step_id"] == (
-        "local_certificate" if change == "different" else "local_result"
+        "local_certificate_data" if change == "different" else "local_result"
     )
     if change == "different":
         assert result["description_placeholders"]["previous"] == (b"a" * 32).hex()

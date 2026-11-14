@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Prihlásenie pomocou SingleKey ID",
-        "description": "SingleKey ID je rovnaké prihlásenie, aké používa vaša aplikácia Bosch alebo Buderus. Použite rovnakú e-mailovú adresu alebo mobilné číslo a heslo. Nepotrebujete nový účet a heslo v Home Assistant **nezadávate**.\n\n1. Nechajte toto okno otvorené a v novej karte prehliadača Chrome otvorte [SingleKey ID]({authorization_url}). Vždy použite tento novo vygenerovaný odkaz.\n2. Stlačte tam `F12` a vo vývojárskych nástrojoch otvorte **Konzola** / **Console**.\n3. Prihláste sa údajmi SingleKey ID, ktoré používa vaša vykurovacia aplikácia.\n4. Po prihlásení sa môže zobraziť hlásenie o probléme so sieťou. V takom prípade to zvyčajne znamená len to, že Chrome nedokázal otvoriť adresu aplikácie `{redirect_scheme}://`.\n5. V konzole nájdite červené hlásenie **Failed to launch** alebo **Connecting to**. Kliknite pravým tlačidlom myši na modrú adresu `{redirect_scheme}://` v tomto hlásení a vyberte **Kopírovať adresu odkazu** / **Copy link address**.\n6. Vráťte sa do tohto okna, nižšie vložte celú adresu a vyberte **OK**. Pole môže z bezpečnostných dôvodov zobrazovať bodky.\n\nPoužite adresu z tohto konkrétneho pokusu o prihlásenie a nekopírujte iba parameter `code`. Úplná adresa obsahuje krátkodobý jednorazový kód. Nikdy ju nezdieľajte v hlásení problému, v chate, na snímke obrazovky ani v protokole.",
+        "description": "SingleKey ID je rovnaké prihlásenie, aké používa vaša aplikácia Bosch alebo Buderus. Použite rovnakú e-mailovú adresu alebo mobilné číslo a heslo. Nepotrebujete nový účet a heslo v Home Assistant **nezadávate**.\n\n1. Nechajte toto okno otvorené a v novej karte prehliadača Chrome otvorte [SingleKey ID]({authorization_url}). Vždy použite tento novo vygenerovaný odkaz.\n2. Stlačte tam `F12` a vo vývojárskych nástrojoch otvorte **Konzola** / **Console**.\n3. Prihláste sa údajmi SingleKey ID, ktoré používa vaša vykurovacia aplikácia.\n4. Po prihlásení sa môže zobraziť hlásenie o probléme so sieťou. V takom prípade to zvyčajne znamená len to, že Chrome nedokázal otvoriť adresu aplikácie `{redirect_scheme}://`. Ak SingleKey ID zobrazí stránku oznamujúcu presmerovanie a nič sa nestane, zvoľte odkaz alebo tlačidlo na tejto stránke.\n5. V konzole nájdite červené hlásenie **Failed to launch** alebo **Connecting to**. Kliknite pravým tlačidlom myši na modrú adresu `{redirect_scheme}://` v tomto hlásení a vyberte **Kopírovať adresu odkazu** / **Copy link address**.\n6. Vráťte sa do tohto okna, nižšie vložte celú adresu a vyberte **OK**. Pole môže z bezpečnostných dôvodov zobrazovať bodky.\n\nPoužite adresu z tohto konkrétneho pokusu o prihlásenie a nekopírujte iba parameter `code`. Úplná adresa obsahuje krátkodobý jednorazový kód. Nikdy ju nezdieľajte v hlásení problému, v chate, na snímke obrazovky ani v protokole.",
         "data": {
           "redirect_url": "Úplná adresa presmerovania"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Prekonfigurovať a znova vyhľadať",
-        "description": "Vyberte značku aplikácie, brány a profil dopytovania. Uložením sa integrácia znova načíta a vykoná sa úplné vyhľadanie zdrojov. Použite to po aktualizácii firmvéru alebo po zmene okruhov, systémov teplej vody, zdrojov tepla či brán. **Štandardný** profil číta aktuálne prevádzkové hodnoty každú minútu. Profil **Šetrný ku cloudu** znižuje prenos dát do cloudu: tieto hodnoty číta každé dve minúty a všetky ostatné meniace sa hodnoty zriedkavejšie. Zmena značky aplikácie vyžaduje nové prihlásenie pomocou SingleKey ID.",
+        "description": "Vyberte značku aplikácie, brány a profil dopytovania. Uloženie znova načíta integráciu a znova vyhľadá všetky prostriedky, napríklad po aktualizácii firmvéru alebo zmene inštalácie. Zmena značky aplikácie vyžaduje nové prihlásenie cez SingleKey ID.",
         "data": {
           "brand": "Značka aplikácie",
           "gateway_ids": "Brány",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Výber existujúceho nastavenia",
-        "description": "Vyberte nastavenie, ku ktorému patrí táto lokálna brána. Nevytvorí sa ďalšia inštalácia.",
+        "description": "Vyberte nastavenie, ku ktorému patrí táto lokálna brána, alebo ju nastavte ako nové nastavenie iba s lokálnym prístupom.",
         "data": {
-          "owner": "Existujúce nastavenie"
+          "owner": "Nastavenie"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Potvrdzujem túto bránu a jej certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrdenie certifikátu dátového portu",
+        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.\n\nBrána má pre každý port vlastný certifikát. Port 9442 je port na prihlásenie a kontroluje sa pred prihlásením; port 9443 je dátový port a kontroluje sa po ňom. Preto sa môže táto stránka zobraziť dvakrát.\n\nAk certifikát nepatrí vašej bráne, zatvorte okno; nič sa neodošle.",
+        "data": {
+          "confirm": "Potvrdzujem túto bránu a jej certifikát"
+        }
+      },
       "local_auth": {
         "title": "Prihlásenie pomocou štítka zariadenia",
         "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Ak oprava preklepu trvá dlhšie ako päť minút, tlačidlá stlačte znova. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a Pass sa neukladajú.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Potvrdenie lokálneho pripojenia",
-        "description": "Kontrola čítania pre **{host}** bola úspešná a brána **{gateway}** zodpovedá vybranej inštalácii. Uloženie znova skontroluje aktuálne údaje a pridá alebo aktualizuje tento prístup v existujúcom nastavení.",
-        "data": {
-          "confirm": "Uložiť toto lokálne pripojenie"
-        }
+        "description": "Kontrola čítania pre **{host}** bola úspešná a brána **{gateway}** zodpovedá vybranej inštalácii. Uloženie znova skontroluje aktuálne údaje a pridá alebo aktualizuje tento prístup v existujúcom nastavení. Ak nechcete nič uložiť, namiesto toho dialóg zatvorte."
       },
       "local_retry": {
         "title": "Lokálnu kontrolu sa nepodarilo dokončiť",
@@ -151,6 +155,7 @@
       "cannot_connect": "Cloudový prístup nie je dostupný. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
       "invalid_auth": "SingleKey ID odmietlo oprávnenie alebo jeho platnosť vypršala. Použite nový odkaz SingleKey ID zobrazený vyššie a zopakujte prihlásenie.",
       "invalid_redirect": "Home Assistant nemohol túto adresu použiť. Skopírujte úplnú adresu aplikácie z hlásenia ‘Failed to launch’ v konzole prehliadača Chrome. Musí začínať schémou zobrazenou vyššie a patriť k aktuálnemu pokusu o prihlásenie.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, nie adresa aplikácie. Ak táto stránka oznamuje presmerovanie a nič sa nestane, zvoľte jej odkaz alebo tlačidlo. Potom skopírujte v konzole prehliadača Chrome adresu `{redirect_scheme}://` z červeného hlásenia **Failed to launch**.",
       "gateway_changed": "Zoznam brán sa zmenil, kým bolo toto okno otvorené. Zatvorte okno a znova otvorte Prekonfigurovať.",
       "select_gateway": "Pred pokračovaním vyberte zo zoznamu aspoň jedno zariadenie.",
       "unknown": "V cloudovom prístupe sa vyskytla neočakávaná chyba. Chvíľu počkajte a skúste to znova.",
@@ -172,6 +177,7 @@
       "local_timeout": "Lokálna brána neodpovedala včas. Skontrolujte pripojenie a skúste to znova.",
       "local_connection_failed": "Home Assistant sa k tejto bráne nedokázal pripojiť. Skontrolujte jej adresu a sieťové pripojenie.",
       "local_certificate_changed": "Certifikát sa nepodarilo potvrdiť alebo sa zmenil. Pred pokračovaním znova skontrolujte certifikát brány.",
+      "local_certificate_unconfirmed": "Začiarknutím políčka potvrďte certifikát. Ak nepatrí k vašej bráne, zatvorte dialóg; nič sa neodošle.",
       "local_token_rejected": "Brána tento token odmietla. Skontrolujte ho alebo tento pokus zámerne zahoďte a použite iný.",
       "local_resource_forbidden": "Brána odmietla prístup k potrebnému zdroju. Samotný token nepreukazuje oprávnenie na čítanie.",
       "local_missing_resource": "Brána neposkytuje potrebný zdroj pre nastavenie.",
@@ -238,7 +244,6 @@
     "step": {
       "init": {
         "title": "Nastavenia",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Upozornenia",
           "holidays": "Správa období dovolenky",
@@ -376,6 +381,10 @@
           "temperature": "Teplota"
         }
       },
+      "rrc_confirm": {
+        "title": "Uložiť spínací bod",
+        "description": "**{program}**\n\n**Pred:** {before}\n\n**Po:** {after}\n\nZmena sa odošle raz a potom sa spätne načíta. Platí pre všetky priradené zóny."
+      },
       "rrc_day": {
         "title": "Výber spínacieho bodu",
         "description": "**{program}**",
@@ -457,18 +466,79 @@
       },
       "connections": {
         "title": "Pripojenia",
-        "description": "{result}Vyberte prístup, ktorý chcete spravovať.",
+        "description": "Vyberte prístup, ktorý chcete spravovať.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Nastaviť lokálny prístup",
           "back": "← Späť"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Test pripojenia",
-        "description": "{result}"
+        "description": "OK, odpoveď po {ms} ms. Nastavenia zostávajú nezmenené."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Test pripojenia",
+        "description": "OK, odpoveď po {ms} ms; brány v účte: {count}. Nastavenia zostávajú nezmenené."
+      },
+      "connection_test_not_running": {
+        "title": "Test pripojenia",
+        "description": "Netestované: prístup momentálne nebeží (zakázaný, spúšťa sa alebo zastavený)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Test pripojenia",
+        "description": "Vyžaduje sa prihlásenie: prihláste sa znova cez „Prihlásiť sa znova“."
+      },
+      "connection_test_auth_local": {
+        "title": "Test pripojenia",
+        "description": "Vyžaduje sa prihlásenie: nastavte lokálny prístup znova cez „Zmeniť lokálny prístup“."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Test pripojenia",
+        "description": "Certifikát zariadenia sa zmenil: nastavte lokálny prístup znova cez „Zmeniť lokálny prístup“."
+      },
+      "connection_test_paused": {
+        "title": "Test pripojenia",
+        "description": "Netestované: požiadavky sú pozastavené do {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Test pripojenia",
+        "description": "Netestované: požiadavky sú momentálne pozastavené."
+      },
+      "connection_test_busy": {
+        "title": "Test pripojenia",
+        "description": "Netestované: prístup je momentálne zaneprázdnený. Skúste to o chvíľu znova."
+      },
+      "connection_test_unreachable": {
+        "title": "Test pripojenia",
+        "description": "Nedostupné: žiadna odpoveď ({ms} ms). Skontrolujte sieť a zariadenie."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Test pripojenia",
+        "description": "Nedostupné: žiadna odpoveď ({ms} ms). Skontrolujte sieť a zariadenie. Tip: ak sa adresa brány mení, napríklad po reštarte routera, pomôže pevná adresa: rezervujte jej IP adresu v routeri (rezervácia DHCP) alebo zadajte názov hostiteľa brány. Ak sa brána ohlási na novej adrese, upozornenie na opravu ponúkne jej použitie."
+      },
+      "connection_test_other_gateway": {
+        "title": "Test pripojenia",
+        "description": "Na tejto adrese odpovedá iná brána. Nastavte lokálny prístup znova."
+      },
+      "connection_test_error": {
+        "title": "Test pripojenia",
+        "description": "Test zlyhal: {kind}."
       },
       "connection": {
         "title": "Správa pripojenia",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Otestovať pripojenie teraz",
           "connection_enabled": "Zapnúť alebo vypnúť prístup",
@@ -523,7 +593,7 @@
       },
       "connection_polling": {
         "title": "Frekvencia dopytovania",
-        "description": "Štandardný profil číta aktuálne prevádzkové hodnoty vykurovania každú minútu, nastavenia a hodnoty energie každých 5 minút a pomalšie sa meniace informácie každých 15 minút. Profil Šetrný ku cloudu tieto intervaly zdvojnásobuje. Aktívne poruchy sa v oboch profiloch kontrolujú každú minútu. Profil sa vzťahuje na dopytovanie vykurovania a nabíjacej stanice (wallbox) vybraného cloudového pripojenia; ďalšie cloudové zariadenia hlásia zmeny formou správ. Prihlásenie, kontroly zariadení a potvrdenie po zmene môžu pridať požiadavky mimo tohto plánu. Ak cyklus dopytovania trvá dlhšie než jeho interval, ďalší sa spustí neskôr.",
+        "description": "**Štandardný** číta aktuálne prevádzkové hodnoty každú minútu a nastavenia a energetické hodnoty každých 5 minút. **Šetrný ku cloudu** tieto intervaly zdvojnásobí. Aktívne poruchy sa v oboch profiloch kontrolujú každú minútu.",
         "data": {
           "polling_profile": "Profil dopytovania"
         }
@@ -537,7 +607,7 @@
       },
       "cloud_auth": {
         "title": "Prihlásenie pomocou SingleKey ID",
-        "description": "SingleKey ID je rovnaké prihlásenie, aké používa vaša aplikácia Bosch alebo Buderus. Použite rovnakú e-mailovú adresu alebo mobilné číslo a heslo. Nepotrebujete nový účet a heslo v Home Assistant **nezadávate**.\n\n1. Nechajte toto okno otvorené a v novej karte prehliadača Chrome otvorte [SingleKey ID]({authorization_url}). Vždy použite tento novo vygenerovaný odkaz.\n2. Stlačte tam `F12` a vo vývojárskych nástrojoch otvorte **Konzola** / **Console**.\n3. Prihláste sa údajmi SingleKey ID, ktoré používa vaša vykurovacia aplikácia.\n4. Po prihlásení sa môže zobraziť hlásenie o probléme so sieťou. V takom prípade to zvyčajne znamená len to, že Chrome nedokázal otvoriť adresu aplikácie `{redirect_scheme}://`.\n5. V konzole nájdite červené hlásenie **Failed to launch** alebo **Connecting to**. Kliknite pravým tlačidlom myši na modrú adresu `{redirect_scheme}://` v tomto hlásení a vyberte **Kopírovať adresu odkazu** / **Copy link address**.\n6. Vráťte sa do tohto okna, nižšie vložte celú adresu a vyberte **OK**. Pole môže z bezpečnostných dôvodov zobrazovať bodky.\n\nPoužite adresu z tohto konkrétneho pokusu o prihlásenie a nekopírujte iba parameter `code`. Úplná adresa obsahuje krátkodobý jednorazový kód. Nikdy ju nezdieľajte v hlásení problému, v chate, na snímke obrazovky ani v protokole.",
+        "description": "SingleKey ID je rovnaké prihlásenie, aké používa vaša aplikácia Bosch alebo Buderus. Použite rovnakú e-mailovú adresu alebo mobilné číslo a heslo. Nepotrebujete nový účet a heslo v Home Assistant **nezadávate**.\n\n1. Nechajte toto okno otvorené a v novej karte prehliadača Chrome otvorte [SingleKey ID]({authorization_url}). Vždy použite tento novo vygenerovaný odkaz.\n2. Stlačte tam `F12` a vo vývojárskych nástrojoch otvorte **Konzola** / **Console**.\n3. Prihláste sa údajmi SingleKey ID, ktoré používa vaša vykurovacia aplikácia.\n4. Po prihlásení sa môže zobraziť hlásenie o probléme so sieťou. V takom prípade to zvyčajne znamená len to, že Chrome nedokázal otvoriť adresu aplikácie `{redirect_scheme}://`. Ak SingleKey ID zobrazí stránku oznamujúcu presmerovanie a nič sa nestane, zvoľte odkaz alebo tlačidlo na tejto stránke.\n5. V konzole nájdite červené hlásenie **Failed to launch** alebo **Connecting to**. Kliknite pravým tlačidlom myši na modrú adresu `{redirect_scheme}://` v tomto hlásení a vyberte **Kopírovať adresu odkazu** / **Copy link address**.\n6. Vráťte sa do tohto okna, nižšie vložte celú adresu a vyberte **OK**. Pole môže z bezpečnostných dôvodov zobrazovať bodky.\n\nPoužite adresu z tohto konkrétneho pokusu o prihlásenie a nekopírujte iba parameter `code`. Úplná adresa obsahuje krátkodobý jednorazový kód. Nikdy ju nezdieľajte v hlásení problému, v chate, na snímke obrazovky ani v protokole.",
         "data": {
           "redirect_url": "Úplná adresa presmerovania"
         }
@@ -568,9 +638,9 @@
       },
       "local_owner": {
         "title": "Výber existujúceho nastavenia",
-        "description": "Vyberte nastavenie, ku ktorému patrí táto lokálna brána. Nevytvorí sa ďalšia inštalácia.",
+        "description": "Vyberte nastavenie, ku ktorému patrí táto lokálna brána, alebo ju nastavte ako nové nastavenie iba s lokálnym prístupom.",
         "data": {
-          "owner": "Existujúce nastavenie"
+          "owner": "Nastavenie"
         }
       },
       "local_target": {
@@ -608,6 +678,13 @@
           "confirm": "Potvrdzujem túto bránu a jej certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrdenie certifikátu dátového portu",
+        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.\n\nBrána má pre každý port vlastný certifikát. Port 9442 je port na prihlásenie a kontroluje sa pred prihlásením; port 9443 je dátový port a kontroluje sa po ňom. Preto sa môže táto stránka zobraziť dvakrát.\n\nAk certifikát nepatrí vašej bráne, zatvorte okno; nič sa neodošle.",
+        "data": {
+          "confirm": "Potvrdzujem túto bránu a jej certifikát"
+        }
+      },
       "local_auth": {
         "title": "Prihlásenie pomocou štítka zariadenia",
         "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Ak oprava preklepu trvá dlhšie ako päť minút, tlačidlá stlačte znova. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a Pass sa neukladajú.",
@@ -634,10 +711,7 @@
       },
       "local_result": {
         "title": "Potvrdenie lokálneho pripojenia",
-        "description": "Kontrola čítania pre **{host}** bola úspešná a brána **{gateway}** zodpovedá vybranej inštalácii. Uloženie znova skontroluje aktuálne údaje a pridá alebo aktualizuje tento prístup v existujúcom nastavení.",
-        "data": {
-          "confirm": "Uložiť toto lokálne pripojenie"
-        }
+        "description": "Kontrola čítania pre **{host}** bola úspešná a brána **{gateway}** zodpovedá vybranej inštalácii. Uloženie znova skontroluje aktuálne údaje a pridá alebo aktualizuje tento prístup v existujúcom nastavení. Ak nechcete nič uložiť, namiesto toho dialóg zatvorte."
       },
       "local_retry": {
         "title": "Lokálnu kontrolu sa nepodarilo dokončiť",
@@ -645,14 +719,14 @@
       },
       "local_polling": {
         "title": "Lokálne dopytovanie",
-        "description": "Potvrdené zdroje: {known}. Aktuálne dostupné: {available}. Tieto počty zobrazujú stav v čase otvorenia tohto okna. Interval je cieľom pre živé hodnoty. Nastavenia, hodnoty energie a diagnostika sa čítajú každých 5 minút a počítadlá každých 15 minút, alebo v tomto intervale, ak je dlhší; statické údaje sa čítajú denne. Hodnota sa stane nedostupnou po troch vynechaných intervaloch. Veľké sady zdrojov môžu trvať dlhšie. Dopytovanie cloudu zostáva nezávislé. Hodnoty, ktoré poskytuje aj cloud, sa lokálne čítajú aspoň tak často ako v cloude.",
+        "description": "Potvrdené prostriedky: {known}, teraz dostupné: {available}. Interval je cieľom pre aktuálne hodnoty; pomalšie hodnoty sa čítajú menej často. Presné intervaly popisuje dokumentácia.",
         "data": {
           "interval": "Cieľový interval pre živé hodnoty"
         }
       },
       "local_values": {
         "title": "Lokálne hodnoty pre existujúce entity",
-        "description": "Kým cloud funguje, táto možnosť určuje, či existujúce senzory používajú lokálnu hodnotu veličiny, ktorú oba prístupy poskytujú pod rovnakým zdokumentovaným zdrojom. Bez cloudu (vypnutý, vyžaduje sa prihlásenie, pozastavený, obmedzený alebo nedostupný) sa lokálne hodnoty používajú vždy. Možnosť je pri nových nastaveniach s cloudovým a lokálnym prístupom predvolene zapnutá.\n\nPo zapnutí sa lokálna hodnota používa, pokiaľ je aktuálna. Ak je lokálna hodnota zastaraná alebo chýba, použije sa aktuálna cloudová hodnota; ak sú zastarané obe, senzor sa stane nedostupným. Počítadlá energie, štartov a prevádzkovej doby tiež používajú lokálnu hodnotu, ale zdroj menia, len ak je každý zobrazený počet aspoň taký ako posledný zobrazený počet, aby zmena zdroja nikdy nespôsobila spätné počítanie. Nastaviteľné nastavenia naďalej používajú cloud. ID entít, názvy a história zostávajú nezmenené. Ovládanie a zmeny sa naďalej odosielajú cez cloud.",
+        "description": "Kým cloud beží, táto voľba určuje, či existujúce senzory používajú lokálnu hodnotu veličiny, ktorú poskytujú oba prístupy. Bez cloudu sa vždy používajú lokálne hodnoty; nastavenia a ovládanie naďalej prebiehajú cez cloud. ID entít, názvy a história zostávajú nezmenené.",
         "data": {
           "enabled": "Použiť lokálne hodnoty"
         }
@@ -716,6 +790,122 @@
           "confirm": "Odvolať tento token na bráne",
           "confirm_end": "Lokálny prístup, ktorý používa tento token, skončí"
         }
+      },
+      "result_connection_removed": {
+        "title": "Výsledok",
+        "description": "Prístup bol odstránený."
+      },
+      "result_connection_saved": {
+        "title": "Výsledok",
+        "description": "Zmena bola uložená."
+      },
+      "result_holiday_created": {
+        "title": "Výsledok",
+        "description": "Dovolenka bola vytvorená a potvrdená spätným prečítaním."
+      },
+      "result_holiday_deleted": {
+        "title": "Výsledok",
+        "description": "Dovolenka bola odstránená a jej odstránenie potvrdil vykurovací systém."
+      },
+      "result_holiday_unchanged": {
+        "title": "Výsledok",
+        "description": "Nič sa nezmenilo, preto sa vykurovaciemu systému nič neodoslalo."
+      },
+      "result_holiday_updated": {
+        "title": "Výsledok",
+        "description": "Nastavenia dovolenky boli uložené a potvrdené vykurovacím systémom."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Výsledok",
+        "description": "Bol to token, ktorý tento prístup používal, takže lokálny prístup skončil, ale prístup sa nepodarilo vypnúť. Vypnite ho, odstráňte ho alebo ho nastavte znova pomocou štítka zariadenia."
+      },
+      "result_local_token_access_ended": {
+        "title": "Výsledok",
+        "description": "Bol to token, ktorý tento prístup používal. Lokálny prístup skončil a prístup bol vypnutý. Nastavte ho znova pomocou štítka zariadenia alebo ho odstráňte."
+      },
+      "result_local_token_not_removed": {
+        "title": "Výsledok",
+        "description": "Odvolanie nebolo potvrdené, preto prístup nebol odstránený. Skontrolujte zoznam tokenov a potom prístup odstráňte znova."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Výsledok",
+        "description": "Vybraný token bol na bráne odvolaný a prístup bol odstránený. Token, ktorý tento prístup sám používal, na bráne zostáva."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Výsledok",
+        "description": "Brána odvolanie odmietla; token je stále v zozname."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Výsledok",
+        "description": "Brána odvolanie nepotvrdila. Nič sa neopakovalo. Na kontrolu otvorte zoznam tokenov znova."
+      },
+      "result_local_token_revoked": {
+        "title": "Výsledok",
+        "description": "Token bol odvolaný; brána ho už nevedie."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Výsledok",
+        "description": "Token bol na bráne odvolaný a prístup bol odstránený."
+      },
+      "result_local_tokens_changed": {
+        "title": "Výsledok",
+        "description": "Zoznam tokenov sa medzitým zmenil. Nič nebolo odvolané ani odstránené. Otvorte zoznam znova."
+      },
+      "result_notifications_saved": {
+        "title": "Výsledok",
+        "description": "Nastavenia upozornení boli uložené."
+      },
+      "result_rescan_partial": {
+        "title": "Výsledok",
+        "description": "Vyhľadávanie je naplánované pre súčasti, ktoré sú pripravené, a prebehne pri najbližšej pravidelnej aktualizácii. Súčasti, ktoré sú momentálne pozastavené, sa preskočili; pre ne to skúste neskôr znova."
+      },
+      "result_rescan_paused": {
+        "title": "Výsledok",
+        "description": "Vyhľadávanie sa nespustilo: požiadavky sú momentálne pozastavené (napríklad po tom, čo cloud požiadal o pauzu). Skúste to neskôr znova."
+      },
+      "result_rescan_planned": {
+        "title": "Výsledok",
+        "description": "Vyhľadávanie je naplánované a prebehne pri najbližšej pravidelnej aktualizácii; nové súčasti sa zobrazia hneď po ich nájdení."
+      },
+      "result_rescan_running": {
+        "title": "Výsledok",
+        "description": "Vyhľadávanie už beží alebo je naplánované. Počkajte, kým sa dokončí."
+      },
+      "result_rescan_unavailable": {
+        "title": "Výsledok",
+        "description": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému."
+      },
+      "result_rrc_program_saved": {
+        "title": "Výsledok",
+        "description": "Spínací bod bol uložený a potvrdený spätným načítaním."
+      },
+      "result_switch_program_saved": {
+        "title": "Výsledok",
+        "description": "Časový program {program} bol uložený a potvrdený spätným načítaním.\n\nDoterajšie spínacie body zmenených dní:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Výsledok",
+        "description": "Prihlásenie bolo úspešne obnovené."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Výsledok",
+        "description": "Prihlásenie bolo obnovené. Zapnuté systémy alebo zariadenia, ktoré sa v účte nenašli: {count}; zostávajú nakonfigurované. Oprava ich uvádza a vysvetľuje, ako ich zabudnúť."
+      },
+      "result_recordings_import_on": {
+        "title": "Výsledok",
+        "description": "Prevzatie záznamu systému je zapnuté; prvé hodnoty nasledujú v priebehu niekoľkých minút."
+      },
+      "result_recordings_import_off": {
+        "title": "Výsledok",
+        "description": "Prevzatie záznamu systému je vypnuté; prevzaté hodnoty zostávajú."
+      },
+      "result_recordings_deleted": {
+        "title": "Výsledok",
+        "description": "Vymazané prevzaté štatistiky: {count}. Prevzatie je vypnuté."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Výsledok",
+        "description": "Nič nebolo vymazané."
       }
     },
     "error": {
@@ -776,7 +966,9 @@
       "cloud_connection_disabled": "Pred vyhľadávaním zariadení povoľte toto cloudové pripojenie.",
       "cloud_rate_limited": "Cloud požiadal o pauzu. Pred ďalším pokusom počkajte.",
       "invalid_auth": "SingleKey ID odmietlo oprávnenie alebo jeho platnosť vypršala. Použite nový odkaz SingleKey ID zobrazený vyššie a zopakujte prihlásenie.",
+      "reauth_targets_missing": "Toto prihlásenie nenašlo žiadny zo zapnutých systémov a zariadení. Predchádzajúce prihlasovacie údaje zostávajú zachované. Skontrolujte, či ste sa prihlásili rovnakým účtom ako predtým. Ak boli systémy z účtu odstránené, otvorte Konfigurovať → Pripojenia → cloudový prístup: pod **Použiť pre systémy a zariadenia** zapnite systém, ktorý je v účte stále k dispozícii, alebo vypnite odstránené systémy a odstráňte ich pomocou **Zabudnúť zrušené systémy**. Ak žiadny nezostal, odstráňte cloudový prístup a pripojte ho znova.",
       "invalid_redirect": "Home Assistant nemohol túto adresu použiť. Skopírujte úplnú adresu aplikácie z hlásenia ‘Failed to launch’ v konzole prehliadača Chrome. Musí začínať schémou zobrazenou vyššie a patriť k aktuálnemu pokusu o prihlásenie.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, nie adresa aplikácie. Ak táto stránka oznamuje presmerovanie a nič sa nestane, zvoľte jej odkaz alebo tlačidlo. Potom skopírujte v konzole prehliadača Chrome adresu `{redirect_scheme}://` z červeného hlásenia **Failed to launch**.",
       "cannot_connect": "Cloudový prístup nie je dostupný. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
       "select_gateway": "Pred pokračovaním vyberte zo zoznamu aspoň jedno zariadenie.",
       "no_gateways": "Nenašli sa žiadne zariadenia. Skontrolujte, či vybraná značka a účet SingleKey ID zodpovedajú vašej aplikácii. Izbový regulátor so starším firmvérom sa zobrazí až po aktualizácii firmvéru a po jeho nastavení v aktuálnej aplikácii s vaším SingleKey ID.",
@@ -794,6 +986,7 @@
       "local_timeout": "Lokálna brána neodpovedala včas. Skontrolujte pripojenie a skúste to znova.",
       "local_connection_failed": "Home Assistant sa k tejto bráne nedokázal pripojiť. Skontrolujte jej adresu a sieťové pripojenie.",
       "local_certificate_changed": "Certifikát sa nepodarilo potvrdiť alebo sa zmenil. Pred pokračovaním znova skontrolujte certifikát brány.",
+      "local_certificate_unconfirmed": "Začiarknutím políčka potvrďte certifikát. Ak nepatrí k vašej bráne, zatvorte dialóg; nič sa neodošle.",
       "local_token_rejected": "Brána tento token odmietla. Skontrolujte ho alebo tento pokus zámerne zahoďte a použite iný.",
       "local_resource_forbidden": "Brána odmietla prístup k potrebnému zdroju. Samotný token nepreukazuje oprávnenie na čítanie.",
       "local_missing_resource": "Brána neposkytuje potrebný zdroj pre nastavenie.",
@@ -837,12 +1030,8 @@
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
       "notification_gateways_changed": "Výber inštalácie sa zmenil. Znova otvorte nastavenia.",
       "holiday_changed": "Vybraná dovolenka sa zmenila alebo ju už nie je možné upravovať. Znova otvorte dovolenku a skontrolujte jej aktuálne údaje.",
-      "holiday_updated": "Nastavenia dovolenky boli uložené a potvrdené vykurovacím systémom.",
-      "holiday_unchanged": "Nič sa nezmenilo, preto sa vykurovaciemu systému nič neodoslalo.",
       "no_writable_holidays": "Správa dovolenky momentálne nie je dostupná. Počkajte, kým inštalácia poskytne svoje nastavenia dovolenky.",
-      "holiday_deleted": "Dovolenka bola odstránená a jej odstránenie potvrdil vykurovací systém.",
       "not_loaded": "Bosch/Buderus Home Comfort musí byť načítaný, aby bolo možné nakonfigurovať dovolenku.",
-      "holiday_created": "Dovolenka bola vytvorená a potvrdená spätným prečítaním.",
       "holiday_previous_request_found": "Predchádzajúca nevyriešená požiadavka je teraz potvrdená. Vaše nové vstupy sa neodoslali. Najprv skontrolujte existujúcu dovolenku v časti Správa období dovolenky.",
       "holiday_already_exists": "Dovolenka s týmto začiatkom a výberom okruhov už existuje. Nevytvorila sa žiadna ďalšia dovolenka. Otvorte Správa období dovolenky a upravte existujúci záznam.",
       "holiday_create_unconfirmed": "Požiadavku na vytvorenie sa nepodarilo potvrdiť. Dovolenka už mohla existovať. Skontrolujte Správa období dovolenky alebo aplikáciu výrobcu. Ďalších 10 minút ďalší pokus skontroluje výsledok tejto požiadavky bez vytvorenia druhej dovolenky.",
@@ -851,7 +1040,6 @@
       "no_rrc_schedules": "Nie je dostupný žiadny aktuálny podporovaný týždenný časový program izbového regulátora.",
       "no_switch_programs": "Tu sa nedá zmeniť žiadny aktuálny časový program vykurovacieho okruhu ani teplej vody.",
       "switch_program_changed": "Časový program sa medzitým zmenil alebo sa už nedá meniť. Znova ho otvorte a pozrite si aktuálne spínacie body.",
-      "switch_program_saved": "Časový program {program} bol uložený a potvrdený spätným načítaním.\n\nDoterajšie spínacie body zmenených dní:\n\n{before}",
       "controls_not_loaded": "Ovládacie prvky sú dostupné iba cez cloudový prístup; lokálny prístup iba číta. Pripojte cloudový prístup alebo počkajte, kým sa načíta.",
       "controls_auth_required": "Ovládacie prvky nie sú dostupné: cloudový prístup vyžaduje nové prihlásenie. Hodnoty zostávajú viditeľné.",
       "controls_cloud_stopped": "Ovládacie prvky nie sú dostupné: cloudový prístup je zastavený alebo sa reštartuje. Hodnoty zostávajú viditeľné.",
@@ -861,8 +1049,9 @@
       "controls_not_current": "Ovládacie prvky ešte nie sú dostupné: cloud nedodal aktuálne hodnoty. Skúste to o chvíľu znova.",
       "controls_none": "Toto zariadenie momentálne nehlási žiadne nastavenia, ktoré by sa tu dali zmeniť.",
       "configuration_changed": "Nastavenia pripojenia sa zmenili, kým bolo toto okno otvorené. Zatvorte ho a skúste to znova.",
+      "reauth_wrong_account": "Vybraný účet nezodpovedá nakonfigurovaným zariadeniam. Prihláste sa pôvodným účtom.",
+      "reauth_no_targets": "Tento cloudový prístup už nemá žiadne systémy ani zariadenia a účet, ku ktorému patrí, sa nedá potvrdiť. Predchádzajúce prihlasovacie údaje zostávajú zachované. Ak chcete znova použiť cloudový účet, odstráňte cloudový prístup v časti Konfigurovať → Pripojenia a pripojte ho znova.",
       "no_connections": "Nie je nakonfigurovaný žiadny prístup. Existujúce systémy a entity zostanú zachované.",
-      "connection_reauth_started": "Nové prihlásenie je pripravené. Zatvorte toto okno a pre túto integráciu vyberte v Nastavenia → Zariadenia a služby v časti **Vyžaduje pozornosť** možnosť **Prekonfigurovať**.",
       "cloud_already_connected": "Cloudové pripojenie je už nakonfigurované. Na výber ďalších zariadení alebo na opätovné prihlásenie použite jeho nastavenia pripojenia. Druhé paralelné cloudové prihlásenie zatiaľ nie je podporované.",
       "cloud_setup_in_progress": "Iné nastavenie cloudu je už otvorené. Najprv dokončite alebo zatvorte toto okno.",
       "cloud_setup_taken_over": "Toto okno nahradilo novšie okno nastavenia cloudu. Zatvorte toto okno a pokračujte v novšom.",
@@ -880,29 +1069,8 @@
       "local_pending_saved": "Čakajúci pokus zostáva zachovaný. Môžete v ňom pokračovať z lokálneho nastavenia.",
       "local_storage_failed": "Súkromný záznam nastavenia sa nepodarilo prečítať ani uložiť. Pred pokračovaním skontrolujte úložisko Home Assistant.",
       "cloud_local_first_other_entry": "Tento systém je už nastavený cez svoj lokálny prístup v inom zázname tejto integrácie. Cloudový prístup pridajte radšej v tomto zázname.",
-      "rescan_planned": "Vyhľadávanie je naplánované a prebehne pri najbližšej pravidelnej aktualizácii; nové súčasti sa zobrazia hneď po ich nájdení.",
-      "rescan_paused": "Vyhľadávanie sa nespustilo: požiadavky sú momentálne pozastavené (napríklad po tom, čo cloud požiadal o pauzu). Skúste to neskôr znova.",
-      "rescan_running": "Vyhľadávanie už beží alebo je naplánované. Počkajte, kým sa dokončí.",
-      "rescan_partial": "Vyhľadávanie je naplánované pre súčasti, ktoré sú pripravené, a prebehne pri najbližšej pravidelnej aktualizácii. Súčasti, ktoré sú momentálne pozastavené, sa preskočili; pre ne to skúste neskôr znova.",
       "rescan_unavailable": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému.",
-      "recordings_import_on": "Prevzatie záznamu systému je zapnuté; prvé hodnoty nasledujú v priebehu niekoľkých minút.",
-      "recordings_import_off": "Prevzatie záznamu systému je vypnuté; prevzaté hodnoty zostávajú.",
-      "recordings_deleted": "Vymazané prevzaté štatistiky: {count}. Prevzatie je vypnuté.",
-      "recordings_delete_kept": "Nič nebolo vymazané.",
-      "connection_saved": "Zmena bola uložená.",
-      "connection_removed": "Prístup bol odstránený.",
-      "notifications_saved": "Nastavenia upozornení boli uložené.",
-      "rrc_program_saved": "Spínací bod bol uložený a potvrdený spätným načítaním.",
-      "local_tokens_unavailable": "Tento prístup nemá použiteľný uložený token pre zoznam tokenov. Najprv znova nastavte lokálny prístup.",
-      "local_tokens_changed": "Zoznam tokenov sa medzitým zmenil. Nič nebolo odvolané ani odstránené. Otvorte zoznam znova.",
-      "local_token_revoked": "Token bol odvolaný; brána ho už nevedie.",
-      "local_token_access_ended": "Bol to token, ktorý tento prístup používal. Lokálny prístup skončil a prístup bol vypnutý. Nastavte ho znova pomocou štítka zariadenia alebo ho odstráňte.",
-      "local_token_revoke_rejected": "Brána odvolanie odmietla; token je stále v zozname.",
-      "local_token_revoke_unclear": "Brána odvolanie nepotvrdila. Nič sa neopakovalo. Na kontrolu otvorte zoznam tokenov znova.",
-      "local_token_revoked_removed": "Token bol na bráne odvolaný a prístup bol odstránený.",
-      "local_token_not_removed": "Odvolanie nebolo potvrdené, preto prístup nebol odstránený. Skontrolujte zoznam tokenov a potom prístup odstráňte znova.",
-      "local_token_old_revoked_removed": "Vybraný token bol na bráne odvolaný a prístup bol odstránený. Token, ktorý tento prístup sám používal, na bráne zostáva.",
-      "local_token_access_end_failed": "Bol to token, ktorý tento prístup používal, takže lokálny prístup skončil, ale prístup sa nepodarilo vypnúť. Vypnite ho, odstráňte ho alebo ho nastavte znova pomocou štítka zariadenia."
+      "local_tokens_unavailable": "Tento prístup nemá použiteľný uložený token pre zoznam tokenov. Najprv znova nastavte lokálny prístup."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."
@@ -1377,6 +1545,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Späť",
         "create": "Nová dovolenka"
       }
     },
@@ -1467,6 +1636,21 @@
         "continue": "Pokračovať s uloženým tokenom",
         "discard": "Zahodiť čakajúci pokus",
         "later": "Pokračovať neskôr"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nový systém (iba lokálne)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nové nastavenie (iba lokálny prístup)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Späť"
       }
     }
   },

@@ -172,7 +172,7 @@ what the report contains.
 
 ## Documentation
 
-- **Getting started:** [setup guide](docs/setup.md), [reconfiguration](docs/reconfiguration.md), [cloud and local access](docs/operation-without-cloud.md), [source selection](docs/source-selection.md)
+- **Getting started:** [setup guide](docs/setup.md), [reconfiguration](docs/reconfiguration.md), [settings dialog](docs/dialogs.md), [cloud and local access](docs/operation-without-cloud.md), [source selection](docs/source-selection.md)
 - **Operating:** [heating controls](docs/heating-controls.md), [PointT hot water](docs/pointt-hot-water.md), [holiday periods](docs/holiday-periods.md), [older holiday formats](docs/legacy-holidays.md), [season switching](docs/season-switching.md)
 - **Room controllers:** [overview](docs/room-controllers.md), [zones and schedules](docs/rrc-zones-and-schedules.md), [zone controls](docs/zone-controls.md), [zone and DHW additions](docs/zone-and-dhw-fields.md)
 - **Readings:** [entities and polling](docs/entities.md), [calculated values](docs/calculated-values.md), [faults and notifications](docs/faults.md), [validity of readings](docs/reading-validity.md), [device presentation](docs/device-presentation.md), [names and languages](docs/resource-names-and-languages.md), [translations](docs/translations.md)

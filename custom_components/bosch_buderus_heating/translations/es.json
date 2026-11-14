@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Iniciar sesión con SingleKey ID",
-        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
+        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`. Si SingleKey ID muestra una página que anuncia una redirección y no ocurre nada, selecciona el enlace o el botón de esa página.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
         "data": {
           "redirect_url": "Dirección de redirección completa"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Volver a configurar y volver a detectar",
-        "description": "Elige la marca de la aplicación, las pasarelas y el perfil de consulta. Al guardar se vuelve a cargar la integración y se realiza una detección completa de recursos. Úsalo después de una actualización de firmware o cuando hayan cambiado los circuitos, los sistemas de agua caliente, las fuentes de calor o las pasarelas. **Estándar** lee los valores de funcionamiento actuales cada minuto. **Ligero para la nube** reduce el tráfico de la nube leyéndolos cada dos minutos y todos los demás valores cambiantes con menos frecuencia. Cambiar la marca de la aplicación requiere un nuevo inicio de sesión con SingleKey ID.",
+        "description": "Elige la marca de la aplicación, las pasarelas y el perfil de consulta. Al guardar se recarga la integración y vuelve a buscar todos los recursos, por ejemplo tras una actualización de firmware o un cambio en la instalación. Cambiar la marca de la aplicación requiere un nuevo inicio de sesión con SingleKey ID.",
         "data": {
           "brand": "Marca de la aplicación",
           "gateway_ids": "Pasarelas",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Elegir la configuración existente",
-        "description": "Selecciona la configuración a la que pertenece esta pasarela local. No se creará otra instalación.",
+        "description": "Selecciona la configuración a la que pertenece esta pasarela local o configúrala como una configuración nueva solo con acceso local.",
         "data": {
-          "owner": "Configuración existente"
+          "owner": "Configuración"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmar el certificado del puerto de datos",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
         "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Confirmar la conexión local",
-        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente.",
-        "data": {
-          "confirm": "Guardar esta conexión local"
-        }
+        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente. Para no guardar nada, cierra el diálogo."
       },
       "local_retry": {
         "title": "No se pudo terminar la comprobación local",
@@ -151,6 +155,7 @@
       "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
+      "singlekey_page": "Esta es la dirección de la página de SingleKey ID, no la dirección de la aplicación. Si esa página indica que serás redirigido y no ocurre nada, selecciona su enlace o botón. Después copia, en la consola de Chrome, la dirección `{redirect_scheme}://` del mensaje rojo **Failed to launch**.",
       "gateway_changed": "La lista de pasarelas cambió mientras este cuadro de diálogo estaba abierto. Cierra el cuadro de diálogo y abre Volver a configurar de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
       "unknown": "Se ha producido un error inesperado en el acceso a la nube. Espera un momento e inténtalo de nuevo.",
@@ -172,6 +177,7 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
+      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
@@ -238,7 +244,6 @@
     "step": {
       "init": {
         "title": "Ajustes",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaciones",
           "holidays": "Gestionar períodos de vacaciones",
@@ -376,6 +381,10 @@
           "temperature": "Temperatura"
         }
       },
+      "rrc_confirm": {
+        "title": "Guardar punto de conmutación",
+        "description": "**{program}**\n\n**Antes:** {before}\n\n**Después:** {after}\n\nEl cambio se envía una vez y después se vuelve a leer. Se aplica a todas las zonas asignadas."
+      },
       "rrc_day": {
         "title": "Elegir punto de conmutación",
         "description": "**{program}**",
@@ -457,18 +466,79 @@
       },
       "connections": {
         "title": "Conexiones",
-        "description": "{result}Elige el acceso que quieres gestionar.",
+        "description": "Elige el acceso que quieres gestionar.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Configurar el acceso local",
           "back": "← Atrás"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Prueba de conexión",
-        "description": "{result}"
+        "description": "Correcto, respuesta tras {ms} ms. Los ajustes no cambian."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Prueba de conexión",
+        "description": "Correcto, respuesta tras {ms} ms; {count} pasarela(s) en la cuenta. Los ajustes no cambian."
+      },
+      "connection_test_not_running": {
+        "title": "Prueba de conexión",
+        "description": "No probado: el acceso no está en funcionamiento en este momento (desactivado, arrancando o detenido)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Prueba de conexión",
+        "description": "Inicio de sesión necesario: vuelve a iniciar sesión mediante «Volver a iniciar sesión»."
+      },
+      "connection_test_auth_local": {
+        "title": "Prueba de conexión",
+        "description": "Inicio de sesión necesario: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Prueba de conexión",
+        "description": "El certificado del dispositivo ha cambiado: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
+      },
+      "connection_test_paused": {
+        "title": "Prueba de conexión",
+        "description": "No probado: las consultas están en pausa hasta {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Prueba de conexión",
+        "description": "No probado: las consultas están en pausa en este momento."
+      },
+      "connection_test_busy": {
+        "title": "Prueba de conexión",
+        "description": "No probado: el acceso está ocupado en este momento. Inténtalo de nuevo en breve."
+      },
+      "connection_test_unreachable": {
+        "title": "Prueba de conexión",
+        "description": "No accesible: sin respuesta ({ms} ms). Comprueba la red y el dispositivo."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Prueba de conexión",
+        "description": "No accesible: sin respuesta ({ms} ms). Comprueba la red y el dispositivo. Consejo: si la dirección de la pasarela cambia, por ejemplo tras reiniciar el router, ayuda una dirección fija: reserve su dirección IP en el router (reserva DHCP) o introduzca el nombre de host de la pasarela. Si la pasarela se anuncia en una dirección nueva, un aviso de reparación ofrece usarla."
+      },
+      "connection_test_other_gateway": {
+        "title": "Prueba de conexión",
+        "description": "Otra pasarela responde en esta dirección. Vuelve a configurar el acceso local."
+      },
+      "connection_test_error": {
+        "title": "Prueba de conexión",
+        "description": "Prueba fallida: {kind}."
       },
       "connection": {
         "title": "Gestionar conexión",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Probar la conexión ahora",
           "connection_enabled": "Activar o desactivar el acceso",
@@ -523,7 +593,7 @@
       },
       "connection_polling": {
         "title": "Frecuencia de consulta",
-        "description": "Estándar lee los valores de funcionamiento actuales de la calefacción cada minuto, los ajustes y los valores de energía cada 5 minutos y la información más lenta cada 15 minutos. Ligero para la nube duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles. El perfil se aplica a la consulta de calefacción y punto de recarga de la conexión a la nube seleccionada; los dispositivos adicionales en la nube notifican los cambios como mensajes. El inicio de sesión, las comprobaciones de dispositivos y la confirmación tras un cambio pueden añadir solicitudes fuera de este calendario. Si un ciclo de consulta tarda más que su intervalo, el siguiente empieza más tarde.",
+        "description": "**Estándar** lee los valores de funcionamiento actuales cada minuto y los ajustes y valores de energía cada 5 minutos. **Moderado con la nube** duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles.",
         "data": {
           "polling_profile": "Perfil de consulta"
         }
@@ -537,7 +607,7 @@
       },
       "cloud_auth": {
         "title": "Iniciar sesión con SingleKey ID",
-        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
+        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`. Si SingleKey ID muestra una página que anuncia una redirección y no ocurre nada, selecciona el enlace o el botón de esa página.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
         "data": {
           "redirect_url": "Dirección de redirección completa"
         }
@@ -568,9 +638,9 @@
       },
       "local_owner": {
         "title": "Elegir la configuración existente",
-        "description": "Selecciona la configuración a la que pertenece esta pasarela local. No se creará otra instalación.",
+        "description": "Selecciona la configuración a la que pertenece esta pasarela local o configúrala como una configuración nueva solo con acceso local.",
         "data": {
-          "owner": "Configuración existente"
+          "owner": "Configuración"
         }
       },
       "local_target": {
@@ -608,6 +678,13 @@
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmar el certificado del puerto de datos",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
         "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
@@ -634,10 +711,7 @@
       },
       "local_result": {
         "title": "Confirmar la conexión local",
-        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente.",
-        "data": {
-          "confirm": "Guardar esta conexión local"
-        }
+        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente. Para no guardar nada, cierra el diálogo."
       },
       "local_retry": {
         "title": "No se pudo terminar la comprobación local",
@@ -645,14 +719,14 @@
       },
       "local_polling": {
         "title": "Consulta local",
-        "description": "Recursos confirmados: {known}. Disponibles actualmente: {available}. Estos recuentos muestran el estado en el momento en que se abrió este cuadro de diálogo. El intervalo es el objetivo para los valores en tiempo real. Los ajustes, los valores de energía y el diagnóstico se leen cada 5 minutos y los contadores cada 15 minutos, o con este intervalo si es mayor; los datos estáticos se leen a diario. Un valor deja de estar disponible tras tres intervalos perdidos. Los conjuntos grandes de recursos pueden tardar más. La consulta a la nube sigue siendo independiente. Los valores que también ofrece la nube se leen localmente al menos con la misma frecuencia que en la nube.",
+        "description": "Recursos confirmados: {known}, disponibles ahora: {available}. El intervalo es el objetivo para los valores en vivo; los valores más lentos se leen con menos frecuencia. La documentación describe los intervalos exactos.",
         "data": {
           "interval": "Intervalo objetivo para los valores en tiempo real"
         }
       },
       "local_values": {
         "title": "Valores locales para las entidades existentes",
-        "description": "Mientras la nube está en funcionamiento, esta opción decide si los sensores existentes usan el valor local de un valor medido que ambos accesos proporcionan bajo el mismo recurso documentado. Sin la nube (desactivada, con inicio de sesión necesario, en pausa, limitada o inaccesible), siempre se usan los valores locales. La opción está activada de forma predeterminada en las configuraciones nuevas con acceso a la nube y local.\n\nCuando está activada, se usa el valor local mientras esté actualizado. Si el valor local está obsoleto o falta, se usa el valor actual de la nube; si ambos están obsoletos, el sensor deja de estar disponible. Los contadores de energía, de arranques y de tiempo de funcionamiento también usan el valor local, pero solo cambian de origen cuando todos los recuentos mostrados son al menos iguales al último recuento mostrado, de modo que un cambio de origen nunca hace que cuenten hacia atrás. Los ajustes modificables siguen usando la nube. Los ID de entidad, los nombres y el historial no cambian. Los controles y los cambios se siguen enviando a través de la nube.",
+        "description": "Mientras la nube funciona, esta opción decide si los sensores existentes usan el valor local de una magnitud que ofrecen ambos accesos. Sin la nube se usan siempre los valores locales; los ajustes y el manejo siguen pasando por la nube. Los ID de entidad, los nombres y el historial no cambian.",
         "data": {
           "enabled": "Usar valores locales"
         }
@@ -716,6 +790,122 @@
           "confirm": "Revocar este token en la pasarela",
           "confirm_end": "Un acceso local que use este token termina"
         }
+      },
+      "result_connection_removed": {
+        "title": "Resultado",
+        "description": "El acceso se eliminó."
+      },
+      "result_connection_saved": {
+        "title": "Resultado",
+        "description": "El cambio se guardó."
+      },
+      "result_holiday_created": {
+        "title": "Resultado",
+        "description": "Las vacaciones se crearon y se confirmaron volviendo a leerlas."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultado",
+        "description": "Las vacaciones se eliminaron y la instalación de calefacción confirmó su eliminación."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultado",
+        "description": "No se cambió nada, por lo que no se envió nada a la instalación de calefacción."
+      },
+      "result_holiday_updated": {
+        "title": "Resultado",
+        "description": "Los ajustes de las vacaciones se guardaron y la instalación de calefacción los confirmó."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultado",
+        "description": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultado",
+        "description": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultado",
+        "description": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultado",
+        "description": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultado",
+        "description": "La pasarela rechazó la revocación; el token sigue en la lista."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultado",
+        "description": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultado",
+        "description": "El token se ha revocado; la pasarela ya no lo muestra."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultado",
+        "description": "El token se revocó en la pasarela y el acceso se eliminó."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultado",
+        "description": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo."
+      },
+      "result_notifications_saved": {
+        "title": "Resultado",
+        "description": "Los ajustes de notificaciones se guardaron."
+      },
+      "result_rescan_partial": {
+        "title": "Resultado",
+        "description": "La búsqueda está planificada para los componentes que están listos y se ejecuta con la siguiente actualización periódica. Se omitieron los componentes que están en pausa en este momento; inténtalo de nuevo más tarde para ellos."
+      },
+      "result_rescan_paused": {
+        "title": "Resultado",
+        "description": "La búsqueda no se inició: las consultas están en pausa en este momento (por ejemplo, después de que la nube pidiera una pausa). Inténtalo de nuevo más tarde."
+      },
+      "result_rescan_planned": {
+        "title": "Resultado",
+        "description": "La búsqueda está planificada y se ejecuta con la siguiente actualización periódica; los componentes nuevos aparecen en cuanto se encuentran."
+      },
+      "result_rescan_running": {
+        "title": "Resultado",
+        "description": "Ya hay una búsqueda en curso o planificada. Espera a que termine."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultado",
+        "description": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultado",
+        "description": "El punto de conmutación se guardó y se confirmó al volver a leerlo."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultado",
+        "description": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado correctamente."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado. {count} instalaciones o dispositivos activados no se encontraron en la cuenta; siguen configurados. Una nota de reparación los nombra y explica cómo olvidarlos."
+      },
+      "result_recordings_import_on": {
+        "title": "Resultado",
+        "description": "La importación de los registros de la instalación está activada; los primeros valores llegan en pocos minutos."
+      },
+      "result_recordings_import_off": {
+        "title": "Resultado",
+        "description": "La importación de los registros de la instalación está desactivada; los valores importados se conservan."
+      },
+      "result_recordings_deleted": {
+        "title": "Resultado",
+        "description": "Estadísticas importadas eliminadas: {count}. La importación está desactivada."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Resultado",
+        "description": "No se eliminó nada."
       }
     },
     "error": {
@@ -776,7 +966,9 @@
       "cloud_connection_disabled": "Habilita esta conexión a la nube antes de buscar dispositivos.",
       "cloud_rate_limited": "La nube ha solicitado una pausa. Espera antes de volver a intentarlo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
+      "reauth_targets_missing": "Este inicio de sesión no encontró ninguna de las instalaciones y dispositivos activados. Se conservan las credenciales anteriores. Comprueba que has iniciado sesión con la misma cuenta que antes. Si las instalaciones se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube: activa una instalación que siga en la cuenta en **Usar para instalaciones y dispositivos**, o desactiva las eliminadas y quítalas con **Olvidar las instalaciones desmarcadas**. Si no queda ninguna, elimina el acceso a la nube y vuelve a conectarlo.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
+      "singlekey_page": "Esta es la dirección de la página de SingleKey ID, no la dirección de la aplicación. Si esa página indica que serás redirigido y no ocurre nada, selecciona su enlace o botón. Después copia, en la consola de Chrome, la dirección `{redirect_scheme}://` del mensaje rojo **Failed to launch**.",
       "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
       "no_gateways": "No se encontró ningún dispositivo. Comprueba que la marca seleccionada y la cuenta de SingleKey ID coinciden con tu aplicación. Un regulador de ambiente con un firmware antiguo solo aparece cuando su firmware se ha actualizado y se ha configurado en la aplicación actual con tu SingleKey ID.",
@@ -794,6 +986,7 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
+      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
@@ -837,12 +1030,8 @@
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
       "notification_gateways_changed": "La selección de instalaciones ha cambiado. Vuelve a abrir los ajustes.",
       "holiday_changed": "Las vacaciones seleccionadas han cambiado o ya no se pueden editar. Vuelve a abrir las vacaciones para revisar sus datos actuales.",
-      "holiday_updated": "Los ajustes de las vacaciones se guardaron y la instalación de calefacción los confirmó.",
-      "holiday_unchanged": "No se cambió nada, por lo que no se envió nada a la instalación de calefacción.",
       "no_writable_holidays": "La gestión de vacaciones no está disponible en este momento. Espera hasta que la instalación haya proporcionado sus ajustes de vacaciones.",
-      "holiday_deleted": "Las vacaciones se eliminaron y la instalación de calefacción confirmó su eliminación.",
       "not_loaded": "Bosch/Buderus Home Comfort debe estar cargado antes de poder configurar unas vacaciones.",
-      "holiday_created": "Las vacaciones se crearon y se confirmaron volviendo a leerlas.",
       "holiday_previous_request_found": "La solicitud anterior sin resolver ya está confirmada. Tus nuevos datos no se enviaron. Comprueba primero las vacaciones existentes en Gestionar períodos de vacaciones.",
       "holiday_already_exists": "Ya existen unas vacaciones con este inicio y esta selección de circuitos. No se creó ninguna vacación adicional. Abre Gestionar períodos de vacaciones y edita la entrada existente.",
       "holiday_create_unconfirmed": "No se pudo confirmar la solicitud de creación. Puede que las vacaciones ya existan. Comprueba Gestionar períodos de vacaciones o la aplicación del fabricante. Durante los próximos 10 minutos, otro intento comprobará el resultado de esta solicitud sin crear unas segundas vacaciones.",
@@ -851,7 +1040,6 @@
       "no_rrc_schedules": "No hay ningún programa semanal actual y compatible de un regulador de ambiente disponible.",
       "no_switch_programs": "Aquí no se puede cambiar ningún programa horario actual de un circuito de calefacción ni del agua caliente.",
       "switch_program_changed": "El programa horario ha cambiado entretanto o ya no se puede cambiar. Vuelve a abrirlo para ver los puntos de conmutación actuales.",
-      "switch_program_saved": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}",
       "controls_not_loaded": "Los controles solo están disponibles a través del acceso a la nube; el acceso local solo lee. Conecta un acceso a la nube o espera a que se haya cargado.",
       "controls_auth_required": "Los controles no están disponibles: el acceso a la nube necesita un nuevo inicio de sesión. Los valores siguen visibles.",
       "controls_cloud_stopped": "Los controles no están disponibles: el acceso a la nube está detenido o se está reiniciando. Los valores siguen visibles.",
@@ -861,8 +1049,9 @@
       "controls_not_current": "Los controles aún no están disponibles: la nube no ha entregado valores actuales. Inténtalo de nuevo dentro de un momento.",
       "controls_none": "Este equipo no informa actualmente de ningún ajuste que se pueda cambiar aquí.",
       "configuration_changed": "Los ajustes de conexión cambiaron mientras este cuadro de diálogo estaba abierto. Ciérralo e inténtalo de nuevo.",
+      "reauth_wrong_account": "La cuenta seleccionada no coincide con los dispositivos configurados. Inicia sesión con la cuenta original.",
+      "reauth_no_targets": "Este acceso a la nube ya no tiene instalaciones ni dispositivos, y no se puede confirmar la cuenta a la que pertenece. Se conservan las credenciales anteriores. Para volver a usar una cuenta en la nube, elimina el acceso a la nube en Configurar → Conexiones y vuelve a conectarlo.",
       "no_connections": "No hay ningún acceso configurado. Se conservan las instalaciones y las entidades existentes.",
-      "connection_reauth_started": "El nuevo inicio de sesión está preparado. Cierra este cuadro de diálogo y selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios, en la sección **Requiere atención**.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_setup_taken_over": "Un cuadro de diálogo de configuración de la nube más reciente ha sustituido a este. Cierra este cuadro de diálogo y continúa en el más reciente.",
@@ -880,29 +1069,8 @@
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
-      "rescan_planned": "La búsqueda está planificada y se ejecuta con la siguiente actualización periódica; los componentes nuevos aparecen en cuanto se encuentran.",
-      "rescan_paused": "La búsqueda no se inició: las consultas están en pausa en este momento (por ejemplo, después de que la nube pidiera una pausa). Inténtalo de nuevo más tarde.",
-      "rescan_running": "Ya hay una búsqueda en curso o planificada. Espera a que termine.",
-      "rescan_partial": "La búsqueda está planificada para los componentes que están listos y se ejecuta con la siguiente actualización periódica. Se omitieron los componentes que están en pausa en este momento; inténtalo de nuevo más tarde para ellos.",
       "rescan_unavailable": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento.",
-      "recordings_import_on": "La importación de los registros de la instalación está activada; los primeros valores llegan en pocos minutos.",
-      "recordings_import_off": "La importación de los registros de la instalación está desactivada; los valores importados se conservan.",
-      "recordings_deleted": "Estadísticas importadas eliminadas: {count}. La importación está desactivada.",
-      "recordings_delete_kept": "No se eliminó nada.",
-      "connection_saved": "El cambio se guardó.",
-      "connection_removed": "El acceso se eliminó.",
-      "notifications_saved": "Los ajustes de notificaciones se guardaron.",
-      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo.",
-      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local.",
-      "local_tokens_changed": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo.",
-      "local_token_revoked": "El token se ha revocado; la pasarela ya no lo muestra.",
-      "local_token_access_ended": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo.",
-      "local_token_revoke_rejected": "La pasarela rechazó la revocación; el token sigue en la lista.",
-      "local_token_revoke_unclear": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo.",
-      "local_token_revoked_removed": "El token se revocó en la pasarela y el acceso se eliminó.",
-      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso.",
-      "local_token_old_revoked_removed": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela.",
-      "local_token_access_end_failed": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
+      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
@@ -1377,6 +1545,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Atrás",
         "create": "Vacaciones nuevas"
       }
     },
@@ -1467,6 +1636,21 @@
         "continue": "Continuar con el token guardado",
         "discard": "Descartar el intento pendiente",
         "later": "Continuar más tarde"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Instalación nueva (solo local)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Configuración nueva (solo acceso local)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Atrás"
       }
     }
   },

@@ -49,40 +49,6 @@ _TEXTS: dict[str, dict[str, str]] = {
         "interval": "Zielintervall für Livewerte: {seconds} s.",
         "on": "ein",
         "off": "aus",
-        "ok": "In Ordnung, Antwort nach {ms} ms. Einstellungen bleiben unverändert.",
-        "ok_cloud": (
-            "In Ordnung, Antwort nach {ms} ms; {count} Gateway(s) im Konto. "
-            "Einstellungen bleiben unverändert."
-        ),
-        "test_auth_cloud": (
-            "Anmeldung nötig: Bitte über „Erneut anmelden“ neu anmelden."
-        ),
-        "test_auth_local": (
-            "Anmeldung nötig: Bitte den lokalen Zugang über „Lokalen Zugang "
-            "ändern“ neu einrichten."
-        ),
-        "test_certificate_changed": (
-            "Das Zertifikat des Geräts hat sich geändert: Bitte den lokalen "
-            "Zugang über „Lokalen Zugang ändern“ neu einrichten."
-        ),
-        "test_paused": "Nicht getestet: Abfragen sind pausiert bis {until}.",
-        "test_paused_open": "Nicht getestet: Abfragen sind gerade pausiert.",
-        "test_busy": (
-            "Nicht getestet: Der Zugang ist gerade beschäftigt. Bitte gleich "
-            "erneut versuchen."
-        ),
-        "test_unreachable": (
-            "Nicht erreichbar: Keine Antwort ({ms} ms). Netzwerk und Gerät prüfen."
-        ),
-        "test_other_gateway": (
-            "Unter dieser Adresse antwortet ein anderes Gateway. Lokalen Zugang "
-            "neu einrichten."
-        ),
-        "test_not_running": (
-            "Nicht getestet: Der Zugang läuft gerade nicht (deaktiviert, startet "
-            "oder gestoppt)."
-        ),
-        "test_error": "Fehler beim Test: {kind}.",
         "address_hint": (
             "Tipp: Ändert sich die Adresse des Gateways, etwa nach einem "
             "Neustart des Routers, hilft eine feste Adresse: die IP-Adresse im "
@@ -116,39 +82,6 @@ _TEXTS: dict[str, dict[str, str]] = {
         "interval": "Target interval for live values: {seconds} s.",
         "on": "on",
         "off": "off",
-        "ok": "OK, answer after {ms} ms. Settings stay unchanged.",
-        "ok_cloud": (
-            "OK, answer after {ms} ms; {count} gateway(s) in the account. "
-            "Settings stay unchanged."
-        ),
-        "test_auth_cloud": (
-            "Sign-in required: please sign in again via “Sign in again”."
-        ),
-        "test_auth_local": (
-            "Sign-in required: please set up the local access again via "
-            "“Change local access”."
-        ),
-        "test_certificate_changed": (
-            "The device certificate has changed: please set up the local access "
-            "again via “Change local access”."
-        ),
-        "test_paused": "Not tested: requests are paused until {until}.",
-        "test_paused_open": "Not tested: requests are paused right now.",
-        "test_busy": (
-            "Not tested: the access is busy right now. Please try again shortly."
-        ),
-        "test_unreachable": (
-            "Not reachable: no answer ({ms} ms). Check the network and the device."
-        ),
-        "test_other_gateway": (
-            "A different gateway answers at this address. Set up the local access "
-            "again."
-        ),
-        "test_not_running": (
-            "Not tested: the access is not running right now (disabled, starting "
-            "or stopped)."
-        ),
-        "test_error": "Test failed: {kind}.",
         "address_hint": (
             "Tip: if the gateway's address changes, for example after a router "
             "restart, a fixed address helps: reserve its IP address in the router "
@@ -428,20 +361,24 @@ def connection_description(
     return " ".join(parts)
 
 
-def _paused_text(texts: dict[str, str], until: datetime | None) -> str:
+# The outcome of an explicit test: a code with its values. The dialog shows
+# the page ``connection_test_<code>``, a fixed text in the profile language.
+TestOutcome = tuple[str, dict[str, str]]
+
+
+def _paused(until: datetime | None) -> TestOutcome:
     if until is None:
-        return texts["test_paused_open"]
-    return texts["test_paused"].format(until=_clock(until))
+        return "paused_open", {}
+    return "paused", {"until": _clock(until)}
 
 
 async def test_connection(
     hass: HomeAssistant, entry: ConfigEntry[Any], key: str
-) -> str:
-    """Read once on explicit request and describe the result."""
+) -> TestOutcome:
+    """Read once on explicit request and name the outcome."""
     from .pointt import AuthenticationError, PointTError, RateLimited
     from .pointt.exceptions import SourceStopped
 
-    texts = _texts(hass)
     connections = _runtime(entry)
     status = access_status(entry, key)
     if connections is None or status.state in (
@@ -450,46 +387,46 @@ async def test_connection(
         "starting",
         "unused",
     ):
-        return texts["test_not_running"]
+        return "not_running", {}
     connection = connections.snapshot.connections.get(key)
     if connection is None:
-        return texts["test_not_running"]
+        return "not_running", {}
     started = monotonic()
 
-    def elapsed() -> int:
-        return round((monotonic() - started) * 1000)
+    def elapsed() -> str:
+        return str(round((monotonic() - started) * 1000))
 
     if connection.kind == CLOUD_KIND:
         # Known causes need no request; the user can act on them directly.
         if status.state == "auth_required":
-            return texts["test_auth_cloud"]
+            return "auth_cloud", {}
         if status.state == "paused":
-            return _paused_text(texts, status.until)
+            return _paused(status.until)
         driver = connections.connection_driver(key)
         client = getattr(driver, "client", None)
         if client is None:
-            return texts["test_not_running"]
+            return "not_running", {}
         try:
             async with asyncio.timeout(30):
                 gateways = await client.get_gateways()
         except SourceStopped:
-            return texts["test_not_running"]
+            return "not_running", {}
         except AuthenticationError:
-            return texts["test_auth_cloud"]
+            return "auth_cloud", {}
         except RateLimited:
             remaining = getattr(getattr(driver, "backoff", None), "remaining", 0.0)
             seconds = remaining if isinstance(remaining, int | float) else 0.0
-            return _paused_text(texts, _in(seconds) if seconds > 0 else None)
+            return _paused(_in(seconds) if seconds > 0 else None)
         except TimeoutError, PointTError:
-            return texts["test_unreachable"].format(ms=elapsed())
-        return texts["ok_cloud"].format(ms=elapsed(), count=len(gateways))
+            return "unreachable", {"ms": elapsed()}
+        return "ok_cloud", {"ms": elapsed(), "count": str(len(gateways))}
     # LAN: the published state already names these causes.
     if status.state == "auth_required":
-        return texts["test_auth_local"]
+        return "auth_local", {}
     if status.state == "certificate_changed":
-        return texts["test_certificate_changed"]
+        return "certificate_changed", {}
     if status.state == "paused":
-        return _paused_text(texts, status.until)
+        return _paused(status.until)
     for binding_id, binding in connections.snapshot.bindings.items():
         if binding.connection_id != key:
             continue
@@ -499,17 +436,43 @@ async def test_connection(
             continue
         result, millis = await probe()
         if result == "ok":
-            return texts["ok"].format(ms=millis)
+            return "ok", {"ms": str(millis)}
         if result == "auth_required":
-            return texts["test_auth_local"]
+            return "auth_local", {}
         if result == "paused":
-            return _paused_text(texts, access_status(entry, key).until)
+            return _paused(access_status(entry, key).until)
         if result == "not_running" and status.state == "unreachable":
             result = "unreachable"
-        text = texts.get(f"test_{result}", texts["test_error"]).format(
-            ms=millis, kind=result
-        )
         if result == "unreachable":
-            text += " " + texts["address_hint"]
-        return text
-    return texts["test_not_running"]
+            # With the tip on a fixed address.
+            return "unreachable_local", {"ms": str(millis)}
+        if result in TEST_CODES:
+            return result, {"ms": str(millis)}
+        return "error", {"kind": safe_kind(result)}
+    return "not_running", {}
+
+
+# Every code of ``test_connection``; each has its page.
+TEST_CODES = frozenset(
+    {
+        "auth_cloud",
+        "auth_local",
+        "busy",
+        "certificate_changed",
+        "error",
+        "not_running",
+        "ok",
+        "ok_cloud",
+        "other_gateway",
+        "paused",
+        "paused_open",
+        "unreachable",
+        "unreachable_local",
+    }
+)
+
+
+def safe_kind(value: object) -> str:
+    """A code for the page, never free text."""
+    text = str(value)
+    return text if text.replace("_", "").isalnum() and len(text) <= 40 else "unknown"
