@@ -156,7 +156,7 @@ SECOND_SOURCES = {
     HP1 + "CompressorSpeedActual": "Compressor speed (signal)",
     HP1 + "CHPumpSpeed": "Primary heating pump speed (PC0, signal)",
     "/signals/SRC.IntFlowTemp": "Primary supply temperature (TC1, signal)",
-    HP1 + "ReturnTemp": "Return temperature (TC0, signal)",
+    HP1 + "ReturnTemp": "Return to the heat pump (TC0, signal)",
     "/signals/SRC.SystemPumpVolumeFlow": "Primary flow rate (PC0, signal)",
     "/signals/SC.HC1.FlowTempSetp": "Supply setpoint HC1 (signal)",
     "/signals/SRC.HC1.FlowCtrl.ReqFlowTemp": (

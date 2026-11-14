@@ -63,6 +63,14 @@ DASH = "\N{EN DASH}"
 # (path, subkey, English, German) of the cloud names.
 CLOUD_NAMES = [
     ("/heatSources/flameStatus", None, "Heat source active", "Wärmeerzeuger aktiv"),
+    # The return into the heat source (TC0 of a heat pump), not a heating
+    # circuit's return.
+    (
+        "/heatSources/returnTemperature",
+        None,
+        "Return to the heat source",
+        "Rücklauf zum Wärmeerzeuger",
+    ),
     (
         "/heatingCircuits/hc1/temperatureLevels/comfort2",
         None,
@@ -102,6 +110,11 @@ CLOUD_NAMES = [
 
 # (signal, English, German) of the local names.
 LOCAL_NAMES = [
+    (
+        "SRC.CUHP.HP1.ReturnTemp",
+        "Return to the heat pump (TC0, signal)",
+        "Rücklauf zur Wärmepumpe (TC0, Signal)",
+    ),
     (
         "SRC.CUHP.HP1.CompressorPower",
         "Heat output (thermal)",
@@ -607,3 +620,119 @@ def test_an_impossible_installation_date_is_unknown() -> None:
 def test_missing_parts_stay_unavailable() -> None:
     for day, month, year in ((None, 8, 20), (1, None, 20), (1, 8, None)):
         assert _date_sensor(day, month, year) == (None, False)
+
+
+# ------------------------------------- counters in German, the return (TC0)
+
+# The counters are named in the language of Home Assistant; in German none of
+# them keeps an English name.
+GERMAN_COUNTERS = [
+    (
+        "/heatSources/emon/totalConsumption",
+        "compressor",
+        f"Gesamt {DASH} Stromverbrauch Wärmepumpe",
+    ),
+    (
+        "/heatSources/emon/chConsumption",
+        "eheater",
+        f"Heizung {DASH} Stromverbrauch elektrischer Zuheizer",
+    ),
+    (
+        "/heatSources/emon/dhwConsumption",
+        "outputProduced",
+        f"Warmwasser {DASH} Erzeugte Wärme",
+    ),
+    (
+        "/heatSources/emon/coolingConsumption",
+        "outputProduced",
+        f"Kühlung {DASH} Erzeugte Kühlenergie",
+    ),
+    ("/heatSources/numberOfStarts", None, "Anzahl der Starts"),
+    ("/heatSources/hs1/numberOfStarts", "dhw", "Anzahl der Starts Warmwasser"),
+    ("/heatSources/workingTime/totalSystem", None, "Gesamtlaufzeit Anlage"),
+    ("/heatSources/hs1/workingTime", "total", "Betriebszeit Gesamt"),
+]
+
+
+@pytest.mark.parametrize(("path", "subkey", "german"), GERMAN_COUNTERS)
+def test_the_counters_have_german_names(path, subkey, german) -> None:
+    assert resource_name(path, subkey, language="de") == german
+    assert resource_name(path, subkey, language="en") != german
+
+
+def test_only_the_heat_sources_return_names_its_direction() -> None:
+    assert resource_name("/heatingCircuits/hc1/returnTemperature", language="de") == (
+        "Rücklauftemperatur"
+    )
+    assert resource_name("/heatSources/returnTemperature", language="en") == (
+        "Return to the heat source"
+    )
+
+
+def _cloud_sensor(hass: HomeAssistant, path: str, value: object):
+    from tests.test_sensor import _sensor
+
+    return _sensor(
+        hass,
+        Resource(
+            path=path,
+            value=value,
+            has_value=True,
+            metadata=ResourceMetadata(
+                resource_type="floatValue",
+                unit="C" if "Temperature" in path else None,
+            ),
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "object_id", "old_name", "language", "new_name"),
+    [
+        (
+            "/heatSources/returnTemperature",
+            22.7,
+            "k40_heat_pump_return_temperature",
+            f"Heat pump {DASH} Return temperature",
+            "en",
+            "Return to the heat source",
+        ),
+        (
+            "/heatSources/returnTemperature",
+            22.7,
+            "k40_heat_pump_return_temperature",
+            f"Heat pump {DASH} Return temperature",
+            "de",
+            "Rücklauf zum Wärmeerzeuger",
+        ),
+        (
+            "/heatSources/numberOfStarts",
+            125,
+            "k40_heat_pump_number_of_starts",
+            f"Heat pump {DASH} Number of starts",
+            "de",
+            "Anzahl der Starts",
+        ),
+    ],
+)
+async def test_a_renamed_or_german_entity_keeps_its_id(
+    hass: HomeAssistant, path, value, object_id, old_name, language, new_name
+) -> None:
+    hass.config.language = language
+    assert await async_setup_component(hass, "sensor", {})
+    sensor = _cloud_sensor(hass, path, value)
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "sensor",
+        "sensor",
+        sensor.unique_id,
+        suggested_object_id=object_id,
+        original_name=old_name,
+    )
+    await add_without_device(hass, sensor)
+    await hass.async_block_till_done()
+    entry = registry.async_get(old.entity_id)
+    assert sensor.entity_id == old.entity_id == f"sensor.{object_id}"
+    assert entry is not None and entry.unique_id == old.unique_id
+    assert entry.disabled_by is None
+    assert entry.original_name.endswith(new_name)

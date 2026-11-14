@@ -519,9 +519,11 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             (
                 _HP1 + "ReturnTemp",
                 "return_temperature_signal",
+                # The return into the heat pump, not that of a heating
+                # circuit.
                 (
-                    "Rücklauftemperatur (TC0, Signal)",
-                    "Return temperature (TC0, signal)",
+                    "Rücklauf zur Wärmepumpe (TC0, Signal)",
+                    "Return to the heat pump (TC0, signal)",
                 ),
             ),
             (
