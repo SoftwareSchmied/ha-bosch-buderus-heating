@@ -196,7 +196,6 @@ class BoschBuderusHolidayActiveBinarySensor(
 
     _attr_has_entity_name = True
     _attr_translation_key = "holiday_active"
-    _attr_icon = "mdi:palm-tree"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -254,7 +253,6 @@ class BoschBuderusCloudControlBinarySensor(
     _attr_translation_key = "cloud_control"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_entity_registry_enabled_default = False
-    _attr_icon = "mdi:remote"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -338,7 +336,6 @@ class BoschBuderusSystemFaultBinarySensor(
     _attr_has_entity_name = True
     _attr_translation_key = "system_fault"
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
-    _attr_icon = "mdi:alert-circle"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)

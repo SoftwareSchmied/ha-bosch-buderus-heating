@@ -97,7 +97,6 @@ class BoschBuderusHolidayCalendar(
 
     _attr_has_entity_name = True
     _attr_translation_key = "holiday_periods"
-    _attr_icon = "mdi:calendar-account"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)

@@ -5,6 +5,46 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Changed
+
+- **Safer heating-circuit writes:**
+  - Before every write of a heating-circuit climate (mode, target,
+    temporary setpoint) and of the button "Clear temporary setpoint", I now
+    also read the circuit's control type on the appliance, together with
+    the mode and the heating context. If it changed since it was shown,
+    nothing is sent. A circuit whose control type has no current reading
+    takes no change.
+  - With the control type `ISRC`, a circuit takes no temporary setpoint and
+    offers no clearing, as in the manufacturer's app. The manual setpoint
+    stays.
+  - The lower limit of the temporary target, taken from the manual
+    setpoint, stays shown while the last reading of the manual setpoint is
+    still valid. One missed reading no longer hides the target in
+    automatic mode; a change still needs a current reading.
+  - I tested this with automated tests and simulated data only; it is
+    expected, untested on a real installation.
+- **Clearing a temporary setpoint outside the reported limits:** some
+  gateways report limits such as 5 to 30 for the temporary setpoint and use
+  -1 to end it, as the manufacturer's app does. The button "Clear temporary
+  setpoint" is now created for them as well, disabled by default. It sends
+  -1 exactly once, and any negative reading afterwards confirms that no
+  temporary setpoint is active. Only this one value is allowed outside the
+  limits. This is expected, untested on a real installation; I welcome
+  reports.
+- **Flags of every setting:** all controls now follow the `used` and
+  `available` flags when the appliance reports them, not only those of
+  room controllers. A setting reported as not available gets no control; a
+  setting reported as not used keeps its control, and a change is refused
+  before anything is sent, with a general message. Without flags nothing
+  changes. The zone controls of room controllers keep their own rules. I
+  tested this with automated tests only.
+- **Icons per state:** icons of many entities now come from Home
+  Assistant's icon translations, among them operating modes, compressor and
+  refrigerant status, heat demand, pressure status and fan levels, with an
+  icon per state where it helps. Entities that had a fixed icon keep it.
+  Entity IDs, names and settings stay as they are; an icon you chose
+  yourself stays.
+
 ### Fixed
 
 - **Second heating circuit without name and without target in Auto:** some
@@ -29,6 +69,11 @@ Versioning after its first tagged preview.
     [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
     I tested it with automated tests in the shape of that report; it is not
     yet confirmed on a real installation.
+- **Discovery next to an entry whose update failed:** when an existing entry
+  stays at an older version because its update failed, a discovered
+  gateway no longer offers a new local-only entry for the same plant; the
+  notice ends with "Local setup is not available". I tested this with
+  automated tests.
 
 ## [0.9.2-beta.1] - 2026-11-14
 

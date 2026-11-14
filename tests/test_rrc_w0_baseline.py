@@ -13,6 +13,8 @@ heat source and its burner status disabled, and the request sensors carry
 neutral names. 0.9.1 adds the heat generator sensor of the module list on
 purpose, without a request of its own, and corrected the name of its system
 supply temperature (before "Supply temperature"); its unique ID stays.
+0.9.2 moves fixed icons to ``icons.json`` on purpose: those entities record
+no icon of their own any more (``original_icon`` empty); nothing else changes.
 """
 
 from __future__ import annotations

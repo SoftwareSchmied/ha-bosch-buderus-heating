@@ -226,10 +226,12 @@ def test_the_heating_circuit_keeps_the_earlier_rule() -> None:
 
 
 def test_only_contract_policies_on_a_room_controller_follow_the_rule() -> None:
-    """S11: the generic policies and other gateways are not affected."""
+    """S11: other gateways keep the generic rule: an unused setting keeps
+    its control and refuses to write (no contract message)."""
     away = flagged(AWAY, "off", used="false", allowedValues=["on", "off"])
     assert assess_control(away, GENERIC_CONTEXT).eligible
-    validate_control_value(away, "on", GENERIC_CONTEXT)
+    with pytest.raises(ControlUnused):
+        validate_control_value(away, "on", GENERIC_CONTEXT)
     # A zone mode keeps its own rule (#113).
     mode = flagged("/zones/zn1/userMode", "manual", used="true", available="false")
     with pytest.raises(ControlLocked) as raised:

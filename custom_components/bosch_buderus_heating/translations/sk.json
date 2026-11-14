@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Rádiové zariadenie toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
     },
+    "control_unused": {
+      "message": "Zariadenie toto nastavenie momentálne nepoužíva. Táto zmena sa neodoslala."
+    },
     "rrc_setting_unused": {
       "message": "Izbový regulátor toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
     },

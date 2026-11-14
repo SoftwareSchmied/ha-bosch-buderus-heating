@@ -39,7 +39,6 @@ DESCRIPTIONS = (
         translation_key="wallbox_state",
         device_class=SensorDeviceClass.ENUM,
         options=list(STATES.values()),
-        icon="mdi:ev-station",
     ),
     WallboxSensorDescription(
         key="power",

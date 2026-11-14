@@ -79,7 +79,6 @@ def build_button_descriptions(
                 ButtonEntityDescription(
                     key=resource.path,
                     translation_key="softener_start_regeneration",
-                    icon="mdi:water-sync",
                     entity_registry_enabled_default=False,
                 )
             )

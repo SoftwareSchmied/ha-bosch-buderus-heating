@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "The radio device does not use this setting at the moment, so it was not changed."
     },
+    "control_unused": {
+      "message": "The appliance does not use this setting at the moment. This change was not sent."
+    },
     "rrc_setting_unused": {
       "message": "The room controller does not use this setting at the moment, so it was not changed."
     },

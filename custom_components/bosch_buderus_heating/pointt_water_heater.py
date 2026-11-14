@@ -97,7 +97,6 @@ class PointTWaterHeater(
     _attr_translation_key = "pointt_dhw"
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 0.1
-    _attr_icon = "mdi:water-boiler"
 
     def __init__(
         self, coordinator: BoschBuderusDataUpdateCoordinator, root: str

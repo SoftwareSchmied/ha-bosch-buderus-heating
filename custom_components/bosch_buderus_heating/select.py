@@ -31,6 +31,7 @@ from .coordinator import (
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
 from .i18n import localize
+from .icon_translations import TRANSLATED_SELECT_ICONS
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -176,7 +177,10 @@ def build_select_descriptions(
                 write_policy=policy,
                 options=list(options),
                 translation_key=translation_key or None,
-                icon=control_icon(resource.path, contract=contract),
+                # Icons of the generic selects come from icons.json.
+                icon=control_icon(resource.path, contract=contract)
+                if contract or translation_key not in TRANSLATED_SELECT_ICONS
+                else None,
                 entity_category=control_category(resource.path, contract=contract),
                 entity_registry_enabled_default=policy.enabled_by_default,
             )

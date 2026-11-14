@@ -291,7 +291,10 @@ async def async_set_control(
             await coordinator.async_write_control(path, value, policy)
     except ControlUnused as err:
         raise ServiceValidationError(
-            translation_domain=DOMAIN, translation_key=unused_translation_key(path)
+            translation_domain=DOMAIN,
+            translation_key=unused_translation_key(path)
+            if err.contract
+            else "control_unused",
         ) from err
     except ControlLocked as err:
         raise ServiceValidationError(

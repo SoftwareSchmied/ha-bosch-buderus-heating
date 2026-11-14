@@ -1274,6 +1274,9 @@
     "rrc_device_setting_unused": {
       "message": "Radijska naprava te nastavitve trenutno ne uporablja, zato ni bila spremenjena."
     },
+    "control_unused": {
+      "message": "Naprava te nastavitve trenutno ne uporablja. Ta sprememba ni bila poslana."
+    },
     "rrc_setting_unused": {
       "message": "Sobni regulator te nastavitve trenutno ne uporablja, zato ni bila spremenjena."
     },

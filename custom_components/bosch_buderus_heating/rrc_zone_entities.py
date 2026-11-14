@@ -275,7 +275,6 @@ class RrcOverrideClearButton(
 
     _attr_has_entity_name = True
     _attr_translation_key = "rrc_override_clear"
-    _attr_icon = "mdi:timer-off-outline"
 
     def __init__(
         self, coordinator: BoschBuderusDataUpdateCoordinator, root: str
@@ -353,7 +352,6 @@ class RrcAdvanceSwitchPointButton(
 
     _attr_has_entity_name = True
     _attr_translation_key = "rrc_override_advance"
-    _attr_icon = "mdi:skip-next-outline"
 
     def __init__(
         self, coordinator: BoschBuderusDataUpdateCoordinator, root: str

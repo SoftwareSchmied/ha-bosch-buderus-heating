@@ -49,6 +49,14 @@ settings are separate transactions. On failure, confirmed earlier changes
 remain applied and the last attempted change may have an uncertain outcome.
 The dialog explains this and retains the remaining draft.
 
+Since 0.9.2, every control follows the `used` and `available` flags when the
+appliance reports them, not only the controls of room controllers. A setting
+reported as not available gets no control (an existing entity becomes
+unavailable). A setting reported as not used keeps its control, but a change
+is refused before anything is sent. Malformed flags give no control. Without
+flags nothing changes. The zone controls of a room controller keep their own
+flag rules.
+
 The tabs show the heating circuits in numerical order first, then hot water,
 then the system. After **Apply** or **Reload values**, the dialog stays on the
 open tab; after a successful write it shows the tab of the last confirmed
@@ -118,7 +126,10 @@ circuit climate.
   the minimum because these values end the temporary setpoint or switch the
   circuit off for now. The climate never writes them as a target: its lower
   limit is then the minimum of the manual setpoint, and without one the
-  climate offers no target in automatic mode.
+  climate offers no target in automatic mode. Since 0.9.2 this lower limit
+  stays shown while the last reading of the manual setpoint is still valid,
+  so one missed reading no longer hides the target; a change still needs a
+  current reading.
 - **Shown target.** While a temporary setpoint is active (a reading of 0 or
   more), the climate shows it and the attribute `temporary_override` is
   `true`. A negative reading (-1) means none; the climate then shows the
@@ -126,15 +137,24 @@ circuit climate.
   A reading of 0 (switched off for now) counts as active, but the climate
   shows the program's target.
 - **Clear button.** A button "Clear temporary setpoint" ends an active
-  temporary setpoint by writing -1. I add it only when the reported limits
-  include -1 (on the reported step). Otherwise no button is created, and the
-  temporary setpoint ends at the controller's own time. The button is
-  available only in automatic mode while a temporary setpoint is active.
+  temporary setpoint by writing -1. When the reported limits include -1, it
+  must lie on the reported step. Since 0.9.2 I also add the button when the
+  limits leave -1 out (for example 5 to 30), because the manufacturer's app
+  writes -1 there as well; this button is created disabled, and any negative
+  reading afterwards confirms that no temporary setpoint is active. The
+  button is available only in automatic mode while a temporary setpoint is
+  active. Clearing outside the limits is expected, untested on a real
+  device.
 - **Write rules.** Each change reads the mode, the temporary setpoint and the
   known heating context on the appliance first and refuses the write when
   one of them has changed. It then sends exactly one request and confirms
   the value by reading it back; it never sends the request again. A
-  circuit with the control type `constants` takes no target.
+  circuit with the control type `constants` takes no target. Since 0.9.2 the
+  control type is read on the appliance together with the other values
+  before every climate write (mode, target, temporary setpoint and clear
+  button); if it changed since it was shown, nothing is sent. With the
+  control type `ISRC` the circuit takes no temporary target and offers no
+  clearing, as in the manufacturer's app; the manual setpoint stays.
 - **No entity of its own.** The temporary setpoint gets no number entity and
   no row in the controls dialog. The existing sensor of the temporary
   setpoint stays as it was.
@@ -280,6 +300,14 @@ geschrieben. Bei einem Fehler bleiben bereits bestätigte Änderungen wirksam;
 die zuletzt versuchte Änderung kann bereits übernommen worden sein.
 Der Dialog erklärt das und erhält die verbleibenden Eingaben.
 
+Seit 0.9.2 folgen alle Regler den Kennzeichen `used` und `available`, wenn
+die Anlage sie meldet, nicht nur die Regler von Raumreglern. Eine als nicht
+verfügbar gemeldete Einstellung erhält keinen Regler (eine bestehende Entität
+wird nicht verfügbar). Eine als nicht genutzt gemeldete Einstellung behält
+ihren Regler, eine Änderung wird aber vor dem Senden abgewiesen. Fehlerhafte
+Kennzeichen ergeben keinen Regler. Ohne Kennzeichen ändert sich nichts. Die
+Zonenregler eines Raumreglers behalten ihre eigenen Regeln.
+
 Die Reiter zeigen zuerst die Heizkreise in numerischer Reihenfolge, dann
 Warmwasser und zuletzt die Anlage. Nach **Übernehmen** oder **Werte neu laden**
 bleibt der geöffnete Reiter erhalten; nach erfolgreichem Schreiben zeigt der
@@ -337,6 +365,19 @@ jedes Gateway, das diese Regelungsart meldet. Ohne aktuelle Lesung von
 Klimaentität erst wieder nach einer Lesung einer anderen Regelungsart. Die
 Einzelentitäten folgen weiter ihren eigenen Regeln. Erwartet, aber an einem
 echten Gerät ungetestet.
+
+Seit 0.9.2 lese ich `controlType` vor jedem Schreiben der Klimaentität und
+der Taste „Vorübergehenden Sollwert aufheben“ zusammen mit Betriebsart und
+Heizkontext erneut an der Anlage; hat sich die Regelungsart seit der Anzeige
+geändert, wird nichts gesendet. Mit der Regelungsart `ISRC` gibt es wie in der
+Hersteller-App keinen vorübergehenden Sollwert und kein Aufheben; der manuelle
+Sollwert bleibt. Die Untergrenze des vorübergehenden Sollwerts aus dem
+manuellen Sollwert bleibt sichtbar, solange dessen letzte Lesung gültig ist;
+eine Änderung braucht weiter eine aktuelle Lesung. Lassen die gemeldeten
+Grenzen den Wert -1 aus (zum Beispiel 5 bis 30), lege ich die Aufheben-Taste
+trotzdem an, weil die Hersteller-App -1 dort ebenfalls schreibt; diese Taste
+ist standardmäßig deaktiviert, und jeder negative Wert beim Rücklesen
+bestätigt das Aufheben. Erwartet, aber an einem echten Gerät ungetestet.
 
 Die Raumtemperatur stammt ausschließlich aus einem gültigen
 `roomtemperature`-Messwert dieses Kreises. Vorlauftemperaturen werden nicht

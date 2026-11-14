@@ -169,7 +169,6 @@ class BoschBuderusHeatGeneratorSensor(
     _attr_has_entity_name = True
     _attr_translation_key = "heat_generator"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:heat-pump-outline"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
