@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energía (estimada a partir de la potencia actual)"
       },
+      "calculated_activity": {
+        "name": "Actividad (calculada)",
+        "state": {
+          "heating": "Calefacción",
+          "cooling": "Refrigeración",
+          "defrosting": "Desescarche",
+          "idle": "Inactivo",
+          "off": "Apagado"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Último desescarche (calculado)"
+      },
+      "calculated_defrost_count": {
+        "name": "Número de desescarches (calculado)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Tiempo total de desescarche (calculado)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Calor extraído por el desescarche (calculado)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Electricidad durante el desescarche (calculada)"
+      },
+      "calculated_net_heat": {
+        "name": "Calor neto (calculado)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Tiempo medio de funcionamiento por arranque, calefacción (calculado)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Impulsión por encima de la consigna (calculado)"
+      },
       "heating_switch_program": {
         "name": "Programa horario de calefacción",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Avería de la instalación"
       },
+      "calculated_defrost_active": {
+        "name": "Desescarche activo (calculado)"
+      },
       "bacon_connectivity": {
         "name": "Conexión del dispositivo"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Aparecido",
               "resolved": "Resuelto"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Desescarche (calculado)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Desescarche finalizado"
             }
           }
         }

@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energia (stimata dalla potenza attuale)"
       },
+      "calculated_activity": {
+        "name": "Attività (calcolata)",
+        "state": {
+          "heating": "Riscaldamento",
+          "cooling": "Raffrescamento",
+          "defrosting": "Sbrinamento",
+          "idle": "Inattivo",
+          "off": "Spento"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Ultimo sbrinamento (calcolato)"
+      },
+      "calculated_defrost_count": {
+        "name": "Numero di sbrinamenti (calcolato)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Durata totale sbrinamento (calcolata)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Calore prelevato dallo sbrinamento (calcolato)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Elettricità durante lo sbrinamento (calcolata)"
+      },
+      "calculated_net_heat": {
+        "name": "Calore netto (calcolato)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Durata media di funzionamento per avvio, riscaldamento (calcolata)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Mandata sopra il setpoint (calcolato)"
+      },
       "heating_switch_program": {
         "name": "Programma orario riscaldamento",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Anomalia dell'impianto"
       },
+      "calculated_defrost_active": {
+        "name": "Sbrinamento attivo (calcolato)"
+      },
       "bacon_connectivity": {
         "name": "Connessione del dispositivo"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Comparso",
               "resolved": "Risolto"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Sbrinamento (calcolato)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Sbrinamento terminato"
             }
           }
         }

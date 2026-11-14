@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energie (geschätzt aus aktueller Leistung)"
       },
+      "calculated_activity": {
+        "name": "Aktivität (berechnet)",
+        "state": {
+          "heating": "Heizen",
+          "cooling": "Kühlen",
+          "defrosting": "Abtauen",
+          "idle": "Untätig",
+          "off": "Aus"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Letzte Abtauung (berechnet)"
+      },
+      "calculated_defrost_count": {
+        "name": "Anzahl Abtauungen (berechnet)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Abtaudauer gesamt (berechnet)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Wärmeentnahme beim Abtauen (berechnet)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Strom beim Abtauen (berechnet)"
+      },
+      "calculated_net_heat": {
+        "name": "Netto-Wärme (berechnet)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Mittlere Laufzeit je Start Heizen (berechnet)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Vorlauf über Sollwert (berechnet)"
+      },
       "heating_switch_program": {
         "name": "Zeitprogramm Heizen",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Anlagenstörung"
       },
+      "calculated_defrost_active": {
+        "name": "Abtauung aktiv (berechnet)"
+      },
       "bacon_connectivity": {
         "name": "Geräteverbindung"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Aufgetreten",
               "resolved": "Behoben"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Abtauung (berechnet)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Abtauung beendet"
             }
           }
         }

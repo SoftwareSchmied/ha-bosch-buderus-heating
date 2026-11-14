@@ -27,7 +27,7 @@ from typing import Any
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import ClimateEntityFeature as Feature
-from homeassistant.components.climate.const import HVACMode
+from homeassistant.components.climate.const import HVACAction, HVACMode
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
@@ -51,6 +51,7 @@ from .control import (
     track_control_entities,
 )
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .derived_activity import circuit_activity, circuit_input_paths
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members, temperature_unit
@@ -172,6 +173,8 @@ class HeatingCircuitClimate(
         self._attr_name = grouped_entity_name(
             coordinator, root + "/operationMode", ""
         ).rstrip(" \N{EN DASH}")
+        # The readings the calculated action combines (entity use).
+        self.extra_resource_paths = circuit_input_paths(coordinator, root)
 
     def _resource(self, suffix: str, *, strict: bool = False) -> Resource | None:
         """A reading within its validity limit; ``strict`` for a change.
@@ -246,6 +249,14 @@ class HeatingCircuitClimate(
     def hvac_mode(self) -> HVACMode | None:
         mode = self._mode
         return _MODES.get(str(mode.value)) if self.available and mode else None
+
+    @property
+    def hvac_action(self) -> HVACAction | None:
+        """Calculated from the plant's readings; none without its inputs."""
+        if not self.available:
+            return None
+        action = circuit_activity(self.coordinator, self.root).value
+        return HVACAction(action) if action is not None else None
 
     def _read_only_control(
         self,

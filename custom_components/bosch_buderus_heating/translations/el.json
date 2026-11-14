@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Ενέργεια (εκτίμηση από την τρέχουσα ισχύ)"
       },
+      "calculated_activity": {
+        "name": "Δραστηριότητα (υπολογισμένο)",
+        "state": {
+          "heating": "Θέρμανση",
+          "cooling": "Ψύξη",
+          "defrosting": "Απόψυξη",
+          "idle": "Αδρανές",
+          "off": "Ανενεργό"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Τελευταία απόψυξη (υπολογισμένο)"
+      },
+      "calculated_defrost_count": {
+        "name": "Αριθμός αποψύξεων (υπολογισμένο)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Συνολικός χρόνος απόψυξης (υπολογισμένο)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Θερμότητα που αφαιρέθηκε κατά την απόψυξη (υπολογισμένο)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Ηλεκτρική ενέργεια κατά την απόψυξη (υπολογισμένο)"
+      },
+      "calculated_net_heat": {
+        "name": "Καθαρή θερμότητα (υπολογισμένο)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Μέσος χρόνος λειτουργίας ανά εκκίνηση, θέρμανση (υπολογισμένο)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Προσαγωγή πάνω από την επιθυμητή τιμή (υπολογισμένο)"
+      },
       "heating_switch_program": {
         "name": "Χρονοπρόγραμμα θέρμανσης",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Βλάβη συστήματος"
       },
+      "calculated_defrost_active": {
+        "name": "Απόψυξη ενεργή (υπολογισμένο)"
+      },
       "bacon_connectivity": {
         "name": "Σύνδεση συσκευής"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Εμφανίστηκε",
               "resolved": "Επιλύθηκε"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Απόψυξη (υπολογισμένο)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Η απόψυξη ολοκληρώθηκε"
             }
           }
         }

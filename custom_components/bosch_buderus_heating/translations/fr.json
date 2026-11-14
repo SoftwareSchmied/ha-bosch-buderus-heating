@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Énergie (estimée à partir de la puissance actuelle)"
       },
+      "calculated_activity": {
+        "name": "Activité (calculée)",
+        "state": {
+          "heating": "Chauffage",
+          "cooling": "Rafraîchissement",
+          "defrosting": "Dégivrage",
+          "idle": "Inactif",
+          "off": "Arrêt"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Dernier dégivrage (calculé)"
+      },
+      "calculated_defrost_count": {
+        "name": "Nombre de dégivrages (calculé)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Durée totale de dégivrage (calculée)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Chaleur prélevée par le dégivrage (calculée)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Électricité pendant le dégivrage (calculée)"
+      },
+      "calculated_net_heat": {
+        "name": "Chaleur nette (calculée)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Durée moyenne de fonctionnement par démarrage, chauffage (calculée)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Départ au-dessus de la consigne (calculé)"
+      },
       "heating_switch_program": {
         "name": "Programme horaire du chauffage",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Défaut de l'installation"
       },
+      "calculated_defrost_active": {
+        "name": "Dégivrage actif (calculé)"
+      },
       "bacon_connectivity": {
         "name": "Connexion de l'appareil"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Apparu",
               "resolved": "Résolu"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Dégivrage (calculé)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Dégivrage terminé"
             }
           }
         }

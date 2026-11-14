@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energie (geschat op basis van actueel vermogen)"
       },
+      "calculated_activity": {
+        "name": "Activiteit (berekend)",
+        "state": {
+          "heating": "Verwarmen",
+          "cooling": "Koelen",
+          "defrosting": "Ontdooien",
+          "idle": "Inactief",
+          "off": "Uit"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Laatste ontdooiing (berekend)"
+      },
+      "calculated_defrost_count": {
+        "name": "Aantal ontdooiingen (berekend)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Totale ontdooitijd (berekend)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Bij ontdooien onttrokken warmte (berekend)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Stroom tijdens ontdooien (berekend)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettowarmte (berekend)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Gemiddelde looptijd per start, verwarming (berekend)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Aanvoer boven setpoint (berekend)"
+      },
       "heating_switch_program": {
         "name": "Verwarmingstijdprogramma",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Installatiestoring"
       },
+      "calculated_defrost_active": {
+        "name": "Ontdooien actief (berekend)"
+      },
       "bacon_connectivity": {
         "name": "Apparaatverbinding"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Opgetreden",
               "resolved": "Opgelost"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Ontdooiing (berekend)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Ontdooiing beëindigd"
             }
           }
         }

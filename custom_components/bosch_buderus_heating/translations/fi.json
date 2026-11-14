@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energia (arvioitu nykyisestä tehosta)"
       },
+      "calculated_activity": {
+        "name": "Toiminta (laskettu)",
+        "state": {
+          "heating": "Lämmitys",
+          "cooling": "Jäähdytys",
+          "defrosting": "Sulatus",
+          "idle": "Joutokäynti",
+          "off": "Pois"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Viimeisin sulatus (laskettu)"
+      },
+      "calculated_defrost_count": {
+        "name": "Sulatusten määrä (laskettu)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Sulatusaika yhteensä (laskettu)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Sulatuksessa otettu lämpö (laskettu)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Sähkö sulatuksen aikana (laskettu)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettolämpö (laskettu)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Keskimääräinen käyntiaika käynnistystä kohden, lämmitys (laskettu)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Meno yli asetusarvon (laskettu)"
+      },
       "heating_switch_program": {
         "name": "Lämmityksen aikaohjelma",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Järjestelmävika"
       },
+      "calculated_defrost_active": {
+        "name": "Sulatus käynnissä (laskettu)"
+      },
       "bacon_connectivity": {
         "name": "Laiteyhteys"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Ilmennyt",
               "resolved": "Ratkaistu"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Sulatus (laskettu)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Sulatus päättynyt"
             }
           }
         }

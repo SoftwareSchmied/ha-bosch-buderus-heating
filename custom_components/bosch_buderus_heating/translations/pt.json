@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energia (estimada a partir da potência atual)"
       },
+      "calculated_activity": {
+        "name": "Atividade (calculada)",
+        "state": {
+          "heating": "Aquecimento",
+          "cooling": "Arrefecimento",
+          "defrosting": "Descongelação",
+          "idle": "Inativo",
+          "off": "Desligado"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Última descongelação (calculada)"
+      },
+      "calculated_defrost_count": {
+        "name": "Número de descongelações (calculado)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Tempo total de descongelação (calculado)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Calor retirado pela descongelação (calculado)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Eletricidade durante a descongelação (calculada)"
+      },
+      "calculated_net_heat": {
+        "name": "Calor líquido (calculado)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Tempo médio de funcionamento por arranque, aquecimento (calculado)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Ida acima do ponto de ajuste (calculado)"
+      },
       "heating_switch_program": {
         "name": "Programa horário do aquecimento",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Avaria da instalação"
       },
+      "calculated_defrost_active": {
+        "name": "Descongelação ativa (calculada)"
+      },
       "bacon_connectivity": {
         "name": "Ligação do dispositivo"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Ocorrido",
               "resolved": "Resolvido"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Descongelação (calculada)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Descongelação concluída"
             }
           }
         }

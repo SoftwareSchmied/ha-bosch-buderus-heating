@@ -34,7 +34,11 @@ async def test_event_platform_adds_one_stream_per_gateway(
     hass: HomeAssistant,
 ) -> None:
     coordinator = _coordinator(hass)
-    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    entry = SimpleNamespace(
+        runtime_data=SimpleNamespace(coordinators=(coordinator,)),
+        # The defrost event follows the coordinator for the entry's lifetime.
+        async_on_unload=lambda _listener: None,
+    )
     added: list[BoschBuderusNotificationEvent] = []
 
     await async_setup_entry(hass, entry, added.extend)

@@ -1785,6 +1785,40 @@
       "estimated_energy": {
         "name": "Energija (procijenjena iz trenutne snage)"
       },
+      "calculated_activity": {
+        "name": "Aktivnost (izračunato)",
+        "state": {
+          "heating": "Grijanje",
+          "cooling": "Hlađenje",
+          "defrosting": "Odmrzavanje",
+          "idle": "Neaktivno",
+          "off": "Isključeno"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Zadnje odmrzavanje (izračunato)"
+      },
+      "calculated_defrost_count": {
+        "name": "Broj odmrzavanja (izračunato)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Ukupno vrijeme odmrzavanja (izračunato)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Toplina oduzeta odmrzavanjem (izračunato)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Struja tijekom odmrzavanja (izračunato)"
+      },
+      "calculated_net_heat": {
+        "name": "Neto toplina (izračunato)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Prosječno vrijeme rada po pokretanju, grijanje (izračunato)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Polaz iznad zadane vrijednosti (izračunato)"
+      },
       "heating_switch_program": {
         "name": "Vremenski program grijanja",
         "state": {
@@ -2637,6 +2671,9 @@
       "system_fault": {
         "name": "Smetnja sustava"
       },
+      "calculated_defrost_active": {
+        "name": "Odmrzavanje aktivno (izračunato)"
+      },
       "bacon_connectivity": {
         "name": "Veza uređaja"
       },
@@ -2719,6 +2756,16 @@
             "state": {
               "appeared": "Pojavilo se",
               "resolved": "Riješeno"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Odmrzavanje (izračunato)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Odmrzavanje završeno"
             }
           }
         }
