@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan, och återkallar du den upphör den lokala åtkomsten. Äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Utan ett val ändras ingenting.",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan, och återkallar du den upphör den lokala åtkomsten. Äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Utan ett val ändras ingenting.{note}",
         "data": {
           "token": "Token som ska återkallas"
         }
       },
       "local_tokens_remove": {
         "title": "Återkalla en token före borttagning",
-        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan. Välj den token som ska återkallas innan åtkomsten tas bort. Utan ett val tar **Skicka** bort åtkomsten utan att något återkallas. Stäng den här dialogen för att behålla åtkomsten.",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan. Välj den token som ska återkallas innan åtkomsten tas bort. Utan ett val tar **Skicka** bort åtkomsten utan att något återkallas. Stäng den här dialogen för att behålla åtkomsten.{note}",
         "data": {
           "token": "Token som ska återkallas"
         }

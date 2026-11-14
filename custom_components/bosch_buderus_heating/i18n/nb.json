@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Kompressorstarter kjøling",
     "Holiday slot {} state": "Status for feriespor {}",
     "used by this access": "brukt av denne tilgangen",
-    "not readable": "kan ikke leses"
+    "not readable": "kan ikke leses",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Denne tilgangen bruker en token som ble skrevet inn manuelt. Det kan ikke fastslås hvilken oppføring i listen det er, så ingen er markert. Den kan stå under «Andre apper», hvis tokens aldri tilbys for tilbakekalling."
   }
 }

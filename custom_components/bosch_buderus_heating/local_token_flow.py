@@ -465,8 +465,28 @@ class LocalTokenFlow(ConnectionOptionsFlow):
                     for token in others
                 ),
                 "confirmed": _created(access.verified_at) if access else "?",
+                "note": self._tokens_entered_note(access, tokens),
             },
         )
+
+    def _tokens_entered_note(
+        self, access: _TokenAccess | None, tokens: tuple[GatewayToken, ...] | None
+    ) -> str:
+        """A token entered by hand: why nothing is marked, after a read list."""
+        if access is None or access.created or tokens is None:
+            return ""
+        note = localize(
+            self.hass.config.language,
+            "Dieser Zugang nutzt einen von Hand eingegebenen Token. Welcher "
+            "Eintrag der Liste das ist, lässt sich nicht erkennen, deshalb ist "
+            "keiner markiert. Er kann unter „Andere Programme“ stehen, deren "
+            "Tokens nie zum Widerruf angeboten werden.",
+            "This access uses a token that was entered by hand. Which entry of "
+            "the list it is cannot be identified, so none is marked. It may be "
+            "listed under other apps, whose tokens are never offered for "
+            "revocation.",
+        )
+        return f"\n\n{note}"
 
     async def _tokens_submit(
         self, user_input: dict[str, Any], *, removal: bool

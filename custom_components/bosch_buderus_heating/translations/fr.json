@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Jetons sur la passerelle",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. Les jetons plus anciens de cette intégration proviennent généralement de configurations antérieures. Sans choix, rien ne change.",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. Les jetons plus anciens de cette intégration proviennent généralement de configurations antérieures. Sans choix, rien ne change.{note}",
         "data": {
           "token": "Jeton à révoquer"
         }
       },
       "local_tokens_remove": {
         "title": "Révoquer un jeton avant la suppression",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, **Valider** supprime l'accès sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, **Valider** supprime l'accès sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.{note}",
         "data": {
           "token": "Jeton à révoquer"
         }

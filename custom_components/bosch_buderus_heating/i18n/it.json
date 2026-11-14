@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Avvii compressore raffrescamento",
     "Holiday slot {} state": "Stato slot vacanza {}",
     "used by this access": "usato da questo accesso",
-    "not readable": "non leggibile"
+    "not readable": "non leggibile",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Questo accesso usa un token inserito a mano. Non è possibile stabilire quale voce dell'elenco sia, quindi nessuna è contrassegnata. Può comparire tra «Altre app», i cui token non vengono mai proposti per la revoca."
   }
 }

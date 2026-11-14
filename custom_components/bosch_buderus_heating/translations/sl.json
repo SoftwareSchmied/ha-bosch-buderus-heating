@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Žetoni na prehodu",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.{note}",
         "data": {
           "token": "Žeton za preklic"
         }
       },
       "local_tokens_remove": {
         "title": "Preklic žetona pred odstranitvijo",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.{note}",
         "data": {
           "token": "Žeton za preklic"
         }

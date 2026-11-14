@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens op de gateway",
-        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd en als je het intrekt, eindigt de lokale toegang. Oudere tokens van deze integratie zijn meestal over van eerdere instellingen. Zonder keuze verandert er niets.",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd en als je het intrekt, eindigt de lokale toegang. Oudere tokens van deze integratie zijn meestal over van eerdere instellingen. Zonder keuze verandert er niets.{note}",
         "data": {
           "token": "In te trekken token"
         }
       },
       "local_tokens_remove": {
         "title": "Token intrekken vóór het verwijderen",
-        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd. Kies het token dat wordt ingetrokken voordat de toegang wordt verwijderd. Zonder keuze verwijdert **Verzenden** de toegang zonder iets in te trekken. Sluit dit venster om de toegang te behouden.",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd. Kies het token dat wordt ingetrokken voordat de toegang wordt verwijderd. Zonder keuze verwijdert **Verzenden** de toegang zonder iets in te trekken. Sluit dit venster om de toegang te behouden.{note}",
         "data": {
           "token": "In te trekken token"
         }

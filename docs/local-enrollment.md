@@ -167,7 +167,9 @@ access the message stays as before.
   old are all marked). The setup time is taken after the token was created,
   so this is normally the token in use, but it remains an assumption. For an
   access that uses a token entered by hand, nothing is marked, because that
-  token is not one of this integration's own. The mark appears in the list
+  token is not one of this integration's own; a short note below the list
+  says so. Such a token usually appears among the other apps, which are never
+  offered for revocation. The mark appears in the list
   and in the selection ("used by this access"); no token value or ID is shown.
   The user chooses by creation time. The revocation
   needs its own confirmation. Revoking the marked token also needs a second,

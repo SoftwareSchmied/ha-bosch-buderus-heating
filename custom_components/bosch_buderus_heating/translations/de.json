@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens auf dem Gateway",
-        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert, und widerrufst du ihn, endet der lokale Zugang. Ältere Tokens dieser Integration stammen meist von früheren Einrichtungen. Ohne Auswahl ändert sich nichts.",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert, und widerrufst du ihn, endet der lokale Zugang. Ältere Tokens dieser Integration stammen meist von früheren Einrichtungen. Ohne Auswahl ändert sich nichts.{note}",
         "data": {
           "token": "Zu widerrufender Token"
         }
       },
       "local_tokens_remove": {
         "title": "Token vor dem Entfernen widerrufen",
-        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert. Wähle den Token, der vor dem Entfernen des Zugangs widerrufen wird. Ohne Auswahl entfernt **OK** den Zugang, ohne etwas zu widerrufen. Um den Zugang zu behalten, schließe diesen Dialog.",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert. Wähle den Token, der vor dem Entfernen des Zugangs widerrufen wird. Ohne Auswahl entfernt **OK** den Zugang, ohne etwas zu widerrufen. Um den Zugang zu behalten, schließe diesen Dialog.{note}",
         "data": {
           "token": "Zu widerrufender Token"
         }

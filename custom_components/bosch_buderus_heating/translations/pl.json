@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokeny na bramce",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Bez wyboru nic się nie zmienia.",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Bez wyboru nic się nie zmienia.{note}",
         "data": {
           "token": "Token do unieważnienia"
         }
       },
       "local_tokens_remove": {
         "title": "Unieważnij token przed usunięciem",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru **Prześlij** usunie dostęp bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru **Prześlij** usunie dostęp bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.{note}",
         "data": {
           "token": "Token do unieważnienia"
         }

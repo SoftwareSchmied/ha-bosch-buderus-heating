@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Εκκινήσεις συμπιεστή – ψύξη",
     "Holiday slot {} state": "Κατάσταση θέσης διακοπών {}",
     "used by this access": "χρησιμοποιείται από αυτή την πρόσβαση",
-    "not readable": "μη αναγνώσιμο"
+    "not readable": "μη αναγνώσιμο",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Αυτή η πρόσβαση χρησιμοποιεί ένα διακριτικό που καταχωρίστηκε χειροκίνητα. Δεν μπορεί να προσδιοριστεί ποια καταχώριση της λίστας είναι, γι' αυτό δεν επισημαίνεται καμία. Μπορεί να εμφανίζεται στις «Άλλες εφαρμογές», των οποίων τα διακριτικά δεν προσφέρονται ποτέ για ανάκληση."
   }
 }

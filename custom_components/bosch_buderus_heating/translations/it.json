@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Token sul gateway",
-        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. I token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Senza una scelta non cambia nulla.",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. I token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Senza una scelta non cambia nulla.{note}",
         "data": {
           "token": "Token da revocare"
         }
       },
       "local_tokens_remove": {
         "title": "Revoca un token prima della rimozione",
-        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta, **Invia** rimuove l'accesso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta, **Invia** rimuove l'accesso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.{note}",
         "data": {
           "token": "Token da revocare"
         }

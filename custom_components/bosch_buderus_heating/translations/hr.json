@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokeni na pristupniku",
-        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Bez odabira ništa se ne mijenja.",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Bez odabira ništa se ne mijenja.{note}",
         "data": {
           "token": "Token za opoziv"
         }
       },
       "local_tokens_remove": {
         "title": "Opoziv tokena prije uklanjanja",
-        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira **Podnijeti** uklanja pristup bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira **Podnijeti** uklanja pristup bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.{note}",
         "data": {
           "token": "Token za opoziv"
         }

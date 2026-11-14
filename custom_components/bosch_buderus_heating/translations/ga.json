@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Comharthaí ar an ngeata",
-        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Gan rogha ní athraíonn aon rud.",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Gan rogha ní athraíonn aon rud.{note}",
         "data": {
           "token": "Comhartha le cúlghairm"
         }
       },
       "local_tokens_remove": {
         "title": "Cúlghair comhartha sula mbaintear é",
-        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, bainfidh **Cuir isteach** an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, bainfidh **Cuir isteach** an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.{note}",
         "data": {
           "token": "Comhartha le cúlghairm"
         }

@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens en la pasarela",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. Los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Sin elección no cambia nada.",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. Los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Sin elección no cambia nada.{note}",
         "data": {
           "token": "Token que se revocará"
         }
       },
       "local_tokens_remove": {
         "title": "Revocar un token antes de eliminar",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.{note}",
         "data": {
           "token": "Token que se revocará"
         }

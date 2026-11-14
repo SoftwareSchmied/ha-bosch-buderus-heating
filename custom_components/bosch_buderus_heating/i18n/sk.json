@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Počet štartov kompresora – chladenie",
     "Holiday slot {} state": "Stav slotu dovolenky {}",
     "used by this access": "používa ho tento prístup",
-    "not readable": "nečitateľné"
+    "not readable": "nečitateľné",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tento prístup používa ručne zadaný token. Nedá sa zistiť, ktorý záznam zoznamu to je, preto žiadny nie je označený. Môže byť uvedený v časti „Iné aplikácie“, ktorých tokeny sa nikdy neponúkajú na odvolanie."
   }
 }

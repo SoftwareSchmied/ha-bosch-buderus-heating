@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens on the gateway",
-        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. Older tokens of this integration usually remain from earlier setups. Without a choice nothing changes.",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. Older tokens of this integration usually remain from earlier setups. Without a choice nothing changes.{note}",
         "data": {
           "token": "Token to revoke"
         }
       },
       "local_tokens_remove": {
         "title": "Revoke a token before removing",
-        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list. Choose the token to revoke before the access is removed. Without a choice, **Submit** removes the access without revoking anything. To keep the access, close this dialog.",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list. Choose the token to revoke before the access is removed. Without a choice, **Submit** removes the access without revoking anything. To keep the access, close this dialog.{note}",
         "data": {
           "token": "Token to revoke"
         }

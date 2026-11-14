@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Стартирания на компресора – охлаждане",
     "Holiday slot {} state": "Състояние на ваканционен слот {}",
     "used by this access": "използва се от този достъп",
-    "not readable": "не може да се прочете"
+    "not readable": "не може да се прочете",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Този достъп използва ръчно въведен токен. Не може да се установи кой запис от списъка е той, затова нито един не е отбелязан. Може да е посочен под „Други приложения“, чиито токени никога не се предлагат за отмяна."
   }
 }

@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen, og tilbagekalder du det, ophører den lokale adgang. Ældre tokens fra denne integration stammer som regel fra tidligere opsætninger. Uden et valg ændres intet.",
+        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen, og tilbagekalder du det, ophører den lokale adgang. Ældre tokens fra denne integration stammer som regel fra tidligere opsætninger. Uden et valg ændres intet.{note}",
         "data": {
           "token": "Token, der skal tilbagekaldes"
         }
       },
       "local_tokens_remove": {
         "title": "Tilbagekald et token før fjernelse",
-        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen. Vælg det token, der skal tilbagekaldes, før adgangen fjernes. Uden et valg fjerner **Send** adgangen uden at tilbagekalde noget. Luk denne dialog for at beholde adgangen.",
+        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen. Vælg det token, der skal tilbagekaldes, før adgangen fjernes. Uden et valg fjerner **Send** adgangen uden at tilbagekalde noget. Luk denne dialog for at beholde adgangen.{note}",
         "data": {
           "token": "Token, der skal tilbagekaldes"
         }

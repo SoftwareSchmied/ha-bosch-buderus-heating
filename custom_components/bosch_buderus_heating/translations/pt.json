@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens no gateway",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. Os tokens mais antigos desta integração costumam ficar de configurações anteriores. Sem escolha nada muda.",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. Os tokens mais antigos desta integração costumam ficar de configurações anteriores. Sem escolha nada muda.{note}",
         "data": {
           "token": "Token a revogar"
         }
       },
       "local_tokens_remove": {
         "title": "Revogar um token antes de remover",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, **Submeter** remove o acesso sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, **Submeter** remove o acesso sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.{note}",
         "data": {
           "token": "Token a revogar"
         }

@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.{note}",
         "data": {
           "token": "Peruttava tunnus"
         }
       },
       "local_tokens_remove": {
         "title": "Peru tunnus ennen poistamista",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.{note}",
         "data": {
           "token": "Peruttava tunnus"
         }

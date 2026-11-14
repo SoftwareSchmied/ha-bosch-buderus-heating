@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Arranques del compresor en refrigeración",
     "Holiday slot {} state": "Estado de la ranura de vacaciones {}",
     "used by this access": "usado por este acceso",
-    "not readable": "no legible"
+    "not readable": "no legible",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Este acceso usa un token introducido a mano. No se puede saber qué entrada de la lista es, así que no se marca ninguna. Puede aparecer en «Otras aplicaciones», cuyos tokens nunca se ofrecen para revocar."
   }
 }

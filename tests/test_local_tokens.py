@@ -1033,6 +1033,61 @@ async def test_an_entered_token_marks_nothing(hass, dialog):
     assert all(MARKER not in label for label in _choices(result))
 
 
+async def test_an_entered_token_is_explained_below_the_list(hass, dialog):
+    entry, _ = await dialog(Gateway((FOREIGN,)), imported=True, auth_pin=False)
+    result = await _open_list(hass, entry)
+    assert result["step_id"] == "local_tokens" and not result["errors"]
+    assert result["description_placeholders"]["note"] == (
+        "\n\nThis access uses a token that was entered by hand. Which entry of "
+        "the list it is cannot be identified, so none is marked. It may be "
+        "listed under other apps, whose tokens are never offered for revocation."
+    )
+    # Nothing is offered: the only entry belongs to another client.
+    assert {str(key) for key in result["data_schema"].schema} == set()
+
+
+async def test_the_entered_token_note_follows_the_language(hass, dialog):
+    hass.config.language = "de"
+    entry, _ = await dialog(Gateway(), imported=True, auth_pin=False)
+    result = await _open_list(hass, entry)
+    note = result["description_placeholders"]["note"]
+    assert note.startswith("\n\nDieser Zugang nutzt einen von Hand eingegebenen")
+
+
+async def test_the_entered_token_note_also_before_removing(hass, dialog):
+    entry, _ = await dialog(Gateway(), imported=True, auth_pin=False)
+    _, result = await _remove_with_revoke(hass, entry)
+    assert result["step_id"] == "local_tokens_remove"
+    assert "entered by hand" in result["description_placeholders"]["note"]
+
+
+async def test_a_created_token_has_no_note(hass, dialog):
+    entry, _ = await dialog(Gateway())
+    result = await _open_list(hass, entry)
+    assert result["description_placeholders"]["note"] == ""
+
+
+async def test_an_unread_list_has_no_note(hass, dialog):
+    gateway = Gateway()
+    gateway.list_statuses = [401]
+    entry, _ = await dialog(gateway, imported=True, auth_pin=False)
+    result = await _open_list(hass, entry)
+    assert result["errors"] == {"base": "local_tokens_rejected"}
+    assert result["description_placeholders"]["note"] == ""
+
+
+def test_every_token_list_text_has_the_note_placeholder():
+    from pathlib import Path
+
+    root = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
+    files = [root / "strings.json", *sorted((root / "translations").glob("*.json"))]
+    assert len(files) == 20
+    for path in files:
+        steps = json.loads(path.read_text(encoding="utf-8"))["options"]["step"]
+        for step in ("local_tokens", "local_tokens_remove"):
+            assert steps[step]["description"].endswith("{note}"), (path.name, step)
+
+
 async def test_no_token_is_marked_when_all_were_created_later(hass, dialog):
     entry, _ = await dialog(Gateway(), verified_at=OLD["created_at"] - 10_000)
     result = await _open_list(hass, entry)

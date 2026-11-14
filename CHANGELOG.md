@@ -71,6 +71,11 @@ names the heat generator models and shows texts for more gateway states.
   - The list marks the token this access most likely uses: the token of this
     integration created last before the access was set up. Revoking that
     token needs a second confirmation ("This ends the local access").
+  - For an access whose token was entered by hand, the gateway's list does
+    not show which entry is that token. A short note below the list now says
+    so: no entry is marked, and the token usually appears under other apps,
+    which are never offered for revocation. The case was seen on a real
+    gateway; the note is tested with a synthetic gateway.
   - If you tick the revoke choice when removing an access but there is no
     token of this integration to offer, or the list cannot be read, I no
     longer remove the access silently: you choose between removing it

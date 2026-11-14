@@ -608,6 +608,7 @@
     "Compressor starts cooling": "Kompressorin käynnistykset jäähdytys",
     "Holiday slot {} state": "Lomapaikan {} tila",
     "used by this access": "tämän yhteyden käyttämä",
-    "not readable": "ei luettavissa"
+    "not readable": "ei luettavissa",
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tämä yhteys käyttää käsin syötettyä tunnusta. Ei voida tunnistaa, mikä luettelon merkintä se on, joten mitään ei ole merkitty. Se voi näkyä kohdassa ”Muut sovellukset”, joiden tunnuksia ei koskaan tarjota peruttaviksi."
   }
 }

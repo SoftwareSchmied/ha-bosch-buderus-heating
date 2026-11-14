@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Uten et valg endres ingenting.",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Uten et valg endres ingenting.{note}",
         "data": {
           "token": "Token som skal tilbakekalles"
         }
       },
       "local_tokens_remove": {
         "title": "Tilbakekall en token før fjerning",
-        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjerner **Send** tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjerner **Send** tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.{note}",
         "data": {
           "token": "Token som skal tilbakekalles"
         }

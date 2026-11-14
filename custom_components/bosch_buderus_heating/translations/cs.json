@@ -662,14 +662,14 @@
       },
       "local_tokens": {
         "title": "Tokeny na bráně",
-        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen a jeho odvoláním místní přístup skončí. Starší tokeny této integrace obvykle zůstávají z dřívějších nastavení. Bez výběru se nic nezmění.",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen a jeho odvoláním místní přístup skončí. Starší tokeny této integrace obvykle zůstávají z dřívějších nastavení. Bez výběru se nic nezmění.{note}",
         "data": {
           "token": "Token k odvolání"
         }
       },
       "local_tokens_remove": {
         "title": "Odvolání tokenu před odstraněním",
-        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen. Vyberte token, který se odvolá před odstraněním přístupu. Bez výběru **Odeslat** odstraní přístup, aniž by se cokoli odvolalo. Chcete-li přístup zachovat, zavřete tento dialog.",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen. Vyberte token, který se odvolá před odstraněním přístupu. Bez výběru **Odeslat** odstraní přístup, aniž by se cokoli odvolalo. Chcete-li přístup zachovat, zavřete tento dialog.{note}",
         "data": {
           "token": "Token k odvolání"
         }
