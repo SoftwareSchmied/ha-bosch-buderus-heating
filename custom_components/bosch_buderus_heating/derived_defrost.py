@@ -808,8 +808,7 @@ class DefrostCounterSensor(_DefrostEntity, SensorEntity):
             self._attr_device_class = SensorDeviceClass.ENERGY
             self._attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
             self._attr_suggested_display_precision = 2
-        else:
-            self._attr_icon = "mdi:snowflake-melt"
+        # The count takes its icon from icons.json.
 
     @property
     def available(self) -> bool:

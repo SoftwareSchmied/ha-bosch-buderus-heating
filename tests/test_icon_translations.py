@@ -135,3 +135,27 @@ def test_generic_selects_leave_their_icon_to_icons_json():
     (description,) = build_select_descriptions({MODE: mode})
     assert description.translation_key == "heating_circuit_operation_mode"
     assert description.icon is None
+
+
+@pytest.mark.parametrize(
+    "module",
+    [
+        "derived_activity.py",
+        "derived_defrost.py",
+        "derived_sensors.py",
+        "flow_range.py",
+        "outdoor_unit_software.py",
+        "recordings/sensor.py",
+    ],
+)
+def test_newer_entities_set_no_code_icon(module):
+    """Entities with a translation key take a fixed icon from icons.json."""
+    assert "_attr_icon" not in (PACKAGE / module).read_text("utf-8")
+
+
+def test_calculated_activity_and_defrost_count_icons():
+    sensors = ICONS["entity"]["sensor"]
+    assert set(sensors["calculated_activity"]["state"]) == set(
+        STRINGS["entity"]["sensor"]["calculated_activity"]["state"]
+    )
+    assert sensors["calculated_defrost_count"]["default"] == "mdi:snowflake-melt"

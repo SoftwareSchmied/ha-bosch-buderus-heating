@@ -105,6 +105,19 @@
       "active_notifications": {
         "default": "mdi:alert-circle-outline"
       },
+      "calculated_activity": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "cooling": "mdi:snowflake",
+          "defrosting": "mdi:snowflake-melt",
+          "heating": "mdi:fire",
+          "idle": "mdi:pause-circle-outline",
+          "off": "mdi:power"
+        }
+      },
+      "calculated_defrost_count": {
+        "default": "mdi:snowflake-melt"
+      },
       "compressor_status": {
         "default": "mdi:heat-pump-outline",
         "state": {
