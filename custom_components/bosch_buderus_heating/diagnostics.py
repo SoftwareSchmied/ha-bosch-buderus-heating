@@ -106,7 +106,7 @@ from .writes import (
     context_of,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 47
+DIAGNOSTICS_SCHEMA_VERSION = 48
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

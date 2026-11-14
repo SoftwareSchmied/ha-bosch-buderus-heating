@@ -1254,7 +1254,7 @@ async def test_the_diagnostics_report_modules_without_serial_numbers(hass) -> No
 
 def test_the_anonymized_inventory_drops_the_heat_generators() -> None:
     diagnostics = inventory_diagnostics()
-    diagnostics["diagnostics_schema"] = 47
+    diagnostics["diagnostics_schema"] = 48
     diagnostics["privacy"].update(
         contains_raw_resource_values=True,
         raw_resource_values_scope="allowlisted_technical_metadata",

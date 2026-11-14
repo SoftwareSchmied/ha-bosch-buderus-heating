@@ -4,6 +4,31 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 48 (0.9.2) adds, again without readings, names or identifiers:
+
+- `gateways[].calculated_values`: the calculated defrost detection of the
+  gateway. `defrost_capable` says whether the gateway shows evidence of a
+  heat pump that defrosts; `defrost` holds the state of the detection
+  (`capable`, `active`, `running`, `settling`, the path and the origin
+  `local` or `cloud` of the source in use, the number of defrosts counted
+  and the start of the last one), `null` before the detection runs. See
+  [calculated values](calculated-values.md).
+- `heat_source_type`, `heat_source_type_evidence` and `unnamed_modules` in
+  `gateways[].heat_generator`: the heat source type (`air`, `brine` or
+  `water`), the paths or signals it comes from (`reported_defrost` for a
+  defrost the plant reported earlier), and the module
+  rows without a product name counted by hardware type (see
+  [heat generator modules](#heat-generator-modules)).
+- `gateways[].recordings`: the reads of the plant's recordings and the
+  optional statistics import (see [plant recordings](recordings.md#diagnostics)).
+- The discovery counters of containers read directly
+  (`direct_probe_containers`, `direct_probe_paths`,
+  `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
+  `direct_probes`), described under
+  [missing controls](#missing-controls).
+
+The anonymized inventory keeps dropping all of these sections.
+
 Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in
 `views_without_cloud[]`: the heat generator modules of the module list with
 their product names and hardware types, never serial numbers (see
