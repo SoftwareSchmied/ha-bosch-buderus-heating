@@ -528,8 +528,9 @@ requested a pause: wait, then select **Submit**.
 - Open the official heating app and confirm that the system is online.
 - Confirm that the correct SingleKey ID account was used.
 - Confirm the selected brand.
-- Compare the gateway with the compatibility list in the README. If it is
-  listed, create a bug report as described below.
+- Compare the gateway with the
+  [supported systems](compatibility.md#supported-systems-at-a-glance). If it
+  is listed, create a bug report as described below.
 
 ### A new sign-in does not find every system
 

@@ -3,6 +3,28 @@
 Keep changes small, reviewable, and backed by fixtures or test systems. Broad
 endpoint coverage is not a goal on its own.
 
+## Development setup
+
+The development toolchain requires Python 3.14.2 or newer.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install -e ".[test]"
+ruff format --check .
+ruff check .
+mypy
+pytest
+```
+
+For the appliance dialog's browser tests:
+
+```bash
+npm ci
+npx playwright install --with-deps chromium
+npm test
+```
+
 ## Before opening a pull request
 
 1. Open or reference an issue for user-visible behavior.
