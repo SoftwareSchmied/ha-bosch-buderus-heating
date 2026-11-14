@@ -22,12 +22,12 @@ Automated checks on the release state (2026-11-14, run locally):
 
 | Check | Environment | Result |
 |---|---|---|
-| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11180 passed; coverage 95.99 % |
-| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11178 passed, 2 skipped (version-dependent) |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11192 passed; coverage 95.98 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11190 passed, 2 skipped (version-dependent) |
 | Repeated runs of the request count after removing the cloud | Home Assistant 2026.11.0 and 2026.5.4, under extra CPU load | 500 of 500 passed on each version |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 613 files formatted |
 | Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
-| Release archive and SHA-256 | local build on a clean tree | built for version 0.9.1 with 271 files (1,818,948 bytes) under Linux, without tests or bytecode; SHA-256 `df20e980dc3a3c70a8de4bf796d5b4bf3faeb8ccc4c1852b5d3caba2b005b37e`; the release notes come from this version's CHANGELOG section |
+| Release archive and SHA-256 | local build on a clean tree | built for version 0.9.1 with 271 files (1,823,862 bytes) under Linux, without tests or bytecode; SHA-256 `26d1fc2017381d6845a501bd2cc083b3256d8dea82080ad786cc496b4a4aff2e`; the release notes come from this version's CHANGELOG section |
 | GitHub checks | PR and release workflow | pending: all required checks of the PR must pass before the merge |
 
 Not yet confirmed on a real installation: a complete cloud sign-in with a
