@@ -2,9 +2,11 @@
 
 Some controllers refuse the directory of a circuit (HTTP 403 or 406) while
 its values stay readable one by one, or answer with an empty or shorter list
-than a sibling circuit. The references of that directory are then missing,
-and with them the values the integration only learns from the references
-(the name of the circuit, its current setpoint, its status, its program).
+than a sibling circuit of the same kind. The references of that directory
+are then missing, and with them the values the integration only learns from
+the references (the name of the circuit, its current setpoint, its status,
+its program). An empty directory without such a sibling is a valid answer
+and leads to no direct reads.
 
 For every circuit container of a known kind (heating circuits, hot-water
 circuits, heat sources, solar circuits, ventilation zones and zones), this
@@ -179,6 +181,11 @@ def known_child_suffixes(
     return {root: tuple(children) for root, children in table.items()}
 
 
+def _shorter_reason(children: frozenset[str]) -> str:
+    """Why a listed container is read directly: empty or shorter list."""
+    return "missing_children" if children else "empty_listing"
+
+
 class ContainerProbes:
     """Plan direct reads below circuit containers during one discovery."""
 
@@ -231,23 +238,22 @@ class ContainerProbes:
         self._register(container, depth)
         self._listings[container] = children
         probes: list[ContainerProbe] = []
-        if not children:
-            self._incomplete[container] = "empty_listing"
-            probes += self._fill(container, "empty_listing")
-        else:
-            siblings = self._listed_siblings(container)
-            missing = sorted(
-                {child for sibling in siblings for child in self._listings[sibling]}
-                - children
+        # An empty directory is a valid answer (a ventilation zone of a heat
+        # pump without ventilation); only a sibling of the same kind that
+        # lists children makes it, like any shorter list, incomplete.
+        siblings = self._listed_siblings(container)
+        missing = sorted(
+            {child for sibling in siblings for child in self._listings[sibling]}
+            - children
+        )
+        if missing:
+            probes += self._plan(
+                container,
+                _shorter_reason(children),
+                (f"{container}{child}" for child in missing),
+                references=siblings,
+                core=False,
             )
-            if missing:
-                probes += self._plan(
-                    container,
-                    "missing_children",
-                    (f"{container}{child}" for child in missing),
-                    references=siblings,
-                    core=False,
-                )
         for sibling in self._siblings(container):
             if sibling in self._incomplete:
                 probes += self._plan(
@@ -262,7 +268,7 @@ class ContainerProbes:
             ):
                 probes += self._plan(
                     sibling,
-                    "missing_children",
+                    _shorter_reason(self._listings[sibling]),
                     (f"{sibling}{child}" for child in missing_there),
                     references=(container,),
                     core=False,

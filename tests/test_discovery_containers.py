@@ -277,6 +277,61 @@ async def test_shorter_sibling_list_reads_the_missing_children_as_optional():
     assert all(count == 1 for count in Counter(requested(client)).values())
 
 
+async def test_an_empty_zone_without_sibling_is_a_valid_answer():
+    """Like the ventilation zone of a heat pump without ventilation."""
+    vent = "/ventilation"
+    resources = {
+        vent: directory(vent, "/zone1"),
+        f"{vent}/zone1": directory(f"{vent}/zone1"),
+        # Readable, but the directory does not list it: never asked for.
+        f"{vent}/zone1/applianceRunTime": value(f"{vent}/zone1/applianceRunTime"),
+    }
+
+    found, report, client = await discover(resources, roots=(vent,))
+
+    assert report.direct_probes == {}
+    assert report.snapshot()["direct_probe_paths"] == 0
+    assert f"{vent}/zone1/applianceRunTime" not in requested(client)
+    assert f"{vent}/zone1/applianceRunTime" not in found
+
+
+@pytest.mark.parametrize("order", [("/hc1", "/hc2"), ("/hc2", "/hc1")])
+async def test_an_empty_directory_next_to_a_listing_sibling_is_read(order):
+    """Whichever circuit answers first, the empty one gets the sibling's list."""
+    hc1, hc2 = f"{HC}/hc1", f"{HC}/hc2"
+    resources = {
+        HC: directory(HC, *order),
+        hc1: directory(hc1),
+        hc2: directory(hc2, "/name", "/vendorOnlyValue"),
+        f"{hc1}/name": value(f"{hc1}/name", "EG"),
+        f"{hc1}/vendorOnlyValue": value(f"{hc1}/vendorOnlyValue"),
+        f"{hc2}/name": value(f"{hc2}/name", "OG"),
+        f"{hc2}/vendorOnlyValue": value(f"{hc2}/vendorOnlyValue"),
+    }
+
+    found, report, client = await discover(resources)
+
+    assert found == resources
+    assert report.direct_probes[hc1].reason == "empty_listing"
+    assert report.direct_probes[hc1].references == {hc2}
+    assert hc2 not in report.direct_probes
+    assert report.paths[f"{hc1}/vendorOnlyValue"].source is (
+        DiscoveryPathSource.OPTIONAL
+    )
+    assert all(count == 1 for count in Counter(requested(client)).values())
+
+
+def test_an_empty_directory_alone_plans_nothing():
+    records: dict = {}
+    probes = ContainerProbes(
+        known_child_suffixes(), known=lambda _: False, records=records
+    )
+    zone = directory("/ventilation/zone1")
+
+    assert probes.listed(zone.path, zone, 1) == []
+    assert records == {}
+
+
 async def test_hot_water_heat_source_solar_ventilation_and_zones():
     dhw, hs, sc, vent, zones = (
         "/dhwCircuits",
@@ -293,10 +348,8 @@ async def test_hot_water_heat_source_solar_ventilation_and_zones():
         f"{dhw}/dhw2/currentSetpoint": value(f"{dhw}/dhw2/currentSetpoint", 48),
         f"{dhw}/dhw2/name": value(f"{dhw}/dhw2/name", "Hot water 2"),
         hs: directory(hs, "/hs1"),
-        # An empty directory: its known children are read directly.
+        # An empty directory without a listing sibling is a valid answer.
         f"{hs}/hs1": directory(f"{hs}/hs1"),
-        f"{hs}/hs1/numberOfStarts": value(f"{hs}/hs1/numberOfStarts", 10),
-        f"{hs}/hs1/refrigerant/hotGasTemp": value(f"{hs}/hs1/refrigerant/hotGasTemp"),
         sc: directory(sc, "/sc1", "/sc2"),
         f"{sc}/sc1": directory(f"{sc}/sc1", "/collectorTemperature", "/extraYield"),
         f"{sc}/sc1/collectorTemperature": value(f"{sc}/sc1/collectorTemperature"),
@@ -323,7 +376,7 @@ async def test_hot_water_heat_source_solar_ventilation_and_zones():
     reasons = {path: record.reason for path, record in report.direct_probes.items()}
     assert reasons == {
         f"{dhw}/dhw2": "http_403",
-        f"{hs}/hs1": "empty_listing",
+        # Empty, but its sibling sc1 lists children.
         f"{sc}/sc2": "empty_listing",
         f"{vent}/zone1": "http_403",
         f"{zones}/zone2": "http_403",

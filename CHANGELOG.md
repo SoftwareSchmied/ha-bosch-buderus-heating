@@ -227,8 +227,9 @@ only; I have not yet checked them in the browser or on a real installation.
     children a readable sibling of the same kind lists and the children known
     for that kind. This works for every advertised heating circuit, hot-water
     circuit, heat source, solar circuit, ventilation zone and zone, also for
-    refused directories below them such as a time program directory, and for
-    empty directories or lists shorter than a sibling's.
+    refused directories below them such as a time program directory. An
+    empty or shorter list gets the children a sibling of the same kind lists;
+    an empty directory without such a sibling counts as a valid answer.
   - Nothing is requested for a circuit the controller does not advertise or
     a container it answers with "not found". The extra reads happen only
     during discovery, at most 256 of them, within its usual budget.

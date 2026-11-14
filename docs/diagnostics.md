@@ -689,16 +689,19 @@ both across discovery and within each `discovery → groups` entry. A failed
 catalog probe is diagnostic evidence, not an invented resource or control.
 
 Some controllers refuse the directory of a circuit (HTTP 403 or 406) while its
-values stay readable one by one, or answer with an empty directory or a shorter
-list than a sibling circuit. Discovery then reads the known children of that
-container directly: the children a readable sibling of the same kind lists
-(for example `hc1` for `hc2`, or `hc1/switchPrograms` for `hc2/switchPrograms`)
-and the children known for that kind. This applies to every heating circuit,
+values stay readable one by one. Discovery then reads the known children of
+that container directly: the children a readable sibling of the same kind
+lists (for example `hc1` for `hc2`, or `hc1/switchPrograms` for
+`hc2/switchPrograms`) and the children known for that kind. A directory that
+answers with an empty or shorter list than a sibling of the same kind gets
+the children only that sibling lists. An empty directory without such a
+sibling, such as the ventilation zone of a heat pump without ventilation, is
+a valid answer and is not probed. This applies to every heating circuit,
 hot-water circuit, heat source, solar circuit, ventilation zone and zone the
 controller advertises, also to refused directories below them. A circuit that
 is not advertised, or a container answering 404, is never probed. Children of
-a refused or empty directory are read like catalog paths; children only a
-sibling lists are read like optional probes. At most 256 such reads happen per
+a refused directory are read like catalog paths; children only a sibling
+lists are read like optional probes. At most 256 such reads happen per
 discovery, within its overall budget; a 403 or 404 answer to one of them is
 kept and paused like any other path. `direct_probe_containers`,
 `direct_probe_paths`, `direct_probe_paths_discovered` and
