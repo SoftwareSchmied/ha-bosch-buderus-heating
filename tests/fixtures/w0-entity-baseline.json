@@ -6321,7 +6321,7 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Return temperature",
+     "original_name": "Heat pump \u2013 Return to the heat source",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:return_temperature",
      "unit": "\u00b0C"
