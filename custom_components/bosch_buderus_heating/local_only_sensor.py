@@ -28,26 +28,22 @@ from .control import HeldCapabilities
 from .device import device_info_for_resource, grouped_entity_name
 from .i18n import localize
 from .local_only import (
-    BELOW_MEASURING_RANGE,
     CONCENTRATION,
-    ENERGY_MANAGER_STATUS_PATH,
     ENUM_KINDS,
     FLAG,
     FLOW,
     GENERIC,
     HUMIDITY,
     MAX_STATES,
-    MEASURING_RANGE,
     PERCENT,
     POWER,
     ROTATION,
     TEMPERATURE,
     LocalOnlyDefinition,
     below_measuring_range,
+    below_range_attributes,
     definition_for,
     diagnostic,
-    energy_manager_not_connected,
-    energy_manager_setpoint,
     entity_name,
     native_value,
     state_class,
@@ -198,9 +194,9 @@ class BoschBuderusLocalOnlySensor(
         definition = self._definition
         if definition.kind in ENUM_KINDS:
             return native_value(definition, reading), None, SensorDeviceClass.ENUM
+        # The value as reported, 0 included: the used setpoints of an energy
+        # manager also show 0 while none is connected (0.9.2).
         value = native_value(definition, reading)
-        if value is not None and self._energy_manager_placeholder():
-            value = None  # #76: no energy manager, so no setpoint of it
         if reading.status is ValueStatus.UNKNOWN_UNIT:
             return value, None, None  # C7: the number, without an unknown unit
         mapped = unit_and_class(definition, reading.unit)
@@ -208,24 +204,6 @@ class BoschBuderusLocalOnlySensor(
             return None, None, None  # another quantity: never shown
         unit, device_class = mapped
         return value, unit, device_class
-
-    def _energy_manager_placeholder(self) -> bool:
-        """#76: a setpoint of an energy manager the system reports as not
-        connected; its 0 °C is a placeholder, not a setpoint.
-
-        The status as its own entity shows it: the local reading first, else
-        the cloud reading within its validity limit. The stored cloud copy
-        alone would lag: it is read only every 15 minutes while the local
-        reading is shown (O45).
-        """
-        if not energy_manager_setpoint(self._path):
-            return False
-        status = self.coordinator.display_snapshot(ENERGY_MANAGER_STATUS_PATH)
-        return (
-            status is not None
-            and status.available
-            and energy_manager_not_connected(status.resource.value)
-        )
 
     @property
     def available(self) -> bool:
@@ -235,12 +213,13 @@ class BoschBuderusLocalOnlySensor(
     @property
     def extra_state_attributes(self) -> dict[str, str] | None:
         """#73: a flow below the sensor's measuring range is unknown; the
-        attribute tells it apart from a missing reading."""
+        attributes tell it apart from a missing reading and name the state
+        the device reported (``reported_state: low_flow``)."""
         if self._definition.kind in ENUM_KINDS or self._shape() is None:
             return None
         reading = self._reading()
         if reading is not None and below_measuring_range(reading):
-            return {MEASURING_RANGE: BELOW_MEASURING_RANGE}
+            return below_range_attributes()
         return None
 
     @property

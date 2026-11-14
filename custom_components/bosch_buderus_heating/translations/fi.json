@@ -1965,11 +1965,11 @@
           "none": "Ei mitään",
           "ch": "Lämmitys",
           "dhw": "Lämmin käyttövesi",
-          "frost": "Pakkassuojaus",
+          "frost": "Pakkasalue",
           "ch_dhw": "Lämmitys ja lämmin käyttövesi",
-          "ch_frost": "Lämmitys ja pakkassuojaus",
-          "dhw_frost": "Lämmin käyttövesi ja pakkassuojaus",
-          "ch_dhw_frost": "Lämmitys, lämmin käyttövesi ja pakkassuojaus"
+          "ch_frost": "Lämmitys ja pakkasalue",
+          "dhw_frost": "Lämmin käyttövesi ja pakkasalue",
+          "ch_dhw_frost": "Lämmitys, lämmin käyttövesi ja pakkasalue"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Lämmönlähde"
       },
+      "outdoor_unit_software_version": {
+        "name": "Ulkoyksikön ohjelmistoversio"
+      },
       "pointt_api_requests_total": {
         "name": "Pilvipyynnöt yhteensä"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "Käynnissä"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Lämpimän käyttöveden lomatila",
+        "state": {
+          "none": "Ei mitään",
+          "auto_sat": "Automaattinen (AUTO_SAT)",
+          "off": "Pois",
+          "on_eco": "Päällä – eco",
+          "on_low": "Päällä – matala",
+          "on_high": "Päällä – korkea"
+        }
+      },
       "signal_true_false": {
         "name": "Tila",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Mittausalue",
             "state": {
               "below": "Mittausalueen alapuolella"
+            }
+          },
+          "reported_state": {
+            "name": "Ilmoitettu tila",
+            "state": {
+              "low_flow": "Virtaama liian pieni mitattavaksi"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Laiteohjelmistopäivityksen tila"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Huonelämpötila"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktiivinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Manuaalinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Väliaikainen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Lämmityksen käyttötila"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Valittu lämmitysaikaohjelma"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Aseta huonelämpötila"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Aseta aktiivinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Aseta manuaalinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Aseta väliaikainen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Aseta lämmityksen käyttötila"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Aseta valittu lämmitysaikaohjelma"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Lämpöpumppu: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Lämpöpumppu: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Lämpöpumppu: sähkö jäähdytykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Kattila: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Kattila: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Sähkövastus: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Sähkövastus: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Tuotettu aurinkosähkö (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Lämpöpumppu: lämpö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Lämpöpumppu: lämpö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Lämpöpumppu: jäähdytysenergia (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Kattila: lämpö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Kattila: lämpö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Kaasu: lämmitykseen (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Kaasu: lämpimään käyttöveteen (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Ulkolämpötilan vuorokausikeskiarvo (ei vahvistettu)"
+      },
+      "name_part_low_salt": {
+        "name": "Vähän suolaa"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Lämpimän käyttöveden laitteen tyyppi"
+      },
+      "name_part_mode_heating": {
+        "name": "Lämmitys"
+      },
+      "name_part_mode_cooling": {
+        "name": "Jäähdytys"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Väliaikainen asetusarvo"
+      },
+      "name_part_heating_temperature": {
+        "name": "Lämmityslämpötila"
+      },
+      "name_part_setback_temperature": {
+        "name": "Alennuslämpötila"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Eco+-käynnistysraja"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Mukavuuden käynnistysraja"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Eco-käynnistysraja"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Pois-tason asetusarvo"
+      },
+      "name_part_schedule_name": {
+        "name": "Aikaohjelman {suffix} nimi"
+      },
+      "name_part_software_update": {
+        "name": "Ohjelmistopäivitys"
+      },
+      "name_part_heat_source_type": {
+        "name": "Lämmönlähteen tyyppi"
+      },
+      "name_part_consumption_total": {
+        "name": "Yhteensä"
+      },
+      "name_part_consumption_heating": {
+        "name": "Lämmitys"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Lämmin käyttövesi"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Jäähdytys"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Tuotettu jäähdytysenergia"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Täyttö tarpeen"
+      },
+      "primary_flow_below_range": {
+        "name": "Ensiövirtaama mittausalueen alapuolella"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Lämmityspiirin 1 virtaama mittausalueen alapuolella (PC1)"
       }
     },
     "calendar": {

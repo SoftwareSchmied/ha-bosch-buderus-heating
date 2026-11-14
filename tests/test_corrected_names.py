@@ -37,6 +37,9 @@ from custom_components.bosch_buderus_heating.local_only import (
 from custom_components.bosch_buderus_heating.local_only_sensor import (
     local_only_unique_id,
 )
+from custom_components.bosch_buderus_heating.name_translations import (
+    NAMES as NAME_PARTS,
+)
 from custom_components.bosch_buderus_heating.pointt import Resource
 from custom_components.bosch_buderus_heating.pointt.models import ResourceMetadata
 from custom_components.bosch_buderus_heating.resource_catalog import resource_name
@@ -68,8 +71,11 @@ OTHER_LANGUAGES = [code for code in LANGUAGES if code not in ("en", "de")]
 
 
 def _catalog(code: str) -> dict[str, str]:
+    """The built texts and the composed name parts (0.9.2), by English text."""
     path = COMPONENT / "i18n" / f"{code}.json"
-    return json.loads(path.read_text(encoding="utf-8"))["texts"]
+    texts = json.loads(path.read_text(encoding="utf-8"))["texts"]
+    parts = {NAME_PARTS["en"][key]: text for key, text in NAME_PARTS[code].items()}
+    return {**texts, **parts}
 
 
 # ---------------------------------------------------------------- the names

@@ -875,20 +875,33 @@ settings stay for the case that the gateway lists the signal again.
 A volume flow too low for its sensor to measure is reported by the device as
 its declared low-flow state (for example `lowflow` with the value 65535). The
 heat pump volume flow and the heating circuit 1 volume flow then show
-"unknown" with the attribute `measuring_range: below` (shown as "Below
-measuring range"), so such a flow can be told apart from a missing reading;
-a measured flow has no such attribute. A volume flow read through the cloud
-access is treated the same way when its reading declares the low-flow state:
-"unknown" instead of 65535, with the same attribute.
+"unknown" with the attributes `measuring_range: below` (shown as "Below
+measuring range") and, since 0.9.2, `reported_state: low_flow` (the state
+the device reported instead of a value), so such a flow can be told apart
+from a missing reading; a measured flow has no such attribute, and a
+measured 0 stays 0. A volume flow read through the cloud access is treated
+the same way when its reading declares the low-flow state: "unknown"
+instead of 65535, with the same attributes.
+
+Since 0.9.2 two diagnostic binary sensors show the same as on/off, so the
+time below the measuring range can be recorded: **Primary flow below
+measuring range** follows the heat source's flow
+(`/heatSources/hs1/pumpVolumeFlow`, else the signal
+`SRC.SystemPumpVolumeFlow`), and **Heating circuit 1 flow below measuring
+range (PC1)** follows `SRC.HC1.FlowCtrl.PumpVolumeFlow`. They are on while
+the low-flow state is reported, off while a value is measured, and
+unavailable without a current reading or with another device state (for
+example an open sensor). They exist only where the flow reading exists on
+the plant (a brine-to-water heat pump without a primary flow reading gets
+no primary one), are disabled by default and send no request of their own.
 
 The two setpoints the controller keeps for an energy manager
 (`SRC.CUHP.EM.UsedLowerFlowTempSetp` and `SRC.CUHP.EM.UsedUpperFlowTempSetp`)
-show "unknown" while the energy management status reports "not connected":
-the controller then reports 0 °C as a placeholder, not a setpoint. The status
-counts as its own entity shows it (the local reading first, else a still valid
-cloud reading); without a current status the setpoints are shown as reported. The
-entities stay; with a connected energy manager they show the reported
-setpoints. The hot water "off" value is not affected.
+show the value the controller reports, 0 included. Up to 0.9.1 they showed
+"unknown" while the energy management status reported "not connected";
+since 0.9.2 a reported 0 is shown as 0. On a real installation without an
+energy manager both report 0 all the time, which most likely means that no
+energy manager asks for a supply temperature.
 
 When an existing entity of a signal gets its reviewed form, it keeps its
 unique ID and entity ID; its device class, unit or state class may change. A
@@ -973,9 +986,73 @@ entity IDs, unique IDs and the activation of existing entities stay:
   starts for cooling, the maximum supply temperature, the current room
   setpoint and the holiday mode of heating circuit 1, the modulation of
   the primary heating pump (PC0) and the eight holiday slots. They stay
-  generic, disabled diagnostic entities. Signals whose meaning is open, for
+  generic, disabled diagnostic entities. Signals whose meaning was open, for
   example the four *PermittedAirTemp/Temp* flags that report on/off for a
-  temperature name, keep the signal path.
+  temperature name, kept the signal path (two of them are named since
+  0.9.2, see below).
+
+Since 0.9.2 more controller signals have names instead of *Signal …*, again
+only for entities without a name of your own. They stay generic, disabled
+diagnostic entities; entity IDs, unique IDs and the activation of existing
+entities stay. The names follow the manufacturer's manuals, the state names
+the gateway declares and the readings recorded on a real installation; where
+only the signal name speaks for a meaning, the name says no more than the
+signal name.
+
+- Hot water: *Hot water holiday mode* (states *None*, *Automatic
+  (AUTO_SAT)*, *Off*, *On – eco*, *On – low*, *On – high*, as the gateway
+  names them; which of them matches which holiday setting of the controller
+  is not established), *Hot water extra active (setpoint logic)* and *(generator)*,
+  *Hot water electric heater*, *Hot water circulation pump*, *Thermal
+  disinfection hold timer*.
+- Heat pump: *Compressor start-up sequence* (on for about a minute right
+  before the compressor starts after a standstill, as recorded on a real
+  installation), *Compressor start temperature*, *Air purge mode active*,
+  *Heating cable*, *Electric auxiliary heater active (display)*, *Auxiliary
+  heater alarm input*, *Minimum cooling supply setpoint*, the four stops
+  *Heating/Cooling stopped: outdoor temperature too high/too low*.
+- Pumps and controller: *Pump PC0/PC1/PC2 connected to LIN bus*, *Heating
+  circuit 1 pump request (PC1)*, *Controller start-up check*, *Controller
+  relative time (minute counter)*.
+- *Energy management lower/upper supply setpoint*.
+- *Outdoor temperature above/below permitted range (heat pump)*: on/off
+  flags for the permitted outdoor air range of the heat pump. They and the
+  two other *Permitted* signals (`HighestPermittedTemp`,
+  `LowestPermittedFlowTemp`, whose meaning is open and which keep the signal
+  path) are on/off states in every form of the answer, never a temperature.
+- Signals seen on a brine-to-water heat pump: *High-pressure switch*,
+  *Summary alarm*, *Utility power block active (display)*, *Compressor
+  setpoint*, *Heating circuit pump speed HC1 (PC1)*, *Heating system flow
+  rate*, and the digital inputs *external cut-off*, *air pressure switch*
+  and *oil temperature high*. The same controller serves several kinds of
+  heat pump, so an input says nothing about the kind of the plant. The brine
+  pump speed (`brineCircuit/pumpSpeed`) is *Brine pump speed*.
+
+Signals whose meaning is open keep the signal path: `G3Relay`,
+`IntDHW.DHURunning`, `SC.HC1.FPD.Active`,
+`SC.HC1.RTSD.PreventionEcoModeActive`, `SC.DHW1.HolidayAutoTD`,
+`SC.RTC.RelativeTimer`, the two *Permitted* signals above,
+`SRC.AutoFillingActive` and the two `TimerStopHeatingSeason` signals.
+
+The current heat demand (`/heatSources/actualHeatDemand`) reports `frost`
+next to `ch`, `dhw` and none. Since 0.9.2 it is shown as *Frost range*
+instead of *Frost protection*: on a real installation the heat pump reported
+`frost` during normal heating whenever the outdoor temperature was below
+about 6.5 °C and `ch` above it, at room and supply temperatures far from any
+frost protection. What the manufacturer means by it is not documented.
+
+The outdoor unit's software version is the diagnostic sensor **Outdoor unit
+software version** since 0.9.2. It reads the module lists the integration
+already reads (the cloud's system information, the local system
+information), takes only a module the heat generator model table names as
+an outdoor unit, and shows its version with its product name and hardware
+type as attributes; serial numbers are never read. It keeps its last
+version over a restart. On a real installation with a split air-to-water
+heat pump the version of the outdoor unit was found there; no controller
+signal reports it. A setpoint of the pressure of the heating circuit pump
+(PC1) is not available through the interface: neither the controller
+signals, nor the documented local or cloud resources of a real
+installation report one.
 
 The names of the readings in the sections above that are created disabled
 for new installations (the total starts and total run time of a single heat

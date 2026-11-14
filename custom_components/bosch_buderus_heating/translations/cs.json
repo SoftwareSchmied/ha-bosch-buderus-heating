@@ -1965,11 +1965,11 @@
           "none": "Žádný",
           "ch": "Topení",
           "dhw": "Teplá voda",
-          "frost": "Ochrana proti zamrznutí",
+          "frost": "Mrazová oblast",
           "ch_dhw": "Topení a teplá voda",
-          "ch_frost": "Topení a ochrana proti zamrznutí",
-          "dhw_frost": "Teplá voda a ochrana proti zamrznutí",
-          "ch_dhw_frost": "Topení, teplá voda a ochrana proti zamrznutí"
+          "ch_frost": "Topení a mrazová oblast",
+          "dhw_frost": "Teplá voda a mrazová oblast",
+          "ch_dhw_frost": "Topení, teplá voda a mrazová oblast"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Zdroj tepla"
       },
+      "outdoor_unit_software_version": {
+        "name": "Verze softwaru venkovní jednotky"
+      },
       "pointt_api_requests_total": {
         "name": "Počet požadavků na cloud celkem"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "Probíhá"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Režim dovolené teplé vody",
+        "state": {
+          "none": "Žádný",
+          "auto_sat": "Automaticky (AUTO_SAT)",
+          "off": "Vyp.",
+          "on_eco": "Zap. – eco",
+          "on_low": "Zap. – nízký",
+          "on_high": "Zap. – vysoký"
+        }
+      },
       "signal_true_false": {
         "name": "Stav",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Rozsah měření",
             "state": {
               "below": "Pod rozsahem měření"
+            }
+          },
+          "reported_state": {
+            "name": "Hlášený stav",
+            "state": {
+              "low_flow": "Průtok příliš nízký k měření"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Stav aktualizace firmwaru"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Pokojová teplota"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivní požadovaná hodnota topení"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Ruční požadovaná hodnota topení"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Dočasná požadovaná hodnota topení"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Režim topení"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Vybraný časový program topení"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Nastavit pokojovou teplotu"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Nastavit aktivní požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Nastavit ruční požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Nastavit dočasnou požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Nastavit režim topení"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Nastavit vybraný časový program topení"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Elektřina tepelného čerpadla pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Elektřina tepelného čerpadla pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Elektřina tepelného čerpadla pro chlazení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Elektřina kotle pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Elektřina kotle pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elektrický ohřívač pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elektrický ohřívač pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Vyrobená solární elektřina (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Teplo tepelného čerpadla pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Teplo tepelného čerpadla pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Chladicí energie tepelného čerpadla (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Teplo kotle pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Teplo kotle pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Plyn pro topení (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Plyn pro teplou vodu (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Venkovní teplota, denní průměr (nepotvrzeno)"
+      },
+      "name_part_low_salt": {
+        "name": "Nízká hladina soli"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Typ zařízení teplé vody"
+      },
+      "name_part_mode_heating": {
+        "name": "Topení"
+      },
+      "name_part_mode_cooling": {
+        "name": "Chlazení"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Dočasná požadovaná hodnota"
+      },
+      "name_part_heating_temperature": {
+        "name": "Teplota topení"
+      },
+      "name_part_setback_temperature": {
+        "name": "Teplota útlumu"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Práh spuštění Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Práh spuštění Komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Práh spuštění Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Požadovaná hodnota úrovně Vypnuto"
+      },
+      "name_part_schedule_name": {
+        "name": "Název časového programu {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Aktualizace softwaru"
+      },
+      "name_part_heat_source_type": {
+        "name": "Typ zdroje tepla"
+      },
+      "name_part_consumption_total": {
+        "name": "Celkem"
+      },
+      "name_part_consumption_heating": {
+        "name": "Topení"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Teplá voda"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Chlazení"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Vyrobená energie chlazení"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Nutné doplnění"
+      },
+      "primary_flow_below_range": {
+        "name": "Primární průtok pod rozsahem měření"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Průtok topného okruhu 1 pod rozsahem měření (PC1)"
       }
     },
     "calendar": {

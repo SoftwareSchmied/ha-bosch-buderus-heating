@@ -1965,11 +1965,11 @@
           "none": "Καμία",
           "ch": "Θέρμανση",
           "dhw": "Ζεστό νερό",
-          "frost": "Αντιπαγωτική προστασία",
+          "frost": "Περιοχή παγετού",
           "ch_dhw": "Θέρμανση και ζεστό νερό",
-          "ch_frost": "Θέρμανση και αντιπαγωτική προστασία",
-          "dhw_frost": "Ζεστό νερό και αντιπαγωτική προστασία",
-          "ch_dhw_frost": "Θέρμανση, ζεστό νερό και αντιπαγωτική προστασία"
+          "ch_frost": "Θέρμανση και περιοχή παγετού",
+          "dhw_frost": "Ζεστό νερό και περιοχή παγετού",
+          "ch_dhw_frost": "Θέρμανση, ζεστό νερό και περιοχή παγετού"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Πηγή θερμότητας"
       },
+      "outdoor_unit_software_version": {
+        "name": "Έκδοση λογισμικού εξωτερικής μονάδας"
+      },
       "pointt_api_requests_total": {
         "name": "Σύνολο αιτημάτων στο cloud"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "Σε εξέλιξη"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Λειτουργία διακοπών ζεστού νερού",
+        "state": {
+          "none": "Καμία",
+          "auto_sat": "Αυτόματα (AUTO_SAT)",
+          "off": "Απενεργοποίηση",
+          "on_eco": "Ενεργό – eco",
+          "on_low": "Ενεργό – χαμηλό",
+          "on_high": "Ενεργό – υψηλό"
+        }
+      },
       "signal_true_false": {
         "name": "Κατάσταση",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Εύρος μέτρησης",
             "state": {
               "below": "Κάτω από το εύρος μέτρησης"
+            }
+          },
+          "reported_state": {
+            "name": "Αναφερόμενη κατάσταση",
+            "state": {
+              "low_flow": "Παροχή πολύ χαμηλή για μέτρηση"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Κατάσταση ενημέρωσης υλικολογισμικού"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Θερμοκρασία χώρου"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Ενεργή τιμή ρύθμισης θέρμανσης"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Χειροκίνητη τιμή ρύθμισης θέρμανσης"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Προσωρινή τιμή ρύθμισης θέρμανσης"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Τρόπος θέρμανσης"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Επιλεγμένο χρονοπρόγραμμα θέρμανσης"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Ρύθμιση θερμοκρασίας χώρου"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Ρύθμιση ενεργής τιμής θέρμανσης"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Ρύθμιση χειροκίνητης τιμής θέρμανσης"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Ρύθμιση προσωρινής τιμής θέρμανσης"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Ρύθμιση τρόπου θέρμανσης"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Ρύθμιση επιλεγμένου χρονοπρογράμματος θέρμανσης"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Ρεύμα αντλίας θερμότητας – θέρμανση (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Ρεύμα αντλίας θερμότητας – ζεστό νερό (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Ρεύμα αντλίας θερμότητας – ψύξη (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Ρεύμα λέβητα – θέρμανση (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Ρεύμα λέβητα – ζεστό νερό (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Ηλεκτρική αντίσταση – θέρμανση (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Ηλεκτρική αντίσταση – ζεστό νερό (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Παραγόμενο ηλιακό ρεύμα (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Θερμότητα αντλίας θερμότητας – θέρμανση (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Θερμότητα αντλίας θερμότητας – ζεστό νερό (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Ενέργεια ψύξης αντλίας θερμότητας (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Θερμότητα λέβητα – θέρμανση (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Θερμότητα λέβητα – ζεστό νερό (kWh, μη επιβεβαιωμένο)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Αέριο – θέρμανση (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Αέριο – ζεστό νερό (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Ημερήσιος μέσος όρος εξωτερικής θερμοκρασίας (μη επιβεβαιωμένο)"
+      },
+      "name_part_low_salt": {
+        "name": "Χαμηλή στάθμη αλατιού"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Τύπος συσκευής ζεστού νερού"
+      },
+      "name_part_mode_heating": {
+        "name": "Θέρμανση"
+      },
+      "name_part_mode_cooling": {
+        "name": "Ψύξη"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Προσωρινή τιμή ρύθμισης"
+      },
+      "name_part_heating_temperature": {
+        "name": "Θερμοκρασία θέρμανσης"
+      },
+      "name_part_setback_temperature": {
+        "name": "Μειωμένη θερμοκρασία"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Όριο έναρξης Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Όριο έναρξης Άνεση"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Όριο έναρξης Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Τιμή ρύθμισης επιπέδου Ανενεργό"
+      },
+      "name_part_schedule_name": {
+        "name": "Όνομα χρονοπρογράμματος {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Ενημέρωση λογισμικού"
+      },
+      "name_part_heat_source_type": {
+        "name": "Τύπος πηγής θερμότητας"
+      },
+      "name_part_consumption_total": {
+        "name": "Σύνολο"
+      },
+      "name_part_consumption_heating": {
+        "name": "Θέρμανση"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Ζεστό νερό"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Ψύξη"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Παραγόμενη ενέργεια ψύξης"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Απαιτείται συμπλήρωση"
+      },
+      "primary_flow_below_range": {
+        "name": "Πρωτεύουσα παροχή κάτω από το εύρος μέτρησης"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Παροχή κυκλώματος θέρμανσης 1 κάτω από το εύρος μέτρησης (PC1)"
       }
     },
     "calendar": {

@@ -74,6 +74,72 @@ Versioning after its first tagged preview.
   gateway no longer offers a new local-only entry for the same plant; the
   notice ends with "Local setup is not available". I tested this with
   automated tests.
+- **Energy manager setpoints:** the used lower and upper supply setpoints of
+  the energy manager showed "unknown" most of the time although the
+  controller reports 0. The cause was a rule of 0.9.0 that hid the 0 while
+  the energy management status reported "not connected". The reported value
+  is now shown, 0 included. No other signal used that rule. I checked it with
+  automated tests; it is not yet confirmed on a real installation.
+
+### Local access: signals
+
+- **Names for more controller signals:** 36 signals of the local access that
+  showed *Signal …* have names in every language, for example *Compressor
+  start-up sequence*, *Pump PC0 connected to LIN bus*, *Hot water holiday
+  mode*, *Heating stopped: outdoor temperature too low*, *Energy management
+  lower supply setpoint* and, from a brine-to-water heat pump, *High-pressure
+  switch*, *Summary alarm* and the digital inputs. The brine pump speed is
+  *Brine pump speed* instead of *Pump Speed*.
+  - The names follow the manufacturer's manuals, the state names the gateway
+    declares and readings I recorded on a real installation; where only the
+    signal name speaks for a meaning, the name says no more than that.
+    Signals whose meaning stays open keep the signal path.
+  - Only names change, and only for entities without a name of your own:
+    entity IDs, unique IDs and the activation stay; the signals stay
+    disabled diagnostic entities.
+  - The hot water holiday mode shows texts for its states. The texts in the
+    languages other than English and German are written like the existing
+    ones.
+- **Permitted range flags:** the four *Permitted* signals of the heat pump
+  are on/off states in every form of the answer, never a temperature. Two of
+  them are named *Outdoor temperature above/below permitted range (heat
+  pump)*; the other two keep the signal path.
+- **Frost range:** the current heat demand shows `frost` as *Frost range*
+  instead of *Frost protection*. On a real installation the heat pump reported
+  it during normal heating below about 6.5 °C outdoor temperature; what the
+  manufacturer means by it is not documented.
+
+### Entities
+
+- **Flow below the measuring range:** a flow reading that reports its
+  low-flow state (65535) still shows "unknown", now with the additional
+  attribute `reported_state: low_flow` next to `measuring_range: below`. A
+  measured 0 stays 0.
+  - Two new diagnostic binary sensors, disabled by default, show it as
+    on/off: *Primary flow below measuring range* and *Heating circuit 1 flow
+    below measuring range (PC1)*. They are created only where the flow
+    reading exists on the plant and send no request of their own.
+  - Tested with automated tests and readings in the form a real gateway
+    sends; the binary sensors are not yet confirmed on a real installation.
+- **Outdoor unit software version:** a new diagnostic sensor shows the
+  software version of the outdoor unit from the module lists the integration
+  already reads (cloud or local), with the product name and hardware type as
+  attributes. Only a module the heat generator model table names as an
+  outdoor unit counts; serial numbers are never read. The version was found
+  in the module list of a real installation; the sensor itself is tested with
+  automated tests. A pressure setpoint of the heating circuit pump is not
+  available through the interface.
+
+### Translations
+
+- **Composed name parts as translation keys:** the names of the room
+  controller zone readings and their controls, the energy history statistics
+  and some cloud readings (for example the hot water start thresholds and
+  the energy counters) are now translation keys in the translation files of
+  all 19 languages instead of German and English text in the code. The names
+  stay the same in every language; like all composed names they follow the
+  Home Assistant system language.
+
 
 ## [0.9.2-beta.1] - 2026-11-14
 

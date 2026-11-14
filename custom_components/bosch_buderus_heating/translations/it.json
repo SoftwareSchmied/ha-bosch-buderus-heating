@@ -1965,11 +1965,11 @@
           "none": "Nessuna",
           "ch": "Riscaldamento",
           "dhw": "Acqua calda",
-          "frost": "Protezione antigelo",
+          "frost": "Campo di gelo",
           "ch_dhw": "Riscaldamento e acqua calda",
-          "ch_frost": "Riscaldamento e protezione antigelo",
-          "dhw_frost": "Acqua calda e protezione antigelo",
-          "ch_dhw_frost": "Riscaldamento, acqua calda e protezione antigelo"
+          "ch_frost": "Riscaldamento e campo di gelo",
+          "dhw_frost": "Acqua calda e campo di gelo",
+          "ch_dhw_frost": "Riscaldamento, acqua calda e campo di gelo"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Generatore di calore"
       },
+      "outdoor_unit_software_version": {
+        "name": "Versione software dell'unità esterna"
+      },
       "pointt_api_requests_total": {
         "name": "Richieste al cloud totali"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "In corso"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Modalità vacanza acqua calda",
+        "state": {
+          "none": "Nessuna",
+          "auto_sat": "Automatico (AUTO_SAT)",
+          "off": "Spento",
+          "on_eco": "Acceso – eco",
+          "on_low": "Acceso – basso",
+          "on_high": "Acceso – alto"
+        }
+      },
       "signal_true_false": {
         "name": "Stato",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Campo di misura",
             "state": {
               "below": "Sotto il campo di misura"
+            }
+          },
+          "reported_state": {
+            "name": "Stato segnalato",
+            "state": {
+              "low_flow": "Portata troppo bassa per essere misurata"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Stato dell'aggiornamento del firmware"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Temperatura ambiente"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Setpoint di riscaldamento attivo"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Setpoint di riscaldamento manuale"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Setpoint di riscaldamento temporaneo"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Modalità riscaldamento"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Programma di riscaldamento selezionato"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Imposta temperatura ambiente"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Imposta setpoint di riscaldamento attivo"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Imposta setpoint di riscaldamento manuale"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Imposta setpoint di riscaldamento temporaneo"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Imposta modalità riscaldamento"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Imposta programma di riscaldamento selezionato"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Elettricità pompa di calore, riscaldamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Elettricità pompa di calore, acqua calda (kWh, non confermato)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Elettricità pompa di calore, raffrescamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Elettricità caldaia, riscaldamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Elettricità caldaia, acqua calda (kWh, non confermato)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Resistenza elettrica, riscaldamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Resistenza elettrica, acqua calda (kWh, non confermato)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Elettricità solare prodotta (kWh, non confermato)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Calore pompa di calore, riscaldamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Calore pompa di calore, acqua calda (kWh, non confermato)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Energia di raffrescamento pompa di calore (kWh, non confermato)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Calore caldaia, riscaldamento (kWh, non confermato)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Calore caldaia, acqua calda (kWh, non confermato)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas, riscaldamento (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas, acqua calda (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Temperatura esterna, media giornaliera (non confermata)"
+      },
+      "name_part_low_salt": {
+        "name": "Sale in esaurimento"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Tipo di dispositivo acqua calda"
+      },
+      "name_part_mode_heating": {
+        "name": "Riscaldamento"
+      },
+      "name_part_mode_cooling": {
+        "name": "Raffrescamento"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Setpoint temporaneo"
+      },
+      "name_part_heating_temperature": {
+        "name": "Temperatura di riscaldamento"
+      },
+      "name_part_setback_temperature": {
+        "name": "Temperatura di abbassamento"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Soglia di avvio Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Soglia di avvio Comfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Soglia di avvio Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Setpoint del livello Spento"
+      },
+      "name_part_schedule_name": {
+        "name": "Nome programma orario {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Aggiornamento software"
+      },
+      "name_part_heat_source_type": {
+        "name": "Tipo di fonte di calore"
+      },
+      "name_part_consumption_total": {
+        "name": "Totale"
+      },
+      "name_part_consumption_heating": {
+        "name": "Riscaldamento"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Acqua calda"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Raffrescamento"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Energia di raffrescamento prodotta"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Rabbocco necessario"
+      },
+      "primary_flow_below_range": {
+        "name": "Portata primaria sotto il campo di misura"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Portata circuito di riscaldamento 1 sotto il campo di misura (PC1)"
       }
     },
     "calendar": {

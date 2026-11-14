@@ -1965,11 +1965,11 @@
           "none": "Brak",
           "ch": "Grzanie",
           "dhw": "Ciepła woda użytkowa",
-          "frost": "Ochrona przed zamarzaniem",
+          "frost": "Zakres mrozu",
           "ch_dhw": "Grzanie i ciepła woda użytkowa",
-          "ch_frost": "Grzanie i ochrona przed zamarzaniem",
-          "dhw_frost": "Ciepła woda użytkowa i ochrona przed zamarzaniem",
-          "ch_dhw_frost": "Grzanie, ciepła woda użytkowa i ochrona przed zamarzaniem"
+          "ch_frost": "Grzanie i zakres mrozu",
+          "dhw_frost": "Ciepła woda użytkowa i zakres mrozu",
+          "ch_dhw_frost": "Grzanie, ciepła woda użytkowa i zakres mrozu"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Źródło ciepła"
       },
+      "outdoor_unit_software_version": {
+        "name": "Wersja oprogramowania jednostki zewnętrznej"
+      },
       "pointt_api_requests_total": {
         "name": "Żądania do chmury łącznie"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "W toku"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Tryb urlopowy ciepłej wody użytkowej",
+        "state": {
+          "none": "Brak",
+          "auto_sat": "Automatyczny (AUTO_SAT)",
+          "off": "Wył.",
+          "on_eco": "Wł. – eko",
+          "on_low": "Wł. – niski",
+          "on_high": "Wł. – wysoki"
+        }
+      },
       "signal_true_false": {
         "name": "Stan",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Zakres pomiarowy",
             "state": {
               "below": "Poniżej zakresu pomiarowego"
+            }
+          },
+          "reported_state": {
+            "name": "Zgłoszony stan",
+            "state": {
+              "low_flow": "Przepływ zbyt mały do pomiaru"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Stan aktualizacji oprogramowania układowego"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Temperatura pomieszczenia"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktywna wartość zadana grzania"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Ręczna wartość zadana grzania"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Tymczasowa wartość zadana grzania"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Tryb grzania"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Wybrany program czasowy grzania"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Ustaw temperaturę pomieszczenia"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Ustaw aktywną wartość zadaną grzania"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Ustaw ręczną wartość zadaną grzania"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Ustaw tymczasową wartość zadaną grzania"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Ustaw tryb grzania"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Ustaw wybrany program czasowy grzania"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Energia elektryczna pompy ciepła – grzanie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Energia elektryczna pompy ciepła – ciepła woda użytkowa (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Energia elektryczna pompy ciepła – chłodzenie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Energia elektryczna kotła – grzanie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Energia elektryczna kotła – ciepła woda użytkowa (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Grzałka elektryczna – grzanie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Grzałka elektryczna – ciepła woda użytkowa (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Wyprodukowana energia elektryczna z energii słonecznej (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Ciepło pompy ciepła – grzanie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Ciepło pompy ciepła – ciepła woda użytkowa (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Energia chłodnicza pompy ciepła (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Ciepło kotła – grzanie (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Ciepło kotła – ciepła woda użytkowa (kWh, niepotwierdzone)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gaz – grzanie (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gaz – ciepła woda użytkowa (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Średnia dobowa temperatura zewnętrzna (niepotwierdzona)"
+      },
+      "name_part_low_salt": {
+        "name": "Mało soli"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Typ urządzenia ciepłej wody użytkowej"
+      },
+      "name_part_mode_heating": {
+        "name": "Grzanie"
+      },
+      "name_part_mode_cooling": {
+        "name": "Chłodzenie"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Tymczasowa wartość zadana"
+      },
+      "name_part_heating_temperature": {
+        "name": "Temperatura grzania"
+      },
+      "name_part_setback_temperature": {
+        "name": "Temperatura obniżona"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Próg startu Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Próg startu Komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Próg startu Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Wartość zadana poziomu Wyłączony"
+      },
+      "name_part_schedule_name": {
+        "name": "Nazwa programu czasowego {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Aktualizacja oprogramowania"
+      },
+      "name_part_heat_source_type": {
+        "name": "Typ źródła ciepła"
+      },
+      "name_part_consumption_total": {
+        "name": "Razem"
+      },
+      "name_part_consumption_heating": {
+        "name": "Grzanie"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Ciepła woda użytkowa"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Chłodzenie"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Wytworzona energia chłodnicza"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Wymagane uzupełnienie"
+      },
+      "primary_flow_below_range": {
+        "name": "Przepływ pierwotny poniżej zakresu pomiarowego"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Przepływ w obiegu grzewczym 1 poniżej zakresu pomiarowego (PC1)"
       }
     },
     "calendar": {

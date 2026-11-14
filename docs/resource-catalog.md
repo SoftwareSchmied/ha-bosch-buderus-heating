@@ -221,7 +221,7 @@ PointT codes and app display names for operation mode:
 | PointT path | User-facing name | Access | HA mapping / note |
 |---|---|---:|---|
 | `/heatSources` | Available heat sources | R | Internal: dynamic discovery |
-| `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water, and/or frost protection |
+| `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water and/or frost range (`frost`, meaning not documented) |
 | `/heatSources/actualModulation` | Current modulation | R | Measurement in % |
 | `/heatSources/actualSupplyTemperature` | System supply temperature | R | Temperature sensor; the supply of the heating system (behind a buffer cylinder the heating side's flow), not necessarily the heat pump's own flow (TC1) |
 | `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |

@@ -73,6 +73,12 @@ Every language has two data files in
    options dialogs, repairs, error messages, entity names with a
    translation key and state names. They follow the language of the user
    profile.
+   Since 0.9.2 they also hold parts of composed names as keys
+   `entity.sensor.name_part_…` (for example the names of the room controller
+   zone readings and their controls, of the energy history statistics and of
+   some cloud readings). The integration reads these keys itself and
+   composes the names in the Home Assistant system language, like the
+   generated names below.
 2. **`i18n/<code>.json`: texts the integration builds itself.**
    - `texts`: entity and device names composed at runtime (for example
      "Heating circuit 1 – Supply temperature"), notification texts,

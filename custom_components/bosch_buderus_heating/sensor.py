@@ -87,9 +87,8 @@ from .holidays import (
 )
 from .i18n import localize
 from .local_only import (
-    BELOW_MEASURING_RANGE,
     MAX_STATES,
-    MEASURING_RANGE,
+    below_range_attributes,
     flag_state,
     state_key,
 )
@@ -100,6 +99,7 @@ from .local_only_sensor import (
     hand_over_while_running,
     track_local_only_sensors,
 )
+from .outdoor_unit_software import track_outdoor_unit_software_sensor
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import Resource
 from .pointt.metrics import RequestMetrics
@@ -570,6 +570,7 @@ def _setup_entities(
         track_estimated_energy_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
+        track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
         rrc_platforms.track(Platform.SENSOR, entry, coordinator, async_add_entities)
     async_add_entities(entities)
@@ -1966,10 +1967,7 @@ class BoschBuderusSensor(
     def extra_state_attributes(self) -> Mapping[str, object] | None:
         attributes = self._base_attributes()
         if self._below_measuring_range():
-            attributes = {
-                **(attributes or {}),
-                MEASURING_RANGE: BELOW_MEASURING_RANGE,
-            }
+            attributes = {**(attributes or {}), **below_range_attributes()}
         source = shown_source(self.coordinator, self.entity_description, self._snapshot)
         if source is None:
             return attributes

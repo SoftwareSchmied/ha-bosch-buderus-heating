@@ -1965,11 +1965,11 @@
           "none": "Ingen",
           "ch": "Opvarmning",
           "dhw": "Varmt brugsvand",
-          "frost": "Frostsikring",
+          "frost": "Frostområde",
           "ch_dhw": "Opvarmning og varmt brugsvand",
-          "ch_frost": "Opvarmning og frostsikring",
-          "dhw_frost": "Varmt brugsvand og frostsikring",
-          "ch_dhw_frost": "Opvarmning, varmt brugsvand og frostsikring"
+          "ch_frost": "Opvarmning og frostområde",
+          "dhw_frost": "Varmt brugsvand og frostområde",
+          "ch_dhw_frost": "Opvarmning, varmt brugsvand og frostområde"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Varmekilde"
       },
+      "outdoor_unit_software_version": {
+        "name": "Udedelens softwareversion"
+      },
       "pointt_api_requests_total": {
         "name": "Cloud-forespørgsler i alt"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "I gang"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Ferietilstand varmt brugsvand",
+        "state": {
+          "none": "Ingen",
+          "auto_sat": "Automatisk (AUTO_SAT)",
+          "off": "Fra",
+          "on_eco": "Til – eco",
+          "on_low": "Til – lav",
+          "on_high": "Til – høj"
+        }
+      },
       "signal_true_false": {
         "name": "Tilstand",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Måleområde",
             "state": {
               "below": "Under måleområdet"
+            }
+          },
+          "reported_state": {
+            "name": "Rapporteret tilstand",
+            "state": {
+              "low_flow": "Flow for lavt til at måle"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Status for firmwareopdatering"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Rumtemperatur"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Manuelt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Midlertidigt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Driftsform for opvarmning"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Valgt varmeprogram"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Angiv rumtemperatur"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Angiv aktivt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Angiv manuelt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Angiv midlertidigt sætpunkt for opvarmning"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Angiv driftsform for opvarmning"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Angiv valgt varmeprogram"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Varmepumpe: el til opvarmning (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Varmepumpe: el til varmt brugsvand (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Varmepumpe: el til køling (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Kedel: el til opvarmning (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Kedel: el til varmt brugsvand (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elvarmelegeme: el til opvarmning (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elvarmelegeme: el til varmt brugsvand (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Produceret solcellestrøm (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Varmepumpe: varme til opvarmning (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Varmepumpe: varme til varmt brugsvand (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Varmepumpe: køleenergi (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Kedel: varme til opvarmning (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Kedel: varme til varmt brugsvand (kWh, ikke bekræftet)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas: til opvarmning (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas: til varmt brugsvand (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Udetemperatur, døgnmiddel (ikke bekræftet)"
+      },
+      "name_part_low_salt": {
+        "name": "Lavt saltniveau"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Enhedstype for varmt brugsvand"
+      },
+      "name_part_mode_heating": {
+        "name": "Opvarmning"
+      },
+      "name_part_mode_cooling": {
+        "name": "Køling"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Midlertidigt sætpunkt"
+      },
+      "name_part_heating_temperature": {
+        "name": "Opvarmningstemperatur"
+      },
+      "name_part_setback_temperature": {
+        "name": "Nedsænkningstemperatur"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Startgrænse Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Startgrænse komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Startgrænse Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Sætpunkt for niveau Fra"
+      },
+      "name_part_schedule_name": {
+        "name": "Navn på program {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Softwareopdatering"
+      },
+      "name_part_heat_source_type": {
+        "name": "Varmekildetype"
+      },
+      "name_part_consumption_total": {
+        "name": "I alt"
+      },
+      "name_part_consumption_heating": {
+        "name": "Opvarmning"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Varmt brugsvand"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Køling"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Produceret kølenergi"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Genopfyldning nødvendig"
+      },
+      "primary_flow_below_range": {
+        "name": "Primærflow under måleområdet"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Flow varmekreds 1 under måleområdet (PC1)"
       }
     },
     "calendar": {

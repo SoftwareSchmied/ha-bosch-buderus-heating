@@ -1965,11 +1965,11 @@
           "none": "Brez",
           "ch": "Ogrevanje",
           "dhw": "Topla voda",
-          "frost": "Zaščita pred zmrzaljo",
+          "frost": "Območje zmrzali",
           "ch_dhw": "Ogrevanje in topla voda",
-          "ch_frost": "Ogrevanje in zaščita pred zmrzaljo",
-          "dhw_frost": "Topla voda in zaščita pred zmrzaljo",
-          "ch_dhw_frost": "Ogrevanje, topla voda in zaščita pred zmrzaljo"
+          "ch_frost": "Ogrevanje in območje zmrzali",
+          "dhw_frost": "Topla voda in območje zmrzali",
+          "ch_dhw_frost": "Ogrevanje, topla voda in območje zmrzali"
         }
       },
       "compressor_status": {
@@ -2163,6 +2163,9 @@
       "heat_generator": {
         "name": "Vir toplote"
       },
+      "outdoor_unit_software_version": {
+        "name": "Različica programske opreme zunanje enote"
+      },
       "pointt_api_requests_total": {
         "name": "Zahteve v oblak skupaj"
       },
@@ -2344,6 +2347,17 @@
           "startup_inprogress": "V teku"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Počitniški način tople vode",
+        "state": {
+          "none": "Brez",
+          "auto_sat": "Samodejno (AUTO_SAT)",
+          "off": "Izklop",
+          "on_eco": "Vklop – eco",
+          "on_low": "Vklop – nizko",
+          "on_high": "Vklop – visoko"
+        }
+      },
       "signal_true_false": {
         "name": "Stanje",
         "state": {
@@ -2357,6 +2371,12 @@
             "name": "Merilno območje",
             "state": {
               "below": "Pod merilnim območjem"
+            }
+          },
+          "reported_state": {
+            "name": "Sporočeno stanje",
+            "state": {
+              "low_flow": "Pretok prenizek za merjenje"
             }
           }
         }
@@ -2448,6 +2468,147 @@
       },
       "rrc_update_state": {
         "name": "Stanje posodobitve vdelane programske opreme"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Sobna temperatura"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivna nastavljena vrednost ogrevanja"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Ročna nastavljena vrednost ogrevanja"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Začasna nastavljena vrednost ogrevanja"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Način ogrevanja"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Izbrani časovni program ogrevanja"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Nastavi sobno temperaturo"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Nastavi aktivno nastavljeno vrednost ogrevanja"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Nastavi ročno nastavljeno vrednost ogrevanja"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Nastavi začasno nastavljeno vrednost ogrevanja"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Nastavi način ogrevanja"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Nastavi izbrani časovni program ogrevanja"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Električna energija toplotne črpalke za ogrevanje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Električna energija toplotne črpalke za toplo vodo (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Električna energija toplotne črpalke za hlajenje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Električna energija kotla za ogrevanje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Električna energija kotla za toplo vodo (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Električni grelnik za ogrevanje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Električni grelnik za toplo vodo (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Proizvedena sončna električna energija (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Toplota toplotne črpalke za ogrevanje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Toplota toplotne črpalke za toplo vodo (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Energija hlajenja toplotne črpalke (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Toplota kotla za ogrevanje (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Toplota kotla za toplo vodo (kWh, nepotrjeno)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Plin za ogrevanje (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Plin za toplo vodo (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Zunanja temperatura, dnevno povprečje (nepotrjeno)"
+      },
+      "name_part_low_salt": {
+        "name": "Malo soli"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Vrsta naprave za toplo vodo"
+      },
+      "name_part_mode_heating": {
+        "name": "Ogrevanje"
+      },
+      "name_part_mode_cooling": {
+        "name": "Hlajenje"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Začasna nastavljena vrednost"
+      },
+      "name_part_heating_temperature": {
+        "name": "Temperatura ogrevanja"
+      },
+      "name_part_setback_temperature": {
+        "name": "Znižana temperatura"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Prag zagona Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Prag zagona Udobno"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Prag zagona Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Nastavljena vrednost stopnje Izklopljeno"
+      },
+      "name_part_schedule_name": {
+        "name": "Ime časovnega programa {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Posodobitev programske opreme"
+      },
+      "name_part_heat_source_type": {
+        "name": "Vrsta vira toplote"
+      },
+      "name_part_consumption_total": {
+        "name": "Skupaj"
+      },
+      "name_part_consumption_heating": {
+        "name": "Ogrevanje"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Topla voda"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Hlajenje"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Proizvedena energija hlajenja"
       }
     },
     "binary_sensor": {
@@ -2529,6 +2690,12 @@
       },
       "rrc_refill_needed": {
         "name": "Potrebno dolivanje"
+      },
+      "primary_flow_below_range": {
+        "name": "Primarni pretok pod merilnim območjem"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Pretok ogrevalnega kroga 1 pod merilnim območjem (PC1)"
       }
     },
     "calendar": {
