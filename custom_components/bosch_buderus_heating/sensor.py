@@ -107,6 +107,7 @@ from .pointt.metrics import RequestMetrics
 from .pointt.models import JsonValue
 from .pointt.redaction import resource_path_template
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
+from .recordings.sensor import track_recording_sensors
 from .resource_catalog import (
     UNKNOWN_ENUM,
     UNKNOWN_NUMBER,
@@ -571,6 +572,7 @@ def _setup_entities(
         track_estimated_energy_sensors(entry, coordinator, async_add_entities)
         track_calculated_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
+        track_recording_sensors(entry, coordinator, async_add_entities)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)

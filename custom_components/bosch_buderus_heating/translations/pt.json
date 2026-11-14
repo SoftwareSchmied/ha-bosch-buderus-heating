@@ -248,7 +248,8 @@
           "connections": "Ligações",
           "connection_add_cloud": "Ligar o acesso à cloud",
           "local_setup": "Configurar o acesso local",
-          "rescan": "Pesquisar a instalação novamente"
+          "rescan": "Pesquisar a instalação novamente",
+          "recordings": "Registos da instalação"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Pesquisar a instalação novamente",
         "description": "Pesquisa novamente na instalação por componentes e valores, através do acesso à cloud e do acesso local. Utilize esta opção depois de adicionar ou alterar componentes. A pesquisa decorre na próxima atualização regular e dentro dos limites habituais de pedidos; nunca remove uma entidade e os valores que não voltar a encontrar mantêm-se como estão."
       },
+      "recordings": {
+        "title": "Registos da instalação",
+        "description": "A bomba de calor regista a energia, os arranques e o tempo de funcionamento por hora. A integração mostra-os como entidades e pode importar os valores horários para as estatísticas de longo prazo (painel de energia, cartões de estatísticas). Séries encontradas: {series}, importadas: {imported}.",
+        "data": {
+          "recordings_import": "Importar os valores horários para as estatísticas de longo prazo",
+          "delete_statistics": "Eliminar as estatísticas importadas"
+        },
+        "data_description": {
+          "recordings_import": "No painel de energia use estas estatísticas ou as entidades dos contadores, não ambas. Ao desativar, o que foi importado mantém-se.",
+          "delete_statistics": "A página seguinte pede uma confirmação."
+        }
+      },
+      "recordings_delete": {
+        "title": "Eliminar as estatísticas importadas",
+        "description": "Elimina todas as estatísticas importadas dos registos da instalação desta entrada e desativa a importação. As entidades e os registos próprios da instalação mantêm-se. Não é possível anular.",
+        "data": {
+          "confirm": "Sim, eliminar as estatísticas importadas"
+        }
+      },
       "local_tokens": {
         "title": "Tokens no gateway",
         "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. Os tokens mais antigos desta integração costumam ficar de configurações anteriores. Sem escolha nada muda.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Já está em curso ou planeada uma pesquisa. Aguarde até que termine.",
       "rescan_partial": "A pesquisa está planeada para os componentes que estão prontos e decorre na próxima atualização regular. Os componentes que estão atualmente em pausa foram ignorados; tente novamente mais tarde para esses.",
       "rescan_unavailable": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação.",
+      "recordings_import_on": "A importação dos registos da instalação está ativada; os primeiros valores seguem dentro de poucos minutos.",
+      "recordings_import_off": "A importação dos registos da instalação está desativada; os valores importados mantêm-se.",
+      "recordings_deleted": "Estatísticas importadas eliminadas: {count}. A importação está desativada.",
+      "recordings_delete_kept": "Nada foi eliminado.",
       "connection_saved": "A alteração foi guardada.",
       "connection_removed": "O acesso foi removido.",
       "notifications_saved": "As definições de notificações foram guardadas.",

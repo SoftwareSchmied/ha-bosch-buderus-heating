@@ -1279,10 +1279,9 @@ PointT limits within the broad plausibility range of number controls. Matching r
 diagnostic entities; the maximum-supply-temperature number is also disabled by
 default because it changes an installer-level limit.
 
-Historical `/recordings/...` resources are deliberately not represented by
-ordinary state entities. Home Assistant already records the corresponding live
-states; importing vendor history requires a separate opt-in design with date
-ranges, deduplication, statistics semantics, and a strict request budget.
+The plant's own `/recordings/...` are shown as period entities (yesterday,
+previous and current month and year) and can be imported into the long-term
+statistics on request; see [Plant recordings](recordings.md).
 
 ## Sensitive diagnostic values
 

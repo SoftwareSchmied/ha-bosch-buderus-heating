@@ -248,7 +248,8 @@
           "connections": "Połączenia",
           "connection_add_cloud": "Połącz dostęp przez chmurę",
           "local_setup": "Skonfiguruj dostęp lokalny",
-          "rescan": "Wyszukaj instalację ponownie"
+          "rescan": "Wyszukaj instalację ponownie",
+          "recordings": "Zapisy instalacji"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Wyszukaj instalację ponownie",
         "description": "Wyszukuje w instalacji jeszcze raz części i odczyty, przez dostęp przez chmurę i dostęp lokalny. Użyj tego po dodaniu lub zmianie komponentów. Wyszukiwanie odbywa się przy następnej regularnej aktualizacji i w zwykłych limitach żądań; nigdy nie usuwa encji, a odczyty, których nie znajdzie ponownie, pozostają bez zmian."
       },
+      "recordings": {
+        "title": "Zapisy instalacji",
+        "description": "Pompa ciepła zapisuje energię, uruchomienia i czas pracy co godzinę. Integracja pokazuje je jako encje i może przenieść wartości godzinowe do statystyk długoterminowych (panel energii, karty statystyk). Znalezione serie: {series}, przeniesione: {imported}.",
+        "data": {
+          "recordings_import": "Przenieś wartości godzinowe do statystyk długoterminowych",
+          "delete_statistics": "Usuń przeniesione statystyki"
+        },
+        "data_description": {
+          "recordings_import": "W panelu energii używaj albo tych statystyk, albo encji liczników, nie obu. Po wyłączeniu przeniesione dane pozostają.",
+          "delete_statistics": "Następna strona prosi o potwierdzenie."
+        }
+      },
+      "recordings_delete": {
+        "title": "Usuń przeniesione statystyki",
+        "description": "Usuwa wszystkie statystyki przeniesione z zapisów instalacji tego wpisu i wyłącza przenoszenie. Encje i własne zapisy instalacji pozostają. Tej operacji nie można cofnąć.",
+        "data": {
+          "confirm": "Tak, usuń przeniesione statystyki"
+        }
+      },
       "local_tokens": {
         "title": "Tokeny na bramce",
         "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Bez wyboru nic się nie zmienia.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Wyszukiwanie już trwa lub jest zaplanowane. Zaczekaj, aż się zakończy.",
       "rescan_partial": "Wyszukiwanie jest zaplanowane dla gotowych części i odbywa się przy następnej regularnej aktualizacji. Części, które są teraz wstrzymane, pominięto; spróbuj dla nich ponownie później.",
       "rescan_unavailable": "Wyszukiwanie nie zostało uruchomione: żaden dostęp do instalacji nie jest teraz gotowy.",
+      "recordings_import_on": "Przenoszenie zapisów instalacji jest włączone; pierwsze wartości pojawią się w ciągu kilku minut.",
+      "recordings_import_off": "Przenoszenie zapisów instalacji jest wyłączone; przeniesione wartości pozostają.",
+      "recordings_deleted": "Usunięte przeniesione statystyki: {count}. Przenoszenie jest wyłączone.",
+      "recordings_delete_kept": "Nic nie zostało usunięte.",
       "connection_saved": "Zmiana została zapisana.",
       "connection_removed": "Dostęp został usunięty.",
       "notifications_saved": "Ustawienia powiadomień zostały zapisane.",

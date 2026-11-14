@@ -404,6 +404,19 @@ class LocalSelection:
                 sent += int(refresh(paths))
         return sent
 
+    def running_sources(self) -> tuple[object, ...]:
+        """The running local source drivers of this target, enabled first.
+
+        For features that read on their own (the recordings); each driver
+        keeps its own limits and identity checks.
+        """
+        found = []
+        for binding_id in self._local_bindings():
+            driver = self._runtime.source_driver(binding_id)
+            if driver is not None:
+                found.append(driver)
+        return tuple(found)
+
     def refresh_paths(self, path: str) -> tuple[str, ...]:
         """Local readings to read again after a confirmed write of ``path``."""
         scope = write_scope(path)

@@ -248,7 +248,8 @@
           "connections": "Yhteydet",
           "connection_add_cloud": "Yhdistä pilviyhteys",
           "local_setup": "Määritä paikallinen yhteys",
-          "rescan": "Etsi järjestelmä uudelleen"
+          "rescan": "Etsi järjestelmä uudelleen",
+          "recordings": "Järjestelmän tallenteet"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Etsi järjestelmä uudelleen",
         "description": "Etsii järjestelmästä osat ja mittausarvot vielä kerran pilviyhteyden ja paikallisen yhteyden kautta. Käytä tätä komponenttien lisäämisen tai muuttamisen jälkeen. Etsintä suoritetaan seuraavan säännöllisen päivityksen yhteydessä ja pyyntöjen tavanomaisissa rajoissa; se ei koskaan poista entiteettiä, ja mittausarvot, joita se ei löydä uudelleen, pysyvät ennallaan."
       },
+      "recordings": {
+        "title": "Järjestelmän tallenteet",
+        "description": "Lämpöpumppu tallentaa energian, käynnistykset ja käyntiajan tunneittain. Integraatio näyttää ne entiteetteinä ja voi siirtää tuntiarvot pitkän aikavälin tilastoihin (energianäkymä, tilastokortit). Löydetyt sarjat: {series}, siirretyt: {imported}.",
+        "data": {
+          "recordings_import": "Siirrä tuntiarvot pitkän aikavälin tilastoihin",
+          "delete_statistics": "Poista siirretyt tilastot"
+        },
+        "data_description": {
+          "recordings_import": "Käytä energianäkymässä joko näitä tilastoja tai laskurientiteettejä, ei molempia. Kun siirto kytketään pois, siirretyt arvot säilyvät.",
+          "delete_statistics": "Seuraava sivu pyytää vahvistusta."
+        }
+      },
+      "recordings_delete": {
+        "title": "Poista siirretyt tilastot",
+        "description": "Poistaa kaikki tämän merkinnän järjestelmän tallenteista siirretyt tilastot ja kytkee siirron pois. Entiteetit ja järjestelmän omat tallenteet säilyvät. Toimintoa ei voi perua.",
+        "data": {
+          "confirm": "Kyllä, poista siirretyt tilastot"
+        }
+      },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
         "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis.",
       "rescan_partial": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen.",
       "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis.",
+      "recordings_import_on": "Järjestelmän tallenteiden siirto on kytketty päälle; ensimmäiset arvot tulevat muutamassa minuutissa.",
+      "recordings_import_off": "Järjestelmän tallenteiden siirto on kytketty pois; siirretyt arvot säilyvät.",
+      "recordings_deleted": "Poistetut siirretyt tilastot: {count}. Siirto on kytketty pois.",
+      "recordings_delete_kept": "Mitään ei poistettu.",
       "connection_saved": "Muutos tallennettiin.",
       "connection_removed": "Yhteys poistettiin.",
       "notifications_saved": "Ilmoitusasetukset tallennettiin.",

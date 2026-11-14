@@ -248,7 +248,8 @@
           "connections": "Connexions",
           "connection_add_cloud": "Connecter l'accès cloud",
           "local_setup": "Configurer l'accès local",
-          "rescan": "Rechercher à nouveau dans l'installation"
+          "rescan": "Rechercher à nouveau dans l'installation",
+          "recordings": "Enregistrements de l'installation"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Rechercher à nouveau dans l'installation",
         "description": "Recherche à nouveau dans l'installation les composants et les valeurs, via l'accès cloud et l'accès local. Utilisez cette option après l'ajout ou la modification de composants. La recherche s'exécute lors de la prochaine mise à jour régulière et dans les limites habituelles de requêtes ; elle ne supprime jamais d'entité, et les valeurs qu'elle ne retrouve pas restent telles quelles."
       },
+      "recordings": {
+        "title": "Enregistrements de l'installation",
+        "description": "La pompe à chaleur enregistre l'énergie, les démarrages et la durée de fonctionnement heure par heure. L'intégration les affiche comme entités et peut importer les valeurs horaires dans les statistiques à long terme (tableau de bord énergie, cartes de statistiques). Séries trouvées : {series}, importées : {imported}.",
+        "data": {
+          "recordings_import": "Importer les valeurs horaires dans les statistiques à long terme",
+          "delete_statistics": "Supprimer les statistiques importées"
+        },
+        "data_description": {
+          "recordings_import": "Dans le tableau de bord énergie, utilisez soit ces statistiques, soit les entités des compteurs, pas les deux. À la désactivation, ce qui a été importé est conservé.",
+          "delete_statistics": "La page suivante demande une confirmation."
+        }
+      },
+      "recordings_delete": {
+        "title": "Supprimer les statistiques importées",
+        "description": "Supprime toutes les statistiques importées des enregistrements de l'installation de cette entrée et désactive l'importation. Les entités et les enregistrements propres de l'installation restent. Cette action est irréversible.",
+        "data": {
+          "confirm": "Oui, supprimer les statistiques importées"
+        }
+      },
       "local_tokens": {
         "title": "Jetons sur la passerelle",
         "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. Les jetons plus anciens de cette intégration proviennent généralement de configurations antérieures. Sans choix, rien ne change.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Une recherche est déjà en cours ou planifiée. Veuillez attendre qu'elle soit terminée.",
       "rescan_partial": "La recherche est planifiée pour les composants prêts et s'exécute lors de la prochaine mise à jour régulière. Les composants actuellement en pause ont été ignorés ; réessayez plus tard pour eux.",
       "rescan_unavailable": "La recherche n'a pas été lancée : aucun accès à l'installation n'est prêt pour le moment.",
+      "recordings_import_on": "L'importation des enregistrements de l'installation est activée ; les premières valeurs suivent dans quelques minutes.",
+      "recordings_import_off": "L'importation des enregistrements de l'installation est désactivée ; les valeurs importées restent.",
+      "recordings_deleted": "Statistiques importées supprimées : {count}. L'importation est désactivée.",
+      "recordings_delete_kept": "Rien n'a été supprimé.",
       "connection_saved": "La modification a été enregistrée.",
       "connection_removed": "L'accès a été supprimé.",
       "notifications_saved": "Les paramètres de notification ont été enregistrés.",

@@ -248,7 +248,8 @@
           "connections": "Veze",
           "connection_add_cloud": "Povezivanje pristupa putem oblaka",
           "local_setup": "Postavljanje lokalnog pristupa",
-          "rescan": "Ponovno pretraživanje sustava"
+          "rescan": "Ponovno pretraživanje sustava",
+          "recordings": "Zapisi sustava"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Ponovno pretraživanje sustava",
         "description": "Još jednom pretražuje sustav u potrazi za dijelovima i mjernim vrijednostima, putem pristupa putem oblaka i lokalnog pristupa. Koristite to nakon dodavanja ili promjene komponenti. Pretraživanje se izvodi pri sljedećem redovitom ažuriranju i unutar uobičajenih ograničenja zahtjeva; nikada ne uklanja entitet, a mjerne vrijednosti koje ponovno ne pronađe ostaju kakve jesu."
       },
+      "recordings": {
+        "title": "Zapisi sustava",
+        "description": "Dizalica topline bilježi energiju, pokretanja i vrijeme rada po satima. Integracija ih prikazuje kao entitete i može satne vrijednosti prenijeti u dugoročnu statistiku (energetska nadzorna ploča, kartice statistike). Pronađeni nizovi: {series}, preneseni: {imported}.",
+        "data": {
+          "recordings_import": "Prenesi satne vrijednosti u dugoročnu statistiku",
+          "delete_statistics": "Izbriši prenesenu statistiku"
+        },
+        "data_description": {
+          "recordings_import": "Na energetskoj nadzornoj ploči koristite ili ovu statistiku ili entitete brojila, ne oboje. Pri isključivanju preneseno ostaje.",
+          "delete_statistics": "Sljedeća stranica traži potvrdu."
+        }
+      },
+      "recordings_delete": {
+        "title": "Izbriši prenesenu statistiku",
+        "description": "Briše svu statistiku prenesenu iz zapisa sustava ovog unosa i isključuje prijenos. Entiteti i vlastiti zapisi sustava ostaju. To se ne može poništiti.",
+        "data": {
+          "confirm": "Da, izbriši prenesenu statistiku"
+        }
+      },
       "local_tokens": {
         "title": "Tokeni na pristupniku",
         "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Bez odabira ništa se ne mijenja.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Pretraživanje se već izvodi ili je zakazano. Pričekajte da završi.",
       "rescan_partial": "Pretraživanje je zakazano za dijelove koji su spremni i izvodi se pri sljedećem redovitom ažuriranju. Dijelovi koji su trenutno pauzirani preskočeni su; za njih pokušajte ponovno kasnije.",
       "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu.",
+      "recordings_import_on": "Prijenos zapisa sustava je uključen; prve vrijednosti slijede za nekoliko minuta.",
+      "recordings_import_off": "Prijenos zapisa sustava je isključen; prenesene vrijednosti ostaju.",
+      "recordings_deleted": "Izbrisane prenesene statistike: {count}. Prijenos je isključen.",
+      "recordings_delete_kept": "Ništa nije izbrisano.",
       "connection_saved": "Promjena je spremljena.",
       "connection_removed": "Pristup je uklonjen.",
       "notifications_saved": "Postavke obavijesti su spremljene.",

@@ -248,7 +248,8 @@
           "connections": "Connessioni",
           "connection_add_cloud": "Collega l'accesso cloud",
           "local_setup": "Configura l'accesso locale",
-          "rescan": "Cerca di nuovo nell'impianto"
+          "rescan": "Cerca di nuovo nell'impianto",
+          "recordings": "Registrazioni dell'impianto"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Cerca di nuovo nell'impianto",
         "description": "Cerca ancora una volta nell'impianto componenti e valori, tramite l'accesso cloud e l'accesso locale. Usalo dopo aver aggiunto o modificato dei componenti. La ricerca viene eseguita con il prossimo aggiornamento regolare e nei limiti consueti per le richieste; non rimuove mai un'entità e i valori che non vengono ritrovati restano come sono."
       },
+      "recordings": {
+        "title": "Registrazioni dell'impianto",
+        "description": "La pompa di calore registra energia, avvii e tempo di funzionamento ora per ora. L'integrazione li mostra come entità e può importare i valori orari nelle statistiche a lungo termine (dashboard energia, schede statistiche). Serie trovate: {series}, importate: {imported}.",
+        "data": {
+          "recordings_import": "Importa i valori orari nelle statistiche a lungo termine",
+          "delete_statistics": "Elimina le statistiche importate"
+        },
+        "data_description": {
+          "recordings_import": "Nella dashboard energia usare queste statistiche oppure le entità dei contatori, non entrambe. Disattivando, quanto importato resta.",
+          "delete_statistics": "La pagina successiva chiede una conferma."
+        }
+      },
+      "recordings_delete": {
+        "title": "Elimina le statistiche importate",
+        "description": "Elimina tutte le statistiche importate dalle registrazioni dell'impianto di questa voce e disattiva l'importazione. Le entità e le registrazioni proprie dell'impianto restano. L'operazione non può essere annullata.",
+        "data": {
+          "confirm": "Sì, elimina le statistiche importate"
+        }
+      },
       "local_tokens": {
         "title": "Token sul gateway",
         "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. I token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Senza una scelta non cambia nulla.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "È già in corso o pianificata una ricerca. Attendi che sia conclusa.",
       "rescan_partial": "La ricerca è pianificata per i componenti pronti e viene eseguita con il prossimo aggiornamento regolare. I componenti attualmente in pausa sono stati saltati; riprova più tardi per questi.",
       "rescan_unavailable": "La ricerca non è stata avviata: al momento nessun accesso all'impianto è pronto.",
+      "recordings_import_on": "L'importazione delle registrazioni dell'impianto è attiva; i primi valori seguono entro pochi minuti.",
+      "recordings_import_off": "L'importazione delle registrazioni dell'impianto è disattivata; i valori importati restano.",
+      "recordings_deleted": "Statistiche importate eliminate: {count}. L'importazione è disattivata.",
+      "recordings_delete_kept": "Non è stato eliminato nulla.",
       "connection_saved": "La modifica è stata salvata.",
       "connection_removed": "L'accesso è stato rimosso.",
       "notifications_saved": "Le impostazioni delle notifiche sono state salvate.",

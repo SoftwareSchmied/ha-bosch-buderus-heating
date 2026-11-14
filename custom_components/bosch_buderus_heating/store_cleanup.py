@@ -97,6 +97,7 @@ async def async_remove_entry_stores(
     from .estimated_energy import estimated_energy_store
     from .faults import async_remove_fault_store
     from .notifications import async_remove_notification_store
+    from .recordings.manager import async_remove_recordings_store
     from .rrc_energy_statistics import async_remove_energy_store
 
     gateways = _entry_gateways(entry)
@@ -104,6 +105,7 @@ async def async_remove_entry_stores(
         await async_remove_fault_store(hass, entry.entry_id, gateway_id)
         await async_remove_notification_store(hass, entry.entry_id, gateway_id)
         await async_remove_energy_store(hass, entry.entry_id, gateway_id)
+        await async_remove_recordings_store(hass, entry.entry_id, gateway_id)
     for connection_id in sorted(_cloud_connection_ids(entry)):
         await Store[dict[str, Any]](
             hass,

@@ -248,7 +248,8 @@
           "connections": "Connections",
           "connection_add_cloud": "Connect cloud access",
           "local_setup": "Set up local access",
-          "rescan": "Search the system again"
+          "rescan": "Search the system again",
+          "recordings": "Plant recordings"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Search the system again",
         "description": "Searches the system once more for parts and readings, through the cloud access and the local access. Use it after adding or changing components. The search runs with the next regular update and within the usual limits for requests; it never removes an entity, and readings it does not find again stay as they are."
       },
+      "recordings": {
+        "title": "Plant recordings",
+        "description": "The heat pump records its energy, starts and working time per hour. The integration shows them as entities and can import the hourly values into the long-term statistics (energy dashboard, statistics cards). Series found: {series}, imported: {imported}.",
+        "data": {
+          "recordings_import": "Import the hourly values into the long-term statistics",
+          "delete_statistics": "Delete the imported statistics"
+        },
+        "data_description": {
+          "recordings_import": "Use either these statistics or the counter entities in the energy dashboard, not both. Switching off keeps what was imported.",
+          "delete_statistics": "The next page asks for a confirmation."
+        }
+      },
+      "recordings_delete": {
+        "title": "Delete the imported statistics",
+        "description": "Deletes every statistic imported from the plant recordings of this entry and switches the import off. The entities and the plant's own recordings stay. This cannot be undone.",
+        "data": {
+          "confirm": "Yes, delete the imported statistics"
+        }
+      },
       "local_tokens": {
         "title": "Tokens on the gateway",
         "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. Older tokens of this integration usually remain from earlier setups. Without a choice nothing changes.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "A search is already running or planned. Please wait until it has finished.",
       "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
       "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
+      "recordings_import_on": "The import of the plant recordings is switched on; the first values follow within a few minutes.",
+      "recordings_import_off": "The import of the plant recordings is switched off; imported values stay.",
+      "recordings_deleted": "Imported statistics deleted: {count}. The import is switched off.",
+      "recordings_delete_kept": "Nothing was deleted.",
       "connection_saved": "The change was saved.",
       "connection_removed": "The access was removed.",
       "notifications_saved": "The notification settings were saved.",

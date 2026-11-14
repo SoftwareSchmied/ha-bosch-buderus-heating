@@ -248,7 +248,8 @@
           "connections": "Pripojenia",
           "connection_add_cloud": "Pripojiť cloudový prístup",
           "local_setup": "Nastaviť lokálny prístup",
-          "rescan": "Znova vyhľadať systém"
+          "rescan": "Znova vyhľadať systém",
+          "recordings": "Záznam systému"
         }
       },
       "notifications": {
@@ -660,6 +661,25 @@
         "title": "Znova vyhľadať systém",
         "description": "Znova vyhľadá v systéme súčasti a hodnoty, cez cloudový aj lokálny prístup. Použite to po pridaní alebo zmene komponentov. Vyhľadávanie prebehne pri najbližšej pravidelnej aktualizácii a v rámci obvyklých limitov pre požiadavky; nikdy neodstráni žiadnu entitu a hodnoty, ktoré sa znova nenájdu, zostanú také, aké sú."
       },
+      "recordings": {
+        "title": "Záznam systému",
+        "description": "Tepelné čerpadlo zaznamenáva energiu, štarty a dobu prevádzky po hodinách. Integrácia ich zobrazuje ako entity a môže hodinové hodnoty prevziať do dlhodobej štatistiky (energetický panel, karty štatistiky). Nájdené rady: {series}, prevzaté: {imported}.",
+        "data": {
+          "recordings_import": "Prevziať hodinové hodnoty do dlhodobej štatistiky",
+          "delete_statistics": "Vymazať prevzatú štatistiku"
+        },
+        "data_description": {
+          "recordings_import": "V energetickom paneli použite buď túto štatistiku, alebo entity počítadiel, nie oboje. Po vypnutí prevzaté hodnoty zostanú.",
+          "delete_statistics": "Ďalšia stránka si vyžiada potvrdenie."
+        }
+      },
+      "recordings_delete": {
+        "title": "Vymazať prevzatú štatistiku",
+        "description": "Vymaže všetky štatistiky prevzaté zo záznamu systému tohto záznamu a vypne prevzatie. Entity a vlastný záznam systému zostanú. Túto akciu nemožno vrátiť.",
+        "data": {
+          "confirm": "Áno, vymazať prevzatú štatistiku"
+        }
+      },
       "local_tokens": {
         "title": "Tokeny na bráne",
         "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený a jeho odvolaním sa lokálny prístup skončí. Staršie tokeny tejto integrácie zvyčajne zostávajú z predchádzajúcich nastavení. Bez výberu sa nič nezmení.{note}",
@@ -865,6 +885,10 @@
       "rescan_running": "Vyhľadávanie už beží alebo je naplánované. Počkajte, kým sa dokončí.",
       "rescan_partial": "Vyhľadávanie je naplánované pre súčasti, ktoré sú pripravené, a prebehne pri najbližšej pravidelnej aktualizácii. Súčasti, ktoré sú momentálne pozastavené, sa preskočili; pre ne to skúste neskôr znova.",
       "rescan_unavailable": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému.",
+      "recordings_import_on": "Prevzatie záznamu systému je zapnuté; prvé hodnoty nasledujú v priebehu niekoľkých minút.",
+      "recordings_import_off": "Prevzatie záznamu systému je vypnuté; prevzaté hodnoty zostávajú.",
+      "recordings_deleted": "Vymazané prevzaté štatistiky: {count}. Prevzatie je vypnuté.",
+      "recordings_delete_kept": "Nič nebolo vymazané.",
       "connection_saved": "Zmena bola uložená.",
       "connection_removed": "Prístup bol odstránený.",
       "notifications_saved": "Nastavenia upozornení boli uložené.",
