@@ -104,9 +104,7 @@ async def test_ok_on_a_page_leads_to_its_menu(hass) -> None:
     flow.hass = hass
     flow.handler = "x"
     flow.flow_id = "f"
-    page = await flow.async_return_to_menu(
-        "connection", "connection_saved", {"x": "1"}
-    )
+    page = await flow.async_return_to_menu("connection", "connection_saved", {"x": "1"})
     assert page["type"] is FlowResultType.FORM
     assert page["step_id"] == "result_connection_saved"
     assert page["description_placeholders"] == {"x": "1"}
@@ -175,3 +173,56 @@ async def test_a_long_list_falls_back_to_built_labels(hass, monkeypatch) -> None
         result["flow_id"], connection_choice(hass, result, cloud)
     )
     assert result["step_id"] == "connection"
+
+
+async def test_systems_of_an_access_are_listed_by_name(hass) -> None:
+    from homeassistant.helpers import device_registry as dr
+
+    from custom_components.bosch_buderus_heating.const import DOMAIN
+
+    entry, _, cloud, _ = registered(hass)
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, "000123")},
+        name="Heat pump",
+    )
+    result = await _connections(hass, entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], connection_choice(hass, result, cloud)
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "connection_targets"}
+    )
+    labels = [
+        item["label"]
+        for item in result["data_schema"].schema["targets"].config["options"]
+    ]
+    assert "Heat pump" in labels and "000123" not in labels
+
+
+async def test_intermediate_forms_say_next(hass) -> None:
+    from homeassistant import config_entries
+
+    from custom_components.bosch_buderus_heating.const import DOMAIN
+    from custom_components.bosch_buderus_heating.options_navigation import (
+        NEXT_STEPS,
+    )
+
+    flow = NavigatingOptionsFlow()
+    flow.hass = hass
+    flow.handler = "x"
+    flow.flow_id = "f"
+    for step in NEXT_STEPS:
+        assert flow.async_show_form(step_id=step)["last_step"] is False
+    # A form that saves keeps the default button; an explicit choice stays.
+    assert flow.async_show_form(step_id="notifications")["last_step"] is None
+    assert flow.async_show_form(step_id="holidays", last_step=True)["last_step"]
+    # The setup: the brand choice leads to the sign-in.
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud"}
+    )
+    assert result["step_id"] == "cloud" and result["last_step"] is False
+    hass.config_entries.flow.async_abort(result["flow_id"])

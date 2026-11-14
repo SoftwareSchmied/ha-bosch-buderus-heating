@@ -90,7 +90,9 @@ async def test_menu_and_program_choice(hass, environment):
     ]
     first = await flow.async_step_switch_programs()
     labels = {item["value"]: item["label"] for item in _options(first, "program")}
-    assert set(labels) == {f"1:{PROGRAM_A}", f"1:{PROGRAM_B}", f"1:{DHW}"}
+    # The first choice leads back to the main menu.
+    assert next(iter(labels)) == "back"
+    assert set(labels) == {"back", f"1:{PROGRAM_A}", f"1:{PROGRAM_B}", f"1:{DHW}"}
     # The name the gateway reports; an empty name adds nothing.
     assert labels[f"1:{PROGRAM_A}"].endswith("(Home office)")
     assert "(" not in labels[f"1:{PROGRAM_B}"]

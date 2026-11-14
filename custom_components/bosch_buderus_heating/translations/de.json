@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Mit SingleKey ID anmelden",
-        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
+        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte. Zeigt SingleKey ID eine Seite, die eine Weiterleitung ankündigt, und es passiert nichts, wähle den Link oder die Schaltfläche auf dieser Seite.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
         "data": {
           "redirect_url": "Vollständige Weiterleitungsadresse"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Neu konfigurieren und suchen",
-        "description": "Wähle App-Marke, Gateways und Abfrageprofil. Beim Speichern wird die Integration neu geladen und sucht alle Ressourcen vollständig neu. Nutze dies nach einem Firmwareupdate oder wenn sich Heizkreise, Warmwassersysteme, Wärmeerzeuger oder Gateways geändert haben. **Standard** liest aktuelle Betriebswerte jede Minute. **Cloud-schonend** reduziert die Cloud-Zugriffe: Betriebswerte alle zwei Minuten, andere veränderliche Werte seltener. Beim Wechsel der App-Marke ist eine neue SingleKey-ID-Anmeldung erforderlich.",
+        "description": "Wähle App-Marke, Gateways und Abfrageprofil. Beim Speichern wird die Integration neu geladen und sucht alle Ressourcen neu, etwa nach einem Firmwareupdate oder einer geänderten Anlage. Ein Wechsel der App-Marke erfordert eine neue SingleKey-ID-Anmeldung.",
         "data": {
           "brand": "App-Marke",
           "gateway_ids": "Gateways",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Vorhandene Einrichtung auswählen",
-        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört. Es wird keine weitere Anlage angelegt.",
+        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört, oder richte es als neue Einrichtung nur mit lokalem Zugang ein.",
         "data": {
-          "owner": "Vorhandene Einrichtung"
+          "owner": "Einrichtung"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Zertifikat des Datenports bestätigen",
+        "description": "Home Assistant hat **{host}:{port}** erreicht. Bestätige vor der Übertragung von Zugangsdaten, dass dies dein Gateway ist. Ein Fingerprint allein beweist die Geräteidentität nicht.\n\nSHA-256: `{fingerprint}`\n\nBisheriger Fingerprint: `{previous}`. Ein Fragezeichen bedeutet, dass für diese Adresse und diesen Port kein passendes Zertifikat gespeichert ist.\n\nDas Gateway hat für jeden Port ein eigenes Zertifikat. Port 9442 ist der Anmeldeport und wird vor der Anmeldung geprüft, Port 9443 ist der Datenport und wird danach geprüft. Deshalb kann diese Seite zweimal erscheinen.\n\nGehört das Zertifikat nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
+        "data": {
+          "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
+        }
+      },
       "local_auth": {
         "title": "Mit dem Geräteaufkleber anmelden",
         "description": "Gib Login und Pass vom Gateway-Aufkleber ein. Drücke zur Freigabe der lokalen Anmeldung die WLAN- und die Wireless-Taste gleichzeitig 1 Sekunde lang und lasse beide zusammen los. Bestätige das kurze blaue Signal und fahre innerhalb von fünf Minuten fort. Dauert die Korrektur eines Tippfehlers länger als fünf Minuten, drücke die Tasten erneut. Der Zugriff bleibt über die gewählte LAN-Adresse. Ob die Freigabe erfolgt ist, entscheidet die Antwort des Gateways. Login und Pass werden nicht gespeichert.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Lokalen Zugang bestätigen",
-        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert.",
-        "data": {
-          "confirm": "Diesen lokalen Zugang speichern"
-        }
+        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert. Um nichts zu speichern, schließe stattdessen den Dialog."
       },
       "local_retry": {
         "title": "Lokale Prüfung nicht abgeschlossen",
@@ -151,7 +155,7 @@
       "cannot_connect": "Der Cloud-Zugang ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
-      "singlekey_page": "Das ist die Adresse der SingleKey-ID-Seite, nicht die App-Adresse. Kopiere stattdessen in der Chrome-Konsole die `{redirect_scheme}://`-Adresse aus der roten Meldung **Failed to launch**.",
+      "singlekey_page": "Das ist die Adresse der SingleKey-ID-Seite, nicht die App-Adresse. Kündigt diese Seite eine Weiterleitung an und es passiert nichts, wähle ihren Link oder ihre Schaltfläche. Kopiere danach in der Chrome-Konsole die `{redirect_scheme}://`-Adresse aus der roten Meldung **Failed to launch**.",
       "gateway_changed": "Die Gateway-Liste hat sich geändert, während dieser Dialog geöffnet war. Schließe den Dialog und öffne Neu konfigurieren erneut.",
       "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
       "unknown": "Beim Cloud-Zugang ist ein unerwarteter Fehler aufgetreten. Warte kurz und versuche es erneut.",
@@ -173,6 +177,7 @@
       "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
       "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
       "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
+      "local_certificate_unconfirmed": "Setze das Häkchen, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
       "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
       "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
       "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
@@ -374,6 +379,10 @@
           "time": "Uhrzeit",
           "temperature": "Temperatur"
         }
+      },
+      "rrc_confirm": {
+        "title": "Schaltpunkt speichern",
+        "description": "**{program}**\n\n**Vorher:** {before}\n\n**Nachher:** {after}\n\nDie Änderung wird einmal gesendet und danach zurückgelesen. Sie gilt für alle zugeordneten Zonen."
       },
       "rrc_day": {
         "title": "Schaltpunkt auswählen",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Abfragehäufigkeit",
-        "description": "Standard liest aktuelle Heizungsbetriebswerte jede Minute, Einstellungen und Energiewerte alle 5 Minuten und langsamere Angaben alle 15 Minuten. Cloud-schonend verdoppelt diese Abstände. Aktive Störungen werden in beiden Profilen jede Minute geprüft. Das Profil gilt für die Abfragen von Heizung und Wallbox des ausgewählten Cloud-Zugangs; weitere Cloud-Geräte melden Änderungen als Nachrichten. Anmeldung, Geräteprüfung und die Bestätigung nach einer Änderung können zusätzliche Anfragen außerhalb dieses Rasters auslösen. Dauert ein Abrufdurchlauf länger als sein Intervall, beginnt der nächste entsprechend später.",
+        "description": "**Standard** liest aktuelle Betriebswerte jede Minute sowie Einstellungen und Energiewerte alle 5 Minuten. **Cloud-schonend** verdoppelt diese Abstände. Aktive Störungen werden in beiden Profilen jede Minute geprüft.",
         "data": {
           "polling_profile": "Abfrageprofil"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Mit SingleKey ID anmelden",
-        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
+        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte. Zeigt SingleKey ID eine Seite, die eine Weiterleitung ankündigt, und es passiert nichts, wähle den Link oder die Schaltfläche auf dieser Seite.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
         "data": {
           "redirect_url": "Vollständige Weiterleitungsadresse"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Vorhandene Einrichtung auswählen",
-        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört. Es wird keine weitere Anlage angelegt.",
+        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört, oder richte es als neue Einrichtung nur mit lokalem Zugang ein.",
         "data": {
-          "owner": "Vorhandene Einrichtung"
+          "owner": "Einrichtung"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Zertifikat des Datenports bestätigen",
+        "description": "Home Assistant hat **{host}:{port}** erreicht. Bestätige vor der Übertragung von Zugangsdaten, dass dies dein Gateway ist. Ein Fingerprint allein beweist die Geräteidentität nicht.\n\nSHA-256: `{fingerprint}`\n\nBisheriger Fingerprint: `{previous}`. Ein Fragezeichen bedeutet, dass für diese Adresse und diesen Port kein passendes Zertifikat gespeichert ist.\n\nDas Gateway hat für jeden Port ein eigenes Zertifikat. Port 9442 ist der Anmeldeport und wird vor der Anmeldung geprüft, Port 9443 ist der Datenport und wird danach geprüft. Deshalb kann diese Seite zweimal erscheinen.\n\nGehört das Zertifikat nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
+        "data": {
+          "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
+        }
+      },
       "local_auth": {
         "title": "Mit dem Geräteaufkleber anmelden",
         "description": "Gib Login und Pass vom Gateway-Aufkleber ein. Drücke zur Freigabe der lokalen Anmeldung die WLAN- und die Wireless-Taste gleichzeitig 1 Sekunde lang und lasse beide zusammen los. Bestätige das kurze blaue Signal und fahre innerhalb von fünf Minuten fort. Dauert die Korrektur eines Tippfehlers länger als fünf Minuten, drücke die Tasten erneut. Der Zugriff bleibt über die gewählte LAN-Adresse. Ob die Freigabe erfolgt ist, entscheidet die Antwort des Gateways. Login und Pass werden nicht gespeichert.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Lokalen Zugang bestätigen",
-        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert.",
-        "data": {
-          "confirm": "Diesen lokalen Zugang speichern"
-        }
+        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert. Um nichts zu speichern, schließe stattdessen den Dialog."
       },
       "local_retry": {
         "title": "Lokale Prüfung nicht abgeschlossen",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Lokale Abfragen",
-        "description": "Bestätigte Ressourcen: {known}. Aktuell verfügbar: {available}. Die Zahlen zeigen den Stand beim Öffnen des Dialogs. Das Intervall ist das Ziel für Livewerte. Einstellungen, Energiewerte und Diagnose werden alle 5 Minuten und Zähler alle 15 Minuten gelesen, bei einem längeren Intervall in dessen Abstand; statische Angaben täglich. Ein Wert wird nach drei verpassten Intervallen als nicht verfügbar angezeigt. Bei vielen Ressourcen können die tatsächlichen Abstände länger sein. Cloud-Abfragen bleiben unabhängig. Werte, die auch die Cloud liefert, werden lokal mindestens so oft gelesen wie in der Cloud.",
+        "description": "Bestätigte Ressourcen: {known}, aktuell verfügbar: {available}. Das Intervall ist das Ziel für Livewerte; langsamere Werte werden seltener gelesen. Die genauen Abstände beschreibt die Dokumentation.",
         "data": {
           "interval": "Zielintervall für Livewerte"
         }
       },
       "local_values": {
         "title": "Lokale Werte für vorhandene Entitäten",
-        "description": "Solange die Cloud läuft, entscheidet diese Option, ob vorhandene Sensoren den lokalen Wert einer Messgröße verwenden, die beide Zugänge unter derselben dokumentierten Ressource liefern. Ohne Cloud (abgeschaltet, neue Anmeldung nötig, pausiert, begrenzt oder nicht erreichbar) werden immer die lokalen Werte verwendet. Bei neuen Einrichtungen mit Cloud und lokalem Zugang ist die Option eingeschaltet.\n\nWenn aktiviert, wird der lokale Wert verwendet, solange er aktuell ist. Ist der lokale Wert veraltet oder fehlt er, wird der aktuelle Cloud-Wert verwendet; sind beide veraltet, wird der Sensor nicht verfügbar. Energie-, Start- und Laufzeitzähler verwenden den lokalen Wert ebenfalls, wechseln ihre Quelle aber nur, wenn jeder angezeigte Zählerstand mindestens den zuletzt angezeigten erreicht; ein Quellenwechsel lässt sie dadurch nie rückwärts zählen. Einstellbare Werte verwenden weiterhin die Cloud. Entitäts-IDs, Namen und Verläufe bleiben unverändert. Bedienung und Änderungen laufen weiterhin über die Cloud.",
+        "description": "Solange die Cloud läuft, entscheidet diese Option, ob vorhandene Sensoren den lokalen Wert einer Messgröße verwenden, die beide Zugänge liefern. Ohne Cloud werden immer die lokalen Werte verwendet; Einstellungen und Bedienung laufen weiter über die Cloud. Entitäts-IDs, Namen und Verläufe bleiben unverändert.",
         "data": {
           "enabled": "Lokale Werte verwenden"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
       "reauth_targets_missing": "Mit dieser Anmeldung wurde keine der eingeschalteten Anlagen und Geräte gefunden. Die bisherigen Zugangsdaten bleiben erhalten. Prüfe, ob du dich mit demselben Konto wie bisher angemeldet hast. Wurden die Anlagen aus dem Konto entfernt, öffne Konfigurieren → Verbindungen → den Cloud-Zugang: Schalte unter **Verwendung für Anlagen und Geräte** eine Anlage ein, die noch im Konto ist, oder schalte die entfernten aus und vergiss sie mit **Abgewählte Anlagen vergessen**. Ist keine mehr übrig, entferne den Cloud-Zugang und verbinde ihn neu.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
-      "singlekey_page": "Das ist die Adresse der SingleKey-ID-Seite, nicht die App-Adresse. Kopiere stattdessen in der Chrome-Konsole die `{redirect_scheme}://`-Adresse aus der roten Meldung **Failed to launch**.",
+      "singlekey_page": "Das ist die Adresse der SingleKey-ID-Seite, nicht die App-Adresse. Kündigt diese Seite eine Weiterleitung an und es passiert nichts, wähle ihren Link oder ihre Schaltfläche. Kopiere danach in der Chrome-Konsole die `{redirect_scheme}://`-Adresse aus der roten Meldung **Failed to launch**.",
       "cannot_connect": "Der Cloud-Zugang ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
       "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
       "no_gateways": "Es wurden keine Geräte gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur verwendeten App passen. Ein Raumregler mit älterer Firmware erscheint erst, wenn seine Firmware aktualisiert und er in der aktuellen App mit deiner SingleKey-ID eingerichtet ist.",
@@ -937,6 +950,7 @@
       "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
       "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
       "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
+      "local_certificate_unconfirmed": "Setze das Häkchen, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
       "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
       "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
       "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Zurück",
         "create": "Neue Urlaubszeit"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Mit gespeichertem Token fortfahren",
         "discard": "Offenen Versuch verwerfen",
         "later": "Später fortsetzen"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Neue Anlage (nur lokal)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Neue Einrichtung (nur lokaler Zugang)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Zurück"
       }
     }
   },

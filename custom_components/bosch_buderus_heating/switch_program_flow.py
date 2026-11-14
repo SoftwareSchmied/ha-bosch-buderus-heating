@@ -32,7 +32,13 @@ from .device import grouped_entity_name
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .markdown_text import markdown_literal
-from .options_navigation import NavigatingOptionsFlow
+from .notifications import installation_name
+from .options_navigation import (
+    BACK,
+    BACK_CHOICE,
+    NAVIGATION,
+    NavigatingOptionsFlow,
+)
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -157,10 +163,14 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                 if name is not None:
                     label = f"{label} ({name})"
                 if len(coordinators) > 1:
-                    label = (
-                        f"{coordinator.gateway.model or self._entry.title} "
-                        f"[{number}] / {label}"
+                    # The system by the name the user knows.
+                    system = installation_name(
+                        self.hass,
+                        self._entry.entry_id,
+                        coordinator.gateway.gateway_id,
+                        number,
                     )
+                    label = f"{system} / {label}"
                 if is_dhw_switch_program_path(path):
                     hint = "dhw"
                 else:
@@ -249,6 +259,8 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         if not choices:
             return self.async_abort(reason="no_switch_programs")
         if user_input is not None:
+            if user_input.get("program") == BACK:
+                return await self._show_menu("init")
             offered = self._sp_offered or choices
             choice = offered.get(str(user_input.get("program", "")))
             if choice is None or not any(
@@ -268,10 +280,14 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                     vol.Required("program"): SelectSelector(
                         SelectSelectorConfig(
                             options=[
-                                SelectOptionDict(value=key, label=choice.label)
-                                for key, choice in choices.items()
+                                BACK_CHOICE,
+                                *(
+                                    SelectOptionDict(value=key, label=choice.label)
+                                    for key, choice in choices.items()
+                                ),
                             ],
                             mode=SelectSelectorMode.DROPDOWN,
+                            translation_key=NAVIGATION,
                         )
                     ),
                 }

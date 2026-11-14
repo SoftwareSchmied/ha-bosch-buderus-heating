@@ -35,7 +35,9 @@ async def outcome_text(hass: HomeAssistant, entry, key: str) -> str:
     """The text of the page the test outcome opens, as the frontend fills it."""
     code, values = await status.test_connection(hass, entry, key)
     assert code in status.TEST_CODES
-    data = json.loads((TRANSLATIONS / f"{hass.config.language}.json").read_text("utf-8"))
+    data = json.loads(
+        (TRANSLATIONS / f"{hass.config.language}.json").read_text("utf-8")
+    )
     return data["options"]["step"][f"connection_test_{code}"]["description"].format(
         **values
     )
@@ -282,9 +284,7 @@ async def test_local_test_uses_the_running_source(hass: HomeAssistant) -> None:
 async def test_no_test_for_a_disabled_access(hass: HomeAssistant) -> None:
     hass.config.language = "en"
     runtime = Runtime(hass)
-    result = await outcome_text(
-        hass, entry_with(runtime, cloud_enabled=False), CLOUD
-    )
+    result = await outcome_text(hass, entry_with(runtime, cloud_enabled=False), CLOUD)
     assert result.startswith("Not tested: the access is not running")
     runtime.client.get_gateways.assert_not_awaited()
 

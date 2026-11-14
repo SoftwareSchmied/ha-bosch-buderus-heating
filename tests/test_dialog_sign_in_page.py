@@ -126,4 +126,19 @@ def test_the_hint_names_the_app_scheme_in_every_language() -> None:
         text = strings["config"]["error"]["singlekey_page"]
         assert "{redirect_scheme}://" in text, path.name
         assert "Failed to launch" in text, path.name
+        # A page that announces a redirect needs its link selected first.
+        assert text.count(".") >= 3, path.name
         assert strings["options"]["error"]["singlekey_page"] == text, path.name
+
+
+def test_the_sign_in_guide_names_a_redirect_page_that_stays() -> None:
+    """Step 4 of the guide: a page announcing a redirect needs its link."""
+    for path in [PACKAGE / "strings.json", *(PACKAGE / "translations").glob("*.json")]:
+        strings = json.loads(path.read_text("utf-8"))
+        guide = strings["config"]["step"]["auth"]["description"]
+        assert strings["options"]["step"]["cloud_auth"]["description"] == guide
+        (step,) = [line for line in guide.splitlines() if line.startswith("4. ")]
+        assert "SingleKey ID" in step, path.name
+    english = json.loads((PACKAGE / "strings.json").read_text("utf-8"))
+    assert "announcing a redirect" in english["config"]["step"]["auth"]["description"]
+    assert "redirected" in english["config"]["error"]["singlekey_page"]

@@ -90,7 +90,7 @@ async def test_spaces_and_line_breaks_at_the_edges_are_removed(
             "unlocked": True,
         },
     )
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert len(forms) == 1
     assert forms[0]["username"] == LABEL.login
     assert forms[0]["password"] == LABEL.password.replace("-", "")

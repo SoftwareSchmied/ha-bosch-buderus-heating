@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Zaloguj się za pomocą SingleKey ID",
-        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
+        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`. Jeśli SingleKey ID pokaże stronę zapowiadającą przekierowanie i nic się nie dzieje, wybierz link lub przycisk na tej stronie.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
         "data": {
           "redirect_url": "Pełny adres przekierowania"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Skonfiguruj ponownie i wykryj na nowo",
-        "description": "Wybierz markę aplikacji, bramki i profil odpytywania. Zapisanie przeładowuje integrację i wykonuje pełne wykrywanie zasobów. Użyj tego po aktualizacji oprogramowania układowego lub gdy zmieniły się obiegi, układy ciepłej wody, źródła ciepła albo bramki. **Standardowy** odczytuje bieżące wartości robocze co minutę. **Oszczędzający chmurę** zmniejsza ruch do chmury, odczytując je co dwie minuty, a wszystkie pozostałe zmienne wartości rzadziej. Zmiana marki aplikacji wymaga ponownego logowania przez SingleKey ID.",
+        "description": "Wybierz markę aplikacji, bramki i profil odpytywania. Zapisanie przeładowuje integrację i ponownie wyszukuje wszystkie zasoby, na przykład po aktualizacji oprogramowania sprzętowego lub zmianie instalacji. Zmiana marki aplikacji wymaga nowego logowania SingleKey ID.",
         "data": {
           "brand": "Marka aplikacji",
           "gateway_ids": "Bramki",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Wybierz istniejącą konfigurację",
-        "description": "Wybierz konfigurację, do której należy ta lokalna bramka. Nie zostanie utworzona kolejna instalacja.",
+        "description": "Wybierz konfigurację, do której należy ta lokalna bramka, albo skonfiguruj ją jako nową konfigurację tylko z dostępem lokalnym.",
         "data": {
-          "owner": "Istniejąca konfiguracja"
+          "owner": "Konfiguracja"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Potwierdzam tę bramkę i jej certyfikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Potwierdź certyfikat portu danych",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.\n\nJeśli certyfikat nie należy do Twojej bramki, zamknij okno; nic nie zostanie wysłane.",
+        "data": {
+          "confirm": "Potwierdzam tę bramkę i jej certyfikat"
+        }
+      },
       "local_auth": {
         "title": "Zaloguj się za pomocą etykiety urządzenia",
         "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Jeśli poprawienie literówki trwa dłużej niż pięć minut, naciśnij przyciski ponownie. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i Pass nie są zapisywane.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Potwierdź połączenie lokalne",
-        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji.",
-        "data": {
-          "confirm": "Zapisz to połączenie lokalne"
-        }
+        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji. Aby niczego nie zapisywać, zamknij zamiast tego okno dialogowe."
       },
       "local_retry": {
         "title": "Sprawdzenie lokalne nie mogło zostać zakończone",
@@ -151,7 +155,7 @@
       "cannot_connect": "Dostęp przez chmurę jest nieosiągalny. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
       "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
       "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
-      "singlekey_page": "To jest adres strony SingleKey ID, a nie adres aplikacji. Zamiast tego skopiuj w konsoli Chrome adres `{redirect_scheme}://` z czerwonego komunikatu **Failed to launch**.",
+      "singlekey_page": "To jest adres strony SingleKey ID, a nie adres aplikacji. Jeśli ta strona zapowiada przekierowanie i nic się nie dzieje, wybierz jej link lub przycisk. Następnie skopiuj w konsoli Chrome adres `{redirect_scheme}://` z czerwonego komunikatu **Failed to launch**.",
       "gateway_changed": "Lista bramek zmieniła się, gdy to okno było otwarte. Zamknij okno i ponownie otwórz opcję Skonfiguruj ponownie.",
       "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
       "unknown": "Wystąpił nieoczekiwany błąd dostępu przez chmurę. Zaczekaj chwilę i spróbuj ponownie.",
@@ -173,6 +177,7 @@
       "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
       "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
       "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
+      "local_certificate_unconfirmed": "Zaznacz pole, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
       "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
       "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
       "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
@@ -374,6 +379,10 @@
           "time": "Godzina",
           "temperature": "Temperatura"
         }
+      },
+      "rrc_confirm": {
+        "title": "Zapisz punkt przełączania",
+        "description": "**{program}**\n\n**Przed:** {before}\n\n**Po:** {after}\n\nZmiana jest wysyłana raz, a następnie odczytywana ponownie. Dotyczy wszystkich przypisanych stref."
       },
       "rrc_day": {
         "title": "Wybierz punkt przełączenia",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Częstotliwość odpytywania",
-        "description": "Profil standardowy odczytuje bieżące wartości robocze instalacji grzewczej co minutę, ustawienia i wartości energii co 5 minut, a wolniej zmieniające się informacje co 15 minut. Profil oszczędzający chmurę podwaja te odstępy. Aktywne usterki są sprawdzane co minutę w obu profilach. Profil dotyczy odpytywania instalacji grzewczej i stacji ładowania w wybranym połączeniu z chmurą; dodatkowe urządzenia w chmurze zgłaszają zmiany jako komunikaty. Logowanie, sprawdzanie urządzeń i potwierdzenie po zmianie mogą dodać żądania poza tym harmonogramem. Jeśli cykl odpytywania trwa dłużej niż jego odstęp, następny rozpoczyna się później.",
+        "description": "**Standardowy** odczytuje bieżące wartości pracy co minutę, a ustawienia i wartości energii co 5 minut. **Oszczędny dla chmury** podwaja te odstępy. Aktywne usterki są sprawdzane co minutę w obu profilach.",
         "data": {
           "polling_profile": "Profil odpytywania"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Zaloguj się za pomocą SingleKey ID",
-        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
+        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`. Jeśli SingleKey ID pokaże stronę zapowiadającą przekierowanie i nic się nie dzieje, wybierz link lub przycisk na tej stronie.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
         "data": {
           "redirect_url": "Pełny adres przekierowania"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Wybierz istniejącą konfigurację",
-        "description": "Wybierz konfigurację, do której należy ta lokalna bramka. Nie zostanie utworzona kolejna instalacja.",
+        "description": "Wybierz konfigurację, do której należy ta lokalna bramka, albo skonfiguruj ją jako nową konfigurację tylko z dostępem lokalnym.",
         "data": {
-          "owner": "Istniejąca konfiguracja"
+          "owner": "Konfiguracja"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Potwierdzam tę bramkę i jej certyfikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Potwierdź certyfikat portu danych",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.\n\nJeśli certyfikat nie należy do Twojej bramki, zamknij okno; nic nie zostanie wysłane.",
+        "data": {
+          "confirm": "Potwierdzam tę bramkę i jej certyfikat"
+        }
+      },
       "local_auth": {
         "title": "Zaloguj się za pomocą etykiety urządzenia",
         "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Jeśli poprawienie literówki trwa dłużej niż pięć minut, naciśnij przyciski ponownie. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i Pass nie są zapisywane.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Potwierdź połączenie lokalne",
-        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji.",
-        "data": {
-          "confirm": "Zapisz to połączenie lokalne"
-        }
+        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji. Aby niczego nie zapisywać, zamknij zamiast tego okno dialogowe."
       },
       "local_retry": {
         "title": "Sprawdzenie lokalne nie mogło zostać zakończone",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Odpytywanie lokalne",
-        "description": "Potwierdzone zasoby: {known}. Obecnie dostępne: {available}. Te liczby pokazują stan z chwili otwarcia tego okna. Odstęp to wartość docelowa dla wartości bieżących. Ustawienia, wartości energii i diagnostyka są odczytywane co 5 minut, a liczniki co 15 minut, lub w tym odstępie, jeśli jest dłuższy; szczegóły statyczne są odczytywane raz dziennie. Wartość staje się niedostępna po trzech pominiętych odstępach. Duże zestawy zasobów mogą trwać dłużej. Odpytywanie chmury pozostaje niezależne. Odczyty, które udostępnia także chmura, są odczytywane lokalnie co najmniej tak często jak w chmurze.",
+        "description": "Potwierdzone zasoby: {known}, obecnie dostępne: {available}. Interwał jest celem dla bieżących wartości; wolniejsze wartości są odczytywane rzadziej. Dokładne odstępy opisuje dokumentacja.",
         "data": {
           "interval": "Docelowy odstęp dla wartości bieżących"
         }
       },
       "local_values": {
         "title": "Wartości lokalne dla istniejących encji",
-        "description": "Gdy chmura działa, ta opcja decyduje, czy istniejące czujniki używają wartości lokalnej odczytu, który oba dostępy udostępniają w tym samym udokumentowanym zasobie. Bez chmury (wyłączonej, wymagającej logowania, wstrzymanej, ograniczonej lub nieosiągalnej) zawsze używane są wartości lokalne. Opcja jest domyślnie włączona dla nowych konfiguracji z dostępem przez chmurę i lokalnym.\n\nPo włączeniu wartość lokalna jest używana, dopóki jest aktualna. Jeśli wartość lokalna jest nieaktualna lub jej brak, używana jest aktualna wartość z chmury; jeśli obie są nieaktualne, czujnik staje się niedostępny. Liczniki energii, uruchomień i czasu pracy również używają wartości lokalnej, ale zmieniają źródło tylko wtedy, gdy każdy pokazywany stan jest co najmniej równy ostatnio pokazanemu, więc zmiana źródła nigdy nie sprawia, że liczą wstecz. Regulowane ustawienia nadal korzystają z chmury. Identyfikatory encji, nazwy i historia pozostają bez zmian. Sterowanie i zmiany są nadal wysyłane przez chmurę.",
+        "description": "Dopóki chmura działa, ta opcja decyduje, czy istniejące czujniki używają lokalnej wartości wielkości dostarczanej przez oba dostępy. Bez chmury zawsze używane są wartości lokalne; ustawienia i sterowanie nadal przechodzą przez chmurę. Identyfikatory encji, nazwy i historia pozostają bez zmian.",
         "data": {
           "enabled": "Używaj wartości lokalnych"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
       "reauth_targets_missing": "To logowanie nie znalazło żadnej z włączonych instalacji i żadnego z włączonych urządzeń. Poprzednie dane logowania zostają zachowane. Sprawdź, czy zalogowałeś się na to samo konto co wcześniej. Jeśli instalacje zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę: włącz w sekcji **Używaj dla instalacji i urządzeń** instalację, która nadal jest na koncie, albo wyłącz usunięte i usuń je opcją **Zapomnij odznaczone instalacje**. Jeśli żadna nie pozostała, usuń dostęp przez chmurę i połącz go ponownie.",
       "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
-      "singlekey_page": "To jest adres strony SingleKey ID, a nie adres aplikacji. Zamiast tego skopiuj w konsoli Chrome adres `{redirect_scheme}://` z czerwonego komunikatu **Failed to launch**.",
+      "singlekey_page": "To jest adres strony SingleKey ID, a nie adres aplikacji. Jeśli ta strona zapowiada przekierowanie i nic się nie dzieje, wybierz jej link lub przycisk. Następnie skopiuj w konsoli Chrome adres `{redirect_scheme}://` z czerwonego komunikatu **Failed to launch**.",
       "cannot_connect": "Dostęp przez chmurę jest nieosiągalny. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
       "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
       "no_gateways": "Nie znaleziono żadnych urządzeń. Sprawdź, czy wybrana marka i konto SingleKey ID odpowiadają Twojej aplikacji. Regulator pokojowy ze starszym oprogramowaniem układowym pojawi się dopiero po aktualizacji oprogramowania i skonfigurowaniu go w aktualnej aplikacji przy użyciu Twojego SingleKey ID.",
@@ -937,6 +950,7 @@
       "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
       "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
       "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
+      "local_certificate_unconfirmed": "Zaznacz pole, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
       "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
       "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
       "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Wstecz",
         "create": "Nowy urlop"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Kontynuuj z zapisanym tokenem",
         "discard": "Odrzuć oczekującą próbę",
         "later": "Kontynuuj później"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nowa instalacja (tylko lokalnie)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nowa konfiguracja (tylko dostęp lokalny)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Wstecz"
       }
     }
   },

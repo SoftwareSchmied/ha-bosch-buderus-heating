@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Přihlášení pomocí SingleKey ID",
-        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`. Pokud SingleKey ID zobrazí stránku oznamující přesměrování a nic se nestane, zvolte odkaz nebo tlačítko na této stránce.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
         "data": {
           "redirect_url": "Úplná přesměrovací adresa"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Překonfigurovat a znovu vyhledat",
-        "description": "Zvolte značku aplikace, brány a profil dotazování. Uložením se integrace znovu načte a provede se úplné nové vyhledání prostředků. Použijte to po aktualizaci firmwaru nebo když se změnily okruhy, systémy teplé vody, zdroje tepla či brány. **Standardní** čte aktuální provozní hodnoty každou minutu. **Šetrný ke cloudu** snižuje provoz cloudu tím, že je čte každé dvě minuty a všechny ostatní měnící se hodnoty méně často. Změna značky aplikace vyžaduje nové přihlášení pomocí SingleKey ID.",
+        "description": "Vyberte značku aplikace, brány a profil dotazování. Uložení znovu načte integraci a znovu vyhledá všechny prostředky, například po aktualizaci firmwaru nebo změně instalace. Změna značky aplikace vyžaduje nové přihlášení přes SingleKey ID.",
         "data": {
           "brand": "Značka aplikace",
           "gateway_ids": "Brány",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Výběr existující konfigurace",
-        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří, nebo ji nastavte jako novou konfiguraci pouze s místním přístupem.",
         "data": {
-          "owner": "Existující konfigurace"
+          "owner": "Konfigurace"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrzení certifikátu datového portu",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
         "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Potvrzení místního připojení",
-        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
-        "data": {
-          "confirm": "Uložit toto místní připojení"
-        }
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace. Pokud nechcete nic uložit, místo toho dialog zavřete."
       },
       "local_retry": {
         "title": "Místní kontrolu nebylo možné dokončit",
@@ -151,7 +155,7 @@
       "cannot_connect": "Cloudový přístup není dostupný. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
       "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
       "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
-      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Místo toho zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Pokud tato stránka oznamuje přesměrování a nic se nestane, zvolte její odkaz nebo tlačítko. Potom zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
       "gateway_changed": "Seznam bran se během otevření tohoto okna změnil. Zavřete okno a znovu otevřete Překonfigurovat.",
       "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
       "unknown": "V cloudovém přístupu došlo k neočekávané chybě. Chvíli počkejte a zkuste to znovu.",
@@ -173,6 +177,7 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
@@ -374,6 +379,10 @@
           "time": "Čas",
           "temperature": "Teplota"
         }
+      },
+      "rrc_confirm": {
+        "title": "Uložit spínací bod",
+        "description": "**{program}**\n\n**Před:** {before}\n\n**Po:** {after}\n\nZměna se odešle jednou a poté se zpětně načte. Platí pro všechny přiřazené zóny."
       },
       "rrc_day": {
         "title": "Výběr spínacího bodu",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Frekvence dotazování",
-        "description": "Standardní profil čte aktuální provozní hodnoty topení každou minutu, nastavení a hodnoty energie každých 5 minut a pomalejší informace každých 15 minut. Šetrný ke cloudu tyto intervaly zdvojnásobuje. Aktivní poruchy se v obou profilech kontrolují každou minutu. Profil se vztahuje na dotazování topení a nabíjecích stanic u vybraného cloudového připojení; další cloudová zařízení hlásí změny zprávami. Přihlášení, kontroly zařízení a potvrzení po změně mohou přidat dotazy mimo tento rozvrh. Pokud cyklus dotazování trvá déle než jeho interval, další začne později.",
+        "description": "**Standardní** čte aktuální provozní hodnoty každou minutu a nastavení a energetické hodnoty každých 5 minut. **Šetrný ke cloudu** tyto intervaly zdvojnásobí. Aktivní poruchy se v obou profilech kontrolují každou minutu.",
         "data": {
           "polling_profile": "Profil dotazování"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Přihlášení pomocí SingleKey ID",
-        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`. Pokud SingleKey ID zobrazí stránku oznamující přesměrování a nic se nestane, zvolte odkaz nebo tlačítko na této stránce.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
         "data": {
           "redirect_url": "Úplná přesměrovací adresa"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Výběr existující konfigurace",
-        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří, nebo ji nastavte jako novou konfiguraci pouze s místním přístupem.",
         "data": {
-          "owner": "Existující konfigurace"
+          "owner": "Konfigurace"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrzení certifikátu datového portu",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
         "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Potvrzení místního připojení",
-        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
-        "data": {
-          "confirm": "Uložit toto místní připojení"
-        }
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace. Pokud nechcete nic uložit, místo toho dialog zavřete."
       },
       "local_retry": {
         "title": "Místní kontrolu nebylo možné dokončit",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Místní dotazování",
-        "description": "Potvrzené prostředky: {known}. Aktuálně dostupné: {available}. Tyto počty ukazují stav při otevření tohoto okna. Interval je cílem pro aktuální hodnoty. Nastavení, hodnoty energie a diagnostika se čtou každých 5 minut a počítadla každých 15 minut, případně v tomto intervalu, je-li delší; statické údaje se čtou denně. Hodnota se stane nedostupnou po třech zmeškaných intervalech. Rozsáhlé sady prostředků mohou trvat déle. Dotazování cloudu zůstává nezávislé. Hodnoty, které poskytuje i cloud, se místně čtou alespoň tak často jako v cloudu.",
+        "description": "Potvrzené prostředky: {known}, nyní dostupné: {available}. Interval je cílem pro aktuální hodnoty; pomalejší hodnoty se čtou méně často. Přesné intervaly popisuje dokumentace.",
         "data": {
           "interval": "Cílový interval pro aktuální hodnoty"
         }
       },
       "local_values": {
         "title": "Místní hodnoty pro existující entity",
-        "description": "Dokud cloud běží, tato volba určuje, zda existující senzory používají místní hodnotu údaje, který oba přístupy poskytují pod stejným zdokumentovaným prostředkem. Bez cloudu (vypnutého, vyžadujícího přihlášení, pozastaveného, omezeného nebo nedostupného) se místní hodnoty používají vždy. Volba je u nových konfigurací s cloudovým i místním přístupem ve výchozím stavu zapnuta.\n\nPři zapnutí se místní hodnota používá, dokud je aktuální. Je-li místní hodnota zastaralá nebo chybí, použije se aktuální hodnota z cloudu; jsou-li zastaralé obě, senzor se stane nedostupným. Počítadla energie, startů a doby provozu používají také místní hodnotu, ale zdroj mění jen tehdy, když je každý zobrazený počet alespoň tak velký jako naposledy zobrazený, takže změna zdroje nikdy nezpůsobí zpětný chod počítadla. Nastavitelné hodnoty nadále používají cloud. ID entit, názvy a historie zůstávají beze změny. Ovládání a změny se stále odesílají přes cloud.",
+        "description": "Dokud cloud běží, tato volba určuje, zda stávající senzory používají místní hodnotu veličiny, kterou poskytují oba přístupy. Bez cloudu se vždy používají místní hodnoty; nastavení a ovládání dál probíhají přes cloud. ID entit, názvy a historie zůstávají beze změny.",
         "data": {
           "enabled": "Použít místní hodnoty"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
       "reauth_targets_missing": "Při tomto přihlášení nebyla nalezena žádná ze zapnutých soustav a zařízení. Předchozí přihlašovací údaje zůstávají zachovány. Zkontrolujte, zda jste se přihlásili ke stejnému účtu jako dříve. Pokud byly soustavy z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup: u položky **Použít pro soustavy a zařízení** zapněte soustavu, která v účtu stále je, nebo odebrané soustavy vypněte a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Pokud žádná nezůstane, odstraňte cloudový přístup a připojte jej znovu.",
       "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
-      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Místo toho zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Pokud tato stránka oznamuje přesměrování a nic se nestane, zvolte její odkaz nebo tlačítko. Potom zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
       "cannot_connect": "Cloudový přístup není dostupný. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
       "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
       "no_gateways": "Nebyla nalezena žádná zařízení. Zkontrolujte, zda vybraná značka a účet SingleKey ID odpovídají vaší aplikaci. Prostorový regulátor se starším firmwarem se zobrazí až po aktualizaci firmwaru a po jeho nastavení v aktuální aplikaci s vaším SingleKey ID.",
@@ -937,6 +950,7 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Zpět",
         "create": "Nová dovolená"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Pokračovat s uloženým tokenem",
         "discard": "Zahodit čekající pokus",
         "later": "Pokračovat později"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nová soustava (pouze místní)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nová konfigurace (pouze místní přístup)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Zpět"
       }
     }
   },

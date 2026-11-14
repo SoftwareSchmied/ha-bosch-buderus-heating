@@ -47,12 +47,21 @@ def make_flow(hass, environment):
 async def open_point(flow):
     first = await flow.async_step_rrc_programs()
     options = next(iter(first["data_schema"].schema.values())).config["options"]
-    assert len(options) == 1
-    result = await flow.async_step_rrc_programs({"program": options[0]["value"]})
+    # The first choice leads back to the main menu.
+    assert [item["value"] for item in options[:1]] == ["back"]
+    assert len(options) == 2
+    result = await flow.async_step_rrc_programs({"program": options[1]["value"]})
     assert result["step_id"] == "rrc_schedule"
     assert "07:05" in result["description_placeholders"]["mo"]
     await flow.async_step_rrc_schedule({"day": "mo"})
     return await flow.async_step_rrc_day({"point": "1"})
+
+
+async def send(flow, values):
+    """Enter a point and confirm it on the before/after page."""
+    shown = await flow.async_step_rrc_point(values)
+    assert shown["step_id"] == "rrc_confirm", shown
+    return await flow.async_step_rrc_confirm({})
 
 
 @pytest.mark.parametrize("language", ["de", "en"])
@@ -72,7 +81,13 @@ async def test_native_flow_uses_hour_minute_and_commits_only_requested_point(
     fields = {str(key): value for key, value in result["data_schema"].schema.items()}
     assert fields["time"].config["type"] == "time"
     assert list(fields) == ["time", "temperature"]
-    result = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
+    confirm = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
+    # Before and after first; nothing is sent yet.
+    assert confirm["step_id"] == "rrc_confirm" and confirm["last_step"] is True
+    assert confirm["description_placeholders"]["before"] == "07:05 (21.5 °C)"
+    assert confirm["description_placeholders"]["after"] == "07:10 (22 °C)"
+    assert coordinator.data[WEEK].resource.value[1] != {"d": "Mo", "t": 430, "Th": 22}
+    result = await flow.async_step_rrc_confirm({})
     # The outcome page first; OK leads back to the main menu.
     assert await outcome(hass, result) == "rrc_program_saved"
     assert (await leave_page(hass, result, flow))["step_id"] == "init"
@@ -128,8 +143,12 @@ async def test_write_failure_has_specific_translated_error(
     flow, coordinator = make_flow(hass, environment)
     await open_point(flow)
     coordinator.async_edit_rrc_program = AsyncMock(side_effect=error)
-    result = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
+    result = await send(flow, {"time": "07:10", "temperature": 22})
+    # Back at the point with the reason and the entered values.
+    assert result["step_id"] == "rrc_point"
     assert result["errors"] == {"base": key}
+    fields = {str(key): key for key in result["data_schema"].schema}
+    assert fields["time"].description["suggested_value"] == "07:10"
     coordinator.async_edit_rrc_program.assert_awaited_once_with(
         RESOURCES[WEEK], 1, 430, 22
     )
@@ -141,7 +160,7 @@ async def test_a_change_during_the_protection_pause_says_so(hass, environment):
     flow, coordinator = make_flow(hass, environment)
     await open_point(flow)
     coordinator._circuit_open_until = monotonic() + 600
-    result = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
+    result = await send(flow, {"time": "07:10", "temperature": 22})
     assert result["errors"] == {"base": "switch_program_paused"}
     coordinator.client.put_resource_value.assert_not_awaited()
 
@@ -173,7 +192,9 @@ async def test_multiple_gateways_and_disappearing_programs_are_explicit(
     flow, coordinator = make_flow(hass, environment)
     flow._entry.runtime_data.coordinators = (coordinator, coordinator)
     assert len(flow._rrc_choices()) == 2
-    assert all("[" in item.label for item in flow._rrc_choices().values())
+    # Each program with the name of its system, without technical numbers.
+    labels = [item.label for item in flow._rrc_choices().values()]
+    assert all(" / " in label and "[" not in label for label in labels)
     coordinator.data = {}
     result = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
     assert await outcome(hass, result) == "no_rrc_schedules"
@@ -185,7 +206,13 @@ async def test_all_rrc_flow_and_enum_translations_are_available(
 ):
     options = await async_get_translations(hass, language, "options", {DOMAIN})
     prefix = f"component.{DOMAIN}.options."
-    for step in ("rrc_programs", "rrc_schedule", "rrc_readonly", "rrc_point"):
+    for step in (
+        "rrc_programs",
+        "rrc_schedule",
+        "rrc_readonly",
+        "rrc_point",
+        "rrc_confirm",
+    ):
         assert options[prefix + f"step.{step}.title"]
     for error in (
         "rrc_time",
@@ -225,8 +252,9 @@ async def test_a_gateway_model_cannot_add_markup_to_the_program_dialogs(
     point = await flow.async_step_rrc_day({"point": "1"})
     for result in (week, day, point):
         shown = result["description_placeholders"]["program"]
-        assert _rendered(shown).startswith(f"{model} [1] / ")
-        assert _rendered(shown).endswith("(#3)")
+        # The system name (here the fallback) instead of the cloud model.
+        assert _rendered(shown).startswith("Heating system 1 / ")
+        assert model not in _rendered(shown)
         active = _strip(shown)
         assert "![" not in active and "](" not in active and "://" not in active
 
@@ -241,7 +269,7 @@ async def test_the_program_dialog_shows_the_controller_program_names(hass, envir
 
     flow, coordinator = make_flow(hass, environment)
     labels = {choice.label for choice in flow._rrc_choices().values()}
-    assert labels == {"Program 3 (#3)"}  # the name the controller reports
+    assert labels == {"Program 3"}  # the name the controller reports
     markup = "![](https://t.invalid/p)"
     listed = program_list(value=[{"id": 3, "name": markup}, {"id": 7, "name": "Bad"}])
     saved = coordinator.data.pop(listed.path)
@@ -249,8 +277,8 @@ async def test_the_program_dialog_shows_the_controller_program_names(hass, envir
     assert {choice.label for choice in flow._rrc_choices().values()} == {"#3"}
     coordinator.data[listed.path] = replace(saved, resource=listed)
     (choice,) = flow._rrc_choices().values()
-    assert choice.label == f"{markup} (#3)"
+    assert choice.label == markup
     week = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
     shown = week["description_placeholders"]["program"]
-    assert _rendered(shown) == f"{markup} (#3)"
+    assert _rendered(shown) == markup
     assert "![" not in _strip(shown) and "://" not in _strip(shown)

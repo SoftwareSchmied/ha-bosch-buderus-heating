@@ -1868,7 +1868,9 @@ async def test_new_holiday_selector_uses_profile_translations(
     assert labels["create"] == expected
     existing = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     assert labels[existing].startswith("Urlaub ")
-    assert len(labels) == 2
+    # The first choice leads back, in the profile language as well.
+    assert labels["back"] in ("← Back", "← Zurück")
+    assert len(labels) == 3
     result = await _configure_options(
         hass, result["flow_id"], {CONF_HOLIDAY_PERIOD: "create"}
     )

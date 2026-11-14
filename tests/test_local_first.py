@@ -75,7 +75,7 @@ async def local_setup(hass, entry, *, target=None):
     result = await submit(hass, manager, result, {"address": "gateway.example.invalid"})
     result = await submit(hass, manager, result, {"method": "token"})
     result = await submit(hass, manager, result, {"token": TOKEN})
-    if result.get("step_id") == "local_certificate":
+    if result.get("step_id") == "local_certificate_data":
         # A saved certificate of the same access needs no new confirmation.
         result = await submit(hass, manager, result, {"confirm": True})
     return manager, result
@@ -615,7 +615,7 @@ async def test_an_interrupted_new_system_attempt_is_resumed(
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
-    if result.get("step_id") == "local_certificate":
+    if result.get("step_id") == "local_certificate_data":
         result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result", result
     result = await submit(hass, manager, result, {"confirm": True})

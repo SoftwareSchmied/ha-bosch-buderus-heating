@@ -35,8 +35,8 @@ from .configuration import (
 )
 from .configuration_access import EntryConfiguration
 from .configuration_management import ConnectionEdit, not_found_bindings
-from .const import CONF_BRAND, DOMAIN
 from .connection_flow import ConnectionOptionsFlow
+from .const import CONF_BRAND, DOMAIN
 from .local_identity import verify_local_first_merges
 from .pointt import (
     AuthenticationError,

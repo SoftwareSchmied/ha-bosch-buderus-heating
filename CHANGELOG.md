@@ -5,6 +5,74 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Changed
+
+#### Setup and settings dialogs
+
+I tested the following changes with the automated tests and simulated data
+only; I have not yet checked them in the browser or on a real installation.
+
+- **Outcomes in the language of your profile:** a finished action (a saved
+  setting, a holiday, a schedule, a planned search) and a connection test now
+  show their outcome on a page of their own, with a fixed text in the
+  language of your user profile. **OK** returns to the menu. Before, the
+  outcome was a note in the menu, built in the language of the server. The
+  **Back** entries and fixed choices such as a new system without the cloud
+  follow the profile language as well. The list of accesses with their
+  state, the status line of an access and the overviews of a schedule still
+  use the server language; Home Assistant gives a dialog no access to the
+  profile language for texts built from current data.
+- **Sign in again in the dialog:** **Configure → Connections → cloud access →
+  Sign in again** now opens the SingleKey ID sign-in right there, instead of
+  ending with a hint to look under **Attention required**. The account is
+  checked as before; another account is refused and the previous sign-in is
+  kept. A device search that finds the sign-in expired continues with the
+  same sign-in page.
+- **Local access from the connections menu:** **Configure → Connections**
+  now offers **Set up local access** as well.
+- **A way back from selection forms:** the lists of holiday periods,
+  schedules, room controller schedules, systems to operate and gateway tokens
+  start with **← Back**; before, only X helped, and it closed the whole
+  dialog.
+- **"Next" on intermediate steps:** forms after which another form follows
+  now show **Next**.
+- **A shorter local setup:** the last page saves with **OK**, without an
+  extra box. Not confirming a certificate shows a note instead of the same
+  page again; nothing is sent. The second certificate page, for the data
+  port, has its own title.
+- **Shorter descriptions:** the pages for local values, local polling, the
+  cloud polling profile and reconfiguring say what matters in two or three
+  sentences; the details moved to the new
+  [settings dialog](docs/dialogs.md) page.
+- **Names instead of identifiers:** the systems of an access and the targets
+  of a local setup are listed by their device name. Room controller programs
+  show their name without the program number, and with several gateways the
+  schedules name their system instead of a model and a number. Two systems
+  with the same name keep their identifier.
+- **Room controller switch points with before and after:** a changed switch
+  point is shown before and after the change first, as for the heating
+  schedules; it is sent only after **OK**.
+- **A found gateway as a new entry:** when Home Assistant finds a gateway
+  and entries exist already, the notice can also set it up as a new entry
+  with local access only. Its address is preselected in the local setup when
+  it is the only gateway found.
+
+### Fixed
+
+- **Sign-in with the address of the SingleKey ID page:** pasting the address
+  of a SingleKey ID page (for example `…/redirection?f=…`) instead of the app
+  address now shows a specific hint: copy the `com.bosch…://` or
+  `com.buderus…://` address from the **Failed to launch** message in the
+  Chrome console. The sign-in link stays valid. Thank you to xmaka for the
+  report in
+  [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
+  - The hint, the sign-in guide in the dialog and the
+    [setup guide](docs/setup.md) also cover a SingleKey ID page that
+    announces a redirect that never happens: select the link or button on
+    that page first.
+  - I tested it with automated tests; it is not yet confirmed with a real
+    sign-in.
+
 ## [0.9.2-beta.1] - 2026-11-14
 
 > [!IMPORTANT]

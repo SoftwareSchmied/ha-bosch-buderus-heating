@@ -41,7 +41,13 @@ from custom_components.bosch_buderus_heating.repairs import (
     LocalAddressRepairFlow,
     async_create_fix_flow,
 )
-from tests.test_connection_status import LAN, Runtime, entry_with, ready_local
+from tests.test_connection_status import (
+    LAN,
+    Runtime,
+    entry_with,
+    outcome_text,
+    ready_local,
+)
 from tests.test_local_discovery import discover, finish_options
 from tests.test_local_flow import journal as journal
 from tests.test_local_flow import registered
@@ -181,7 +187,7 @@ async def test_address_hint_after_a_failed_test(hass, result, shown) -> None:
     hass.config.language = "en"
     runtime = Runtime(hass, local=ready_local())
     runtime.local_driver.test_connection.return_value = (result, 40)
-    text = await status.test_connection(hass, entry_with(runtime), LAN)
+    text = await outcome_text(hass, entry_with(runtime), LAN)
     assert (HINT_EN in text) is shown
 
 

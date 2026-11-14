@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Prijava putem SingleKey ID",
-        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
+        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`. Ako SingleKey ID prikaže stranicu koja najavljuje preusmjeravanje, a ništa se ne dogodi, odaberite poveznicu ili gumb na toj stranici.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
         "data": {
           "redirect_url": "Cijela adresa preusmjeravanja"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Ponovna konfiguracija i ponovno otkrivanje",
-        "description": "Odaberite marku aplikacije, pristupnike i profil dohvaćanja. Spremanje ponovno učitava integraciju i provodi potpuno otkrivanje resursa. Koristite to nakon ažuriranja firmvera ili kada su se promijenili krugovi, sustavi potrošne tople vode, izvori topline ili pristupnici. **Standardno** dohvaća trenutne radne vrijednosti svake minute. **Poštedno za oblak** smanjuje promet prema oblaku dohvaćanjem svake dvije minute, a sve ostale promjenjive vrijednosti rjeđe. Promjena marke aplikacije zahtijeva novu prijavu putem SingleKey ID.",
+        "description": "Odaberite marku aplikacije, pristupnike i profil upita. Spremanje ponovno učitava integraciju i ponovno traži sve resurse, primjerice nakon ažuriranja firmvera ili promjene instalacije. Promjena marke aplikacije zahtijeva novu prijavu putem SingleKey ID-a.",
         "data": {
           "brand": "Marka aplikacije",
           "gateway_ids": "Pristupnici",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Odabir postojeće konfiguracije",
-        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik. Time se neće stvoriti nova instalacija.",
+        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik ili ga postavite kao novu konfiguraciju samo s lokalnim pristupom.",
         "data": {
-          "owner": "Postojeća konfiguracija"
+          "owner": "Konfiguracija"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrda certifikata podatkovnog priključka",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.\n\nAko certifikat ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
         "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Ako ispravljanje pogreške pri unosu traje dulje od pet minuta, ponovno pritisnite tipke. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i Pass se ne spremaju.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Potvrda lokalne veze",
-        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji.",
-        "data": {
-          "confirm": "Spremi ovu lokalnu vezu"
-        }
+        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji. Ako ništa ne želite spremiti, umjesto toga zatvorite dijalog."
       },
       "local_retry": {
         "title": "Lokalna provjera nije se mogla dovršiti",
@@ -151,7 +155,7 @@
       "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
       "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
       "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
-      "singlekey_page": "Ovo je adresa stranice SingleKey ID, a ne adresa aplikacije. Umjesto toga u konzoli preglednika Chrome kopirajte adresu `{redirect_scheme}://` iz crvene poruke **Failed to launch**.",
+      "singlekey_page": "Ovo je adresa stranice SingleKey ID, a ne adresa aplikacije. Ako ta stranica najavljuje preusmjeravanje, a ništa se ne dogodi, odaberite njezinu poveznicu ili gumb. Zatim u konzoli preglednika Chrome kopirajte adresu `{redirect_scheme}://` iz crvene poruke **Failed to launch**.",
       "gateway_changed": "Popis pristupnika promijenio se dok je ovaj dijalog bio otvoren. Zatvorite dijalog i ponovno otvorite Ponovnu konfiguraciju.",
       "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
       "unknown": "Došlo je do neočekivane greške u pristupu putem oblaka. Pričekajte trenutak i pokušajte ponovno.",
@@ -173,6 +177,7 @@
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
       "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
+      "local_certificate_unconfirmed": "Označite okvir kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
       "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
       "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
       "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
@@ -374,6 +379,10 @@
           "time": "Vrijeme",
           "temperature": "Temperatura"
         }
+      },
+      "rrc_confirm": {
+        "title": "Spremi točku uklapanja",
+        "description": "**{program}**\n\n**Prije:** {before}\n\n**Poslije:** {after}\n\nPromjena se šalje jednom, a zatim se ponovno očitava. Vrijedi za sve dodijeljene zone."
       },
       "rrc_day": {
         "title": "Odabir točke uklapanja",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Učestalost dohvaćanja",
-        "description": "Standardno dohvaća trenutne radne vrijednosti grijanja svake minute, postavke i vrijednosti energije svakih 5 minuta, a sporije informacije svakih 15 minuta. Poštedno za oblak udvostručuje te intervale. Aktivne smetnje provjeravaju se svake minute u oba profila. Profil se odnosi na dohvaćanje podataka grijanja i zidnog punjača za odabranu vezu s oblakom; dodatni uređaji u oblaku prijavljuju promjene kao poruke. Prijava, provjere uređaja i potvrda nakon promjene mogu dodati zahtjeve izvan ovog rasporeda. Ako ciklus dohvaćanja traje dulje od svog intervala, sljedeći počinje kasnije.",
+        "description": "**Standardno** čita trenutne radne vrijednosti svake minute, a postavke i energetske vrijednosti svakih 5 minuta. **Štedljivo prema oblaku** udvostručuje te razmake. Aktivni kvarovi provjeravaju se svake minute u oba profila.",
         "data": {
           "polling_profile": "Profil dohvaćanja"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Prijava putem SingleKey ID",
-        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
+        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`. Ako SingleKey ID prikaže stranicu koja najavljuje preusmjeravanje, a ništa se ne dogodi, odaberite poveznicu ili gumb na toj stranici.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
         "data": {
           "redirect_url": "Cijela adresa preusmjeravanja"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Odabir postojeće konfiguracije",
-        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik. Time se neće stvoriti nova instalacija.",
+        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik ili ga postavite kao novu konfiguraciju samo s lokalnim pristupom.",
         "data": {
-          "owner": "Postojeća konfiguracija"
+          "owner": "Konfiguracija"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrda certifikata podatkovnog priključka",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.\n\nAko certifikat ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
         "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Ako ispravljanje pogreške pri unosu traje dulje od pet minuta, ponovno pritisnite tipke. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i Pass se ne spremaju.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Potvrda lokalne veze",
-        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji.",
-        "data": {
-          "confirm": "Spremi ovu lokalnu vezu"
-        }
+        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji. Ako ništa ne želite spremiti, umjesto toga zatvorite dijalog."
       },
       "local_retry": {
         "title": "Lokalna provjera nije se mogla dovršiti",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Lokalno dohvaćanje",
-        "description": "Potvrđeni resursi: {known}. Trenutno dostupno: {available}. Ovi brojevi prikazuju stanje u trenutku otvaranja ovog dijaloga. Interval je ciljna vrijednost za vrijednosti uživo. Postavke, vrijednosti energije i dijagnostika čitaju se svakih 5 minuta, a brojila svakih 15 minuta, ili u ovom intervalu ako je dulji; statični podaci čitaju se dnevno. Vrijednost postaje nedostupna nakon tri propuštena intervala. Veliki skupovi resursa mogu trajati dulje. Dohvaćanje putem oblaka ostaje neovisno. Mjerne vrijednosti koje oblak također pruža lokalno se čitaju barem jednako često kao u oblaku.",
+        "description": "Potvrđeni resursi: {known}, trenutačno dostupni: {available}. Interval je cilj za trenutne vrijednosti; sporije vrijednosti čitaju se rjeđe. Točne razmake opisuje dokumentacija.",
         "data": {
           "interval": "Ciljni interval za vrijednosti uživo"
         }
       },
       "local_values": {
         "title": "Lokalne vrijednosti za postojeće entitete",
-        "description": "Dok oblak radi, ova opcija određuje koriste li postojeći senzori lokalnu vrijednost mjerne vrijednosti koju oba pristupa pružaju pod istim dokumentiranim resursom. Bez oblaka (isključen, potrebna prijava, pauziran, ograničen ili nedostupan) uvijek se koriste lokalne vrijednosti. Opcija je prema zadanim postavkama uključena za nove konfiguracije s pristupom putem oblaka i lokalnim pristupom.\n\nKada je uključena, lokalna vrijednost koristi se dok je aktualna. Ako je lokalna vrijednost zastarjela ili nedostaje, koristi se trenutna vrijednost iz oblaka; ako su obje zastarjele, senzor postaje nedostupan. Brojila energije, pokretanja i vremena rada također koriste lokalnu vrijednost, ali mijenjaju izvor tek kada je svaki prikazani broj barem jednak zadnjem prikazanom broju, tako da promjena izvora nikada ne uzrokuje brojanje unatrag. Podesive postavke i dalje koriste oblak. ID-jevi entiteta, nazivi i povijest ostaju nepromijenjeni. Upravljanje i promjene i dalje se šalju putem oblaka.",
+        "description": "Dok oblak radi, ova opcija određuje koriste li postojeći senzori lokalnu vrijednost veličine koju daju oba pristupa. Bez oblaka uvijek se koriste lokalne vrijednosti; postavke i upravljanje i dalje idu preko oblaka. ID-ovi entiteta, nazivi i povijest ostaju nepromijenjeni.",
         "data": {
           "enabled": "Koristi lokalne vrijednosti"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
       "reauth_targets_missing": "Ova prijava nije pronašla nijedan od uključenih sustava i uređaja. Prethodni podaci za prijavu su zadržani. Provjerite jeste li se prijavili istim računom kao prije. Ako su sustavi uklonjeni s računa, otvorite Konfiguriraj → Veze → pristup putem oblaka: uključite sustav koji je još na računu pod **Koristi za sustave i uređaje** ili isključite uklonjene i uklonite ih pomoću **Zaboravi isključene sustave**. Ako nijedan nije ostao, uklonite pristup putem oblaka i ponovno ga povežite.",
       "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
-      "singlekey_page": "Ovo je adresa stranice SingleKey ID, a ne adresa aplikacije. Umjesto toga u konzoli preglednika Chrome kopirajte adresu `{redirect_scheme}://` iz crvene poruke **Failed to launch**.",
+      "singlekey_page": "Ovo je adresa stranice SingleKey ID, a ne adresa aplikacije. Ako ta stranica najavljuje preusmjeravanje, a ništa se ne dogodi, odaberite njezinu poveznicu ili gumb. Zatim u konzoli preglednika Chrome kopirajte adresu `{redirect_scheme}://` iz crvene poruke **Failed to launch**.",
       "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
       "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
       "no_gateways": "Nije pronađen nijedan uređaj. Provjerite podudaraju li se odabrana marka i račun SingleKey ID s vašom aplikacijom. Sobni regulator sa starijim firmverom pojavljuje se tek nakon što se njegov firmver ažurira i nakon što se postavi u trenutačnoj aplikaciji s vašim računom SingleKey ID.",
@@ -937,6 +950,7 @@
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
       "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
+      "local_certificate_unconfirmed": "Označite okvir kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
       "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
       "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
       "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Natrag",
         "create": "Novi odmor"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Nastavi sa spremljenim tokenom",
         "discard": "Odbaci pokušaj na čekanju",
         "later": "Nastavi kasnije"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Novi sustav (samo lokalno)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nova konfiguracija (samo lokalni pristup)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Natrag"
       }
     }
   },

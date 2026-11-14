@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Se connecter avec SingleKey ID",
-        "description": "SingleKey ID est la même connexion que celle de votre application Bosch ou Buderus. Utilisez la même adresse e-mail ou le même numéro de mobile et le même mot de passe. Vous n'avez pas besoin d'un nouveau compte, et vous ne saisissez **pas** votre mot de passe dans Home Assistant.\n\n1. Gardez cette boîte de dialogue ouverte et ouvrez [SingleKey ID]({authorization_url}) dans un nouvel onglet Chrome. Utilisez toujours ce lien nouvellement généré.\n2. Appuyez sur `F12` dans cet onglet et ouvrez **Console** dans les outils de développement.\n3. Connectez-vous avec les identifiants SingleKey ID utilisés par votre application de chauffage.\n4. Un message de problème réseau peut apparaître après la connexion. Dans ce cas, il signifie normalement seulement que Chrome n'a pas pu ouvrir l'adresse d'application `{redirect_scheme}://`.\n5. Repérez dans la console le message rouge **Failed to launch** ou **Connecting to**. Faites un clic droit sur l'adresse bleue `{redirect_scheme}://` de ce message et choisissez **Copier l'adresse du lien**.\n6. Revenez à cette boîte de dialogue, collez l'adresse complète ci-dessous et sélectionnez **OK**. Le champ peut afficher des points par sécurité.\n\nUtilisez l'adresse de cette tentative de connexion précise et ne copiez pas uniquement le paramètre `code`. L'adresse complète contient un code à usage unique de courte durée. Ne la partagez jamais dans un ticket, un chat, une capture d'écran ou un journal.",
+        "description": "SingleKey ID est la même connexion que celle de votre application Bosch ou Buderus. Utilisez la même adresse e-mail ou le même numéro de mobile et le même mot de passe. Vous n'avez pas besoin d'un nouveau compte, et vous ne saisissez **pas** votre mot de passe dans Home Assistant.\n\n1. Gardez cette boîte de dialogue ouverte et ouvrez [SingleKey ID]({authorization_url}) dans un nouvel onglet Chrome. Utilisez toujours ce lien nouvellement généré.\n2. Appuyez sur `F12` dans cet onglet et ouvrez **Console** dans les outils de développement.\n3. Connectez-vous avec les identifiants SingleKey ID utilisés par votre application de chauffage.\n4. Un message de problème réseau peut apparaître après la connexion. Dans ce cas, il signifie normalement seulement que Chrome n'a pas pu ouvrir l'adresse d'application `{redirect_scheme}://`. Si SingleKey ID affiche une page annonçant une redirection et que rien ne se passe, sélectionnez le lien ou le bouton de cette page.\n5. Repérez dans la console le message rouge **Failed to launch** ou **Connecting to**. Faites un clic droit sur l'adresse bleue `{redirect_scheme}://` de ce message et choisissez **Copier l'adresse du lien**.\n6. Revenez à cette boîte de dialogue, collez l'adresse complète ci-dessous et sélectionnez **OK**. Le champ peut afficher des points par sécurité.\n\nUtilisez l'adresse de cette tentative de connexion précise et ne copiez pas uniquement le paramètre `code`. L'adresse complète contient un code à usage unique de courte durée. Ne la partagez jamais dans un ticket, un chat, une capture d'écran ou un journal.",
         "data": {
           "redirect_url": "Adresse de redirection complète"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Reconfigurer et redécouvrir",
-        "description": "Choisissez la marque de l'application, les passerelles et le profil d'interrogation. L'enregistrement recharge l'intégration et effectue une découverte complète des ressources. Utilisez cette option après une mise à jour du micrologiciel ou lorsque des circuits, des systèmes d'eau chaude, des sources de chaleur ou des passerelles ont changé. **Standard** lit les valeurs de fonctionnement actuelles chaque minute. **Léger pour le cloud** réduit le trafic cloud en les lisant toutes les deux minutes et toutes les autres valeurs changeantes moins souvent. Changer la marque de l'application nécessite une nouvelle connexion SingleKey ID.",
+        "description": "Choisissez la marque de l'application, les passerelles et le profil d'interrogation. L'enregistrement recharge l'intégration et recherche à nouveau toutes les ressources, par exemple après une mise à jour du micrologiciel ou une installation modifiée. Changer de marque d'application nécessite une nouvelle connexion SingleKey ID.",
         "data": {
           "brand": "Marque de l'application",
           "gateway_ids": "Passerelles",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Choisir l'installation existante",
-        "description": "Sélectionnez l'installation à laquelle appartient cette passerelle locale. Cela ne créera pas d'autre installation.",
+        "description": "Sélectionnez l'installation à laquelle appartient cette passerelle locale, ou configurez-la comme nouvelle installation avec accès local uniquement.",
         "data": {
-          "owner": "Installation existante"
+          "owner": "Installation"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmer le certificat du port de données",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.\n\nSi le certificat n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
+        "data": {
+          "confirm": "Je confirme cette passerelle et son certificat"
+        }
+      },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
         "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Si la correction d'une faute de frappe prend plus de cinq minutes, appuyez de nouveau sur les boutons. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le Login et le Pass ne sont pas enregistrés.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Confirmer la connexion locale",
-        "description": "La vérification de lecture pour **{host}** a réussi et la passerelle **{gateway}** correspond à l'installation sélectionnée. L'enregistrement vérifie à nouveau les données actuelles et ajoute ou met à jour cet accès sur l'installation existante.",
-        "data": {
-          "confirm": "Enregistrer cette connexion locale"
-        }
+        "description": "La vérification de lecture pour **{host}** a réussi et la passerelle **{gateway}** correspond à l'installation sélectionnée. L'enregistrement vérifie à nouveau les données actuelles et ajoute ou met à jour cet accès sur l'installation existante. Pour ne rien enregistrer, fermez plutôt la boîte de dialogue."
       },
       "local_retry": {
         "title": "La vérification locale n'a pas pu aboutir",
@@ -151,7 +155,7 @@
       "cannot_connect": "L'accès cloud est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
       "invalid_auth": "SingleKey ID a rejeté l'autorisation ou celle-ci a expiré. Utilisez le nouveau lien SingleKey ID affiché ci-dessus et répétez la connexion.",
       "invalid_redirect": "Home Assistant n'a pas pu utiliser cette adresse. Copiez l'adresse complète de l'application depuis le message « Failed to launch » de la console Chrome. Elle doit commencer par le schéma indiqué ci-dessus et appartenir à la tentative de connexion en cours.",
-      "singlekey_page": "Il s'agit de l'adresse de la page SingleKey ID, et non de l'adresse de l'application. Copiez plutôt, dans la console Chrome, l'adresse `{redirect_scheme}://` du message rouge **Failed to launch**.",
+      "singlekey_page": "Il s'agit de l'adresse de la page SingleKey ID, et non de l'adresse de l'application. Si cette page annonce une redirection et que rien ne se passe, sélectionnez son lien ou son bouton. Copiez ensuite, dans la console Chrome, l'adresse `{redirect_scheme}://` du message rouge **Failed to launch**.",
       "gateway_changed": "La liste des passerelles a changé pendant que cette boîte de dialogue était ouverte. Fermez la boîte de dialogue et rouvrez Reconfigurer.",
       "select_gateway": "Sélectionnez au moins un appareil dans la liste avant de continuer.",
       "unknown": "Une erreur inattendue s'est produite dans l'accès cloud. Patientez un instant et réessayez.",
@@ -173,6 +177,7 @@
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
       "local_certificate_changed": "Le certificat n'a pas pu être confirmé ou a changé. Examinez à nouveau le certificat de la passerelle avant de continuer.",
+      "local_certificate_unconfirmed": "Cochez la case pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
       "local_token_rejected": "La passerelle a rejeté ce jeton. Vérifiez-le ou abandonnez volontairement cette tentative pour en utiliser un autre.",
       "local_resource_forbidden": "La passerelle a refusé l'accès à une ressource nécessaire. Un jeton seul ne prouve pas l'accès en lecture.",
       "local_missing_resource": "La passerelle ne fournit pas une ressource de configuration nécessaire.",
@@ -374,6 +379,10 @@
           "time": "Heure",
           "temperature": "Température"
         }
+      },
+      "rrc_confirm": {
+        "title": "Enregistrer le point de commutation",
+        "description": "**{program}**\n\n**Avant :** {before}\n\n**Après :** {after}\n\nLa modification est envoyée une fois, puis relue. Elle s'applique à toutes les zones associées."
       },
       "rrc_day": {
         "title": "Choisir le point de commutation",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Fréquence d'interrogation",
-        "description": "**Standard** lit les valeurs de fonctionnement actuelles du chauffage chaque minute, les réglages et les valeurs d'énergie toutes les 5 minutes et les informations plus lentes toutes les 15 minutes. **Léger pour le cloud** double ces intervalles. Les défauts actifs sont vérifiés chaque minute dans les deux profils. Le profil s'applique à l'interrogation du chauffage et de la borne de recharge de la connexion cloud sélectionnée ; les appareils cloud supplémentaires signalent les changements sous forme de messages. La connexion, les vérifications d'appareils et la confirmation après une modification peuvent ajouter des requêtes en dehors de ce calendrier. Si un cycle d'interrogation dure plus longtemps que son intervalle, le suivant démarre plus tard.",
+        "description": "**Standard** lit les valeurs de fonctionnement actuelles chaque minute et les réglages et valeurs d'énergie toutes les 5 minutes. **Économe pour le cloud** double ces intervalles. Les défauts actifs sont vérifiés chaque minute dans les deux profils.",
         "data": {
           "polling_profile": "Profil d'interrogation"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Se connecter avec SingleKey ID",
-        "description": "SingleKey ID est la même connexion que celle de votre application Bosch ou Buderus. Utilisez la même adresse e-mail ou le même numéro de mobile et le même mot de passe. Vous n'avez pas besoin d'un nouveau compte, et vous ne saisissez **pas** votre mot de passe dans Home Assistant.\n\n1. Gardez cette boîte de dialogue ouverte et ouvrez [SingleKey ID]({authorization_url}) dans un nouvel onglet Chrome. Utilisez toujours ce lien nouvellement généré.\n2. Appuyez sur `F12` dans cet onglet et ouvrez **Console** dans les outils de développement.\n3. Connectez-vous avec les identifiants SingleKey ID utilisés par votre application de chauffage.\n4. Un message de problème réseau peut apparaître après la connexion. Dans ce cas, il signifie normalement seulement que Chrome n'a pas pu ouvrir l'adresse d'application `{redirect_scheme}://`.\n5. Repérez dans la console le message rouge **Failed to launch** ou **Connecting to**. Faites un clic droit sur l'adresse bleue `{redirect_scheme}://` de ce message et choisissez **Copier l'adresse du lien**.\n6. Revenez à cette boîte de dialogue, collez l'adresse complète ci-dessous et sélectionnez **OK**. Le champ peut afficher des points par sécurité.\n\nUtilisez l'adresse de cette tentative de connexion précise et ne copiez pas uniquement le paramètre `code`. L'adresse complète contient un code à usage unique de courte durée. Ne la partagez jamais dans un ticket, un chat, une capture d'écran ou un journal.",
+        "description": "SingleKey ID est la même connexion que celle de votre application Bosch ou Buderus. Utilisez la même adresse e-mail ou le même numéro de mobile et le même mot de passe. Vous n'avez pas besoin d'un nouveau compte, et vous ne saisissez **pas** votre mot de passe dans Home Assistant.\n\n1. Gardez cette boîte de dialogue ouverte et ouvrez [SingleKey ID]({authorization_url}) dans un nouvel onglet Chrome. Utilisez toujours ce lien nouvellement généré.\n2. Appuyez sur `F12` dans cet onglet et ouvrez **Console** dans les outils de développement.\n3. Connectez-vous avec les identifiants SingleKey ID utilisés par votre application de chauffage.\n4. Un message de problème réseau peut apparaître après la connexion. Dans ce cas, il signifie normalement seulement que Chrome n'a pas pu ouvrir l'adresse d'application `{redirect_scheme}://`. Si SingleKey ID affiche une page annonçant une redirection et que rien ne se passe, sélectionnez le lien ou le bouton de cette page.\n5. Repérez dans la console le message rouge **Failed to launch** ou **Connecting to**. Faites un clic droit sur l'adresse bleue `{redirect_scheme}://` de ce message et choisissez **Copier l'adresse du lien**.\n6. Revenez à cette boîte de dialogue, collez l'adresse complète ci-dessous et sélectionnez **OK**. Le champ peut afficher des points par sécurité.\n\nUtilisez l'adresse de cette tentative de connexion précise et ne copiez pas uniquement le paramètre `code`. L'adresse complète contient un code à usage unique de courte durée. Ne la partagez jamais dans un ticket, un chat, une capture d'écran ou un journal.",
         "data": {
           "redirect_url": "Adresse de redirection complète"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Choisir l'installation existante",
-        "description": "Sélectionnez l'installation à laquelle appartient cette passerelle locale. Cela ne créera pas d'autre installation.",
+        "description": "Sélectionnez l'installation à laquelle appartient cette passerelle locale, ou configurez-la comme nouvelle installation avec accès local uniquement.",
         "data": {
-          "owner": "Installation existante"
+          "owner": "Installation"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmer le certificat du port de données",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.\n\nSi le certificat n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
+        "data": {
+          "confirm": "Je confirme cette passerelle et son certificat"
+        }
+      },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
         "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Si la correction d'une faute de frappe prend plus de cinq minutes, appuyez de nouveau sur les boutons. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le Login et le Pass ne sont pas enregistrés.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Confirmer la connexion locale",
-        "description": "La vérification de lecture pour **{host}** a réussi et la passerelle **{gateway}** correspond à l'installation sélectionnée. L'enregistrement vérifie à nouveau les données actuelles et ajoute ou met à jour cet accès sur l'installation existante.",
-        "data": {
-          "confirm": "Enregistrer cette connexion locale"
-        }
+        "description": "La vérification de lecture pour **{host}** a réussi et la passerelle **{gateway}** correspond à l'installation sélectionnée. L'enregistrement vérifie à nouveau les données actuelles et ajoute ou met à jour cet accès sur l'installation existante. Pour ne rien enregistrer, fermez plutôt la boîte de dialogue."
       },
       "local_retry": {
         "title": "La vérification locale n'a pas pu aboutir",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Interrogation locale",
-        "description": "Ressources confirmées : {known}. Actuellement disponibles : {available}. Ces nombres indiquent l'état à l'ouverture de cette boîte de dialogue. L'intervalle est la cible pour les valeurs en direct. Les réglages, les valeurs d'énergie et les diagnostics sont lus toutes les 5 minutes et les compteurs toutes les 15 minutes, ou à cet intervalle s'il est plus long ; les informations statiques sont lues une fois par jour. Une valeur devient indisponible après trois intervalles manqués. Les grands ensembles de ressources peuvent prendre plus de temps. L'interrogation cloud reste indépendante. Les valeurs que le cloud fournit également sont lues en local au moins aussi souvent que dans le cloud.",
+        "description": "Ressources confirmées : {known}, disponibles actuellement : {available}. L'intervalle est la cible pour les valeurs en direct ; les valeurs plus lentes sont lues moins souvent. La documentation décrit les intervalles exacts.",
         "data": {
           "interval": "Intervalle cible des valeurs en direct"
         }
       },
       "local_values": {
         "title": "Valeurs locales pour les entités existantes",
-        "description": "Tant que le cloud fonctionne, cette option détermine si les capteurs existants utilisent la valeur locale d'une valeur que les deux accès fournissent sous la même ressource documentée. Sans le cloud (désactivé, connexion au compte requise, en pause, limité ou inaccessible), les valeurs locales sont toujours utilisées. L'option est activée par défaut pour les nouvelles installations avec accès cloud et local.\n\nLorsqu'elle est activée, la valeur locale est utilisée tant qu'elle est à jour. Si la valeur locale est obsolète ou absente, la valeur cloud actuelle est utilisée ; si les deux sont obsolètes, le capteur devient indisponible. Les compteurs d'énergie, de démarrages et de durée de fonctionnement utilisent aussi la valeur locale, mais ne changent de source que lorsque chaque compte affiché est au moins égal au dernier compte affiché, afin qu'un changement de source ne les fasse jamais reculer. Les réglages modifiables continuent d'utiliser le cloud. Les ID d'entité, les noms et l'historique restent inchangés. Les commandes et les modifications sont toujours envoyées via le cloud.",
+        "description": "Tant que le cloud fonctionne, cette option détermine si les capteurs existants utilisent la valeur locale d'une mesure fournie par les deux accès. Sans le cloud, les valeurs locales sont toujours utilisées ; les réglages et les commandes passent toujours par le cloud. Les identifiants d'entité, les noms et l'historique restent inchangés.",
         "data": {
           "enabled": "Utiliser les valeurs locales"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID a rejeté l'autorisation ou celle-ci a expiré. Utilisez le nouveau lien SingleKey ID affiché ci-dessus et répétez la connexion.",
       "reauth_targets_missing": "Cette connexion n'a trouvé aucune des installations et aucun des appareils activés. Les identifiants précédents sont conservés. Vérifiez que vous vous êtes connecté avec le même compte qu'auparavant. Si les installations ont été supprimées du compte, ouvrez Configurer → Connexions → l'accès cloud : activez une installation qui figure encore dans le compte sous **Utiliser pour les installations et appareils**, ou désactivez celles qui ont été supprimées et retirez-les avec **Oublier les installations désélectionnées**. S'il n'en reste aucune, supprimez l'accès cloud et reconnectez-le.",
       "invalid_redirect": "Home Assistant n'a pas pu utiliser cette adresse. Copiez l'adresse complète de l'application depuis le message « Failed to launch » de la console Chrome. Elle doit commencer par le schéma indiqué ci-dessus et appartenir à la tentative de connexion en cours.",
-      "singlekey_page": "Il s'agit de l'adresse de la page SingleKey ID, et non de l'adresse de l'application. Copiez plutôt, dans la console Chrome, l'adresse `{redirect_scheme}://` du message rouge **Failed to launch**.",
+      "singlekey_page": "Il s'agit de l'adresse de la page SingleKey ID, et non de l'adresse de l'application. Si cette page annonce une redirection et que rien ne se passe, sélectionnez son lien ou son bouton. Copiez ensuite, dans la console Chrome, l'adresse `{redirect_scheme}://` du message rouge **Failed to launch**.",
       "cannot_connect": "L'accès cloud est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
       "select_gateway": "Sélectionnez au moins un appareil dans la liste avant de continuer.",
       "no_gateways": "Aucun appareil n'a été trouvé. Vérifiez que la marque sélectionnée et le compte SingleKey ID correspondent à votre application. Un régulateur d'ambiance doté d'un micrologiciel plus ancien n'apparaît qu'une fois son micrologiciel mis à jour et après sa configuration dans l'application actuelle avec votre SingleKey ID.",
@@ -937,6 +950,7 @@
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
       "local_certificate_changed": "Le certificat n'a pas pu être confirmé ou a changé. Examinez à nouveau le certificat de la passerelle avant de continuer.",
+      "local_certificate_unconfirmed": "Cochez la case pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
       "local_token_rejected": "La passerelle a rejeté ce jeton. Vérifiez-le ou abandonnez volontairement cette tentative pour en utiliser un autre.",
       "local_resource_forbidden": "La passerelle a refusé l'accès à une ressource nécessaire. Un jeton seul ne prouve pas l'accès en lecture.",
       "local_missing_resource": "La passerelle ne fournit pas une ressource de configuration nécessaire.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Retour",
         "create": "Nouvelles vacances"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Continuer avec le jeton enregistré",
         "discard": "Abandonner la tentative en attente",
         "later": "Continuer plus tard"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nouvelle installation (local uniquement)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nouvelle installation (accès local uniquement)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Retour"
       }
     }
   },

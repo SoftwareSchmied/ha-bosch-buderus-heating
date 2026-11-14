@@ -32,6 +32,16 @@ def discovery_endpoints(hass: HomeAssistant) -> tuple[LocalEndpoint, ...]:
     return tuple(dict.fromkeys(e for hint in hints.values() for e in hint.endpoints))
 
 
+def single_discovery(hass: HomeAssistant) -> LocalEndpoint | None:
+    """The first address of the only gateway announced now, if just one is."""
+    discovery_endpoints(hass)
+    hints = cast(dict[str, DiscoveryHint], hass.data[_HINTS])
+    if len(hints) != 1:
+        return None
+    (hint,) = hints.values()
+    return hint.endpoints[0] if hint.endpoints else None
+
+
 def remember_discovery(
     hass: HomeAssistant,
     info: ZeroconfServiceInfo,

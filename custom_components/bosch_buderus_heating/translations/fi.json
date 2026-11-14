@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Kirjaudu SingleKey ID:llä",
-        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
+        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`. Jos SingleKey ID näyttää sivun, joka ilmoittaa uudelleenohjauksesta, eikä mitään tapahdu, valitse sivun linkki tai painike.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
         "data": {
           "redirect_url": "Koko uudelleenohjausosoite"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Määritä uudelleen ja etsi uudelleen",
-        "description": "Valitse sovelluksen merkki, yhdyskäytävät ja kyselyprofiili. Tallennus lataa integraation uudelleen ja suorittaa kaikkien resurssien täydellisen etsinnän. Käytä tätä laiteohjelmistopäivityksen jälkeen tai kun piirit, lämpimän käyttöveden järjestelmät, lämmönlähteet tai yhdyskäytävät ovat muuttuneet. **Vakio** lukee nykyiset käyttöarvot kerran minuutissa. **Pilviystävällinen** vähentää pilviliikennettä lukemalla ne kahden minuutin välein ja kaikki muut muuttuvat arvot harvemmin. Sovelluksen merkin vaihtaminen vaatii uuden SingleKey ID -kirjautumisen.",
+        "description": "Valitse sovelluksen merkki, yhdyskäytävät ja kyselyprofiili. Tallennus lataa integraation uudelleen ja hakee kaikki resurssit uudelleen, esimerkiksi laiteohjelmistopäivityksen tai muuttuneen asennuksen jälkeen. Sovelluksen merkin vaihto vaatii uuden SingleKey ID -kirjautumisen.",
         "data": {
           "brand": "Sovelluksen merkki",
           "gateway_ids": "Yhdyskäytävät",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Valitse olemassa oleva asennus",
-        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu. Tämä ei luo uutta asennusta.",
+        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu, tai ota se käyttöön uutena asennuksena pelkällä paikallisella yhteydellä.",
         "data": {
-          "owner": "Olemassa oleva asennus"
+          "owner": "Asennus"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
+      "local_certificate_data": {
+        "title": "Vahvista dataportin varmenne",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
         "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Vahvista paikallinen yhteys",
-        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen.",
-        "data": {
-          "confirm": "Tallenna tämä paikallinen yhteys"
-        }
+        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen. Jos et halua tallentaa mitään, sulje sen sijaan valintaikkuna."
       },
       "local_retry": {
         "title": "Paikallinen tarkistus ei valmistunut",
@@ -151,7 +155,7 @@
       "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ”Failed to launch” -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
-      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Kopioi sen sijaan Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
+      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Jos sivu ilmoittaa uudelleenohjauksesta eikä mitään tapahdu, valitse sen linkki tai painike. Kopioi sitten Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
       "gateway_changed": "Yhdyskäytäväluettelo muuttui tämän ikkunan ollessa auki. Sulje ikkuna ja avaa Määritä uudelleen uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
       "unknown": "Pilviyhteydessä tapahtui odottamaton virhe. Odota hetki ja yritä uudelleen.",
@@ -173,6 +177,7 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
+      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
@@ -374,6 +379,10 @@
           "time": "Aika",
           "temperature": "Lämpötila"
         }
+      },
+      "rrc_confirm": {
+        "title": "Tallenna kytkentäpiste",
+        "description": "**{program}**\n\n**Ennen:** {before}\n\n**Jälkeen:** {after}\n\nMuutos lähetetään kerran ja luetaan sitten takaisin. Se koskee kaikkia määritettyjä vyöhykkeitä."
       },
       "rrc_day": {
         "title": "Valitse kytkentäpiste",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Kyselytiheys",
-        "description": "Vakio lukee lämmityksen nykyiset käyttöarvot kerran minuutissa, asetukset ja energia-arvot 5 minuutin välein ja hitaammin muuttuvat tiedot 15 minuutin välein. Pilviystävällinen kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan minuutin välein molemmissa profiileissa. Profiili koskee valitun pilviyhteyden lämmityksen ja latausaseman kyselyä; muut pilvilaitteet ilmoittavat muutokset viesteinä. Kirjautuminen, laitetarkistukset ja muutoksen jälkeinen vahvistus voivat lisätä pyyntöjä tämän aikataulun ulkopuolella. Jos kyselykierros kestää pidempään kuin sen väli, seuraava alkaa myöhemmin.",
+        "description": "**Vakio** lukee nykyiset käyttöarvot minuutin välein sekä asetukset ja energia-arvot 5 minuutin välein. **Pilveä säästävä** kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan molemmissa profiileissa minuutin välein.",
         "data": {
           "polling_profile": "Kyselyprofiili"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Kirjaudu SingleKey ID:llä",
-        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
+        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`. Jos SingleKey ID näyttää sivun, joka ilmoittaa uudelleenohjauksesta, eikä mitään tapahdu, valitse sivun linkki tai painike.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
         "data": {
           "redirect_url": "Koko uudelleenohjausosoite"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Valitse olemassa oleva asennus",
-        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu. Tämä ei luo uutta asennusta.",
+        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu, tai ota se käyttöön uutena asennuksena pelkällä paikallisella yhteydellä.",
         "data": {
-          "owner": "Olemassa oleva asennus"
+          "owner": "Asennus"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
+      "local_certificate_data": {
+        "title": "Vahvista dataportin varmenne",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
         "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Vahvista paikallinen yhteys",
-        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen.",
-        "data": {
-          "confirm": "Tallenna tämä paikallinen yhteys"
-        }
+        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen. Jos et halua tallentaa mitään, sulje sen sijaan valintaikkuna."
       },
       "local_retry": {
         "title": "Paikallinen tarkistus ei valmistunut",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Paikallinen kysely",
-        "description": "Vahvistetut resurssit: {known}. Tällä hetkellä saatavilla: {available}. Nämä määrät kuvaavat tilannetta tämän ikkunan avaamishetkellä. Väli on reaaliaikaisten arvojen tavoite. Asetukset, energia-arvot ja diagnostiikka luetaan 5 minuutin välein ja laskurit 15 minuutin välein tai tällä välillä, jos se on pidempi; staattiset tiedot luetaan päivittäin. Arvo muuttuu saamattomaksi kolmen ohitetun välin jälkeen. Suuret resurssijoukot voivat kestää pidempään. Pilvikysely pysyy erillisenä. Mittausarvot, jotka myös pilvi tarjoaa, luetaan paikallisesti vähintään yhtä usein kuin pilvessä.",
+        "description": "Vahvistetut resurssit: {known}, nyt saatavilla: {available}. Väli on reaaliaikaisten arvojen tavoite; hitaammat arvot luetaan harvemmin. Tarkat välit kuvataan dokumentaatiossa.",
         "data": {
           "interval": "Reaaliaikaisten arvojen tavoiteväli"
         }
       },
       "local_values": {
         "title": "Paikalliset arvot olemassa oleville entiteeteille",
-        "description": "Kun pilvi on käynnissä, tämä asetus ratkaisee, käyttävätkö olemassa olevat anturit sellaisen mittausarvon paikallista arvoa, jonka molemmat yhteydet tarjoavat saman dokumentoidun resurssin alla. Ilman pilveä (kytketty pois, kirjautuminen vaaditaan, tauolla, rajoitettu tai tavoittamattomissa) paikallisia arvoja käytetään aina. Asetus on oletuksena päällä uusissa asennuksissa, joissa on pilvi- ja paikallinen yhteys.\n\nKun asetus on käytössä, paikallista arvoa käytetään niin kauan kuin se on ajantasainen. Jos paikallinen arvo on vanhentunut tai puuttuu, käytetään nykyistä pilviarvoa; jos molemmat ovat vanhentuneita, anturi muuttuu saamattomaksi. Energia-, käynnistys- ja käyntiaikalaskurit käyttävät myös paikallista arvoa, mutta vaihtavat lähdettään vain, kun jokainen näytetty lukema on vähintään yhtä suuri kuin viimeksi näytetty, joten lähteen vaihto ei koskaan saa niitä laskemaan taaksepäin. Säädettävät asetukset käyttävät edelleen pilveä. Entiteettitunnukset, nimet ja historia pysyvät ennallaan. Ohjaukset ja muutokset lähetetään edelleen pilven kautta.",
+        "description": "Kun pilvi on käytössä, tämä valinta ratkaisee, käyttävätkö nykyiset anturit sellaisen mittauksen paikallista arvoa, jonka molemmat yhteydet tarjoavat. Ilman pilveä käytetään aina paikallisia arvoja; asetukset ja ohjaus kulkevat edelleen pilven kautta. Entiteettien tunnukset, nimet ja historia pysyvät ennallaan.",
         "data": {
           "enabled": "Käytä paikallisia arvoja"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
       "reauth_targets_missing": "Tämä kirjautuminen ei löytänyt yhtään käytössä olevaa järjestelmää tai laitetta. Aiemmat tunnistetiedot säilyvät. Tarkista, että kirjauduit samalla tilillä kuin aiemmin. Jos järjestelmät poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys: ota käyttöön järjestelmä, joka on edelleen tilillä, kohdassa **Käytä järjestelmille ja laitteille**, tai poista poistetut käytöstä ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Jos mitään ei ole jäljellä, poista pilviyhteys ja yhdistä se uudelleen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ‘Failed to launch’ -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
-      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Kopioi sen sijaan Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
+      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Jos sivu ilmoittaa uudelleenohjauksesta eikä mitään tapahdu, valitse sen linkki tai painike. Kopioi sitten Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
       "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
       "no_gateways": "Laitteita ei löytynyt. Tarkista, että valittu merkki ja SingleKey ID -tili vastaavat sovellustasi. Vanhemmalla laiteohjelmistolla varustettu huonesäädin näkyy vasta, kun sen laiteohjelmisto on päivitetty ja se on otettu käyttöön nykyisessä sovelluksessa SingleKey ID:lläsi.",
@@ -937,6 +950,7 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
+      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Takaisin",
         "create": "Uusi loma"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Jatka tallennetulla tunnuksella",
         "discard": "Hylkää keskeneräinen yritys",
         "later": "Jatka myöhemmin"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Uusi järjestelmä (vain paikallinen)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Uusi asennus (vain paikallinen yhteys)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Takaisin"
       }
     }
   },

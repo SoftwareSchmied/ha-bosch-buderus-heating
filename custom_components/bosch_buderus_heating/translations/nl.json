@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Aanmelden met SingleKey ID",
-        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
+        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen. Toont SingleKey ID een pagina die een doorsturing aankondigt en gebeurt er niets, kies dan de link of knop op die pagina.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
         "data": {
           "redirect_url": "Volledig doorverwijzingsadres"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Opnieuw configureren en opnieuw zoeken",
-        "description": "Kies het merk van de app, de gateways en het opvraagprofiel. Bij het opslaan wordt de integratie opnieuw geladen en worden alle bronnen volledig opnieuw gezocht. Gebruik dit na een firmware-update of wanneer verwarmingscircuits, warmwatersystemen, warmtebronnen of gateways zijn gewijzigd. **Standaard** leest actuele bedrijfswaarden elke minuut. **Cloudvriendelijk** vermindert het cloudverkeer door ze om de twee minuten te lezen en alle andere veranderende waarden minder vaak. Bij een ander appmerk moet je je opnieuw aanmelden bij SingleKey ID.",
+        "description": "Kies het app-merk, de gateways en het opvraagprofiel. Bij het opslaan wordt de integratie opnieuw geladen en zoekt ze alle resources opnieuw, bijvoorbeeld na een firmware-update of een gewijzigde installatie. Een ander app-merk vereist een nieuwe aanmelding met SingleKey ID.",
         "data": {
           "brand": "Merk van de app",
           "gateway_ids": "Gateways",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Bestaande configuratie kiezen",
-        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort. Hiermee wordt geen extra installatie aangemaakt.",
+        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort, of stel hem in als nieuwe configuratie met alleen lokale toegang.",
         "data": {
-          "owner": "Bestaande configuratie"
+          "owner": "Configuratie"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
+      "local_certificate_data": {
+        "title": "Het certificaat van de datapoort bevestigen",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+        "data": {
+          "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
+        }
+      },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
         "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "De lokale verbinding bevestigen",
-        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie.",
-        "data": {
-          "confirm": "Deze lokale verbinding opslaan"
-        }
+        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie. Sluit in plaats daarvan het dialoogvenster om niets op te slaan."
       },
       "local_retry": {
         "title": "Lokale controle kon niet worden voltooid",
@@ -151,7 +155,7 @@
       "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
-      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Kopieer in plaats daarvan in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
+      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Meldt die pagina dat je wordt doorgestuurd en gebeurt er niets, kies dan de link of knop op die pagina. Kopieer daarna in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
       "gateway_changed": "De gatewaylijst is gewijzigd terwijl dit dialoogvenster open was. Sluit het dialoogvenster en open Opnieuw configureren opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
       "unknown": "Er is een onverwachte fout in de cloudtoegang opgetreden. Wacht even en probeer het opnieuw.",
@@ -173,6 +177,7 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
+      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
@@ -374,6 +379,10 @@
           "time": "Tijd",
           "temperature": "Temperatuur"
         }
+      },
+      "rrc_confirm": {
+        "title": "Schakelpunt opslaan",
+        "description": "**{program}**\n\n**Voor:** {before}\n\n**Na:** {after}\n\nDe wijziging wordt één keer verzonden en daarna teruggelezen. Ze geldt voor alle toegewezen zones."
       },
       "rrc_day": {
         "title": "Schakelpunt kiezen",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Opvraagfrequentie",
-        "description": "Standaard leest actuele bedrijfswaarden van de verwarming elke minuut, instellingen en energiewaarden elke 5 minuten en tragere informatie elke 15 minuten. Cloudvriendelijk verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd. Het profiel geldt voor de opvraging van verwarming en laadpaal van de geselecteerde cloudverbinding; extra cloudapparaten melden wijzigingen als berichten. Aanmelden, apparaatcontroles en de bevestiging na een wijziging kunnen buiten dit schema extra verzoeken veroorzaken. Als een opvraagcyclus langer duurt dan het interval, begint de volgende later.",
+        "description": "**Standaard** leest actuele bedrijfswaarden elke minuut en instellingen en energiewaarden elke 5 minuten. **Cloudvriendelijk** verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd.",
         "data": {
           "polling_profile": "Opvraagprofiel"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Aanmelden met SingleKey ID",
-        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
+        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen. Toont SingleKey ID een pagina die een doorsturing aankondigt en gebeurt er niets, kies dan de link of knop op die pagina.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
         "data": {
           "redirect_url": "Volledig doorverwijzingsadres"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Bestaande configuratie kiezen",
-        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort. Hiermee wordt geen extra installatie aangemaakt.",
+        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort, of stel hem in als nieuwe configuratie met alleen lokale toegang.",
         "data": {
-          "owner": "Bestaande configuratie"
+          "owner": "Configuratie"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
+      "local_certificate_data": {
+        "title": "Het certificaat van de datapoort bevestigen",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+        "data": {
+          "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
+        }
+      },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
         "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "De lokale verbinding bevestigen",
-        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie.",
-        "data": {
-          "confirm": "Deze lokale verbinding opslaan"
-        }
+        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie. Sluit in plaats daarvan het dialoogvenster om niets op te slaan."
       },
       "local_retry": {
         "title": "Lokale controle kon niet worden voltooid",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Lokale opvraging",
-        "description": "Bevestigde bronnen: {known}. Nu beschikbaar: {available}. Deze aantallen tonen de toestand op het moment dat dit dialoogvenster werd geopend. Het interval is het streefinterval voor livewaarden. Instellingen, energiewaarden en diagnostiek worden elke 5 minuten gelezen en tellers elke 15 minuten, of met dit interval als het langer is; statische details worden dagelijks gelezen. Een waarde wordt niet beschikbaar na drie gemiste intervallen. Grote bronnensets kunnen langer duren. De cloudopvraging blijft onafhankelijk. Meetwaarden die de cloud ook levert, worden lokaal minstens even vaak gelezen als in de cloud.",
+        "description": "Bevestigde resources: {known}, nu beschikbaar: {available}. Het interval is het doel voor livewaarden; tragere waarden worden minder vaak gelezen. De documentatie beschrijft de exacte intervallen.",
         "data": {
           "interval": "Streefinterval voor livewaarden"
         }
       },
       "local_values": {
         "title": "Lokale waarden voor bestaande entiteiten",
-        "description": "Zolang de cloud actief is, bepaalt deze optie of bestaande sensoren de lokale waarde gebruiken van een meetwaarde die beide toegangen onder dezelfde gedocumenteerde bron leveren. Zonder de cloud (uitgeschakeld, aanmelding vereist, gepauzeerd, beperkt of onbereikbaar) worden altijd lokale waarden gebruikt. De optie staat standaard aan voor nieuwe configuraties met cloud- en lokale toegang.\n\nAls de optie is ingeschakeld, wordt de lokale waarde gebruikt zolang die actueel is. Als de lokale waarde verouderd is of ontbreekt, wordt de actuele cloudwaarde gebruikt; als beide verouderd zijn, wordt de sensor niet beschikbaar. Tellers voor energie, starts en bedrijfstijd gebruiken ook de lokale waarde, maar wisselen alleen van bron als elke getoonde stand minstens zo hoog is als de laatst getoonde stand, zodat een bronwissel ze nooit achteruit laat tellen. Instelbare instellingen blijven de cloud gebruiken. Entiteits-ID's, namen en geschiedenis blijven ongewijzigd. Bediening en wijzigingen worden nog steeds via de cloud verstuurd.",
+        "description": "Zolang de cloud draait, bepaalt deze optie of bestaande sensoren de lokale waarde gebruiken van een meetwaarde die beide toegangen leveren. Zonder cloud worden altijd de lokale waarden gebruikt; instellingen en bediening blijven via de cloud lopen. Entiteit-ID's, namen en geschiedenis blijven ongewijzigd.",
         "data": {
           "enabled": "Lokale waarden gebruiken"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
       "reauth_targets_missing": "Bij deze aanmelding is geen van de ingeschakelde installaties en apparaten gevonden. De vorige inloggegevens blijven behouden. Controleer of je je met hetzelfde account hebt aangemeld als eerder. Als de installaties uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang: schakel een installatie in die nog in het account staat onder **Gebruiken voor installaties en apparaten**, of schakel de verwijderde installaties uit en verwijder ze met **Niet-geselecteerde installaties vergeten**. Als er geen meer over is, verwijder dan de cloudtoegang en verbind deze opnieuw.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
-      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Kopieer in plaats daarvan in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
+      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Meldt die pagina dat je wordt doorgestuurd en gebeurt er niets, kies dan de link of knop op die pagina. Kopieer daarna in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
       "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
       "no_gateways": "Er zijn geen apparaten gevonden. Controleer of het geselecteerde merk en het SingleKey ID-account bij je app passen. Een kamerregelaar met oudere firmware verschijnt pas als de firmware is bijgewerkt en hij in de huidige app met je SingleKey ID is ingesteld.",
@@ -937,6 +950,7 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
+      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Terug",
         "create": "Nieuwe vakantie"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Doorgaan met opgeslagen token",
         "discard": "Lopende poging verwerpen",
         "later": "Later doorgaan"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nieuwe installatie (alleen lokaal)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nieuwe configuratie (alleen lokale toegang)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Terug"
       }
     }
   },

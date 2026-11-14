@@ -10,7 +10,6 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
-    SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
 )
@@ -23,6 +22,7 @@ from .local_auth import token_management_available
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .local_support import setup_support
 from .options_navigation import BACK, NavigatingOptionsFlow
+from .plant_labels import plant_choices
 
 # The menu entry of the n-th connection (the menu lists them with their
 # labels; the entries name no identifier).
@@ -272,10 +272,9 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
                 {
                     vol.Required("bindings", default=[]): SelectSelector(
                         SelectSelectorConfig(
-                            options=[
-                                SelectOptionDict(value=key, label=label)
-                                for key, label in choices.items()
-                            ],
+                            options=plant_choices(
+                                self.hass, self._entry.entry_id, choices
+                            ),
                             multiple=True,
                         )
                     )
@@ -313,13 +312,15 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
                 return self.async_abort(reason="configuration_changed")
             return await self._connection_saved()
         options = section(snapshot.to_options(), "bindings")
-        choices = [
-            SelectOptionDict(
-                value=key,
-                label=str(cast(dict[str, Any], item.to_data()["locator"])["value"]),
-            )
-            for key, item in bindings.items()
-        ]
+        # The device names the user knows instead of the identifiers.
+        choices = plant_choices(
+            self.hass,
+            self._entry.entry_id,
+            {
+                key: str(cast(dict[str, Any], item.to_data()["locator"])["value"])
+                for key, item in bindings.items()
+            },
+        )
         return self.async_show_form(
             step_id="connection_targets",
             data_schema=vol.Schema(

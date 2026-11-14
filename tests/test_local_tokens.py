@@ -539,10 +539,10 @@ def _choices(result):
     schema = result["data_schema"].schema
     for key, selector in schema.items():
         if str(key) == "token":
-            return {
-                option["label"]: option["value"]
-                for option in selector.config["options"]
-            }
+            # The tokens offered; the first choice ("back") leads back.
+            options = selector.config["options"]
+            assert options[0]["value"] == "back"
+            return {option["label"]: option["value"] for option in options[1:]}
     return {}
 
 
@@ -933,7 +933,7 @@ async def test_tokens_with_the_same_time_get_distinct_labels(hass, dialog):
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     (selector,) = result["data_schema"].schema.values()
-    labels = [option["label"] for option in selector.config["options"]]
+    labels = [option["label"] for option in selector.config["options"]][1:]
     assert len(set(labels)) == 3 and labels[1] == labels[0] + " (2)"
 
 

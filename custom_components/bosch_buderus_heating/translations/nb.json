@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Logg på med SingleKey ID",
-        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
+        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`. Hvis SingleKey ID viser en side som varsler en videresending og ingenting skjer, velger du lenken eller knappen på siden.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
         "data": {
           "redirect_url": "Hele omdirigeringsadressen"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Konfigurer på nytt og søk på nytt",
-        "description": "Velg appens merke, gatewayer og forespørselsprofil. Lagring laster integrasjonen på nytt og utfører et fullstendig ressurssøk. Bruk dette etter en fastvareoppdatering eller når varmekretser, varmtvannsanlegg, varmekilder eller gatewayer har endret seg. **Standard** leser gjeldende driftsverdier hvert minutt. **Skyvennlig** reduserer skytrafikken ved å lese dem hvert andre minutt og alle andre skiftende verdier sjeldnere. Hvis du bytter appens merke, må du logge på med SingleKey ID på nytt.",
+        "description": "Velg appmerke, gatewayer og spørringsprofil. Når du lagrer, lastes integrasjonen inn på nytt og søker etter alle ressurser igjen, for eksempel etter en fastvareoppdatering eller et endret anlegg. Bytte av appmerke krever en ny SingleKey ID-pålogging.",
         "data": {
           "brand": "Appens merke",
           "gateway_ids": "Gatewayer",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Velg det eksisterende oppsettet",
-        "description": "Velg oppsettet denne lokale gatewayen hører til. Dette oppretter ikke et nytt anlegg.",
+        "description": "Velg oppsettet denne lokale gatewayen hører til, eller sett den opp som et nytt oppsett med bare lokal tilgang.",
         "data": {
-          "owner": "Eksisterende oppsett"
+          "owner": "Oppsett"
         }
       },
       "local_discovered": {
@@ -109,6 +109,13 @@
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
+      "local_certificate_data": {
+        "title": "Bekreft sertifikatet til dataporten",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
         "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Bekreft den lokale tilkoblingen",
-        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet.",
-        "data": {
-          "confirm": "Lagre denne lokale tilkoblingen"
-        }
+        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet. Lukk i stedet dialogen for ikke å lagre noe."
       },
       "local_retry": {
         "title": "Den lokale sjekken ble ikke fullført",
@@ -151,7 +155,7 @@
       "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
-      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Kopier i stedet `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
+      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Hvis siden sier at du blir videresendt og ingenting skjer, velger du lenken eller knappen på siden. Kopier deretter `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
       "gateway_changed": "Gatewaylisten endret seg mens denne dialogen var åpen. Lukk dialogen og åpne Konfigurer på nytt.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
       "unknown": "Det oppstod en uventet feil i skytilgangen. Vent litt og prøv igjen.",
@@ -173,6 +177,7 @@
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
       "local_certificate_changed": "Sertifikatet kunne ikke bekreftes eller har endret seg. Kontroller gateway-sertifikatet på nytt før du fortsetter.",
+      "local_certificate_unconfirmed": "Kryss av for å bekrefte sertifikatet. Hvis det ikke hører til gatewayen din, lukker du dialogen; ingenting sendes.",
       "local_token_rejected": "Gatewayen avviste denne tokenen. Sjekk den, eller forkast dette forsøket bevisst for å bruke en annen.",
       "local_resource_forbidden": "Gatewayen nektet tilgang til en nødvendig ressurs. En token alene beviser ikke lesetilgang.",
       "local_missing_resource": "Gatewayen tilbyr ikke en nødvendig oppsettsressurs.",
@@ -374,6 +379,10 @@
           "time": "Tidspunkt",
           "temperature": "Temperatur"
         }
+      },
+      "rrc_confirm": {
+        "title": "Lagre koblingspunkt",
+        "description": "**{program}**\n\n**Før:** {before}\n\n**Etter:** {after}\n\nEndringen sendes én gang og leses deretter tilbake. Den gjelder for alle tilordnede soner."
       },
       "rrc_day": {
         "title": "Velg koblingspunkt",
@@ -583,7 +592,7 @@
       },
       "connection_polling": {
         "title": "Forespørselsfrekvens",
-        "description": "Standard leser gjeldende driftsverdier for oppvarming hvert minutt, innstillinger og energiverdier hvert 5. minutt og tregere informasjon hvert 15. minutt. Skyvennlig dobler disse intervallene. Aktive feil sjekkes hvert minutt i begge profilene. Profilen gjelder forespørsler for oppvarming og ladeboks for den valgte skytilkoblingen; flere skyenheter melder endringer som meldinger. Pålogging, enhetssjekker og bekreftelsen etter en endring kan gi ekstra forespørsler utenfor denne tidsplanen. Hvis en forespørselssyklus tar lengre tid enn intervallet, starter den neste senere.",
+        "description": "**Standard** leser gjeldende driftsverdier hvert minutt og innstillinger og energiverdier hvert 5. minutt. **Skyvennlig** dobler disse intervallene. Aktive feil kontrolleres hvert minutt i begge profilene.",
         "data": {
           "polling_profile": "Forespørselsprofil"
         }
@@ -597,7 +606,7 @@
       },
       "cloud_auth": {
         "title": "Logg på med SingleKey ID",
-        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
+        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`. Hvis SingleKey ID viser en side som varsler en videresending og ingenting skjer, velger du lenken eller knappen på siden.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
         "data": {
           "redirect_url": "Hele omdirigeringsadressen"
         }
@@ -628,9 +637,9 @@
       },
       "local_owner": {
         "title": "Velg det eksisterende oppsettet",
-        "description": "Velg oppsettet denne lokale gatewayen hører til. Dette oppretter ikke et nytt anlegg.",
+        "description": "Velg oppsettet denne lokale gatewayen hører til, eller sett den opp som et nytt oppsett med bare lokal tilgang.",
         "data": {
-          "owner": "Eksisterende oppsett"
+          "owner": "Oppsett"
         }
       },
       "local_target": {
@@ -668,6 +677,13 @@
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
+      "local_certificate_data": {
+        "title": "Bekreft sertifikatet til dataporten",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
         "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
@@ -694,10 +710,7 @@
       },
       "local_result": {
         "title": "Bekreft den lokale tilkoblingen",
-        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet.",
-        "data": {
-          "confirm": "Lagre denne lokale tilkoblingen"
-        }
+        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet. Lukk i stedet dialogen for ikke å lagre noe."
       },
       "local_retry": {
         "title": "Den lokale sjekken ble ikke fullført",
@@ -705,14 +718,14 @@
       },
       "local_polling": {
         "title": "Lokale forespørsler",
-        "description": "Bekreftede ressurser: {known}. Tilgjengelige nå: {available}. Disse tallene viser tilstanden da denne dialogen ble åpnet. Intervallet er målet for sanntidsverdier. Innstillinger, energiverdier og diagnostikk leses hvert 5. minutt og tellere hvert 15. minutt, eller med dette intervallet hvis det er lengre; statiske detaljer leses daglig. En verdi blir utilgjengelig etter tre mistede intervaller. Store ressurssett kan ta lengre tid. Skyforespørslene forblir uavhengige. Måleverdier som skyen også leverer, leses lokalt minst like ofte som i skyen.",
+        "description": "Bekreftede ressurser: {known}, tilgjengelige nå: {available}. Intervallet er målet for liveverdier; tregere verdier leses sjeldnere. Dokumentasjonen beskriver de nøyaktige intervallene.",
         "data": {
           "interval": "Målintervall for sanntidsverdier"
         }
       },
       "local_values": {
         "title": "Lokale verdier for eksisterende entiteter",
-        "description": "Mens skyen kjører, avgjør dette valget om eksisterende sensorer bruker den lokale verdien av en måleverdi som begge tilgangene leverer under samme dokumenterte ressurs. Uten skyen (slått av, pålogging kreves, satt på pause, begrenset eller utilgjengelig) brukes alltid lokale verdier. Valget er slått på som standard for nye oppsett med sky- og lokal tilgang.\n\nNår det er aktivert, brukes den lokale verdien så lenge den er oppdatert. Hvis den lokale verdien er utdatert eller mangler, brukes den gjeldende skyverdien; hvis begge er utdatert, blir sensoren utilgjengelig. Tellere for energi, starter og driftstid bruker også den lokale verdien, men bytter bare kilde når hver viste telling er minst like høy som siste viste telling, slik at et kildebytte aldri får dem til å telle bakover. Justerbare innstillinger bruker fortsatt skyen. Entitets-ID-er, navn og historikk forblir uendret. Styring og endringer sendes fortsatt via skyen.",
+        "description": "Så lenge skyen kjører, avgjør dette valget om eksisterende sensorer bruker den lokale verdien av en måling som begge tilgangene leverer. Uten skyen brukes alltid de lokale verdiene; innstillinger og betjening går fortsatt via skyen. Entitets-ID-er, navn og historikk forblir uendret.",
         "data": {
           "enabled": "Bruk lokale verdier"
         }
@@ -919,7 +932,7 @@
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
       "reauth_targets_missing": "Denne påloggingen fant ingen av de påslåtte anleggene og enhetene. De tidligere påloggingsopplysningene beholdes. Sjekk at du logget på med samme konto som før. Hvis anleggene er fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen: slå på et anlegg som fortsatt finnes i kontoen under **Bruk for anlegg og enheter**, eller slå av de fjernede og fjern dem med **Glem fravalgte anlegg**. Hvis ingen er igjen, fjerner du skytilgangen og kobler den til på nytt.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
-      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Kopier i stedet `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
+      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Hvis siden sier at du blir videresendt og ingenting skjer, velger du lenken eller knappen på siden. Kopier deretter `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
       "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
       "no_gateways": "Ingen enheter ble funnet. Sjekk at det valgte merket og SingleKey ID-kontoen samsvarer med appen din. En romregulator med eldre fastvare vises først når fastvaren er oppdatert og den er satt opp i den nåværende appen med din SingleKey ID.",
@@ -937,6 +950,7 @@
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
       "local_certificate_changed": "Sertifikatet kunne ikke bekreftes eller har endret seg. Kontroller gateway-sertifikatet på nytt før du fortsetter.",
+      "local_certificate_unconfirmed": "Kryss av for å bekrefte sertifikatet. Hvis det ikke hører til gatewayen din, lukker du dialogen; ingenting sendes.",
       "local_token_rejected": "Gatewayen avviste denne tokenen. Sjekk den, eller forkast dette forsøket bevisst for å bruke en annen.",
       "local_resource_forbidden": "Gatewayen nektet tilgang til en nødvendig ressurs. En token alene beviser ikke lesetilgang.",
       "local_missing_resource": "Gatewayen tilbyr ikke en nødvendig oppsettsressurs.",
@@ -1492,6 +1506,7 @@
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Tilbake",
         "create": "Ny ferie"
       }
     },
@@ -1582,6 +1597,21 @@
         "continue": "Fortsett med lagret token",
         "discard": "Forkast ventende forsøk",
         "later": "Fortsett senere"
+      }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nytt anlegg (bare lokalt)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nytt oppsett (bare lokal tilgang)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Tilbake"
       }
     }
   },

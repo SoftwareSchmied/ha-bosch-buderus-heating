@@ -22,10 +22,16 @@ from collections.abc import Awaitable, Callable, Mapping
 from typing import Any, Final
 
 from homeassistant.config_entries import ConfigFlowResult, OptionsFlow
+from homeassistant.helpers.selector import SelectOptionDict
 
 from .ha_schema import validation as vol
 
 BACK: Final = "back"
+# The translation of the "Back" choice of a selection form (also in
+# ``holiday_period``): a selection form has no menu entry, so its first
+# choice leads back instead of closing the whole dialog with X.
+NAVIGATION: Final = "navigation"
+BACK_CHOICE: Final = SelectOptionDict(value=BACK, label=BACK)
 # The step of the outcome of a finished action.
 RESULT_PREFIX: Final = "result_"
 # Every outcome a finished action can report, each with its own page text.
@@ -60,6 +66,29 @@ RESULT_REASONS: Final = frozenset(
 )
 
 StepHandler = Callable[..., Awaitable[ConfigFlowResult]]
+# Forms that always lead to another form: Home Assistant shows "Next"
+# instead of the button that ends a dialog.
+NEXT_STEPS: Final = frozenset(
+    {
+        "cloud_retry",
+        "connection_add_cloud",
+        "connection_discover_retry",
+        "controls",
+        "holiday_gateway",
+        "holidays",
+        "local_tokens",
+        "rrc_day",
+        "rrc_programs",
+        "rrc_schedule",
+        "switch_program_copy",
+        "switch_program_day",
+        "switch_program_point",
+        "switch_program_week",
+        "switch_program_week_dhw",
+        "switch_program_week_inactive",
+        "switch_programs",
+    }
+)
 
 
 class NavigatingOptionsFlow(OptionsFlow):
@@ -69,6 +98,12 @@ class NavigatingOptionsFlow(OptionsFlow):
     # Steps that exist only while their form or menu is shown: an entry of
     # the connections menu, the page of an outcome.
     _page_steps: dict[str, StepHandler] | None = None
+
+    def async_show_form(self, **kwargs: Any) -> ConfigFlowResult:
+        """An intermediate form says "Next" (its own choice stays)."""
+        if kwargs.get("step_id") in NEXT_STEPS:
+            kwargs.setdefault("last_step", False)
+        return super().async_show_form(**kwargs)
 
     def __getattr__(self, name: str) -> Any:
         """A step that exists only while its form or menu is shown."""
