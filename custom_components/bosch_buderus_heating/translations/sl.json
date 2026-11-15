@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Nastavitev ni dokončana",
       "description": "Vnos »{title}« še nima nobenega dostopa. Pri njem izberite **Konfiguriraj** in nato »Nastavi lokalni dostop« (ali povežite dostop prek oblaka)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entitete zdaj berejo prek lokalnega dostopa",
+      "description": "{count} uporabljenih entitet zdaj prikazuje svojo vrednost prek lokalnega dostopa, vrednost iz oblaka pa je drugi vir: {entities}. Njihovi ID-ji entitet, nastavitve in zgodovina ostanejo, zato avtomatizacije, skripte in nadzorne plošče še naprej delujejo. Njihova imena, kategorije in stanja zdaj sledijo lokalni vrednosti. To obvestilo lahko prezrete; izgine po naslednjem ponovnem zagonu."
+    },
+    "local_only_entities_kept": {
+      "title": "Entitete niso več na voljo",
+      "description": "{count} entitet iz oblaka ni več na voljo, ker druga entiteta te integracije prikazuje isto vrednost prek lokalnega dostopa (stara → nova): {entities}. Avtomatizacije, skripte in nadzorne plošče, ki uporabljajo staro entiteto, naj uporabljajo novo. Staro entiteto odstranite, ko je ne potrebujete več; njena zgodovina do takrat ostane. To obvestilo lahko prezrete; ob naslednjem ponovnem zagonu se znova prikaže, dokler stara entiteta obstaja."
     }
   },
   "exceptions": {

@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Einrichtung nicht abgeschlossen",
       "description": "Der Eintrag „{title}“ hat noch keinen Zugang. Wähle bei ihm **Konfigurieren** und dann „Lokalen Zugang einrichten“ (oder verbinde einen Cloud-Zugang)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entitäten lesen jetzt über den lokalen Zugang",
+      "description": "{count} genutzte Entitäten zeigen ihren Wert jetzt über den lokalen Zugang, mit dem Cloud-Wert als zweiter Quelle: {entities}. Entity-IDs, Einstellungen und Verlauf bleiben, Automationen, Skripte und Dashboards funktionieren also weiter. Name, Kategorie und Zustände folgen jetzt dem lokalen Wert. Du kannst diesen Hinweis ignorieren; er verschwindet nach dem nächsten Neustart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entitäten werden nicht mehr bereitgestellt",
+      "description": "{count} Cloud-Entitäten werden nicht mehr bereitgestellt, weil eine andere Entität dieser Integration denselben Wert über den lokalen Zugang zeigt (alt → neu): {entities}. Automationen, Skripte und Dashboards, die die alte Entität nutzen, sollten die neue verwenden. Entferne die alte Entität, wenn du sie nicht mehr brauchst; ihr Verlauf bleibt bis dahin erhalten. Du kannst diesen Hinweis ignorieren; er erscheint beim nächsten Neustart wieder, solange die alte Entität existiert."
     }
   },
   "exceptions": {

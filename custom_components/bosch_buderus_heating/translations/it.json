@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Configurazione non terminata",
       "description": "La voce \"{title}\" non ha ancora nessun accesso. Seleziona **Configura** su di essa e poi \"Configura l'accesso locale\" (oppure collega un accesso cloud)."
+    },
+    "local_only_entities_continued": {
+      "title": "Le entità ora leggono tramite l'accesso locale",
+      "description": "{count} entità in uso mostrano ora il loro valore tramite l'accesso locale, con il valore del cloud come seconda fonte: {entities}. I loro ID entità, impostazioni e cronologia restano, quindi automazioni, script e dashboard continuano a funzionare. I loro nomi, categorie e stati seguono ora il valore locale. Puoi ignorare questo avviso; scompare dopo il prossimo riavvio."
+    },
+    "local_only_entities_kept": {
+      "title": "Entità non più fornite",
+      "description": "{count} entità del cloud non sono più fornite perché un'altra entità di questa integrazione mostra lo stesso valore tramite l'accesso locale (vecchia → nuova): {entities}. Automazioni, script e dashboard che usano la vecchia entità dovrebbero usare la nuova. Rimuovi la vecchia entità quando non ti serve più; la sua cronologia resta fino ad allora. Puoi ignorare questo avviso; ricompare al prossimo riavvio finché la vecchia entità esiste."
     }
   },
   "exceptions": {

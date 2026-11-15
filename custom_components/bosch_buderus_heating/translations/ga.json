@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Níl an socrú críochnaithe",
       "description": "Níl aon rochtain ag an iontráil “{title}” go fóill. Roghnaigh **Cumraigh** uirthi agus ansin “Socraigh rochtain áitiúil” (nó ceangail rochtain néil)."
+    },
+    "local_only_entities_continued": {
+      "title": "Léann na heintitis anois tríd an rochtain áitiúil",
+      "description": "Taispeánann {count} eintiteas atá in úsáid a luach anois tríd an rochtain áitiúil, agus luach na scamaill mar an dara foinse: {entities}. Fanann a n-aitheantais eintitis, a socruithe agus a stair, mar sin leanann uathoibrithe, scripteanna agus deaise ag obair. Leanann a n-ainmneacha, a gcatagóirí agus a staideanna an luach áitiúil anois. Is féidir leat neamhaird a dhéanamh den fhógra seo; imíonn sé tar éis an chéad atosú eile."
+    },
+    "local_only_entities_kept": {
+      "title": "Ní sholáthraítear na heintitis a thuilleadh",
+      "description": "Ní sholáthraítear {count} eintiteas scamaill a thuilleadh mar go dtaispeánann eintiteas eile den chomhtháthú seo an luach céanna tríd an rochtain áitiúil (sean → nua): {entities}. Ba cheart d'uathoibrithe, scripteanna agus deaiseanna a úsáideann an sean-eintiteas an ceann nua a úsáid. Bain an sean-eintiteas nuair nach mbíonn sé de dhíth ort a thuilleadh; fanann a stair go dtí sin. Is féidir leat neamhaird a dhéanamh den fhógra seo; feictear arís é ag an gcéad atosú eile fad is atá an sean-eintiteas ann."
     }
   },
   "exceptions": {

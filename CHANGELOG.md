@@ -143,7 +143,11 @@ entry says how it was tested; most of it with automated tests only.
     by an automated upgrade test from 0.9.1.
   - Such an entity that an earlier version removed or handed over to the
     cloud's sensor comes back at the next start with its entity ID and
-    settings. Automated tests only (Home Assistant 2026.5 and 2026.11).
+    settings. A cloud entity of the same reading that is in use is never
+    removed: it continues as the local-only entity with its entity ID (also
+    a renamed one), settings and statistics, whichever was set up first, and
+    a repair notice names it. Automated tests only (Home Assistant 2026.5 and
+    2026.11).
 - **Zone modes and setpoints missing on a large zone controller:** discovery
   now reads them first and wastes fewer requests on radio devices, so it
   finishes. Reported by petergoris-netizen in

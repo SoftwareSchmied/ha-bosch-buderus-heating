@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Nastavení není dokončeno",
       "description": "Položka „{title}“ zatím nemá žádný přístup. Vyberte u ní **Konfigurovat** a potom „Nastavit místní přístup“ (nebo připojte cloudový přístup)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entity nyní čtou přes místní přístup",
+      "description": "{count} používaných entit nyní zobrazuje svou hodnotu přes místní přístup, hodnota z cloudu je druhým zdrojem: {entities}. Jejich ID entit, nastavení a historie zůstávají, takže automatizace, skripty a dashboardy dál fungují. Jejich názvy, kategorie a stavy se nyní řídí místní hodnotou. Toto upozornění můžete ignorovat; po příštím restartu zmizí."
+    },
+    "local_only_entities_kept": {
+      "title": "Entity už nejsou poskytovány",
+      "description": "{count} cloudových entit už není poskytováno, protože jiná entita této integrace zobrazuje stejnou hodnotu přes místní přístup (stará → nová): {entities}. Automatizace, skripty a dashboardy, které používají starou entitu, by měly používat novou. Starou entitu odstraňte, až ji nebudete potřebovat; její historie do té doby zůstává. Toto upozornění můžete ignorovat; při příštím restartu se objeví znovu, dokud stará entita existuje."
     }
   },
   "exceptions": {

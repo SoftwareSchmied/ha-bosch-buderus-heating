@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Asennus ei ole valmis",
       "description": "Merkinnällä ”{title}” ei ole vielä yhteyttä. Valitse sen kohdalla **Määritä** ja sen jälkeen ”Määritä paikallinen yhteys” (tai yhdistä pilviyhteys)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteetit lukevat nyt paikallisen yhteyden kautta",
+      "description": "{count} käytössä olevaa entiteettiä näyttää nyt arvonsa paikallisen yhteyden kautta, ja pilven arvo on toinen lähde: {entities}. Niiden entiteettitunnukset, asetukset ja historia säilyvät, joten automaatiot, skriptit ja kojelaudat toimivat edelleen. Niiden nimet, luokat ja tilat seuraavat nyt paikallista arvoa. Voit ohittaa tämän ilmoituksen; se katoaa seuraavan uudelleenkäynnistyksen jälkeen."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteettejä ei enää tarjota",
+      "description": "{count} pilven entiteettiä ei enää tarjota, koska tämän integraation toinen entiteetti näyttää saman arvon paikallisen yhteyden kautta (vanha → uusi): {entities}. Vanhaa entiteettiä käyttävien automaatioiden, skriptien ja kojelautojen pitäisi käyttää uutta. Poista vanha entiteetti, kun et enää tarvitse sitä; sen historia säilyy siihen asti. Voit ohittaa tämän ilmoituksen; se näkyy uudelleen seuraavassa uudelleenkäynnistyksessä niin kauan kuin vanha entiteetti on olemassa."
     }
   },
   "exceptions": {

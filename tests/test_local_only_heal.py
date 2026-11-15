@@ -4,7 +4,9 @@ An earlier candidate removed the local-only entry of the compressor speed
 (and added a cloud entry of its own for the path) and handed the refrigerant
 circuit status over to the cloud sensor. At the next setup the local-only
 entities come back with their entity IDs and settings, and the cloud entries
-left over are removed. Generic local-only readings keep the hand-over, and
+the integration created disabled are removed. A cloud entry in use is never
+removed: it continues as the local-only entity under its entity ID, whichever
+was set up first. Generic local-only readings keep the hand-over, and
 nothing else in the registry is touched.
 """
 
@@ -16,6 +18,7 @@ import pytest
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 
 from custom_components.bosch_buderus_heating import local_only_heal
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -48,6 +51,8 @@ from tests.test_source_isolation import paired_target
 from tests.test_validity import MockConfigEntry
 
 UNIT_GATEWAY = "gateway-one"
+# The separator of grouped entity names.
+DASH = chr(0x2013)
 # Offered by the local plant view without a reviewed definition.
 GENERIC = "/heatingCircuits/hc1/mixerPosition"
 MANAGED = pytest.mark.usefixtures("socket_enabled", "enable_custom_integrations")
@@ -136,6 +141,51 @@ def handed_over_status(registry, entry, gateway) -> str:
         capabilities={"options": CLOUD_STATES},
     )
     return entity_id
+
+
+def counts(**values: int) -> dict[str, int]:
+    return {
+        "restored": 0,
+        "taken_back": 0,
+        "continued": 0,
+        "cloud_entries_removed": 0,
+        "cloud_entries_kept": 0,
+        **values,
+    }
+
+
+def notice(hass, coordinator, kind: str) -> dict[str, str] | None:
+    """The placeholders of a repair notice of the heal, if there is one."""
+    issue = ir.async_get(hass).async_get_issue(
+        DOMAIN,
+        local_only_heal.issue_id(
+            f"local_only_entities_{kind}",
+            coordinator.config_entry.entry_id,
+            coordinator.gateway.gateway_id,
+        ),
+    )
+    return None if issue is None else dict(issue.translation_placeholders or {})
+
+
+def active_cloud_speed(registry, entry, gateway, entity_id: str | None) -> str:
+    """A cloud entity the user has used for weeks: enabled, with statistics,
+    and its entity ID changed by the user (Home Assistant keeps no record)."""
+    item = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        cloud_unique_id(gateway, SPEED),
+        config_entry=entry,
+        suggested_object_id="heat_pump_compressor_actual_speed",
+        original_name="Heat pump Compressor Actual Speed",
+        capabilities={"state_class": "measurement"},
+        unit_of_measurement="%",
+        disabled_by=None,
+    )
+    if entity_id is None:
+        return item.entity_id
+    return registry.async_update_entity(
+        item.entity_id, new_entity_id=entity_id
+    ).entity_id
 
 
 def registry_items(registry) -> dict[tuple[str, str], object]:
@@ -233,10 +283,13 @@ async def test_the_entities_an_earlier_candidate_gave_away_come_back(
         status_state = hass.states.get(old["status"])
         assert set(LOCAL_STATES) <= set(status_state.attributes["options"])
         assert status_state.attributes["source"] == expected
-        assert local_only_heal.diagnostics(coordinator) == {
-            "restored": 1,
-            "taken_back": 1,
-            "cloud_entries_removed": 1,
+        assert local_only_heal.diagnostics(coordinator) == counts(
+            restored=1, taken_back=1, cloud_entries_removed=1
+        )
+        # The status entity in use is named in a notice.
+        assert notice(hass, coordinator, "continued") == {
+            "count": "1",
+            "entities": old["status"],
         }
         healed = [
             record
@@ -276,11 +329,11 @@ async def test_a_removed_entry_comes_back_and_its_cloud_entry_goes(
         _gateway_diagnostics,
     )
 
-    assert _gateway_diagnostics(1, coordinator)["local_only_healed"] == {
-        "restored": 1,
-        "taken_back": 0,
-        "cloud_entries_removed": 1,
-    }
+    assert _gateway_diagnostics(1, coordinator)["local_only_healed"] == counts(
+        restored=1, cloud_entries_removed=1
+    )
+    # Nothing in use changed: no notice.
+    assert notice(hass, coordinator, "continued") is None
     await coordinator.async_shutdown()
 
 
@@ -319,11 +372,7 @@ async def test_a_handed_over_entry_gets_its_local_unique_id_back(
         )
         is None
     )
-    assert local_only_heal.diagnostics(coordinator) == {
-        "restored": 0,
-        "taken_back": 1,
-        "cloud_entries_removed": 0,
-    }
+    assert local_only_heal.diagnostics(coordinator) == counts(taken_back=1)
     await coordinator.async_shutdown()
 
 
@@ -344,21 +393,25 @@ async def test_a_registered_entity_loses_a_leftover_cloud_entry(
     assert set(by_path(track(coordinator))) == {SPEED}
     assert registry.async_get(local) is not None
     assert registry.async_get(cloud) is None
-    assert local_only_heal.diagnostics(coordinator) == {
-        "restored": 0,
-        "taken_back": 0,
-        "cloud_entries_removed": 1,
-    }
+    assert local_only_heal.diagnostics(coordinator) == counts(cloud_entries_removed=1)
     await coordinator.async_shutdown()
 
 
-async def test_a_registered_entity_loses_a_handed_over_duplicate(
-    hass: HomeAssistant,
+@pytest.mark.parametrize("in_use", [True, False])
+async def test_a_handed_over_duplicate_of_a_registered_entity(
+    hass: HomeAssistant, in_use
 ) -> None:
+    """Next to a registered local-only entity only a duplicate the
+    integration created disabled is removed; one in use stays, and a notice
+    names it with the entity that shows the reading now."""
     coordinator = coordinator_with(hass, [], status_resource())
     registry = er.async_get(hass)
     handed = handed_over_status(registry, coordinator.config_entry, UNIT_GATEWAY)
-    registry.async_update_entity(handed, icon=None)  # not customised
+    registry.async_update_entity(
+        handed,
+        icon=None,  # not customised
+        disabled_by=None if in_use else er.RegistryEntryDisabler.INTEGRATION,
+    )
     local = registry.async_get_or_create(
         "sensor",
         DOMAIN,
@@ -366,11 +419,25 @@ async def test_a_registered_entity_loses_a_handed_over_duplicate(
         config_entry=coordinator.config_entry,
     ).entity_id
     heal_registered(coordinator)
-    assert registry.async_get(handed) is None
+    heal_registered(coordinator)  # the second setup call changes nothing
+    assert (registry.async_get(handed) is not None) is in_use
     assert registry.async_get(local).unique_id == local_only_unique_id(
         UNIT_GATEWAY, STATUS
     )
-    assert local_only_heal.diagnostics(coordinator)["cloud_entries_removed"] == 1
+    if in_use:
+        assert registry.async_get(handed).unique_id == cloud_unique_id(
+            UNIT_GATEWAY, STATUS
+        )
+        assert local_only_heal.diagnostics(coordinator) == counts(cloud_entries_kept=1)
+        assert notice(hass, coordinator, "kept") == {
+            "count": "1",
+            "entities": f"{handed} → {local}",
+        }
+    else:
+        assert local_only_heal.diagnostics(coordinator) == counts(
+            cloud_entries_removed=1
+        )
+        assert notice(hass, coordinator, "kept") is None
     await coordinator.async_shutdown()
 
 
@@ -397,18 +464,36 @@ async def test_the_090_1_shape_is_left_as_it_is(hass: HomeAssistant) -> None:
     await coordinator.async_shutdown()
 
 
-async def test_a_cloud_entity_that_was_never_local_stays(hass: HomeAssistant) -> None:
-    """No removed or handed-over local-only entry: the existing cloud entity
-    of a reviewed reading stays, and no local-only entity is added."""
+async def test_a_disabled_cloud_entry_that_was_never_local_gives_way(
+    hass: HomeAssistant,
+) -> None:
+    """Not in use: removed, and the local-only entity is added as new, the
+    same as with the local access set up first."""
     coordinator = coordinator_with(
         hass, [number(SPEED, 41, unit="%", kind="integerValue")], speed_resource()
     )
     registry = er.async_get(hass)
     cloud = cloud_speed(registry, coordinator.config_entry, UNIT_GATEWAY)
+    entities = by_path(track(coordinator))
+    assert set(entities) == {SPEED}
+    assert entities[SPEED].unique_id == local_only_unique_id(UNIT_GATEWAY, SPEED)
+    assert registry.async_get(cloud) is None
+    assert local_only_heal.diagnostics(coordinator) == counts(cloud_entries_removed=1)
+    await coordinator.async_shutdown()
+
+
+async def test_a_cloud_entity_in_use_waits_for_an_enabled_local_access(
+    hass: HomeAssistant,
+) -> None:
+    """Without any local-only entry and with the local access switched off,
+    the cloud entity stays the entity of the reading."""
+    coordinator = coordinator_with(hass, [], speed_resource(), binding_enabled=False)
+    registry = er.async_get(hass)
+    cloud = active_cloud_speed(registry, coordinator.config_entry, UNIT_GATEWAY, None)
     before = registry_items(registry)
     assert set(by_path(track(coordinator))) == set()
     assert registry_items(registry) == before
-    assert registry.async_get(cloud) is not None
+    assert registry.async_get(cloud).unique_id == cloud_unique_id(UNIT_GATEWAY, SPEED)
     await coordinator.async_shutdown()
 
 
@@ -515,23 +600,25 @@ async def test_entries_of_others_and_customised_ones_stay(
         config_entry=entry,
     ).entity_id
     heal_registered(coordinator)
+    # Customised: in use, so it continues as the local-only entity.
     assert registry.async_get(cloud).name == "Mine"
+    assert registry.async_get(cloud).unique_id == local_only_unique_id(
+        UNIT_GATEWAY, SPEED
+    )
     for kept in (alien, binary, unprefixed):
         assert registry.async_get(kept) is not None
     assert registry.async_get(old).platform == "other_integration"
     assert registry.async_get(other_entry) is not None
-    assert local_only_heal.diagnostics(coordinator) == {
-        "restored": 1,
-        "taken_back": 0,
-        "cloud_entries_removed": 0,
-    }
+    assert local_only_heal.diagnostics(coordinator) == counts(continued=1)
     await coordinator.async_shutdown()
 
 
 async def test_a_removed_entry_of_another_config_entry_is_not_restored(
     hass: HomeAssistant,
 ) -> None:
-    coordinator = coordinator_with(hass, [], speed_resource())
+    """It is no local-only entry of this entry: with the local access
+    switched off the reading counts as new to the entry and waits."""
+    coordinator = coordinator_with(hass, [], speed_resource(), binding_enabled=False)
     registry = er.async_get(hass)
     elsewhere = MockConfigEntry(domain=DOMAIN)
     elsewhere.add_to_hass(hass)
@@ -540,6 +627,11 @@ async def test_a_removed_entry_of_another_config_entry_is_not_restored(
     heal_registered(coordinator)
     assert registry.async_get(cloud) is not None
     assert set(local_only_heal.diagnostics(coordinator).values()) == {0}
+    assert (
+        "sensor",
+        DOMAIN,
+        local_only_unique_id(UNIT_GATEWAY, SPEED),
+    ) in registry.deleted_entities
     await coordinator.async_shutdown()
 
 
@@ -594,3 +686,333 @@ async def test_a_new_reading_without_a_fixed_form_waits_for_its_local_reading(
     assert keeps_local_entity(later, brine)
     await coordinator.async_shutdown()
     await later.async_shutdown()
+
+
+# ------------------------------------------- a cloud entity in use continues
+
+
+async def test_a_renamed_cloud_entity_in_use_keeps_its_entity_id(
+    hass: HomeAssistant,
+) -> None:
+    """The local-only entry was removed (for example with the local access)
+    and the user has worked with the cloud entity since, under an entity ID
+    of their own: it is never removed. It continues as the local-only
+    entity, so its entity ID, settings and statistics stay; the removed
+    entry stays removed, and a notice names the entity."""
+    coordinator = coordinator_with(
+        hass, [number(SPEED, 41, unit="%", kind="integerValue")], speed_resource()
+    )
+    registry = er.async_get(hass)
+    entry = coordinator.config_entry
+    old_local = removed_local_speed(registry, entry, UNIT_GATEWAY)
+    mine = active_cloud_speed(
+        registry, entry, UNIT_GATEWAY, "sensor.my_compressor_speed"
+    )
+    entities = by_path(track(coordinator))
+    assert set(entities) == {SPEED}
+    item = registry.async_get(mine)
+    assert item is not None
+    assert item.unique_id == local_only_unique_id(UNIT_GATEWAY, SPEED)
+    assert item.previous_unique_id == cloud_unique_id(UNIT_GATEWAY, SPEED)
+    assert item.disabled_by is None
+    assert item.name is None  # not the removed entry's name
+    assert entities[SPEED].unique_id == item.unique_id
+    # The removed entry stays removed; its entity ID is not taken again.
+    assert registry.async_get(old_local) is None
+    assert (
+        "sensor",
+        DOMAIN,
+        local_only_unique_id(UNIT_GATEWAY, SPEED),
+    ) not in registry.deleted_entities
+    assert (
+        registry.async_get_entity_id(
+            "sensor", DOMAIN, cloud_unique_id(UNIT_GATEWAY, SPEED)
+        )
+        is None
+    )
+    assert local_only_heal.diagnostics(coordinator) == counts(continued=1)
+    assert notice(hass, coordinator, "continued") == {
+        "count": "1",
+        "entities": "sensor.my_compressor_speed",
+    }
+    # Repeating it changes nothing.
+    before = registry_items(registry)
+    heal_registered(coordinator)
+    assert registry_items(registry) == before
+    assert local_only_heal.diagnostics(coordinator)["continued"] == 1
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize(
+    "capabilities", [{"state_class": "total_increasing"}, {"state_class": None}]
+)
+async def test_a_cloud_entity_with_other_statistics_stays_as_it_is(
+    hass: HomeAssistant, capabilities
+) -> None:
+    """Its long-term statistics would not continue under the local-only
+    form: the cloud entity stays the entity of the reading (no state class
+    is fine, the local-only entity may add one)."""
+    from custom_components.bosch_buderus_heating.local_only_sensor import (
+        keeps_local_entity,
+    )
+
+    coordinator = coordinator_with(
+        hass, [number(SPEED, 41, unit="%", kind="integerValue")], speed_resource()
+    )
+    registry = er.async_get(hass)
+    removed_local_speed(registry, coordinator.config_entry, UNIT_GATEWAY)
+    mine = active_cloud_speed(
+        registry, coordinator.config_entry, UNIT_GATEWAY, "sensor.my_speed"
+    )
+    registry.async_update_entity(mine, capabilities=capabilities)
+    entities = by_path(track(coordinator))
+    continued = capabilities["state_class"] is None
+    assert set(entities) == ({SPEED} if continued else set())
+    assert registry.async_get(mine).unique_id == (
+        local_only_unique_id(UNIT_GATEWAY, SPEED)
+        if continued
+        else cloud_unique_id(UNIT_GATEWAY, SPEED)
+    )
+    assert keeps_local_entity(coordinator, SPEED) is continued
+    await coordinator.async_shutdown()
+
+
+async def test_a_cloud_entity_with_another_unit_stays_as_it_is(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.bosch_buderus_heating.local_only_sensor import (
+        keeps_local_entity,
+    )
+
+    cloud = Resource(
+        SPEED,
+        value=38,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="integerValue", unit="Hz"),
+    )
+    coordinator = coordinator_with(
+        hass, [number(SPEED, 41, unit="%", kind="integerValue")], cloud
+    )
+    registry = er.async_get(hass)
+    mine = active_cloud_speed(registry, coordinator.config_entry, UNIT_GATEWAY, None)
+    assert set(by_path(track(coordinator))) == set()
+    assert registry.async_get(mine).unique_id == cloud_unique_id(UNIT_GATEWAY, SPEED)
+    assert not keeps_local_entity(coordinator, SPEED)
+    await coordinator.async_shutdown()
+
+
+async def test_a_removed_entry_without_a_fixed_form_waits_for_its_reading(
+    hass: HomeAssistant,
+) -> None:
+    """Its local-only entity cannot be added before a local reading: the
+    cloud sensor is not held back (the reading would have no entity)."""
+    from custom_components.bosch_buderus_heating.local_only_sensor import (
+        keeps_local_entity,
+    )
+
+    brine = "/heatSources/hs1/brineCircuit/pumpSpeed"
+    cloud = Resource(
+        brine,
+        value=40,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="integerValue", unit="%"),
+    )
+    coordinator = coordinator_with(hass, [], cloud, binding_enabled=False)
+    registry = er.async_get(hass)
+    item = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        local_only_unique_id(UNIT_GATEWAY, brine),
+        config_entry=coordinator.config_entry,
+    )
+    registry.async_remove(item.entity_id)
+    assert not keeps_local_entity(coordinator, brine)
+    assert set(by_path(track(coordinator))) == set()
+    # With its local reading it comes back.
+    later = coordinator_with(
+        hass, [number(brine, 41, unit="%", kind="integerValue")], cloud
+    )
+    assert keeps_local_entity(later, brine)
+    assert set(by_path(track(later))) == {brine}
+    await coordinator.async_shutdown()
+    await later.async_shutdown()
+
+
+async def test_a_handed_over_entry_without_a_reading_waits(
+    hass: HomeAssistant,
+) -> None:
+    """A handed-over entry of a reading without a fixed form is taken back
+    only with its local reading; until then the cloud sensor shows it."""
+    brine = "/heatSources/hs1/brineCircuit/pumpSpeed"
+    cloud = Resource(
+        brine,
+        value=40,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="integerValue", unit="%"),
+    )
+    coordinator = coordinator_with(hass, [], cloud)
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        local_only_unique_id(UNIT_GATEWAY, brine),
+        config_entry=coordinator.config_entry,
+    ).entity_id
+    registry.async_update_entity(
+        entity_id, new_unique_id=cloud_unique_id(UNIT_GATEWAY, brine)
+    )
+    before = registry_items(registry)
+    heal_registered(coordinator)
+    assert registry_items(registry) == before
+    await coordinator.async_shutdown()
+
+
+# ------------------------------------- the same result in either setup order
+
+
+@MANAGED
+@pytest.mark.parametrize("first", ["local", "cloud"])
+async def test_the_setup_order_gives_the_same_entities(hass, first) -> None:
+    """Local access first, or the cloud first (its entities in use) and the
+    local access added later: the same unique IDs, names, categories,
+    states and enablement; only a cloud entity's entity ID is kept."""
+    hass.config.components.add(DOMAIN)
+    registry = er.async_get(hass)
+    cloud_ids: dict[str, str] = {}
+
+    def configure(data, options):
+        target, _ = paired_target(data, options)
+        options["targets"][target]["local_values"] = True
+        options["bindings"]["local"]["enabled"] = True
+        if first == "local":
+            return
+        (entry,) = hass.config_entries.async_entries(DOMAIN)
+        # What a cloud-only start registered for the two readings.
+        cloud_ids["speed"] = active_cloud_speed(
+            registry, entry, GATEWAY, "sensor.my_compressor_speed"
+        )
+        cloud_ids["status"] = registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            cloud_unique_id(GATEWAY, STATUS),
+            config_entry=entry,
+            suggested_object_id="heat_pump_status",
+            original_name="Heat pump - Status",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            capabilities={"options": CLOUD_STATES},
+        ).entity_id
+
+    def probed() -> bool:
+        coordinator = source_for(owner, GATEWAY)
+        return (
+            coordinator is not None
+            and SPEED in coordinator.resources
+            and STATUS in coordinator.resources
+        )
+
+    backend = RefusedRefrigerantBackend()
+    async with running(hass, backend, configure=configure) as (_, _, owner, _):
+        await owner.start_platforms()
+        publish_local(owner, 41, "defrost")
+        await eventually(probed)
+        # The compressor speed is disabled by default, the status enabled.
+        await eventually(lambda: native(owner, "sensor", STATUS_ID) is not None)
+        shapes = {}
+        for name, unique_id in (("speed", SPEED_ID), ("status", STATUS_ID)):
+            entity_id = registry.async_get_entity_id("sensor", DOMAIN, unique_id)
+            item = registry.async_get(entity_id)
+            if first == "cloud":
+                assert entity_id == cloud_ids[name]
+            shapes[name] = (
+                item.original_name,
+                item.translation_key,
+                item.entity_category,
+                item.capabilities,
+            )
+            # The enablement of an entity in use stays the user's.
+            assert item.disabled_by is (
+                er.RegistryEntryDisabler.INTEGRATION
+                if first == "local" and name == "speed"
+                else None
+            )
+        for unique_id in (CLOUD_SPEED_ID, CLOUD_STATUS_ID):
+            assert registry.async_get_entity_id("sensor", DOMAIN, unique_id) is None
+        assert shapes == {
+            "speed": (
+                "Heat generator 1 " + DASH + " Compressor speed",
+                None,
+                None,
+                {"state_class": "measurement"},
+            ),
+            "status": (
+                "Heat generator 1 " + DASH + " Refrigerant circuit status",
+                "refrigerant_status",
+                None,
+                {"options": LOCAL_STATES},
+            ),
+        }
+
+
+@MANAGED
+async def test_an_automation_on_a_renamed_cloud_entity_keeps_working(
+    hass,
+) -> None:
+    """The user renamed the cloud entity's ID and an automation triggers on
+    it; after the local-only entity of the reading took over, the automation
+    still sees every new reading under the same entity ID."""
+    from homeassistant.setup import async_setup_component
+
+    hass.config.components.add(DOMAIN)
+    registry = er.async_get(hass)
+    seen: list[str] = []
+
+    def configure(data, options):
+        target, _ = paired_target(data, options)
+        options["targets"][target]["local_values"] = True
+        options["bindings"]["local"]["enabled"] = True
+        (entry,) = hass.config_entries.async_entries(DOMAIN)
+        removed_local_speed(registry, entry, GATEWAY)
+        active_cloud_speed(registry, entry, GATEWAY, "sensor.my_compressor_speed")
+
+    assert await async_setup_component(
+        hass,
+        "automation",
+        {
+            "automation": {
+                "triggers": [
+                    {"trigger": "state", "entity_id": "sensor.my_compressor_speed"}
+                ],
+                "actions": [
+                    {
+                        "event": "speed_seen",
+                        "event_data": {"value": "{{ trigger.to_state.state }}"},
+                    }
+                ],
+            }
+        },
+    )
+    hass.bus.async_listen(
+        "speed_seen", lambda event: seen.append(str(event.data["value"]))
+    )
+
+    def probed() -> bool:
+        coordinator = source_for(owner, GATEWAY)
+        return coordinator is not None and SPEED in coordinator.resources
+
+    backend = RefusedRefrigerantBackend()
+    async with running(hass, backend, configure=configure) as (_, _, owner, _):
+        await owner.start_platforms()
+        publish_local(owner, 41, "defrost")
+        await eventually(probed)
+        await eventually(lambda: native(owner, "sensor", SPEED_ID) is not None)
+        assert native(owner, "sensor", SPEED_ID).entity_id == (
+            "sensor.my_compressor_speed"
+        )
+        await eventually(lambda: "41" in seen)
+        publish_local(owner, 44, "defrost")
+        source_for(owner, GATEWAY).async_update_listeners()
+        await eventually(lambda: "44" in seen)
+        state = hass.states.get("sensor.my_compressor_speed")
+        assert state.attributes["source"] == "local"
+        coordinator = source_for(owner, GATEWAY)
+        assert local_only_heal.diagnostics(coordinator) == counts(continued=1)

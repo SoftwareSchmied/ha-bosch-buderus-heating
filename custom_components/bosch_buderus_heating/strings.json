@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Setup not finished",
       "description": "The entry \"{title}\" has no access yet. Select **Configure** on it and then \"Set up local access\" (or connect a cloud access)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entities now read from the local access",
+      "description": "{count} entities in use now show their reading from the local access, with the cloud reading as the second source: {entities}. Their entity IDs, settings and history stay, so automations, scripts and dashboards keep working. Their names, categories and states now follow the local reading. You can ignore this notice; it disappears after the next restart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entities no longer provided",
+      "description": "{count} cloud entities are no longer provided because another entity of this integration shows the same reading from the local access (old → new): {entities}. Automations, scripts and dashboards that use the old entity should use the new one. Remove the old entity when you no longer need it; its history stays until then. You can ignore this notice; it appears again at the next restart while the old entity exists."
     }
   },
   "exceptions": {

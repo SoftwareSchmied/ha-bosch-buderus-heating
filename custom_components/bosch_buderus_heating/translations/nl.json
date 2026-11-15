@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Configuratie niet voltooid",
       "description": "De invoer \"{title}\" heeft nog geen toegang. Kies **Configureren** bij deze invoer en daarna \"Lokale toegang instellen\" (of verbind een cloudtoegang)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteiten lezen nu via de lokale toegang",
+      "description": "{count} gebruikte entiteiten tonen hun waarde nu via de lokale toegang, met de cloudwaarde als tweede bron: {entities}. Hun entiteits-ID's, instellingen en geschiedenis blijven behouden, dus automatiseringen, scripts en dashboards blijven werken. Hun namen, categorieën en toestanden volgen nu de lokale waarde. Je kunt deze melding negeren; ze verdwijnt na de volgende herstart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteiten worden niet meer geleverd",
+      "description": "{count} cloudentiteiten worden niet meer geleverd omdat een andere entiteit van deze integratie dezelfde waarde via de lokale toegang toont (oud → nieuw): {entities}. Automatiseringen, scripts en dashboards die de oude entiteit gebruiken, moeten de nieuwe gebruiken. Verwijder de oude entiteit wanneer je haar niet meer nodig hebt; haar geschiedenis blijft tot dan behouden. Je kunt deze melding negeren; ze verschijnt bij de volgende herstart opnieuw zolang de oude entiteit bestaat."
     }
   },
   "exceptions": {
