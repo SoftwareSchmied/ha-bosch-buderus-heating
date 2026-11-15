@@ -142,7 +142,7 @@ must not be described as local MX300/MX400 access.
 
 The integration was accepted into the default HACS catalog on 2026-10-20 through
 [hacs/default#10040](https://github.com/hacs/default/pull/10040). I have updated
-the [installation guide](setup.md#install-boschbuderus-heating) for direct HACS
+the [installation guide](setup.md#install-boschbuderus-home-comfort) for direct HACS
 search and installation. Thank you to the HACS maintainers for reviewing and
 accepting the submission.
 

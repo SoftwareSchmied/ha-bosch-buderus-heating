@@ -74,9 +74,8 @@ A past period (yesterday, previous month, previous year) changes only once
 the new period is confirmed by a read after its end. Just after midnight or
 the first of a month the entity still shows the period before, with its
 dates in the attributes. The values have no state class: they are not
-counters. The months July to October 2026 of the reference installation are
-rounded to whole kWh by the plant itself; months are therefore summed from
-the days wherever the days are complete.
+counters. Some plants round older monthly values to whole kWh; months are
+therefore summed from the days wherever the days are complete.
 
 ## Import into the statistics
 
