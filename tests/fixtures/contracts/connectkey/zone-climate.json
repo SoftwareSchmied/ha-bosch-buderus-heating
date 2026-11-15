@@ -5,7 +5,7 @@
   "physical_device_verified": false,
   "firmware": null,
   "capture_date": null,
-  "contract": "MX400 zones behind a K40 gateway: 8 zones (numbers with gaps), 12 radio room devices that refuse the same 8 leaves each, a second heating circuit whose directory is refused, refused zone heating/cooling/program directories with readable heating leaves. Every value is synthetic; anything not listed answers HTTP 404."
+  "contract": "MX400 zones behind a K40 gateway: 8 zones (numbers with gaps), 12 radio room devices that refuse the same 8 leaves each, a second heating circuit whose directory is refused, three heat sources with names outside the hsN scheme whose directories are refused, refused zone heating/cooling/program directories with readable heating leaves. Every value is synthetic; anything not listed answers HTTP 404."
  },
  "resources": [
   {
@@ -745,13 +745,13 @@
      "id": "/heatSources/hs1"
     },
     {
-     "id": "/heatSources/hs2"
+     "id": "/heatSources/sourceA"
     },
     {
-     "id": "/heatSources/hs3"
+     "id": "/heatSources/sourceB"
     },
     {
-     "id": "/heatSources/hs4"
+     "id": "/heatSources/sourceC"
     },
     {
      "id": "/heatSources/info"
@@ -3766,9 +3766,9 @@
   "/heatSources/additionalHeater/primary/status",
   "/heatSources/emon",
   "/heatSources/hs1/pumpVolumeFlow",
-  "/heatSources/hs2",
-  "/heatSources/hs3",
-  "/heatSources/hs4",
+  "/heatSources/sourceA",
+  "/heatSources/sourceB",
+  "/heatSources/sourceC",
   "/heatSources/workingTime",
   "/heatingCircuits/hc1/cooling/manualRoomSetpoint",
   "/heatingCircuits/hc1/cooling/temporaryRoomSetpoint",

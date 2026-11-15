@@ -27,6 +27,8 @@ from tests.ha_test_helpers import MockConfigEntry
 from tests.helpers.managed_runtime import wait_for_sources, wallbox_coordinators
 from tests.helpers.options_menu import menu_note, outcome
 
+pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
+
 ROOT = "custom_components.bosch_buderus_heating"
 FIXTURE = Path(__file__).parent / "fixtures/contracts/pointt-wallbox/cp0-control.json"
 GW = "wallbox-A"

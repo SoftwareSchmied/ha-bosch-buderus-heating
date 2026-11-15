@@ -297,20 +297,72 @@ ROOM_CONTROLLER_EVIDENCE_PATHS: Final = ("/zones", ZONE_LIST, PRODUCT_TYPE_PATH)
 _OPEN_ANSWERS: Final = frozenset({"http_401", "http_408", "http_429"})
 
 
-def room_controller_check_complete(report: object) -> bool:
+def _evidence_settled(item: object) -> bool:
+    """Whether one requested evidence path was found or got a definite
+    client answer (such as 404)."""
+    if getattr(item, "discovered", False) or getattr(item, "read_policy", "") != (
+        "normal"
+    ):
+        return True
+    answer = getattr(item, "fallback_result", None) or getattr(item, "bulk_result", "")
+    return (
+        isinstance(answer, str)
+        and re.fullmatch(r"http_4\d\d", answer) is not None
+        and answer not in _OPEN_ANSWERS
+    )
+
+
+def evidence_answers(report: object) -> dict[str, bool]:
+    """Per evidence path a later discovery (the search for missing parts)
+    requested: whether its answer settles it. A path below the zones left
+    unread leaves all of them open."""
+    paths = getattr(report, "paths", {})
+    zones_unread = _search_left_zones_unread(report)
+    return {
+        path: not zones_unread and _evidence_settled(paths[path])
+        for path in ROOM_CONTROLLER_EVIDENCE_PATHS
+        if path in paths
+    }
+
+
+def _search_left_zones_unread(report: object) -> bool:
+    """Whether a discovery stopped at its budget before reading a path below
+    the zones (a room controller's zones are evidence too)."""
+    return any(
+        path.startswith("/zones/")
+        and not item.discovered
+        and item.read_policy == "normal"
+        and item.bulk_result in ("not_attempted", "pending")
+        for path, item in getattr(report, "paths", {}).items()
+    )
+
+
+def room_controller_check_complete(
+    report: object, later: Mapping[str, bool] | None = None
+) -> bool:
     """Whether a discovery report settles that evidence of a room controller
-    was read: the discovery finished, and each evidence path it requested was
-    found or got a definite client answer (such as 404). A server error, a
-    timeout, a rate limit or a malformed answer leaves it open."""
-    if not getattr(report, "completed", False):
+    was read: the discovery finished (or stopped at its budget with every
+    path below the zones read), and each evidence path it requested was found
+    or got a definite client answer (such as 404). A server error, a timeout,
+    a rate limit or a malformed answer leaves it open.
+
+    ``later``: the answers of later searches for missing parts
+    (``evidence_answers``); an evidence path they requested is decided by the
+    latest of them instead.
+    """
+    stop_reason = getattr(report, "stop_reason", None)
+    if not getattr(report, "completed", False) and (
+        stop_reason != "resource_limit" or _search_left_zones_unread(report)
+    ):
         return False
     paths = getattr(report, "paths", {})
     for path in ROOM_CONTROLLER_EVIDENCE_PATHS:
-        item = paths.get(path)
-        if item is None or item.discovered or item.read_policy != "normal":
+        if later and path in later:
+            if not later[path]:
+                return False
             continue
-        answer = item.fallback_result or item.bulk_result
-        if not re.fullmatch(r"http_4\d\d", answer) or answer in _OPEN_ANSWERS:
+        item = paths.get(path)
+        if item is not None and not _evidence_settled(item):
             return False
     return True
 

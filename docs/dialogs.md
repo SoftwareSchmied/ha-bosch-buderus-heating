@@ -63,8 +63,8 @@ valid. See [setup](setup.md) for where to find the app address.
 connections menu as well: to a system that has none yet, or as a new system
 without the cloud. A gateway that Home Assistant finds in the network while
 entries exist can be added to one of them or set up as a new entry with local
-access only. Its address is preselected in the local setup when it is the only
-gateway found.
+access only. Its address is preselected in the local setup of the new entry,
+also when other gateways are announced; any other address can still be chosen.
 
 The local setup asks to confirm a certificate once per port. The second page,
 for the data port after the sign-in, has its own title. Not ticking the box

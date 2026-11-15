@@ -171,6 +171,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # P49b step 7: the marker that opens an options flow at the local setup.
 LOCAL_FIRST_START = "local_first_start"
+# The address of the discovered gateway that new entry was set up for.
+LOCAL_FOUND_ADDRESS = "local_found_address"
 # Setup forms that always lead to another form ("Next").
 _CONFIG_NEXT_STEPS = frozenset(
     {
@@ -294,12 +296,16 @@ class BoschBuderusConfigFlow(
             return result
         from .managed_entry import SETUP_ISSUE_PREFIX
 
+        start: dict[str, Any] = {LOCAL_FIRST_START: True}
+        if (found := self._local_found_address()) is not None:
+            # The gateway the setup started from is preselected there.
+            start[LOCAL_FOUND_ADDRESS] = found
         try:
             local = await self.hass.config_entries.options.async_init(
                 entry.entry_id,
                 # Marks the prepared flow for as long as it exists.
-                context=cast(Any, {LOCAL_FIRST_START: True}),
-                data={LOCAL_FIRST_START: True},
+                context=cast(Any, dict(start)),
+                data=start,
             )
             if local.get("type") in (FlowResultType.FORM, FlowResultType.MENU):
                 result["next_flow"] = (FlowType.OPTIONS_FLOW, local["flow_id"])
@@ -1033,6 +1039,7 @@ class BoschBuderusOptionsFlow(
             and self._entry.version == 4
         ):
             # Continued from the setup of this entry (P49b step 7).
+            self._local_preselect(user_input.get(LOCAL_FOUND_ADDRESS))
             return await self.async_step_local_setup()
         prepared = [
             flow
@@ -1049,6 +1056,7 @@ class BoschBuderusOptionsFlow(
             # than a GET of the prepared flow). This one takes over and the
             # prepared one ends quietly: it is handed off, not abandoned.
             for flow in prepared:
+                self._local_preselect(flow["context"].get(LOCAL_FOUND_ADDRESS))
                 cast(dict[str, Any], flow["context"])["handed_off"] = True
                 with suppress(UnknownFlow):
                     self.hass.config_entries.options.async_abort(flow["flow_id"])

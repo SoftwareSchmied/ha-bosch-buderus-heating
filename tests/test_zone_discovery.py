@@ -2,9 +2,10 @@
 
 The fixture has the shape of a real report: eight zones with gaps in their
 numbers, twelve radio devices that refuse the same eight leaves each, a
-second heating circuit and three heat sources whose directories are refused,
-and zone side directories (``heating``, ``cooling``) that are refused while
-their leaves are readable. No payload of a real installation is used.
+second heating circuit and three heat sources whose directories are refused
+(their names are outside the ``hsN`` scheme, as the redacted report shows
+them as ``{hs}``), and zone side directories (``heating``, ``cooling``) that
+are refused while their leaves are readable. No payload of a real installation is used.
 """
 
 from __future__ import annotations
@@ -18,6 +19,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
+from custom_components.bosch_buderus_heating.circuit_controls import (
+    room_controller_check_complete,
+)
 from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
 )
@@ -406,6 +410,106 @@ async def test_references_left_after_the_budget_are_not_read_by_the_allowance():
         and item.bulk_result == "not_attempted"
         for item in report.paths.values()
     )
+
+
+def canonical_heat_sources(resources, refused) -> None:
+    """A synthetic variant: the refused heat sources are named ``hs2`` to
+    ``hs4``, so their known children are read directly."""
+    names = ("/hs2", "/hs3", "/hs4")
+    listed = tuple(
+        reference.path[len("/heatSources") :]
+        for reference in resources["/heatSources"].references
+        if "/source" not in reference.path
+    )
+    resources["/heatSources"] = directory("/heatSources", *listed, *names)
+    refused.difference_update({f"/heatSources/source{n}" for n in "ABC"})
+    refused.update(f"/heatSources{name}" for name in names)
+
+
+SOLAR = (
+    "/collectorTemperature",
+    "/pumpModulation",
+    "/solarYield",
+    "/dhwTankBottomTemperature",
+    "/actualPower",
+    "/status",
+)
+
+
+async def test_heat_sources_outside_the_hs_scheme_get_no_direct_reads():
+    """The real shape: refused names outside ``hsN`` are not circuits."""
+    resources, refused = fixture_tree()
+
+    _, report, _ = await discover(
+        resources, refused, maximum_extra_probes=MAX_EXTRA_PROBES
+    )
+
+    assert report.completed
+    assert not any(c.startswith("/heatSources/") for c in report.direct_probes)
+    assert set(report.direct_probes) == {"/heatingCircuits/hc2"} | {
+        c for c in report.direct_probes if c.startswith("/zones/")
+    }
+
+
+async def test_refused_canonical_heat_sources_are_read_directly():
+    resources, refused = fixture_tree()
+    canonical_heat_sources(resources, refused)
+
+    _, report, _ = await discover(
+        resources, refused, maximum_extra_probes=MAX_EXTRA_PROBES
+    )
+
+    assert report.completed and report.stop_reason == "complete"
+    assert {"/heatSources/hs2", "/heatSources/hs3", "/heatSources/hs4"} <= set(
+        report.direct_probes
+    )
+    assert report.extra_probes_requested <= MAX_EXTRA_PROBES - 50
+
+
+async def test_a_directory_read_from_the_allowance_has_its_children_read():
+    """A solar circuit only an optional probe reaches, read after the shared
+    budget: its children are read from the allowance too, and the discovery
+    finishes (the room controller check needs a finished one)."""
+    resources, refused = fixture_tree()
+    canonical_heat_sources(resources, refused)
+    resources["/solarCircuits/sc1"] = directory("/solarCircuits/sc1", *SOLAR)
+    for child in SOLAR:
+        resources[f"/solarCircuits/sc1{child}"] = value(f"/solarCircuits/sc1{child}")
+
+    found, report, client = await discover(
+        resources, refused, maximum_extra_probes=MAX_EXTRA_PROBES
+    )
+
+    assert report.completed and report.stop_reason == "complete"
+    late = extra_paths(client, report, 512)
+    assert "/solarCircuits/sc1" in late
+    for child in SOLAR:
+        assert f"/solarCircuits/sc1{child}" in found
+        assert f"/solarCircuits/sc1{child}" in late
+    assert room_controller_check_complete(report)
+
+
+async def test_the_allowance_reads_below_its_own_directories_only():
+    """References of directories the shared budget read stay unread."""
+    resources, refused = fixture_tree()
+    resources["/solarCircuits/sc1"] = directory("/solarCircuits/sc1", *SOLAR)
+    for child in SOLAR:
+        resources[f"/solarCircuits/sc1{child}"] = value(f"/solarCircuits/sc1{child}")
+
+    found, report, client = await discover(
+        resources, refused, maximum_resources=40, maximum_extra_probes=1000
+    )
+
+    assert report.stop_reason == "resource_limit"
+    late = set(extra_paths(client, report, 40))
+    direct = {p for record in report.direct_probes.values() for p in record.paths}
+    read_late = {p for p in late if p in found and p not in direct}
+    for path in late:
+        item = report.paths[path]
+        if item.source is DiscoveryPathSource.OPTIONAL or path in direct:
+            continue
+        # Anything else read late lies below a directory read late.
+        assert any(path.startswith(f"{parent}/") for parent in read_late), path
 
 
 @pytest.mark.parametrize("budget", [1000, 512 + 400])

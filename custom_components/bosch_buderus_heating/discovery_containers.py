@@ -21,6 +21,7 @@ one of them is kept like any other.
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import NamedTuple
@@ -30,6 +31,11 @@ from .pointt import Resource
 
 # At most this many direct reads per discovery, apart from its overall budget.
 MAX_DIRECT_CONTAINER_PROBES = 256
+# And at most this many per kind of circuit and per circuit, so containers
+# found early cannot use up the reads of the others (a refused heating circuit
+# needs about 30).
+MAX_DIRECT_PROBES_PER_KIND = 128
+MAX_DIRECT_PROBES_PER_CIRCUIT = 64
 
 REFUSED_STATUSES = frozenset({403, 406})
 
@@ -59,6 +65,8 @@ _KNOWN_CHILDREN: dict[str, tuple[str, ...]] = {
         "/switchPrograms",
         "/switchPrograms/A",
         "/switchPrograms/B",
+        "/cooling/switchPrograms",
+        "/cooling/switchPrograms/A",
         "/switchPrograms/nameA",
         "/switchPrograms/nameB",
         "/supplyTemperatureSetpoint",
@@ -101,7 +109,9 @@ _KNOWN_CHILDREN: dict[str, tuple[str, ...]] = {
         "/lowChargingDelta",
         "/lowStop",
         "/switchPrograms",
+        "/switchPrograms/A",
         "/switchPrograms/B",
+        "/switchPrograms/program1",
         "/sensor",
         "/recirculation",
     ),
@@ -121,8 +131,10 @@ _KNOWN_CHILDREN: dict[str, tuple[str, ...]] = {
         "/sensor/gas",
     ),
     "solarCircuits": (),
-    "ventilation": (),
-    "zones": (),
+    # The time programs of each kind (``switch_programs.KINDS``), read like
+    # the other children when their directory is refused.
+    "ventilation": ("/switchPrograms", "/switchPrograms/cp"),
+    "zones": ("/switchPrograms", "/switchPrograms/heating", "/switchPrograms/cooling"),
 }
 
 
@@ -196,12 +208,18 @@ class ContainerProbes:
         known: Callable[[str], bool],
         records: dict[str, DirectProbeDiagnostic],
         limit: int = MAX_DIRECT_CONTAINER_PROBES,
+        kind_limit: int = MAX_DIRECT_PROBES_PER_KIND,
+        circuit_limit: int = MAX_DIRECT_PROBES_PER_CIRCUIT,
     ) -> None:
         self._suffixes = suffixes
         self._known = known
         self._records = records
         self._limit = limit
+        self._kind_limit = kind_limit
+        self._circuit_limit = circuit_limit
         self._planned = 0
+        self._per_kind: Counter[str] = Counter()
+        self._per_circuit: Counter[str] = Counter()
         self.over_limit: set[str] = set()
         self._listings: dict[str, frozenset[str]] = {}
         self._incomplete: dict[str, str] = {}
@@ -308,16 +326,25 @@ class ContainerProbes:
         core: bool,
     ) -> list[ContainerProbe]:
         depth = self._depths[container]
+        family = family_of(container)
+        assert family is not None
+        kind, circuit = family[0], f"/{family[0]}/{family[1]}"
         probes: list[ContainerProbe] = []
         seen: set[str] = set()
         for path in paths:
             if path in seen or self._known(path) or path in self.over_limit:
                 continue
             seen.add(path)
-            if self._planned >= self._limit:
+            if (
+                self._planned >= self._limit
+                or self._per_kind[kind] >= self._kind_limit
+                or self._per_circuit[circuit] >= self._circuit_limit
+            ):
                 self.over_limit.add(path)
                 continue
             self._planned += 1
+            self._per_kind[kind] += 1
+            self._per_circuit[circuit] += 1
             levels = path[len(container) :].count("/")
             probes.append(ContainerProbe(path, depth + levels, core))
         if probes:

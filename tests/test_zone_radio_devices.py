@@ -197,7 +197,8 @@ async def test_one_entity_per_reporting_device_also_when_found_later(
 async def test_no_entities_on_a_room_controller(hass, coordinator):
     show(coordinator, battery(), signal())
     added = []
-    entry = SimpleNamespace(async_on_unload=lambda _: None)
+    unload = []
+    entry = SimpleNamespace(async_on_unload=unload.append)
     with patch(
         "custom_components.bosch_buderus_heating.zone_radio_devices.context_of",
         return_value=SimpleNamespace(rrc_plant=True),
@@ -206,6 +207,8 @@ async def test_no_entities_on_a_room_controller(hass, coordinator):
             entry, coordinator, added.extend, ZoneRadioBatteryBinarySensor
         )
     assert added == []
+    for callback in unload:
+        callback()
 
 
 async def test_names_are_translated_and_grouped_by_device(hass, coordinator):

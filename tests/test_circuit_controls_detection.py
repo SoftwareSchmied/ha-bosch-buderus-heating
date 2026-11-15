@@ -18,6 +18,7 @@ from homeassistant.exceptions import ServiceValidationError
 from custom_components.bosch_buderus_heating.circuit_controls import (
     GENERIC_ONLY_POLICIES,
     SUMMER_WINTER_MODE_POLICY,
+    evidence_answers,
     room_controller_check_complete,
 )
 from custom_components.bosch_buderus_heating.control import track_control_entities
@@ -155,7 +156,7 @@ async def test_an_existing_entity_refuses_while_unchecked(hass):
 # The check itself --------------------------------------------------------------
 
 
-def _report(completed=True, **answers):
+def _report(completed=True, stop_reason=None, **answers):
     paths = {
         path: SimpleNamespace(
             discovered=answer == "found",
@@ -165,7 +166,7 @@ def _report(completed=True, **answers):
         )
         for path, answer in answers.items()
     }
-    return SimpleNamespace(completed=completed, paths=paths)
+    return SimpleNamespace(completed=completed, stop_reason=stop_reason, paths=paths)
 
 
 @pytest.mark.parametrize(
@@ -180,10 +181,52 @@ def _report(completed=True, **answers):
         (_report(**{ZONE_LIST: "http_429"}), False),
         (_report(**{"/zones": "timeout"}), False),
         (_report(**{"/gateway/productType": "malformed"}), False),
+        # Stopped at the budget: settled only with every zone path read.
+        (_report(completed=False, stop_reason="resource_limit"), True),
+        (
+            _report(
+                completed=False,
+                stop_reason="resource_limit",
+                **{"/zones": "found", "/zones/zn1": "not_attempted"},
+            ),
+            False,
+        ),
+        (_report(completed=False, stop_reason="depth_limit"), False),
+        (
+            _report(
+                completed=False,
+                stop_reason="resource_limit",
+                **{"/zones": "not_attempted"},
+            ),
+            False,
+        ),
     ],
 )
 def test_room_controller_check(report, complete):
     assert room_controller_check_complete(report) is complete
+
+
+@pytest.mark.parametrize(
+    ("later", "complete"),
+    [
+        ({}, False),
+        ({"/zones": True}, True),
+        ({"/zones": False}, False),
+        ({"/zones": True, ZONE_LIST: False}, False),
+    ],
+)
+def test_a_later_search_decides_its_evidence(later, complete):
+    report = _report(**{"/zones": "http_503"})
+    assert room_controller_check_complete(report, later) is complete
+
+
+def test_evidence_answers_of_a_later_search():
+    assert evidence_answers(_report(**{"/zones": "http_404"})) == {"/zones": True}
+    assert evidence_answers(_report(**{"/zones": "http_503"})) == {"/zones": False}
+    assert evidence_answers(
+        _report(**{"/zones": "found", "/zones/zn1": "not_attempted"})
+    ) == {"/zones": False}
+    assert evidence_answers(_report(**{"/system": "found"})) == {}
 
 
 def _client(tree: dict[str, object]) -> AsyncMock:
@@ -261,6 +304,69 @@ async def test_the_check_stays_settled_after_a_failed_discovery(hass):
     coordinator.client.get_resource.side_effect = client.get_resource.side_effect
     await coordinator._async_discover_data()
     assert coordinator.room_controller_checked
+
+
+def _answer_with(coordinator, tree) -> None:
+    client = _client(tree)
+    coordinator.client.get_resources_bulk.side_effect = (
+        client.get_resources_bulk.side_effect
+    )
+    coordinator.client.get_resource.side_effect = client.get_resource.side_effect
+
+
+@pytest.mark.parametrize(("later", "checked"), [(404, True), (503, False)])
+async def test_the_search_for_missing_parts_settles_the_check(hass, later, checked):
+    """The zones did not answer at start; the search for missing parts gets
+    the answer later and the generic settings follow without a restart."""
+    coordinator = coordinator_for(hass, {}, checked=False)
+    _answer_with(coordinator, _tree(503))
+    coordinator.data = await coordinator._async_discover_data()
+    assert not coordinator.room_controller_checked
+    assert "/zones" in coordinator.discovery_recovery.missing
+    added, lifecycle = _track(coordinator)
+    assert _generic(added) == set()
+    _answer_with(coordinator, _tree(later))
+    await coordinator._async_recover_missing({})
+    assert coordinator.room_controller_checked is checked
+    coordinator.async_update_listeners()
+    assert bool(_generic(added)) is checked
+    lifecycle.unload()
+
+
+async def test_a_later_search_that_finds_a_room_controller(hass):
+    """The zones answer later with a zone list: checked, but no generic
+    setting appears (the gateway is a room controller)."""
+    coordinator = coordinator_for(hass, {}, checked=False)
+    _answer_with(coordinator, _tree(503))
+    coordinator.data = await coordinator._async_discover_data()
+    added, lifecycle = _track(coordinator)
+    zone = "/zones/zn1"
+    tree = _tree(
+        parse_resource(
+            {
+                "id": "/zones",
+                "type": "refEnum",
+                "references": [{"id": ZONE_LIST}, {"id": zone}],
+            }
+        )
+    )
+    tree[zone] = parse_resource(
+        {"id": zone, "type": "refEnum", "references": [{"id": f"{zone}/name"}]}
+    )
+    tree[f"{zone}/name"] = parse_resource(
+        {"id": f"{zone}/name", "type": "stringValue", "value": "x"}
+    )
+    tree[ZONE_LIST] = parse_resource(
+        {"id": ZONE_LIST, "type": "zoneList", "values": [{"id": 1}]}
+    )
+    _answer_with(coordinator, tree)
+    await coordinator._async_recover_missing({})
+    assert ZONE_LIST in coordinator.resources
+    assert coordinator.room_controller_checked
+    coordinator.async_update_listeners()
+    assert coordinator.control_context().rrc_plant
+    assert _generic(added) == set()
+    lifecycle.unload()
 
 
 # Existing entities after a restart with the stored inventory ---------------------

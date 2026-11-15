@@ -768,11 +768,15 @@ the children only that sibling lists. An empty directory without such a
 sibling, such as the ventilation zone of a heat pump without ventilation, is
 a valid answer and is not probed. This applies to every heating circuit,
 hot-water circuit, heat source, solar circuit, ventilation zone and zone the
-controller advertises, also to refused directories below them. A circuit that
-is not advertised, or a container answering 404, is never probed. Children of
-a refused directory are read like catalog paths; children only a sibling
-lists are read like optional probes. At most 256 such reads happen per
-discovery, within its overall budget or, once that is used up, within the
+controller advertises, also to refused directories below them, including
+refused program directories (the time programs of each kind, such as
+`switchPrograms/heating` and `switchPrograms/cooling` of a zone). A circuit
+that is not advertised, a heat-source entry whose name is not `hsN`, or a
+container answering 404, is never probed. Children of a refused directory are
+read like catalog paths; children only a sibling lists are read like optional
+probes. At most 256 such reads happen per discovery (at most 128 per kind of
+circuit and 64 per circuit, so containers found early leave reads for the
+others), within its overall budget or, once that is used up, within the
 extra allowance of the start-up discovery; a 403 or 404 answer to one of them is
 kept and paused like any other path. `direct_probe_containers`,
 `direct_probe_paths`, `direct_probe_paths_discovered` and

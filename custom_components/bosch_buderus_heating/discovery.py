@@ -715,11 +715,15 @@ async def async_discover_resources(
     # #131: the direct reads below refused or incomplete containers.
     direct_paths: set[str] = set()
 
+    # Directories the extra allowance read: what they list is read from it too.
+    extra_parents: set[str] = set()
+
     def extra_eligible(path: str) -> bool:
         """A path the allowance outside the shared budget may read."""
         return (
             report.paths[path].source is DiscoveryPathSource.OPTIONAL
             or path in direct_paths
+            or _below_any(path, extra_parents)
         )
 
     def admitted(
@@ -1079,6 +1083,8 @@ async def async_discover_resources(
                 )
                 continue
             discovered[result.path] = resource
+            if extra_mode and not device_frontier:
+                extra_parents.add(result.path)
             if resource.path == ZONE_LIST and listed_ids(resource) is not None:
                 enable_rrc_profile("zones", depth + 1)
                 enable_rrc_lists(depth + 1)
@@ -1363,6 +1369,18 @@ def _optional_children(path: str) -> tuple[str, ...]:
     elif _DEVICE_PATH.fullmatch(path):
         suffixes = _DEVICE_OPTIONAL_SUFFIXES
     return (*fixed, *(f"{path}{suffix}" for suffix in suffixes))
+
+
+def _below_any(path: str, parents: set[str]) -> bool:
+    """Whether a path lies below one of ``parents``."""
+    if not parents:
+        return False
+    position = path.rfind("/")
+    while position > 0:
+        if path[:position] in parents:
+            return True
+        position = path.rfind("/", 0, position)
+    return False
 
 
 def _is_allowed_reference(path: str, roots: tuple[str, ...]) -> bool:
