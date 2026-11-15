@@ -145,6 +145,10 @@ async def test_start_removes_only_files_of_entries_that_no_longer_exist(
     hass, storage_dir
 ):
     """STORE-5 Variant 2, on real files in the storage folder."""
+    from custom_components.bosch_buderus_heating.recordings.manager import (
+        store_key,
+    )
+
     entry, cloud, target = entry_for(hass)
     known, gone = entry.entry_id, "removed-entry"
     digest, key = "0" * 16, "a" * 24
@@ -154,6 +158,9 @@ async def test_start_removes_only_files_of_entries_that_no_longer_exist(
         f"{DOMAIN}_faults_{known}_{key}": True,
         f"{DOMAIN}_faults_{gone}_{key}": False,
         f"{DOMAIN}.inventory.{known}": True,
+        store_key(known, digest): True,  # the plant's recordings
+        store_key(gone, digest): False,
+        f"{DOMAIN}.rrc_energy.{gone}.{digest}": False,
         f"{DOMAIN}.inventory.{gone}": False,
         f"{DOMAIN}.discovery_inventory.{gone}": False,
         f"{DOMAIN}.module_fingerprints.{gone}": False,

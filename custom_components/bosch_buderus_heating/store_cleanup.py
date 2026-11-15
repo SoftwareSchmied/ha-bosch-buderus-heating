@@ -26,6 +26,8 @@ _ENTRY_FAMILIES = (
     (f"{DOMAIN}.faults.", r"\.[0-9a-f]{16}"),
     # W5: the energy history import of an RRC controller.
     (f"{DOMAIN}.rrc_energy.", r"\.[0-9a-f]{16}"),
+    # The plant's recordings of a gateway (recordings.manager.store_key).
+    (f"{DOMAIN}.recordings.", r"\.[0-9a-f]{16}"),
     (f"{DOMAIN}_faults_", r"_[0-9a-f]{24}"),
     (f"{DOMAIN}.inventory.", ""),
     (f"{DOMAIN}.discovery_inventory.", ""),
