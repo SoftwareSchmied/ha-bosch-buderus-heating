@@ -61,8 +61,8 @@ concurrency with heating sources, while keeping its own section polling. A slow
 wallbox does not hold heating discovery or supplementary startup reads. Source
 shutdown immediately makes its readings unavailable, cancels pending polls and
 rejects late replies. Replacement logins must confirm every assigned gateway,
-including disabled wallboxes. Sensor identifiers and the read-only scope remain
-unchanged.
+including disabled wallboxes. Sensor identifiers remain unchanged; the
+controls added later are described below.
 
 This preparation has tests against a local HTTP server, including separate
 wallboxes and mixed heating accounts. Normal version 4 setup now uses this
@@ -82,9 +82,9 @@ Feedback from wallbox owners is very welcome.
 
 ### Controls and additional readings (0.9.2-beta.2)
 
-Since 0.9.2-beta.2 a wallbox can also be operated. The functions and their
-rules follow the vendor app, because I could not test them on a wallbox:
-expected, untested on a real wallbox. Every control is **disabled by
+Since 0.9.2-beta.2 a wallbox can also be operated. I could not test the
+functions and their rules on a wallbox: expected, untested on a real
+wallbox. Every control is **disabled by
 default**; enable only what you need.
 
 | Entity | Type | What it does | Exists when |
@@ -122,14 +122,14 @@ unknown.
 - Right before sending, the integration reads the wallbox again
   (`telemetry`, `conf`, `info` and the value itself). If the state no
   longer allows the change, nothing is sent.
-- A setting is written only when the wallbox reports it `writeable`
-  (stricter than the vendor app, which does not check this), not when it
-  reports `available: false`, and not when it reports `used: false`.
+- A setting is written only when the wallbox reports it `writeable`, not
+  when it reports `available: false`, and not when it reports `used:
+  false`.
 - Exactly one request per action, never repeated, also not after a timeout.
   The integration then reads every two seconds for up to twenty seconds. If
   the new state does not show, the action is reported as not confirmed; the
   wallbox may still apply it.
-- Commands keep five seconds apart, as in the vendor app. No change runs
+- Commands keep five seconds apart. No change runs
   while the wallbox is being read.
 - Start is offered only while the vehicle is plugged in and waiting
   (`Preparing`, paused by the vehicle, or paused by the station for a
@@ -141,9 +141,9 @@ unknown.
 - The charging current can be changed only in normal mode, not during a
   boost and not while a group's load management limits the wallbox. Back to
   normal mode is refused during a boost: end the boost first.
-- The vendor app's own extra steps are not reproduced: no hidden
-  `cmd/limit 6` after a start (below 6 A the start is refused with a
-  message), and no automatic raise of a power limit below 5 000 W.
+- No extra steps happen on their own: no current limit is set after a
+  start (below 6 A the start is refused with a message), and a power limit
+  below 5 000 W is not raised automatically.
 - Access control is never written: `conf/auth`, RFID cards and their
   teach-in are not part of the integration, and the charge log and energy
   history are not read (personal data).
@@ -245,8 +245,8 @@ ich mich.
 ### Bedienung und zusätzliche Anzeigen (0.9.2-beta.2)
 
 Seit 0.9.2-beta.2 lässt sich eine Wallbox auch bedienen. Funktionen und
-Regeln folgen der Hersteller-App, weil ich sie an keiner Wallbox prüfen
-konnte: erwartet, ungetestet an einer echten Wallbox. Alle Bedienelemente
+Regeln konnte ich an keiner Wallbox prüfen: erwartet, ungetestet an einer
+echten Wallbox. Alle Bedienelemente
 sind **standardmäßig deaktiviert**; bitte nur aktivieren, was gebraucht wird.
 
 | Entität | Typ | Wirkung | Entsteht, wenn |
@@ -285,15 +285,13 @@ Codes bleiben unbekannt.
   (`telemetry`, `conf`, `info` und den Wert selbst). Erlaubt der Zustand die
   Änderung nicht mehr, wird nichts gesendet.
 - Eine Einstellung wird nur geschrieben, wenn die Wallbox sie als
-  `writeable` meldet (strenger als die Hersteller-App, die das nicht prüft),
-  nicht bei `available: false` und nicht bei `used: false`.
+  `writeable` meldet, nicht bei `available: false` und nicht bei `used: false`.
 - Genau eine Anfrage je Aktion, nie wiederholt, auch nicht nach einer
   Zeitüberschreitung. Danach liest die Integration alle zwei Sekunden bis zu
   zwanzig Sekunden lang. Zeigt sich der neue Zustand nicht, wird die Aktion
   als nicht bestätigt gemeldet; die Wallbox kann sie trotzdem noch
   übernehmen.
-- Zwischen zwei Befehlen liegen mindestens fünf Sekunden, wie in der
-  Hersteller-App. Während die Wallbox gelesen wird, läuft keine Änderung.
+- Zwischen zwei Befehlen liegen mindestens fünf Sekunden. Während die Wallbox gelesen wird, läuft keine Änderung.
 - Starten wird nur angeboten, solange das Fahrzeug angesteckt ist und wartet
   (`Preparing`, vom Fahrzeug pausiert oder von der Ladestation pausiert bei
   einer Begrenzungsquelle, die auch die App beendet); Pausieren nur während
@@ -306,10 +304,10 @@ Codes bleiben unbekannt.
   während eines Boosts und nicht, solange das Lastmanagement eines Verbunds
   die Wallbox begrenzt. Der Wechsel zurück in die normale Betriebsart wird
   während eines Boosts abgelehnt: zuerst den Boost beenden.
-- Eigene Zusatzschritte der Hersteller-App werden nicht nachgebaut: kein
-  verdecktes `cmd/limit 6` nach einem Start (unter 6 A wird der Start mit
-  einem Hinweis abgelehnt) und kein selbsttätiges Anheben einer
-  Leistungsgrenze unter 5 000 W.
+- Nichts geschieht zusätzlich von selbst: Nach einem Start wird keine
+  Stromgrenze gesetzt (unter 6 A wird der Start mit einem Hinweis
+  abgelehnt), und eine Leistungsgrenze unter 5 000 W wird nicht
+  selbsttätig angehoben.
 - Zugangsschutz wird nie geschrieben: `conf/auth`, RFID-Karten und ihr
   Einlernen gehören nicht zur Integration; Ladeprotokoll und
   Energieverlauf werden nicht gelesen (personenbezogene Daten).

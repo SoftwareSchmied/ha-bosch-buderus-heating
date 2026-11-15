@@ -1,6 +1,6 @@
 # Slovenian (sl) glossary
 
-Draft, awaiting review by a native speaker. Based on the glossary in
+Corrections are welcome. Based on the glossary in
 [`docs/translations.md`](../translations.md); Home Assistant core terms are
 used where core already has them (marked HA).
 

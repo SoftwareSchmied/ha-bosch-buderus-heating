@@ -1,6 +1,6 @@
 # Glossary: Czech (cs)
 
-Reviewed (2026-11-10). The Czech texts in
+Corrections are welcome. The Czech texts in
 `translations/cs.json` and `i18n/cs.json` use these terms consistently.
 
 Style: sentence case; the user is addressed formally in the plural
@@ -92,7 +92,7 @@ Further terms used in the texts:
 | utility power block | blokace dodavatelem energie |
 | plan regeneration (water softener) | naplánování regenerace |
 
-Room controller terms added in 0.9.0-alpha.5 (drafts, awaiting review):
+Room controller terms added in 0.9.0-alpha.5:
 
 | English | Czech |
 | --- | --- |

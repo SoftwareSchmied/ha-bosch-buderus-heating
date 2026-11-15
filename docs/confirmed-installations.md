@@ -17,12 +17,13 @@ and keep serial numbers, gateway IDs and account details out of your post.
 
 Thank you to everyone who has shared their system and test results.
 
-Last updated: 2026-11-13.
+Last updated: 2026-11-15.
 
 ## Tested heaters
 
 | Manufacturer | Model | Variants | Type | Controller | Gateway / internet module | Confirmed features |
 |---|---|---|---|---|---|---|
+| Bosch | Compress 7800i LW | CS7800iLW 8 F | brine-to-water heat pump | – | K40RF, firmware 15.00.01 | readings (cloud and local), brine temperatures, hot water, energy counters, local access |
 | Buderus | Logatherm WLW176i | WLW176i-12 TP70, WLW-10 MB AR | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
 | Buderus | Logatherm WLW186i | WLW186i-12 TP70, WLW186i-12 TP70 W, WLW186i-12 E | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating controls, time programs (read-only), hot water schedule changes (WLW186i-12 E), local access |
 | Buderus | Logatherm WLW196i | WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |

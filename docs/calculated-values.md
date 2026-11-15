@@ -141,7 +141,8 @@ is saved and never falls after a restart. Disabled by default.
   with its own supply sensor, its supply temperature minus its supply
   setpoint signal while the circuit heats. In kelvin, diagnostic, enabled.
   On a real installation with a heat pump at its minimum output, the supply
-  was measured a few kelvin above the setpoint in normal operation.
+  was measured a few kelvin above the setpoint in normal operation; see
+  [why the supply is above the setpoint](heating-controls.md#why-is-the-supply-temperature-above-the-setpoint).
 
 There is no "compressor at minimum output" flag: the threshold would rest on
 no manufacturer statement, and the compressor speed is available as a

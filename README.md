@@ -36,11 +36,14 @@ access; when it is back, the same entities carry on with their history.
 
 - Readings of heating circuits, hot water, heat sources, system pressure, starts and operating hours
 - Cumulative energy counters, including a calculated environmental energy
+- Calculated values: what a heating circuit is doing, defrosts, current COP and performance factors ([calculated values](docs/calculated-values.md))
+- The heat pump's own recordings per day, month and year, optionally as long-term statistics ([plant recordings](docs/recordings.md))
 - Controls for operating modes, setpoints, hot water, extra hot water, Silent Mode and away mode, where the system offers them
 - **Operate appliance** dialog with heating-circuit climates and a native hot-water entity
 - Heating, hot water, cooling, zone and ventilation schedules with a weekly view and the action `set_switch_points` (beyond hot water program A expected, untested), and holiday periods with calendar
 - Faults, warnings and maintenance messages with bell notifications and events for automations
 - Room controllers of the RRC 2.0 platform: zones, programs, absences, radio devices
+- A climate entity per zone of a zone controller such as an MX400 with radio room thermostats (expected, untested; [zone controls](docs/zone-controls.md#zone-climate))
 - Optional read-only **local access** that updates many readings more often and keeps them available without the cloud
 - Additional device families: water heaters, air conditioners, air purifiers, dehumidifiers, the WE800i water softener and wallboxes (controls expected, untested)
 - Redacted diagnostics and texts in 19 languages
@@ -63,7 +66,7 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 
 Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
 
-- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i and WLW186i, confirmed.
+- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i and WLW186i and the brine-to-water heat pump Bosch Compress 7800i LW, confirmed.
 - **K30/K30RF:** split heat pump Logatherm WLW196i AR and gas boiler Logamax plus GBH192i.2, confirmed (readings, partly holidays read-only).
 - **iCom:** gas boiler Logamax plus GB172 with KM200, confirmed (readings only).
 - **RRC 2.0:** gas boiler Logano plus GB212 with TC100.2, confirmed; CT200 expected, untested.
@@ -76,7 +79,7 @@ Access and brands:
 - iCom gateways, room controllers and the other device families are cloud
   only. The other device families still need checks on real devices.
 - **Brands:** sign-in with the Bosch or Buderus app; the confirmed
-  installations are Buderus systems. IVT, Junkers, Nefit, Worcester and
+  installations are Buderus systems and one Bosch heat pump. IVT, Junkers, Nefit, Worcester and
   Vulcano use the same cloud and are expected to work, not confirmed yet.
 - **Not covered:** Matter devices, arbitrary MQTT devices and gateway network
   administration.
@@ -129,10 +132,16 @@ Everyday readings and controls are enabled; technical and identifying values
 stay disabled. The [entity catalog](docs/entities.md) lists every entity with
 its source, default state and polling interval.
 
-For a hydraulic view of the heat pump on a dashboard, the
-[Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card)
-has a preset for this integration (`preset: bosch_buderus_heating`). See
-[using the hydraulic card](docs/entities.md#using-the-heat-pump-hydraulic-card).
+### Works with
+
+- [Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card):
+  a dashboard card that draws the heat pump's hydraulics with live values;
+  it has a preset for this integration (`preset: bosch_buderus_heating`,
+  see [using the hydraulic card](docs/entities.md#using-the-heat-pump-hydraulic-card)).
+- [Wärmewacht](https://github.com/waermewacht/integration): a health check
+  of the heat pump built on this integration's energy counters, compressor
+  status and temperatures, with performance factors per mode, cycling and
+  defrosts. Its template finds the system during setup.
 
 <a id="unreleased-development-work"></a>
 <a id="new-pointt-controls-in-beta7"></a>

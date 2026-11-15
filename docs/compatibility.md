@@ -24,7 +24,7 @@ account, gateway, controller and heating system.
 | Status | Systems |
 |---|---|
 | In use | Many installations with heat pumps and gas condensing boilers; see [confirmed installations](confirmed-installations.md) |
-| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus |
+| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus and Bosch |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
 | Room controllers (RRC 2.0) | TC100.2: zone readings and control, programs, temporary setpoint, open window detection, one-day absence, hot water mode, boost, away mode and next switch point confirmed; editing switch points, other absences and hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings untested. CT200: untested. Cloud only, no local access. See [room controllers](room-controllers.md) |

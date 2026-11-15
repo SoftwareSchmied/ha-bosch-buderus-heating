@@ -6246,7 +6246,7 @@
       "path": "/heatingCircuits/hc{circuitNumber}/cooling/switchPrograms/A",
       "previous_path": "/heatingCircuits/{hc}/cooling/switchPrograms/A",
       "disposition": "supported_transaction",
-      "reason": "Cooling program A (on/off) read strictly and changed as a raw array only with reported limits and the cooling level on; form from the app, no device response seen.",
+      "reason": "Cooling program A (on/off) read strictly and changed as a raw array only with reported limits and the cooling level on; form not yet confirmed by a device response.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -11111,7 +11111,7 @@
       "path": "/ventilation/zone1/switchPrograms/cp",
       "previous_path": "/ventilation/zone1/switchPrograms/cp",
       "disposition": "supported_transaction",
-      "reason": "Ventilation program changed as a raw array only with reported limits and the levels listed in ventilationLevels; form from the app, no device response seen.",
+      "reason": "Ventilation program changed as a raw array only with reported limits and the levels listed in ventilationLevels; form not yet confirmed by a device response.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -11924,7 +11924,7 @@
       "path": "/zones/zone{zoneNumber}/switchPrograms/cooling",
       "previous_path": "/zones/{zone}/switchPrograms/cooling",
       "disposition": "supported_transaction",
-      "reason": "Zone cooling program with absolute temperatures changed as a raw array only with reported limits, range and step; form from the app, no device response seen.",
+      "reason": "Zone cooling program with absolute temperatures changed as a raw array only with reported limits, range and step; form not yet confirmed by a device response.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -11973,7 +11973,7 @@
       "path": "/zones/zone{zoneNumber}/switchPrograms/heating",
       "previous_path": "/zones/{zone}/switchPrograms/heating",
       "disposition": "supported_transaction",
-      "reason": "Zone heating program with absolute temperatures changed as a raw array only with reported limits, range and step; form from the app, no device response seen.",
+      "reason": "Zone heating program with absolute temperatures changed as a raw array only with reported limits, range and step; form not yet confirmed by a device response.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -20535,7 +20535,7 @@
       "path": "/dhwCircuits/dhw1/switchPrograms/program1",
       "previous_path": "/dhwCircuits/dhw1/switchPrograms/program1",
       "disposition": "supported_transaction",
-      "reason": "WDDW2 program written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off, only with reported limits; form from the app, no device response seen.",
+      "reason": "WDDW2 program written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off, only with reported limits; form not yet confirmed by a device response.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",

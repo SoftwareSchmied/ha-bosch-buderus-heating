@@ -1,8 +1,7 @@
 # Air conditioners on a PointT gateway
 
-Expected, untested on a real installation. I built this support in
-0.9.2-beta.2 from the behaviour of the vendor app and checked it only with
-simulated data in automated tests. I am happy about feedback from anyone who
+Expected, untested on a real installation. I added this support in
+0.9.2-beta.2 and checked it only with simulated data in automated tests. I am happy about feedback from anyone who
 has such an air conditioner in the Bosch or Buderus app.
 
 Some air conditioners appear in the account's PointT gateway list as their
@@ -108,9 +107,9 @@ the unit is off.
   `{"switchPoints": [...]}` and reads it back after 1, 2, 4 and 8 seconds.
   Nothing is sent again; a lost answer is resolved by reading. A program
   changed in the meantime (for example in the app) is refused.
-- Expected, untested on a real installation: the form of a program follows
-  the vendor app, which reads it without checking its type; a program in
-  another form is shown with a note in the diagnostics or not at all.
+- Expected, untested on a real installation: the form of a program; its
+  type is not checked, and a program in another form is shown with a note
+  in the diagnostics or not at all.
 
 ## Changes
 
@@ -147,8 +146,8 @@ numbers or identifiers are included.
 ## Deutsch
 
 Erwartet, ungetestet an einer echten Anlage. Ich habe die Unterstützung in
-0.9.2-beta.2 nach dem Verhalten der Hersteller-App gebaut und nur mit
-simulierten Daten in automatisierten Tests geprüft. Über Rückmeldungen von
+0.9.2-beta.2 ergänzt und nur mit simulierten Daten in automatisierten Tests
+geprüft. Über Rückmeldungen von
 Besitzern solcher Klimageräte freue ich mich.
 
 Klimageräte, die in der PointT-Gateway-Liste mit dem Gerätetyp `rac`

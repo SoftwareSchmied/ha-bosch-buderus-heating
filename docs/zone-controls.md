@@ -40,7 +40,7 @@ heating mode, also when the mode is read-only; then it only shows the zone.
   change with its own message. A circuit with the control type `constants`
   is only shown.
 - **Clear button:** "Clear temporary setpoint" writes -1 in the mode `auto`
-  while a temporary setpoint is active, as the manufacturer's app does; any
+  while a temporary setpoint is active; any
   negative read-back confirms it. When the advertised limits leave -1 out,
   the button is created disabled.
 - **Action (calculated):** off in the mode off; otherwise the activity of
@@ -193,7 +193,7 @@ ergänzt, jeweils getrennt für Heizen und Kühlen. Seit 0.9.2 hat jede Zone
 außerdem eine Klimaentität (Betriebsart, Zieltemperatur, Raumtemperatur,
 Feuchte). Im Automatikbetrieb schreibt sie den vorübergehenden Sollwert bis
 zum nächsten Schaltpunkt; die Taste „Vorübergehenden Sollwert aufheben“
-schreibt -1 wie die Hersteller-App. Die Kühlseite gilt, solange der Heizkreis
+schreibt -1. Die Kühlseite gilt, solange der Heizkreis
 der Zone die Kühlsaison meldet. Vor jeder Änderung lese ich Betriebsart,
 Ziel, Jahreszeit und Regelungsart des Heizkreises frisch; danach genau ein
 PUT und Rücklesen. Die Aktion (heizen/kühlen/Leerlauf) ist berechnet: Heizkreis

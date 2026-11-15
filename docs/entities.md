@@ -1087,7 +1087,9 @@ heat pump the version of the outdoor unit was found there; no controller
 signal reports it. A setpoint of the pressure of the heating circuit pump
 (PC1) is not available through the interface: neither the controller
 signals, nor the documented local or cloud resources of a real
-installation report one.
+installation report one. Further settings that only the service menu
+offers are listed in
+[heating controls](heating-controls.md#values-only-available-in-the-service-menu).
 
 The names of the readings in the sections above that are created disabled
 for new installations (the total starts and total run time of a single heat
@@ -1132,11 +1134,11 @@ The [Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-ca
 for Home Assistant (`custom:heatpump-hydraulic-card`) has
 a preset `bosch_buderus_heating`. The preset finds the entities by their
 unique IDs in the entity registry and uses only enabled entities; entity
-names, entity IDs and the language do not matter. The preset in the card's
-current release uses only cloud entities. An updated preset is proposed in
-[the card's pull request #408](https://github.com/Sturmi77/heatpump-hydraulic-card/pull/408);
-once it is accepted, it covers installations with only the cloud,
-with the cloud and a local access, and with only a local access. The
+names, entity IDs and the language do not matter. Since the card's release
+0.19.0 ([pull request #408](https://github.com/Sturmi77/heatpump-hydraulic-card/pull/408))
+the preset covers installations with only the cloud, with the cloud and a
+local access, and with only a local access; earlier releases of the card
+use only cloud entities. The
 updated preset was compared live on a real installation while the heat pump was
 heating, and with recorded states for defrost, hot water and standby. With
 only a local access it is untested on a real installation.

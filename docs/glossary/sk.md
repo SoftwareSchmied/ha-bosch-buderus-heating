@@ -1,6 +1,6 @@
 # Slovak glossary (sk)
 
-Reviewed (2026-11-10). The Slovak texts in
+Corrections are welcome. The Slovak texts in
 `translations/sk.json` and `i18n/sk.json` use these terms consistently; a
 correction to one term usually applies to every text that uses it.
 
@@ -90,7 +90,7 @@ notifications: `%d. %m. %Y`.
 | plan regeneration (water softener) | naplánovanie regenerácie ("Naplánovanie regenerácie") |
 | requested supply temperature (signal) | vyžiadaná výstupná teplota ("Vyžiadaná výstupná teplota okruhu 1 (signál)") |
 
-Room controller terms added in 0.9.0-alpha.5 (drafts, awaiting review):
+Room controller terms added in 0.9.0-alpha.5:
 
 | English | Slovak |
 | --- | --- |

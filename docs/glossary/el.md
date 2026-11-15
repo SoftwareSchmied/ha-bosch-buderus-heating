@@ -1,6 +1,6 @@
 # Greek glossary (el)
 
-Draft, awaiting review by a native speaker. The Greek texts in
+Corrections are welcome. The Greek texts in
 `translations/el.json` and `i18n/el.json` use these terms consistently; a
 correction to one term usually applies to every text that uses it.
 

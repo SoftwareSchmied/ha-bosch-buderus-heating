@@ -139,8 +139,8 @@ circuit climate.
 - **Clear button.** A button "Clear temporary setpoint" ends an active
   temporary setpoint by writing -1. When the reported limits include -1, it
   must lie on the reported step. Since 0.9.2 I also add the button when the
-  limits leave -1 out (for example 5 to 30), because the manufacturer's app
-  writes -1 there as well; this button is created disabled, and any negative
+  limits leave -1 out (for example 5 to 30), because -1 ends a temporary
+  setpoint there as well; this button is created disabled, and any negative
   reading afterwards confirms that no temporary setpoint is active. The
   button is available only in automatic mode while a temporary setpoint is
   active. Clearing outside the limits is expected, untested on a real
@@ -154,7 +154,7 @@ circuit climate.
   before every climate write (mode, target, temporary setpoint and clear
   button); if it changed since it was shown, nothing is sent. With the
   control type `ISRC` the circuit takes no temporary target and offers no
-  clearing, as in the manufacturer's app; the manual setpoint stays.
+  clearing; the manual setpoint stays.
 - **No entity of its own.** The temporary setpoint gets no number entity and
   no row in the controls dialog. The existing sensor of the temporary
   setpoint stays as it was.
@@ -208,8 +208,8 @@ browser and the automated Home Assistant test, without an extra click.
 
 Since 0.9.2 a heating circuit gets these settings as number and select
 entities (category configuration) and as rows in the controls dialog, when
-the circuit reports them writable and with limits or options. They follow
-the manufacturer's app. I tested them only with simulated data in
+the circuit reports them writable and with limits or options. I tested
+them only with simulated data in
 automated tests; they are **expected, untested on a real installation**.
 Reports are welcome.
 
@@ -350,8 +350,8 @@ gateway reports them:
 | Air conditioner programs (PointT gateway of type `rac`) | `/airConditioning/switchPrograms/program1` ... `program9` | Mode, temperature and fan speed, such as `cool 24.0 auto`, or `off` | the program configuration is readable and writable; see [air conditioners on a PointT gateway](pointt-air-conditioners.md#changing-switch-points) |
 
 Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
-`maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never fall back to
-the app's own default values. A program without them is shown as a sensor,
+`maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never assume
+default values. A program without them is shown as a sensor,
 not offered for changes, and the diagnostics name the reason. A temperature
 outside the range or off the step is refused, never rounded. Off (`"0.0"`)
 is offered only where the program already holds it. The cooling program is
@@ -367,8 +367,7 @@ the attribute `scheduled: off`. The attributes also hold `allowed_levels`
 (level programs) or `min_setpoint`, `max_setpoint` and `setpoint_step`.
 
 None of these programs has been read or changed on a real installation:
-the forms follow the manufacturer's app, and reading and writing them is
-expected, untested. A diagnostics file of such a system shows the form
+their forms, reading and writing them are expected, untested. A diagnostics file of such a system shows the form
 (key names and value types, never values) and helps to confirm it.
 
 #### Weekly view
@@ -428,6 +427,67 @@ Program sensors of programs the gateway reports as writable are now
 enabled by default when they are first registered, so the action finds its
 targets; existing entities keep their state. The action is tested with
 simulated data only; the write behind it is the dialog's.
+
+### Why is the supply temperature above the setpoint?
+
+While a heat pump heats, its supply temperature often stays a few kelvin
+above the current supply setpoint. The sensor **Supply above setpoint
+(calculated)** shows this difference (see
+[calculated values](calculated-values.md#run-time-per-start-and-supply-above-setpoint)).
+In mild weather this is usually normal. Over several mild days (about 4 to
+11 °C outdoors) on a real installation, an air-to-water heat pump with one
+underfloor circuit and a buffer, the readings showed:
+
+- **Minimum output:** the compressor ran at its lowest speed almost all the
+  time it heated. Even that lowest output was more heat than the heating
+  curve asked for, so the water warmed up until the floor took the heat
+  away. The supply settled about 1 to 3 K above the setpoint (typically
+  about 2.4 K). When the setpoint rose or fell by 1 K, neither the
+  compressor speed nor the supply changed.
+- **Stop:** the heat pump stopped when the supply reached about 4 K above
+  the setpoint.
+- **Start:** it started again only after the shortfall below the setpoint
+  had added up over time (degree minutes, there about 40 K·min). At that
+  moment the supply was only 1 to 2 K below the setpoint.
+- **Circuit pump and room thermostats:** when many room thermostats closed
+  their valves, the circuit pump moved less water, the supply rose faster
+  and the heat pump stopped after a short run. Most short runs came from
+  this, not from the setpoint.
+
+So a lower heating curve does not lower the supply in mild weather; it
+mainly brings the stop point closer, and the heat pump stops more often.
+When it gets colder and the house needs more than the minimum output, the
+compressor speeds up and the difference shrinks. The start and stop
+thresholds and the minimum speed are controller settings that the
+interface does not offer (see the next section). These are the values of
+one installation; other models and settings can behave differently.
+
+### Values only available in the service menu
+
+Some settings are made in the controller's service menu, usually by the
+installer. On heat pumps with a K30/K40 gateway the interface the
+integration uses (cloud and local) does not offer them, so the integration
+can neither show nor change them:
+
+- the **minimum supply temperature** of a heating circuit (the maximum
+  supply temperature is available where the system reports it);
+- the **pressure setpoint of the heating circuit pump** (PC1): neither the
+  controller signals nor the local or cloud resources of a real
+  installation report one;
+- the **limits of the auxiliary heater**, such as its maximum power, its
+  delay or the outdoor temperature below which it may help; its operating
+  mode, status and power are available where reported;
+- the **charging delta** of the hot water, that is how far the tank cools
+  down before charging starts; the hot water temperatures the system
+  reports stay available;
+- the **building type**, which the controller uses to damp the outdoor
+  temperature;
+- the **start and stop thresholds** of the heat pump (degree minutes,
+  overshoot) and its minimum compressor speed.
+
+Room controllers of the RRC 2.0 platform report their heating curve and
+both supply limits themselves (see [room controllers](room-controllers.md));
+hybrid systems with a hybrid manager report their bivalence point.
 
 ## Deutsch
 
@@ -549,13 +609,13 @@ echten Gerät ungetestet.
 Seit 0.9.2 lese ich `controlType` vor jedem Schreiben der Klimaentität und
 der Taste „Vorübergehenden Sollwert aufheben“ zusammen mit Betriebsart und
 Heizkontext erneut an der Anlage; hat sich die Regelungsart seit der Anzeige
-geändert, wird nichts gesendet. Mit der Regelungsart `ISRC` gibt es wie in der
-Hersteller-App keinen vorübergehenden Sollwert und kein Aufheben; der manuelle
+geändert, wird nichts gesendet. Mit der Regelungsart `ISRC` gibt es keinen
+vorübergehenden Sollwert und kein Aufheben; der manuelle
 Sollwert bleibt. Die Untergrenze des vorübergehenden Sollwerts aus dem
 manuellen Sollwert bleibt sichtbar, solange dessen letzte Lesung gültig ist;
 eine Änderung braucht weiter eine aktuelle Lesung. Lassen die gemeldeten
 Grenzen den Wert -1 aus (zum Beispiel 5 bis 30), lege ich die Aufheben-Taste
-trotzdem an, weil die Hersteller-App -1 dort ebenfalls schreibt; diese Taste
+trotzdem an, weil -1 den vorübergehenden Sollwert auch dort beendet; diese Taste
 ist standardmäßig deaktiviert, und jeder negative Wert beim Rücklesen
 bestätigt das Aufheben. Erwartet, aber an einem echten Gerät ungetestet.
 
@@ -597,7 +657,7 @@ Browser sowie im automatisierten Home-Assistant-Test ohne weiteren Klick geprüf
 Seit 0.9.2 erhält ein Heizkreis diese Einstellungen als Zahlen- und
 Auswahlentitäten (Kategorie Konfiguration) und als Zeilen im
 Bedienungsdialog, wenn der Kreis sie schreibbar und mit Grenzen oder
-Optionen meldet. Sie folgen der Hersteller-App. Ich habe sie nur mit
+Optionen meldet. Ich habe sie nur mit
 simulierten Daten in automatisierten Tests geprüft; sie sind **erwartet,
 aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
 
@@ -751,8 +811,8 @@ Temperatur und Lüfterstufe wie `cool 24.0 auto` oder `off`; siehe
 Änderbar ist ein solches Programm nur mit den gemeldeten Grenzen
 (`maxNbOfSwitchPoints`, `maxNbOfSwitchPointsPerDay`,
 `switchPointTimeRaster`) und, bei Temperaturen, mit gemeldetem Bereich und
-Schritt (`switchPointMin`, `switchPointMax`, `switchPointResolution`). Die
-Ersatzwerte der App verwende ich nie. Ohne diese Angaben erscheint das
+Schritt (`switchPointMin`, `switchPointMax`, `switchPointResolution`).
+Ersatzwerte nehme ich nie an. Ohne diese Angaben erscheint das
 Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
 außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
 gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das
@@ -760,8 +820,7 @@ WDDW2-Programm und die Klimageräte-Programme gehen als Objekt
 `{"switchPoints": [...]}` hinaus, alle anderen als rohes Array.
 
 Keines dieser Programme wurde an einer echten Anlage gelesen oder geändert;
-die Formen folgen der App des Herstellers. Lesen und Schreiben sind
-erwartet, ungetestet. Eine Diagnosedatei zeigt die Form (Schlüsselnamen und
+ihre Formen, Lesen und Schreiben sind erwartet, ungetestet. Eine Diagnosedatei zeigt die Form (Schlüsselnamen und
 Werttypen, nie Werte).
 
 #### Wochenansicht
@@ -803,3 +862,62 @@ Programm-Sensoren schreibbarer Programme sind jetzt beim ersten Anlegen
 standardmäßig aktiviert, damit die Aktion ihre Ziele findet; bestehende
 Entitäten behalten ihren Zustand. Die Aktion ist nur mit simulierten Daten
 getestet; das Schreiben dahinter ist das des Dialogs.
+
+### Warum liegt der Vorlauf über dem Sollwert?
+
+Während eine Wärmepumpe heizt, liegt ihr Vorlauf oft einige Kelvin über dem
+aktuellen Vorlauf-Sollwert. Der Sensor **Vorlauf über Sollwert
+(berechnet)** zeigt diese Differenz. Bei mildem Wetter ist das meist normal.
+An einer echten Anlage, einer Luft-Wasser-Wärmepumpe mit einem
+Fußbodenheizkreis und Puffer, zeigten die Messwerte über mehrere milde Tage
+(etwa 4 bis 11 °C außen):
+
+- **Mindestleistung:** Der Verdichter lief fast die ganze Heizzeit mit
+  seiner kleinsten Drehzahl. Schon diese kleinste Leistung war mehr Wärme,
+  als die Heizkurve verlangte; das Wasser erwärmte sich, bis der Fußboden
+  die Wärme abnahm. Der Vorlauf pendelte sich etwa 1 bis 3 K über dem
+  Sollwert ein (typisch etwa 2,4 K). Stieg oder sank der Sollwert um 1 K,
+  änderten sich weder die Drehzahl noch der Vorlauf.
+- **Abschalten:** Die Wärmepumpe schaltete ab, wenn der Vorlauf etwa 4 K
+  über dem Sollwert lag.
+- **Einschalten:** Sie startete erst wieder, nachdem sich die
+  Unterschreitung des Sollwerts über die Zeit aufsummiert hatte
+  (Gradminuten, dort etwa 40 K·min). In diesem Moment lag der Vorlauf nur
+  1 bis 2 K unter dem Sollwert.
+- **Heizkreispumpe und Raumthermostate:** Schlossen viele Raumthermostate
+  ihre Ventile, förderte die Heizkreispumpe weniger Wasser, der Vorlauf
+  stieg schneller und die Wärmepumpe schaltete nach kurzer Laufzeit ab. Die
+  meisten kurzen Laufzeiten kamen daher, nicht vom Sollwert.
+
+Eine tiefere Heizkurve senkt den Vorlauf bei mildem Wetter also nicht; sie
+rückt vor allem den Abschaltpunkt näher, und die Wärmepumpe schaltet öfter
+ab. Wird es kälter und braucht das Haus mehr als die Mindestleistung, dreht
+der Verdichter höher und die Differenz wird kleiner. Ein- und
+Abschaltschwellen und die Mindestdrehzahl sind Reglereinstellungen, die die
+Schnittstelle nicht anbietet (nächster Abschnitt). Die Werte stammen von
+einer Anlage; andere Modelle und Einstellungen können sich anders verhalten.
+
+### Werte nur im Servicemenü
+
+Manche Einstellungen werden im Servicemenü des Reglers vorgenommen, meist
+vom Fachbetrieb. Bei Wärmepumpen mit K30/K40-Gateway bietet die
+Schnittstelle der Integration (Cloud und lokal) sie nicht an; die
+Integration kann sie daher weder anzeigen noch ändern:
+
+- die **minimale Vorlauftemperatur** eines Heizkreises (die maximale
+  Vorlauftemperatur ist verfügbar, wo die Anlage sie meldet);
+- der **Solldruck der Heizkreispumpe** (PC1): Weder die Reglersignale noch
+  die lokalen oder Cloud-Ressourcen einer echten Anlage melden einen;
+- die **Grenzen des Zuheizers**, etwa seine maximale Leistung, seine
+  Verzögerung oder die Außentemperatur, unter der er helfen darf;
+  Betriebsart, Status und Leistung sind verfügbar, wo gemeldet;
+- das **Ladedelta** des Warmwassers, also wie weit der Speicher abkühlt,
+  bevor die Ladung startet; die Warmwassertemperaturen, die die Anlage
+  meldet, bleiben verfügbar;
+- die **Gebäudeart**, mit der der Regler die Außentemperatur dämpft;
+- die **Ein- und Abschaltschwellen** der Wärmepumpe (Gradminuten,
+  Überhöhung) und ihre Mindestdrehzahl.
+
+Raumregler der RRC-2.0-Plattform melden ihre Heizkurve und beide
+Vorlaufgrenzen selbst (siehe [Raumregler](room-controllers.md));
+Hybridanlagen mit Hybridmanager melden ihren Bivalenzpunkt.
