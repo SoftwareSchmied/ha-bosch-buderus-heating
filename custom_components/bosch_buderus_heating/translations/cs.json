@@ -1724,6 +1724,18 @@
     },
     "wallbox_not_solar": {
       "message": "Toto nastavení platí jen pro solární nabíjení. Nejprve přepněte režim nabíjení na solární. Tato změna nebyla odeslána."
+    },
+    "aircon_switched_off": {
+      "message": "Klimatizace je vypnutá. Nejprve ji zapněte a potom změňte režim. Nic nebylo odesláno."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimatizace běží v solárním provozu, proto nejsou režimy automatika a topení k dispozici. Nic nebylo odesláno."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Tato hodnota není pro klimatizaci povolena. Nic nebylo odesláno."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Změna byla odeslána, ale klimatizace ji zatím nepotvrdila. Může se ještě projevit. Znovu jsem ji neodeslal; hodnota se aktualizuje při dalším čtení."
     }
   },
   "selector": {
@@ -2009,6 +2021,12 @@
       },
       "wallbox_feed_in_price": {
         "name": "Výkupní cena"
+      },
+      "aircon_timer_on": {
+        "name": "Časovač zapnutí"
+      },
+      "aircon_timer_off": {
+        "name": "Časovač vypnutí"
       }
     },
     "select": {
@@ -2157,6 +2175,33 @@
           "manual": "Normální",
           "solar": "Solární"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Bodové směrování vzduchu",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto",
+          "top_left": "Nahoře vlevo",
+          "top_center": "Nahoře uprostřed",
+          "top_right": "Nahoře vpravo",
+          "bottom_left": "Dole vlevo",
+          "bottom_center": "Dole uprostřed",
+          "bottom_right": "Dole vpravo"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivní časový program",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -2240,6 +2285,24 @@
       },
       "wallbox_locked": {
         "name": "Nabíjecí stanice zamčena"
+      },
+      "aircon_full_power": {
+        "name": "Plný výkon"
+      },
+      "aircon_sleep": {
+        "name": "Režim spánku"
+      },
+      "aircon_setback_8": {
+        "name": "Protimrazové topení (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Protimrazové topení (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Čištění vzduchu"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Časový program aktivní"
       }
     },
     "sensor": {
@@ -3362,6 +3425,9 @@
       },
       "wallbox_authentication_required": {
         "name": "Vyžadováno ověření"
+      },
+      "aircon_solar_operation": {
+        "name": "Solární provoz"
       }
     },
     "calendar": {
@@ -3418,6 +3484,9 @@
       },
       "wallbox_pause_charging": {
         "name": "Pozastavit nabíjení"
+      },
+      "aircon_end_temporary": {
+        "name": "Ukončit dočasnou změnu"
       }
     },
     "water_heater": {
@@ -3524,6 +3593,54 @@
               "away": "Režim nepřítomnosti",
               "standby": "Pohotovostní režim",
               "unreachable": "Chyba zóny nebo komunikace"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimatizace",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatický",
+              "quiet": "Tichý",
+              "low": "Nízký",
+              "medium": "Střední",
+              "high": "Vysoký",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto",
+              "auto": "Automatický",
+              "swing": "Kývání",
+              "angle1": "Poloha 1",
+              "angle2": "Poloha 2",
+              "angle3": "Poloha 3",
+              "angle4": "Poloha 4",
+              "angle5": "Poloha 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto",
+              "auto": "Automatický",
+              "swing": "Kývání",
+              "left": "Vlevo",
+              "center": "Střed",
+              "right": "Vpravo",
+              "wide": "Široce",
+              "ultra_wide": "Velmi široce",
+              "fixed": "Pevně"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Žádný",
+              "eco": "Eco"
             }
           }
         }

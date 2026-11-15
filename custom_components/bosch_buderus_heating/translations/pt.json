@@ -1724,6 +1724,18 @@
     },
     "wallbox_not_solar": {
       "message": "Esta definição aplica-se apenas ao carregamento solar. Mude primeiro o modo de carregamento para solar. Esta alteração não foi enviada."
+    },
+    "aircon_switched_off": {
+      "message": "O ar condicionado está desligado. Ligue-o primeiro e depois altere o modo. Nada foi enviado."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "O ar condicionado funciona em modo solar, por isso os modos automático e aquecimento não estão disponíveis. Nada foi enviado."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Este valor não é permitido para o ar condicionado. Nada foi enviado."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "A alteração foi enviada, mas o ar condicionado ainda não a confirmou. Ainda pode entrar em vigor. Não a enviei novamente; o valor é atualizado na próxima leitura."
     }
   },
   "selector": {
@@ -2009,6 +2021,12 @@
       },
       "wallbox_feed_in_price": {
         "name": "Tarifa de injeção"
+      },
+      "aircon_timer_on": {
+        "name": "Temporizador de ligar"
+      },
+      "aircon_timer_off": {
+        "name": "Temporizador de desligar"
       }
     },
     "select": {
@@ -2157,6 +2175,33 @@
           "manual": "Normal",
           "solar": "Solar"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Direção de ar pontual",
+        "state": {
+          "off": "Desligado",
+          "on": "Ligado",
+          "top_left": "Em cima à esquerda",
+          "top_center": "Em cima ao centro",
+          "top_right": "Em cima à direita",
+          "bottom_left": "Em baixo à esquerda",
+          "bottom_center": "Em baixo ao centro",
+          "bottom_right": "Em baixo à direita"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Programa horário selecionado",
+        "state": {
+          "program1": "Programa 1",
+          "program2": "Programa 2",
+          "program3": "Programa 3",
+          "program4": "Programa 4",
+          "program5": "Programa 5",
+          "program6": "Programa 6",
+          "program7": "Programa 7",
+          "program8": "Programa 8",
+          "program9": "Programa 9"
+        }
       }
     },
     "switch": {
@@ -2240,6 +2285,24 @@
       },
       "wallbox_locked": {
         "name": "Posto de carregamento bloqueado"
+      },
+      "aircon_full_power": {
+        "name": "Potência máxima"
+      },
+      "aircon_sleep": {
+        "name": "Modo noturno"
+      },
+      "aircon_setback_8": {
+        "name": "Aquecimento anticongelamento (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Aquecimento anticongelamento (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Purificação do ar"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Programa horário ativo"
       }
     },
     "sensor": {
@@ -3362,6 +3425,9 @@
       },
       "wallbox_authentication_required": {
         "name": "Autenticação necessária"
+      },
+      "aircon_solar_operation": {
+        "name": "Funcionamento solar"
       }
     },
     "calendar": {
@@ -3418,6 +3484,9 @@
       },
       "wallbox_pause_charging": {
         "name": "Pausar carregamento"
+      },
+      "aircon_end_temporary": {
+        "name": "Terminar a alteração temporária"
       }
     },
     "water_heater": {
@@ -3524,6 +3593,54 @@
               "away": "Modo ausente",
               "standby": "Em espera",
               "unreachable": "Erro de zona ou de comunicação"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Ar condicionado",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automático",
+              "quiet": "Silencioso",
+              "low": "Baixo",
+              "medium": "Médio",
+              "high": "Alto",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Desligado",
+              "on": "Ligado",
+              "auto": "Automático",
+              "swing": "Oscilação",
+              "angle1": "Posição 1",
+              "angle2": "Posição 2",
+              "angle3": "Posição 3",
+              "angle4": "Posição 4",
+              "angle5": "Posição 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Desligado",
+              "on": "Ligado",
+              "auto": "Automático",
+              "swing": "Oscilação",
+              "left": "Esquerda",
+              "center": "Centro",
+              "right": "Direita",
+              "wide": "Amplo",
+              "ultra_wide": "Muito amplo",
+              "fixed": "Fixo"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Nenhum",
+              "eco": "Eco"
             }
           }
         }

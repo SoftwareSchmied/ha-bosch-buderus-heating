@@ -11,6 +11,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
+from .aircon_entities import track_aircon_buttons
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
@@ -53,6 +54,7 @@ def _setup_entities(
     disabled, and the clear button of a heating circuit's temporary
     setpoint."""
     track_wallbox_entities(Platform.BUTTON, entry, async_add_entities)
+    track_aircon_buttons(entry, async_add_entities)
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,

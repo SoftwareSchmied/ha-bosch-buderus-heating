@@ -263,6 +263,25 @@ Versioning after its first tagged preview.
   enabled; boost active, the grid-friendly input, the external meter's
   maximum current and the currency symbol are disabled by default. Tested
   with automated tests only.
+- **Air conditioners on a PointT gateway:** an air conditioner that appears
+  as its own gateway in the account (device type `rac`, Midea units with or
+  without gateway connector, Sharp units) now gets a climate entity with
+  on/off, mode, target temperature, fan, louvres and the Eco preset.
+  - Disabled by default: switches for full power, sleep mode,
+    frost-protection heating (8 or 10 °C) and air purification, the spot
+    air direction, switch-on and switch-off timers, the schedule switch,
+    the active schedule and a button to end a temporary override, plus a
+    read-only solar operation sensor.
+  - Options come only from what the unit reports. Each change writes one
+    value once and is confirmed by reading it back; a mode change on a
+    switched-off unit is refused (switch it on first), and auto and heat
+    are refused while the unit runs in solar operation, as in the app.
+  - Separate from the air conditioners of the second cloud. The switch
+    points of the active program are shown read-only as an attribute of the
+    active schedule; editing them is not offered yet.
+  - I have only checked this with simulated data in automated tests; it is
+    expected, untested on a real installation, and I am happy about
+    feedback.
 
 ### Changed
 

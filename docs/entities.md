@@ -49,6 +49,17 @@ The Beta.6 [Midea Climate Series package](bacon-air-conditioners.md) adds one
 native climate entity per identified device, with its offered mode, target,
 fan and swing controls. Physical-device confirmation is outstanding.
 
+Air conditioners that are their own PointT gateway (device type `rac`)
+get one enabled climate entity named after the device and, disabled by
+default, switches for full power, sleep mode, frost-protection heating
+and air purification, the select spot air direction, switch-on and
+switch-off timers, the schedule switch, the active schedule select, the
+button to end a temporary override and the diagnostic binary sensor
+solar operation. Unique IDs follow `<gateway>:airConditioning:<path>`
+(`<gateway>:airConditioning:climate` for the climate entity,
+`<gateway>:pv:enable` for the solar state). Expected, untested on a real
+installation; see [air conditioners on a PointT gateway](pointt-air-conditioners.md).
+
 The Beta.6 [Midea/RWH water-heater package](bacon-water-heaters.md) adds one
 native water heater per identified device and optional read-only status
 indicators. Physical-device checks and additional actions remain open.

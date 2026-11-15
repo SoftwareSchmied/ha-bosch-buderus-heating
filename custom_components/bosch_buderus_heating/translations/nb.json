@@ -1724,6 +1724,18 @@
     },
     "wallbox_not_solar": {
       "message": "Denne innstillingen gjelder bare sollading. Bytt først lademodus til sol. Denne endringen ble ikke sendt."
+    },
+    "aircon_switched_off": {
+      "message": "Klimaanlegget er slått av. Slå det på først, og bytt deretter modus. Ingenting ble sendt."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimaanlegget går i soldrift, så modusene auto og varme er ikke tilgjengelige. Ingenting ble sendt."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Denne verdien er ikke tillatt for klimaanlegget. Ingenting ble sendt."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Endringen ble sendt, men klimaanlegget har ikke bekreftet den ennå. Den kan fortsatt tre i kraft. Jeg har ikke sendt den på nytt; verdien oppdateres ved neste avlesning."
     }
   },
   "selector": {
@@ -2009,6 +2021,12 @@
       },
       "wallbox_feed_in_price": {
         "name": "Pris for innmatet strøm"
+      },
+      "aircon_timer_on": {
+        "name": "På-timer"
+      },
+      "aircon_timer_off": {
+        "name": "Av-timer"
       }
     },
     "select": {
@@ -2157,6 +2175,33 @@
           "manual": "Normal",
           "solar": "Sol"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Punktrettet luftstrøm",
+        "state": {
+          "off": "Av",
+          "on": "På",
+          "top_left": "Øverst til venstre",
+          "top_center": "Øverst i midten",
+          "top_right": "Øverst til høyre",
+          "bottom_left": "Nederst til venstre",
+          "bottom_center": "Nederst i midten",
+          "bottom_right": "Nederst til høyre"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -2240,6 +2285,24 @@
       },
       "wallbox_locked": {
         "name": "Ladeboks låst"
+      },
+      "aircon_full_power": {
+        "name": "Full effekt"
+      },
+      "aircon_sleep": {
+        "name": "Sovemodus"
+      },
+      "aircon_setback_8": {
+        "name": "Frostsikringsvarme (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Frostsikringsvarme (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luftrensing"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tidsprogram aktivt"
       }
     },
     "sensor": {
@@ -3362,6 +3425,9 @@
       },
       "wallbox_authentication_required": {
         "name": "Autentisering kreves"
+      },
+      "aircon_solar_operation": {
+        "name": "Soldrift"
       }
     },
     "calendar": {
@@ -3418,6 +3484,9 @@
       },
       "wallbox_pause_charging": {
         "name": "Sett lading på pause"
+      },
+      "aircon_end_temporary": {
+        "name": "Avslutt midlertidig endring"
       }
     },
     "water_heater": {
@@ -3524,6 +3593,54 @@
               "away": "Bortemodus",
               "standby": "Standby",
               "unreachable": "Sone- eller kommunikasjonsfeil"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimaanlegg",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Stille",
+              "low": "Lav",
+              "medium": "Middels",
+              "high": "Høy",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Sving",
+              "angle1": "Posisjon 1",
+              "angle2": "Posisjon 2",
+              "angle3": "Posisjon 3",
+              "angle4": "Posisjon 4",
+              "angle5": "Posisjon 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Sving",
+              "left": "Venstre",
+              "center": "Midten",
+              "right": "Høyre",
+              "wide": "Bred",
+              "ultra_wide": "Ekstra bred",
+              "fixed": "Fast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ingen",
+              "eco": "Eco"
             }
           }
         }

@@ -10,6 +10,7 @@ from dataclasses import dataclass, replace
 from functools import lru_cache
 
 from . import circuit_controls, rrc, rrc_contract_zone, rrc_contracts
+from .aircon_policies import AIRCON_ENUM_POLICIES, AIRCON_NUMBER_POLICIES
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
     InvalidPayload,
@@ -289,6 +290,8 @@ NUMBER_WRITE_POLICIES = (
     POOL_SETPOINT_POLICY,
     # Heating circuit settings besides the climate entity (0.9.2).
     *circuit_controls.NUMBER_POLICIES,
+    # Air conditioners on a PointT gateway (``/airConditioning``).
+    *AIRCON_NUMBER_POLICIES,
 )
 
 
@@ -1131,6 +1134,8 @@ _ENUM_POLICIES = (
     *STRING_SWITCH_POLICIES,
     # The summer/winter switching of a heating circuit (0.9.2).
     *circuit_controls.ENUM_POLICIES,
+    # Air conditioners on a PointT gateway (``/airConditioning``).
+    *AIRCON_ENUM_POLICIES,
 )
 
 

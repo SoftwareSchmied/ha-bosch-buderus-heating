@@ -36,6 +36,9 @@
       },
       "wallbox_authentication_required": {
         "default": "mdi:card-account-details"
+      },
+      "aircon_solar_operation": {
+        "default": "mdi:solar-power"
       }
     },
     "button": {
@@ -56,6 +59,9 @@
       },
       "wallbox_pause_charging": {
         "default": "mdi:pause"
+      },
+      "aircon_end_temporary": {
+        "default": "mdi:calendar-remove"
       }
     },
     "calendar": {
@@ -116,6 +122,12 @@
       },
       "wallbox_feed_in_price": {
         "default": "mdi:cash-plus"
+      },
+      "aircon_timer_on": {
+        "default": "mdi:timer-play-outline"
+      },
+      "aircon_timer_off": {
+        "default": "mdi:timer-stop-outline"
       }
     },
     "select": {
@@ -184,6 +196,12 @@
         "state": {
           "solar": "mdi:solar-power"
         }
+      },
+      "aircon_quick_air_flow": {
+        "default": "mdi:weather-windy"
+      },
+      "aircon_active_schedule": {
+        "default": "mdi:calendar-week"
       }
     },
     "sensor": {
@@ -412,6 +430,24 @@
       },
       "wallbox_locked": {
         "default": "mdi:lock"
+      },
+      "aircon_full_power": {
+        "default": "mdi:fan-plus"
+      },
+      "aircon_sleep": {
+        "default": "mdi:sleep"
+      },
+      "aircon_setback_8": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "aircon_setback_10": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "aircon_air_purification": {
+        "default": "mdi:air-purifier"
+      },
+      "aircon_schedule_enabled": {
+        "default": "mdi:calendar-clock"
       }
     },
     "text": {

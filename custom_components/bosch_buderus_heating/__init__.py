@@ -23,6 +23,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
 from . import rrc_platforms
+from .aircon import AirconCoordinator, is_aircon_gateway
 from .auth_diagnostics import async_load_auth_histories
 from .auth_lifecycle import (
     async_wait_for_entry_refresh,
@@ -289,12 +290,17 @@ async def _async_setup_legacy_entry(
             startup_session=startup,
         )
         for gateway in selected_gateways
-        if not is_wallbox(gateway)
+        if not is_wallbox(gateway) and not is_aircon_gateway(gateway)
     )
     wallboxes = tuple(
         WallboxCoordinator(hass, client, gateway, entry)
         for gateway in selected_gateways
         if is_wallbox(gateway)
+    )
+    aircons = tuple(
+        AirconCoordinator(hass, client, gateway, entry)
+        for gateway in selected_gateways
+        if is_aircon_gateway(gateway)
     )
     # Publish the safe, partially initialized runtime before the first refresh.
     # Home Assistant can then produce diagnostics when discovery itself keeps
@@ -305,6 +311,7 @@ async def _async_setup_legacy_entry(
         gateways=selected_gateways,
         coordinators=coordinators,
         wallboxes=wallboxes,
+        aircons=aircons,
         startup=startup,
     )
     _restore_registered_startup_paths(hass, entry)
@@ -337,6 +344,9 @@ async def _async_setup_legacy_entry(
     for wallbox in wallboxes:
         with suppress(ConfigEntryNotReady):
             await wallbox.async_config_entry_first_refresh()
+    for aircon in aircons:
+        with suppress(ConfigEntryNotReady):
+            await aircon.async_config_entry_first_refresh()
         # Keep mixed accounts usable. Entities retry on their normal cadence.
 
     if bacon_ids:

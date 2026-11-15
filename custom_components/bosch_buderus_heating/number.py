@@ -24,6 +24,7 @@ from . import (
     rrc_contracts,
     rrc_platforms,
 )
+from .aircon_entities import track_aircon_numbers
 from .bacon import purifier
 from .bacon.purifier_entities import (
     BaconPurifierNumber,
@@ -88,6 +89,7 @@ def _setup_entities(
 ) -> None:
     """Create numeric controls only from matching live metadata."""
     track_wallbox_entities(Platform.NUMBER, entry, async_add_entities)
+    track_aircon_numbers(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS

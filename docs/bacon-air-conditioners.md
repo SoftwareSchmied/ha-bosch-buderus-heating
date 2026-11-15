@@ -4,7 +4,10 @@ I added support in v0.8.2-beta.6 for the Bacon **Midea Climate Series**.
 Each selected, identified device receives one native Home Assistant `climate`
 entity through the existing [account connection](bacon-connection.md).
 This is separate from PointT heating-circuit cooling and the
-[Midea/RWH water heaters](bacon-water-heaters.md).
+[Midea/RWH water heaters](bacon-water-heaters.md). Air conditioners that
+appear as their own gateway in the PointT gateway list (device type `rac`)
+use a different backend, described in
+[air conditioners on a PointT gateway](pointt-air-conditioners.md).
 
 ## Identification and supported functions
 

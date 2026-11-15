@@ -1724,6 +1724,18 @@
     },
     "wallbox_not_solar": {
       "message": "Diese Einstellung gilt nur für das Solarladen. Bitte zuerst die Ladebetriebsart auf Solar stellen. Diese Änderung wurde nicht gesendet."
+    },
+    "aircon_switched_off": {
+      "message": "Das Klimagerät ist ausgeschaltet. Schalte es zuerst ein und ändere dann die Betriebsart. Es wurde nichts gesendet."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Das Klimagerät läuft im Solarbetrieb, daher sind die Betriebsarten Automatik und Heizen nicht verfügbar. Es wurde nichts gesendet."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Dieser Wert ist für das Klimagerät nicht zulässig. Es wurde nichts gesendet."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Die Änderung wurde gesendet, das Klimagerät hat sie aber noch nicht bestätigt. Sie kann noch wirksam werden. Ich habe sie nicht erneut gesendet; der Wert wird mit der nächsten Abfrage aktualisiert."
     }
   },
   "selector": {
@@ -2009,6 +2021,12 @@
       },
       "wallbox_feed_in_price": {
         "name": "Einspeisevergütung"
+      },
+      "aircon_timer_on": {
+        "name": "Einschalt-Timer"
+      },
+      "aircon_timer_off": {
+        "name": "Ausschalt-Timer"
       }
     },
     "select": {
@@ -2157,6 +2175,33 @@
           "manual": "Normal",
           "solar": "Solar"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Spot-Luftführung",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "top_left": "Oben links",
+          "top_center": "Oben Mitte",
+          "top_right": "Oben rechts",
+          "bottom_left": "Unten links",
+          "bottom_center": "Unten Mitte",
+          "bottom_right": "Unten rechts"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktives Zeitprogramm",
+        "state": {
+          "program1": "Programm 1",
+          "program2": "Programm 2",
+          "program3": "Programm 3",
+          "program4": "Programm 4",
+          "program5": "Programm 5",
+          "program6": "Programm 6",
+          "program7": "Programm 7",
+          "program8": "Programm 8",
+          "program9": "Programm 9"
+        }
       }
     },
     "switch": {
@@ -2240,6 +2285,24 @@
       },
       "wallbox_locked": {
         "name": "Wallbox gesperrt"
+      },
+      "aircon_full_power": {
+        "name": "Volllast"
+      },
+      "aircon_sleep": {
+        "name": "Schlafmodus"
+      },
+      "aircon_setback_8": {
+        "name": "Frostschutz-Heizen (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Frostschutz-Heizen (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luftreinigung"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Zeitprogramm aktiv"
       }
     },
     "sensor": {
@@ -3362,6 +3425,9 @@
       },
       "wallbox_authentication_required": {
         "name": "Authentifizierung erforderlich"
+      },
+      "aircon_solar_operation": {
+        "name": "Solarbetrieb"
       }
     },
     "calendar": {
@@ -3418,6 +3484,9 @@
       },
       "wallbox_pause_charging": {
         "name": "Ladevorgang pausieren"
+      },
+      "aircon_end_temporary": {
+        "name": "Temporäre Abweichung beenden"
       }
     },
     "water_heater": {
@@ -3524,6 +3593,54 @@
               "away": "Abwesenheitsmodus",
               "standby": "Standby",
               "unreachable": "Zonen- oder Kommunikationsfehler"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimagerät",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatisch",
+              "quiet": "Leise",
+              "low": "Niedrig",
+              "medium": "Mittel",
+              "high": "Hoch",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Aus",
+              "on": "Ein",
+              "auto": "Automatisch",
+              "swing": "Schwenken",
+              "angle1": "Stellung 1",
+              "angle2": "Stellung 2",
+              "angle3": "Stellung 3",
+              "angle4": "Stellung 4",
+              "angle5": "Stellung 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Aus",
+              "on": "Ein",
+              "auto": "Automatisch",
+              "swing": "Schwenken",
+              "left": "Links",
+              "center": "Mitte",
+              "right": "Rechts",
+              "wide": "Breit",
+              "ultra_wide": "Extra breit",
+              "fixed": "Fest"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Keine",
+              "eco": "Eco"
             }
           }
         }

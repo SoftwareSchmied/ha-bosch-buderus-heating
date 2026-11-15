@@ -14,6 +14,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
+from .aircon_entities import track_aircon_switches
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -71,6 +72,7 @@ def _setup_entities(
 ) -> None:
     """Create switches only from exact current capability metadata."""
     track_wallbox_entities(Platform.SWITCH, entry, async_add_entities)
+    track_aircon_switches(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "switch")
         track_purifier_entities(

@@ -1724,6 +1724,18 @@
     },
     "wallbox_not_solar": {
       "message": "Ce réglage ne concerne que la charge solaire. Passez d'abord le mode de charge sur solaire. Cette modification n'a pas été envoyée."
+    },
+    "aircon_switched_off": {
+      "message": "Le climatiseur est éteint. Allumez-le d'abord, puis changez le mode. Rien n'a été envoyé."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Le climatiseur fonctionne en mode solaire ; les modes auto et chauffage ne sont donc pas disponibles. Rien n'a été envoyé."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Cette valeur n'est pas autorisée pour le climatiseur. Rien n'a été envoyé."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "La modification a été envoyée, mais le climatiseur ne l'a pas encore confirmée. Elle peut encore prendre effet. Je ne l'ai pas renvoyée ; la valeur est mise à jour lors de la prochaine lecture."
     }
   },
   "selector": {
@@ -2009,6 +2021,12 @@
       },
       "wallbox_feed_in_price": {
         "name": "Tarif d'injection"
+      },
+      "aircon_timer_on": {
+        "name": "Minuterie de mise en marche"
+      },
+      "aircon_timer_off": {
+        "name": "Minuterie d'arrêt"
       }
     },
     "select": {
@@ -2157,6 +2175,33 @@
           "manual": "Normal",
           "solar": "Solaire"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Orientation ciblée de l'air",
+        "state": {
+          "off": "Arrêt",
+          "on": "Marche",
+          "top_left": "En haut à gauche",
+          "top_center": "En haut au centre",
+          "top_right": "En haut à droite",
+          "bottom_left": "En bas à gauche",
+          "bottom_center": "En bas au centre",
+          "bottom_right": "En bas à droite"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Programme horaire sélectionné",
+        "state": {
+          "program1": "Programme 1",
+          "program2": "Programme 2",
+          "program3": "Programme 3",
+          "program4": "Programme 4",
+          "program5": "Programme 5",
+          "program6": "Programme 6",
+          "program7": "Programme 7",
+          "program8": "Programme 8",
+          "program9": "Programme 9"
+        }
       }
     },
     "switch": {
@@ -2240,6 +2285,24 @@
       },
       "wallbox_locked": {
         "name": "Borne de recharge verrouillée"
+      },
+      "aircon_full_power": {
+        "name": "Pleine puissance"
+      },
+      "aircon_sleep": {
+        "name": "Mode nuit"
+      },
+      "aircon_setback_8": {
+        "name": "Chauffage hors gel (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Chauffage hors gel (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Purification de l'air"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Programme horaire actif"
       }
     },
     "sensor": {
@@ -3362,6 +3425,9 @@
       },
       "wallbox_authentication_required": {
         "name": "Authentification requise"
+      },
+      "aircon_solar_operation": {
+        "name": "Fonctionnement solaire"
       }
     },
     "calendar": {
@@ -3418,6 +3484,9 @@
       },
       "wallbox_pause_charging": {
         "name": "Mettre la charge en pause"
+      },
+      "aircon_end_temporary": {
+        "name": "Terminer la modification temporaire"
       }
     },
     "water_heater": {
@@ -3524,6 +3593,54 @@
               "away": "Mode absent",
               "standby": "Veille",
               "unreachable": "Erreur de zone ou de communication"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Climatiseur",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Silencieux",
+              "low": "Faible",
+              "medium": "Moyen",
+              "high": "Élevé",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Arrêt",
+              "on": "Marche",
+              "auto": "Auto",
+              "swing": "Oscillation",
+              "angle1": "Position 1",
+              "angle2": "Position 2",
+              "angle3": "Position 3",
+              "angle4": "Position 4",
+              "angle5": "Position 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Arrêt",
+              "on": "Marche",
+              "auto": "Auto",
+              "swing": "Oscillation",
+              "left": "Gauche",
+              "center": "Centre",
+              "right": "Droite",
+              "wide": "Large",
+              "ultra_wide": "Très large",
+              "fixed": "Fixe"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Aucun",
+              "eco": "Eco"
             }
           }
         }

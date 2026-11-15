@@ -21,6 +21,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry, rrc_platforms
+from .aircon_entities import track_aircon_binary_sensors
 from .bacon.access import BaconAccess
 from .bacon.dhw_status import track_status
 from .bacon.dry_entities import track_entities as track_dry_entities
@@ -102,6 +103,7 @@ def _setup_entities(
 ) -> None:
     """Create entities from every safe boolean found during discovery."""
     track_wallbox_entities(Platform.BINARY_SENSOR, entry, async_add_entities)
+    track_aircon_binary_sensors(entry, async_add_entities)
     entities: list[BinarySensorEntity] = []
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "binary_sensor")
