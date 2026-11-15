@@ -37,8 +37,12 @@ heating mode, also when the mode is read-only; then it only shows the zone.
   checked against the new mode before anything is sent.
 - **Flags:** a mode or setpoint the zone reports as not available hides the
   climate or its target; one it does not use now (`used` false) refuses the
-  change with its own message. A circuit with the control type `constants`
-  is only shown.
+  change with its own message. The flags are checked again on the reading
+  of the change's own request, so a flag reported since the last poll also
+  refuses it. A target whose flags follow the mode (a manual setpoint not
+  used in the mode auto) is checked after the mode is confirmed, and after a
+  new mode the targets are read again a few seconds later. A circuit with the
+  control type `constants` is only shown.
 - **Clear button:** "Clear temporary setpoint" writes -1 in the mode `auto`
   while a temporary setpoint is active; any
   negative read-back confirms it. When the advertised limits leave -1 out,
@@ -52,7 +56,10 @@ heating mode, also when the mode is read-only; then it only shows the zone.
 - **Attributes:** `zone_side`, `active_setpoint`, `temporary_override`,
   `child_lock` (read only) and `heating_circuit`.
 
-The select and number controls of the zone (below) stay as they are; the
+The select and number controls of the zone (below) stay; since 0.9.2 they
+follow the climate's write rules: the setting, the circuit's season and
+control type are read again before the request, `used`/`available` of the
+current reading decide, and a circuit on constant values sends nothing. The
 climate is the simpler way to use a zone. The climate of the heating circuit
 the zones belong to also stays: it controls the circuit, the zone climates
 control the rooms. On a zone-controlled circuit (`controlType` `ISRC`) the
@@ -125,14 +132,12 @@ Selecting a mode sends only that mode command. I require each resource's
 current permission and metadata rather than borrowing settings from a
 heating circuit or another zone.
 
-The numeric control uses the current `stepSize`, or a 0.5 °C UI increment
-when it is absent. Invalid advertised steps block the control. Since 0.9.2
-an advertised `stepSize` is a rule of the gateway: a value between two steps,
-counted from the minimum, is refused before anything is sent. The 0.5 °C UI
-increment without `stepSize` does not establish an API quantization rule: a
-finite service value within the current bounds can be sent without
-automatic rounding. The zone climate puts a value converted from °F on the
-nearest step.
+The numeric control uses the current `stepSize`, or 0.5 °C when it is
+absent. Invalid advertised steps block the control. Since 0.9.2 the step is
+a rule of the write: a value between two steps, counted from the minimum, is
+refused before anything is sent. Without `stepSize` the step is 0.5 °C, the
+one the manufacturer's app uses for the zone setpoint. The zone climate puts
+a value converted from °F on the nearest step.
 Error markers, invalid samples, compound responses, missing bounds and
 unexpected units block writes. The narrow reviewed unit is `C`; no
 conversion from an unverified zone wire unit is inferred.
@@ -202,7 +207,11 @@ zum nächsten Schaltpunkt; die Taste „Vorübergehenden Sollwert aufheben“
 schreibt -1. Die Kühlseite gilt, solange der Heizkreis
 der Zone die Kühlsaison meldet. Vor jeder Änderung lese ich Betriebsart,
 Ziel, Jahreszeit und Regelungsart des Heizkreises frisch; danach genau ein
-PUT und Rücklesen. Die Aktion (heizen/kühlen/Leerlauf) ist berechnet: Heizkreis
+PUT und Rücklesen. Die Kennzeichen `used`/`available` entscheiden an dieser
+frischen Lesung. Ein Ziel, dessen Kennzeichen mit der Betriebsart wechseln,
+prüfe ich nach der bestätigten Betriebsart; nach einer neuen Betriebsart
+lese ich die Ziele einige Sekunden später erneut. Auswahl und Zahl der Zone
+folgen seit 0.9.2 denselben Schreibregeln. Die Aktion (heizen/kühlen/Leerlauf) ist berechnet: Heizkreis
 heizt und Raum unter dem aktiven Sollwert. Funk-Raumgeräte zeigen „Batterie
 schwach“ (aktiviert) und das Funksignal in dB (deaktiviert). Die Discovery
 liest die Betriebsarten und Sollwerte der Zonen jetzt direkt nach den
@@ -217,13 +226,11 @@ aktueller Modus sperrt das Bedienelement vorübergehend.
 
 Jeder manuelle Sollwert verwendet seine eigenen aktuellen Grenzen und die
 Einheit `C`. Die Schrittweite stammt aus `stepSize`; ohne diese Angabe
-beträgt der Anzeigeschritt 0,5 °C. Eine fehlerhafte Angabe sperrt die Bedienung.
-Seit 0.9.2 ist eine gemeldete `stepSize` eine Vorgabe des Gateways: Ein
-Wert zwischen zwei Schritten, gezählt ab dem Minimum, wird vor jeder Anfrage
-abgewiesen. Der Anzeigeschritt ohne `stepSize` ist keine nachgewiesene
-Vorgabe für Schreibwerte: Serviceaufrufe können gültige Zwischenwerte ohne
-Rundung senden. Die Zonen-Klimaentität legt einen aus °F umgerechneten Wert
-auf den nächsten Schritt.
+beträgt sie 0,5 °C wie in der Hersteller-App. Eine fehlerhafte Angabe sperrt
+die Bedienung. Seit 0.9.2 ist die Schrittweite eine Vorgabe für das
+Schreiben: Ein Wert zwischen zwei Schritten, gezählt ab dem Minimum, wird
+vor jeder Anfrage abgewiesen. Die Zonen-Klimaentität legt einen aus °F
+umgerechneten Wert auf den nächsten Schritt.
 Fehlerkennwerte, ungültige Antworten, fehlende Grenzen und ungeklärte
 Einheiten erlauben keinen Schreibzugriff.
 
