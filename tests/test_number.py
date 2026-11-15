@@ -67,9 +67,12 @@ def _number(
         current.path: ResourceSnapshot(current, True, datetime.now(UTC))
     }
     coordinator.last_update_success = True
-    return BoschBuderusNumber(
+    entity = BoschBuderusNumber(
         coordinator, build_number_descriptions(coordinator.resources)[0]
     )
+    # A temperature number converts with the unit system of the installation.
+    entity.hass = hass
+    return entity
 
 
 def test_number_uses_live_limits_and_identity(hass: HomeAssistant) -> None:

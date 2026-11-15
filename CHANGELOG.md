@@ -235,6 +235,16 @@ Versioning after its first tagged preview.
 
 ### Changed
 
+- **Temperature settings in your unit system:** every number entity that
+  holds a temperature (setpoints, levels, supply limits, outdoor thresholds,
+  the boost temperature) now has the device class *temperature*; the offset
+  of a radio room device is a temperature difference. Home Assistant shows
+  them in the temperature unit of your installation.
+  - The step is converted with them (0.5 °C becomes 0.9 °F), and a value set
+    in °F is sent as the exact step in the gateway's unit; a value between
+    two steps is refused, not rounded.
+  - Entity IDs, unique IDs and enablement stay as they were; with metric
+    units nothing changes in the display. Tested with automated tests.
 - **Heating and setback level writes:** a change of the heating or setback
   temperature now reads the circuit's control type and the other levels on
   the appliance together with the level itself, and checks the value against

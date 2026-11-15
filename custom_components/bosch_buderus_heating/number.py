@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
-    NumberEntity,
+    NumberDeviceClass,
     NumberEntityDescription,
     NumberMode,
 )
@@ -41,6 +41,7 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .number_temperature import TemperatureNumber, temperature_device_class
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -131,6 +132,7 @@ def build_number_descriptions(
         else:
             key, name = _number_identity(resource.path)
         assessment = assess_control(resource, context)
+        unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
             BoschBuderusNumberEntityDescription(
                 key=_semantic_key(resource.path, None),
@@ -140,7 +142,8 @@ def build_number_descriptions(
                 native_min_value=display_minimum(policy, minimum, assessment.ui_step),
                 native_max_value=maximum,
                 native_step=assessment.ui_step,
-                native_unit_of_measurement=_policy_unit(policy, assessment.unit),
+                native_unit_of_measurement=unit,
+                device_class=policy_device_class(policy, unit),
                 mode=NumberMode.BOX,
                 # The heating circuit settings take theirs from icons.json.
                 icon=None
@@ -156,6 +159,17 @@ def build_number_descriptions(
     return tuple(descriptions)
 
 
+def policy_device_class(
+    policy: NumberWritePolicy, unit: str | None
+) -> NumberDeviceClass | None:
+    """``temperature`` for a temperature setting shown in a temperature unit.
+
+    All temperature settings of the write policies are absolute
+    temperatures (setpoints, levels, limits, outdoor thresholds).
+    """
+    return temperature_device_class(unit) if policy.unit == "C" else None
+
+
 def _policy_unit(policy: NumberWritePolicy, unit: str | None) -> str | None:
     """The unit shown: a contract's override ("" for none), else the
     resource's."""
@@ -167,7 +181,7 @@ def _policy_unit(policy: NumberWritePolicy, unit: str | None) -> str | None:
 class BoschBuderusNumber(
     HeldCapabilities,
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
-    NumberEntity,
+    TemperatureNumber,
 ):
     """Represent one numeric setting confirmed by PointT read-back."""
 

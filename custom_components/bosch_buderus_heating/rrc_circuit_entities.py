@@ -42,6 +42,7 @@ from .number import (
     BoschBuderusNumber,
     BoschBuderusNumberEntityDescription,
     _policy_unit,
+    policy_device_class,
 )
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
@@ -82,6 +83,7 @@ def build_number_descriptions(
             continue
         path = resource.path
         assessment = assess_control(resource, context)
+        unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
             BoschBuderusNumberEntityDescription(
                 key=_semantic_key(path, None),
@@ -91,7 +93,8 @@ def build_number_descriptions(
                 native_min_value=minimum,
                 native_max_value=maximum,
                 native_step=assessment.ui_step,
-                native_unit_of_measurement=_policy_unit(policy, assessment.unit),
+                native_unit_of_measurement=unit,
+                device_class=policy_device_class(policy, unit),
                 mode=NumberMode.BOX,
                 icon=control_icon(path, numeric=True, contract=True),
                 entity_category=control_category(path, numeric=True, contract=True),

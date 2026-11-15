@@ -38,6 +38,7 @@ from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
 from .number import BoschBuderusNumber, BoschBuderusNumberEntityDescription
+from .number_temperature import temperature_device_class
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_devices import OFFSET_POLICY, SENSITIVITY_POLICY
@@ -164,6 +165,10 @@ def build_offsets(
                 native_max_value=maximum,
                 native_step=assessment.ui_step,
                 native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                # An offset is a temperature difference, never an absolute one.
+                device_class=temperature_device_class(
+                    UnitOfTemperature.CELSIUS, delta=True
+                ),
                 mode=NumberMode.BOX,
                 icon=rrc_contracts.icon(path),
                 entity_category=EntityCategory.CONFIG,

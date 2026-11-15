@@ -24,6 +24,15 @@ usable. Existing number and select entities keep their IDs and user settings;
 the heating mode, manual target and hot-water mode controls move to
 **Configuration**. Numeric controls use input fields instead of sliders.
 
+Since 0.9.2 every number entity that holds a temperature (setpoints, levels,
+supply limits, outdoor thresholds, the boost temperature) has the device class
+*temperature*; the temperature offset of a room controller's radio device is a
+*temperature difference*. Home Assistant shows these settings in the
+temperature unit of your installation. The integration converts the step with
+them (0.5 °C becomes 0.9 °F) and sends a value set in °F as the exact step in
+the gateway's unit; a value between two steps is refused, not rounded. Entity
+IDs, unique IDs and enablement stay as they were.
+
 The [controls dialog](heating-controls.md) groups settings and keeps edits as
 a draft until Apply. Individual device-page controls write immediately.
 The [PointT hot-water guide](pointt-hot-water.md) distinguishes the read-only
