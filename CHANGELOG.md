@@ -359,9 +359,15 @@ See [heating controls](docs/heating-controls.md#heating-circuit-settings-summerw
   - With the control type `ISRC`, a circuit takes no temporary setpoint and
     offers no clearing. The manual setpoint stays.
   - A change of the heating or setback temperature reads the control type
-    and the other levels together with the level itself and checks the value
+    and the other level together with the level itself and checks the value
     against these fresh limits; the two levels limit each other. With the
     control type `ISRC` or `constants` no level is changed.
+  - The manual setpoint and the operating mode (entities and dialog rows)
+    read the control type and the setting itself before a change; with
+    `constants` nothing is changed, as on the climate.
+  - A ConnectKey zone's manual setpoint now refuses a value between two
+    steps when the zone reports a step; without one, any value within the
+    limits is sent as before.
   - The lower limit of the temporary target, taken from the manual
     setpoint, stays shown while the last reading of the manual setpoint is
     still valid. One missed reading no longer hides the target in
