@@ -24,6 +24,9 @@ from homeassistant.components.climate.const import ClimateEntityFeature, HVACMod
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from custom_components.bosch_buderus_heating import button as button_platform
+from custom_components.bosch_buderus_heating.aircon_policies import (
+    TIMER_POLICY as AIRCON_TIMER_POLICY,
+)
 from custom_components.bosch_buderus_heating.control import async_set_control
 from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.heating_climate import (
@@ -261,6 +264,8 @@ async def test_platform_creates_the_outside_button_disabled(hass):
     lifecycle = _Lifecycle()
     scope = SimpleNamespace(
         coordinators=(coordinator,),
+        wallboxes=(),
+        aircons=(),
         bacon=None,
         async_on_unload=lifecycle.async_on_unload,
     )
@@ -399,13 +404,14 @@ def test_the_confirmation_rule_belongs_to_the_clear_value():
     # A target is confirmed only by itself.
     assert not confirms_value(policy, -1.0, 21.5)
     assert confirms_value(policy, 21.5, 21.5)
-    # The temporary setpoint of a zone shares it; no other policy has it.
+    # The temporary setpoint of a zone shares it; besides the timers of an
+    # air conditioner (their own countdown tolerance) no other policy has it.
     assert confirms_value(ZONE_TEMPORARY_SETPOINT_POLICY, -3.0, -1.0)
     assert not confirms_value(ZONE_TEMPORARY_SETPOINT_POLICY, -1.0, 21.5)
     assert all(
         item.confirm_if is None and item.sentinel_value is None
         for item in NUMBER_WRITE_POLICIES
-        if item not in (policy, ZONE_TEMPORARY_SETPOINT_POLICY)
+        if item not in (policy, ZONE_TEMPORARY_SETPOINT_POLICY, AIRCON_TIMER_POLICY)
     )
 
 

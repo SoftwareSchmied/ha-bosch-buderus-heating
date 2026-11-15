@@ -1063,7 +1063,11 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         registry.async_get_or_create("sensor", DOMAIN, cloud_id, config_entry=entry)
 
     scope = SimpleNamespace(
-        bacon=None, wallboxes=(), metrics=None, coordinators=(coordinator,)
+        bacon=None,
+        wallboxes=(),
+        aircons=(),
+        metrics=None,
+        coordinators=(coordinator,),
     )
     with (
         patch.object(sensor, "_track_resource_sensors", eager),

@@ -288,6 +288,8 @@ async def test_button_platform_adds_the_clear_button_once(hass, minimum, count):
     lifecycle = _Lifecycle()
     scope = SimpleNamespace(
         coordinators=(coordinator,),
+        wallboxes=(),
+        aircons=(),
         bacon=None,
         async_on_unload=lifecycle.async_on_unload,
     )
