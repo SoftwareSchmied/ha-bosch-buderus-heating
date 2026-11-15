@@ -38,21 +38,45 @@ ventilation systems.
    more (unless the hourly run comes sooner): a past hour only counts after
    two reads with the same value, so yesterday is shown then instead of
    after the next hourly run. Entities added after a run get their values
-   right away from what was already read.
+   right away from what was already read. A run with nothing to read
+   locally (for example only a *(calculated)* entity enabled) never falls
+   back to the cloud while the local access answers.
 2. **Cloud**: only when the local access is missing or does not answer, and
    only for the nine energy recordings (heat, compressor and heater for
-   total, heating and hot water). Every hour today, and yesterday until it
-   is confirmed (then like an older day at most twice a day), plus at most
-   a few older days, months and years per run until the history is complete
-   (at most 30 reads per run). The cloud's pauses and rate limits
-   apply as for every other read.
+   total, heating and hot water). Most installations have no local access,
+   so these reads are kept low and spread over hours:
+   - the start run reads yesterday once per recording (to find them), with
+     no second run five minutes later;
+   - every hour yesterday until it is confirmed (then like an older day at
+     most twice a day), only for the recordings something needs;
+   - today only for an enabled *current month* or *current year* entity or
+     with the import on;
+   - the history (older months, years and, with the import, older days)
+     at most four intervals per hourly run, never in the start run and not
+     for the rest of the day after a rate limit;
+   - at most 24 reads per run. With the default entities and the
+     performance factors that is about nine reads in the start run, about
+     a dozen in the first hourly runs and a few per hour afterwards, well
+     below the regular reads of the integration.
+
+   The cloud's pauses and rate limits apply as for every other read; a
+   pause or a rate limit during a run ends it. The manufacturer's app reads
+   the recordings of a whole period at once (`query=all&sampleRate=all`);
+   that form was refused (403) for a real account, so the integration
+   reads one day, month or year per request.
 3. **Counters of the integration**: where neither recording has a value,
    the period entities use the change of the integration's own counter
    entity over the period (from Home Assistant's long-term statistics).
 
 A recording that answers 404 is tried again once a day; one that answers 403
 is not tried again before the next start. A recording in an unknown unit is
-not used. Nothing is read while no period entity is enabled, the import is
+not used. A recording whose reads fail (another error, an answer that is no
+recording, a server error of the local data port) is tried again once a day
+(locally after two failures in a row when it answered before; what was read
+stays) and never holds up the others; a cloud recording that fails while
+the others answer is left out for three hours. A recording whose whole
+history does not arrive within 30 seconds is read by its last two days
+only. Nothing is read while no period entity is enabled, the import is
 off and no other part of the integration needs the recordings, except once
 after every start to find the recordings of the plant.
 
@@ -68,9 +92,13 @@ The plant splits the heat into heating and hot water by hour; in an hour in
 which it switches between the two, both modes get the heat of that hour, so
 heating plus hot water can be more than the total (about 2 kWh on a day
 observed on a real installation). The heat per mode is therefore taken from
-the counters first; those entities are named *(calculated)*. Each energy
-entity has a disabled companion with the other method (*(calculated)* from
-the counters, or *(system recording)* from the plant) for comparison.
+the counters first; those entities are named *(calculated)*. The
+manufacturer's app shows the recorded heat per mode, so its values for
+heating and hot water can be higher than these entities (on a real
+installation hot water yesterday was 13.6 kWh in the app and 11.5 kWh from
+the counters); the total is the same. Each energy entity has a disabled
+companion with the other method (*(calculated)* from the counters, or
+*(system recording)* from the plant) for comparison.
 
 Attributes:
 
@@ -90,6 +118,12 @@ counters. Some plants round older monthly values to whole kWh; months are
 therefore summed from the days wherever the days are complete. The current
 month with a day missing shows the sum of the known days, or the plant's
 month value read at the start where that is larger.
+
+A day or month without data (the plant or the gateway was off, `c = 0`) is
+a gap, never a zero: yesterday then shows no value (or the counters' value
+where the entity uses them), a month with such a day uses the plant's month
+value, and a month without data adds nothing to its year. The plant's
+placeholder values for such slots are dropped.
 
 ## Import into the statistics
 
@@ -139,19 +173,29 @@ of the month.
   set up the gateway again and delete them in the options; a new entry for
   the same gateway uses the same statistics.
 - Values the plant no longer has (after a reset or a new controller) stay
-  imported.
+  imported; a confirmed hour or day that a later answer reports without
+  data keeps its value (counted as `gap_after_value`).
+- In a time zone off the full hour (for example India, Nepal, Iran,
+  Newfoundland, central Australia) nothing is imported: the recorder takes
+  rows on full UTC hours only. The diagnostics show
+  `time_zone_on_the_hour: false`; the period entities work as usual.
 
 ## Diagnostics
 
 The section `recordings` of each gateway shows, without values, dates or
 identifiers: whether the import is on, the state per recording (`ok`,
-`missing`, `forbidden`, `unit`) for local and cloud, how many hours, days
+`missing`, `forbidden`, `unit`, `failed`) for local and cloud, how many hours, days
 and months are known, how many hours the import is behind, discarded values
 with their reason, local and cloud differences, days whose hours could not
 be placed, the last runs (reason, source, number of reads, and for an
 import that failed the number of recordings) and whether the
 plant's UTC offset differs from the time zone of Home Assistant, and the
-plausibility bound per hour.
+plausibility bound per hour. Also: `time_zone_on_the_hour` (`false`: the
+import waits), `local_paths_read_by_days_only` (recordings whose whole
+history did not arrive in time) and `cloud_paths_left_out` (cloud
+recordings left out for a while after a failed read); a run reports
+`cloud_paths_left_out`, `cloud_backfill_left` and
+`import_rows_not_on_the_hour` where they apply.
 
 ## Limits
 

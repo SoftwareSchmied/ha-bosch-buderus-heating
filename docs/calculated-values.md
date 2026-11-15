@@ -235,7 +235,8 @@ defrosts, so the heat taken back from the water is netted.
   the next midnight. The start of the day is saved, so a restart keeps it.
 - The heat per mode comes from the counters first because the plant gives
   an hour in which it switches between heating and hot water to both modes.
-  A day the counters' statistics cover only partly (the first day of a new
+  The manufacturer's app shows the recorded heat per mode, so its heating
+  and hot water values (and factors) can be higher than these. A day the counters' statistics cover only partly (the first day of a new
   counter) never counts. Home Assistant off for a whole day puts that day's
   energy into the counters' change of the next day; where the recordings
   fill the day itself, the counters of the days next to it do not count

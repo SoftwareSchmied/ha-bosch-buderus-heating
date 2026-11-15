@@ -62,6 +62,10 @@ entry says how it was tested; most of it with automated tests only.
     few minutes after the start instead of after the first hourly run. Found
     on a real installation; the changed request plan is tested with
     automated tests only.
+  - Without a local access the cloud reads are spread over hours: about nine
+    at the start, then a few per hour. A day or month without data shows no
+    value instead of the plant's placeholder, and a failing recording no
+    longer holds up the others. Automated tests only.
 - **Readings:** a flow below the measuring range is marked with
   `reported_state: low_flow` and two disabled binary sensors; a new sensor
   shows the software version of the outdoor unit.
