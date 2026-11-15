@@ -23,6 +23,17 @@
       "time": "Godzina",
       "deleteFailed": "Nie udało się otworzyć potwierdzenia usunięcia. Odśwież stronę i spróbuj ponownie.",
       "reopen": "Zamknij okno i otwórz je ponownie."
+    },
+    "schedule": {
+      "title": "Widok tygodniowy",
+      "clock": "Godziny według zegara instalacji grzewczej.",
+      "carried": "kontynuacja z poprzedniego dnia",
+      "empty": "brak punktów przełączenia",
+      "noLevel": "brak wartości zadanej",
+      "changed": "zmieniono, jeszcze nie zapisano",
+      "hours": "Godziny",
+      "day": "Dzień",
+      "segment": "{day} od {start} do {end}: {level}"
     }
   },
   "texts": {

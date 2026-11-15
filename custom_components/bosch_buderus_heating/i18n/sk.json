@@ -23,6 +23,17 @@
       "time": "Čas",
       "deleteFailed": "Potvrdenie odstránenia sa nepodarilo otvoriť. Obnovte stránku a skúste to znova.",
       "reopen": "Zatvorte a znova otvorte okno."
+    },
+    "schedule": {
+      "title": "Týždenný prehľad",
+      "clock": "Časy podľa hodín vykurovacieho systému.",
+      "carried": "pokračuje z predchádzajúceho dňa",
+      "empty": "žiadne spínacie body",
+      "noLevel": "žiadna požadovaná hodnota",
+      "changed": "zmenené, zatiaľ neuložené",
+      "hours": "Hodiny",
+      "day": "Deň",
+      "segment": "{day} {start} až {end}: {level}"
     }
   },
   "texts": {

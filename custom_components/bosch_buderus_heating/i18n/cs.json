@@ -23,6 +23,17 @@
       "time": "Čas",
       "deleteFailed": "Potvrzení odstranění se nepodařilo otevřít. Obnovte prosím stránku a zkuste to znovu.",
       "reopen": "Zavřete prosím dialog a znovu jej otevřete."
+    },
+    "schedule": {
+      "title": "Týdenní přehled",
+      "clock": "Časy podle hodin topné soustavy.",
+      "carried": "pokračuje z předchozího dne",
+      "empty": "žádné spínací body",
+      "noLevel": "žádná požadovaná hodnota",
+      "changed": "změněno, dosud neuloženo",
+      "hours": "Hodiny",
+      "day": "Den",
+      "segment": "{day} {start} až {end}: {level}"
     }
   },
   "texts": {

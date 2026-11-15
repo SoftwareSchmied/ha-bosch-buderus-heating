@@ -366,19 +366,24 @@
         "title": "Verwarmingstijdprogramma bekijken",
         "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nKies een weekdag. De tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. ∅ betekent dat voor die dag geen schakelpunt is opgeslagen. Wijzigingen gelden voor elke zone die dit tijdprogramma gebruikt.",
         "data": {
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "rrc_readonly": {
         "title": "Verwarmingstijdprogramma bekijken",
-        "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nDit tijdprogramma kan hier alleen worden bekeken. Het heeft geen bewerkbare schakelpunten of bevat niet-ondersteunde instellingen. ∅ betekent dat er geen schakelpunt is opgeslagen. Je kunt wijzigingen aanbrengen in de app van de fabrikant."
+        "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nDit tijdprogramma kan hier alleen worden bekeken. Het heeft geen bewerkbare schakelpunten of bevat niet-ondersteunde instellingen. ∅ betekent dat er geen schakelpunt is opgeslagen. Je kunt wijzigingen aanbrengen in de app van de fabrikant.",
+        "data": {
+          "week_view": "Weekoverzicht"
+        }
       },
       "rrc_point": {
         "title": "Schakelpunt bewerken",
         "description": "**{program}**\n\nKies een tijd in stappen van vijf minuten en een temperatuur van 5 tot 30 °C in stappen van 0,5 °C. De tijd herhaalt zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Wijzigingen gelden voor alle toegewezen zones.",
         "data": {
           "time": "Tijd",
-          "temperature": "Temperatuur"
+          "temperature": "Temperatuur",
+          "delete": "Dit schakelpunt verwijderen"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Schakelpunt kiezen",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nKies een schakelpunt om het te wijzigen of te verwijderen, of voeg er een toe. Een dag heeft hoogstens {per_day} schakelpunten (de grens van de app van de fabrikant, niet gemeld door de regelaar); het laatste schakelpunt van een dag blijft staan.",
         "data": {
           "point": "Schakelpunt"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDit programma is niet het actieve programma van het verwarmingscircuit. Wijzigingen werken pas als het is geselecteerd.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nHet warmwaterprogramma geldt alleen zolang de bedrijfsmodus voor warm water op Auto staat.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Resultaat",
         "description": "Er is niets verwijderd."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Warmwaterprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDe niveaus zijn die van het programma van de kamerregelaar. Het programma geldt zolang het warme water zijn eigen programma volgt. Hoogstens zes schakelpunten per dag is de grens van de app van de fabrikant, niet een grens die de regelaar meldt.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Schakelpunt bewerken",
+        "description": "**{program}** – **{day}**\n\nKies een tijd in stappen van {raster} minuten en een temperatuur van {minimum} tot {maximum} °C in stappen van {step} °C. Dit geldt vanaf deze tijd tot het volgende schakelpunt.",
+        "data": {
+          "time": "Tijd",
+          "value": "Temperatuur",
+          "off": "Uit in plaats van een temperatuur",
+          "delete": "Dit schakelpunt verwijderen"
+        }
+      },
+      "rrc_add": {
+        "title": "Schakelpunt toevoegen",
+        "description": "**{program}**\n\n{points}\n\nKies een tijd in stappen van vijf minuten en een temperatuur van 5 tot 30 °C in stappen van 0,5 °C. De tijd herhaalt zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Wijzigingen gelden voor alle toegewezen zones.",
+        "data": {
+          "time": "Tijd",
+          "temperature": "Temperatuur"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
       "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd.",
       "local_token_end_unconfirmed": "Het intrekken van dit token kan een lokale toegang beëindigen. Vink ook het tweede vakje aan, of laat het eerste uitgevinkt om terug te gaan. Er is niets verstuurd.",
-      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd."
+      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd.",
+      "switch_program_value": "Voer een temperatuur in van {minimum} tot {maximum} °C in stappen van {step} °C.",
+      "switch_program_day_emptied": "Een dag met schakelpunten behoudt er minstens één; wat een lege dag voor de regelaar betekent, is niet bekend.",
+      "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
+      "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
+      "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "Het gekozen tijdprogramma kan op dit moment niet worden gelezen. Er is niets verzonden."
+    },
+    "switch_points_no_target": {
+      "message": "Er is geen ingeschakelde tijdprogrammasensor van deze integratie gekozen. Schakel de tijdprogrammasensor in en kies deze als doel."
+    },
+    "not_a_program_entity": {
+      "message": "Alleen de tijdprogrammasensoren van deze integratie kunnen worden gekozen."
+    },
+    "switch_points_empty_week": {
+      "message": "De week heeft minstens één schakelpunt nodig."
+    },
+    "switch_points_invalid_time": {
+      "message": "Elke tijd moet in stappen van {raster} minuten liggen, zonder seconden."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Een dag heeft twee schakelpunten op hetzelfde tijdstip."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Een dag heeft meer schakelpunten dan de verwarmingsinstallatie toestaat ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "De week heeft meer schakelpunten dan de verwarmingsinstallatie toestaat ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Alleen deze niveaus kunnen worden gebruikt: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Alleen temperaturen van {minimum} tot {maximum} in stappen van {step} kunnen worden gebruikt."
+    },
+    "switch_points_not_writable": {
+      "message": "De verwarmingsinstallatie meldt dit tijdprogramma niet als wijzigbaar."
+    },
+    "switch_points_unused": {
+      "message": "De verwarmingsinstallatie gebruikt dit tijdprogramma op dit moment niet. Er is niets verzonden."
+    },
+    "switch_points_not_level_program": {
+      "message": "Het type van dit tijdprogramma kon niet worden gelezen of past niet bij de schakelpunten. Er is niets verzonden."
+    },
+    "switch_points_not_editable": {
+      "message": "Dit tijdprogramma kan alleen worden weergegeven, niet gewijzigd: de verwarmingsinstallatie meldt niet alle grenzen die voor een wijziging nodig zijn."
+    },
+    "switch_points_program_changed": {
+      "message": "Het tijdprogramma is intussen gewijzigd of komt niet meer overeen met de verwachte schakelpunten. Er is niets verzonden."
+    },
+    "switch_points_paused": {
+      "message": "Schrijven naar de verwarmingsinstallatie is enkele minuten gepauzeerd na herhaalde mislukte uitleesacties. Er is niets verzonden."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Het tijdprogramma is verzonden, maar kon niet worden bevestigd door het terug te lezen. Het kan toch zijn toegepast; het wordt niet opnieuw verzonden."
+    },
+    "switch_points_rejected": {
+      "message": "De verwarmingsinstallatie heeft het tijdprogramma geweigerd (HTTP {status}). Er is niets gewijzigd."
+    },
+    "switch_points_invalid": {
+      "message": "De schakelpunten passen niet binnen de grenzen van het tijdprogramma."
+    },
+    "program_name_empty": {
+      "message": "Voer een naam in; een lege naam wordt niet verzonden."
+    },
+    "program_name_too_long": {
+      "message": "De naam mag hoogstens {max} tekens hebben."
+    },
+    "program_name_charset": {
+      "message": "De naam bevat tekens die de verwarmingsinstallatie niet kan opslaan ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "De verwarmingsinstallatie meldt deze naam niet als wijzigbaar."
+    },
+    "program_name_changed": {
+      "message": "De naam is intussen gewijzigd. Er is niets verzonden."
+    },
+    "program_name_not_confirmed": {
+      "message": "De naam is verzonden, maar kon niet worden bevestigd door hem terug te lezen. Hij kan toch zijn toegepast; hij wordt niet opnieuw verzonden."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Terug"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Hele week vervangen",
+        "replace_days": "Alleen de opgegeven dagen vervangen"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dag"
+        },
+        "time": {
+          "name": "Tijd"
+        },
+        "level": {
+          "name": "Niveau of temperatuur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Uit",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Hoog",
+        "off": "Uit",
+        "low": "Laag",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Schakelpunt toevoegen"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Opgewekte koelenergie"
+      },
+      "cooling_switch_program": {
+        "name": "Koeltijdprogramma",
+        "state": {
+          "on": "Koelen",
+          "off": "Uit"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Ventilatietijdprogramma",
+        "state": {
+          "min": "Minimaal",
+          "red": "Verlaagd",
+          "nom": "Nominaal",
+          "max": "Maximaal",
+          "dem": "Vraaggestuurd",
+          "off": "Uit"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Tijdprogramma (temperaturen)"
+      },
+      "wddw2_switch_program": {
+        "name": "Warmwatertijdprogramma (temperaturen)"
+      },
+      "name_part_program_cooling": {
+        "name": "Koeltijdprogramma"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Verwarmingstijdprogramma"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Koeltijdprogramma"
+      },
+      "name_part_program_ventilation": {
+        "name": "Ventilatietijdprogramma"
+      },
+      "name_part_program_hot_water": {
+        "name": "Warmwatertijdprogramma"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Onbekend"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Naam van het tijdprogramma"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Schakelpunten van een tijdprogramma instellen",
+      "description": "Stelt de schakelpunten van een of meer wekelijkse tijdprogramma's van de verwarmingsinstallatie in, vers uitgelezen en gecontroleerd aan de hand van de grenzen die de installatie meldt. Elk programma wordt één keer verzonden en teruggelezen; niets wordt automatisch herhaald.",
+      "fields": {
+        "mode": {
+          "name": "Wijze",
+          "description": "De hele week vervangen, of alleen de dagen die in de schakelpunten voorkomen (de overige dagen blijven zoals uitgelezen)."
+        },
+        "switch_points": {
+          "name": "Schakelpunten",
+          "description": "Dag (mo tot su), tijd (HH:MM, volgens de klok van de verwarmingsinstallatie) en niveau van elk schakelpunt. Bij een programma met temperaturen is het niveau een getal zoals 21.5."
+        },
+        "expected": {
+          "name": "Verwachte schakelpunten",
+          "description": "Optioneel: de schakelpunten die het programma op dit moment moet hebben. Heeft het andere (bijvoorbeeld in de app gewijzigd), dan wordt niets verzonden."
+        },
+        "validate_only": {
+          "name": "Alleen controleren",
+          "description": "Controleert de schakelpunten en antwoordt, zonder te verzenden."
         }
       }
     }

@@ -23,6 +23,17 @@
       "time": "Tid",
       "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen.",
       "reopen": "Luk dialogen, og åbn den igen."
+    },
+    "schedule": {
+      "title": "Ugevisning",
+      "clock": "Tidspunkter efter varmeanlæggets ur.",
+      "carried": "fortsat fra den foregående dag",
+      "empty": "ingen koblingspunkter",
+      "noLevel": "ingen sætpunktsværdi",
+      "changed": "ændret, endnu ikke gemt",
+      "hours": "Timer",
+      "day": "Dag",
+      "segment": "{day} {start} til {end}: {level}"
     }
   },
   "texts": {

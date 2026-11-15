@@ -366,19 +366,24 @@
         "title": "Féach ar an sceideal téimh",
         "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nRoghnaigh lá den tseachtain. Athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte don lá sin. Beidh tionchar ag athruithe ar gach crios a úsáideann an sceideal seo.",
         "data": {
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "rrc_readonly": {
         "title": "Féach ar an sceideal téimh",
-        "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nNí féidir an sceideal seo a fheiceáil anseo ach amháin. Níl aon phointí lasctha in-eagraithe aige nó tá socruithe gan tacaíocht ann. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte. Is féidir leat athruithe a dhéanamh in aip an déantóra."
+        "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nNí féidir an sceideal seo a fheiceáil anseo ach amháin. Níl aon phointí lasctha in-eagraithe aige nó tá socruithe gan tacaíocht ann. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte. Is féidir leat athruithe a dhéanamh in aip an déantóra.",
+        "data": {
+          "week_view": "Amharc seachtainiúil"
+        }
       },
       "rrc_point": {
         "title": "Cuir pointe lasctha in eagar",
         "description": "**{program}**\n\nRoghnaigh am i gcéimeanna cúig nóiméad agus teocht ó 5 go 30 °C i gcéimeanna 0.5 °C. Athdhéantar an t-am gach seachtain in am áitiúil an chórais téimh. Beidh tionchar ag athruithe ar na criosanna sannta ar fad.",
         "data": {
           "time": "Am",
-          "temperature": "Teocht"
+          "temperature": "Teocht",
+          "delete": "Scrios an pointe lasctha seo"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Roghnaigh pointe lasctha",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nRoghnaigh pointe lasctha chun é a athrú nó a scriosadh, nó cuir ceann leis. Tá {per_day} pointe lasctha ar a mhéad ag lá (teorainn aip an déantúsóra, nach dtuairiscíonn an rialaitheoir); fanann an pointe lasctha deireanach de lá.",
         "data": {
           "point": "Pointe lasctha"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí hé an sceideal seo sceideal gníomhach an chiorcaid téimh. Beidh éifeacht ag athruithe nuair a roghnaítear é.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí bhíonn feidhm ag sceideal an uisce te ach fad atá mód oibríochta an uisce te socraithe ar Uathoibríoch.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Toradh",
         "description": "Níor scriosadh aon rud."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Athraigh clár an uisce the",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nIs iad na leibhéil iad siúd de chlár rialaitheoir an tseomra. Bíonn feidhm ag an gclár fad a leanann an t-uisce te a chlár féin. Is é sé phointe lasctha in aghaidh an lae ar a mhéad teorainn aip an déantúsóra, ní teorainn a thuairiscíonn an rialaitheoir.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá na seachtaine",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Cuir pointe lasctha in eagar",
+        "description": "**{program}** – **{day}**\n\nRoghnaigh am i gcéimeanna {raster} nóiméad agus teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C. Bíonn feidhm aici ón am seo go dtí an chéad phointe lasctha eile.",
+        "data": {
+          "time": "Am",
+          "value": "Teocht",
+          "off": "As in ionad teochta",
+          "delete": "Scrios an pointe lasctha seo"
+        }
+      },
+      "rrc_add": {
+        "title": "Cuir pointe lasctha leis",
+        "description": "**{program}**\n\n{points}\n\nRoghnaigh am i gcéimeanna cúig nóiméad agus teocht ó 5 go 30 °C i gcéimeanna 0.5 °C. Athdhéantar an t-am gach seachtain in am áitiúil an chórais téimh. Beidh tionchar ag athruithe ar na criosanna sannta uile.",
+        "data": {
+          "time": "Am",
+          "temperature": "Teocht"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
       "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
       "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
-      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud."
+      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
+      "switch_program_value": "Cuir isteach teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C.",
+      "switch_program_day_emptied": "Coinníonn lá a bhfuil pointí lasctha aige ceann amháin ar a laghad; ní fios cad is brí le lá folamh don rialaitheoir.",
+      "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaíonn an aip ag an lá seo cheana ({per_day}).",
+      "rrc_point_last": "Ní féidir an pointe lasctha deireanach de lá a scriosadh; ní fios cad is brí le lá folamh don rialaitheoir.",
+      "rrc_point_duplicate": "Tá pointe lasctha ag an lá seo cheana ag an am seo."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "Ní féidir an sceideal roghnaithe a léamh faoi láthair. Níor seoladh aon rud."
+    },
+    "switch_points_no_target": {
+      "message": "Níor roghnaíodh braiteoir cláir ama cumasaithe den chomhtháthú seo. Cumasaigh an braiteoir cláir ama agus roghnaigh é mar sprioc."
+    },
+    "not_a_program_entity": {
+      "message": "Ní féidir ach braiteoirí cláir ama an chomhtháthaithe seo a roghnú."
+    },
+    "switch_points_empty_week": {
+      "message": "Teastaíonn pointe lasctha amháin ar a laghad ón tseachtain."
+    },
+    "switch_points_invalid_time": {
+      "message": "Caithfidh gach am a bheith i gcéimeanna {raster} nóiméad, gan soicindí."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Tá dhá phointe lasctha ag lá ag an am céanna."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Tá níos mó pointí lasctha ag lá ná mar a cheadaíonn an córas téimh ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Tá níos mó pointí lasctha sa tseachtain ná mar a cheadaíonn an córas téimh ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Ní féidir ach na leibhéil seo a úsáid: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Ní féidir ach teochtaí ó {minimum} go {maximum} i gcéimeanna {step} a úsáid."
+    },
+    "switch_points_not_writable": {
+      "message": "Ní thuairiscíonn an córas téimh go bhfuil an clár ama seo inathraithe."
+    },
+    "switch_points_unused": {
+      "message": "Ní úsáideann an córas téimh an clár ama seo faoi láthair. Níor seoladh aon rud."
+    },
+    "switch_points_not_level_program": {
+      "message": "Níorbh fhéidir cineál an chláir ama seo a léamh nó ní oireann sé dá phointí lasctha. Níor seoladh aon rud."
+    },
+    "switch_points_not_editable": {
+      "message": "Ní féidir an clár ama seo a thaispeáint ach gan é a athrú: ní thuairiscíonn an córas téimh na teorainneacha uile atá ag teastáil le haghaidh athraithe."
+    },
+    "switch_points_program_changed": {
+      "message": "Tá an clár ama athraithe idir an dá linn nó ní hionann é a thuilleadh agus na pointí lasctha ionchasacha. Níor seoladh aon rud."
+    },
+    "switch_points_paused": {
+      "message": "Tá scríobh chuig an gcóras téimh ar sos ar feadh cúpla nóiméad tar éis léamha teipthe arís agus arís eile. Níor seoladh aon rud."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Seoladh an clár ama, ach níorbh fhéidir é a dheimhniú trína léamh ar ais. B'fhéidir go bhfuil sé curtha i bhfeidhm ar aon nós; ní sheoltar arís é."
+    },
+    "switch_points_rejected": {
+      "message": "Dhiúltaigh an córas téimh don chlár ama (HTTP {status}). Níor athraíodh aon rud."
+    },
+    "switch_points_invalid": {
+      "message": "Ní oireann na pointí lasctha do theorainneacha an chláir ama."
+    },
+    "program_name_empty": {
+      "message": "Cuir isteach ainm; ní sheoltar ainm folamh."
+    },
+    "program_name_too_long": {
+      "message": "Ní féidir leis an ainm a bheith níos faide ná {max} carachtar."
+    },
+    "program_name_charset": {
+      "message": "Tá carachtair san ainm nach féidir leis an gcóras téimh a stóráil ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Ní thuairiscíonn an córas téimh go bhfuil an t-ainm seo inathraithe."
+    },
+    "program_name_changed": {
+      "message": "Tá an t-ainm athraithe idir an dá linn. Níor seoladh aon rud."
+    },
+    "program_name_not_confirmed": {
+      "message": "Seoladh an t-ainm, ach níorbh fhéidir é a dheimhniú trína léamh ar ais. B'fhéidir go bhfuil sé curtha i bhfeidhm ar aon nós; ní sheoltar arís é."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Siar"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Athsholáthar an tseachtain ar fad",
+        "replace_days": "Athsholáthar na laethanta a tugadh amháin"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Lá"
+        },
+        "time": {
+          "name": "Am"
+        },
+        "level": {
+          "name": "Leibhéal nó teocht"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "As",
+        "decimal_sign": "."
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Ard",
+        "off": "As",
+        "low": "Íseal",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Cuir pointe lasctha leis"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Fuinneamh fuaraithe a ghintear"
+      },
+      "cooling_switch_program": {
+        "name": "Clár ama fuaraithe",
+        "state": {
+          "on": "Fuarú",
+          "off": "As"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Clár ama aeraithe",
+        "state": {
+          "min": "Íosta",
+          "red": "Laghdaithe",
+          "nom": "Ainmniúil",
+          "max": "Uasta",
+          "dem": "Rialaithe de réir éilimh",
+          "off": "As"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Clár ama (teochtaí)"
+      },
+      "wddw2_switch_program": {
+        "name": "Clár ama an uisce the (teochtaí)"
+      },
+      "name_part_program_cooling": {
+        "name": "Clár ama fuaraithe"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Clár ama téimh"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Clár ama fuaraithe"
+      },
+      "name_part_program_ventilation": {
+        "name": "Clár ama aeraithe"
+      },
+      "name_part_program_hot_water": {
+        "name": "Clár ama an uisce the"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Anaithnid"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Ainm an chláir ama"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Socraigh pointí lasctha clár ama",
+      "description": "Socraíonn sé pointí lasctha clár ama seachtainiúil amháin nó níos mó den chóras téimh, léite as an nua agus seiceáilte i gcomparáid leis na teorainneacha a thuairiscíonn an córas. Seoltar gach clár uair amháin agus léitear ar ais é; ní athdhéantar tada go huathoibríoch.",
+      "fields": {
+        "mode": {
+          "name": "Modh",
+          "description": "Athsholáthar an tseachtain ar fad, nó na laethanta amháin a bhfuil sna pointí lasctha (fanann na laethanta eile mar a léadh iad)."
+        },
+        "switch_points": {
+          "name": "Pointí lasctha",
+          "description": "Lá (mo go su), am (HH:MM, de réir chlog an chórais téimh) agus leibhéal gach pointe lasctha. I gclár le teochtaí, is uimhir ar nós 21.5 an leibhéal."
+        },
+        "expected": {
+          "name": "Pointí lasctha ionchasacha",
+          "description": "Roghnach: na pointí lasctha a chaithfidh a bheith sa chlár faoi láthair. Má tá cinn eile ann (mar shampla athraithe san aip), ní sheoltar aon rud."
+        },
+        "validate_only": {
+          "name": "Seiceáil amháin",
+          "description": "Seiceálann sé na pointí lasctha agus freagraíonn sé gan aon rud a sheoladh."
         }
       }
     }

@@ -100,23 +100,29 @@ def week_days(
             )
         else:
             level = _carried_level(ordered, day) if carry_over else None
-            cursor = 0
-            for point in own:
-                if point.minute > cursor:
-                    segments.append(
-                        _segment(
-                            cursor,
-                            point.minute,
-                            level,
-                            labels,
-                            point=False,
-                            carried=cursor == 0 and level is not None,
-                        )
+            if own and own[0].minute > 0:
+                # Before the day's first point: the carried level, or none.
+                segments.append(
+                    _segment(
+                        0,
+                        own[0].minute,
+                        level,
+                        labels,
+                        point=False,
+                        carried=level is not None,
                     )
-                cursor, level = point.minute, point.level
+                )
+            for point in own:
                 # Its end is the start of the next segment (set below).
                 segments.append(
-                    _segment(cursor, cursor, level, labels, point=True, carried=False)
+                    _segment(
+                        point.minute,
+                        point.minute,
+                        point.level,
+                        labels,
+                        point=True,
+                        carried=False,
+                    )
                 )
             # Close every segment at the start of the next one.
             for index, segment in enumerate(segments):

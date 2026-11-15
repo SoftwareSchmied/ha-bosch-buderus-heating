@@ -23,6 +23,17 @@
       "time": "Ora",
       "deleteFailed": "Non è stato possibile aprire la conferma di eliminazione. Ricarica la pagina e riprova.",
       "reopen": "Chiudi e riapri la finestra di dialogo."
+    },
+    "schedule": {
+      "title": "Vista settimanale",
+      "clock": "Orari secondo l'orologio dell'impianto di riscaldamento.",
+      "carried": "continua dal giorno precedente",
+      "empty": "nessun punto di commutazione",
+      "noLevel": "nessun valore di setpoint",
+      "changed": "modificato, non ancora salvato",
+      "hours": "Ore",
+      "day": "Giorno",
+      "segment": "{day} dalle {start} alle {end}: {level}"
     }
   },
   "texts": {

@@ -366,19 +366,24 @@
         "title": "Wyświetl program czasowy grzania",
         "description": "**{program}**\n\n**Poniedziałek:** {mo}\n\n**Wtorek:** {tu}\n\n**Środa:** {we}\n\n**Czwartek:** {th}\n\n**Piątek:** {fr}\n\n**Sobota:** {sa}\n\n**Niedziela:** {su}\n\nWybierz dzień tygodnia. Godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. ∅ oznacza, że dla tego dnia nie zapisano punktu przełączenia. Zmiany dotyczą każdej strefy używającej tego programu czasowego.",
         "data": {
-          "day": "Dzień tygodnia"
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
         }
       },
       "rrc_readonly": {
         "title": "Wyświetl program czasowy grzania",
-        "description": "**{program}**\n\n**Poniedziałek:** {mo}\n\n**Wtorek:** {tu}\n\n**Środa:** {we}\n\n**Czwartek:** {th}\n\n**Piątek:** {fr}\n\n**Sobota:** {sa}\n\n**Niedziela:** {su}\n\nTen program czasowy można tu tylko wyświetlić. Nie ma edytowalnych punktów przełączenia lub zawiera nieobsługiwane ustawienia. ∅ oznacza, że nie zapisano punktu przełączenia. Zmian możesz dokonać w aplikacji producenta."
+        "description": "**{program}**\n\n**Poniedziałek:** {mo}\n\n**Wtorek:** {tu}\n\n**Środa:** {we}\n\n**Czwartek:** {th}\n\n**Piątek:** {fr}\n\n**Sobota:** {sa}\n\n**Niedziela:** {su}\n\nTen program czasowy można tu tylko wyświetlić. Nie ma edytowalnych punktów przełączenia lub zawiera nieobsługiwane ustawienia. ∅ oznacza, że nie zapisano punktu przełączenia. Zmian możesz dokonać w aplikacji producenta.",
+        "data": {
+          "week_view": "Widok tygodniowy"
+        }
       },
       "rrc_point": {
         "title": "Edytuj punkt przełączenia",
         "description": "**{program}**\n\nWybierz godzinę w krokach pięciominutowych i temperaturę od 5 do 30 °C w krokach co 0,5 °C. Godzina powtarza się co tydzień w czasie lokalnym instalacji grzewczej. Zmiany dotyczą wszystkich przypisanych stref.",
         "data": {
           "time": "Godzina",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Usuń ten punkt przełączenia"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Wybierz punkt przełączenia",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nWybierz punkt przełączenia, aby go zmienić lub usunąć, albo dodaj nowy. Dzień ma najwyżej {per_day} punktów przełączenia (granica aplikacji producenta, niezgłaszana przez regulator); ostatni punkt przełączenia dnia pozostaje.",
         "data": {
           "point": "Punkt przełączenia"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.",
         "data": {
           "action": "Następny krok",
-          "day": "Dzień tygodnia"
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nTen program nie jest aktywnym programem obiegu grzewczego. Zmiany zaczną działać, gdy zostanie wybrany.",
         "data": {
           "action": "Następny krok",
-          "day": "Dzień tygodnia"
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nProgram ciepłej wody użytkowej działa tylko wtedy, gdy tryb pracy ciepłej wody użytkowej jest ustawiony na Automatyczny.",
         "data": {
           "action": "Następny krok",
-          "day": "Dzień tygodnia"
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Wynik",
         "description": "Nic nie zostało usunięte."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Zmień program ciepłej wody",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nPoziomy są takie jak w programie regulatora pokojowego. Program obowiązuje, dopóki ciepła woda podąża za własnym programem. Najwyżej sześć punktów przełączenia na dzień to granica aplikacji producenta, a nie granica zgłaszana przez regulator.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Edytuj punkt przełączenia",
+        "description": "**{program}** – **{day}**\n\nWybierz godzinę w krokach co {raster} minut i temperaturę od {minimum} do {maximum} °C w krokach co {step} °C. Obowiązuje od tej godziny do następnego punktu przełączenia.",
+        "data": {
+          "time": "Godzina",
+          "value": "Temperatura",
+          "off": "Wyłączony zamiast temperatury",
+          "delete": "Usuń ten punkt przełączenia"
+        }
+      },
+      "rrc_add": {
+        "title": "Dodaj punkt przełączenia",
+        "description": "**{program}**\n\n{points}\n\nWybierz godzinę w krokach pięciominutowych i temperaturę od 5 do 30 °C w krokach co 0,5 °C. Godzina powtarza się co tydzień w czasie lokalnym instalacji grzewczej. Zmiany dotyczą wszystkich przypisanych stref.",
+        "data": {
+          "time": "Godzina",
+          "temperature": "Temperatura"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Ta bramka nie udostępnia listy tokenów. Nic nie zostało zmienione.",
       "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione.",
       "local_token_end_unconfirmed": "Unieważnienie tego tokenu może zakończyć dostęp lokalny. Zaznacz również drugie pole albo pozostaw pierwsze niezaznaczone, aby wrócić. Nic nie zostało wysłane.",
-      "connection_remove_unconfirmed": "Zaznacz również „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte."
+      "connection_remove_unconfirmed": "Zaznacz również „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte.",
+      "switch_program_value": "Wpisz temperaturę od {minimum} do {maximum} °C w krokach co {step} °C.",
+      "switch_program_day_emptied": "Dzień, który ma punkty przełączenia, zachowuje co najmniej jeden; nie wiadomo, co pusty dzień oznacza dla regulatora.",
+      "rrc_point_limit": "Ten dzień ma już największą liczbę punktów przełączenia, jaką dopuszcza aplikacja ({per_day}).",
+      "rrc_point_last": "Ostatniego punktu przełączenia dnia nie można usunąć; nie wiadomo, co pusty dzień oznacza dla regulatora.",
+      "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "Wybranego programu czasowego nie można teraz odczytać. Nic nie wysłano."
+    },
+    "switch_points_no_target": {
+      "message": "Nie wybrano włączonego czujnika programu czasowego tej integracji. Włącz czujnik programu czasowego i wybierz go jako cel."
+    },
+    "not_a_program_entity": {
+      "message": "Można wybrać tylko czujniki programu czasowego tej integracji."
+    },
+    "switch_points_empty_week": {
+      "message": "Tydzień wymaga co najmniej jednego punktu przełączenia."
+    },
+    "switch_points_invalid_time": {
+      "message": "Każda godzina musi być w krokach co {raster} minut, bez sekund."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Dzień ma dwa punkty przełączenia o tej samej godzinie."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Dzień ma więcej punktów przełączenia, niż dopuszcza instalacja grzewcza ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Tydzień ma więcej punktów przełączenia, niż dopuszcza instalacja grzewcza ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Można używać tylko tych poziomów: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Można używać tylko temperatur od {minimum} do {maximum} w krokach co {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Instalacja grzewcza nie zgłasza tego programu czasowego jako możliwego do zmiany."
+    },
+    "switch_points_unused": {
+      "message": "Instalacja grzewcza w tej chwili nie używa tego programu czasowego. Nic nie zostało wysłane."
+    },
+    "switch_points_not_level_program": {
+      "message": "Nie udało się odczytać typu tego programu czasowego lub nie pasuje on do jego punktów przełączenia. Nic nie zostało wysłane."
+    },
+    "switch_points_not_editable": {
+      "message": "Ten program czasowy można tylko wyświetlić, nie zmienić: instalacja grzewcza nie zgłasza wszystkich granic potrzebnych do zmiany."
+    },
+    "switch_points_program_changed": {
+      "message": "Program czasowy w międzyczasie się zmienił lub nie pasuje już do oczekiwanych punktów przełączenia. Nic nie zostało wysłane."
+    },
+    "switch_points_paused": {
+      "message": "Zapis do instalacji grzewczej jest wstrzymany na kilka minut po powtarzających się nieudanych odczytach. Nic nie zostało wysłane."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Program czasowy został wysłany, ale nie udało się go potwierdzić przez ponowny odczyt. Mógł mimo to zostać zastosowany; nie jest wysyłany ponownie."
+    },
+    "switch_points_rejected": {
+      "message": "Instalacja grzewcza odrzuciła program czasowy (HTTP {status}). Nic nie zostało zmienione."
+    },
+    "switch_points_invalid": {
+      "message": "Punkty przełączenia nie mieszczą się w granicach programu czasowego."
+    },
+    "program_name_empty": {
+      "message": "Wpisz nazwę; pusta nazwa nie jest wysyłana."
+    },
+    "program_name_too_long": {
+      "message": "Nazwa może mieć najwyżej {max} znaków."
+    },
+    "program_name_charset": {
+      "message": "Nazwa zawiera znaki, których instalacja grzewcza nie może zapisać ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Instalacja grzewcza nie zgłasza tej nazwy jako możliwej do zmiany."
+    },
+    "program_name_changed": {
+      "message": "Nazwa w międzyczasie się zmieniła. Nic nie zostało wysłane."
+    },
+    "program_name_not_confirmed": {
+      "message": "Nazwa została wysłana, ale nie udało się jej potwierdzić przez ponowny odczyt. Mogła mimo to zostać zastosowana; nie jest wysyłana ponownie."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Wstecz"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Zastąp cały tydzień",
+        "replace_days": "Zastąp tylko podane dni"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dzień"
+        },
+        "time": {
+          "name": "Godzina"
+        },
+        "level": {
+          "name": "Poziom lub temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Wyłączony",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Wysoki",
+        "off": "Wyłączony",
+        "low": "Niski",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Dodaj punkt przełączenia"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Wytworzona energia chłodnicza"
+      },
+      "cooling_switch_program": {
+        "name": "Program czasowy chłodzenia",
+        "state": {
+          "on": "Chłodzenie",
+          "off": "Wyłączony"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Program czasowy wentylacji",
+        "state": {
+          "min": "Minimalny",
+          "red": "Obniżony",
+          "nom": "Nominalny",
+          "max": "Maksymalny",
+          "dem": "Według zapotrzebowania",
+          "off": "Wyłączony"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Program czasowy (temperatury)"
+      },
+      "wddw2_switch_program": {
+        "name": "Program czasowy ciepłej wody użytkowej (temperatury)"
+      },
+      "name_part_program_cooling": {
+        "name": "Program czasowy chłodzenia"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Program czasowy grzania"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Program czasowy chłodzenia"
+      },
+      "name_part_program_ventilation": {
+        "name": "Program czasowy wentylacji"
+      },
+      "name_part_program_hot_water": {
+        "name": "Program czasowy ciepłej wody użytkowej"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Nieznany"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Nazwa programu czasowego"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Ustaw punkty przełączenia programu czasowego",
+      "description": "Ustawia punkty przełączenia jednego lub kilku tygodniowych programów czasowych instalacji grzewczej, odczytane na nowo i sprawdzone względem granic zgłaszanych przez instalację. Każdy program jest wysyłany raz i odczytywany z powrotem; nic nie jest powtarzane automatycznie.",
+      "fields": {
+        "mode": {
+          "name": "Tryb",
+          "description": "Zastąp cały tydzień albo tylko dni występujące w punktach przełączenia (pozostałe dni zostają takie, jak odczytano)."
+        },
+        "switch_points": {
+          "name": "Punkty przełączenia",
+          "description": "Dzień (mo do su), godzina (HH:MM, według zegara instalacji grzewczej) i poziom każdego punktu przełączenia. W programie z temperaturami poziomem jest liczba, na przykład 21.5."
+        },
+        "expected": {
+          "name": "Oczekiwane punkty przełączenia",
+          "description": "Opcjonalnie: punkty przełączenia, które program musi mieć w tej chwili. Jeśli ma inne (na przykład zmienione w aplikacji), nic nie jest wysyłane."
+        },
+        "validate_only": {
+          "name": "Tylko sprawdź",
+          "description": "Sprawdza punkty przełączenia i odpowiada, bez wysyłania."
         }
       }
     }

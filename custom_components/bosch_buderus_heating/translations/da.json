@@ -366,19 +366,24 @@
         "title": "Vis varmeprogram",
         "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nVælg en ugedag. Tidspunkterne gentages hver uge i varmeanlæggets lokale tid. ∅ betyder, at der ikke er gemt noget koblingspunkt for den dag. Ændringer gælder for alle zoner, der bruger dette program.",
         "data": {
-          "day": "Ugedag"
+          "day": "Ugedag",
+          "week_view": "Ugevisning"
         }
       },
       "rrc_readonly": {
         "title": "Vis varmeprogram",
-        "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nDette program kan kun vises her. Det har ingen redigerbare koblingspunkter eller indeholder indstillinger, der ikke understøttes. ∅ betyder, at der ikke er gemt noget koblingspunkt. Du kan foretage ændringer i producentens app."
+        "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nDette program kan kun vises her. Det har ingen redigerbare koblingspunkter eller indeholder indstillinger, der ikke understøttes. ∅ betyder, at der ikke er gemt noget koblingspunkt. Du kan foretage ændringer i producentens app.",
+        "data": {
+          "week_view": "Ugevisning"
+        }
       },
       "rrc_point": {
         "title": "Redigér koblingspunkt",
         "description": "**{program}**\n\nVælg et tidspunkt i trin på fem minutter og en temperatur fra 5 til 30 °C i trin på 0,5 °C. Tidspunktet gentages hver uge i varmeanlæggets lokale tid. Ændringer gælder for alle tilknyttede zoner.",
         "data": {
           "time": "Tidspunkt",
-          "temperature": "Temperatur"
+          "temperature": "Temperatur",
+          "delete": "Slet dette koblingspunkt"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Vælg koblingspunkt",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nVælg et koblingspunkt for at ændre eller slette det, eller tilføj et. En dag har højst {per_day} koblingspunkter (grænsen i producentens app, ikke oplyst af regulatoren); dagens sidste koblingspunkt bliver stående.",
         "data": {
           "point": "Koblingspunkt"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.",
         "data": {
           "action": "Næste trin",
-          "day": "Ugedag"
+          "day": "Ugedag",
+          "week_view": "Ugevisning"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nDette program er ikke varmekredsens aktive program. Ændringer får virkning, når det vælges.",
         "data": {
           "action": "Næste trin",
-          "day": "Ugedag"
+          "day": "Ugedag",
+          "week_view": "Ugevisning"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nProgrammet for varmt brugsvand gælder kun, så længe driftsformen for varmt brugsvand står på Auto.",
         "data": {
           "action": "Næste trin",
-          "day": "Ugedag"
+          "day": "Ugedag",
+          "week_view": "Ugevisning"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Resultat",
         "description": "Intet blev slettet."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Ret tidsprogram for varmt brugsvand",
+        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nNiveauerne er dem fra rumregulatorens program. Programmet gælder, mens det varme brugsvand følger sit eget program. Højst seks koblingspunkter pr. dag er grænsen i producentens app, ikke en grænse oplyst af regulatoren.",
+        "data": {
+          "action": "Næste trin",
+          "day": "Ugedag",
+          "week_view": "Ugevisning"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Redigér koblingspunkt",
+        "description": "**{program}** – **{day}**\n\nVælg et tidspunkt i trin på {raster} minutter og en temperatur fra {minimum} til {maximum} °C i trin på {step} °C. Det gælder fra dette tidspunkt til næste koblingspunkt.",
+        "data": {
+          "time": "Tidspunkt",
+          "value": "Temperatur",
+          "off": "Fra i stedet for en temperatur",
+          "delete": "Slet dette koblingspunkt"
+        }
+      },
+      "rrc_add": {
+        "title": "Tilføj koblingspunkt",
+        "description": "**{program}**\n\n{points}\n\nVælg et tidspunkt i trin på fem minutter og en temperatur fra 5 til 30 °C i trin på 0,5 °C. Tidspunktet gentages hver uge i varmeanlæggets lokale tid. Ændringer gælder for alle tilknyttede zoner.",
+        "data": {
+          "time": "Tidspunkt",
+          "temperature": "Temperatur"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Denne gateway tilbyder ingen tokenliste. Intet blev ændret.",
       "local_tokens_invalid": "Gatewayens tokenliste kunne ikke kontrolleres (uventet eller for stort svar). Intet blev ændret.",
       "local_token_end_unconfirmed": "Tilbagekaldelse af dette token kan afslutte en lokal adgang. Sæt også kryds i det andet felt, eller lad det første være uafkrydset for at gå tilbage. Intet blev sendt.",
-      "connection_remove_unconfirmed": "Sæt også kryds i „Fjern denne adgang“: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet."
+      "connection_remove_unconfirmed": "Sæt også kryds i „Fjern denne adgang“: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet.",
+      "switch_program_value": "Indtast en temperatur fra {minimum} til {maximum} °C i trin på {step} °C.",
+      "switch_program_day_emptied": "En dag med koblingspunkter beholder mindst ét; hvad en tom dag betyder for regulatoren, er ikke kendt.",
+      "rrc_point_limit": "Denne dag har allerede det højeste antal koblingspunkter, appen tillader ({per_day}).",
+      "rrc_point_last": "Dagens sidste koblingspunkt kan ikke slettes; hvad en tom dag betyder for regulatoren, er ikke kendt.",
+      "rrc_point_duplicate": "Denne dag har allerede et koblingspunkt på dette tidspunkt."
     },
     "abort": {
       "no_notification_gateways": "Der er ikke konfigureret noget varmeanlæg.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "Det valgte tidsprogram kan ikke læses lige nu. Der blev ikke sendt noget."
+    },
+    "switch_points_no_target": {
+      "message": "Der er ikke valgt nogen aktiveret tidsprogramsensor fra denne integration. Aktivér tidsprogramsensoren, og vælg den som mål."
+    },
+    "not_a_program_entity": {
+      "message": "Kun denne integrations tidsprogramsensorer kan vælges."
+    },
+    "switch_points_empty_week": {
+      "message": "Ugen skal have mindst ét koblingspunkt."
+    },
+    "switch_points_invalid_time": {
+      "message": "Hvert tidspunkt skal ligge i trin på {raster} minutter, uden sekunder."
+    },
+    "switch_points_duplicate_time": {
+      "message": "En dag har to koblingspunkter på samme tidspunkt."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "En dag har flere koblingspunkter, end varmeanlægget tillader ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Ugen har flere koblingspunkter, end varmeanlægget tillader ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Kun disse niveauer kan bruges: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Kun temperaturer fra {minimum} til {maximum} i trin på {step} kan bruges."
+    },
+    "switch_points_not_writable": {
+      "message": "Varmeanlægget oplyser ikke, at dette tidsprogram kan ændres."
+    },
+    "switch_points_unused": {
+      "message": "Varmeanlægget bruger ikke dette tidsprogram i øjeblikket. Der blev ikke sendt noget."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typen af dette tidsprogram kunne ikke læses eller passer ikke til dets koblingspunkter. Der blev ikke sendt noget."
+    },
+    "switch_points_not_editable": {
+      "message": "Dette tidsprogram kan kun vises, ikke ændres: Varmeanlægget oplyser ikke alle de grænser, der er nødvendige for en ændring."
+    },
+    "switch_points_program_changed": {
+      "message": "Tidsprogrammet er imellemtiden blevet ændret eller passer ikke længere til de forventede koblingspunkter. Der blev ikke sendt noget."
+    },
+    "switch_points_paused": {
+      "message": "Skrivning til varmeanlægget er sat på pause i nogle minutter efter gentagne mislykkede aflæsninger. Der blev ikke sendt noget."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Tidsprogrammet blev sendt, men kunne ikke bekræftes ved at læse det tilbage. Det kan stadig være blevet anvendt; det sendes ikke igen."
+    },
+    "switch_points_rejected": {
+      "message": "Varmeanlægget afviste tidsprogrammet (HTTP {status}). Der blev ikke ændret noget."
+    },
+    "switch_points_invalid": {
+      "message": "Koblingspunkterne passer ikke til tidsprogrammets grænser."
+    },
+    "program_name_empty": {
+      "message": "Indtast et navn; et tomt navn sendes ikke."
+    },
+    "program_name_too_long": {
+      "message": "Navnet må højst have {max} tegn."
+    },
+    "program_name_charset": {
+      "message": "Navnet indeholder tegn, som varmeanlægget ikke kan gemme ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Varmeanlægget oplyser ikke, at dette navn kan ændres."
+    },
+    "program_name_changed": {
+      "message": "Navnet er imellemtiden blevet ændret. Der blev ikke sendt noget."
+    },
+    "program_name_not_confirmed": {
+      "message": "Navnet blev sendt, men kunne ikke bekræftes ved at læse det tilbage. Det kan stadig være blevet anvendt; det sendes ikke igen."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Tilbage"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Erstat hele ugen",
+        "replace_days": "Erstat kun de angivne dage"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dag"
+        },
+        "time": {
+          "name": "Tidspunkt"
+        },
+        "level": {
+          "name": "Niveau eller temperatur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Fra",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Høj",
+        "off": "Fra",
+        "low": "Lav",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Tilføj koblingspunkt"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Produceret kølenergi"
+      },
+      "cooling_switch_program": {
+        "name": "Tidsprogram for køling",
+        "state": {
+          "on": "Køling",
+          "off": "Fra"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Tidsprogram for ventilation",
+        "state": {
+          "min": "Minimum",
+          "red": "Nedsat",
+          "nom": "Normal",
+          "max": "Maksimum",
+          "dem": "Behovsstyret",
+          "off": "Fra"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Tidsprogram (temperaturer)"
+      },
+      "wddw2_switch_program": {
+        "name": "Tidsprogram for varmt brugsvand (temperaturer)"
+      },
+      "name_part_program_cooling": {
+        "name": "Tidsprogram for køling"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Tidsprogram for opvarmning"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Tidsprogram for køling"
+      },
+      "name_part_program_ventilation": {
+        "name": "Tidsprogram for ventilation"
+      },
+      "name_part_program_hot_water": {
+        "name": "Tidsprogram for varmt brugsvand"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Ukendt"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Tidsprogrammets navn"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Indstil koblingspunkterne for et tidsprogram",
+      "description": "Indstiller koblingspunkterne for et eller flere ugentlige tidsprogrammer i varmeanlægget, læst på ny og kontrolleret mod de grænser, anlægget oplyser. Hvert program sendes én gang og læses tilbage; intet gentages automatisk.",
+      "fields": {
+        "mode": {
+          "name": "Fremgangsmåde",
+          "description": "Erstat hele ugen, eller kun de dage, der forekommer i koblingspunkterne (de øvrige dage forbliver som læst)."
+        },
+        "switch_points": {
+          "name": "Koblingspunkter",
+          "description": "Dag (mo til su), tidspunkt (HH:MM, efter varmeanlæggets ur) og niveau for hvert koblingspunkt. For et program med temperaturer er niveauet et tal som 21.5."
+        },
+        "expected": {
+          "name": "Forventede koblingspunkter",
+          "description": "Valgfrit: de koblingspunkter, programmet skal have lige nu. Har det andre (for eksempel ændret i appen), sendes intet."
+        },
+        "validate_only": {
+          "name": "Kun kontrollere",
+          "description": "Kontrollerer koblingspunkterne og svarer uden at sende."
         }
       }
     }

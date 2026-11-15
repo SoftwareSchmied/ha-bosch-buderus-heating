@@ -366,19 +366,24 @@
         "title": "Zobrazenie vykurovacieho časového programu",
         "description": "**{program}**\n\n**Pondelok:** {mo}\n\n**Utorok:** {tu}\n\n**Streda:** {we}\n\n**Štvrtok:** {th}\n\n**Piatok:** {fr}\n\n**Sobota:** {sa}\n\n**Nedeľa:** {su}\n\nVyberte deň v týždni. Časy sa opakujú každý týždeň v miestnom čase vykurovacieho systému. ∅ znamená, že pre daný deň nie je uložený žiadny spínací bod. Zmeny sa týkajú každej zóny, ktorá tento časový program používa.",
         "data": {
-          "day": "Deň v týždni"
+          "day": "Deň v týždni",
+          "week_view": "Týždenný prehľad"
         }
       },
       "rrc_readonly": {
         "title": "Zobrazenie vykurovacieho časového programu",
-        "description": "**{program}**\n\n**Pondelok:** {mo}\n\n**Utorok:** {tu}\n\n**Streda:** {we}\n\n**Štvrtok:** {th}\n\n**Piatok:** {fr}\n\n**Sobota:** {sa}\n\n**Nedeľa:** {su}\n\nTento časový program je tu možné iba zobraziť. Nemá upraviteľné spínacie body alebo obsahuje nepodporované nastavenia. ∅ znamená, že nie je uložený žiadny spínací bod. Zmeny môžete vykonať v aplikácii výrobcu."
+        "description": "**{program}**\n\n**Pondelok:** {mo}\n\n**Utorok:** {tu}\n\n**Streda:** {we}\n\n**Štvrtok:** {th}\n\n**Piatok:** {fr}\n\n**Sobota:** {sa}\n\n**Nedeľa:** {su}\n\nTento časový program je tu možné iba zobraziť. Nemá upraviteľné spínacie body alebo obsahuje nepodporované nastavenia. ∅ znamená, že nie je uložený žiadny spínací bod. Zmeny môžete vykonať v aplikácii výrobcu.",
+        "data": {
+          "week_view": "Týždenný prehľad"
+        }
       },
       "rrc_point": {
         "title": "Úprava spínacieho bodu",
         "description": "**{program}**\n\nVyberte čas v päťminútových krokoch a teplotu od 5 do 30 °C v krokoch po 0,5 °C. Čas sa opakuje každý týždeň v miestnom čase vykurovacieho systému. Zmeny sa týkajú všetkých priradených zón.",
         "data": {
           "time": "Čas",
-          "temperature": "Teplota"
+          "temperature": "Teplota",
+          "delete": "Vymazať tento spínací bod"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Výber spínacieho bodu",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nVyberte spínací bod, ktorý chcete zmeniť alebo vymazať, alebo pridajte nový. Deň má najviac {per_day} spínacích bodov (hranica aplikácie výrobcu, regulátorom nehlásená); posledný spínací bod dňa zostáva.",
         "data": {
           "point": "Spínací bod"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviac {per_day} spínacích bodov za deň a {total} za týždeň, časy v krokoch po {raster} minútach. Každý spínací bod platí až do ďalšieho; časy sa opakujú každý týždeň v miestnom čase vykurovacieho systému. Dni označené * majú zatiaľ neuložené zmeny. Pred posledným krokom sa nič neodosiela.",
         "data": {
           "action": "Ďalší krok",
-          "day": "Deň v týždni"
+          "day": "Deň v týždni",
+          "week_view": "Týždenný prehľad"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviac {per_day} spínacích bodov za deň a {total} za týždeň, časy v krokoch po {raster} minútach. Každý spínací bod platí až do ďalšieho; časy sa opakujú každý týždeň v miestnom čase vykurovacieho systému. Dni označené * majú zatiaľ neuložené zmeny. Pred posledným krokom sa nič neodosiela.\n\nTento program nie je aktívnym programom vykurovacieho okruhu. Zmeny sa prejavia, až keď bude vybraný.",
         "data": {
           "action": "Ďalší krok",
-          "day": "Deň v týždni"
+          "day": "Deň v týždni",
+          "week_view": "Týždenný prehľad"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviac {per_day} spínacích bodov za deň a {total} za týždeň, časy v krokoch po {raster} minútach. Každý spínací bod platí až do ďalšieho; časy sa opakujú každý týždeň v miestnom čase vykurovacieho systému. Dni označené * majú zatiaľ neuložené zmeny. Pred posledným krokom sa nič neodosiela.\n\nProgram teplej vody platí len vtedy, keď je prevádzkový režim teplej vody nastavený na Auto.",
         "data": {
           "action": "Ďalší krok",
-          "day": "Deň v týždni"
+          "day": "Deň v týždni",
+          "week_view": "Týždenný prehľad"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Výsledok",
         "description": "Nič nebolo vymazané."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Zmena programu teplej vody",
+        "description": "**{program}**\n\n{week}\n\nNajviac {per_day} spínacích bodov za deň a {total} za týždeň, časy v krokoch po {raster} minútach. Každý spínací bod platí až do ďalšieho; časy sa opakujú každý týždeň v miestnom čase vykurovacieho systému. Dni označené * majú zatiaľ neuložené zmeny. Pred posledným krokom sa nič neodosiela.\n\nÚrovne sú tie z programu izbového regulátora. Program platí, kým sa teplá voda riadi vlastným programom. Najviac šesť spínacích bodov za deň je hranica aplikácie výrobcu, nie hranica hlásená regulátorom.",
+        "data": {
+          "action": "Ďalší krok",
+          "day": "Deň v týždni",
+          "week_view": "Týždenný prehľad"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Úprava spínacieho bodu",
+        "description": "**{program}** – **{day}**\n\nVyberte čas v krokoch po {raster} minútach a teplotu od {minimum} do {maximum} °C v krokoch po {step} °C. Platí od tohto času do ďalšieho spínacieho bodu.",
+        "data": {
+          "time": "Čas",
+          "value": "Teplota",
+          "off": "Vypnuté namiesto teploty",
+          "delete": "Vymazať tento spínací bod"
+        }
+      },
+      "rrc_add": {
+        "title": "Pridať spínací bod",
+        "description": "**{program}**\n\n{points}\n\nVyberte čas v päťminútových krokoch a teplotu od 5 do 30 °C v krokoch po 0,5 °C. Čas sa opakuje každý týždeň v miestnom čase vykurovacieho systému. Zmeny sa týkajú všetkých priradených zón.",
+        "data": {
+          "time": "Čas",
+          "temperature": "Teplota"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Táto brána neposkytuje zoznam tokenov. Nič sa nezmenilo.",
       "local_tokens_invalid": "Zoznam tokenov brány sa nepodarilo overiť (neočakávaná alebo príliš veľká odpoveď). Nič sa nezmenilo.",
       "local_token_end_unconfirmed": "Odvolanie tohto tokenu môže ukončiť lokálny prístup. Zaškrtnite aj druhé políčko alebo nechajte prvé nezaškrtnuté a vráťte sa. Nič sa neodoslalo.",
-      "connection_remove_unconfirmed": "Zaškrtnite aj „Odstrániť tento prístup“: token sa odvolá len spolu s odstránením prístupu. Nič sa neodoslalo ani neodstránilo."
+      "connection_remove_unconfirmed": "Zaškrtnite aj „Odstrániť tento prístup“: token sa odvolá len spolu s odstránením prístupu. Nič sa neodoslalo ani neodstránilo.",
+      "switch_program_value": "Zadajte teplotu od {minimum} do {maximum} °C v krokoch po {step} °C.",
+      "switch_program_day_emptied": "Deň so spínacími bodmi si ponechá aspoň jeden; čo znamená prázdny deň pre regulátor, nie je známe.",
+      "rrc_point_limit": "Tento deň už má najvyšší počet spínacích bodov, ktorý aplikácia dovoľuje ({per_day}).",
+      "rrc_point_last": "Posledný spínací bod dňa nemožno vymazať; čo znamená prázdny deň pre regulátor, nie je známe.",
+      "rrc_point_duplicate": "Tento deň už má spínací bod v tomto čase."
     },
     "abort": {
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "Vybraný časový program sa teraz nedá načítať. Nič sa neodoslalo."
+    },
+    "switch_points_no_target": {
+      "message": "Nebol zvolený žiadny povolený senzor časového programu tejto integrácie. Povoľte senzor časového programu a zvoľte ho ako cieľ."
+    },
+    "not_a_program_entity": {
+      "message": "Zvoliť možno iba senzory časového programu tejto integrácie."
+    },
+    "switch_points_empty_week": {
+      "message": "Týždeň potrebuje aspoň jeden spínací bod."
+    },
+    "switch_points_invalid_time": {
+      "message": "Každý čas musí byť v krokoch po {raster} minútach, bez sekúnd."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Deň má dva spínacie body v rovnakom čase."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Deň má viac spínacích bodov, než vykurovací systém dovoľuje ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Týždeň má viac spínacích bodov, než vykurovací systém dovoľuje ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Použiť možno iba tieto úrovne: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Použiť možno iba teploty od {minimum} do {maximum} v krokoch po {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Vykurovací systém nehlási tento časový program ako zmeniteľný."
+    },
+    "switch_points_unused": {
+      "message": "Vykurovací systém tento časový program momentálne nepoužíva. Nič nebolo odoslané."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typ tohto časového programu sa nepodarilo prečítať alebo nezodpovedá jeho spínacím bodom. Nič nebolo odoslané."
+    },
+    "switch_points_not_editable": {
+      "message": "Tento časový program možno iba zobraziť, nie zmeniť: vykurovací systém nehlási všetky hranice potrebné na zmenu."
+    },
+    "switch_points_program_changed": {
+      "message": "Časový program sa medzitým zmenil alebo už nezodpovedá očakávaným spínacím bodom. Nič nebolo odoslané."
+    },
+    "switch_points_paused": {
+      "message": "Zápis do vykurovacieho systému je na niekoľko minút pozastavený po opakovaných neúspešných čítaniach. Nič nebolo odoslané."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Časový program bol odoslaný, ale nepodarilo sa ho potvrdiť spätným prečítaním. Môže byť napriek tomu použitý; znova sa neodosiela."
+    },
+    "switch_points_rejected": {
+      "message": "Vykurovací systém odmietol časový program (HTTP {status}). Nič nebolo zmenené."
+    },
+    "switch_points_invalid": {
+      "message": "Spínacie body nezodpovedajú hraniciam časového programu."
+    },
+    "program_name_empty": {
+      "message": "Zadajte názov; prázdny názov sa neodosiela."
+    },
+    "program_name_too_long": {
+      "message": "Názov môže mať najviac {max} znakov."
+    },
+    "program_name_charset": {
+      "message": "Názov obsahuje znaky, ktoré vykurovací systém nevie uložiť ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Vykurovací systém nehlási tento názov ako zmeniteľný."
+    },
+    "program_name_changed": {
+      "message": "Názov sa medzitým zmenil. Nič nebolo odoslané."
+    },
+    "program_name_not_confirmed": {
+      "message": "Názov bol odoslaný, ale nepodarilo sa ho potvrdiť spätným prečítaním. Môže byť napriek tomu použitý; znova sa neodosiela."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Späť"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Nahradiť celý týždeň",
+        "replace_days": "Nahradiť len zadané dni"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Deň"
+        },
+        "time": {
+          "name": "Čas"
+        },
+        "level": {
+          "name": "Úroveň alebo teplota"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Vypnuté",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Vysoká",
+        "off": "Vypnuté",
+        "low": "Nízka",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Pridať spínací bod"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Vyrobená energia chladenia"
+      },
+      "cooling_switch_program": {
+        "name": "Časový program chladenia",
+        "state": {
+          "on": "Chladenie",
+          "off": "Vypnuté"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Časový program vetrania",
+        "state": {
+          "min": "Minimálne",
+          "red": "Znížené",
+          "nom": "Menovité",
+          "max": "Maximálne",
+          "dem": "Podľa potreby",
+          "off": "Vypnuté"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Časový program (teploty)"
+      },
+      "wddw2_switch_program": {
+        "name": "Časový program teplej vody (teploty)"
+      },
+      "name_part_program_cooling": {
+        "name": "Časový program chladenia"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Časový program vykurovania"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Časový program chladenia"
+      },
+      "name_part_program_ventilation": {
+        "name": "Časový program vetrania"
+      },
+      "name_part_program_hot_water": {
+        "name": "Časový program teplej vody"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Neznámy"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Názov časového programu"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Nastaviť spínacie body časového programu",
+      "description": "Nastaví spínacie body jedného alebo viacerých týždenných časových programov vykurovacieho systému, čerstvo načítané a skontrolované podľa hraníc, ktoré systém hlási. Každý program sa odošle raz a prečíta späť; nič sa automaticky neopakuje.",
+      "fields": {
+        "mode": {
+          "name": "Spôsob",
+          "description": "Nahradiť celý týždeň, alebo len dni, ktoré sa vyskytujú v spínacích bodoch (ostatné dni zostanú tak, ako boli načítané)."
+        },
+        "switch_points": {
+          "name": "Spínacie body",
+          "description": "Deň (mo až su), čas (HH:MM, podľa hodín vykurovacieho systému) a úroveň každého spínacieho bodu. Pri programe s teplotami je úrovňou číslo, napríklad 21.5."
+        },
+        "expected": {
+          "name": "Očakávané spínacie body",
+          "description": "Voliteľné: spínacie body, ktoré musí program práve obsahovať. Ak obsahuje iné (napríklad zmenené v aplikácii), nič sa neodošle."
+        },
+        "validate_only": {
+          "name": "Iba skontrolovať",
+          "description": "Skontroluje spínacie body a odpovie bez odosielania."
         }
       }
     }

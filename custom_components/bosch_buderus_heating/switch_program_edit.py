@@ -28,8 +28,10 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from .pointt.models import JsonValue, Resource
+from .start_counters import value_shape
 from .switch_programs import (
     DAYS,
+    MAX_SWITCH_POINTS,
     MINUTES_PER_DAY,
     SwitchPoint,
     SwitchProgramAssessment,
@@ -618,3 +620,29 @@ def points_per_day(resource: Resource) -> list[int] | None:
     for point in assessment.points:
         counts[point.day] += 1
     return counts
+
+
+MAX_POINT_SHAPES = 4
+
+
+def program_shapes(resource: Resource) -> dict[str, object]:
+    """Diagnostics (Block G): the kind, the form notes and the forms of the
+    switch points of a program; key names and value types only, never a
+    value, so one diagnostics file shows the form a gateway uses."""
+    assessment = assess_switch_program(resource)
+    raw = resource.program_fields.get("switchPoints")
+    shapes = (
+        sorted({value_shape(item) for item in raw[:MAX_SWITCH_POINTS]})
+        if isinstance(raw, list)
+        else []
+    )
+    if len(shapes) > MAX_POINT_SHAPES:
+        shapes = [*shapes[:MAX_POINT_SHAPES], "more"]
+    return {
+        "kind": kind_key(resource.path),
+        "value_type": assessment.value_type,
+        "notes": list(assessment.notes),
+        "program_fields": sorted(resource.program_fields),
+        "point_shapes": shapes,
+    }
+

@@ -366,19 +366,24 @@
         "title": "Ver programa horário de aquecimento",
         "description": "**{program}**\n\n**Segunda-feira:** {mo}\n\n**Terça-feira:** {tu}\n\n**Quarta-feira:** {we}\n\n**Quinta-feira:** {th}\n\n**Sexta-feira:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEscolha um dia da semana. As horas repetem-se semanalmente na hora local do sistema de aquecimento. ∅ significa que não há nenhum ponto de comutação guardado para esse dia. As alterações afetam todas as zonas que utilizam este programa horário.",
         "data": {
-          "day": "Dia da semana"
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
         }
       },
       "rrc_readonly": {
         "title": "Ver programa horário de aquecimento",
-        "description": "**{program}**\n\n**Segunda-feira:** {mo}\n\n**Terça-feira:** {tu}\n\n**Quarta-feira:** {we}\n\n**Quinta-feira:** {th}\n\n**Sexta-feira:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horário só pode ser visualizado aqui. Não tem pontos de comutação editáveis ou contém definições não suportadas. ∅ significa que não há nenhum ponto de comutação guardado. Pode fazer alterações na aplicação do fabricante."
+        "description": "**{program}**\n\n**Segunda-feira:** {mo}\n\n**Terça-feira:** {tu}\n\n**Quarta-feira:** {we}\n\n**Quinta-feira:** {th}\n\n**Sexta-feira:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horário só pode ser visualizado aqui. Não tem pontos de comutação editáveis ou contém definições não suportadas. ∅ significa que não há nenhum ponto de comutação guardado. Pode fazer alterações na aplicação do fabricante.",
+        "data": {
+          "week_view": "Vista semanal"
+        }
       },
       "rrc_point": {
         "title": "Editar ponto de comutação",
         "description": "**{program}**\n\nEscolha uma hora em passos de cinco minutos e uma temperatura de 5 a 30 °C em passos de 0,5 °C. A hora repete-se semanalmente na hora local do sistema de aquecimento. As alterações afetam todas as zonas atribuídas.",
         "data": {
           "time": "Hora",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Eliminar este ponto de comutação"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Escolher ponto de comutação",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nEscolha um ponto de comutação para o alterar ou eliminar, ou adicione um. Um dia tem no máximo {per_day} pontos de comutação (o limite da aplicação do fabricante, não comunicado pelo regulador); o último ponto de comutação de um dia permanece.",
         "data": {
           "point": "Ponto de comutação"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.",
         "data": {
           "action": "Próximo passo",
-          "day": "Dia da semana"
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nEste programa não é o programa ativo do circuito de aquecimento. As alterações produzem efeito quando for selecionado.",
         "data": {
           "action": "Próximo passo",
-          "day": "Dia da semana"
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nO programa da água quente só se aplica enquanto o modo de funcionamento da água quente estiver em Automático.",
         "data": {
           "action": "Próximo passo",
-          "day": "Dia da semana"
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Resultado",
         "description": "Nada foi eliminado."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Alterar o programa da água quente",
+        "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nOs níveis são os do programa do regulador de ambiente. O programa aplica-se enquanto a água quente seguir o seu próprio programa. No máximo seis pontos de comutação por dia é o limite da aplicação do fabricante, não um limite comunicado pelo regulador.",
+        "data": {
+          "action": "Passo seguinte",
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Editar ponto de comutação",
+        "description": "**{program}** – **{day}**\n\nEscolha uma hora em passos de {raster} minutos e uma temperatura de {minimum} a {maximum} °C em passos de {step} °C. Aplica-se desta hora até ao ponto de comutação seguinte.",
+        "data": {
+          "time": "Hora",
+          "value": "Temperatura",
+          "off": "Desligado em vez de uma temperatura",
+          "delete": "Eliminar este ponto de comutação"
+        }
+      },
+      "rrc_add": {
+        "title": "Adicionar ponto de comutação",
+        "description": "**{program}**\n\n{points}\n\nEscolha uma hora em passos de cinco minutos e uma temperatura de 5 a 30 °C em passos de 0,5 °C. A hora repete-se semanalmente na hora local do sistema de aquecimento. As alterações afetam todas as zonas atribuídas.",
+        "data": {
+          "time": "Hora",
+          "temperature": "Temperatura"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Este gateway não disponibiliza uma lista de tokens. Nada foi alterado.",
       "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado.",
       "local_token_end_unconfirmed": "Revogar este token pode terminar um acesso local. Marque também a segunda caixa ou deixe a primeira desmarcada para voltar. Nada foi enviado.",
-      "connection_remove_unconfirmed": "Marque também «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido."
+      "connection_remove_unconfirmed": "Marque também «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido.",
+      "switch_program_value": "Introduza uma temperatura de {minimum} a {maximum} °C em passos de {step} °C.",
+      "switch_program_day_emptied": "Um dia que tem pontos de comutação mantém pelo menos um; não se sabe o que um dia vazio significa para o regulador.",
+      "rrc_point_limit": "Este dia já tem o maior número de pontos de comutação que a aplicação permite ({per_day}).",
+      "rrc_point_last": "O último ponto de comutação de um dia não pode ser eliminado; não se sabe o que um dia vazio significa para o regulador.",
+      "rrc_point_duplicate": "Este dia já tem um ponto de comutação a esta hora."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
@@ -1540,6 +1580,78 @@
     },
     "switch_program_not_readable": {
       "message": "O programa horário selecionado não pode ser lido de momento. Nada foi enviado."
+    },
+    "switch_points_no_target": {
+      "message": "Não foi escolhido nenhum sensor de programa horário ativado desta integração. Ative o sensor de programa horário e escolha-o como destino."
+    },
+    "not_a_program_entity": {
+      "message": "Só se podem escolher os sensores de programa horário desta integração."
+    },
+    "switch_points_empty_week": {
+      "message": "A semana precisa de pelo menos um ponto de comutação."
+    },
+    "switch_points_invalid_time": {
+      "message": "Cada hora tem de estar em passos de {raster} minutos, sem segundos."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Um dia tem dois pontos de comutação à mesma hora."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Um dia tem mais pontos de comutação do que o sistema de aquecimento permite ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "A semana tem mais pontos de comutação do que o sistema de aquecimento permite ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Só se podem usar estes níveis: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Só se podem usar temperaturas de {minimum} a {maximum} em passos de {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "O sistema de aquecimento não indica este programa horário como alterável."
+    },
+    "switch_points_unused": {
+      "message": "O sistema de aquecimento não está a usar este programa horário neste momento. Nada foi enviado."
+    },
+    "switch_points_not_level_program": {
+      "message": "Não foi possível ler o tipo deste programa horário ou não corresponde aos seus pontos de comutação. Nada foi enviado."
+    },
+    "switch_points_not_editable": {
+      "message": "Este programa horário só pode ser mostrado, não alterado: o sistema de aquecimento não indica todos os limites necessários para uma alteração."
+    },
+    "switch_points_program_changed": {
+      "message": "O programa horário foi alterado entretanto ou já não corresponde aos pontos de comutação esperados. Nada foi enviado."
+    },
+    "switch_points_paused": {
+      "message": "A escrita no sistema de aquecimento está em pausa durante alguns minutos após leituras falhadas repetidas. Nada foi enviado."
+    },
+    "switch_points_not_confirmed": {
+      "message": "O programa horário foi enviado, mas não foi possível confirmá-lo relendo-o. Pode ter sido aplicado mesmo assim; não é enviado de novo."
+    },
+    "switch_points_rejected": {
+      "message": "O sistema de aquecimento recusou o programa horário (HTTP {status}). Nada foi alterado."
+    },
+    "switch_points_invalid": {
+      "message": "Os pontos de comutação não cabem nos limites do programa horário."
+    },
+    "program_name_empty": {
+      "message": "Introduza um nome; um nome vazio não é enviado."
+    },
+    "program_name_too_long": {
+      "message": "O nome pode ter no máximo {max} carateres."
+    },
+    "program_name_charset": {
+      "message": "O nome contém carateres que o sistema de aquecimento não consegue guardar ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "O sistema de aquecimento não indica este nome como alterável."
+    },
+    "program_name_changed": {
+      "message": "O nome foi alterado entretanto. Nada foi enviado."
+    },
+    "program_name_not_confirmed": {
+      "message": "O nome foi enviado, mas não foi possível confirmá-lo relendo-o. Pode ter sido aplicado mesmo assim; não é enviado de novo."
     }
   },
   "selector": {
@@ -1651,6 +1763,44 @@
     "navigation": {
       "options": {
         "back": "← Voltar"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Substituir a semana inteira",
+        "replace_days": "Substituir apenas os dias indicados"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dia"
+        },
+        "time": {
+          "name": "Hora"
+        },
+        "level": {
+          "name": "Nível ou temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Desligado",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Alto",
+        "off": "Desligado",
+        "low": "Baixo",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Adicionar um ponto de comutação"
       }
     }
   },
@@ -2851,6 +3001,45 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Energia de arrefecimento produzida"
+      },
+      "cooling_switch_program": {
+        "name": "Programa horário do arrefecimento",
+        "state": {
+          "on": "Arrefecimento",
+          "off": "Desligado"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Programa horário da ventilação",
+        "state": {
+          "min": "Mínimo",
+          "red": "Reduzido",
+          "nom": "Nominal",
+          "max": "Máximo",
+          "dem": "Conforme a necessidade",
+          "off": "Desligado"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Programa horário (temperaturas)"
+      },
+      "wddw2_switch_program": {
+        "name": "Programa horário da água quente (temperaturas)"
+      },
+      "name_part_program_cooling": {
+        "name": "Programa horário do arrefecimento"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Programa horário do aquecimento"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Programa horário do arrefecimento"
+      },
+      "name_part_program_ventilation": {
+        "name": "Programa horário da ventilação"
+      },
+      "name_part_program_hot_water": {
+        "name": "Programa horário da água quente"
       }
     },
     "binary_sensor": {
@@ -3155,6 +3344,35 @@
               "unknown": "Desconhecido"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Nome do programa horário"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Definir os pontos de comutação de um programa horário",
+      "description": "Define os pontos de comutação de um ou mais programas horários semanais do sistema de aquecimento, lidos de novo e verificados face aos limites comunicados pelo sistema. Cada programa é enviado uma vez e relido; nada é repetido automaticamente.",
+      "fields": {
+        "mode": {
+          "name": "Modo",
+          "description": "Substituir a semana inteira, ou apenas os dias que constam dos pontos de comutação (os restantes dias ficam como foram lidos)."
+        },
+        "switch_points": {
+          "name": "Pontos de comutação",
+          "description": "Dia (mo a su), hora (HH:MM, pelo relógio do sistema de aquecimento) e nível de cada ponto de comutação. Num programa com temperaturas, o nível é um número como 21.5."
+        },
+        "expected": {
+          "name": "Pontos de comutação esperados",
+          "description": "Opcional: os pontos de comutação que o programa tem de ter neste momento. Se tiver outros (por exemplo, alterados na aplicação), nada é enviado."
+        },
+        "validate_only": {
+          "name": "Apenas verificar",
+          "description": "Verifica os pontos de comutação e responde, sem enviar."
         }
       }
     }

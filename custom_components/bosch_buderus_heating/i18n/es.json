@@ -23,6 +23,17 @@
       "time": "Hora",
       "deleteFailed": "No se pudo abrir la confirmación de eliminación. Recarga la página e inténtalo de nuevo.",
       "reopen": "Cierra y vuelve a abrir el cuadro de diálogo."
+    },
+    "schedule": {
+      "title": "Vista semanal",
+      "clock": "Horas según el reloj de la instalación de calefacción.",
+      "carried": "continúa del día anterior",
+      "empty": "sin puntos de conmutación",
+      "noLevel": "sin valor de consigna",
+      "changed": "cambiado, aún sin guardar",
+      "hours": "Horas",
+      "day": "Día",
+      "segment": "{day} de {start} a {end}: {level}"
     }
   },
   "texts": {

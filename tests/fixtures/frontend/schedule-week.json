@@ -1,0 +1,190 @@
+{
+  "provenance": {
+    "kind": "synthetic",
+    "created": "2026-11-15",
+    "physical_device_verified": false,
+    "contract": "TP-07: the weekly view draws gapless days with carry-over, empty RRC days, unknown levels and device texts as plain text."
+  },
+  "weeks": {
+    "heating_two_points": {
+      "carry_over": true,
+      "mark_empty_days": false,
+      "points": [
+        [
+          0,
+          390,
+          "comfort2"
+        ],
+        [
+          1,
+          390,
+          "comfort2"
+        ],
+        [
+          2,
+          390,
+          "comfort2"
+        ],
+        [
+          3,
+          390,
+          "comfort2"
+        ],
+        [
+          4,
+          390,
+          "comfort2"
+        ],
+        [
+          5,
+          390,
+          "comfort2"
+        ],
+        [
+          6,
+          390,
+          "comfort2"
+        ],
+        [
+          0,
+          1320,
+          "eco"
+        ],
+        [
+          1,
+          1320,
+          "eco"
+        ],
+        [
+          2,
+          1320,
+          "eco"
+        ],
+        [
+          3,
+          1320,
+          "eco"
+        ],
+        [
+          4,
+          1320,
+          "eco"
+        ],
+        [
+          5,
+          1320,
+          "eco"
+        ],
+        [
+          6,
+          1320,
+          "eco"
+        ]
+      ],
+      "labels": {
+        "comfort2": "Heizen",
+        "eco": "Absenken"
+      }
+    },
+    "dhw_six_points": {
+      "carry_over": true,
+      "mark_empty_days": false,
+      "points": [
+        [
+          0,
+          300,
+          "high"
+        ],
+        [
+          0,
+          315,
+          "off"
+        ],
+        [
+          0,
+          600,
+          "high"
+        ],
+        [
+          0,
+          615,
+          "off"
+        ],
+        [
+          0,
+          1020,
+          "high"
+        ],
+        [
+          0,
+          1035,
+          "off"
+        ]
+      ],
+      "labels": {
+        "high": "Komfort",
+        "off": "Aus"
+      }
+    },
+    "rrc_empty_day": {
+      "carry_over": true,
+      "mark_empty_days": true,
+      "points": [
+        [
+          0,
+          360,
+          "21"
+        ],
+        [
+          0,
+          1320,
+          "16"
+        ]
+      ],
+      "labels": {
+        "21": "21 °C",
+        "16": "16 °C"
+      }
+    },
+    "unknown_level": {
+      "carry_over": true,
+      "mark_empty_days": false,
+      "points": [
+        [
+          0,
+          360,
+          "turbo"
+        ]
+      ],
+      "labels": {}
+    },
+    "script_name": {
+      "carry_over": true,
+      "mark_empty_days": false,
+      "points": [
+        [
+          0,
+          360,
+          "x1"
+        ]
+      ],
+      "labels": {
+        "x1": "<script>window.hacked=1</script>**bold**"
+      }
+    },
+    "long_name": {
+      "carry_over": true,
+      "mark_empty_days": false,
+      "points": [
+        [
+          0,
+          360,
+          "eco"
+        ]
+      ],
+      "labels": {
+        "eco": "Ein sehr langer Name eines Programms, der nicht in ein schmales Segment passt"
+      }
+    }
+  }
+}

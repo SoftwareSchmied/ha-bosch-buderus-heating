@@ -23,6 +23,17 @@
       "time": "Čas",
       "deleteFailed": "Potrditve brisanja ni bilo mogoče odpreti. Znova naložite stran in poskusite znova.",
       "reopen": "Zaprite pogovorni okvir in ga znova odprite."
+    },
+    "schedule": {
+      "title": "Tedenski pogled",
+      "clock": "Časi po uri ogrevalnega sistema.",
+      "carried": "se nadaljuje od prejšnjega dne",
+      "empty": "ni preklopnih točk",
+      "noLevel": "ni nastavljene vrednosti",
+      "changed": "spremenjeno, še neshranjeno",
+      "hours": "Ure",
+      "day": "Dan",
+      "segment": "{day} od {start} do {end}: {level}"
     }
   },
   "texts": {
