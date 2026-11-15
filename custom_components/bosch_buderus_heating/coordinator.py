@@ -35,6 +35,7 @@ from homeassistant.util import dt as dt_util
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
+    MAX_EXTRA_PROBES,
     ROOT_RESOURCE_PATHS,
     DiscoveryDiagnostics,
     DiscoveryPathSource,
@@ -3240,6 +3241,8 @@ class BoschBuderusDataUpdateCoordinator(
                 startup_data=self.startup_data,
                 gateway=self.gateway,
                 rrc_evidence=self.rrc_evidence(),
+                # Optional probes may go on outside the shared budget (#131).
+                maximum_extra_probes=MAX_EXTRA_PROBES,
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err

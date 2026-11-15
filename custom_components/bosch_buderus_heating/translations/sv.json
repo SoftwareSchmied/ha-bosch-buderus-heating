@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Den här värmekretsen har just nu inget tillfälligt börvärde som kan tas bort."
     },
+    "zone_climate_command": {
+      "message": "Det här kommandot för zonen är inte tillgängligt just nu. Temperaturer kan bara ändras i manuellt läge, eller i automatiskt läge när zonen erbjuder ett tillfälligt börvärde. Välj läget separat och kontrollera att zonen levererar aktuella värden."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Den här zonen har inget tillfälligt börvärde att häva just nu."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Apparaten bestämmer det aktuella börvärdet för varmvatten. Du kan justera de separata starttemperaturerna för lägena under Styr apparaten."
     },

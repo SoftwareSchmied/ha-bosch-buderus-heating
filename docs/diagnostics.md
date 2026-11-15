@@ -26,6 +26,30 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
   `direct_probes`), described under
   [missing controls](#missing-controls).
+- `gateways[].zone_climates`, only for a zone controller: per zone
+  (`zone1`, `zone2` …) its current `side` (`heating`, `cooling`, `null`
+  while the season is unknown), whether the climate is `available`, whether
+  the mode and the target can be changed (`mode_writable`,
+  `target_writable`), whether a temporary setpoint exists and takes the
+  clear value (`temporary_setpoint`, `temporary_clearable`), whether the
+  zone has a heating circuit (`heating_circuit_assigned`), whether its
+  calculated action is known (`hvac_action_known`) and a `rejection_reason`
+  (`season_unknown`, `mode_invalid`, `mode_not_writable`,
+  `control_type_read_only` or `null`). See
+  [zone controls](zone-controls.md#zone-climate).
+- `extra_probe_limit`, `extra_probes_requested` and `resource_limit_scope`
+  in `gateways[].discovery`: the allowance outside the 512 shared paths for
+  optional probes and direct reads (400 for the start-up discovery, 0
+  otherwise), how much of it was used, and after a `resource_limit` whether
+  the shared budget (`shared_budget`, only advertised references or catalog
+  paths were left) or the allowance (`extra_allowance`) ended the
+  discovery; `null` otherwise. See
+  [request behavior](request-behavior.md#startup-order-and-time-budgets).
+- `identical_device_refused` in `gateways[].discovery.paths_not_read` and as
+  the `read_policy` of such a path: a leaf of a radio device that was not
+  requested because the cloud refused the same leaf on a device listing
+  exactly the same children (see
+  [zone controls](zone-controls.md#discovery-on-large-zone-controllers)).
 
 The anonymized inventory keeps dropping all of these sections.
 
@@ -702,7 +726,8 @@ controller advertises, also to refused directories below them. A circuit that
 is not advertised, or a container answering 404, is never probed. Children of
 a refused directory are read like catalog paths; children only a sibling
 lists are read like optional probes. At most 256 such reads happen per
-discovery, within its overall budget; a 403 or 404 answer to one of them is
+discovery, within its overall budget or, once that is used up, within the
+extra allowance of the start-up discovery; a 403 or 404 answer to one of them is
 kept and paused like any other path. `direct_probe_containers`,
 `direct_probe_paths`, `direct_probe_paths_discovered` and
 `direct_probe_paths_over_limit` count them, and `direct_probes` lists each
@@ -889,7 +914,9 @@ device identifiers or radio keys. On other gateways it contains only
 deliberately not read: `never_read_private` (keys and personal data),
 `outside_rrc_device_scope` (device parts a room controller does not need)
 and `rrc_5xx_assumed_missing` (probes answered with HTTP 500). The device
-profile is `rrc2` for these controllers.
+profile is `rrc2` for these controllers. On a zone controller with radio
+room devices, `identical_device_refused` counts device leaves left out
+because the cloud refused the same leaf on an identical device.
 
 ## RRC room controller functions
 

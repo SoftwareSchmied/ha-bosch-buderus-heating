@@ -65,6 +65,10 @@ from .sensor import (
 from .start_counters import is_start_counter_path
 from .water_softener import low_salt, softener_capability, softener_value
 from .write_policies import context_of, rrc_kwargs
+from .zone_radio_devices import (
+    ZoneRadioBatteryBinarySensor,
+    track_zone_radio_devices,
+)
 
 if TYPE_CHECKING:
     from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
@@ -120,6 +124,9 @@ def _setup_entities(
         )
         track_radio_devices(
             entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
+        )
+        track_zone_radio_devices(
+            entry, coordinator, async_add_entities, ZoneRadioBatteryBinarySensor
         )
         rrc_platforms.track(
             Platform.BINARY_SENSOR, entry, coordinator, async_add_entities

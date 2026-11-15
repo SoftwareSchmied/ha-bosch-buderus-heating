@@ -1252,8 +1252,8 @@ been confirmed on physical equipment.
 | Solar | `/solarCircuits/{sc}/collectorTemperature`, `dhwTankBottomTemperature`, `maxCylinderTemperature`, `maxTemperatureReached`, `pumpModulation`, `solarYield` | Temperatures, pump output, limit state, and yield | 60 s; yield 5 min |
 | Pool | `/pool/currentTemp`, `setpointTemp`, `enabled`, `additionalHeater/poolMode` | Temperature, target, enabled state, and auxiliary-heater mode; a target number (°C, reported limits and step) and an on/off switch when the cloud reports them writable (the switch only for exactly `on`/`off`) | 60 s to 15 min; read-back after a change |
 | Ventilation | `/ventilation/operationModes/manual/fanSetpoint`, `/ventilation/{zone}/*` | Fan levels, filter time, air-quality/humidity limits, mode, and supply temperature; an exhaust fan level select when the cloud reports it writable and offers only the documented levels `off`, `min`, `red`, `nom`, `max`, `dem`; from 0.9.0 it is created disabled, because no ventilation unit has confirmed it yet | 60 s to 15 min; read-back after a change |
-| Room zones | `/zones/{zone}/*` | Average temperature/humidity, target, child lock, heating/cooling mode and temporary setpoint | 60 s to 15 min |
-| Room devices | `/devices/{device}/*` | Room temperature/humidity, battery, connection state, errors, and static device information | 60 s to startup only |
+| Room zones | `/zones/{zone}/*` | Average temperature/humidity, target, child lock, heating/cooling mode and temporary setpoint; since 0.9.2 a climate entity per zone and a "Clear temporary setpoint" button (see [zone controls](zone-controls.md#zone-climate)) | 60 s to 15 min; read-back after a change |
+| Room devices | `/devices/{device}/*` | Room temperature/humidity, battery, connection state, errors, and static device information; since 0.9.2 a **Battery low** binary sensor (diagnostic, enabled) and a **Radio signal** sensor in dB (diagnostic, disabled) | 60 s to startup only |
 | Photovoltaics | `/pv/enable`, `/pv/surplusAvailable` | Enabled and surplus states | 60 s to 15 min |
 
 Summer bypass activation, the ventilation operating mode and the pool mode

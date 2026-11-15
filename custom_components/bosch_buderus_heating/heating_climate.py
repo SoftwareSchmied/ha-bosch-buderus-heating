@@ -64,6 +64,7 @@ from .writes import (
     HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
     TEMPORARY_SETPOINT_CLEAR_VALUE,
     ControlContext,
+    NumberWritePolicy,
     assess_control,
     context_of,
     number_policy_for_resource,
@@ -619,13 +620,18 @@ class TemporarySetpoint:
 
 
 def temporary_setpoint(
-    coordinator: BoschBuderusDataUpdateCoordinator, root: str, *, strict: bool
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    root: str,
+    *,
+    strict: bool,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
 ) -> TemporarySetpoint | None:
     """The circuit's temporary setpoint, if it can be written.
 
     Never on a room controller, whose zones have temporary setpoints of their
     own. ``strict`` for a change: a fresh reading of a successful cloud
-    cycle, as every write needs.
+    cycle, as every write needs. ``policy``: the one of a ConnectKey zone's
+    side (``root``: ``/zones/zone1/heating``), whose layout is the same.
     """
     context = context_of(coordinator)
     if context.rrc_plant:
@@ -645,7 +651,7 @@ def temporary_setpoint(
     advertised, maximum = metadata.minimum, metadata.maximum
     if (
         not assessment.eligible
-        or assessment.policy is not HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY
+        or assessment.policy is not policy
         or unit is None
         or advertised is None
         or maximum is None
@@ -670,7 +676,7 @@ def temporary_setpoint(
         maximum,
         step,
         settable=floor is not None and 0 < minimum <= maximum,
-        clearable=takes_clear_value(resource, step),
+        clearable=takes_clear_value(resource, step, policy),
     )
     return temporary if temporary.value is not None else None
 
@@ -714,14 +720,18 @@ def _manual_minimum(
     return minimum
 
 
-def takes_clear_value(resource: Resource, step: float | None) -> bool:
+def takes_clear_value(
+    resource: Resource,
+    step: float | None,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+) -> bool:
     """Whether -1 can be written: on the grid when it lies within the
     advertised limits, or outside them as the manufacturer's app writes it
     (``clear_outside_limits``)."""
     minimum, maximum = resource.metadata.minimum, resource.metadata.maximum
     if minimum is None or maximum is None or not step or step <= 0:
         return False
-    if clear_outside_limits(resource):
+    if clear_outside_limits(resource, policy):
         return True
     ticks = (CLEAR_VALUE - minimum) / step
     return minimum <= CLEAR_VALUE <= maximum and math.isclose(
@@ -729,9 +739,12 @@ def takes_clear_value(resource: Resource, step: float | None) -> bool:
     )
 
 
-def clear_outside_limits(resource: Resource) -> bool:
+def clear_outside_limits(
+    resource: Resource,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+) -> bool:
     """Whether the advertised limits leave the clear value -1 out."""
-    return sentinel_outside_limits(resource, HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY)
+    return sentinel_outside_limits(resource, policy)
 
 
 @dataclass(frozen=True, kw_only=True)

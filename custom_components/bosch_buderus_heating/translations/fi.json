@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Tällä lämmityspiirillä ei tällä hetkellä ole poistettavaa väliaikaista asetusarvoa."
     },
+    "zone_climate_command": {
+      "message": "Tämä vyöhykkeen komento ei ole juuri nyt käytettävissä. Lämpötiloja voi muuttaa vain manuaalitilassa tai automaattitilassa, kun vyöhyke tarjoaa tilapäisen asetusarvon. Valitse tila erikseen ja tarkista, että vyöhyke antaa ajantasaiset arvot."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Tällä vyöhykkeellä ei ole juuri nyt peruttavaa tilapäistä asetusarvoa."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Laite määrittää lämpimän käyttöveden nykyisen asetusarvon. Voit säätää erillisiä tilojen käynnistyslämpötiloja kohdassa Käytä laitetta."
     },

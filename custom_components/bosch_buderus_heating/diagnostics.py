@@ -105,6 +105,7 @@ from .writes import (
     assess_control,
     context_of,
 )
+from .zone_climate import zone_climate_diagnostics
 
 DIAGNOSTICS_SCHEMA_VERSION = 48
 _LOGGER = logging.getLogger(__name__)
@@ -742,6 +743,12 @@ def _gateway_diagnostics(
         },
         "discovery": _discovery_diagnostics(coordinator),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
+        # Only for a zone controller; other gateways keep their report.
+        **(
+            {"zone_climates": zones}
+            if (zones := zone_climate_diagnostics(coordinator))
+            else {}
+        ),
         "rrc_programs": _rrc_program_diagnostics(coordinator),
         # S12/E04: only for an RRC controller; other gateways keep their report.
         **(

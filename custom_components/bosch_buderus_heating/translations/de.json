@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Dieser Heizkreis hat gerade keinen vorübergehenden Sollwert, der sich aufheben ließe."
     },
+    "zone_climate_command": {
+      "message": "Dieser Befehl für die Zone ist gerade nicht möglich. Temperaturen lassen sich nur im manuellen Betrieb ändern oder im Automatikbetrieb, wenn die Zone einen vorübergehenden Sollwert anbietet. Wähle die Betriebsart getrennt und prüfe, ob die Zone aktuelle Werte liefert."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Diese Zone hat gerade keinen vorübergehenden Sollwert, der sich aufheben ließe."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Der aktuelle Warmwasser-Sollwert wird von der Anlage vorgegeben. Die Starttemperaturen für die einzelnen Betriebsarten kannst du unter Anlage bedienen einstellen."
     },

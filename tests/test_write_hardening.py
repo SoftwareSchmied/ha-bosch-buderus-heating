@@ -47,6 +47,7 @@ from custom_components.bosch_buderus_heating.writes import (
     RRC_OPERATION_MODE_POLICY,
     SILENT_MODE_POLICY,
     ZONE_OPERATION_MODE_POLICY,
+    ZONE_TEMPORARY_SETPOINT_POLICY,
     ControlUnused,
     assess_control,
     confirms_value,
@@ -398,11 +399,13 @@ def test_the_confirmation_rule_belongs_to_the_clear_value():
     # A target is confirmed only by itself.
     assert not confirms_value(policy, -1.0, 21.5)
     assert confirms_value(policy, 21.5, 21.5)
-    # No other policy has the rule.
+    # The temporary setpoint of a zone shares it; no other policy has it.
+    assert confirms_value(ZONE_TEMPORARY_SETPOINT_POLICY, -3.0, -1.0)
+    assert not confirms_value(ZONE_TEMPORARY_SETPOINT_POLICY, -1.0, 21.5)
     assert all(
         item.confirm_if is None and item.sentinel_value is None
         for item in NUMBER_WRITE_POLICIES
-        if item is not policy
+        if item not in (policy, ZONE_TEMPORARY_SETPOINT_POLICY)
     )
 
 

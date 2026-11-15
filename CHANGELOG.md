@@ -95,6 +95,36 @@ Versioning after its first tagged preview.
   in the module list of a real installation; the sensor itself is tested with
   automated tests. A pressure setpoint of the heating circuit pump is not
   available through the interface.
+- **A climate entity per zone of a zone controller:** a zone controller such
+  as an MX400 with radio room thermostats now has one climate entity per
+  zone, with mode (off, heat, auto), target temperature, room temperature
+  and humidity.
+  - In Heat the target is the zone's manual setpoint; in Auto it shows the
+    program's setpoint, and a new target is a temporary setpoint until the
+    next switch point. A button **Clear temporary setpoint** per zone ends
+    it (created disabled when the zone's limits leave the clear value out).
+  - The cooling side is used while the zone's heating circuit reports the
+    cooling season. The circuit of a zone comes from its radio devices.
+  - Before every change I read the zone's mode, the target and the
+    circuit's season and control type again on the appliance; if one of
+    them changed, nothing is sent. Then exactly one request and a read-back,
+    never a second request. A mode together with a temperature sends the
+    mode first and the temperature only after the mode is confirmed.
+  - The action (heating, cooling, idle, off, defrosting) is calculated:
+    heating only while the circuit heats and the room is below the zone's
+    setpoint; unknown without these readings.
+  - The existing zone selects and numbers and the climate of the heating
+    circuit stay as they are; the [zone controls](docs/zone-controls.md)
+    explain the difference.
+  - Thank you to petergoris-netizen for the report and the diagnostics in
+    [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131).
+    I tested it with automated tests and a synthetic fixture in the shape of
+    that report; it is not yet confirmed on a real installation.
+- **Battery and radio signal of radio room devices:** each radio room device
+  of a zone controller gets a diagnostic binary sensor **Battery low**
+  (enabled) and a diagnostic sensor **Radio signal** in dB (disabled). A
+  battery text other than `low` or `ok` stays unknown. Tested with automated
+  tests only.
 
 ### Changed
 
@@ -232,11 +262,36 @@ only; I have not yet checked them in the browser or on a real installation.
     an empty directory without such a sibling counts as a valid answer.
   - Nothing is requested for a circuit the controller does not advertise or
     a container it answers with "not found". The extra reads happen only
-    during discovery, at most 256 of them, within its usual budget.
+    during discovery, at most 256 of them, within its usual budget or the
+    allowance of its own for large zone controllers (next entry).
   - The diagnostics list each container that was read this way, why, and how
     many of its values were found.
   - Thank you to markus1783 for the report and the diagnostics in
     [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
+    I tested it with automated tests in the shape of that report; it is not
+    yet confirmed on a real installation.
+- **Zone modes and setpoints missing on a large zone controller:** on a
+  zone controller with many zones and radio room devices, discovery reached
+  its limit of 512 paths before it read the mode and setpoints of any zone,
+  because the cloud refuses many paths on the way. No zone could therefore
+  be controlled.
+  - The mode and setpoint leaves of each side a zone lists are now read
+    right after the zone directories, also when the side directory itself
+    is refused.
+  - A leaf the cloud refuses on one radio device is no longer requested for
+    every other device that lists exactly the same children; any other
+    answer still requests it on every device. In the shape of the report
+    this saves 88 requests.
+  - When the 512 paths are used up, optional probes and the direct reads
+    below refused containers go on with an allowance of their own of at
+    most 400 paths, with the same pauses and limits as every other read.
+    Advertised paths never use it, and a discovery that stays within the
+    512 paths sends exactly the same requests as before. In the shape of
+    the report the discovery now finishes (816 paths, 304 of them from the
+    allowance). The diagnostics show the allowance, its use and which limit
+    ended a discovery.
+  - Reported in
+    [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131).
     I tested it with automated tests in the shape of that report; it is not
     yet confirmed on a real installation.
 - **Discovery next to an entry whose update failed:** when an existing entry
@@ -282,6 +337,11 @@ only; I have not yet checked them in the browser or on a real installation.
   evidence in `heat_generator`, and the counters of the containers that
   discovery read directly. They hold no readings, names or identifiers; see
   [diagnostics](docs/diagnostics.md).
+- **Zone controllers in the diagnostics:** a section `zone_climates` shows per
+  zone whether its climate is shown and can change the mode and the target,
+  and why not; `paths_not_read` counts the device leaves left out because an
+  identical device was refused (`identical_device_refused`). No readings or
+  zone names.
 
 ## [0.9.2-beta.1] - 2026-11-14
 
