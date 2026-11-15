@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Risultato",
         "description": "Le impostazioni della wallbox sono state salvate."
+      },
+      "switch_program_week_aircon": {
+        "title": "Modifica programma orario",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo dello stesso giorno; prima del primo punto di commutazione di un giorno il climatizzatore è spento. Gli orari si ripetono ogni settimana secondo l'orologio del climatizzatore. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.",
+        "data": {
+          "action": "Passo successivo",
+          "day": "Giorno della settimana",
+          "week_view": "Vista settimanale"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Modifica programma orario",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo dello stesso giorno; prima del primo punto di commutazione di un giorno il climatizzatore è spento. Gli orari si ripetono ogni settimana secondo l'orologio del climatizzatore. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.\n\nQuesto programma non è il programma attivo del climatizzatore. Le modifiche hanno effetto quando viene selezionato.",
+        "data": {
+          "action": "Passo successivo",
+          "day": "Giorno della settimana",
+          "week_view": "Vista settimanale"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Modifica punto di commutazione",
+        "description": "**{program}** – **{day}**\n\nScegli un orario a passi di {raster} minuti e l'impostazione da quell'ora in poi. Il climatizzatore offre:\n\n{settings}\n\nLa temperatura e la velocità della ventola contano solo per una modalità che le prevede. Spento spegne il climatizzatore fino al punto di commutazione successivo.",
+        "data": {
+          "time": "Ora",
+          "mode": "Modalità",
+          "value": "Temperatura",
+          "fan": "Velocità della ventola",
+          "delete": "Elimina questo punto di commutazione"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Questo giorno ha già il numero massimo di punti di commutazione consentito dall'app ({per_day}).",
       "rrc_point_last": "L'ultimo punto di commutazione di un giorno non può essere eliminato; non è noto cosa significhi un giorno vuoto per il regolatore.",
       "rrc_point_duplicate": "Questo giorno ha già un punto di commutazione a quest'ora.",
-      "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili."
+      "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili.",
+      "switch_program_aircon_setting": "Scegli una modalità offerta dal climatizzatore e, per essa, una temperatura entro il suo intervallo e i suoi passi e una delle sue velocità della ventola."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "La modifica è stata inviata, ma il climatizzatore non l'ha ancora confermata. Potrebbe ancora avere effetto. Non l'ho inviata di nuovo; il valore viene aggiornato alla prossima lettura."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Si possono usare solo queste impostazioni: {settings}. Un'impostazione si scrive come modalità, temperatura e velocità della ventola, ad esempio «cool 24.0 auto», oppure «off»."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Attivo (acqua calda)",
           "active_energy_manager": "Controlla la wallbox"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Programma orario {number}",
+        "state": {
+          "off": "Spento",
+          "auto": "Automatico",
+          "cool": "Raffreddamento",
+          "heat": "Riscaldamento",
+          "dry": "Deumidifica",
+          "fan_only": "Solo ventilatore"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Programma orario {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Punti di commutazione",
-          "description": "Giorno (mo a su), orario (HH:MM, secondo l'orologio dell'impianto di riscaldamento) e livello di ogni punto di commutazione. Per un programma con temperature il livello è un numero come 21.5."
+          "description": "Giorno (mo a su), orario (HH:MM, secondo l'orologio dell'impianto di riscaldamento) e livello di ogni punto di commutazione. Per un programma con temperature il livello è un numero come 21.5. Per un climatizzatore il livello è la sua impostazione: modalità, temperatura e velocità della ventola, come cool 24.0 auto, oppure off."
         },
         "expected": {
           "name": "Punti di commutazione attesi",

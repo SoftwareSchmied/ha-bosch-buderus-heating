@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Toradh",
         "description": "Sábháladh socruithe an luchtaire balla."
+      },
+      "switch_program_week_aircon": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile den lá céanna; roimh an gcéad phointe lasctha de lá, bíonn an t-aerchóiritheoir as. Athdhéantar na hamanna gach seachtain de réir chlog an aerchóiritheora. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile den lá céanna; roimh an gcéad phointe lasctha de lá, bíonn an t-aerchóiritheoir as. Athdhéantar na hamanna gach seachtain de réir chlog an aerchóiritheora. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí hé an sceideal seo sceideal gníomhach an aerchóiritheora. Beidh éifeacht ag athruithe nuair a roghnaítear é.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Cuir pointe lasctha in eagar",
+        "description": "**{program}** – **{day}**\n\nRoghnaigh am i gcéimeanna {raster} nóiméad agus an socrú ón am sin ar aghaidh. Tairgeann an t-aerchóiritheoir:\n\n{settings}\n\nNí chuirtear an teocht ná luas an lucht aeraithe i gcuntas ach amháin i modh a bhfuil siad aige. Cuireann As an t-aerchóiritheoir as go dtí an chéad phointe lasctha eile.",
+        "data": {
+          "time": "Am",
+          "mode": "Modh",
+          "value": "Teocht",
+          "fan": "Luas an lucht aeraithe",
+          "delete": "Scrios an pointe lasctha seo"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaíonn an aip ag an lá seo cheana ({per_day}).",
       "rrc_point_last": "Ní féidir an pointe lasctha deireanach de lá a scriosadh; ní fios cad is brí le lá folamh don rialaitheoir.",
       "rrc_point_duplicate": "Tá pointe lasctha ag an lá seo cheana ag an am seo.",
-      "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm."
+      "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
+      "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Seoladh an t-athrú, ach níor dheimhnigh an t-aerchóiritheoir é go fóill. D'fhéadfadh sé teacht i bhfeidhm fós. Níor sheol mé arís é; nuashonraítear an luach leis an gcéad léamh eile."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Ní féidir ach na socruithe seo a úsáid: {settings}. Scríobhtar socrú mar mhodh, teocht agus luas an lucht aeraithe, mar shampla “cool 24.0 auto”, nó “off”."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Gníomhach (uisce te)",
           "active_energy_manager": "Rialaíonn sé an luchtaire"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Sceideal {number}",
+        "state": {
+          "off": "As",
+          "auto": "Uathoibríoch",
+          "cool": "Fuaraigh",
+          "heat": "Teas",
+          "dry": "Tirim",
+          "fan_only": "Lucht aeraithe amháin"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Sceideal {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Pointí lasctha",
-          "description": "Lá (mo go su), am (HH:MM, de réir chlog an chórais téimh) agus leibhéal gach pointe lasctha. I gclár le teochtaí, is uimhir ar nós 21.5 an leibhéal."
+          "description": "Lá (mo go su), am (HH:MM, de réir chlog an chórais téimh) agus leibhéal gach pointe lasctha. I gclár le teochtaí, is uimhir ar nós 21.5 an leibhéal. I gcás aerchóiritheora, is é an leibhéal a shocrú: modh, teocht agus luas an lucht aeraithe, mar shampla cool 24.0 auto, nó off."
         },
         "expected": {
           "name": "Pointí lasctha ionchasacha",

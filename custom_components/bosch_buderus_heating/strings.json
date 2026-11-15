@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Result",
         "description": "The wallbox settings are saved."
+      },
+      "switch_program_week_aircon": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one on the same day; before the first switch point of a day the air conditioner is off. The times repeat weekly by the clock of the air conditioner. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday",
+          "week_view": "Weekly view"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one on the same day; before the first switch point of a day the air conditioner is off. The times repeat weekly by the clock of the air conditioner. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThis schedule is not the active one of the air conditioner. Changes take effect once it is selected.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday",
+          "week_view": "Weekly view"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Edit switch point",
+        "description": "**{program}** – **{day}**\n\nChoose a time in steps of {raster} minutes and the setting from then on. The air conditioner offers:\n\n{settings}\n\nThe temperature and the fan speed count only for a mode that has them. Off switches the air conditioner off until the next switch point.",
+        "data": {
+          "time": "Time",
+          "mode": "Mode",
+          "value": "Temperature",
+          "fan": "Fan speed",
+          "delete": "Delete this switch point"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "This day already has the highest number of switch points the app allows ({per_day}).",
       "rrc_point_last": "The last switch point of a day cannot be deleted; what an empty day means for the controller is not known.",
       "rrc_point_duplicate": "This day already has a switch point at this time.",
-      "wallbox_name_invalid": "The name may contain up to 64 printable characters."
+      "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
+      "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "The change was sent, but the air conditioner has not confirmed it yet. It may still take effect. I have not sent it again; the value is updated with the next reading."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Only these settings can be used: {settings}. Write a setting as mode, temperature and fan speed, for example \"cool 24.0 auto\", or \"off\"."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Active (hot water)",
           "active_energy_manager": "Controls the wallbox"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Schedule {number}",
+        "state": {
+          "off": "Off",
+          "auto": "Auto",
+          "cool": "Cool",
+          "heat": "Heat",
+          "dry": "Dry",
+          "fan_only": "Fan only"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Schedule {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Switch points",
-          "description": "Day (mo to su), time (HH:MM, by the clock of the heating system) and level of each switch point. For a program with temperatures the level is a number such as 21.5."
+          "description": "Day (mo to su), time (HH:MM, by the clock of the heating system) and level of each switch point. For a program with temperatures the level is a number such as 21.5. For an air conditioner the level is its setting: mode, temperature and fan speed, such as cool 24.0 auto, or off."
         },
         "expected": {
           "name": "Expected switch points",

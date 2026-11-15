@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Resultaat",
         "description": "De instellingen van de laadpaal zijn opgeslagen."
+      },
+      "switch_program_week_aircon": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende op dezelfde dag; vóór het eerste schakelpunt van een dag is de airconditioner uit. De tijden herhalen zich wekelijks volgens de klok van de airconditioner. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende op dezelfde dag; vóór het eerste schakelpunt van een dag is de airconditioner uit. De tijden herhalen zich wekelijks volgens de klok van de airconditioner. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDit programma is niet het actieve programma van de airconditioner. Wijzigingen werken pas als het is geselecteerd.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Schakelpunt bewerken",
+        "description": "**{program}** – **{day}**\n\nKies een tijd in stappen van {raster} minuten en de instelling vanaf dat moment. De airconditioner biedt:\n\n{settings}\n\nDe temperatuur en de ventilatorsnelheid tellen alleen mee voor een modus die ze heeft. Uit schakelt de airconditioner uit tot het volgende schakelpunt.",
+        "data": {
+          "time": "Tijd",
+          "mode": "Modus",
+          "value": "Temperatuur",
+          "fan": "Ventilatorsnelheid",
+          "delete": "Dit schakelpunt verwijderen"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
       "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
       "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip.",
-      "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten."
+      "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
+      "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "De wijziging is verzonden, maar de airconditioner heeft die nog niet bevestigd. Ze kan nog van kracht worden. Ik heb haar niet opnieuw verzonden; de waarde wordt bij de volgende uitlezing bijgewerkt."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Alleen deze instellingen kunnen worden gebruikt: {settings}. Een instelling wordt geschreven als modus, temperatuur en ventilatorsnelheid, bijvoorbeeld “cool 24.0 auto”, of “off”."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Actief (warm water)",
           "active_energy_manager": "Stuurt de laadpaal"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Tijdprogramma {number}",
+        "state": {
+          "off": "Uit",
+          "auto": "Auto",
+          "cool": "Koelen",
+          "heat": "Verwarmen",
+          "dry": "Drogen",
+          "fan_only": "Alleen ventilator"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Tijdprogramma {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Schakelpunten",
-          "description": "Dag (mo tot su), tijd (HH:MM, volgens de klok van de verwarmingsinstallatie) en niveau van elk schakelpunt. Bij een programma met temperaturen is het niveau een getal zoals 21.5."
+          "description": "Dag (mo tot su), tijd (HH:MM, volgens de klok van de verwarmingsinstallatie) en niveau van elk schakelpunt. Bij een programma met temperaturen is het niveau een getal zoals 21.5. Bij een airconditioner is het niveau de instelling ervan: modus, temperatuur en ventilatorsnelheid, zoals cool 24.0 auto, of off."
         },
         "expected": {
           "name": "Verwachte schakelpunten",

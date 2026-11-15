@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Wynik",
         "description": "Ustawienia stacji ładowania zostały zapisane."
+      },
+      "switch_program_week_aircon": {
+        "title": "Zmień program czasowy",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego tego samego dnia; przed pierwszym punktem przełączenia w danym dniu klimatyzator jest wyłączony. Godziny powtarzają się co tydzień według zegara klimatyzatora. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Zmień program czasowy",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego tego samego dnia; przed pierwszym punktem przełączenia w danym dniu klimatyzator jest wyłączony. Godziny powtarzają się co tydzień według zegara klimatyzatora. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nTen program nie jest aktywnym programem klimatyzatora. Zmiany zaczną działać, gdy zostanie wybrany.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia",
+          "week_view": "Widok tygodniowy"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Edytuj punkt przełączenia",
+        "description": "**{program}** – **{day}**\n\nWybierz godzinę w krokach co {raster} minut i ustawienie od tej godziny. Klimatyzator oferuje:\n\n{settings}\n\nTemperatura i prędkość wentylatora liczą się tylko dla trybu, który je ma. Wyłączony wyłącza klimatyzator do następnego punktu przełączenia.",
+        "data": {
+          "time": "Godzina",
+          "mode": "Tryb",
+          "value": "Temperatura",
+          "fan": "Prędkość wentylatora",
+          "delete": "Usuń ten punkt przełączenia"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Ten dzień ma już największą liczbę punktów przełączenia, jaką dopuszcza aplikacja ({per_day}).",
       "rrc_point_last": "Ostatniego punktu przełączenia dnia nie można usunąć; nie wiadomo, co pusty dzień oznacza dla regulatora.",
       "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie.",
-      "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków."
+      "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
+      "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Zmiana została wysłana, ale klimatyzator jeszcze jej nie potwierdził. Może jeszcze zacząć obowiązywać. Nie wysłałem jej ponownie; wartość zostanie zaktualizowana przy następnym odczycie."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Można używać tylko tych ustawień: {settings}. Ustawienie zapisuje się jako tryb, temperatura i prędkość wentylatora, na przykład „cool 24.0 auto”, lub „off”."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktywny (ciepła woda)",
           "active_energy_manager": "Steruje stacją ładowania"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Program czasowy {number}",
+        "state": {
+          "off": "Wyłączony",
+          "auto": "Auto",
+          "cool": "Chłodzenie",
+          "heat": "Ogrzewanie",
+          "dry": "Osuszanie",
+          "fan_only": "Tylko wentylator"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Program czasowy {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Punkty przełączenia",
-          "description": "Dzień (mo do su), godzina (HH:MM, według zegara instalacji grzewczej) i poziom każdego punktu przełączenia. W programie z temperaturami poziomem jest liczba, na przykład 21.5."
+          "description": "Dzień (mo do su), godzina (HH:MM, według zegara instalacji grzewczej) i poziom każdego punktu przełączenia. W programie z temperaturami poziomem jest liczba, na przykład 21.5. W przypadku klimatyzatora poziomem jest jego ustawienie: tryb, temperatura i prędkość wentylatora, na przykład cool 24.0 auto, lub off."
         },
         "expected": {
           "name": "Oczekiwane punkty przełączenia",

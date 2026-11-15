@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Resultat",
         "description": "Innstillingene for ladeboksen er lagret."
+      },
+      "switch_program_week_aircon": {
+        "title": "Endre tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste samme dag; før dagens første koblingspunkt er klimaanlegget av. Tidspunktene gjentas ukentlig etter klimaanleggets klokke. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.",
+        "data": {
+          "action": "Neste trinn",
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Endre tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste samme dag; før dagens første koblingspunkt er klimaanlegget av. Tidspunktene gjentas ukentlig etter klimaanleggets klokke. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.\n\nDette programmet er ikke det aktive programmet for klimaanlegget. Endringer får virkning når det velges.",
+        "data": {
+          "action": "Neste trinn",
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Rediger koblingspunkt",
+        "description": "**{program}** – **{day}**\n\nVelg et tidspunkt i trinn på {raster} minutter og innstillingen fra dette tidspunktet. Klimaanlegget tilbyr:\n\n{settings}\n\nTemperaturen og viftehastigheten gjelder bare for en driftsmodus som har dem. Av slår klimaanlegget av til neste koblingspunkt.",
+        "data": {
+          "time": "Tidspunkt",
+          "mode": "Driftsmodus",
+          "value": "Temperatur",
+          "fan": "Viftehastighet",
+          "delete": "Slett dette koblingspunktet"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Denne dagen har allerede det høyeste antallet koblingspunkter appen tillater ({per_day}).",
       "rrc_point_last": "Dagens siste koblingspunkt kan ikke slettes; hva en tom dag betyr for regulatoren, er ikke kjent.",
       "rrc_point_duplicate": "Denne dagen har allerede et koblingspunkt på dette tidspunktet.",
-      "wallbox_name_invalid": "Navnet kan inneholde opptil 64 utskrivbare tegn."
+      "wallbox_name_invalid": "Navnet kan inneholde opptil 64 utskrivbare tegn.",
+      "switch_program_aircon_setting": "Velg en driftsmodus som klimaanlegget tilbyr, og for den en temperatur innenfor dets område og trinn og en av dets viftehastigheter."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Endringen ble sendt, men klimaanlegget har ikke bekreftet den ennå. Den kan fortsatt tre i kraft. Jeg har ikke sendt den på nytt; verdien oppdateres ved neste avlesning."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Bare disse innstillingene kan brukes: {settings}. En innstilling skrives som driftsmodus, temperatur og viftehastighet, for eksempel «cool 24.0 auto», eller «off»."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktiv (varmtvann)",
           "active_energy_manager": "Styrer ladeboksen"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Tidsprogram {number}",
+        "state": {
+          "off": "Av",
+          "auto": "Auto",
+          "cool": "Kjøling",
+          "heat": "Varme",
+          "dry": "Tørr",
+          "fan_only": "Kun vifte"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Tidsprogram {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Koblingspunkter",
-          "description": "Dag (mo til su), tidspunkt (HH:MM, etter varmeanleggets klokke) og nivå for hvert koblingspunkt. For et program med temperaturer er nivået et tall som 21.5."
+          "description": "Dag (mo til su), tidspunkt (HH:MM, etter varmeanleggets klokke) og nivå for hvert koblingspunkt. For et program med temperaturer er nivået et tall som 21.5. For et klimaanlegg er nivået dets innstilling: driftsmodus, temperatur og viftehastighet, for eksempel cool 24.0 auto, eller off."
         },
         "expected": {
           "name": "Forventede koblingspunkter",

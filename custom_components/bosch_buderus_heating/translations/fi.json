@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Tulos",
         "description": "Latausaseman asetukset on tallennettu."
+      },
+      "switch_program_week_aircon": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan samana päivänä olevaan asti; päivän ensimmäistä kytkentäpistettä ennen ilmastointilaite on pois päältä. Ajat toistuvat viikoittain ilmastointilaitteen kellon mukaan. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan samana päivänä olevaan asti; päivän ensimmäistä kytkentäpistettä ennen ilmastointilaite on pois päältä. Ajat toistuvat viikoittain ilmastointilaitteen kellon mukaan. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTämä ohjelma ei ole ilmastointilaitteen aktiivinen ohjelma. Muutokset tulevat voimaan, kun se valitaan.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Muokkaa kytkentäpistettä",
+        "description": "**{program}** – **{day}**\n\nValitse aika {raster} minuutin portain ja asetus tästä ajasta alkaen. Ilmastointilaite tarjoaa:\n\n{settings}\n\nLämpötila ja puhaltimen nopeus otetaan huomioon vain toimintatilassa, jossa ne on. Pois kytkee ilmastointilaitteen pois päältä seuraavaan kytkentäpisteeseen asti.",
+        "data": {
+          "time": "Aika",
+          "mode": "Toimintatila",
+          "value": "Lämpötila",
+          "fan": "Puhaltimen nopeus",
+          "delete": "Poista tämä kytkentäpiste"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
       "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
       "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
-      "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä."
+      "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
+      "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Muutos lähetettiin, mutta ilmalämpöpumppu ei ole vielä vahvistanut sitä. Se voi vielä tulla voimaan. En lähettänyt sitä uudelleen; arvo päivittyy seuraavassa luvussa."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Vain nämä asetukset ovat käytettävissä: {settings}. Asetus kirjoitetaan toimintatilana, lämpötilana ja puhaltimen nopeutena, esimerkiksi ”cool 24.0 auto”, tai ”off”."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Käytössä (lämmin vesi)",
           "active_energy_manager": "Ohjaa latausasemaa"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Aikaohjelma {number}",
+        "state": {
+          "off": "Pois",
+          "auto": "Automaattinen",
+          "cool": "Jäähdytys",
+          "heat": "Lämmitys",
+          "dry": "Kuivaus",
+          "fan_only": "Vain puhallin"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Aikaohjelma {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Kytkentäpisteet",
-          "description": "Päivä (mo–su), kellonaika (HH:MM, lämmitysjärjestelmän kellon mukaan) ja kunkin kytkentäpisteen taso. Lämpötiloja käyttävässä ohjelmassa taso on luku, esimerkiksi 21.5."
+          "description": "Päivä (mo–su), kellonaika (HH:MM, lämmitysjärjestelmän kellon mukaan) ja kunkin kytkentäpisteen taso. Lämpötiloja käyttävässä ohjelmassa taso on luku, esimerkiksi 21.5. Ilmastointilaitteella taso on sen asetus: toimintatila, lämpötila ja puhaltimen nopeus, esimerkiksi cool 24.0 auto, tai off."
         },
         "expected": {
           "name": "Odotetut kytkentäpisteet",

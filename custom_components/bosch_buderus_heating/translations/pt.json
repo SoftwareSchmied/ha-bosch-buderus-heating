@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Resultado",
         "description": "As definições do posto de carregamento foram guardadas."
+      },
+      "switch_program_week_aircon": {
+        "title": "Alterar programa horário",
+        "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte do mesmo dia; antes do primeiro ponto de comutação de um dia, o ar condicionado está desligado. As horas repetem-se semanalmente pelo relógio do ar condicionado. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.",
+        "data": {
+          "action": "Próximo passo",
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Alterar programa horário",
+        "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte do mesmo dia; antes do primeiro ponto de comutação de um dia, o ar condicionado está desligado. As horas repetem-se semanalmente pelo relógio do ar condicionado. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nEste programa não é o programa ativo do ar condicionado. As alterações produzem efeito quando for selecionado.",
+        "data": {
+          "action": "Próximo passo",
+          "day": "Dia da semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Editar ponto de comutação",
+        "description": "**{program}** – **{day}**\n\nEscolha uma hora em passos de {raster} minutos e a definição a partir dessa hora. O ar condicionado oferece:\n\n{settings}\n\nA temperatura e a velocidade do ventilador só contam para um modo que as tenha. Desligado desliga o ar condicionado até ao ponto de comutação seguinte.",
+        "data": {
+          "time": "Hora",
+          "mode": "Modo",
+          "value": "Temperatura",
+          "fan": "Velocidade do ventilador",
+          "delete": "Eliminar este ponto de comutação"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Este dia já tem o maior número de pontos de comutação que a aplicação permite ({per_day}).",
       "rrc_point_last": "O último ponto de comutação de um dia não pode ser eliminado; não se sabe o que um dia vazio significa para o regulador.",
       "rrc_point_duplicate": "Este dia já tem um ponto de comutação a esta hora.",
-      "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis."
+      "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
+      "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "A alteração foi enviada, mas o ar condicionado ainda não a confirmou. Ainda pode entrar em vigor. Não a enviei novamente; o valor é atualizado na próxima leitura."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Só se podem usar estas definições: {settings}. Uma definição escreve-se como modo, temperatura e velocidade do ventilador, por exemplo «cool 24.0 auto», ou «off»."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Ativo (água quente)",
           "active_energy_manager": "Controla o posto de carregamento"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Programa horário {number}",
+        "state": {
+          "off": "Desligado",
+          "auto": "Automático",
+          "cool": "Frio",
+          "heat": "Quente",
+          "dry": "Seco",
+          "fan_only": "Apenas ventilador"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Programa horário {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Pontos de comutação",
-          "description": "Dia (mo a su), hora (HH:MM, pelo relógio do sistema de aquecimento) e nível de cada ponto de comutação. Num programa com temperaturas, o nível é um número como 21.5."
+          "description": "Dia (mo a su), hora (HH:MM, pelo relógio do sistema de aquecimento) e nível de cada ponto de comutação. Num programa com temperaturas, o nível é um número como 21.5. Para um ar condicionado, o nível é a sua definição: modo, temperatura e velocidade do ventilador, como cool 24.0 auto, ou off."
         },
         "expected": {
           "name": "Pontos de comutação esperados",

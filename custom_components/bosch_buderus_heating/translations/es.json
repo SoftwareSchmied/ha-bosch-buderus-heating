@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Resultado",
         "description": "Los ajustes del punto de recarga se han guardado."
+      },
+      "switch_program_week_aircon": {
+        "title": "Cambiar programa horario",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente del mismo día; antes del primer punto de conmutación de un día, el aire acondicionado está apagado. Las horas se repiten cada semana según el reloj del aire acondicionado. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Cambiar programa horario",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente del mismo día; antes del primer punto de conmutación de un día, el aire acondicionado está apagado. Las horas se repiten cada semana según el reloj del aire acondicionado. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEste programa no es el programa activo del aire acondicionado. Los cambios surten efecto cuando se selecciona.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Editar punto de conmutación",
+        "description": "**{program}** – **{day}**\n\nElige una hora en pasos de {raster} minutos y el ajuste a partir de esa hora. El aire acondicionado ofrece:\n\n{settings}\n\nLa temperatura y la velocidad del ventilador solo cuentan para un modo que las tenga. Apagado apaga el aire acondicionado hasta el siguiente punto de conmutación.",
+        "data": {
+          "time": "Hora",
+          "mode": "Modo",
+          "value": "Temperatura",
+          "fan": "Velocidad del ventilador",
+          "delete": "Eliminar este punto de conmutación"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Este día ya tiene el mayor número de puntos de conmutación que permite la aplicación ({per_day}).",
       "rrc_point_last": "El último punto de conmutación de un día no se puede eliminar; no se sabe qué significa un día vacío para el regulador.",
       "rrc_point_duplicate": "Este día ya tiene un punto de conmutación a esta hora.",
-      "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles."
+      "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
+      "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "El cambio se ha enviado, pero el aire acondicionado aún no lo ha confirmado. Puede que todavía se aplique. No lo he vuelto a enviar; el valor se actualiza con la siguiente lectura."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Solo se pueden usar estos ajustes: {settings}. Un ajuste se escribe como modo, temperatura y velocidad del ventilador, por ejemplo «cool 24.0 auto», o «off»."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Activo (agua caliente)",
           "active_energy_manager": "Controla el punto de recarga"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Programa horario {number}",
+        "state": {
+          "off": "Apagado",
+          "auto": "Automático",
+          "cool": "Frío",
+          "heat": "Calor",
+          "dry": "Seco",
+          "fan_only": "Solo ventilador"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Programa horario {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Puntos de conmutación",
-          "description": "Día (mo a su), hora (HH:MM, según el reloj de la instalación de calefacción) y nivel de cada punto de conmutación. En un programa con temperaturas, el nivel es un número como 21.5."
+          "description": "Día (mo a su), hora (HH:MM, según el reloj de la instalación de calefacción) y nivel de cada punto de conmutación. En un programa con temperaturas, el nivel es un número como 21.5. Para un aire acondicionado, el nivel es su ajuste: modo, temperatura y velocidad del ventilador, como cool 24.0 auto, o off."
         },
         "expected": {
           "name": "Puntos de conmutación esperados",

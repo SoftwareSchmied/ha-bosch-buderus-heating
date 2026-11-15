@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Výsledek",
         "description": "Nastavení nabíjecí stanice je uloženo."
+      },
+      "switch_program_week_aircon": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího téhož dne; před prvním spínacím bodem dne je klimatizace vypnutá. Časy se opakují každý týden podle hodin klimatizace. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího téhož dne; před prvním spínacím bodem dne je klimatizace vypnutá. Časy se opakují každý týden podle hodin klimatizace. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nTento program není aktivním programem klimatizace. Změny se projeví, až bude vybrán.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}** – **{day}**\n\nZvolte čas v krocích po {raster} minutách a nastavení od tohoto času. Klimatizace nabízí:\n\n{settings}\n\nTeplota a rychlost ventilátoru se uplatní jen u režimu, který je má. Vypnuto vypne klimatizaci do dalšího spínacího bodu.",
+        "data": {
+          "time": "Čas",
+          "mode": "Režim",
+          "value": "Teplota",
+          "fan": "Rychlost ventilátoru",
+          "delete": "Smazat tento spínací bod"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Tento den již má nejvyšší počet spínacích bodů, který aplikace dovoluje ({per_day}).",
       "rrc_point_last": "Poslední spínací bod dne nelze smazat; co znamená prázdný den pro regulátor, není známo.",
       "rrc_point_duplicate": "Tento den již má spínací bod v tento čas.",
-      "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků."
+      "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků.",
+      "switch_program_aircon_setting": "Zvolte režim, který klimatizace nabízí, a k němu teplotu v jejím rozsahu a krocích a jednu z jejích rychlostí ventilátoru."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Změna byla odeslána, ale klimatizace ji zatím nepotvrdila. Může se ještě projevit. Znovu jsem ji neodeslal; hodnota se aktualizuje při dalším čtení."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Použít lze pouze tato nastavení: {settings}. Nastavení se zapisuje jako režim, teplota a rychlost ventilátoru, například „cool 24.0 auto“, nebo „off“."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktivní (teplá voda)",
           "active_energy_manager": "Řídí nabíjecí stanici"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Časový program {number}",
+        "state": {
+          "off": "Vypnuto",
+          "auto": "Automaticky",
+          "cool": "Chlazení",
+          "heat": "Topení",
+          "dry": "Odvlhčování",
+          "fan_only": "Pouze ventilátor"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Časový program {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Spínací body",
-          "description": "Den (mo až su), čas (HH:MM, podle hodin topné soustavy) a úroveň každého spínacího bodu. U programu s teplotami je úrovní číslo, například 21.5."
+          "description": "Den (mo až su), čas (HH:MM, podle hodin topné soustavy) a úroveň každého spínacího bodu. U programu s teplotami je úrovní číslo, například 21.5. U klimatizace je úrovní její nastavení: režim, teplota a rychlost ventilátoru, například cool 24.0 auto, nebo off."
         },
         "expected": {
           "name": "Očekávané spínací body",

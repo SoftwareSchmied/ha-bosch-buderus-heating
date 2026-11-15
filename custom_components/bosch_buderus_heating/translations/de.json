@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Ergebnis",
         "description": "Die Wallbox-Einstellungen sind gespeichert."
+      },
+      "switch_program_week_aircon": {
+        "title": "Zeitprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten desselben Tages; vor dem ersten Schaltpunkt eines Tages ist das Klimagerät aus. Die Zeiten gelten jede Woche nach der Uhr des Klimageräts. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Zeitprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten desselben Tages; vor dem ersten Schaltpunkt eines Tages ist das Klimagerät aus. Die Zeiten gelten jede Woche nach der Uhr des Klimageräts. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDieses Programm ist nicht das aktive Programm des Klimageräts. Änderungen wirken erst, wenn es ausgewählt ist.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Schaltpunkt bearbeiten",
+        "description": "**{program}** – **{day}**\n\nWähle eine Uhrzeit in Schritten von {raster} Minuten und die Einstellung ab dieser Uhrzeit. Das Klimagerät bietet an:\n\n{settings}\n\nTemperatur und Lüfterstufe zählen nur für eine Betriebsart, die sie hat. Aus schaltet das Klimagerät bis zum nächsten Schaltpunkt aus.",
+        "data": {
+          "time": "Uhrzeit",
+          "mode": "Betriebsart",
+          "value": "Temperatur",
+          "fan": "Lüfterstufe",
+          "delete": "Diesen Schaltpunkt löschen"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Dieser Tag hat bereits die höchste Anzahl an Schaltpunkten, die die App erlaubt ({per_day}).",
       "rrc_point_last": "Der letzte Schaltpunkt eines Tages kann nicht gelöscht werden; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
       "rrc_point_duplicate": "Dieser Tag hat bereits einen Schaltpunkt zu dieser Uhrzeit.",
-      "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten."
+      "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
+      "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Die Änderung wurde gesendet, das Klimagerät hat sie aber noch nicht bestätigt. Sie kann noch wirksam werden. Ich habe sie nicht erneut gesendet; der Wert wird mit der nächsten Abfrage aktualisiert."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Nur diese Einstellungen sind möglich: {settings}. Eine Einstellung besteht aus Betriebsart, Temperatur und Lüfterstufe, zum Beispiel „cool 24.0 auto“, oder „off“."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktiv (Warmwasser)",
           "active_energy_manager": "Steuert die Wallbox"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Zeitprogramm {number}",
+        "state": {
+          "off": "Aus",
+          "auto": "Automatik",
+          "cool": "Kühlen",
+          "heat": "Heizen",
+          "dry": "Entfeuchten",
+          "fan_only": "Nur Lüfter"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Zeitprogramm {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Schaltpunkte",
-          "description": "Tag (mo bis su), Uhrzeit (HH:MM, nach der Uhr der Heizungsanlage) und Stufe jedes Schaltpunkts. Bei einem Programm mit Temperaturen ist die Stufe eine Zahl wie 21.5."
+          "description": "Tag (mo bis su), Uhrzeit (HH:MM, nach der Uhr der Heizungsanlage) und Stufe jedes Schaltpunkts. Bei einem Programm mit Temperaturen ist die Stufe eine Zahl wie 21.5. Bei einem Klimagerät ist die Stufe seine Einstellung: Betriebsart, Temperatur und Lüfterstufe, etwa cool 24.0 auto, oder off."
         },
         "expected": {
           "name": "Erwartete Schaltpunkte",

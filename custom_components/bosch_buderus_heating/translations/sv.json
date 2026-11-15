@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Resultat",
         "description": "Laddboxens inställningar har sparats."
+      },
+      "switch_program_week_aircon": {
+        "title": "Ändra tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa samma dag; före dagens första växlingspunkt är luftkonditioneringen avstängd. Tiderna upprepas varje vecka enligt luftkonditioneringens klocka. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag",
+          "week_view": "Veckovy"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Ändra tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa samma dag; före dagens första växlingspunkt är luftkonditioneringen avstängd. Tiderna upprepas varje vecka enligt luftkonditioneringens klocka. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nDet här programmet är inte luftkonditioneringens aktiva program. Ändringar får verkan när det väljs.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag",
+          "week_view": "Veckovy"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Redigera växlingspunkt",
+        "description": "**{program}** – **{day}**\n\nVälj en tid i steg om {raster} minuter och inställningen från den tiden. Luftkonditioneringen erbjuder:\n\n{settings}\n\nTemperaturen och fläkthastigheten gäller bara för ett läge som har dem. Av stänger av luftkonditioneringen till nästa växlingspunkt.",
+        "data": {
+          "time": "Tid",
+          "mode": "Läge",
+          "value": "Temperatur",
+          "fan": "Fläkthastighet",
+          "delete": "Ta bort den här växlingspunkten"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Den här dagen har redan det högsta antal växlingspunkter som appen tillåter ({per_day}).",
       "rrc_point_last": "Dagens sista växlingspunkt kan inte tas bort; vad en tom dag betyder för regulatorn är inte känt.",
       "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden.",
-      "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken."
+      "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken.",
+      "switch_program_aircon_setting": "Välj ett läge som luftkonditioneringen erbjuder och för det en temperatur inom dess intervall och steg samt en av dess fläkthastigheter."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Ändringen skickades, men luftkonditioneringen har inte bekräftat den ännu. Den kan fortfarande träda i kraft. Jag har inte skickat den igen; värdet uppdateras vid nästa avläsning."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Bara dessa inställningar kan användas: {settings}. En inställning skrivs som läge, temperatur och fläkthastighet, till exempel ”cool 24.0 auto”, eller ”off”."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktiv (varmvatten)",
           "active_energy_manager": "Styr laddboxen"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Tidsprogram {number}",
+        "state": {
+          "off": "Av",
+          "auto": "Auto",
+          "cool": "Kyla",
+          "heat": "Värme",
+          "dry": "Torr",
+          "fan_only": "Endast fläkt"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Tidsprogram {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Växlingspunkter",
-          "description": "Dag (mo till su), tid (HH:MM, enligt värmesystemets klocka) och nivå för varje växlingspunkt. För ett program med temperaturer är nivån ett tal som 21.5."
+          "description": "Dag (mo till su), tid (HH:MM, enligt värmesystemets klocka) och nivå för varje växlingspunkt. För ett program med temperaturer är nivån ett tal som 21.5. För en luftkonditionering är nivån dess inställning: läge, temperatur och fläkthastighet, till exempel cool 24.0 auto, eller off."
         },
         "expected": {
           "name": "Förväntade växlingspunkter",

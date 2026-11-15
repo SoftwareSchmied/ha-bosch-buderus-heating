@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Rezultat",
         "description": "Nastavitve stenske polnilnice so shranjene."
+      },
+      "switch_program_week_aircon": {
+        "title": "Sprememba časovnega programa",
+        "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje istega dne; pred prvo preklopno točko dneva je klimatska naprava izklopljena. Časi se tedensko ponavljajo po uri klimatske naprave. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.",
+        "data": {
+          "action": "Naslednji korak",
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Sprememba časovnega programa",
+        "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje istega dne; pred prvo preklopno točko dneva je klimatska naprava izklopljena. Časi se tedensko ponavljajo po uri klimatske naprave. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nTa program ni aktivni program klimatske naprave. Spremembe začnejo veljati, ko je izbran.",
+        "data": {
+          "action": "Naslednji korak",
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Urejanje preklopne točke",
+        "description": "**{program}** – **{day}**\n\nIzberite čas v korakih po {raster} minut in nastavitev od tega časa naprej. Klimatska naprava ponuja:\n\n{settings}\n\nTemperatura in hitrost ventilatorja štejeta samo za način, ki ju ima. Izklopljeno izklopi klimatsko napravo do naslednje preklopne točke.",
+        "data": {
+          "time": "Čas",
+          "mode": "Način",
+          "value": "Temperatura",
+          "fan": "Hitrost ventilatorja",
+          "delete": "Izbriši to preklopno točko"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Ta dan ima že največje število preklopnih točk, ki ga aplikacija dovoljuje ({per_day}).",
       "rrc_point_last": "Zadnje preklopne točke dneva ni mogoče izbrisati; ni znano, kaj prazen dan pomeni za regulator.",
       "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času.",
-      "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov."
+      "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
+      "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Sprememba je bila poslana, vendar je klimatska naprava še ni potrdila. Morda bo še začela veljati. Ponovno je nisem poslal; vrednost se posodobi ob naslednjem branju."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Uporabiti je mogoče samo te nastavitve: {settings}. Nastavitev se zapiše kot način, temperatura in hitrost ventilatorja, na primer „cool 24.0 auto“, ali „off“."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktiven (topla voda)",
           "active_energy_manager": "Upravlja stensko polnilnico"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Časovni program {number}",
+        "state": {
+          "off": "Izklopljeno",
+          "auto": "Samodejno",
+          "cool": "Hlajenje",
+          "heat": "Ogrevanje",
+          "dry": "Sušenje",
+          "fan_only": "Samo ventilator"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Časovni program {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Preklopne točke",
-          "description": "Dan (mo do su), čas (HH:MM, po uri ogrevalnega sistema) in raven vsake preklopne točke. Pri programu s temperaturami je raven število, na primer 21.5."
+          "description": "Dan (mo do su), čas (HH:MM, po uri ogrevalnega sistema) in raven vsake preklopne točke. Pri programu s temperaturami je raven število, na primer 21.5. Pri klimatski napravi je raven njena nastavitev: način, temperatura in hitrost ventilatorja, na primer cool 24.0 auto, ali off."
         },
         "expected": {
           "name": "Pričakovane preklopne točke",

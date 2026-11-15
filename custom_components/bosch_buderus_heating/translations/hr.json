@@ -958,6 +958,35 @@
       "result_wallbox_saved": {
         "title": "Rezultat",
         "description": "Postavke zidnog punjača su spremljene."
+      },
+      "switch_program_week_aircon": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće istog dana; prije prve točke uklapanja u danu klimatizacijski uređaj je isključen. Vremena se ponavljaju tjedno prema satu klimatizacijskog uređaja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće istog dana; prije prve točke uklapanja u danu klimatizacijski uređaj je isključen. Vremena se ponavljaju tjedno prema satu klimatizacijskog uređaja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nOvaj program nije aktivni program klimatizacijskog uređaja. Promjene djeluju kada bude odabran.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Uređivanje točke uklapanja",
+        "description": "**{program}** – **{day}**\n\nOdaberite vrijeme u koracima od {raster} minuta i postavku od tog vremena nadalje. Klimatizacijski uređaj nudi:\n\n{settings}\n\nTemperatura i brzina ventilatora vrijede samo za način rada koji ih ima. Isključeno isključuje klimatizacijski uređaj do sljedeće točke uklapanja.",
+        "data": {
+          "time": "Vrijeme",
+          "mode": "Način rada",
+          "value": "Temperatura",
+          "fan": "Brzina ventilatora",
+          "delete": "Izbriši ovu točku uklapanja"
+        }
       }
     },
     "error": {
@@ -1082,7 +1111,8 @@
       "rrc_point_limit": "Ovaj dan već ima najveći broj točaka uklapanja koji aplikacija dopušta ({per_day}).",
       "rrc_point_last": "Posljednja točka uklapanja u danu ne može se izbrisati; nije poznato što prazan dan znači za regulator.",
       "rrc_point_duplicate": "Ovaj dan već ima točku uklapanja u to vrijeme.",
-      "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka."
+      "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka.",
+      "switch_program_aircon_setting": "Odaberite način rada koji nudi klimatizacijski uređaj i za njega temperaturu unutar njegova raspona i koraka te jednu od njegovih brzina ventilatora."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -1736,6 +1766,9 @@
     },
     "aircon_write_not_confirmed": {
       "message": "Promjena je poslana, ali je klima-uređaj još nije potvrdio. Možda će se još primijeniti. Nisam je ponovno poslao; vrijednost se ažurira pri sljedećem očitanju."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Mogu se koristiti samo ove postavke: {settings}. Postavka se piše kao način rada, temperatura i brzina ventilatora, na primjer „cool 24.0 auto“, ili „off“."
     }
   },
   "selector": {
@@ -3314,6 +3347,20 @@
           "active_hot_water": "Aktivno (topla voda)",
           "active_energy_manager": "Upravlja zidnim punjačem"
         }
+      },
+      "aircon_switch_program": {
+        "name": "Vremenski program {number}",
+        "state": {
+          "off": "Isključeno",
+          "auto": "Automatski",
+          "cool": "Hlađenje",
+          "heat": "Grijanje",
+          "dry": "Sušenje",
+          "fan_only": "Samo ventilator"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Vremenski program {number}"
       }
     },
     "binary_sensor": {
@@ -3722,7 +3769,7 @@
         },
         "switch_points": {
           "name": "Točke uklapanja",
-          "description": "Dan (mo do su), vrijeme (HH:MM, prema satu sustava grijanja) i razina svake točke uklapanja. Kod programa s temperaturama razina je broj poput 21.5."
+          "description": "Dan (mo do su), vrijeme (HH:MM, prema satu sustava grijanja) i razina svake točke uklapanja. Kod programa s temperaturama razina je broj poput 21.5. Kod klimatizacijskog uređaja razina je njegova postavka: način rada, temperatura i brzina ventilatora, poput cool 24.0 auto, ili off."
         },
         "expected": {
           "name": "Očekivane točke uklapanja",
