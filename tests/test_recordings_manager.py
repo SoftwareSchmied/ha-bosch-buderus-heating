@@ -170,6 +170,12 @@ async def manager(hass, clock, drivers=(), cloud=None, **kwargs):
     return result
 
 
+def module_backfill() -> int:
+    from custom_components.bosch_buderus_heating.recordings import manager as module
+
+    return module.CLOUD_BACKFILL
+
+
 def key(measure: str, period: Period, method: str = RECORDING) -> str:
     from custom_components.bosch_buderus_heating.recordings.measures import (
         measures,
@@ -252,7 +258,10 @@ async def test_without_the_local_access_the_cloud_reads_the_energy_paths(
     hass: HomeAssistant,
 ) -> None:
     """Rules 11 and 16, V5: local unreachable, so the cloud; only the nine
-    energy paths, today and yesterday first, within the budget."""
+    energy paths. The start run reads yesterday once per path to find the
+    series (no today without a running period, no back-fill, no second
+    run five minutes later); hourly runs go on with the back-fill of the
+    needed series, a few intervals per run."""
     clock = Clock(
         local(
             2026,
@@ -267,42 +276,43 @@ async def test_without_the_local_access_the_cloud_reads_the_energy_paths(
     rec = await manager(hass, clock, [driver], cloud)
     await rec.async_run("start")
     assert len(driver.requests) == 1  # stopped at the first unreachable read
-    assert 0 < len(cloud.calls) <= CLOUD_BUDGET
-    assert {path for path, _ in cloud.calls} <= set(CLOUD_PATHS)
-    first = cloud.calls[0][0]
-    assert cloud.calls[:2] == [(first, "2026-11-14"), (first, "2026-11-13")]
+    assert sorted(cloud.calls) == sorted((path, "2026-11-13") for path in CLOUD_PATHS)
     assert rec.cloud_paths["/recordings/heatSources/emon/total/eheater"][0] == "missing"
     assert rec.runs[-1]["source"] == "cloud"
     first = len(cloud.calls)
-    # The next run goes on with the older intervals, not again the same.
+    # The next run reads the needed series: yesterday until it is final and
+    # a few older intervals (back-fill), not the same again.
     clock.now += timedelta(hours=1)
     rec.request(key("total_heat", Period.YESTERDAY))
     await rec.async_run("hourly")
     later = cloud.calls[first:]
-    assert ("/recordings/heatSources/emon/total/eheater", "2026-11-14") not in later
+    heat = BY_KEY["total_heat"].path
+    assert later[0] == (heat, "2026-11-13")
+    assert {path for path, _ in later} == {heat}
+    assert len(later) == 1 + module_backfill()
     assert len(later) <= CLOUD_BUDGET
 
 
 async def test_the_cloud_reads_yesterday_only_until_it_is_final(
     hass: HomeAssistant,
 ) -> None:
-    """V5: cloud only, hourly today (nine paths at most); yesterday until a
-    second read confirmed it, then like an older day."""
+    """V5: cloud only; yesterday of the needed series until a second read
+    confirmed it, then like an older day; today only for a running period
+    (none enabled here)."""
     clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
     cloud = Cloud()
     rec = await manager(hass, clock, [], cloud)
     rec.request(key("total_heat", Period.YESTERDAY))
     await rec.async_run("start")
     yesterday = date(2026, 11, 13)
-    paths = {path for path, _ in cloud.calls} - {
-        "/recordings/heatSources/emon/total/eheater"
-    }
+    paths = {BY_KEY["total_heat"].path}
     opened = []
     for _ in range(4):
         open_paths = {
             ledger.series.path
             for ledger in rec.ledgers.values()
             if not (ledger.day(yesterday) or [0, 0, "", 0, False])[4]
+            and ledger.series.path in paths
         }
         opened.append(open_paths)
         done = len(cloud.calls)
@@ -310,7 +320,7 @@ async def test_the_cloud_reads_yesterday_only_until_it_is_final(
         await rec.async_run("hourly")
         calls = cloud.calls[done:]
         assert {path for path, day in calls if day == "2026-11-13"} == open_paths
-        assert {path for path, day in calls if day == "2026-11-14"} == paths
+        assert not [day for _, day in calls if day == "2026-11-14"]
     # Open after the start (read once), confirmed by the next run.
     assert opened[0] and not any(opened[1:])
     # Twelve hours after its last read (23:20) yesterday is read once more

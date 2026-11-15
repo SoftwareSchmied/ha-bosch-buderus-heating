@@ -284,10 +284,7 @@ class _FlakyDriver(Driver):
 
 @pytest.mark.parametrize(
     ("state", "problem"),
-    [
-        (ReadState.DEFERRED, ReadProblem.BUSY),
-        (ReadState.PATH_ERROR, ReadProblem.HTTP_ERROR),
-    ],
+    [(ReadState.DEFERRED, ReadProblem.BUSY)],
 )
 async def test_the_whole_history_is_read_again_until_every_path_answered(
     hass: HomeAssistant, state: ReadState, problem: str, monkeypatch
@@ -447,9 +444,12 @@ async def test_a_cloud_server_error_ends_the_run_without_marking_paths(
     cloud = Cloud(fail=UnexpectedHttpStatus(status))
     rec = await manager(hass, clock, [], cloud)
     await rec.async_run("start")
-    assert len(cloud.calls) == 1, "one error ends the plan, the next run goes on"
+    failures = module.CLOUD_FAILURES_PER_RUN
+    assert len(cloud.calls) == failures, "a few errors end the plan"
     assert rec.cloud_paths == {}
-    assert rec.runs[-1]["outcomes"] == {"cloud_failed": 1}
+    assert rec.runs[-1]["outcomes"] == {"cloud_failed": failures}
+    # Nothing answered: the cloud failed, no path is left out.
+    assert rec._cloud_deferred == {}
     assert rec.runs[-1]["source"] is None
     assert rec.available() == ()
 
@@ -502,6 +502,7 @@ async def test_cloud_months_the_plant_still_knows_are_read_by_the_day(
     clock = _clock()
     cloud = Cloud()
     rec = await manager(hass, clock, [], cloud)
+    rec.acquire()  # the back-fill is only for needed series
     ledger = rec._ledger(BY_KEY["total_heat"])
     ledger.months["2026-04-01"] = [100.0, 1.0, LOCAL, 1, True]
     ledger.months["2026-10-01"] = [100.0, 1.0, LOCAL, 1, True]

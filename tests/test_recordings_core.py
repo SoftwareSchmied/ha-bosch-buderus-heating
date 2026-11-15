@@ -340,13 +340,13 @@ def test_a_changed_final_hour_is_imported_again_from_there() -> None:
 
 
 @pytest.mark.parametrize("can_clear", [True, False])
-def test_an_hour_turned_into_a_gap_is_neutral_where_nothing_is_cleared(
+def test_an_imported_hour_that_later_has_no_data_keeps_its_value(
     can_clear,
 ) -> None:
-    """Rule 6 on a recorder that clears whole statistics only (before
-    2026.11): an imported hour that is now a gap is not written again, so
-    it gets a neutral row with the sum before it; with a range to clear
-    it is simply gone. A plan is taken over only on ``commit``."""
+    """Rules 6 and 12: a confirmed hour that a later answer reports without
+    data (``c = 0``, after a reset or a new controller) is no correction:
+    it keeps its value, its day too, nothing is imported again; the event
+    is counted. A changed value with data is still a correction."""
     ledger = Ledger(HEAT)
     base = [(1.0, 1)] * 34
     at = local(2026, 11, 14, 10) + timedelta(minutes=20)
@@ -358,8 +358,9 @@ def test_an_hour_turned_into_a_gap_is_neutral_where_nothing_is_cleared(
         )
     assert ledger.start_import(100.0, Z)
     assert len(ledger.plan((at + timedelta(hours=1)).astimezone(UTC), Z).rows) == 34
+    day_before = list(ledger.days["2026-11-13"])
     changed = list(base)
-    changed[29] = (0.0, 0)  # 14 Nov 05:00 is now a gap
+    changed[5] = (1.0, 0)  # 13 Nov 05:00 now reported without data
     for step in (2, 3):
         read(
             ledger,
@@ -367,24 +368,13 @@ def test_an_hour_turned_into_a_gap_is_neutral_where_nothing_is_cleared(
             hours(local(2026, 11, 13), changed + [(0.0, 1)] * (step + 1)),
         )
     now = (at + timedelta(hours=3)).astimezone(UTC)
-    before = json.dumps(ledger.to_dict())
-    plan = ledger.plan(now, Z, can_clear=can_clear, commit=False)
-    assert json.dumps(ledger.to_dict()) == before  # nothing taken over yet
-    gap = utc(local(2026, 11, 14, 5))
-    rows = {row[0]: row for row in plan.rows}
-    assert plan.clear is not None and plan.clear[0] == gap
-    if can_clear:
-        assert gap not in rows
-    else:
-        assert rows[gap] == (gap, 0.0, 0.0, pytest.approx(100.0 + 29))
-    assert rows[gap + 3600][3] == pytest.approx(100.0 + 30)
-    ledger.commit(plan)
-    assert ledger.stats["imported_neutral"] == (0 if can_clear else 1)
-    assert ledger.stats["imported_again"] == 1
-    assert ledger.plan(now, Z, can_clear=can_clear).rows == []
-    assert not ledger.imp["stale"]
-    # Stored and read back, the position is the same.
-    assert Ledger(HEAT, json.loads(json.dumps(ledger.to_dict()))).imp == ledger.imp
+    gap = str(utc(local(2026, 11, 13, 5)))
+    assert ledger.hours[gap][:2] == [1.0, 1.0] and ledger.hours[gap][4]
+    assert ledger.days["2026-11-13"][:2] == day_before[:2]
+    assert ledger.stats["gap_after_value"] >= 2
+    plan = ledger.plan(now, Z, can_clear=can_clear)
+    assert plan.clear is None and "imported_again" not in ledger.stats
+    assert all(row[0] > utc(local(2026, 11, 14, 9)) for row in plan.rows)
 
 
 # --------------------------------------------------------- 7: gaps, c = 0

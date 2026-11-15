@@ -8,6 +8,10 @@ its months since the first recorded month. A value is final when every
 part is final; a value of a past period is only shown once it is final
 (``manager``), so "previous month" changes after the first confirmed read
 of the finished month.
+
+``c = 0`` is a gap, never a zero (rule 7): a day without data is no day of
+a month's sum (the plant's month value is used instead), a period that is
+a gap has no value, and a month that is a gap adds nothing to its year.
 """
 
 from __future__ import annotations
@@ -52,10 +56,15 @@ class PeriodValue:
     resolution: str
     sources: frozenset[str]
 
+    @property
+    def gap(self) -> bool:
+        """No data in the period (``c = 0``): no value, never a zero."""
+        return self.c <= 0
+
     def value(self, mean: bool) -> float | None:
-        if not mean:
-            return self.y
-        return self.y / self.c if self.c > 0 else None
+        if self.gap:
+            return None
+        return self.y / self.c if mean else self.y
 
 
 def bounds(period: Period, today: date) -> tuple[date, date]:
@@ -74,18 +83,35 @@ def bounds(period: Period, today: date) -> tuple[date, date]:
 
 
 def combine(values: list[PeriodValue]) -> PeriodValue | None:
-    """The sum of the same period of several series (electricity)."""
+    """The sum of the same period of several series (electricity); a gap
+    when one of them is a gap."""
     if not values:
         return None
     first = values[0]
+    gap = any(item.gap for item in values)
     return PeriodValue(
         first.start,
         first.end,
-        sum(item.y for item in values),
-        sum(item.c for item in values),
+        0.0 if gap else sum(item.y for item in values),
+        0.0 if gap else sum(item.c for item in values),
         all(item.final for item in values),
         max((item.resolution for item in values), key=_RESOLUTIONS.index),
         frozenset().union(*(item.sources for item in values)),
+    )
+
+
+def _cell_value(cell: Cell, start: date, end: date, resolution: str) -> PeriodValue:
+    """A day or month of the plant; without data (``c <= 0``) a gap, whatever
+    placeholder the plant sent as its sum."""
+    gap = float(cell[1]) <= 0
+    return PeriodValue(
+        start,
+        end,
+        0.0 if gap else float(cell[0]),
+        0.0 if gap else float(cell[1]),
+        bool(cell[4]),
+        resolution,
+        frozenset({str(cell[2])}),
     )
 
 
@@ -93,15 +119,7 @@ def _day(ledger: Ledger, day: date) -> PeriodValue | None:
     cell = ledger.day(day)
     if cell is None:
         return None
-    return PeriodValue(
-        day,
-        day + timedelta(days=1),
-        float(cell[0]),
-        float(cell[1]),
-        bool(cell[4]),
-        "daily",
-        frozenset({str(cell[2])}),
-    )
+    return _cell_value(cell, day, day + timedelta(days=1), "daily")
 
 
 def month_value(ledger: Ledger, first: date, today: date) -> PeriodValue | None:
@@ -116,7 +134,8 @@ def month_value(ledger: Ledger, first: date, today: date) -> PeriodValue | None:
     day = begin
     while day <= last:
         value = _day(ledger, day)
-        if value is None:
+        if value is None or value.gap:
+            # A day without data: the month needs the plant's month value.
             break
         days.append(value)
         day += timedelta(days=1)
@@ -137,15 +156,7 @@ def month_value(ledger: Ledger, first: date, today: date) -> PeriodValue | None:
         return _running_month(ledger, first, begin, last, cell)
     if cell is None:
         return None
-    return PeriodValue(
-        first,
-        end,
-        float(cell[0]),
-        float(cell[1]),
-        bool(cell[4]),
-        "monthly",
-        frozenset({str(cell[2])}),
-    )
+    return _cell_value(cell, first, end, "monthly")
 
 
 def _running_month(
@@ -160,10 +171,13 @@ def _running_month(
         value
         for offset in range((last - begin).days + 1)
         if (value := _day(ledger, begin + timedelta(days=offset))) is not None
+        and not value.gap
     ]
     y = sum(item.y for item in known)
-    if cell is not None and (
-        not known or (not ledger.series.mean and float(cell[0]) > y)
+    if (
+        cell is not None
+        and float(cell[1]) > 0
+        and (not known or (not ledger.series.mean and float(cell[0]) > y))
     ):
         return PeriodValue(
             first,
@@ -201,17 +215,18 @@ def year_value(ledger: Ledger, year: int, today: date) -> PeriodValue | None:
             return None
         months.append(value)
         month = add_months(month, 1)
-    combined = combine(months)
-    if combined is None:
+    if not months:
         return None
+    # A month without data adds nothing; a year of gaps only is a gap.
+    recorded = [item for item in months if not item.gap]
     return PeriodValue(
         date(year, 1, 1),
         date(year + 1, 1, 1),
-        combined.y,
-        combined.c,
-        combined.final and last == date(year, 12, 1),
-        combined.resolution,
-        combined.sources,
+        sum(item.y for item in recorded),
+        sum(item.c for item in recorded),
+        all(item.final for item in months) and last == date(year, 12, 1),
+        max((item.resolution for item in months), key=_RESOLUTIONS.index),
+        frozenset().union(*(item.sources for item in months)),
     )
 
 

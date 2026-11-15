@@ -315,13 +315,13 @@ async def test_an_invalid_local_query_is_a_failure_without_a_request() -> None:
     assert driver.requests == []
 
 
-async def test_a_local_read_that_hangs_is_unreachable(
+async def test_a_local_read_that_hangs_is_a_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(sources, "READ_SECONDS", 0.01)
     driver = _Driver(delay=1.0)
     answer = await sources.read_local(driver, HEAT, {"sampleRate": "all"})
-    assert answer.outcome is Outcome.UNREACHABLE
+    assert answer.outcome is Outcome.TIMEOUT
 
 
 @pytest.mark.parametrize(

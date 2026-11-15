@@ -7,7 +7,15 @@ checks, one after another and within ``READ_SECONDS``.
 
 Cloud: the ``interval`` form through the coordinator's client, with the
 integration's pacing, sign-in and pause rules; a rate limit pauses the
-whole cloud access (the transport does that).
+whole cloud access (the transport does that). The bulk form of the
+manufacturer's app (``query=all&sampleRate=all``) was refused with 403 for
+a real account, as a resource read and inside a bulk read, so it is not
+used.
+
+Outcomes: an answer about the path (404, 403, a failed or unusable answer)
+concerns that path only; ``UNREACHABLE`` (no connection, sign-in, a rate
+limit of the local access), ``TIMEOUT`` and ``SERVER_ERROR`` (5xx of the
+local data port, which pauses the local access) end the run.
 """
 
 from __future__ import annotations
@@ -29,6 +37,16 @@ from ..pointt import (
     ResourceForbidden,
     ResourceNotFound,
 )
+from ..pointt.exceptions import (
+    AuthenticationError,
+    RefreshRefused,
+    ResourceError,
+    ServiceUnavailable,
+    SignInUnavailable,
+    SourceStopped,
+    TransportError,
+    UnexpectedHttpStatus,
+)
 from .series import Series
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +59,8 @@ class Outcome(StrEnum):
     FORBIDDEN = "forbidden"
     BUSY = "busy"
     UNREACHABLE = "unreachable"
+    TIMEOUT = "timeout"
+    SERVER_ERROR = "server_error"
     RATE_LIMITED = "rate_limited"
     FAILED = "failed"
 
@@ -79,7 +99,7 @@ async def read_local(
         async with asyncio.timeout(READ_SECONDS):
             result = await driver.read_explicit(request)
     except TimeoutError:
-        return Answer(Outcome.UNREACHABLE)
+        return Answer(Outcome.TIMEOUT)
     if result is None:
         return Answer(Outcome.UNREACHABLE)
     if result.state is ReadState.SUCCESS:
@@ -96,6 +116,8 @@ async def read_local(
         if result.problem == ReadProblem.FORBIDDEN:
             return Answer(Outcome.FORBIDDEN)
         return Answer(Outcome.FAILED)
+    if result.problem == ReadProblem.SERVICE_UNAVAILABLE:
+        return Answer(Outcome.SERVER_ERROR)
     return Answer(Outcome.UNREACHABLE)
 
 
@@ -110,9 +132,28 @@ async def read_cloud(
         return Answer(Outcome.FORBIDDEN)
     except RateLimited:
         return Answer(Outcome.RATE_LIMITED)
-    except (PointTError, ValueError) as err:
-        _LOGGER.debug(
-            "A recording could not be read from the cloud: %s", type(err).__name__
-        )
+    except (
+        SignInUnavailable,
+        RefreshRefused,
+        AuthenticationError,
+        SourceStopped,
+    ) as err:
+        _log_cloud(err)
+        return Answer(Outcome.UNREACHABLE)
+    except (ServiceUnavailable, UnexpectedHttpStatus, ResourceError) as err:
+        # A server error or an unexpected status may concern this path only.
+        _log_cloud(err)
+        return Answer(Outcome.FAILED)
+    except TransportError as err:  # no connection, a timeout
+        _log_cloud(err)
+        return Answer(Outcome.UNREACHABLE)
+    except (PointTError, ValueError) as err:  # an unreadable answer
+        _log_cloud(err)
         return Answer(Outcome.FAILED)
     return Answer(Outcome.OK, payload)
+
+
+def _log_cloud(err: BaseException) -> None:
+    _LOGGER.debug(
+        "A recording could not be read from the cloud: %s", type(err).__name__
+    )
