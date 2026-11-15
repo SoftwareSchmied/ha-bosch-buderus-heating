@@ -226,3 +226,35 @@ async def test_intermediate_forms_say_next(hass) -> None:
     )
     assert result["step_id"] == "cloud" and result["last_step"] is False
     hass.config_entries.flow.async_abort(result["flow_id"])
+
+
+def test_variants_of_intermediate_forms_say_next() -> None:
+    """A variant of an intermediate form (its step id plus a suffix, such as
+    the air conditioner's week) leads to another form as well."""
+    from custom_components.bosch_buderus_heating.options_navigation import (
+        NEXT_STEPS,
+    )
+
+    strings = json.loads(
+        (
+            Path(__file__).parents[1]
+            / "custom_components/bosch_buderus_heating/strings.json"
+        ).read_text(encoding="utf-8")
+    )
+    # Separate steps of the token list that only share its name.
+    others = {
+        "local_tokens_certificate",
+        "local_tokens_remove",
+        "local_tokens_remove_none",
+    }
+    variants = {
+        step
+        for step in strings["options"]["step"]
+        if any(step.startswith(f"{base}_") for base in NEXT_STEPS)
+    } - others
+    assert {
+        "switch_program_week_aircon",
+        "switch_program_week_aircon_inactive",
+        "switch_program_point_aircon",
+    } <= variants
+    assert variants <= NEXT_STEPS

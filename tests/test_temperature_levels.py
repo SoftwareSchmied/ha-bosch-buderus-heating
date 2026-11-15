@@ -85,8 +85,9 @@ async def test_away_temperature_writes_once(hass, key, path):
     assert description.entity_category is EntityCategory.CONFIG
     await entity.async_set_native_value(16)
     assert cloud.puts == [(path, 16.0)]
-    # The other levels and the control type were read again with it.
-    assert set(cloud.bulk_calls[0]) == {path, *LEVEL_GUARDS}
+    # The control type was read again with it; the away temperature bounds
+    # neither the heating nor the setback level.
+    assert set(cloud.bulk_calls[0]) == {path, CONTROL_TYPE}
     assert entity.native_value == 16
 
 
@@ -149,9 +150,7 @@ async def test_changed_heating_level_refuses_the_setback_write(hass):
     assert coordinator.data[ECO].resource.metadata.maximum == 19.5
 
 
-@pytest.mark.parametrize(
-    ("changed", "path"), [(COMFORT, ECO), (ECO, AWAY), (AWAY, COMFORT)]
-)
+@pytest.mark.parametrize(("changed", "path"), [(COMFORT, ECO), (ECO, COMFORT)])
 async def test_a_changed_sibling_level_alone_refuses_the_write(hass, changed, path):
     """Only the other level changed in the app (its limits follow later):
     the write is refused unsent all the same."""
@@ -161,6 +160,56 @@ async def test_a_changed_sibling_level_alone_refuses_the_write(hass, changed, pa
         await number_entity(hass, coordinator, path).async_set_native_value(20)
     assert cloud.puts == []
     assert coordinator.data[changed].resource.value == cloud.state[changed].value
+
+
+def _coupled_gateway(cloud: Cloud) -> None:
+    """The gateway moves the other level's limit with each confirmed level."""
+
+    def gateway(path: str, value: object) -> None:
+        cloud.state[path] = replace(cloud.state[path], value=value)
+        assert isinstance(value, float)
+        if path == COMFORT:
+            eco = cloud.state[ECO]
+            cloud.state[ECO] = with_flags(eco, maximum=value - 0.5)
+        if path == ECO:
+            comfort = cloud.state[COMFORT]
+            cloud.state[COMFORT] = with_flags(comfort, minimum=value + 0.5)
+
+    cloud.on_put = gateway
+
+
+async def test_coupled_levels_one_after_the_other(hass):
+    """A script sets the heating level and then the setback level: the first
+    write moves the other level's limit on the gateway, the next write takes
+    that current limit instead of being refused."""
+    coordinator, cloud = _setup(hass)
+    _coupled_gateway(cloud)
+    comfort = number_entity(hass, coordinator, COMFORT)
+    eco = number_entity(hass, coordinator, ECO)
+    await comfort.async_set_native_value(22)
+    await eco.async_set_native_value(18)
+    # And again: the heating level's minimum moved with the setback level.
+    await eco.async_set_native_value(17.5)
+    await comfort.async_set_native_value(21.5)
+    assert cloud.puts == [(COMFORT, 22.0), (ECO, 18.0), (ECO, 17.5), (COMFORT, 21.5)]
+    # Above the current limit nothing is sent, and the limit is shown.
+    with pytest.raises(ServiceValidationError):
+        await eco.async_set_native_value(21.5)
+    assert len(cloud.puts) == 4
+    assert coordinator.data[ECO].resource.metadata.maximum == 21.0
+
+
+@pytest.mark.parametrize(("changed", "path"), [(AWAY, COMFORT), (ECO, AWAY)])
+async def test_the_away_temperature_and_the_levels_do_not_guard_each_other(
+    hass, changed, path
+):
+    """The away temperature bounds neither level: a change of one does not
+    refuse a write of the other (only the control type is read with it)."""
+    coordinator, cloud = _setup(hass, "V2")
+    cloud.change(changed, value=cloud.state[changed].value + 0.5)
+    await number_entity(hass, coordinator, path).async_set_native_value(20)
+    assert cloud.puts == [(path, 20.0)]
+    assert changed not in cloud.bulk_calls[0]
 
 
 @pytest.mark.parametrize(("path", "value"), [(ECO, 21), (COMFORT, 19)])

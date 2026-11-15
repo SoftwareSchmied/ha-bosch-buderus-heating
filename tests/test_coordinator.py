@@ -461,8 +461,9 @@ async def test_confirmed_number_write_updates_coordinator(
     result = await coordinator.async_write_control(path, 20.5, policy)
 
     assert result is confirmed
+    # The control type rule of the circuit compares with the current readings.
     coordinator._write_service.async_write_number.assert_awaited_once_with(
-        "gateway-one", current, 20.5, policy, current=None
+        "gateway-one", current, 20.5, policy, current=None, related={path: current}
     )
 
 

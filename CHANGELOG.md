@@ -84,9 +84,16 @@ entry says how it was tested; most of it with automated tests only.
 - **Temperature settings in your unit system:** all temperature numbers have
   the device class *temperature* and follow the unit of your installation.
   Entity IDs and settings stay. Automated tests only.
+  - With °F, automations and scripts that set these numbers now use °F
+    values, sent as the nearest step of the appliance; please check them
+    after the update.
 - **Safer heating circuit writes:** every change reads the circuit's control
   type and the related values on the appliance first and sends nothing if
   they changed. Automated tests only.
+  - This also applies to the manual setpoint and the operating mode; with
+    the control type `constants` they are not changed.
+  - A zone's manual setpoint refuses a value between two steps when the
+    zone reports a step.
 - **Clearing a temporary setpoint** also works on gateways that report limits
   without the clear value (button, disabled by default). Untested on a real
   installation.

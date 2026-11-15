@@ -117,6 +117,13 @@ async def test_each_enum_family_accepts_and_writes_a_new_offered_code(
     await setup_selects(hass, entry, added.extend)
     entity = added[0]
     assert entity.options == ["OnlyOld", "NewVendorCode"]
+    # A heating circuit's mode is read again before its write (fresh read),
+    # then read back.
+    client.get_resource.side_effect = (
+        [current, replace(current, value="NewVendorCode")]
+        if path.startswith("/heatingCircuits/")
+        else None
+    )
     client.get_resource.return_value = replace(current, value="NewVendorCode")
     await entity.async_select_option("NewVendorCode")
     client.put_resource_value.assert_awaited_once_with(

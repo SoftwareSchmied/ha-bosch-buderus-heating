@@ -286,7 +286,14 @@ async def test_select_calls_confirmed_coordinator_write(hass: HomeAssistant) -> 
 
     await entity.async_select_option("auto")
 
-    writer.assert_awaited_once_with(PATH, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY)
+    # The mode is read again with its write (fresh read before the change).
+    writer.assert_awaited_once_with(
+        PATH,
+        "auto",
+        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+        expected=(),
+        fresh=(entity.coordinator.data[PATH].resource,),
+    )
 
 
 @pytest.mark.parametrize(
@@ -369,7 +376,11 @@ async def test_two_circuits_keep_independent_operation_mode_options(
     coordinator.async_write_control = writer
     await hc2.async_select_option("auto")
     writer.assert_awaited_once_with(
-        second.path, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+        second.path,
+        "auto",
+        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+        expected=(),
+        fresh=(second,),
     )
     await coordinator.async_shutdown()
 

@@ -126,9 +126,13 @@ current permission and metadata rather than borrowing settings from a
 heating circuit or another zone.
 
 The numeric control uses the current `stepSize`, or a 0.5 °C UI increment
-when it is absent. Invalid advertised steps block the control. This UI
-increment does not establish an API quantization rule: a finite service
-value within the current bounds can be sent without automatic rounding.
+when it is absent. Invalid advertised steps block the control. Since 0.9.2
+an advertised `stepSize` is a rule of the gateway: a value between two steps,
+counted from the minimum, is refused before anything is sent. The 0.5 °C UI
+increment without `stepSize` does not establish an API quantization rule: a
+finite service value within the current bounds can be sent without
+automatic rounding. The zone climate puts a value converted from °F on the
+nearest step.
 Error markers, invalid samples, compound responses, missing bounds and
 unexpected units block writes. The narrow reviewed unit is `C`; no
 conversion from an unverified zone wire unit is inferred.
@@ -214,8 +218,12 @@ aktueller Modus sperrt das Bedienelement vorübergehend.
 Jeder manuelle Sollwert verwendet seine eigenen aktuellen Grenzen und die
 Einheit `C`. Die Schrittweite stammt aus `stepSize`; ohne diese Angabe
 beträgt der Anzeigeschritt 0,5 °C. Eine fehlerhafte Angabe sperrt die Bedienung.
-Der Anzeigeschritt ist keine nachgewiesene Vorgabe für Schreibwerte:
-Serviceaufrufe können gültige Zwischenwerte ohne Rundung senden.
+Seit 0.9.2 ist eine gemeldete `stepSize` eine Vorgabe des Gateways: Ein
+Wert zwischen zwei Schritten, gezählt ab dem Minimum, wird vor jeder Anfrage
+abgewiesen. Der Anzeigeschritt ohne `stepSize` ist keine nachgewiesene
+Vorgabe für Schreibwerte: Serviceaufrufe können gültige Zwischenwerte ohne
+Rundung senden. Die Zonen-Klimaentität legt einen aus °F umgerechneten Wert
+auf den nächsten Schritt.
 Fehlerkennwerte, ungültige Antworten, fehlende Grenzen und ungeklärte
 Einheiten erlauben keinen Schreibzugriff.
 

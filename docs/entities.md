@@ -29,9 +29,11 @@ supply limits, outdoor thresholds, the boost temperature) has the device class
 *temperature*; the temperature offset of a room controller's radio device is a
 *temperature difference*. Home Assistant shows these settings in the
 temperature unit of your installation. The integration converts the step with
-them (0.5 °C becomes 0.9 °F) and sends a value set in °F as the exact step in
-the gateway's unit; a value between two steps is refused, not rounded. Entity
-IDs, unique IDs and enablement stay as they were.
+them (0.5 °C becomes 0.9 °F) and sends a value set in °F as the nearest step
+in the gateway's unit, as the thermostats do. On installations with °F,
+automations and scripts that set these numbers now use °F values; please
+check them after the update. Entity IDs, unique IDs and enablement stay as
+they were.
 
 The [controls dialog](heating-controls.md) groups settings and keeps edits as
 a draft until Apply. Individual device-page controls write immediately.

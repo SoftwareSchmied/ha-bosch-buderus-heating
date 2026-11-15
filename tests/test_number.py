@@ -256,7 +256,14 @@ async def test_number_calls_confirmed_coordinator_write(hass: HomeAssistant) -> 
 
     await entity.async_set_native_value(20.5)
 
-    writer.assert_awaited_once_with(PATH, 20.5, entity.entity_description.write_policy)
+    # The setting is read again with its write (limits from that reading).
+    writer.assert_awaited_once_with(
+        PATH,
+        20.5,
+        entity.entity_description.write_policy,
+        expected=(),
+        fresh=(entity.coordinator.data[PATH].resource,),
+    )
 
 
 async def test_maximum_supply_temperature_uses_confirmed_write(

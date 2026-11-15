@@ -560,6 +560,7 @@ class HeatingCircuitClimate(
             raw,
             HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
             expected=(mode, temporary.resource, *guards),
+            fresh=manual_floor_reading(self.coordinator, self.root),
         )
 
 
@@ -718,6 +719,16 @@ def _manual_minimum(
     ):
         return None
     return minimum
+
+
+def manual_floor_reading(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str
+) -> tuple[Resource, ...]:
+    """The manual setpoint whose minimum may limit a temporary target, as
+    last read: a temporary write reads it again in its request (``fresh``)
+    and checks the target against its current minimum."""
+    snapshot = (coordinator.data or {}).get(f"{root}/manualRoomSetpoint")
+    return (snapshot.resource,) if snapshot is not None else ()
 
 
 def takes_clear_value(

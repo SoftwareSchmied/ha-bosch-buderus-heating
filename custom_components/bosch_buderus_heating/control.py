@@ -280,10 +280,18 @@ async def async_set_control(
     policy: EnumWritePolicy | NumberWritePolicy,
     *,
     expected: tuple[Resource, ...] = (),
+    fresh: tuple[Resource, ...] = (),
 ) -> None:
-    """Write a control and expose only translated, value-free HA errors."""
+    """Write a control and expose only translated, value-free HA errors.
+
+    ``expected`` and ``fresh``: see ``async_write_control``.
+    """
     try:
-        if expected:
+        if fresh:
+            await coordinator.async_write_control(
+                path, value, policy, expected=expected, fresh=fresh
+            )
+        elif expected:
             await coordinator.async_write_control(
                 path, value, policy, expected=expected
             )

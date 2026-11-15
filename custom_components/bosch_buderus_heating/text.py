@@ -157,8 +157,12 @@ class ProgramNameText(
 
     @property
     def native_max(self) -> int:
+        """The advertised maximum length; a longer name the gateway reports
+        is still shown (the write keeps the advertised maximum)."""
         config = value_config(self._reading())
-        return max(1, config.max_length) if config is not None else super().native_max
+        if config is None:
+            return super().native_max
+        return max(1, config.max_length, len(self.native_value or ""))
 
     async def async_set_value(self, value: str) -> None:
         resource = self._reading()

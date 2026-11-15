@@ -170,8 +170,11 @@ climate then only shows the circuit: it offers no target, no other mode and
 no off command, and a mode or temperature call is refused before any request.
 This applies to every gateway that reports this control type. Without a
 current reading of `controlType` the last known value applies, so the climate
-becomes controllable again only after a reading of another control type. The
-individual entities of the circuit keep their own rules. This is expected,
+becomes controllable again only after a reading of another control type.
+Since 0.9.2 the manual setpoint, the operating mode and their rows in the
+controls dialog follow the same rule: before each change they read the
+control type and the setting itself again, nothing is changed on
+`constants`, and the limits come from that reading. This is expected,
 untested on a real device.
 
 I show room temperature only from that circuit's valid `roomtemperature`
@@ -412,7 +415,9 @@ response_variable: result
 ```
 
 `level` is a level key (see the sensor attribute `allowed_levels`) or, for
-programs with temperatures, a number such as `21.5`. `expected` (optional)
+programs with temperatures, a number such as `21.5`. Quotes are safest in
+YAML; an unquoted `on`/`off` and a time such as `22:00`, which YAML turns
+into a boolean and a number, are understood as well. `expected` (optional)
 lists the switch points the program must hold now; otherwise nothing is
 sent. The base of every change is a fresh reading of the program; it is
 read a second time right before the single PUT, and a change in between
@@ -602,8 +607,11 @@ Klimaentität den Kreis dann nur an: kein Sollwert, keine andere Betriebsart,
 kein Ausschalten; ein Befehl wird vor jeder Anfrage abgewiesen. Das gilt für
 jedes Gateway, das diese Regelungsart meldet. Ohne aktuelle Lesung von
 `controlType` gilt der zuletzt bekannte Wert; bedienbar wird die
-Klimaentität erst wieder nach einer Lesung einer anderen Regelungsart. Die
-Einzelentitäten folgen weiter ihren eigenen Regeln. Erwartet, aber an einem
+Klimaentität erst wieder nach einer Lesung einer anderen Regelungsart. Seit
+0.9.2 folgen der manuelle Sollwert, die Betriebsart und ihre Zeilen im
+Bedien-Dialog derselben Regel: Vor jeder Änderung lesen sie die
+Regelungsart und die Einstellung selbst neu, bei `constants` wird nichts
+geändert, und die Grenzen kommen aus dieser Lesung. Erwartet, aber an einem
 echten Gerät ungetestet.
 
 Seit 0.9.2 lese ich `controlType` vor jedem Schreiben der Klimaentität und
@@ -849,7 +857,10 @@ erhalten keine Namenssteuerung. Erwartet, ungetestet an einer echten Anlage.
 Die erste Aktion der Integration setzt die Schaltpunkte eines oder mehrerer
 Programm-Sensoren aus Automationen und Skripten (Beispiel im englischen
 Teil). `level` ist eine Stufe (Attribut `allowed_levels`) oder bei
-Programmen mit Temperaturen eine Zahl wie `21.5`. Grundlage ist immer eine
+Programmen mit Temperaturen eine Zahl wie `21.5`. Anführungszeichen sind in
+YAML am sichersten; ein `on`/`off` oder eine Zeit wie `22:00` ohne
+Anführungszeichen, die YAML zu einem Wahrheitswert bzw. einer Zahl macht,
+werden ebenfalls verstanden. Grundlage ist immer eine
 frische Lesung; direkt vor dem einzigen PUT wird das Programm ein zweites
 Mal gelesen, eine Änderung dazwischen sendet nichts. Es gelten dieselben
 Regeln wie im Dialog. Die Antwort enthält je Ziel `result` (`sent`,
