@@ -65,9 +65,10 @@ installation.
 ## Radio room devices
 
 Each radio room device below `/devices/<id>` that reports them gets two
-diagnostic entities: **Battery low** (binary sensor, enabled; on for `low`,
-off for `ok`, any other text stays unknown and is shown as `reported_state`
-when the device offers it) and **Radio signal** (sensor in dB, disabled by
+diagnostic entities: **Battery low** (binary sensor, enabled; on for
+`BAT_LOW` and `BAT_TOO_LOW`, off for `BAT_NORMAL`; any other state such as
+`NO_BAT` or `BAT_FOTA_FORBIDDEN` stays unknown and is shown as
+`reported_state` when the device offers it) and **Radio signal** (sensor in dB, disabled by
 default). Room controllers keep their own device entities. Expected, not yet
 confirmed on a real installation.
 

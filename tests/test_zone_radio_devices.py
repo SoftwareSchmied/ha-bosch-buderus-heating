@@ -32,10 +32,24 @@ from custom_components.bosch_buderus_heating.zone_radio_devices import (
 )
 from tests.ha_test_helpers import MockConfigEntry
 
-BATTERY_VALUES = ["ok", "low", "critical", "empty", "unknown"]
+# The allowed values of a real device (the local API examples), plus the
+# further ones the manufacturer's app knows and plain words.
+BATTERY_VALUES = [
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW",
+    "BAT_MEDIUM",
+    "BAT_UNKNOWN",
+    "NOT_BAT",
+    "ok",
+    "low",
+    "critical",
+]
 
 
-def battery(device="device1", value="ok", **extra):
+def battery(device="device1", value="BAT_NORMAL", **extra):
     return parse_resource(
         {
             "id": f"/devices/{device}/battery",
@@ -83,9 +97,17 @@ def show(coordinator, *resources):
 @pytest.mark.parametrize(
     ("value", "expected", "reported"),
     [
+        ("BAT_NORMAL", False, "BAT_NORMAL"),
+        ("BAT_LOW", True, "BAT_LOW"),
+        ("BAT_TOO_LOW", True, "BAT_TOO_LOW"),
+        ("BAT_MEDIUM", None, "BAT_MEDIUM"),
+        ("NO_BAT", None, "NO_BAT"),
+        ("NOT_BAT", None, "NOT_BAT"),
+        ("BAT_FOTA_FORBIDDEN", None, "BAT_FOTA_FORBIDDEN"),
+        ("BAT_UNKNOWN", None, "BAT_UNKNOWN"),
         ("ok", False, "ok"),
         ("low", True, "low"),
-        ("unknown", None, "unknown"),
+        ("bat_too_low", True, None),  # any case; not offered as written
         ("critical", None, "critical"),
         ("not offered", None, None),
     ],

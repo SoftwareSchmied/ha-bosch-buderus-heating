@@ -1,12 +1,15 @@
 """Battery and radio signal of the radio room devices of a zone controller.
 
 A ConnectKey zone controller (for example an MX400) reports each radio room
-device below ``/devices/<id>`` with ``battery`` (a text such as ``ok`` or
-``low``) and ``signal`` (a level in dB). Room controllers (RRC) report their
-devices in a list of their own and keep their own entities.
+device below ``/devices/<id>`` with ``battery`` (a state such as
+``BAT_NORMAL`` or ``BAT_LOW``) and ``signal`` (a level in dB). Room
+controllers (RRC) report their devices in a list of their own and keep their
+own entities.
 
 The battery is a diagnostic binary sensor, enabled by default as a warning:
-on for ``low``, off for ``ok``; any other text stays unknown and is shown as
+on for ``BAT_LOW`` and ``BAT_TOO_LOW``, off for ``BAT_NORMAL`` (``low`` and
+``ok`` as well; any case). Any other state (for example ``NO_BAT``,
+``BAT_MEDIUM`` or ``BAT_FOTA_FORBIDDEN``) stays unknown and is shown as
 ``reported_state`` when the device offers it. The signal is a diagnostic
 sensor in dB, disabled by default. Expected, untested on a real device.
 """
@@ -45,8 +48,9 @@ else:
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 _DEVICE_LEAF: Final = re.compile(r"^/devices/(?!list$)([^/]+)/(battery|signal)$")
-BATTERY_LOW: Final = "low"
-BATTERY_OK: Final = "ok"
+# The states the devices report (their allowed values), casefolded.
+BATTERY_LOW: Final = frozenset({"bat_low", "bat_too_low", "low"})
+BATTERY_OK: Final = frozenset({"bat_normal", "ok"})
 # Plausible limits of a radio level in dB; anything else is no reading.
 _SIGNAL_RANGE: Final = (-200.0, 200.0)
 
@@ -133,9 +137,10 @@ class ZoneRadioBatteryBinarySensor(ZoneRadioEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         state = battery_reading(self._resource)
-        if state == BATTERY_LOW:
+        key = state.casefold() if state is not None else None
+        if key in BATTERY_LOW:
             return True
-        return False if state == BATTERY_OK else None
+        return False if key in BATTERY_OK else None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

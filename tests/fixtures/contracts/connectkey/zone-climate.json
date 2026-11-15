@@ -1024,14 +1024,14 @@
   {
    "id": "/devices/device1/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1170,14 +1170,14 @@
   {
    "id": "/devices/device2/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1316,14 +1316,14 @@
   {
    "id": "/devices/device3/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1462,14 +1462,14 @@
   {
    "id": "/devices/device4/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1608,14 +1608,14 @@
   {
    "id": "/devices/device5/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1754,14 +1754,14 @@
   {
    "id": "/devices/device6/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -1900,14 +1900,14 @@
   {
    "id": "/devices/device7/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -2046,14 +2046,14 @@
   {
    "id": "/devices/device8/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -2192,14 +2192,14 @@
   {
    "id": "/devices/device9/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -2338,14 +2338,14 @@
   {
    "id": "/devices/device10/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -2484,14 +2484,14 @@
   {
    "id": "/devices/device11/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
@@ -2630,14 +2630,14 @@
   {
    "id": "/devices/device12/battery",
    "type": "stringValue",
-   "value": "ok",
+   "value": "BAT_NORMAL",
    "writeable": false,
    "allowedValues": [
-    "ok",
-    "low",
-    "critical",
-    "empty",
-    "unknown"
+    "NO_BAT",
+    "BAT_NORMAL",
+    "BAT_FOTA_FORBIDDEN",
+    "BAT_LOW",
+    "BAT_TOO_LOW"
    ]
   },
   {
