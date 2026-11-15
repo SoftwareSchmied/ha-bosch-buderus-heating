@@ -1,0 +1,3845 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "shape_of_a_real_diagnostics_report",
+  "physical_device_verified": false,
+  "firmware": null,
+  "capture_date": null,
+  "contract": "MX400 zones behind a K40 gateway: 8 zones (numbers with gaps), 12 radio room devices that refuse the same 8 leaves each, a second heating circuit whose directory is refused, refused zone heating/cooling/program directories with readable heating leaves. Every value is synthetic; anything not listed answers HTTP 404."
+ },
+ "resources": [
+  {
+   "id": "/notifications",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/dhwCircuits",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/solarCircuits",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/ventilation",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/holidayMode/activeModes",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/holidayMode/configuration",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/holidayMode/list",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/brand"
+    },
+    {
+     "id": "/gateway/dataProcessing"
+    },
+    {
+     "id": "/gateway/dateTime"
+    },
+    {
+     "id": "/gateway/eth"
+    },
+    {
+     "id": "/gateway/logging"
+    },
+    {
+     "id": "/gateway/query"
+    },
+    {
+     "id": "/gateway/serialId"
+    },
+    {
+     "id": "/gateway/swPrefix"
+    },
+    {
+     "id": "/gateway/thirdPartyLicenseInformation"
+    },
+    {
+     "id": "/gateway/tosAccepted"
+    },
+    {
+     "id": "/gateway/tzInfo"
+    },
+    {
+     "id": "/gateway/update"
+    },
+    {
+     "id": "/gateway/uuid"
+    },
+    {
+     "id": "/gateway/versionFirmware"
+    },
+    {
+     "id": "/gateway/versionHardware"
+    },
+    {
+     "id": "/gateway/wifi"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/brand",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/dateTime",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/serialId",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/swPrefix",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/tosAccepted",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/uuid",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/versionFirmware",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/versionHardware",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/thirdPartyLicenseInformation",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/dataProcessing/status",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/tzInfo",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/tzInfo/timeZone"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/tzInfo/timeZone",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/update",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/update/report"
+    },
+    {
+     "id": "/gateway/update/status"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/update/status",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/wifi",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/wifi/ip"
+    },
+    {
+     "id": "/gateway/wifi/mac"
+    },
+    {
+     "id": "/gateway/wifi/ssid"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/wifi/ip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/wifi/ip/ipv4"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/wifi/ip/ipv4",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/wifi/mac",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/gateway/wifi/ssid",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/awayMode"
+    },
+    {
+     "id": "/system/brand"
+    },
+    {
+     "id": "/system/bus"
+    },
+    {
+     "id": "/system/canUds"
+    },
+    {
+     "id": "/system/components"
+    },
+    {
+     "id": "/system/country"
+    },
+    {
+     "id": "/system/dampedOutdoorTemp"
+    },
+    {
+     "id": "/system/dateTime"
+    },
+    {
+     "id": "/system/iSRC"
+    },
+    {
+     "id": "/system/info"
+    },
+    {
+     "id": "/system/minOutdoorTemp"
+    },
+    {
+     "id": "/system/powerLimitation"
+    },
+    {
+     "id": "/system/sensors"
+    },
+    {
+     "id": "/system/switchPrograms"
+    },
+    {
+     "id": "/system/type"
+    },
+    {
+     "id": "/system/update"
+    },
+    {
+     "id": "/system/variableTariff"
+    }
+   ]
+  },
+  {
+   "id": "/system/awayMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/awayMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/system/awayMode/enabled",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": false,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/system/brand",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/bus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/country",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/dateTime",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/info",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/type",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/iSRC/installationStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/iSRC/supportStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/sensors",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors/temperatures"
+    }
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors/temperatures/outdoorTemperatureSource"
+    },
+    {
+     "id": "/system/sensors/temperatures/outdoor_t1"
+    }
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures/outdoorTemperatureSource",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/system/sensors/temperatures/outdoor_t1",
+   "type": "floatValue",
+   "value": 4.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/system/variableTariff",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/variableTariff/supportStatus"
+    }
+   ]
+  },
+  {
+   "id": "/system/variableTariff/supportStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1"
+    },
+    {
+     "id": "/heatingCircuits/hc2"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1/activeSwitchProgram"
+    },
+    {
+     "id": "/heatingCircuits/hc1/controlType"
+    },
+    {
+     "id": "/heatingCircuits/hc1/currentSuWiMode"
+    },
+    {
+     "id": "/heatingCircuits/hc1/heatingType"
+    },
+    {
+     "id": "/heatingCircuits/hc1/maxFlowTemp"
+    },
+    {
+     "id": "/heatingCircuits/hc1/name"
+    },
+    {
+     "id": "/heatingCircuits/hc1/operationMode"
+    },
+    {
+     "id": "/heatingCircuits/hc1/overallStatus"
+    },
+    {
+     "id": "/heatingCircuits/hc1/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/activeSwitchProgram",
+   "type": "stringValue",
+   "value": "A",
+   "writeable": false,
+   "allowedValues": [
+    "A",
+    "B"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/controlType",
+   "type": "stringValue",
+   "value": "ISRC",
+   "writeable": false,
+   "allowedValues": [
+    "outdoor",
+    "room",
+    "ISRC",
+    "constants"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/currentSuWiMode",
+   "type": "stringValue",
+   "value": "forced",
+   "writeable": false,
+   "allowedValues": [
+    "off",
+    "forced",
+    "cooling"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/heatingType",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/maxFlowTemp",
+   "type": "floatValue",
+   "value": 55.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/name",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/overallStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/switchPrograms",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1/switchPrograms/A"
+    },
+    {
+     "id": "/heatingCircuits/hc1/switchPrograms/nameA"
+    },
+    {
+     "id": "/heatingCircuits/hc1/switchPrograms/nameB"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/switchPrograms/A",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/switchPrograms/nameB",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc1/temperatureLevels",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/heatingCircuits/hc2/activeSwitchProgram",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/heatingType",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/name",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/overallStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/controlType",
+   "type": "stringValue",
+   "value": "room",
+   "writeable": false,
+   "allowedValues": [
+    "outdoor",
+    "room",
+    "ISRC",
+    "constants",
+    "power"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/currentSuWiMode",
+   "type": "stringValue",
+   "value": "forced",
+   "writeable": false,
+   "allowedValues": [
+    "off",
+    "forced",
+    "cooling"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/heatingCircuits/hc2/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/heatingCircuits/hc2/roomtemperature",
+   "type": "floatValue",
+   "value": 21.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/awayTemperature",
+   "type": "floatValue",
+   "value": 15.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/boostDuration",
+   "type": "floatValue",
+   "value": 4.0,
+   "unitOfMeasure": "h",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/boostMode",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": false,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/boostTemperature",
+   "type": "floatValue",
+   "value": 23.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/setpointOptimization",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/maxFlowTemp",
+   "type": "floatValue",
+   "value": 40.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatingCircuits/hc2/temperatureLevels",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/heatingCircuits/hc2/switchPrograms",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc2/switchPrograms/A"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/switchPrograms/A",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatSources/actualHeatDemand"
+    },
+    {
+     "id": "/heatSources/actualModulation"
+    },
+    {
+     "id": "/heatSources/actualSupplyTemperature"
+    },
+    {
+     "id": "/heatSources/chStatus"
+    },
+    {
+     "id": "/heatSources/currentEmergencyMode"
+    },
+    {
+     "id": "/heatSources/emon"
+    },
+    {
+     "id": "/heatSources/flameStatus"
+    },
+    {
+     "id": "/heatSources/hs1"
+    },
+    {
+     "id": "/heatSources/hs2"
+    },
+    {
+     "id": "/heatSources/hs3"
+    },
+    {
+     "id": "/heatSources/hs4"
+    },
+    {
+     "id": "/heatSources/info"
+    },
+    {
+     "id": "/heatSources/returnTemperature"
+    },
+    {
+     "id": "/heatSources/standbyMode"
+    },
+    {
+     "id": "/heatSources/systemPressure"
+    },
+    {
+     "id": "/heatSources/systemPressureRange"
+    },
+    {
+     "id": "/heatSources/workingTime"
+    }
+   ]
+  },
+  {
+   "id": "/heatSources/chStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/currentEmergencyMode",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/flameStatus",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/info",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/standbyMode",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/systemPressureRange",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/actualHeatDemand",
+   "type": "floatValue",
+   "value": 30.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/actualModulation",
+   "type": "floatValue",
+   "value": 30.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/actualSupplyTemperature",
+   "type": "floatValue",
+   "value": 35.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/returnTemperature",
+   "type": "floatValue",
+   "value": 35.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/systemPressure",
+   "type": "floatValue",
+   "value": 1.5,
+   "unitOfMeasure": "bar",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/numberOfStarts",
+   "type": "floatValue",
+   "value": 1000.0,
+   "unitOfMeasure": "",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/hs1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatSources/hs1/pumpVolumeFlow"
+    },
+    {
+     "id": "/heatSources/hs1/type"
+    },
+    {
+     "id": "/heatSources/hs1/workingTime"
+    }
+   ]
+  },
+  {
+   "id": "/heatSources/hs1/type",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/heatSources/hs1/workingTime",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/heatSources/hs1/numberOfStarts",
+   "type": "floatValue",
+   "value": 1000.0,
+   "unitOfMeasure": "",
+   "writeable": false
+  },
+  {
+   "id": "/devices",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device1"
+    },
+    {
+     "id": "/devices/device2"
+    },
+    {
+     "id": "/devices/device3"
+    },
+    {
+     "id": "/devices/device4"
+    },
+    {
+     "id": "/devices/device5"
+    },
+    {
+     "id": "/devices/device6"
+    },
+    {
+     "id": "/devices/device7"
+    },
+    {
+     "id": "/devices/device8"
+    },
+    {
+     "id": "/devices/device9"
+    },
+    {
+     "id": "/devices/device10"
+    },
+    {
+     "id": "/devices/device11"
+    },
+    {
+     "id": "/devices/device12"
+    },
+    {
+     "id": "/devices/device13"
+    },
+    {
+     "id": "/devices/device14"
+    },
+    {
+     "id": "/devices/device15"
+    },
+    {
+     "id": "/devices/device16"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device1/actualHumidity"
+    },
+    {
+     "id": "/devices/device1/actuatorModulation"
+    },
+    {
+     "id": "/devices/device1/actuatorPower"
+    },
+    {
+     "id": "/devices/device1/assignedHC"
+    },
+    {
+     "id": "/devices/device1/battery"
+    },
+    {
+     "id": "/devices/device1/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device1/errors"
+    },
+    {
+     "id": "/devices/device1/operationMode"
+    },
+    {
+     "id": "/devices/device1/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device1/rfErrorCause"
+    },
+    {
+     "id": "/devices/device1/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device1/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device1/roomtemperature"
+    },
+    {
+     "id": "/devices/device1/sgtin"
+    },
+    {
+     "id": "/devices/device1/signal"
+    },
+    {
+     "id": "/devices/device1/signalIcon"
+    },
+    {
+     "id": "/devices/device1/type"
+    },
+    {
+     "id": "/devices/device1/versionFirmware"
+    },
+    {
+     "id": "/devices/device1/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device1/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device1/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device1/zoneId",
+   "type": "integerValue",
+   "value": 1,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/actualHumidity"
+    },
+    {
+     "id": "/devices/device2/actuatorModulation"
+    },
+    {
+     "id": "/devices/device2/actuatorPower"
+    },
+    {
+     "id": "/devices/device2/assignedHC"
+    },
+    {
+     "id": "/devices/device2/battery"
+    },
+    {
+     "id": "/devices/device2/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device2/errors"
+    },
+    {
+     "id": "/devices/device2/operationMode"
+    },
+    {
+     "id": "/devices/device2/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device2/rfErrorCause"
+    },
+    {
+     "id": "/devices/device2/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device2/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device2/roomtemperature"
+    },
+    {
+     "id": "/devices/device2/sgtin"
+    },
+    {
+     "id": "/devices/device2/signal"
+    },
+    {
+     "id": "/devices/device2/signalIcon"
+    },
+    {
+     "id": "/devices/device2/type"
+    },
+    {
+     "id": "/devices/device2/versionFirmware"
+    },
+    {
+     "id": "/devices/device2/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device2/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device2/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device2/zoneId",
+   "type": "integerValue",
+   "value": 1,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device3",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/actualHumidity"
+    },
+    {
+     "id": "/devices/device3/actuatorModulation"
+    },
+    {
+     "id": "/devices/device3/actuatorPower"
+    },
+    {
+     "id": "/devices/device3/assignedHC"
+    },
+    {
+     "id": "/devices/device3/battery"
+    },
+    {
+     "id": "/devices/device3/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device3/errors"
+    },
+    {
+     "id": "/devices/device3/operationMode"
+    },
+    {
+     "id": "/devices/device3/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device3/rfErrorCause"
+    },
+    {
+     "id": "/devices/device3/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device3/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device3/roomtemperature"
+    },
+    {
+     "id": "/devices/device3/sgtin"
+    },
+    {
+     "id": "/devices/device3/signal"
+    },
+    {
+     "id": "/devices/device3/signalIcon"
+    },
+    {
+     "id": "/devices/device3/type"
+    },
+    {
+     "id": "/devices/device3/versionFirmware"
+    },
+    {
+     "id": "/devices/device3/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device3/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device3/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device3/zoneId",
+   "type": "integerValue",
+   "value": 2,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/actualHumidity"
+    },
+    {
+     "id": "/devices/device4/actuatorModulation"
+    },
+    {
+     "id": "/devices/device4/actuatorPower"
+    },
+    {
+     "id": "/devices/device4/assignedHC"
+    },
+    {
+     "id": "/devices/device4/battery"
+    },
+    {
+     "id": "/devices/device4/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device4/errors"
+    },
+    {
+     "id": "/devices/device4/operationMode"
+    },
+    {
+     "id": "/devices/device4/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device4/rfErrorCause"
+    },
+    {
+     "id": "/devices/device4/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device4/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device4/roomtemperature"
+    },
+    {
+     "id": "/devices/device4/sgtin"
+    },
+    {
+     "id": "/devices/device4/signal"
+    },
+    {
+     "id": "/devices/device4/signalIcon"
+    },
+    {
+     "id": "/devices/device4/type"
+    },
+    {
+     "id": "/devices/device4/versionFirmware"
+    },
+    {
+     "id": "/devices/device4/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device4/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device4/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device4/zoneId",
+   "type": "integerValue",
+   "value": 2,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device5",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/actualHumidity"
+    },
+    {
+     "id": "/devices/device5/actuatorModulation"
+    },
+    {
+     "id": "/devices/device5/actuatorPower"
+    },
+    {
+     "id": "/devices/device5/assignedHC"
+    },
+    {
+     "id": "/devices/device5/battery"
+    },
+    {
+     "id": "/devices/device5/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device5/errors"
+    },
+    {
+     "id": "/devices/device5/operationMode"
+    },
+    {
+     "id": "/devices/device5/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device5/rfErrorCause"
+    },
+    {
+     "id": "/devices/device5/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device5/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device5/roomtemperature"
+    },
+    {
+     "id": "/devices/device5/sgtin"
+    },
+    {
+     "id": "/devices/device5/signal"
+    },
+    {
+     "id": "/devices/device5/signalIcon"
+    },
+    {
+     "id": "/devices/device5/type"
+    },
+    {
+     "id": "/devices/device5/versionFirmware"
+    },
+    {
+     "id": "/devices/device5/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device5/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device5/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device5/zoneId",
+   "type": "integerValue",
+   "value": 4,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device6",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/actualHumidity"
+    },
+    {
+     "id": "/devices/device6/actuatorModulation"
+    },
+    {
+     "id": "/devices/device6/actuatorPower"
+    },
+    {
+     "id": "/devices/device6/assignedHC"
+    },
+    {
+     "id": "/devices/device6/battery"
+    },
+    {
+     "id": "/devices/device6/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device6/errors"
+    },
+    {
+     "id": "/devices/device6/operationMode"
+    },
+    {
+     "id": "/devices/device6/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device6/rfErrorCause"
+    },
+    {
+     "id": "/devices/device6/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device6/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device6/roomtemperature"
+    },
+    {
+     "id": "/devices/device6/sgtin"
+    },
+    {
+     "id": "/devices/device6/signal"
+    },
+    {
+     "id": "/devices/device6/signalIcon"
+    },
+    {
+     "id": "/devices/device6/type"
+    },
+    {
+     "id": "/devices/device6/versionFirmware"
+    },
+    {
+     "id": "/devices/device6/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device6/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device6/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device6/zoneId",
+   "type": "integerValue",
+   "value": 5,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device7",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/actualHumidity"
+    },
+    {
+     "id": "/devices/device7/actuatorModulation"
+    },
+    {
+     "id": "/devices/device7/actuatorPower"
+    },
+    {
+     "id": "/devices/device7/assignedHC"
+    },
+    {
+     "id": "/devices/device7/battery"
+    },
+    {
+     "id": "/devices/device7/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device7/errors"
+    },
+    {
+     "id": "/devices/device7/operationMode"
+    },
+    {
+     "id": "/devices/device7/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device7/rfErrorCause"
+    },
+    {
+     "id": "/devices/device7/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device7/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device7/roomtemperature"
+    },
+    {
+     "id": "/devices/device7/sgtin"
+    },
+    {
+     "id": "/devices/device7/signal"
+    },
+    {
+     "id": "/devices/device7/signalIcon"
+    },
+    {
+     "id": "/devices/device7/type"
+    },
+    {
+     "id": "/devices/device7/versionFirmware"
+    },
+    {
+     "id": "/devices/device7/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device7/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device7/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device7/zoneId",
+   "type": "integerValue",
+   "value": 5,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device8",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/actualHumidity"
+    },
+    {
+     "id": "/devices/device8/actuatorModulation"
+    },
+    {
+     "id": "/devices/device8/actuatorPower"
+    },
+    {
+     "id": "/devices/device8/assignedHC"
+    },
+    {
+     "id": "/devices/device8/battery"
+    },
+    {
+     "id": "/devices/device8/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device8/errors"
+    },
+    {
+     "id": "/devices/device8/operationMode"
+    },
+    {
+     "id": "/devices/device8/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device8/rfErrorCause"
+    },
+    {
+     "id": "/devices/device8/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device8/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device8/roomtemperature"
+    },
+    {
+     "id": "/devices/device8/sgtin"
+    },
+    {
+     "id": "/devices/device8/signal"
+    },
+    {
+     "id": "/devices/device8/signalIcon"
+    },
+    {
+     "id": "/devices/device8/type"
+    },
+    {
+     "id": "/devices/device8/versionFirmware"
+    },
+    {
+     "id": "/devices/device8/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device8/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device8/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device8/zoneId",
+   "type": "integerValue",
+   "value": 6,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device9",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/actualHumidity"
+    },
+    {
+     "id": "/devices/device9/actuatorModulation"
+    },
+    {
+     "id": "/devices/device9/actuatorPower"
+    },
+    {
+     "id": "/devices/device9/assignedHC"
+    },
+    {
+     "id": "/devices/device9/battery"
+    },
+    {
+     "id": "/devices/device9/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device9/errors"
+    },
+    {
+     "id": "/devices/device9/operationMode"
+    },
+    {
+     "id": "/devices/device9/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device9/rfErrorCause"
+    },
+    {
+     "id": "/devices/device9/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device9/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device9/roomtemperature"
+    },
+    {
+     "id": "/devices/device9/sgtin"
+    },
+    {
+     "id": "/devices/device9/signal"
+    },
+    {
+     "id": "/devices/device9/signalIcon"
+    },
+    {
+     "id": "/devices/device9/type"
+    },
+    {
+     "id": "/devices/device9/versionFirmware"
+    },
+    {
+     "id": "/devices/device9/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device9/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device9/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device9/zoneId",
+   "type": "integerValue",
+   "value": 7,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device10",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/actualHumidity"
+    },
+    {
+     "id": "/devices/device10/actuatorModulation"
+    },
+    {
+     "id": "/devices/device10/actuatorPower"
+    },
+    {
+     "id": "/devices/device10/assignedHC"
+    },
+    {
+     "id": "/devices/device10/battery"
+    },
+    {
+     "id": "/devices/device10/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device10/errors"
+    },
+    {
+     "id": "/devices/device10/operationMode"
+    },
+    {
+     "id": "/devices/device10/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device10/rfErrorCause"
+    },
+    {
+     "id": "/devices/device10/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device10/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device10/roomtemperature"
+    },
+    {
+     "id": "/devices/device10/sgtin"
+    },
+    {
+     "id": "/devices/device10/signal"
+    },
+    {
+     "id": "/devices/device10/signalIcon"
+    },
+    {
+     "id": "/devices/device10/type"
+    },
+    {
+     "id": "/devices/device10/versionFirmware"
+    },
+    {
+     "id": "/devices/device10/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device10/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device10/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device10/zoneId",
+   "type": "integerValue",
+   "value": 8,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device11",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/actualHumidity"
+    },
+    {
+     "id": "/devices/device11/actuatorModulation"
+    },
+    {
+     "id": "/devices/device11/actuatorPower"
+    },
+    {
+     "id": "/devices/device11/assignedHC"
+    },
+    {
+     "id": "/devices/device11/battery"
+    },
+    {
+     "id": "/devices/device11/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device11/errors"
+    },
+    {
+     "id": "/devices/device11/operationMode"
+    },
+    {
+     "id": "/devices/device11/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device11/rfErrorCause"
+    },
+    {
+     "id": "/devices/device11/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device11/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device11/roomtemperature"
+    },
+    {
+     "id": "/devices/device11/sgtin"
+    },
+    {
+     "id": "/devices/device11/signal"
+    },
+    {
+     "id": "/devices/device11/signalIcon"
+    },
+    {
+     "id": "/devices/device11/type"
+    },
+    {
+     "id": "/devices/device11/versionFirmware"
+    },
+    {
+     "id": "/devices/device11/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device11/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device11/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device11/zoneId",
+   "type": "integerValue",
+   "value": 8,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device12",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/actualHumidity"
+    },
+    {
+     "id": "/devices/device12/actuatorModulation"
+    },
+    {
+     "id": "/devices/device12/actuatorPower"
+    },
+    {
+     "id": "/devices/device12/assignedHC"
+    },
+    {
+     "id": "/devices/device12/battery"
+    },
+    {
+     "id": "/devices/device12/currentRoomSetpoint"
+    },
+    {
+     "id": "/devices/device12/errors"
+    },
+    {
+     "id": "/devices/device12/operationMode"
+    },
+    {
+     "id": "/devices/device12/rfConnectionStatus"
+    },
+    {
+     "id": "/devices/device12/rfErrorCause"
+    },
+    {
+     "id": "/devices/device12/rfPairedStatus"
+    },
+    {
+     "id": "/devices/device12/rfTimeofConnectionLost"
+    },
+    {
+     "id": "/devices/device12/roomtemperature"
+    },
+    {
+     "id": "/devices/device12/sgtin"
+    },
+    {
+     "id": "/devices/device12/signal"
+    },
+    {
+     "id": "/devices/device12/signalIcon"
+    },
+    {
+     "id": "/devices/device12/type"
+    },
+    {
+     "id": "/devices/device12/versionFirmware"
+    },
+    {
+     "id": "/devices/device12/zoneId"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/actualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/assignedHC",
+   "type": "stringValue",
+   "value": "hc1",
+   "writeable": false,
+   "allowedValues": [
+    "hc1",
+    "hc2",
+    "hc3",
+    "hc4",
+    "none"
+   ]
+  },
+  {
+   "id": "/devices/device12/battery",
+   "type": "stringValue",
+   "value": "ok",
+   "writeable": false,
+   "allowedValues": [
+    "ok",
+    "low",
+    "critical",
+    "empty",
+    "unknown"
+   ]
+  },
+  {
+   "id": "/devices/device12/errors",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/rfTimeofConnectionLost",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/roomtemperature",
+   "type": "floatValue",
+   "value": 20.5,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/sgtin",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/signal",
+   "type": "floatValue",
+   "value": -60.0,
+   "unitOfMeasure": "db",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/type",
+   "type": "stringValue",
+   "value": "RT10RF",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/versionFirmware",
+   "type": "stringValue",
+   "value": "01.00.00",
+   "writeable": false
+  },
+  {
+   "id": "/devices/device12/zoneId",
+   "type": "integerValue",
+   "value": 10,
+   "writeable": true
+  },
+  {
+   "id": "/devices/device13",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/devices/device14",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/devices/device15",
+   "type": "refEnum",
+   "references": []
+  },
+  {
+   "id": "/zones",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/configuration"
+    },
+    {
+     "id": "/zones/list"
+    },
+    {
+     "id": "/zones/zone1"
+    },
+    {
+     "id": "/zones/zone2"
+    },
+    {
+     "id": "/zones/zone4"
+    },
+    {
+     "id": "/zones/zone5"
+    },
+    {
+     "id": "/zones/zone6"
+    },
+    {
+     "id": "/zones/zone7"
+    },
+    {
+     "id": "/zones/zone8"
+    },
+    {
+     "id": "/zones/zone10"
+    }
+   ]
+  },
+  {
+   "id": "/zones/configuration",
+   "type": "stringValue",
+   "value": "synthetic",
+   "writeable": false
+  },
+  {
+   "id": "/zones/list",
+   "type": "zoneArray",
+   "values": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    7,
+    8,
+    10
+   ],
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone1/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone1/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone1/childLock"
+    },
+    {
+     "id": "/zones/zone1/cooling"
+    },
+    {
+     "id": "/zones/zone1/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone1/heating"
+    },
+    {
+     "id": "/zones/zone1/icon"
+    },
+    {
+     "id": "/zones/zone1/name"
+    },
+    {
+     "id": "/zones/zone1/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone1/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone1/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone1/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone1/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone1/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone1/name",
+   "type": "stringValue",
+   "value": "Zone 1",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone1/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone1/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone1/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone2/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone2/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone2/childLock"
+    },
+    {
+     "id": "/zones/zone2/cooling"
+    },
+    {
+     "id": "/zones/zone2/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone2/heating"
+    },
+    {
+     "id": "/zones/zone2/icon"
+    },
+    {
+     "id": "/zones/zone2/name"
+    },
+    {
+     "id": "/zones/zone2/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone2/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone2/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone2/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone2/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone2/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone2/name",
+   "type": "stringValue",
+   "value": "Zone 2",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone2/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone2/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 25,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone2/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 25,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone4/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone4/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone4/childLock"
+    },
+    {
+     "id": "/zones/zone4/cooling"
+    },
+    {
+     "id": "/zones/zone4/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone4/heating"
+    },
+    {
+     "id": "/zones/zone4/icon"
+    },
+    {
+     "id": "/zones/zone4/name"
+    },
+    {
+     "id": "/zones/zone4/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone4/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone4/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone4/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone4/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone4/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone4/name",
+   "type": "stringValue",
+   "value": "Zone 4",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone4/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": false,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone4/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone4/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": false,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone5",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone5/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone5/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone5/childLock"
+    },
+    {
+     "id": "/zones/zone5/cooling"
+    },
+    {
+     "id": "/zones/zone5/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone5/heating"
+    },
+    {
+     "id": "/zones/zone5/icon"
+    },
+    {
+     "id": "/zones/zone5/name"
+    },
+    {
+     "id": "/zones/zone5/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone5/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone5/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone5/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone5/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone5/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone5/name",
+   "type": "stringValue",
+   "value": "Zone 5",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone5/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone5/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone5/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone6",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone6/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone6/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone6/childLock"
+    },
+    {
+     "id": "/zones/zone6/cooling"
+    },
+    {
+     "id": "/zones/zone6/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone6/heating"
+    },
+    {
+     "id": "/zones/zone6/icon"
+    },
+    {
+     "id": "/zones/zone6/name"
+    },
+    {
+     "id": "/zones/zone6/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone6/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone6/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone6/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone6/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone6/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone6/name",
+   "type": "stringValue",
+   "value": "Zone 6",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone6/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone6/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone6/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone7",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone7/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone7/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone7/childLock"
+    },
+    {
+     "id": "/zones/zone7/cooling"
+    },
+    {
+     "id": "/zones/zone7/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone7/heating"
+    },
+    {
+     "id": "/zones/zone7/icon"
+    },
+    {
+     "id": "/zones/zone7/name"
+    },
+    {
+     "id": "/zones/zone7/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone7/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone7/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone7/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone7/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone7/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone7/name",
+   "type": "stringValue",
+   "value": "Zone 7",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone7/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone7/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone7/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone8",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone8/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone8/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone8/childLock"
+    },
+    {
+     "id": "/zones/zone8/cooling"
+    },
+    {
+     "id": "/zones/zone8/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone8/heating"
+    },
+    {
+     "id": "/zones/zone8/icon"
+    },
+    {
+     "id": "/zones/zone8/name"
+    },
+    {
+     "id": "/zones/zone8/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone8/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone8/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone8/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone8/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone8/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone8/name",
+   "type": "stringValue",
+   "value": "Zone 8",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone8/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone8/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone8/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5
+  },
+  {
+   "id": "/zones/zone10",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zone10/averageActualHumidity"
+    },
+    {
+     "id": "/zones/zone10/averageCurrentTemperature"
+    },
+    {
+     "id": "/zones/zone10/childLock"
+    },
+    {
+     "id": "/zones/zone10/cooling"
+    },
+    {
+     "id": "/zones/zone10/currentRoomSetpoint"
+    },
+    {
+     "id": "/zones/zone10/heating"
+    },
+    {
+     "id": "/zones/zone10/icon"
+    },
+    {
+     "id": "/zones/zone10/name"
+    },
+    {
+     "id": "/zones/zone10/switchPrograms"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zone10/averageActualHumidity",
+   "type": "floatValue",
+   "value": 45.0,
+   "unitOfMeasure": "%",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone10/averageCurrentTemperature",
+   "type": "floatValue",
+   "value": 20.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone10/childLock",
+   "type": "stringValue",
+   "value": "off",
+   "writeable": true,
+   "allowedValues": [
+    "on",
+    "off"
+   ]
+  },
+  {
+   "id": "/zones/zone10/currentRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": false
+  },
+  {
+   "id": "/zones/zone10/icon",
+   "type": "stringValue",
+   "value": "living",
+   "writeable": true,
+   "allowedValues": [
+    "living",
+    "sleeping",
+    "kitchen"
+   ]
+  },
+  {
+   "id": "/zones/zone10/name",
+   "type": "stringValue",
+   "value": "Zone 10",
+   "writeable": true
+  },
+  {
+   "id": "/zones/zone10/heating/operationMode",
+   "type": "stringValue",
+   "value": "auto",
+   "writeable": true,
+   "allowedValues": [
+    "off",
+    "manual",
+    "auto"
+   ]
+  },
+  {
+   "id": "/zones/zone10/heating/manualRoomSetpoint",
+   "type": "floatValue",
+   "value": 21.0,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5,
+   "available": false
+  },
+  {
+   "id": "/zones/zone10/heating/temporaryRoomSetpoint",
+   "type": "floatValue",
+   "value": -1,
+   "unitOfMeasure": "C",
+   "writeable": true,
+   "minValue": 5,
+   "maxValue": 30,
+   "stepSize": 0.5,
+   "available": false
+  }
+ ],
+ "refused": [
+  "/devices/device1/actuatorModulation",
+  "/devices/device1/actuatorPower",
+  "/devices/device1/currentRoomSetpoint",
+  "/devices/device1/operationMode",
+  "/devices/device1/rfConnectionStatus",
+  "/devices/device1/rfErrorCause",
+  "/devices/device1/rfPairedStatus",
+  "/devices/device1/signalIcon",
+  "/devices/device10/actuatorModulation",
+  "/devices/device10/actuatorPower",
+  "/devices/device10/currentRoomSetpoint",
+  "/devices/device10/operationMode",
+  "/devices/device10/rfConnectionStatus",
+  "/devices/device10/rfErrorCause",
+  "/devices/device10/rfPairedStatus",
+  "/devices/device10/signalIcon",
+  "/devices/device11/actuatorModulation",
+  "/devices/device11/actuatorPower",
+  "/devices/device11/currentRoomSetpoint",
+  "/devices/device11/operationMode",
+  "/devices/device11/rfConnectionStatus",
+  "/devices/device11/rfErrorCause",
+  "/devices/device11/rfPairedStatus",
+  "/devices/device11/signalIcon",
+  "/devices/device12/actuatorModulation",
+  "/devices/device12/actuatorPower",
+  "/devices/device12/currentRoomSetpoint",
+  "/devices/device12/operationMode",
+  "/devices/device12/rfConnectionStatus",
+  "/devices/device12/rfErrorCause",
+  "/devices/device12/rfPairedStatus",
+  "/devices/device12/signalIcon",
+  "/devices/device16",
+  "/devices/device2/actuatorModulation",
+  "/devices/device2/actuatorPower",
+  "/devices/device2/currentRoomSetpoint",
+  "/devices/device2/operationMode",
+  "/devices/device2/rfConnectionStatus",
+  "/devices/device2/rfErrorCause",
+  "/devices/device2/rfPairedStatus",
+  "/devices/device2/signalIcon",
+  "/devices/device3/actuatorModulation",
+  "/devices/device3/actuatorPower",
+  "/devices/device3/currentRoomSetpoint",
+  "/devices/device3/operationMode",
+  "/devices/device3/rfConnectionStatus",
+  "/devices/device3/rfErrorCause",
+  "/devices/device3/rfPairedStatus",
+  "/devices/device3/signalIcon",
+  "/devices/device4/actuatorModulation",
+  "/devices/device4/actuatorPower",
+  "/devices/device4/currentRoomSetpoint",
+  "/devices/device4/operationMode",
+  "/devices/device4/rfConnectionStatus",
+  "/devices/device4/rfErrorCause",
+  "/devices/device4/rfPairedStatus",
+  "/devices/device4/signalIcon",
+  "/devices/device5/actuatorModulation",
+  "/devices/device5/actuatorPower",
+  "/devices/device5/currentRoomSetpoint",
+  "/devices/device5/operationMode",
+  "/devices/device5/rfConnectionStatus",
+  "/devices/device5/rfErrorCause",
+  "/devices/device5/rfPairedStatus",
+  "/devices/device5/signalIcon",
+  "/devices/device6/actuatorModulation",
+  "/devices/device6/actuatorPower",
+  "/devices/device6/currentRoomSetpoint",
+  "/devices/device6/operationMode",
+  "/devices/device6/rfConnectionStatus",
+  "/devices/device6/rfErrorCause",
+  "/devices/device6/rfPairedStatus",
+  "/devices/device6/signalIcon",
+  "/devices/device7/actuatorModulation",
+  "/devices/device7/actuatorPower",
+  "/devices/device7/currentRoomSetpoint",
+  "/devices/device7/operationMode",
+  "/devices/device7/rfConnectionStatus",
+  "/devices/device7/rfErrorCause",
+  "/devices/device7/rfPairedStatus",
+  "/devices/device7/signalIcon",
+  "/devices/device8/actuatorModulation",
+  "/devices/device8/actuatorPower",
+  "/devices/device8/currentRoomSetpoint",
+  "/devices/device8/operationMode",
+  "/devices/device8/rfConnectionStatus",
+  "/devices/device8/rfErrorCause",
+  "/devices/device8/rfPairedStatus",
+  "/devices/device8/signalIcon",
+  "/devices/device9/actuatorModulation",
+  "/devices/device9/actuatorPower",
+  "/devices/device9/currentRoomSetpoint",
+  "/devices/device9/operationMode",
+  "/devices/device9/rfConnectionStatus",
+  "/devices/device9/rfErrorCause",
+  "/devices/device9/rfPairedStatus",
+  "/devices/device9/signalIcon",
+  "/gateway/dataProcessing",
+  "/gateway/eth",
+  "/gateway/logging",
+  "/gateway/query",
+  "/gateway/update/report",
+  "/heatSources/additionalHeater/primary/status",
+  "/heatSources/emon",
+  "/heatSources/hs1/pumpVolumeFlow",
+  "/heatSources/hs2",
+  "/heatSources/hs3",
+  "/heatSources/hs4",
+  "/heatSources/workingTime",
+  "/heatingCircuits/hc1/cooling/manualRoomSetpoint",
+  "/heatingCircuits/hc1/cooling/temporaryRoomSetpoint",
+  "/heatingCircuits/hc1/openWindowDetection/status",
+  "/heatingCircuits/hc1/operationSetpoints",
+  "/heatingCircuits/hc1/pumpModulation",
+  "/heatingCircuits/hc2",
+  "/heatingCircuits/hc2/cooling/manualRoomSetpoint",
+  "/heatingCircuits/hc2/cooling/temporaryRoomSetpoint",
+  "/heatingCircuits/hc2/openWindowDetection/status",
+  "/heatingCircuits/hc2/operationSetpoints",
+  "/heatingCircuits/hc2/pumpModulation",
+  "/holidayMode/activated",
+  "/holidayMode/enabled",
+  "/pool",
+  "/pv",
+  "/system/canUds",
+  "/system/components",
+  "/system/dampedOutdoorTemp",
+  "/system/iSRC",
+  "/system/minOutdoorTemp",
+  "/system/powerLimitation",
+  "/system/switchPrograms",
+  "/system/update",
+  "/zones/zone1/cooling",
+  "/zones/zone1/cooling/manualRoomSetpoint",
+  "/zones/zone1/cooling/operationMode",
+  "/zones/zone1/cooling/temporaryRoomSetpoint",
+  "/zones/zone1/heating",
+  "/zones/zone1/switchPrograms",
+  "/zones/zone10/cooling",
+  "/zones/zone10/cooling/manualRoomSetpoint",
+  "/zones/zone10/cooling/operationMode",
+  "/zones/zone10/cooling/temporaryRoomSetpoint",
+  "/zones/zone10/heating",
+  "/zones/zone10/switchPrograms",
+  "/zones/zone2/cooling",
+  "/zones/zone2/cooling/manualRoomSetpoint",
+  "/zones/zone2/cooling/operationMode",
+  "/zones/zone2/cooling/temporaryRoomSetpoint",
+  "/zones/zone2/heating",
+  "/zones/zone2/switchPrograms",
+  "/zones/zone4/cooling",
+  "/zones/zone4/cooling/manualRoomSetpoint",
+  "/zones/zone4/cooling/operationMode",
+  "/zones/zone4/cooling/temporaryRoomSetpoint",
+  "/zones/zone4/heating",
+  "/zones/zone4/switchPrograms",
+  "/zones/zone5/cooling",
+  "/zones/zone5/cooling/manualRoomSetpoint",
+  "/zones/zone5/cooling/operationMode",
+  "/zones/zone5/cooling/temporaryRoomSetpoint",
+  "/zones/zone5/heating",
+  "/zones/zone5/switchPrograms",
+  "/zones/zone6/cooling",
+  "/zones/zone6/cooling/manualRoomSetpoint",
+  "/zones/zone6/cooling/operationMode",
+  "/zones/zone6/cooling/temporaryRoomSetpoint",
+  "/zones/zone6/heating",
+  "/zones/zone6/switchPrograms",
+  "/zones/zone7/cooling",
+  "/zones/zone7/cooling/manualRoomSetpoint",
+  "/zones/zone7/cooling/operationMode",
+  "/zones/zone7/cooling/temporaryRoomSetpoint",
+  "/zones/zone7/heating",
+  "/zones/zone7/switchPrograms",
+  "/zones/zone8/cooling",
+  "/zones/zone8/cooling/manualRoomSetpoint",
+  "/zones/zone8/cooling/operationMode",
+  "/zones/zone8/cooling/temporaryRoomSetpoint",
+  "/zones/zone8/heating",
+  "/zones/zone8/switchPrograms"
+ ]
+}
