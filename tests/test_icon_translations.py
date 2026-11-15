@@ -16,7 +16,9 @@ import pytest
 from custom_components.bosch_buderus_heating import (
     binary_sensor,
     calendar,
+    derived_defrost,
     event,
+    flow_range,
     heat_generator_sensor,
     heating_climate,
     pointt_water_heater,
@@ -102,6 +104,31 @@ def test_entities_without_a_code_icon_have_a_translated_one(
 ):
     assert not _sets_code_icon(entity_class)
     assert key in ICONS["entity"][platform]
+
+
+@pytest.mark.parametrize(
+    ("entity_class", "platform", "keys"),
+    [
+        (
+            derived_defrost.DefrostActiveBinarySensor,
+            "binary_sensor",
+            ("calculated_defrost_active",),
+        ),
+        (derived_defrost.DefrostEvent, "event", ("calculated_defrost",)),
+        (derived_defrost.LastDefrostSensor, "sensor", ("calculated_last_defrost",)),
+        (
+            flow_range.BoschBuderusFlowRangeBinarySensor,
+            "binary_sensor",
+            tuple(flow.key for flow in flow_range.FLOW_RANGES),
+        ),
+    ],
+)
+def test_the_defrost_and_flow_entities_have_translated_icons(
+    entity_class, platform, keys
+):
+    assert not _sets_code_icon(entity_class)
+    for key in keys:
+        assert key in ICONS["entity"][platform], key
 
 
 def _sets_code_icon(entity_class: type) -> bool:
