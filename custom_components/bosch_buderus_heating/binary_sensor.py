@@ -63,6 +63,7 @@ from .sensor import (
     _values_scalar_keys,
 )
 from .start_counters import is_start_counter_path
+from .wallbox_entities import track_wallbox_entities
 from .water_softener import low_salt, softener_capability, softener_value
 from .write_policies import context_of, rrc_kwargs
 
@@ -95,6 +96,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create entities from every safe boolean found during discovery."""
+    track_wallbox_entities(Platform.BINARY_SENSOR, entry, async_add_entities)
     entities: list[BinarySensorEntity] = []
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "binary_sensor")

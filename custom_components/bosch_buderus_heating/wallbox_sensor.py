@@ -90,6 +90,23 @@ DESCRIPTIONS = (
 )
 
 
+def wallbox_device_info(coordinator: WallboxCoordinator) -> DeviceInfo:
+    """The wallbox device, shared by its readings and its controls."""
+    gateway = coordinator.gateway
+    product = coordinator.reading("info", "product")
+    software = coordinator.reading("info", "software")
+    info = DeviceInfo(
+        identifiers={(DOMAIN, gateway.gateway_id)},
+        manufacturer=DEFAULT_MANUFACTURER,
+        model=product if isinstance(product, str) else gateway.model,
+        sw_version=software if isinstance(software, str) else gateway.firmware_version,
+    )
+    if not registered_device(coordinator.hass, gateway.gateway_id):
+        # C8: a new device is named without the brand.
+        info["name"] = "Wallbox"
+    return info
+
+
 class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
     """Expose only a currently valid interpretation of an allowlisted field."""
 
@@ -107,21 +124,7 @@ class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        gateway = self.coordinator.gateway
-        product = self.coordinator.reading("info", "product")
-        software = self.coordinator.reading("info", "software")
-        info = DeviceInfo(
-            identifiers={(DOMAIN, gateway.gateway_id)},
-            manufacturer=DEFAULT_MANUFACTURER,
-            model=product if isinstance(product, str) else gateway.model,
-            sw_version=software
-            if isinstance(software, str)
-            else gateway.firmware_version,
-        )
-        if not registered_device(self.coordinator.hass, gateway.gateway_id):
-            # C8: a new device is named without the brand.
-            info["name"] = "Wallbox"
-        return info
+        return wallbox_device_info(self.coordinator)
 
     @property
     def available(self) -> bool:

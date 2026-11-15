@@ -12,6 +12,7 @@ from urllib.parse import quote, urlencode
 
 import aiohttp
 
+from . import wallbox_paths
 from .bulk import chunk_resource_paths, normalize_query, normalize_resource_path
 from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
 from .exceptions import AccessTokenRejected
@@ -166,6 +167,57 @@ class PointTClient:
             "GET",
             f"gateways/{gateway}/resource{path}",
             retryable=True,
+            resource_path=path,
+        )
+
+    async def get_wallbox_leaf(self, gateway_id: str, leaf: str) -> JsonValue:
+        """Read one allowlisted cp0 value (``conf/locked``) as answered."""
+        if leaf not in wallbox_paths.READ_LEAVES:
+            raise ValueError("Invalid wallbox value")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{leaf}"
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource{path}",
+            retryable=True,
+            resource_path=path,
+        )
+
+    async def put_wallbox_setting(
+        self, gateway_id: str, leaf: str, value: JsonValue
+    ) -> None:
+        """Set one allowlisted cp0 setting once (``{"value": value}``).
+
+        Never retried; the caller confirms the change by reading again.
+        """
+        if not wallbox_paths.setting_value_valid(leaf, value):
+            raise ValueError("Invalid wallbox setting")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{leaf}"
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource{path}",
+            json_body={"value": value},
+            retryable=False,
+            resource_path=path,
+        )
+
+    async def post_wallbox_command(
+        self, gateway_id: str, command: str, body: JsonValue
+    ) -> None:
+        """Send one allowlisted cp0 command once with its exact body.
+
+        Never retried; the caller confirms the outcome by reading again.
+        """
+        if not wallbox_paths.command_body_valid(command, body):
+            raise ValueError("Invalid wallbox command")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/cmd/{command}"
+        await self._request(
+            "POST",
+            f"gateways/{gateway}/resource{path}",
+            json_body=body,
+            retryable=False,
             resource_path=path,
         )
 

@@ -38,6 +38,7 @@ from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     ControlContext,
     NumberWritePolicy,
@@ -77,6 +78,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create numeric controls only from matching live metadata."""
+    track_wallbox_entities(Platform.NUMBER, entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS
