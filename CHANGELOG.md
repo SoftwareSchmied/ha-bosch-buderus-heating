@@ -109,7 +109,10 @@ entry says how it was tested; most of it with automated tests only.
   installation.
 - **`used` and `available` flags** of the appliance now apply to all
   settings. Automated tests only.
-- **Icons per state** for many entities; icons you chose stay.
+- **Icons per state** for many entities; icons you chose stay. They now
+  come from the icon translations, so the state attribute `icon` of these
+  entities is gone; Home Assistant shows the same icons, but a template or
+  card that reads `icon` gets nothing.
 - **Names for local signals:** many signals of the local access that showed
   *Signal …* now have names in every language; `frost` of the heat demand
   shows as *Frost range*.
