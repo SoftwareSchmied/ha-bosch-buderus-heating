@@ -7,7 +7,7 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Paths and types follow the model classes of the manufacturer's app (tariff optimisation on/off as stringValue, the tariff number as floatValue). Every value is constructed; no tariff name, price, region or identifier.",
+    "redaction": "Paths and types follow the behaviour of the manufacturer's app (tariff optimisation on/off as stringValue, the tariff number as floatValue). Every value is constructed; no tariff name, price, region or identifier.",
     "physical_device_verified": false
   },
   "contract": "The variable tariff of an iCom gateway, read only. Each variant replaces (set) or removes (remove) resources of the base; unavailable lists answers without a resource.",

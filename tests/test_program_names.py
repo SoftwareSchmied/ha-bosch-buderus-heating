@@ -128,7 +128,7 @@ def test_icom_gateway_gets_no_name_control(environment):
     coordinator, _client, _ = environment
     coordinator.gateway = Gateway("synthetic-gateway", device_type="iCom")
     added: list = []
-    entry = SimpleNamespace(coordinators=(coordinator,))
+    entry = SimpleNamespace(coordinators=(coordinator,), wallboxes=())
     track = MagicMock()
     original = text_platform.track_control_entities
     text_platform.track_control_entities = track

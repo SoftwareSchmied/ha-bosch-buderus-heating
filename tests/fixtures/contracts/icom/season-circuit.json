@@ -7,7 +7,7 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "The base follows the shapes of suWiSwitchMode, suWiThreshold and controlType in gateway-shapes.json (an iCom gateway with a boiler controller). The heat pump and cooling variants follow the model classes of the manufacturer's app (summer/winter codes automatic, forced, cooling, off; cooling threshold and cooling setpoint as floatValue). Every value and limit is constructed. No identifier.",
+    "redaction": "The base follows the shapes of suWiSwitchMode, suWiThreshold and controlType in gateway-shapes.json (an iCom gateway with a boiler controller). The heat pump and cooling variants follow the behaviour of the manufacturer's app (summer/winter codes automatic, forced, cooling, off; cooling threshold and cooling setpoint as floatValue). Every value and limit is constructed. No identifier.",
     "physical_device_verified": false
   },
   "contract": "Summer/winter switching and heating limit of one heating circuit, the cooling threshold and the cooling setpoint. Each variant replaces (set) or removes (remove) resources of the base.",

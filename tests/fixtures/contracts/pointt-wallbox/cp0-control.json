@@ -3,17 +3,13 @@
   "family": "pointt_wallbox_cp0_control",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model_classes",
-    "sources": {
-      "objects": "TelemetryValues, WallboxConfigurationValue, WallboxInformationValue",
-      "single_values": "StringValue, FloatValue, IntegerValue, TypedList, WallboxExternalMeter",
-      "commands": "WallboxCommandModel, WallboxLimitCommandModel"
-    },
+    "basis": "compatibility_mapping",
+    "reference": "Constructed wallbox: the three cp0 objects, every single value the controls read and the command bodies",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
     "physical_device_verified": false,
-    "redaction": "Fully constructed from the vendor app's model classes; no device capture."
+    "redaction": "Field names and value shapes follow the behaviour of the vendor app; every value is constructed. No device capture, no identifiers."
   },
   "telemetry": {
     "values": {

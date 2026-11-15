@@ -2,7 +2,7 @@
 
 Every test runs without a device or network. A fake client records each
 request; the read-back delays are injected. These tests show that the rules
-hold for the shapes taken from the vendor app's model classes, not that a
+hold for the shapes taken from the vendor app's behaviour, not that a
 real wallbox behaves like this.
 """
 

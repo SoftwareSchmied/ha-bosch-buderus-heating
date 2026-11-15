@@ -1,6 +1,6 @@
 """Cooling setpoint and cooling threshold of a heating circuit (0.9.2).
 
-Only heat pumps with cooling have them; the shapes follow the model classes
+Only heat pumps with cooling have them; the shapes follow the behaviour
 of the manufacturer's app (``fixtures/contracts/icom/season-circuit.json``),
 every value is constructed. Nothing here confirms behaviour on a real
 installation.
