@@ -520,9 +520,15 @@ async def test_user_flow_creates_entry_after_gateway_selection(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "gateways"
 
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {CONF_GATEWAY_IDS: ["gateway-one"]}
-    )
+    # The new entry is set up right away, which would sign in to the real
+    # cloud with these tokens; only the flow matters here.
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_GATEWAY_IDS: ["gateway-one"]}
+        )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Buderus Home Comfort"
     entry = result["result"]

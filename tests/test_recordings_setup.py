@@ -21,7 +21,6 @@ from homeassistant.helpers import entity_registry as er
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.bosch_buderus_heating.pointt import PointTClient
 from custom_components.bosch_buderus_heating.recordings.manager import (
     OPTION_IMPORT,
     START_DELAY,
@@ -64,100 +63,101 @@ async def test_entities_options_and_diagnostics(
     await hass.config.async_update(time_zone="Europe/Berlin")
     freezer.move_to(NOW)
     calls = AsyncMock(side_effect=recording)
-    with patch.object(PointTClient, "get_recording", calls):
-        entry, stack = await start(hass, cloud_tree())
-        try:
-            await advance(hass, freezer, timedelta(seconds=START_DELAY + 5))
-            await hass.async_block_till_done(wait_background_tasks=True)
-            assert calls.await_count > 0
-            registry = er.async_get(hass)
-            ours = [
-                item
-                for item in er.async_entries_for_config_entry(registry, entry.entry_id)
-                if ":recordings:" in item.unique_id
-            ]
-            assert ours, "the period entities exist"
-            enabled = sorted(item.unique_id for item in ours if not item.disabled_by)
-            assert enabled == sorted([YESTERDAY_HEAT, YESTERDAY_POWER])
-            heat = registry.async_get_entity_id(
-                "sensor", "bosch_buderus_heating", YESTERDAY_HEAT
-            )
-            state = hass.states.get(heat)
-            assert state is not None
-            assert "system recording" in state.attributes["friendly_name"]
-            # Yesterday was read once: shown only once a second read confirms it.
-            assert state.state == "unavailable"
-            await advance(hass, freezer, timedelta(minutes=55))
-            await hass.async_block_till_done(wait_background_tasks=True)
-            state = hass.states.get(heat)
-            assert float(state.state) == pytest.approx(24.0)
-            assert state.attributes["method"] == "recording"
-            assert state.attributes["source"] == "cloud_recording"
-            assert state.attributes["period_start"] == "2026-11-13"
-            assert state.attributes["period_end"] == "2026-11-13"
-            assert state.attributes["unit_of_measurement"] == "kWh"
-            assert state.attributes["device_class"] == "energy"
-            assert "state_class" not in state.attributes
-            power = registry.async_get_entity_id(
-                "sensor", "bosch_buderus_heating", YESTERDAY_POWER
-            )
-            assert float(hass.states.get(power).state) == pytest.approx(48.0)
-            assert hass.states.get(power).attributes["derived_from"] == [
-                "/recordings/heatSources/emon/total/compressor",
-                "/recordings/heatSources/emon/total/eheater",
-            ]
+    cloud = cloud_tree()
+    cloud.recording = calls
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, timedelta(seconds=START_DELAY + 5))
+        await hass.async_block_till_done(wait_background_tasks=True)
+        assert calls.await_count > 0
+        registry = er.async_get(hass)
+        ours = [
+            item
+            for item in er.async_entries_for_config_entry(registry, entry.entry_id)
+            if ":recordings:" in item.unique_id
+        ]
+        assert ours, "the period entities exist"
+        enabled = sorted(item.unique_id for item in ours if not item.disabled_by)
+        assert enabled == sorted([YESTERDAY_HEAT, YESTERDAY_POWER])
+        heat = registry.async_get_entity_id(
+            "sensor", "bosch_buderus_heating", YESTERDAY_HEAT
+        )
+        state = hass.states.get(heat)
+        assert state is not None
+        assert "system recording" in state.attributes["friendly_name"]
+        # Yesterday was read once: shown only once a second read confirms it.
+        assert state.state == "unavailable"
+        await advance(hass, freezer, timedelta(minutes=55))
+        await hass.async_block_till_done(wait_background_tasks=True)
+        state = hass.states.get(heat)
+        assert float(state.state) == pytest.approx(24.0)
+        assert state.attributes["method"] == "recording"
+        assert state.attributes["source"] == "cloud_recording"
+        assert state.attributes["period_start"] == "2026-11-13"
+        assert state.attributes["period_end"] == "2026-11-13"
+        assert state.attributes["unit_of_measurement"] == "kWh"
+        assert state.attributes["device_class"] == "energy"
+        assert "state_class" not in state.attributes
+        power = registry.async_get_entity_id(
+            "sensor", "bosch_buderus_heating", YESTERDAY_POWER
+        )
+        assert float(hass.states.get(power).state) == pytest.approx(48.0)
+        assert hass.states.get(power).attributes["derived_from"] == [
+            "/recordings/heatSources/emon/total/compressor",
+            "/recordings/heatSources/emon/total/eheater",
+        ]
 
-            # The options step: on, without a reload; then delete.
-            reload = patch.object(hass.config_entries, "async_schedule_reload")
-            with reload as scheduled:
-                menu = await hass.config_entries.options.async_init(entry.entry_id)
-                assert "recordings" in menu["menu_options"]
-                form = await hass.config_entries.options.async_configure(
-                    menu["flow_id"], {"next_step_id": "recordings"}
-                )
-                assert form["type"] is FlowResultType.FORM
-                assert form["description_placeholders"]["series"] != "0"
-                result = await hass.config_entries.options.async_configure(
-                    form["flow_id"], {OPTION_IMPORT: True, "delete_statistics": False}
-                )
-                assert await outcome(hass, result) == "recordings_import_on"
-                assert "switched on" in await menu_note(
-                    hass, result, "recordings_import_on"
-                )
-                assert entry.options[OPTION_IMPORT] is True
-                result = await hass.config_entries.options.async_configure(
-                    result["flow_id"], {"next_step_id": "recordings"}
-                )
-                result = await hass.config_entries.options.async_configure(
-                    result["flow_id"], {OPTION_IMPORT: True, "delete_statistics": True}
-                )
-                assert result["step_id"] == "recordings_delete"
-                kept = await hass.config_entries.options.async_configure(
-                    result["flow_id"], {"confirm": False}
-                )
-                assert await outcome(hass, kept) == "recordings_delete_kept"
-                await menu_note(hass, kept, "recordings_delete_kept")
-                assert entry.options[OPTION_IMPORT] is True
-                result = await hass.config_entries.options.async_configure(
-                    kept["flow_id"], {"next_step_id": "recordings"}
-                )
-                result = await hass.config_entries.options.async_configure(
-                    result["flow_id"], {OPTION_IMPORT: True, "delete_statistics": True}
-                )
-                done = await hass.config_entries.options.async_configure(
-                    result["flow_id"], {"confirm": True}
-                )
-                assert await outcome(hass, done) == "recordings_deleted"
-                assert done["description_placeholders"]["count"] != ""
-                await menu_note(hass, done, "recordings_deleted")
-                assert entry.options[OPTION_IMPORT] is False
-                scheduled.assert_not_called()
-            assert managers_of(hass, entry.entry_id)
+        # The options step: on, without a reload; then delete.
+        reload = patch.object(hass.config_entries, "async_schedule_reload")
+        with reload as scheduled:
+            menu = await hass.config_entries.options.async_init(entry.entry_id)
+            assert "recordings" in menu["menu_options"]
+            form = await hass.config_entries.options.async_configure(
+                menu["flow_id"], {"next_step_id": "recordings"}
+            )
+            assert form["type"] is FlowResultType.FORM
+            assert form["description_placeholders"]["series"] != "0"
+            result = await hass.config_entries.options.async_configure(
+                form["flow_id"], {OPTION_IMPORT: True, "delete_statistics": False}
+            )
+            assert await outcome(hass, result) == "recordings_import_on"
+            assert "switched on" in await menu_note(
+                hass, result, "recordings_import_on"
+            )
+            assert entry.options[OPTION_IMPORT] is True
+            result = await hass.config_entries.options.async_configure(
+                result["flow_id"], {"next_step_id": "recordings"}
+            )
+            result = await hass.config_entries.options.async_configure(
+                result["flow_id"], {OPTION_IMPORT: True, "delete_statistics": True}
+            )
+            assert result["step_id"] == "recordings_delete"
+            kept = await hass.config_entries.options.async_configure(
+                result["flow_id"], {"confirm": False}
+            )
+            assert await outcome(hass, kept) == "recordings_delete_kept"
+            await menu_note(hass, kept, "recordings_delete_kept")
+            assert entry.options[OPTION_IMPORT] is True
+            result = await hass.config_entries.options.async_configure(
+                kept["flow_id"], {"next_step_id": "recordings"}
+            )
+            result = await hass.config_entries.options.async_configure(
+                result["flow_id"], {OPTION_IMPORT: True, "delete_statistics": True}
+            )
+            done = await hass.config_entries.options.async_configure(
+                result["flow_id"], {"confirm": True}
+            )
+            assert await outcome(hass, done) == "recordings_deleted"
+            assert done["description_placeholders"]["count"] != ""
+            await menu_note(hass, done, "recordings_deleted")
+            assert entry.options[OPTION_IMPORT] is False
+            scheduled.assert_not_called()
+        assert managers_of(hass, entry.entry_id)
 
-            report = await async_get_config_entry_diagnostics(hass, entry)
-            section = report["gateways"][0]["recordings"]
-            assert section["series"]["total_heat"]["cloud"] == "ok"
-            assert GW not in json.dumps(section)
-        finally:
-            await stop(hass, entry, stack)
+        report = await async_get_config_entry_diagnostics(hass, entry)
+        section = report["gateways"][0]["recordings"]
+        assert section["series"]["total_heat"]["cloud"] == "ok"
+        assert GW not in json.dumps(section)
+    finally:
+        await stop(hass, entry, stack)
     assert not managers_of(hass, entry.entry_id)

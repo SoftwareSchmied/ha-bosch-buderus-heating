@@ -309,43 +309,50 @@ async def test_native_discovery_selects_existing_owner_without_secret_access(
 
 async def test_an_ignored_discovery_stays_ignored(hass, supported, journal):
     entry, _, _, _ = registered(hass)
-    manager = hass.config_entries.flow
-    result = await manager.async_init(
-        DOMAIN, context={"source": "zeroconf"}, data=info()
-    )
-    assert result["step_id"] == "local_owner"
-    unique_id = manager.async_get(result["flow_id"])["context"]["unique_id"]
-    assert unique_id == flow.discovery_unique_id(info())
-    # Stable and opaque: no announced name, host or address in it.
-    assert unique_id.startswith("local_discovery_")
-    assert not any(part in unique_id for part in ("192.0.2", "gateway", "arbitrary"))
-    assert flow.discovery_unique_id(info(host="192.0.2.9")) == unique_id
-    assert flow.discovery_unique_id(info(name="other")) != unique_id
-    ignored = await manager.async_init(
-        DOMAIN,
-        context={"source": "ignore"},
-        data={"unique_id": unique_id, "title": "Local gateway"},
-    )
-    assert ignored["type"] is FlowResultType.CREATE_ENTRY
-    assert not manager.async_progress_by_handler(DOMAIN)
-    # Also after a restart: the hints in memory are gone, the entry stays.
-    hass.data.pop(discovery._HINTS, None)
-    hass.data.pop(discovery._FLOWS, None)
-    again = await manager.async_init(
-        DOMAIN, context={"source": "zeroconf"}, data=info(host="192.0.2.9")
-    )
-    assert again["type"] is FlowResultType.ABORT
-    assert again["reason"] == "already_configured"
-    # Another gateway is still offered, and never with the ignored entry.
-    other = await manager.async_init(
-        DOMAIN,
-        context={"source": "zeroconf"},
-        data=info(name="other", host="192.0.2.7"),
-    )
-    assert other["step_id"] == "local_owner"
-    owners = next(iter(other["data_schema"].schema.values())).config["options"]
-    assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
-    assert entry.unique_id == entry.entry_id  # existing entries keep theirs
+    # The flows load the integration, which would set up the registered
+    # entry and sign in to the real cloud; only the flows matter here.
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        manager = hass.config_entries.flow
+        result = await manager.async_init(
+            DOMAIN, context={"source": "zeroconf"}, data=info()
+        )
+        assert result["step_id"] == "local_owner"
+        unique_id = manager.async_get(result["flow_id"])["context"]["unique_id"]
+        assert unique_id == flow.discovery_unique_id(info())
+        # Stable and opaque: no announced name, host or address in it.
+        assert unique_id.startswith("local_discovery_")
+        hidden = ("192.0.2", "gateway", "arbitrary")
+        assert not any(part in unique_id for part in hidden)
+        assert flow.discovery_unique_id(info(host="192.0.2.9")) == unique_id
+        assert flow.discovery_unique_id(info(name="other")) != unique_id
+        ignored = await manager.async_init(
+            DOMAIN,
+            context={"source": "ignore"},
+            data={"unique_id": unique_id, "title": "Local gateway"},
+        )
+        assert ignored["type"] is FlowResultType.CREATE_ENTRY
+        assert not manager.async_progress_by_handler(DOMAIN)
+        # Also after a restart: the hints in memory are gone, the entry stays.
+        hass.data.pop(discovery._HINTS, None)
+        hass.data.pop(discovery._FLOWS, None)
+        again = await manager.async_init(
+            DOMAIN, context={"source": "zeroconf"}, data=info(host="192.0.2.9")
+        )
+        assert again["type"] is FlowResultType.ABORT
+        assert again["reason"] == "already_configured"
+        # Another gateway is still offered, and never with the ignored entry.
+        other = await manager.async_init(
+            DOMAIN,
+            context={"source": "zeroconf"},
+            data=info(name="other", host="192.0.2.7"),
+        )
+        assert other["step_id"] == "local_owner"
+        owners = next(iter(other["data_schema"].schema.values())).config["options"]
+        assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
+        assert entry.unique_id == entry.entry_id  # existing entries keep theirs
 
 
 async def test_discovery_without_any_entry_offers_a_local_only_setup(hass):
