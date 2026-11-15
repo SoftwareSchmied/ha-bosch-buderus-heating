@@ -2,7 +2,8 @@
 
 The periods follow the days of the plant. A month is the sum of its days
 when every day since the first of the month (or since the first recorded
-day) is known, otherwise the plant's own month value; a year is the sum of
+day) is known, otherwise the plant's own month value (the month still
+running: the known days, or its month value where larger); a year is the sum of
 its months since the first recorded month. A value is final when every
 part is final; a value of a past period is only shown once it is final
 (``manager``), so "previous month" changes after the first confirmed read
@@ -16,7 +17,7 @@ from datetime import date, timedelta
 from enum import StrEnum
 from typing import Final
 
-from .ledger import Ledger
+from .ledger import Cell, Ledger
 from .parse import add_months, month_start
 
 
@@ -132,6 +133,8 @@ def month_value(ledger: Ledger, first: date, today: date) -> PeriodValue | None:
                 frozenset().union(*(item.sources for item in days)),
             )
     cell = ledger.month(first)
+    if today < end:
+        return _running_month(ledger, first, begin, last, cell)
     if cell is None:
         return None
     return PeriodValue(
@@ -142,6 +145,45 @@ def month_value(ledger: Ledger, first: date, today: date) -> PeriodValue | None:
         bool(cell[4]),
         "monthly",
         frozenset({str(cell[2])}),
+    )
+
+
+def _running_month(
+    ledger: Ledger, first: date, begin: date, last: date, cell: Cell | None
+) -> PeriodValue | None:
+    """The month still running with a day missing. Its month value is read
+    at the start of Home Assistant and not again, so the known days count;
+    for a sum the month value stays where it is the larger one (both are a
+    lower bound). Never final."""
+    end = add_months(first, 1)
+    known = [
+        value
+        for offset in range((last - begin).days + 1)
+        if (value := _day(ledger, begin + timedelta(days=offset))) is not None
+    ]
+    y = sum(item.y for item in known)
+    if cell is not None and (
+        not known or (not ledger.series.mean and float(cell[0]) > y)
+    ):
+        return PeriodValue(
+            first,
+            end,
+            float(cell[0]),
+            float(cell[1]),
+            False,
+            "monthly",
+            frozenset({str(cell[2])}),
+        )
+    if not known:
+        return None
+    return PeriodValue(
+        first,
+        end,
+        y,
+        sum(item.c for item in known),
+        False,
+        "daily",
+        frozenset().union(*(item.sources for item in known)),
     )
 
 

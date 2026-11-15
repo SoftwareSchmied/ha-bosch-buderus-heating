@@ -343,10 +343,12 @@ class View:
         days: dict[str, dict[date, float]],
         months: dict[str, dict[date, float]] | None = None,
         source: str = "local",
+        open_days: frozenset[date] = frozenset(),
     ) -> None:
         self.days = days
         self.months = months or {}
         self.source = source
+        self.open_days = open_days
         self.listeners: list[Callable[[], None]] = []
         self.acquired = 0
 
@@ -355,7 +357,7 @@ class View:
 
     def daily(self, key: str, start: date, end: date) -> tuple[DailyValue, ...]:
         return tuple(
-            DailyValue(day, value, 1.0, True, self.source)
+            DailyValue(day, value, 1.0, day not in self.open_days, self.source)
             for day, value in sorted(self.days.get(key, {}).items())
             if start <= day <= end
         )
@@ -526,6 +528,34 @@ async def test_the_recordings_fill_the_days_and_months(
     assert engine.value(Period.CURRENT_YEAR, "dhw") is None
     previous = engine.value(Period.PREVIOUS_YEAR, "total")
     assert previous is None
+
+
+async def test_a_day_still_open_in_the_recordings_is_not_used(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, monkeypatch
+) -> None:
+    """A day the recordings have not confirmed yet (a running value from
+    the start) is no day's value: the counters stand in, or it is missing."""
+    plant = air(hass, freezer)
+    _at(plant, local(2026, 11, 15, 12, 0))
+    yesterday = date(2026, 11, 14)
+    days = {
+        "total_heat": _span(date(2026, 11, 1), yesterday, 40.0),
+        "total_electricity": _span(date(2026, 11, 1), yesterday, 10.0),
+    }
+    days["total_heat"][yesterday] = 12.0  # read at the start, never final
+    view = View(days, open_days=frozenset({yesterday}))
+    monkeypatch.setattr(
+        "custom_components.bosch_buderus_heating.recordings.recordings_view",
+        lambda _hass, _gateway: view,
+    )
+    engine = await _engine(plant)
+    await engine.async_refresh(full=True)
+    assert engine.value(Period.YESTERDAY, "total") is None
+    month = engine.value(Period.CURRENT_MONTH, "total")
+    assert month is not None
+    assert month.heat == pytest.approx(13 * 40.0)
+    assert month.ratio == pytest.approx(4.0)
+    assert month.missing_days == 2  # yesterday and today
 
 
 async def test_a_month_value_only_for_an_incomplete_past_month(
@@ -784,6 +814,12 @@ async def test_the_engine_reads_the_plants_recordings(
     await engine.async_refresh(full=True)
     assert engine.diagnostics()["recordings_attached"] is True
     assert recordings.needed()
+    # Yesterday is read once so far: not confirmed, no value yet.
+    assert engine.value(Period.YESTERDAY, "total") is None
+    clock.now += timedelta(hours=1)
+    freezer.move_to(clock.now)
+    await recordings.async_run("hourly")
+    await engine.async_refresh()
     result = engine.value(Period.YESTERDAY, "total")
     assert result is not None
     assert result.heat == pytest.approx(48.0)

@@ -63,6 +63,8 @@ DAY_KEEP: Final = timedelta(days=800)
 _EPSILON: Final = 0.0005
 _MAX_STEPS: Final = 24 * 900
 _NEVER: Final = float("inf")
+# Discarded hours that count as gaps (the others are no hour of the history).
+_GAP_REASONS: Final = frozenset({"negative", "implausible"})
 
 type Cell = list[Any]
 
@@ -190,7 +192,6 @@ class Ledger:
         """Take the samples of one answer read at ``read_at``."""
         floor = date.fromisoformat(self.floor) if self.floor else None
         accepted: list[Sample] = []
-        rejected_days: set[date] = set()
         for sample in parsed.samples:
             if sample.c <= 0:
                 if _start(sample, zone) > read_at:
@@ -200,8 +201,11 @@ class Ledger:
             reason = rejection(sample, self.series, now=read_at, zone=zone, floor=floor)
             if reason is not None:
                 self.stats[f"discarded_{reason}"] += 1
-                if sample.rate is Rate.HOUR:
-                    rejected_days.add(sample.day)
+                if sample.rate is Rate.HOUR and reason in _GAP_REASONS:
+                    # A discarded hour is a gap: the other hours of its day
+                    # are imported and the day is summed up without it (an
+                    # hour known before keeps its value).
+                    accepted.append(self._discarded_hour(sample))
                 continue
             accepted.append(sample)
         for key, count in parsed.issues.items():
@@ -234,8 +238,6 @@ class Ledger:
                     self.months, sample.day.isoformat(), sample, source, end, read
                 )
         for day, (y, c) in aggregates.items():
-            if day in rejected_days:
-                continue
             ended: float = (
                 _ts(local_midnight(day + timedelta(days=1), zone))
                 if day in parsed.complete_days
@@ -254,6 +256,12 @@ class Ledger:
                     # The plant no longer has its oldest values (a reset or a
                     # new controller): what was imported stays.
                     self.stats["history_shrunk"] += 1
+
+    def _discarded_hour(self, sample: Sample) -> Sample:
+        cell = self.hours.get(str(sample.hour)) if sample.hour is not None else None
+        if cell is not None and cell[4] and cell[1] > 0:
+            return Sample(sample.rate, sample.day, sample.hour, cell[0], cell[1])
+        return Sample(sample.rate, sample.day, sample.hour, 0.0, 0.0)
 
     def _put(
         self,

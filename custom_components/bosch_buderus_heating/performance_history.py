@@ -490,7 +490,9 @@ class PerformanceHistory:
             days: dict[date, Amount] = {}
             for value in view.daily(key, start, yesterday):
                 amount = value.value
-                if amount is not None and amount >= 0:
+                # Only confirmed days: a day still open (yesterday before its
+                # second read) falls back to the counters.
+                if amount is not None and amount >= 0 and value.final:
                     days[value.day] = Amount(amount, _recording_source(value.source))
             recorded[item] = days
             found: dict[date, Amount] = {}

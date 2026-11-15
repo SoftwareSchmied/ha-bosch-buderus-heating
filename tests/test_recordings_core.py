@@ -492,8 +492,80 @@ def test_a_wrong_clock_negative_and_implausible_values_are_discarded() -> None:
     assert ledger.stats["discarded_before_history"] == 1
     assert ledger.stats["discarded_negative"] == 1
     assert ledger.stats["discarded_implausible"] == 1
-    assert set(ledger.days) == {"2026-11-10"}
-    assert not ledger.hours
+    # The negative and the implausible hour are gaps; nothing else is kept.
+    assert set(ledger.days) == {"2026-11-10", "2026-11-13"}
+    assert ledger.days["2026-11-13"][:2] == [0.0, 0.0]
+    assert [cell[:2] for cell in ledger.hours.values()] == [[0.0, 0.0]] * 2
+
+
+def test_a_discarded_hour_is_a_gap_and_its_day_still_closes() -> None:
+    """Rule 13: one implausible hour neither keeps its day open nor stops
+    the import of the day's other hours."""
+    day = date(2026, 11, 13)
+    values = [(2.0, 1)] * 24
+    values[6] = (500.0, 1)
+    led = Ledger(HEAT)
+    # The start during the day: the running day and the day before.
+    read(
+        led,
+        local(2026, 11, 13, 14) + timedelta(minutes=20),
+        days(date(2026, 11, 12), [(40.0, 24), (30.0, 14)]),
+        full=True,
+    )
+    for step in range(1, 4):  # hourly after the day ended
+        at = local(2026, 11, 14, step) + timedelta(minutes=20)
+        read(led, at, hours(local(2026, 11, 13), values))
+        led.settle(at.astimezone(UTC), Z)
+    cell = led.day(day)
+    assert cell is not None
+    assert cell[:2] == [46.0, 23.0] and cell[4] is True
+    value = period_value(led, Period.YESTERDAY, date(2026, 11, 14))
+    assert value is not None and value.final and value.y == pytest.approx(46.0)
+    assert led.hours[str(utc(local(2026, 11, 13, 6)))][:2] == [0.0, 0.0]
+    assert led.start_import(0.0, Z)
+    plan = led.plan((local(2026, 11, 16, 12)).astimezone(UTC), Z)
+    rows = [row for row in plan.rows if row[0] >= utc(local(2026, 11, 13))]
+    assert len(rows) == 23
+    assert utc(local(2026, 11, 13, 6)) not in [row[0] for row in rows]
+    assert led.stats["import_gap_days"] == 0
+    # An hour confirmed before keeps its value when a later read is garbage.
+    again = list(values)
+    again[6] = (2.0, 1)
+    for step in range(4, 6):
+        read(led, local(2026, 11, 14, step), hours(local(2026, 11, 13), again))
+    read(led, local(2026, 11, 14, 7), hours(local(2026, 11, 13), values))
+    assert led.hours[str(utc(local(2026, 11, 13, 6)))][:2] == [2.0, 1.0]
+    assert led.day(day)[:2] == [48.0, 24.0]
+
+
+def test_a_running_month_with_a_missing_day_counts_the_known_days() -> None:
+    """The month value of a running month comes from the start and is not
+    read again: with a day missing, the known days count (or the month
+    value where it is larger)."""
+    led = Ledger(HEAT)
+    start = local(2026, 11, 14, 12)
+    read(
+        led,
+        start,
+        days(date(2026, 11, 1), [(10.0, 24)] * 14),
+        months(date(2026, 11, 1), [(140.0, 336)]),
+        full=True,
+    )
+    read(led, local(2026, 11, 20, 12), days(date(2026, 11, 17), [(10.0, 24)] * 4))
+    value = period_value(led, Period.CURRENT_MONTH, date(2026, 11, 20))
+    assert value is not None
+    assert value.y == pytest.approx(180.0)
+    assert value.resolution == "daily" and not value.final
+    year = period_value(led, Period.CURRENT_YEAR, date(2026, 11, 20))
+    assert year is not None and year.y == pytest.approx(180.0)
+    # Only a few days known: the larger month value stays.
+    few = Ledger(HEAT)
+    read(few, start, months(date(2026, 11, 1), [(140.0, 336)]), full=True)
+    read(few, start, days(date(2026, 11, 1), [(10.0, 24)] * 3))
+    read(few, local(2026, 11, 20, 12), days(date(2026, 11, 19), [(10.0, 24)]))
+    value = period_value(few, Period.CURRENT_MONTH, date(2026, 11, 20))
+    assert value is not None and value.y == pytest.approx(140.0)
+    assert value.resolution == "monthly" and not value.final
 
 
 def test_units_are_converted_and_an_unknown_unit_keeps_no_series() -> None:

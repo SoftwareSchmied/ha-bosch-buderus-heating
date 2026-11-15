@@ -76,7 +76,9 @@ the first of a month the entity still shows the period before, with its
 dates in the attributes. The values have no state class: they are not
 counters. The months July to October 2026 of the reference installation are
 rounded to whole kWh by the plant itself; months are therefore summed from
-the days wherever the days are complete.
+the days wherever the days are complete. The current month with a day
+missing shows the sum of the known days, or the plant's month value read at
+the start where that is larger.
 
 ## Import into the statistics
 
@@ -105,7 +107,9 @@ of the month.
 - Values with a start more than an hour ahead, before the first recorded
   day, below zero or above 90 kWh per hour (1.5 × 60 kW, days and months
   scaled) are discarded and counted in the diagnostics. The bound only
-  catches obvious garbage; it is the same for every recording.
+  catches obvious garbage; it is the same for every recording. A discarded
+  hour counts as a gap: the other hours of its day are imported, and the
+  day is summed up without it.
 - A day whose hours cannot be placed on a change of summer time is imported
   as one day.
 - Switching the import off keeps what was imported; switching it on again

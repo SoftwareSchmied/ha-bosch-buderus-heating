@@ -234,7 +234,9 @@ defrosts, so the heat taken back from the water is netted.
   A day the counters' statistics cover only partly (the first day of a new
   counter) never counts.
 - With [plant recordings](recordings.md) the history goes back to the first
-  recorded day, also on a new installation. A month whose days are not all
+  recorded day, also on a new installation. Only days the recordings have
+  confirmed count; until then (yesterday shortly after midnight) the
+  counters stand in. A month whose days are not all
   known takes the plant's month value (whole kWh on some plants). Without
   recordings the counters' long-term statistics are used where Home
   Assistant has them.
