@@ -677,7 +677,12 @@ class WallboxText(WallboxEntity, TextEntity):
 
     _attr_mode = TextMode.TEXT
     _attr_native_min = 1
-    _attr_native_max = 32
+
+    @property
+    def native_max(self) -> int:
+        """32 characters as in the app; a longer name the wallbox reports
+        (up to 128) is still shown, while a write keeps the 32."""
+        return max(SETTINGS["label"].max_length, len(self.native_value or ""))
 
     @property
     def native_value(self) -> str | None:

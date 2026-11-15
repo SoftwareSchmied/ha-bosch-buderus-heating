@@ -20,7 +20,7 @@ from __future__ import annotations
 import asyncio
 import math
 from collections.abc import Awaitable, Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from time import monotonic
 from typing import TYPE_CHECKING, Final, Literal
 
@@ -904,6 +904,14 @@ def _wire_value(
     return float(value)
 
 
+# The single values that the configuration object shows as well (its field).
+_CONF_FIELDS: Final = {
+    "conf/locked": "locked",
+    STRATEGY_PATH: "charging_strategy",
+    "conf/label": "label",
+}
+
+
 async def _put(session: _Session, path: str, wire: JsonValue) -> None:
     await session.send(
         lambda: session.coordinator.client.put_wallbox_setting(
@@ -914,6 +922,22 @@ async def _put(session: _Session, path: str, wire: JsonValue) -> None:
     await session.confirm(
         lambda: session.leaf(path),
         lambda leaf: isinstance(leaf, Leaf) and _same(leaf.value, expected),
+    )
+    _note_confirmed(session.coordinator, path, wire)
+
+
+def _note_confirmed(
+    coordinator: WallboxCoordinator, path: str, wire: JsonValue
+) -> None:
+    """The configuration object read before the write still holds the old
+    value: replace that field by the confirmed one, so the entities show it
+    at once, without another request. Its read time stays as it was."""
+    name = _CONF_FIELDS.get(path)
+    snapshot = (coordinator.data or {}).get("conf") if name is not None else None
+    if name is None or snapshot is None or not isinstance(wire, str):
+        return
+    coordinator.store_section(
+        "conf", replace(snapshot, values={**snapshot.values, name: wire})
     )
 
 
