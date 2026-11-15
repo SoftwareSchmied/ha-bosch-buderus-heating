@@ -138,7 +138,8 @@ identifiers: whether the import is on, the state per recording (`ok`,
 `missing`, `forbidden`, `unit`) for local and cloud, how many hours, days
 and months are known, how many hours the import is behind, discarded values
 with their reason, local and cloud differences, days whose hours could not
-be placed, the last runs (reason, source, number of reads) and whether the
+be placed, the last runs (reason, source, number of reads, and for an
+import that failed the number of recordings) and whether the
 plant's UTC offset differs from the time zone of Home Assistant, and the
 plausibility bound per hour.
 
