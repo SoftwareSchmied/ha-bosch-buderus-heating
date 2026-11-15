@@ -3,15 +3,15 @@
   "family": "connectkey",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed gateway with two radio room zones and their heating and cooling programs (absolute temperatures as text)",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names follow the app's request and model classes named in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-10: zone programs hold absolute temperatures as text within switchPointMin/Max/Resolution and are written as a raw array, heating and cooling separately.",
-    "source": "app ZonesPointtService get/put switchPrograms/{heatCoolMode}; ConnectKeyZoneProvider FREE_TEMPERATURE with switchPointMin/Max/Resolution"
+    "source": "behaviour of the manufacturer's app: zone programs per heating/cooling mode with free temperatures within switchPointMin/Max/Resolution"
   },
   "resources": [
     {

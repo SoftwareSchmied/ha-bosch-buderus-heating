@@ -3,15 +3,15 @@
   "family": "connectkey",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed program names A/B with the codings of the app's string configuration",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names follow the app's request and model classes named in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-05: program names are decoded and coded as valueConfig says (Base64 in UTF-8/UTF-16/UTF-32 big-endian, ascii as is) and written once with read-back.",
-    "source": "app StringConfigurationMapper base64/ascii with charset; StringConfiguration charset/codingType/maxLength; SharedScheduleProviderImpl edit only with valueConfig"
+    "source": "behaviour of the manufacturer's app: program names coded as Base64 or ASCII with charset, coding type and maximum length; a name is editable only with a value configuration"
   },
   "cases": {
     "utf8_base64": {

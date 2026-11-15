@@ -3,7 +3,7 @@
   "family": "rrc",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed hot water week program 1 of a room controller with four points per day, a low point on Saturday and an Off spelling on Sunday",
     "firmware": null,
     "capture_date": null,
@@ -11,7 +11,7 @@
     "redaction": "Point form {d,t,dhw} and type dhwProgram as in the anonymized TC100.2 device tree; every time and level is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-19: the hot water week is written once as {value:[{d,t,dhw}]}, sorted, high/off for new points, low/eco kept only where used, at most six points per day.",
-    "source": "room controller app DhwProgramDayViewModel (6 points per day, new point 12:00 off), week write {value:[{d,t,dhw}]}, DHWSwitchPointStateKt level mapping"
+    "source": "behaviour of the room controller app: 6 points per day, a new point at 12:00 off, week write {value:[{d,t,dhw}]} with the hot water levels"
   },
   "resources": [
     {

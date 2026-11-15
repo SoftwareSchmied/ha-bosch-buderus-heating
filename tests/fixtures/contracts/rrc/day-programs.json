@@ -3,7 +3,7 @@
   "family": "rrc",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed room controller program with days of 0, 1, 2, 3 and 6 switch points; day programs with and without d, Friday with integer names",
     "firmware": null,
     "capture_date": null,
@@ -11,7 +11,7 @@
     "redaction": "Point form {d,t,Th} with optional integer name as in the anonymized TC100.2 structure; every time and temperature is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-17: add or delete a switch point of one day: the whole day {d,t,Th} once to /programs/pgN/<day>, at most six points per day (app limit), the last point of a day stays, read-back of the week.",
-    "source": "room controller app ClockProgramDayViewModel (NUMBER_OF_SWITCHPOINTS_ALLOWED 6, new point 12:00/15 C), day write {value:[{d,t,Th}]}"
+    "source": "behaviour of the room controller app: at most 6 switch points per day, a new point at 12:00/15 C, day write {value:[{d,t,Th}]}"
   },
   "resources": [
     {

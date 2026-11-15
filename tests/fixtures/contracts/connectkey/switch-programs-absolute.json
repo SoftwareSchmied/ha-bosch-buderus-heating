@@ -3,15 +3,15 @@
   "family": "connectkey",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed heating circuit whose program type is absolute: programs A (with an off point) and B hold temperatures as text",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names follow the app's request and model classes named in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-13: absolute programs are read as numbers, written as text in the reading's form within switchPointMin/Max/Resolution, only while the program type reads absolute.",
-    "source": "app IcomSwitchProgramMapperImpl/SwitchProgramMapper absolute setpoints as text, off as 0.0; ScheduleTypeMapped absolute/level/levels"
+    "source": "behaviour of the manufacturer's app: absolute setpoints as text, off as 0.0; program types absolute and level"
   },
   "resources": [
     {

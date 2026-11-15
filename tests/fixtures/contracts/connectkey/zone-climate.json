@@ -1,7 +1,7 @@
 {
  "provenance": {
   "kind": "synthetic",
-  "basis": "shape_of_a_real_diagnostics_report",
+  "basis": "compatibility_mapping", "reference": "shape of a real diagnostics report",
   "physical_device_verified": false,
   "firmware": null,
   "capture_date": null,

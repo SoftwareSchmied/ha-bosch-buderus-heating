@@ -3,15 +3,15 @@
   "family": "wddw2",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model",
+    "basis": "compatibility_mapping",
     "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight)",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names follow the app's request and model classes named in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-12: the WDDW2 program is written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off.",
-    "source": "app Wddw2RequestManagerImpl PutSwitchPoints, PutSwitchPoints @SerialName switchPoints, Wddw2ModelMapperImpl setpoint toIntOrNull and manualSetpoint range"
+    "source": "behaviour of the manufacturer's app: the WDDW2 program is written as {switchPoints:[...]} with whole degrees within the manualSetpoint range"
   },
   "resources": [
     {
