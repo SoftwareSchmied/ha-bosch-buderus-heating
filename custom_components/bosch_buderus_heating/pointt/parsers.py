@@ -268,6 +268,29 @@ SWITCH_PROGRAM_FIELDS = (
     "switchPointMax",
     "switchPointResolution",
 )
+# The weekly programs of an air conditioner (``deviceType`` ``rac``) and their
+# configuration. The app reads a program into its switch-program model
+# without checking the ``type``, and the configuration lists one object per
+# operation mode in ``allowedValues``; both are kept for the program rules
+# instead of being refused. Only these exact paths, never a heating path.
+_AIRCON_PROGRAM = re.compile(r"^/airConditioning/switchPrograms/program[1-9]$")
+AIRCON_PROGRAM_CONFIGURATION = "/airConditioning/switchPrograms/configuration"
+_AIRCON_CONFIGURATION_FIELDS = (
+    "allowedValues",
+    "maxNbOfSwitchPoints",
+    "maxNbOfSwitchPointsPerDay",
+    "switchPointTimeRaster",
+)
+
+
+def _aircon_configuration(path: str, data: Mapping[str, object]) -> bool:
+    """The air-conditioner program configuration with mode objects."""
+    allowed = data.get("allowedValues")
+    return (
+        path == AIRCON_PROGRAM_CONFIGURATION
+        and isinstance(allowed, list)
+        and any(isinstance(item, Mapping) for item in allowed)
+    )
 
 
 def parse_resource(payload: object, *, path: str | None = None) -> Resource:
@@ -284,9 +307,10 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         if _response_resource_path(response_id) != resource_path:
             raise InvalidPayload("Resource ID did not match the requested path")
 
+    aircon_configuration = _aircon_configuration(resource_path, data)
     allowed_raw = data.get("allowedValues")
     allowed_values: tuple[JsonScalar, ...] = ()
-    if allowed_raw is not None:
+    if allowed_raw is not None and not aircon_configuration:
         allowed_values = tuple(
             _scalar(item)
             for item in _sequence(allowed_raw, message="allowedValues must be an array")
@@ -331,8 +355,18 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     program_fields = (
         {key: _json_value(data[key]) for key in SWITCH_PROGRAM_FIELDS if key in data}
         if data.get("type") == "switchProgram"
+        or (
+            _AIRCON_PROGRAM.fullmatch(resource_path) is not None
+            and isinstance(data.get("switchPoints"), list)
+        )
         else {}
     )
+    if aircon_configuration:
+        program_fields = {
+            key: _json_value(data[key])
+            for key in _AIRCON_CONFIGURATION_FIELDS
+            if key in data
+        }
     switch_fields = frozenset(program_fields)
     if data.get("type") == "stringValue" and isinstance(data.get("valueConfig"), dict):
         # TP-05: the text coding of a name (charset, coding, length); kept

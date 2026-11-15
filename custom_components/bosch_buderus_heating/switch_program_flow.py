@@ -11,6 +11,10 @@ allow a change; an absolute program (temperatures) gets a number field
 instead of the level choice. The hot water week of an RRC room controller
 (TP-19) is opened from the RRC dialog and uses the same steps with its own
 write. The week step shows a read-only weekly view (TP-07) next to the text.
+
+The programs of an air conditioner on a PointT gateway are offered with the
+same steps; a switch point there has a mode, a temperature and a fan speed
+(``aircon_program_rules``) and is written by the unit's own coordinator.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from __future__ import annotations
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
@@ -36,12 +41,22 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.helpers.translation import async_get_translations
 
+from .aircon import AirconCoordinator
+from .aircon_entity import option_key
+from .aircon_program_rules import (
+    OFF,
+    AirconRules,
+    Setting,
+    canonical_setting,
+    parse_setting,
+)
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import grouped_entity_name
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .markdown_text import markdown_literal
+from .name_translations import name_part
 from .notifications import installation_name
 from .options_navigation import (
     BACK,
@@ -119,9 +134,26 @@ def _refusal_error(err: WriteValidationError) -> str:
     return "switch_program_changed"
 
 
+def aircons_of(entry: ConfigEntry[Any]) -> tuple[AirconCoordinator, ...]:
+    """The air conditioners the entry currently runs."""
+    runtime = getattr(entry, "runtime_data", None)
+    legacy = getattr(runtime, "aircons", None)
+    if isinstance(legacy, tuple):
+        return legacy
+    connections = getattr(runtime, "connections", None)
+    snapshot = getattr(connections, "snapshot", None)
+    if connections is None or snapshot is None:
+        return ()
+    return tuple(
+        value
+        for key in tuple(snapshot.bindings)
+        if isinstance(value := connections.display_data(key), AirconCoordinator)
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class ProgramChoice:
-    coordinator: BoschBuderusDataUpdateCoordinator
+    coordinator: BoschBuderusDataUpdateCoordinator | AirconCoordinator
     resource: Resource
     program: EditableProgram
     label: str
@@ -234,6 +266,41 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                         ".state"
                     ),
                 )
+        result.update(self._aircon_program_choices())
+        return result
+
+    def _aircon_program_choices(self) -> dict[str, ProgramChoice]:
+        """The programs of the entry's air conditioners that may be changed."""
+        result: dict[str, ProgramChoice] = {}
+        language = self.hass.config.language
+        for number, coordinator in enumerate(aircons_of(self._entry), 1):
+            readings = coordinator.program_readings()
+            for path in coordinator.program_paths():
+                resource = coordinator.resource(path)
+                program = (
+                    editable_program(resource, readings)
+                    if resource is not None
+                    else None
+                )
+                if resource is None or program is None:
+                    continue
+                device = installation_name(
+                    self.hass,
+                    self._entry.entry_id,
+                    coordinator.gateway.gateway_id,
+                    number,
+                )
+                label = name_part(language, "name_part_program_aircon", number=path[-1])
+                active = coordinator.program_active(path)
+                result[f"aircon:{number}:{path}"] = ProgramChoice(
+                    coordinator,
+                    resource,
+                    program,
+                    f"{device} / {label}",
+                    "aircon_inactive" if active is False else "aircon",
+                    labels_key="entity.sensor.aircon_switch_program.state",
+                    write=partial(coordinator.async_write_switch_program, resource),
+                )
         return result
 
     def _sp_extra_choices(self) -> dict[str, ProgramChoice]:
@@ -277,7 +344,15 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
             *(point.level for point in program.points),
             *(point.level for point in self._sp_draft),
         }
-        if program.numeric:
+        if program.aircon is not None:
+            decimal = selectors.get(
+                f"{prefix}selector.switch_program_value.options.decimal_sign", "."
+            )
+            levels = {
+                level: self._aircon_label(level, translations, decimal)
+                for level in shown
+            }
+        elif program.numeric:
             off = selectors.get(
                 f"{prefix}selector.switch_program_value.options.off", "off"
             )
@@ -295,6 +370,31 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                 for level in shown
             }
         return days, levels
+
+    @staticmethod
+    def _aircon_label(level: str, translations: dict[str, str], decimal: str) -> str:
+        """A setting as text: the translated mode, temperature and fan speed."""
+        setting = parse_setting(level)
+        if setting is None:
+            return level
+        prefix = f"component.{DOMAIN}.entity."
+        parts = [
+            translations.get(
+                f"{prefix}sensor.aircon_switch_program.state.{option_key(setting.mode)}",
+                setting.mode,
+            )
+        ]
+        if setting.temperature is not None:
+            parts.append(_number_label(repr(setting.temperature), decimal))
+        if setting.fan is not None:
+            parts.append(
+                translations.get(
+                    f"{prefix}climate.pointt_air_conditioner.state_attributes"
+                    f".fan_mode.state.{option_key(setting.fan)}",
+                    setting.fan,
+                )
+            )
+        return " · ".join(parts)
 
     @staticmethod
     def _points_text(
@@ -415,6 +515,8 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
             "dhw": "switch_program_week_dhw",
             "inactive": "switch_program_week_inactive",
             "rrc_dhw": "switch_program_week_rrc_dhw",
+            "aircon": "switch_program_week_aircon",
+            "aircon_inactive": "switch_program_week_aircon_inactive",
         }.get(choice.hint, "switch_program_week")
         # TP-07: the same week as a read-only view; its value is not used.
         view = ScheduleWeekSelector(
@@ -463,6 +565,16 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         return await self.async_step_switch_program_week(user_input)
 
     async def async_step_switch_program_week_rrc_dhw(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_switch_program_week(user_input)
+
+    async def async_step_switch_program_week_aircon(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_switch_program_week(user_input)
+
+    async def async_step_switch_program_week_aircon_inactive(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return await self.async_step_switch_program_week(user_input)
@@ -559,7 +671,9 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                 if match is None:
                     errors["time"] = "switch_program_time"
                 elif level is None or value_issue(level, program) is not None:
-                    if program.numeric:
+                    if program.aircon is not None:
+                        errors["base"] = "switch_program_aircon_setting"
+                    elif program.numeric:
                         errors["value"] = "switch_program_value"
                     else:
                         errors["level"] = "switch_program_level"
@@ -588,7 +702,13 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                     default=f"{original.minute // 60:02d}:{original.minute % 60:02d}",
                 )
             ] = time_selector
-        if program.numeric:
+        if program.aircon is not None:
+            fields.update(
+                self._sp_aircon_fields(
+                    program.aircon, original, await self._sp_aircon_labels()
+                )
+            )
+        elif program.numeric:
             fields.update(self._sp_number_fields(program, original))
         else:
             level_selector = SelectSelector(
@@ -609,7 +729,9 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         schema = vol.Schema(fields)
         return self.async_show_form(
             step_id=(
-                "switch_program_point_value"
+                "switch_program_point_aircon"
+                if program.aircon is not None
+                else "switch_program_point_value"
                 if program.numeric
                 else "switch_program_point"
             ),
@@ -618,6 +740,15 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
             description_placeholders={
                 **self._sp_placeholders(choice),
                 **self._sp_range_placeholders(program),
+                **(
+                    {
+                        "settings": self._sp_aircon_settings(
+                            program.aircon, await self._sp_aircon_labels()
+                        )
+                    }
+                    if program.aircon is not None
+                    else {}
+                ),
                 "day": days[_day_key(day)],
             },
         )
@@ -626,6 +757,120 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return await self.async_step_switch_program_point(user_input)
+
+    async def async_step_switch_program_point_aircon(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_switch_program_point(user_input)
+
+    async def _sp_aircon_labels(self) -> dict[str, str]:
+        """The translated mode and fan speed names (``mode.<token>``,
+        ``fan.<token>``) and the decimal sign (``decimal``)."""
+        language = self.hass.config.language
+        prefix = f"component.{DOMAIN}."
+        entities = await async_get_translations(self.hass, language, "entity", {DOMAIN})
+        selectors = await async_get_translations(
+            self.hass, language, "selector", {DOMAIN}
+        )
+        labels = {
+            "decimal": selectors.get(
+                f"{prefix}selector.switch_program_value.options.decimal_sign", "."
+            )
+        }
+        for token in (OFF, "auto", "cool", "heat", "dry", "fanOnly"):
+            labels[f"mode.{token}"] = entities.get(
+                f"{prefix}entity.sensor.aircon_switch_program.state.{option_key(token)}",
+                token,
+            )
+        for token in ("auto", "quiet", "low", "mid", "high", "turbo"):
+            labels[f"fan.{token}"] = entities.get(
+                f"{prefix}entity.climate.pointt_air_conditioner.state_attributes"
+                f".fan_mode.state.{option_key(token)}",
+                token,
+            )
+        return labels
+
+    @staticmethod
+    def _sp_aircon_settings(rules: AirconRules, labels: dict[str, str]) -> str:
+        """The modes with their temperature ranges and fan speeds, as text."""
+        decimal = labels.get("decimal", ".")
+        lines: list[str] = []
+        for mode in rules.offered:
+            rule = rules.modes.get(mode)
+            text = labels.get(f"mode.{mode}", mode)
+            details: list[str] = []
+            if rule is not None and rule.minimum is not None:
+                assert rule.maximum is not None and rule.step is not None
+                low = f"{rule.minimum:g}".replace(".", decimal)
+                high = f"{rule.maximum:g}".replace(".", decimal)
+                step = f"{rule.step:g}".replace(".", decimal)
+                details.append(f"{low}-{high} °C ({step})")
+            if rule is not None and rule.fans:
+                details.append(
+                    ", ".join(labels.get(f"fan.{fan}", fan) for fan in rule.fans)
+                )
+            lines.append(f"- {text}" + (f": {'; '.join(details)}" if details else ""))
+        return "\n".join(lines)
+
+    @staticmethod
+    def _sp_aircon_fields(
+        rules: AirconRules, original: SwitchPoint | None, labels: dict[str, str]
+    ) -> dict[Any, Any]:
+        """The mode, a temperature (where a mode has a range) and a fan speed
+        (where a mode lists them)."""
+        setting: Setting | None = (
+            parse_setting(original.level) if original is not None else None
+        )
+        fields: dict[Any, Any] = {}
+        mode_selector = SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value=mode, label=labels.get(f"mode.{mode}", mode))
+                    for mode in rules.offered
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+        )
+        if setting is None:
+            fields[vol.Required("mode")] = mode_selector
+        else:
+            fields[vol.Required("mode", default=setting.mode)] = mode_selector
+        ranged = [rule for rule in rules.modes.values() if rule.minimum is not None]
+        if ranged:
+            minimum = min(rule.minimum for rule in ranged if rule.minimum is not None)
+            maximum = max(rule.maximum for rule in ranged if rule.maximum is not None)
+            step = min(rule.step for rule in ranged if rule.step is not None)
+            number = NumberSelector(
+                NumberSelectorConfig(
+                    min=minimum,
+                    max=maximum,
+                    step=step,
+                    unit_of_measurement="°C",
+                    mode=NumberSelectorMode.BOX,
+                )
+            )
+            if setting is not None and setting.temperature is not None:
+                fields[vol.Optional("value", default=setting.temperature)] = number
+            else:
+                fields[vol.Optional("value")] = number
+        fans = tuple(
+            dict.fromkeys(fan for rule in rules.modes.values() for fan in rule.fans)
+        )
+        if fans:
+            fan_selector = SelectSelector(
+                SelectSelectorConfig(
+                    options=[
+                        SelectOptionDict(value=fan, label=labels.get(f"fan.{fan}", fan))
+                        for fan in fans
+                    ],
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            )
+            if setting is not None and setting.fan is not None:
+                fields[vol.Optional("fan", default=setting.fan)] = fan_selector
+            else:
+                fields[vol.Optional("fan")] = fan_selector
+        return fields
 
     @staticmethod
     def _sp_range_placeholders(program: EditableProgram) -> dict[str, str]:
@@ -673,7 +918,32 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
     def _sp_entered_level(
         program: EditableProgram, user_input: dict[str, Any]
     ) -> str | None:
-        """The setpoint text of the entered level or number, or ``None``."""
+        """The setpoint text of the entered level or number, or ``None``.
+
+        For an air conditioner the temperature and the fan speed count only
+        where the chosen mode has them (a field left from another mode is
+        ignored); ``off`` carries neither.
+        """
+        if program.aircon is not None:
+            mode = user_input.get("mode")
+            rule = program.aircon.modes.get(mode) if isinstance(mode, str) else None
+            if mode == OFF:
+                return OFF
+            if rule is None:
+                return None
+            value = user_input.get("value") if rule.minimum is not None else None
+            fan = user_input.get("fan") if rule.fans else None
+            if value is not None and (
+                isinstance(value, bool) or not isinstance(value, int | float)
+            ):
+                return None
+            # Not rounded: an entry off the step is refused, never corrected.
+            parts = [rule.mode]
+            if value is not None:
+                parts.append(repr(float(value)))
+            if isinstance(fan, str):
+                parts.append(fan)
+            return canonical_setting(" ".join(parts))
         if not program.numeric:
             level = user_input.get("level")
             return level if isinstance(level, str) else None

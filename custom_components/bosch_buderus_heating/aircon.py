@@ -5,7 +5,10 @@ A separate backend from the air conditioners of the second cloud
 and written through normal PointT resources below ``/airConditioning``.
 One bulk request per cycle reads a fixed list of paths; nothing runs the
 heating discovery. Writes go through the shared write service with the slow
-read-back schedule, one PUT per action and no retry.
+read-back schedule, one PUT per action and no retry. The weekly programs are
+read along in the same bulk request and changed through the shared program
+write (``switch_program_service``): fresh reading of the program and its
+configuration, one PUT of the whole week, read-back, no retry.
 
 Expected, untested on a real installation: the paths and their meaning come
 from the vendor app.
@@ -33,6 +36,7 @@ from .aircon_policies import (
     POLL_PATHS,
     PROGRAM_IDS,
     SCHEDULE_BASE,
+    SCHEDULE_CONFIGURATION,
     STANDARD_FUNCTION_PATHS,
     STANDARD_FUNCTIONS,
     WRITE_GUARDS,
@@ -49,6 +53,13 @@ from .pointt import (
 )
 from .pointt.const import DEFAULT_TOTAL_TIMEOUT
 from .pointt.exceptions import RateLimited, SourceStopped
+from .switch_program_edit import edit_issue
+from .switch_program_service import (
+    SwitchProgramChanged,
+    SwitchProgramPlan,
+    SwitchProgramService,
+)
+from .switch_programs import SwitchPoint, program_kind
 from .write_policies import RRC_READ_BACK_DELAYS
 from .write_window import send_window
 from .writes import (
@@ -87,6 +98,11 @@ READ_BACK_DELAYS: Final = RRC_READ_BACK_DELAYS
 WRITE_LOCK_TIMEOUT: Final = 60.0
 # The fresh reading, the PUT and the read-back of one action.
 WRITE_DEADLINE_SECONDS: Final = 2 * DEFAULT_TOTAL_TIMEOUT + sum(READ_BACK_DELAYS)
+# A program change reads the program and its configuration, reads the program
+# once more right before the PUT, then sends and reads back.
+PROGRAM_WRITE_DEADLINE_SECONDS: Final = 3 * DEFAULT_TOTAL_TIMEOUT + sum(
+    READ_BACK_DELAYS
+)
 
 
 def is_aircon_gateway(gateway: Gateway | None) -> bool:
@@ -208,8 +224,10 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         self.data = AirconSnapshot()
         self._lock = asyncio.Lock()
         self._write_service = WriteService(client, read_back_schedule=READ_BACK_DELAYS)
+        self._program_service = SwitchProgramService(client)
         self.writes_sent = 0
         self.writes_refused = 0
+        self.program_writes: dict[str, int] = {}
 
     # Readings
 
@@ -304,11 +322,35 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         return AirconSnapshot(resources, missing, monotonic())
 
     def _program_paths(self) -> tuple[str, ...]:
-        """The program the unit named active in the last cycle, read along
-        in the same bulk request (its switch points are shown, not edited)."""
+        """The programs the unit offered in the last cycle (the allowed values
+        of the active program, at most nine), read along in the same bulk
+        request: no request of their own."""
         active = self.data.resources.get(ACTIVE_PROGRAM)
-        value = active.value if active is not None else None
-        return (program_path(value),) if value in PROGRAM_IDS else ()
+        if active is None:
+            return ()
+        named = [*active.metadata.allowed_values, active.value]
+        return tuple(
+            program_path(program) for program in sorted(PROGRAM_IDS) if program in named
+        )
+
+    def program_paths(self) -> tuple[str, ...]:
+        """The programs with a current reading, sorted."""
+        return tuple(
+            sorted(
+                path
+                for path in self.data.resources
+                if program_kind(path) is not None and self.resource(path) is not None
+            )
+        )
+
+    def program_readings(self) -> dict[str, Resource]:
+        """The current readings, for the program rules."""
+        return dict(self.data.resources) if self.current() else {}
+
+    def program_active(self, path: str) -> bool | None:
+        """Whether ``path`` is the active program; ``None`` when unknown."""
+        value = self.value(ACTIVE_PROGRAM)
+        return program_path(value) == path if value in PROGRAM_IDS else None
 
     def switch_points(self) -> list[dict[str, object]] | None:
         """The switch points of the active program, or None when unknown."""
@@ -355,16 +397,18 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         return False
 
     @asynccontextmanager
-    async def _transaction(self) -> AsyncIterator[None]:
+    async def _transaction(self, deadline: float | None = None) -> AsyncIterator[None]:
+        if deadline is None:
+            deadline = WRITE_DEADLINE_SECONDS
         try:
             async with asyncio.timeout(WRITE_LOCK_TIMEOUT):
                 await self._lock.acquire()
         except TimeoutError as err:
             raise WriteBusy("A reading held the unit; the change was not sent") from err
         try:
-            with send_window(WRITE_DEADLINE_SECONDS) as window:
+            with send_window(deadline) as window:
                 try:
-                    async with asyncio.timeout(WRITE_DEADLINE_SECONDS) as scope:
+                    async with asyncio.timeout(deadline) as scope:
                         yield
                 except TimeoutError as err:
                     if not scope.expired():
@@ -433,6 +477,92 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
 
     def _sent(self) -> None:
         self.writes_sent += 1
+
+    # Weekly programs
+
+    def _count_program(self, outcome: str) -> None:
+        self.program_writes[outcome] = self.program_writes.get(outcome, 0) + 1
+
+    async def async_plan_switch_program(
+        self, path: str, plan: SwitchProgramPlan
+    ) -> tuple[Resource, Resource | None]:
+        """The action ``set_switch_points``: read the program and its
+        configuration fresh, let ``plan`` build the week from that reading
+        and write it once; ``(fresh, confirmed)``, ``confirmed`` is ``None``
+        when nothing was sent."""
+        return await self._async_program_write(path, None, (), plan)
+
+    async def async_write_switch_program(
+        self, expected: Resource, points: tuple[SwitchPoint, ...]
+    ) -> Resource:
+        """The options dialog: write the week over the program as shown."""
+        _fresh, confirmed = await self._async_program_write(
+            expected.path, expected, points, None
+        )
+        assert confirmed is not None
+        return confirmed
+
+    async def _async_program_write(
+        self,
+        path: str,
+        expected: Resource | None,
+        points: tuple[SwitchPoint, ...],
+        plan: SwitchProgramPlan | None,
+    ) -> tuple[Resource, Resource | None]:
+        kind = program_kind(path)
+        if kind is None or kind.key != "aircon":
+            raise WriteValidationError("Unsupported switch program path")
+        if not self.current() or path not in self.data.resources:
+            raise WriteValidationError("The program has no current reading")
+        if expected is not None and self.data.resources[path] != expected:
+            self._count_program("refused")
+            raise SwitchProgramChanged
+        gateway_id = self.gateway.gateway_id
+        try:
+            async with self._transaction(PROGRAM_WRITE_DEADLINE_SECONDS):
+                fresh = await self._fresh(gateway_id, (path, SCHEDULE_CONFIGURATION))
+                program = fresh.get(path)
+                if program is None:
+                    raise WriteValidationError("The program cannot be read now")
+                self._publish(fresh)
+                # The rules need the current configuration: one that cannot
+                # be read now is not taken from the last cycle.
+                readings = {
+                    key: value
+                    for key, value in self.data.resources.items()
+                    if key != SCHEDULE_CONFIGURATION
+                }
+                readings.update(fresh)
+                if plan is not None:
+                    planned = plan(program, readings, None)
+                    if planned is None:
+                        return program, None
+                    expected, points = program, planned
+                assert expected is not None
+                # The shared write checks the rules against these readings,
+                # compares the program once more and sends it once.
+                confirmed = await self._program_service.async_write(
+                    gateway_id,
+                    expected,
+                    points,
+                    readings,
+                    delays=READ_BACK_DELAYS,
+                    on_sent=self._program_sent,
+                )
+                self._publish({path: confirmed})
+        except WriteValidationError:
+            self.writes_refused += 1
+            self._count_program("refused")
+            raise
+        except PointTError:
+            self._count_program("failed")
+            raise
+        self._count_program("confirmed")
+        return program, confirmed
+
+    def _program_sent(self) -> None:
+        self.writes_sent += 1
+        self._count_program("sent")
 
     async def _fresh(
         self, gateway_id: str, paths: tuple[str, ...]
@@ -507,6 +637,21 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             ),
             "function_references": functions,
             "active_program_read": len(resources) < len(self.data.resources),
+            "programs_read": len(self.program_paths()),
+            "program_edit_issues": self._program_issues(),
+            "program_writes": dict(sorted(self.program_writes.items())),
             "writes_sent": self.writes_sent,
             "writes_refused": self.writes_refused,
         }
+
+    def _program_issues(self) -> list[str]:
+        """Why each program cannot be changed (``editable`` otherwise);
+        tokens only, no program IDs."""
+        readings = self.program_readings()
+        return sorted(
+            {
+                edit_issue(resource, readings) or "editable"
+                for path in self.program_paths()
+                if (resource := self.resource(path)) is not None
+            }
+        )

@@ -12,7 +12,10 @@ reported. A heating program whose points all carry numbers is an absolute
 program. The further kinds (cooling, zones, ventilation and the WDDW2 hot
 water program) have no confirmed reading yet: a program whose points can be
 read is shown, also without limits; whether it may be changed is decided by
-``switch_program_edit`` from the reported metadata alone.
+``switch_program_edit`` from the reported metadata alone. The programs of an
+air conditioner on a PointT gateway carry a mode, a temperature and a fan
+speed per point (``aircon_program_rules``); their setting is kept as one
+text and a day starts switched off until its first point.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ import re
 from dataclasses import dataclass
 from typing import Final, Literal
 
+from .aircon_program_rules import bounded_int, parse_point
 from .pointt.models import JsonValue, Resource
 
 DAYS = ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
@@ -37,7 +41,7 @@ _POINT_FIELDS = frozenset({"dayOfWeek", "time", "setpoint"})
 # Range fields an absolute program may report with its limits.
 RANGE_FIELDS: Final = ("switchPointMin", "switchPointMax", "switchPointResolution")
 
-ValueType = Literal["level", "absolute", "degrees"]
+ValueType = Literal["level", "absolute", "degrees", "aircon"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,8 +51,9 @@ class ProgramKind:
     key: str
     pattern: re.Pattern[str]
     # "level": level keys; "level_or_absolute": level keys or, in all points,
-    # numbers; "absolute": numbers; "degrees": ``off`` or whole degrees.
-    values: Literal["level", "level_or_absolute", "absolute", "degrees"]
+    # numbers; "absolute": numbers; "degrees": ``off`` or whole degrees;
+    # "aircon": mode, temperature and fan speed of an air conditioner.
+    values: Literal["level", "level_or_absolute", "absolute", "degrees", "aircon"]
     # The PUT body: a raw array of points, or ``{"switchPoints": [...]}``.
     body: Literal["array", "object"]
     # The form reviewed since 0.9.0: limits and level reference required.
@@ -106,6 +111,17 @@ KINDS: Final[tuple[ProgramKind, ...]] = (
         "wddw2",
         r"^(?P<circuit>/dhwCircuits/dhw1)/switchPrograms/(?P<program>program1)$",
         "degrees",
+        "object",
+        False,
+        False,
+    ),
+    # An air conditioner's programs (``program1`` ... ``program9``, the
+    # number is the last character of the ID in the app): an object body,
+    # no carry-over (the unit is off before the first point of a day).
+    _kind(
+        "aircon",
+        r"^(?P<circuit>/airConditioning)/switchPrograms/(?P<program>program[1-9])$",
+        "aircon",
         "object",
         False,
         False,
@@ -256,6 +272,8 @@ def assess_switch_program(resource: Resource) -> SwitchProgramAssessment:
     kind = program_kind(resource.path)
     if kind is None:
         return SwitchProgramAssessment(False, "not_switch_program")
+    if kind.values == "aircon":
+        return _assess_aircon(resource, kind)
     if (
         resource.metadata.resource_type != "switchProgram"
         or resource.references
@@ -402,6 +420,70 @@ def _assess_further(resource: Resource, kind: ProgramKind) -> SwitchProgramAsses
         step=step,
         carry_over=kind.carry_over,
         notes=tuple(dict.fromkeys((*notes, *range_notes))),
+    )
+
+
+def _assess_aircon(resource: Resource, kind: ProgramKind) -> SwitchProgramAssessment:
+    """An air conditioner's program: readable without limits or configuration.
+
+    The ``type`` is not checked (the app does not either); every point must
+    have the known form, otherwise the program is not shown at all.
+    """
+    if (
+        resource.references
+        or resource.has_value
+        or resource.has_values
+        or resource.unknown_fields
+    ):
+        return SwitchProgramAssessment(False, "unsupported_schema")
+    fields = resource.program_fields
+    raw_points = fields.get("switchPoints")
+    if not isinstance(raw_points, list):
+        return SwitchProgramAssessment(False, "missing_switch_points")
+    if len(raw_points) > MAX_SWITCH_POINTS * 3:
+        return SwitchProgramAssessment(False, "too_many_switch_points")
+    notes: list[str] = []
+    if resource.metadata.resource_type != "switchProgram":
+        notes.append("program_type_other")
+    max_points = bounded_int(fields.get("maxNbOfSwitchPoints"), 7 * 48)
+    max_per_day = bounded_int(
+        fields.get("maxNbOfSwitchPointsPerDay"), MAX_SWITCH_POINTS_PER_DAY
+    )
+    raster = bounded_int(fields.get("switchPointTimeRaster"), 60)
+    if raster is not None and MINUTES_PER_DAY % raster:
+        raster = None
+    if None in (max_points, max_per_day, raster):
+        # The configuration may report them (``switch_program_edit``).
+        notes.append("program_limits_missing")
+    points: list[SwitchPoint] = []
+    seen: set[tuple[int, int]] = set()
+    for item in raw_points:
+        parsed = parse_point(item)
+        if parsed is None:
+            return SwitchProgramAssessment(False, "invalid_switch_point")
+        day, minute, setting = parsed
+        if day not in DAYS or not 0 <= minute < MINUTES_PER_DAY:
+            return SwitchProgramAssessment(False, "invalid_switch_point")
+        if raster is not None and minute % raster:
+            return SwitchProgramAssessment(False, "invalid_switch_point")
+        key = (DAYS.index(day), minute)
+        if key in seen:
+            return SwitchProgramAssessment(False, "duplicate_switch_point")
+        seen.add(key)
+        points.append(SwitchPoint(key[0], minute, setting.text))
+    if not points:
+        notes.append("program_empty")
+    return SwitchProgramAssessment(
+        True,
+        points=tuple(points),
+        max_switch_points=max_points,
+        max_switch_points_per_day=max_per_day,
+        time_raster=raster,
+        kind=kind.key,
+        value_type="aircon",
+        numbers_as_text=False,
+        carry_over=kind.carry_over,
+        notes=tuple(notes),
     )
 
 

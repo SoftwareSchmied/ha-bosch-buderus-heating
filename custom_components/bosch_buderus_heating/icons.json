@@ -410,6 +410,17 @@
       },
       "wallbox_energy_manager": {
         "default": "mdi:home-lightning-bolt"
+      },
+      "aircon_switch_program": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "off": "mdi:air-conditioner",
+          "cool": "mdi:snowflake",
+          "heat": "mdi:fire",
+          "dry": "mdi:water-percent",
+          "fan_only": "mdi:fan",
+          "auto": "mdi:thermostat-auto"
+        }
       }
     },
     "switch": {

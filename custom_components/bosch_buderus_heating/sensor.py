@@ -49,6 +49,7 @@ from . import (
     rrc_platforms,
     switch_program_sensor,
 )
+from .aircon_program_sensor import track_aircon_program_sensors
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -546,6 +547,7 @@ def _setup_entities(
             sensor=True,
         )
     track_wallbox_entities(Platform.SENSOR, entry, async_add_entities)
+    track_aircon_program_sensors(entry, async_add_entities)
     entities: list[SensorEntity] = []
     entities.extend(
         WallboxSensor(coordinator, description)

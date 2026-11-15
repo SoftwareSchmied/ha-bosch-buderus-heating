@@ -18,6 +18,10 @@ program as ``level``/``levels``, an absolute program as ``absolute``. The
 write reads it again right before sending. A program the gateway reports as
 not used (``used: false``) is not offered either. The program type itself is
 never written.
+
+An air conditioner's program (``aircon_program_rules``) is changed only with
+a readable, writable program configuration: its modes, temperature ranges
+and fan speeds, and the limits of the program.
 """
 
 from __future__ import annotations
@@ -27,6 +31,8 @@ import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
+from . import aircon_program_rules
+from .aircon_program_rules import AirconRules
 from .pointt.models import JsonValue, Resource
 from .start_counters import value_shape
 from .switch_programs import (
@@ -138,13 +144,16 @@ class EditableProgram:
     carry_over: bool = True
     # Days that must keep at least one point (an RRC day as read).
     keep_days: frozenset[int] = frozenset()
+    # The modes, ranges and fan speeds of an air conditioner's program.
+    aircon: AirconRules | None = None
 
     def day(self, day: int) -> tuple[SwitchPoint, ...]:
         return day_points(self.points, day)
 
     @property
     def numeric(self) -> bool:
-        return self.value_type != "level"
+        """A temperature program (a number per point)."""
+        return self.value_type in ("absolute", "degrees")
 
 
 def day_points(points: Iterable[SwitchPoint], day: int) -> tuple[SwitchPoint, ...]:
@@ -293,6 +302,19 @@ def edit_issue(
         issue = program_mode_issue(resource.path, program_mode, assessment.value_type)
         if issue is not None:
             return issue
+    if assessment.value_type == "aircon":
+        aircon = aircon_program_rules.rules(resource, resources)
+        if isinstance(aircon, str):
+            return aircon
+        if _over_limit(assessment.points, aircon):
+            return "program_over_limit"
+        if any(
+            aircon_program_rules.setting_issue(point.level, aircon) is not None
+            or point.minute % aircon.time_raster
+            for point in assessment.points
+        ):
+            return "point_out_of_range"
+        return None
     if not assessment.limits_reported:
         return "program_limits_missing"
     if "program_over_limit" in assessment.notes:
@@ -310,6 +332,16 @@ def edit_issue(
     if any(value_issue(point.level, rules) for point in assessment.points):
         return "point_out_of_range"
     return None
+
+
+def _over_limit(points: Sequence[SwitchPoint], rules: AirconRules) -> bool:
+    per_day = [0] * len(DAYS)
+    for point in points:
+        per_day[point.day] += 1
+    return (
+        len(points) > rules.max_switch_points
+        or max(per_day) > rules.max_switch_points_per_day
+    )
 
 
 def _numeric_rules(
@@ -365,6 +397,8 @@ def numeric_rules(program: EditableProgram) -> NumericRules | None:
 def value_issue(level: object, program: EditableProgram | NumericRules) -> str | None:
     """Why one setpoint text is not allowed, as a token, or ``None``."""
     if isinstance(program, EditableProgram):
+        if program.aircon is not None:
+            return aircon_program_rules.setting_issue(level, program.aircon)
         rules = numeric_rules(program)
         if rules is None:
             return (
@@ -407,6 +441,8 @@ def setpoint_text(program: EditableProgram, value: object) -> str | None:
     ``"45"`` (whole degrees), never rounded: an entry off the grid is
     refused by ``value_issue``.
     """
+    if program.aircon is not None:
+        return aircon_program_rules.canonical_setting(value)
     if not program.numeric:
         return value if isinstance(value, str) else None
     if isinstance(value, str):
@@ -440,10 +476,27 @@ def editable_program(
     if edit_issue(resource, resources, program_mode=program_mode) is not None:
         return None
     assessment = assess_switch_program(resource)
+    kind = program_kind(resource.path)
+    if assessment.value_type == "aircon":
+        aircon = aircon_program_rules.rules(resource, resources)
+        assert isinstance(aircon, AirconRules) and kind is not None
+        return EditableProgram(
+            resource.path,
+            sorted_points(assessment.points),
+            aircon.max_switch_points,
+            aircon.max_switch_points_per_day,
+            aircon.time_raster,
+            aircon.offered,
+            kind=kind.key,
+            value_type="aircon",
+            numbers_as_text=False,
+            body=kind.body,
+            carry_over=kind.carry_over,
+            aircon=aircon,
+        )
     assert assessment.max_switch_points is not None
     assert assessment.max_switch_points_per_day is not None
     assert assessment.time_raster is not None
-    kind = program_kind(resource.path)
     assert kind is not None and assessment.value_type is not None
     minimum = maximum = step = None
     off: str | None = None
@@ -507,7 +560,7 @@ def week_issue(
             return "too_many_per_day"
         issue = value_issue(point.level, program)
         if issue is not None:
-            return "level_not_allowed" if not program.numeric else issue
+            return issue if program.numeric else "level_not_allowed"
     if len(points) > program.max_switch_points:
         return "too_many_in_all"
     if any(not per_day[day] for day in program.keep_days):
@@ -547,8 +600,14 @@ def encode_week(
     fields in the order ``dayOfWeek``, ``setpoint``, ``time``.
 
     A number keeps the form the program was read in: text stays text, a
-    JSON number stays a number.
+    JSON number stays a number. An air conditioner's point carries its
+    ``parameters`` instead of a setpoint.
     """
+    if program is not None and program.aircon is not None:
+        return [
+            aircon_program_rules.wire_point(DAYS[point.day], point.minute, point.level)
+            for point in sorted_points(points)
+        ]
     return [
         {
             "dayOfWeek": DAYS[point.day],
@@ -572,7 +631,8 @@ def _wire_setpoint(level: str, program: EditableProgram | None) -> JsonValue:
 def encode_body(
     points: Iterable[SwitchPoint], program: EditableProgram
 ) -> list[JsonValue] | dict[str, JsonValue]:
-    """The PUT body: a raw array, or ``{"switchPoints": [...]}`` for WDDW2."""
+    """The PUT body: a raw array, or ``{"switchPoints": [...]}`` for WDDW2
+    and air conditioners."""
     week = encode_week(points, program)
     if program.body == "object":
         return {"switchPoints": week}

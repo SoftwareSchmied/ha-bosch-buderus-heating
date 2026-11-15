@@ -1,7 +1,9 @@
 """TP-06: the action ``set_switch_points`` for automations and scripts.
 
 The action targets program sensors (``sensor`` entities of a weekly
-program) and sets their switch points as the options dialog would: the same
+program, also those of an air conditioner, whose ``level`` is its setting
+``<mode> [<temperature>] [<fan speed>]``) and sets their switch points as
+the options dialog would: the same
 rules (``switch_program_edit``), the same single write
 (``coordinator.async_plan_switch_program``). The base of a change is always a
 fresh reading of the program; the write reads it once more right before the
@@ -31,6 +33,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import service
 from homeassistant.helpers.typing import VolDictType
 
+from .aircon_program_rules import describe
 from .const import DOMAIN
 from .control import cloud_down_error
 from .ha_schema import validation as vol
@@ -195,6 +198,11 @@ def _points(
 
 
 def _value_error(program: EditableProgram) -> ServiceValidationError:
+    if program.aircon is not None:
+        return _error(
+            "switch_points_aircon_setting_not_allowed",
+            {"settings": describe(program.aircon)},
+        )
     if program.numeric:
         return _error(
             "switch_points_value_not_allowed",
