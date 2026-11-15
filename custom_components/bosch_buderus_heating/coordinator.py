@@ -1139,7 +1139,8 @@ class BoschBuderusDataUpdateCoordinator(
         Paths the bulk response does not answer are read individually, as
         before. Nothing here writes. An ``optional`` path the gateway refuses
         or does not have (403/404) is left out of the result instead of
-        ending the write: it only adds a rule, which then does not apply.
+        ending the write: it only adds a rule, which then keeps its last
+        current reading or, without one, does not apply.
         """
         gateway_id = self.gateway.gateway_id
         paths = tuple(dict.fromkeys(before.path for before in expected))
@@ -1369,9 +1370,6 @@ class BoschBuderusDataUpdateCoordinator(
                     for item, current in (self.data or {}).items()
                     if _snapshot_is_fresh(current)
                 }
-                for item in optional - live.keys():
-                    # Missing on the gateway now: its rule does not apply.
-                    related.pop(item, None)
                 related.update(live)
             # Only an RRC controller's writes carry the RRC context, contract
             # readings and counters; every other write stays as it was.

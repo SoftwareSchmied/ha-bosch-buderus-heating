@@ -33,6 +33,7 @@ from custom_components.bosch_buderus_heating.heating_climate import (
 from custom_components.bosch_buderus_heating.pointt import (
     ResourceForbidden,
     ResourceNotFound,
+    ServiceUnavailable,
 )
 from custom_components.bosch_buderus_heating.pointt.models import BatchItemResult
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
@@ -103,9 +104,10 @@ def test_a_setting_compared_by_value_also_counts_its_flags():
 # A reading read only for a rule may be missing -----------------------------------
 
 
-def _auto_circuit(hass, *, manual_answer):
+def _auto_circuit(hass, *, manual_answer, bulk_fails=False):
     """A circuit in auto whose gateway answers ``manual_answer`` (403/404)
-    for the manual setpoint, whose earlier reading is still current."""
+    for the manual setpoint, whose earlier reading is still current;
+    ``bulk_fails``: the bulk request fails, every path is read alone."""
     resources = _resources()
     resources[HC_MODE] = replace(resources[HC_MODE], value="auto")
     resources[TEMPORARY] = parse_resource(
@@ -125,6 +127,8 @@ def _auto_circuit(hass, *, manual_answer):
     bulk = cloud.bulk
 
     async def answering(gateway, paths, **kwargs):
+        if bulk_fails:
+            raise ServiceUnavailable(503)
         answered = await bulk(gateway, [p for p in paths if p != HC_MANUAL])
         return (
             *answered,
@@ -136,10 +140,11 @@ def _auto_circuit(hass, *, manual_answer):
         )
 
     async def single(gateway, path, **kwargs):
+        cloud.gets.append(path)
         if path == HC_MANUAL:
             error = ResourceNotFound if manual_answer == 404 else ResourceForbidden
             raise error(path, manual_answer)
-        return await cloud.get(gateway, path)
+        return cloud.state[path]
 
     coordinator.client.get_resources_bulk.side_effect = answering
     coordinator.client.get_resource.side_effect = single
@@ -159,6 +164,18 @@ async def test_temporary_target_when_the_manual_setpoint_is_missing_now(hass, an
     assert HC_MANUAL not in cloud.gets
 
 
+@pytest.mark.parametrize("answer", [403, 404])
+async def test_temporary_target_when_only_single_reads_answer(hass, answer):
+    """The bulk request fails; read alone, the manual setpoint answers
+    403/404: the rule does not apply, the target is written once."""
+    _coordinator, cloud, entity = _auto_circuit(
+        hass, manual_answer=answer, bulk_fails=True
+    )
+    await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == [(TEMPORARY, 22.0)]
+    assert HC_MANUAL in cloud.gets
+
+
 async def test_a_missing_reading_of_the_setting_itself_still_ends_the_write(hass):
     """Only a reading read for a rule may be missing; the setting must be
     read, or nothing is sent."""
@@ -170,7 +187,7 @@ async def test_a_missing_reading_of_the_setting_itself_still_ends_the_write(hass
     with pytest.raises(ResourceNotFound):
         await coordinator.async_write_control(
             HC_MANUAL,
-            21.0,
+            22.0,
             MANUAL_SETPOINT_POLICY,
             fresh=(coordinator.data[HC_MANUAL].resource,),
         )
@@ -189,6 +206,31 @@ def test_a_stale_manual_setpoint_is_no_floor_reading(hass):
         ended=True,
     )
     assert manual_floor_reading(coordinator, ROOT) == ()
+
+
+async def test_circuit_manual_target_changed_on_the_gateway_takes_the_new_one(hass):
+    """In the mode manual the target was changed in the app since the last
+    poll: the new target replaces it, checked on the current reading."""
+    coordinator = coordinator_for(hass, _resources())
+    cloud = CircuitCloud(coordinator)
+    cloud.change(HC_MANUAL, value=19.5)
+    entity = HeatingCircuitClimate(coordinator, ROOT)
+    entity.hass = hass
+    await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == [(HC_MANUAL, 22.0)]
+
+
+async def test_circuit_manual_target_not_used_now_is_refused_unsent(hass):
+    coordinator = coordinator_for(hass, _resources())
+    cloud = CircuitCloud(coordinator)
+    cloud.change(
+        HC_MANUAL, metadata=replace(cloud.state[HC_MANUAL].metadata, used=False)
+    )
+    entity = HeatingCircuitClimate(coordinator, ROOT)
+    entity.hass = hass
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == []
 
 
 # Zone controls: the flags of the current reading ---------------------------------
