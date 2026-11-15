@@ -171,6 +171,10 @@ entry says how it was tested; most of it with automated tests only.
   0.9.2-beta.1). Thank you to stalar for the report in
   [#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132).
   Automated tests only.
+- **Local state signals keep the order of their states** between starts
+  (for example the gateway's eBUS status and the holiday states); the
+  gateway sends them in a changing order. After the update the order changes
+  once. Found in recordings of a real installation.
 
 ### Documentation
 
