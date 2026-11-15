@@ -288,9 +288,7 @@ NUMBER_WRITE_POLICIES = (
     ),
     # An advertised step is a rule of the gateway, counted from the minimum;
     # without one, 0.5 is only the display step.
-    NumberWritePolicy(
-        ZONE_MANUAL_PATTERN, "C", 0.5, live_step=True, honor_flags=False
-    ),
+    NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5, live_step=True, honor_flags=False),
     ZONE_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False
