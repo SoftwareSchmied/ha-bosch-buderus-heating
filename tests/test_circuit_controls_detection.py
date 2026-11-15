@@ -261,3 +261,45 @@ async def test_the_check_stays_settled_after_a_failed_discovery(hass):
     coordinator.client.get_resource.side_effect = client.get_resource.side_effect
     await coordinator._async_discover_data()
     assert coordinator.room_controller_checked
+
+
+# Existing entities after a restart with the stored inventory ---------------------
+
+
+async def test_restart_with_stored_inventory_keeps_existing_level_numbers(hass):
+    """The heating and setback levels (since 0.9.0) are created at once and
+    are available with the first fresh reading, before the room controller
+    check; only the new generic settings wait for it."""
+    from custom_components.bosch_buderus_heating.circuit_controls import (
+        HEATING_LEVEL_POLICY,
+    )
+    from tests.circuit_control_helpers import AWAY, COMFORT, ECO
+
+    resources = variant("icom/temperature-levels.json", "V2")
+    coordinator = coordinator_for(hass, {}, checked=False)
+    coordinator.start_from_inventory(
+        resources, reason="cloud_unreachable", age_seconds=60, seen={}
+    )
+    added, lifecycle = _track(coordinator)
+    levels = {
+        entity.entity_description.resource_path: entity
+        for entity in added
+        if entity.entity_description.write_policy is HEATING_LEVEL_POLICY
+    }
+    assert set(levels) == {COMFORT, ECO}
+    assert _generic(added) == set()
+    # The first working cycle: fresh readings, no discovery yet.
+    for resource in resources.values():
+        put_reading(coordinator, resource)
+    coordinator.last_update_success = True
+    coordinator.async_update_listeners()
+    assert not coordinator.room_controller_checked
+    assert all(entity.available for entity in levels.values())
+    assert _generic(added) == set()
+    assert AWAY in coordinator.resources
+    # A level write keeps its fresh reads of the guards.
+    cloud = Cloud(coordinator)
+    await levels[ECO].async_set_native_value(18.5)
+    assert cloud.puts == [(ECO, 18.5)]
+    assert ECO in cloud.bulk_calls[0] and COMFORT in cloud.bulk_calls[0]
+    lifecycle.unload()
