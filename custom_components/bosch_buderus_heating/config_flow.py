@@ -1029,6 +1029,13 @@ class BoschBuderusOptionsFlow(
         self._holiday_mode_source: BoschBuderusDataUpdateCoordinator | None = None
         self._holiday_mode_displayed: Resource | None = None
 
+    def _connections_listed(self) -> bool:
+        """The connections menu lists accesses (and offers the local setup)."""
+        try:
+            return bool(self._management().current().connections)
+        except ConfigurationError:
+            return False
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -1066,8 +1073,12 @@ class BoschBuderusOptionsFlow(
             menu_options=[
                 *(["connections"] if self._entry.version == 4 else []),
                 *(
+                    # Offered in the connections menu; here only while that
+                    # menu has nothing to list (so it is never shown twice).
                     ["local_setup"]
-                    if self._entry.version == 4 and self.local_available()
+                    if self._entry.version == 4
+                    and self.local_available()
+                    and not self._connections_listed()
                     else []
                 ),
                 *(

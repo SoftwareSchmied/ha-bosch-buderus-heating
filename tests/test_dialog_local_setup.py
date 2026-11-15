@@ -105,6 +105,8 @@ async def test_systems_are_listed_by_name(hass, supported, journal):
     _device(hass, entry, identity["value"], "Heat pump", by_user="Cellar")
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    # The local setup is offered in the connections menu.
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_target"
     assert result["last_step"] is False

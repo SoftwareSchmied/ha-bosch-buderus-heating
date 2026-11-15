@@ -124,6 +124,8 @@ async def test_an_owner_that_was_not_offered_is_refused(hass, supported) -> None
 async def _target_form(hass, entry):
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    # The local setup is offered in the connections menu.
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_target"
     return manager, result
@@ -135,6 +137,7 @@ async def test_a_target_page_of_an_unreadable_configuration_ends(
     entry, _, _, _ = registered(hass)
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
     with patch(MANAGEMENT + ".current", side_effect=ConfigurationError("broken")):
         result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["type"] is FlowResultType.ABORT

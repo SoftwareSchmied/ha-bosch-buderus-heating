@@ -148,6 +148,23 @@ async def test_a_local_access_is_added_from_the_connections_menu(
     assert target in values and values[-1] == "new_plant"
 
 
+async def test_the_local_setup_is_offered_once(hass, supported, journal) -> None:
+    """In the connections menu only; the main menu offers it just while there
+    is no access to list (a new entry without one)."""
+    from tests.test_local_first import empty_entry
+
+    entry, _, _, _ = registered(hass)
+    manager = hass.config_entries.options
+    result = await manager.async_init(entry.entry_id)
+    assert "connections" in result["menu_options"]
+    assert "local_setup" not in result["menu_options"]
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
+    assert result["menu_options"].count("local_setup") == 1
+    empty, _ = empty_entry(hass, "empty-entry")
+    result = await manager.async_init(empty.entry_id)
+    assert result["menu_options"].count("local_setup") == 1
+
+
 async def test_without_local_support_the_menu_offers_no_local_setup(hass) -> None:
     entry, _, cloud, _ = registered(hass)
     result = await _connections(hass, entry)

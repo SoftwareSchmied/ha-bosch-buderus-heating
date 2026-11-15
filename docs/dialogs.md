@@ -59,9 +59,9 @@ valid. See [setup](setup.md) for where to find the app address.
 
 ## Adding a local access
 
-**Configure → Connections → Set up local access** adds a local access from the
-connections menu as well: to a system that has none yet, or as a new system
-without the cloud. A gateway that Home Assistant finds in the network while
+**Configure → Connections → Set up local access** adds a local access: to a
+system that has none yet, or as a new system without the cloud. The main
+menu offers it only while an entry has no access to list. A gateway that Home Assistant finds in the network while
 entries exist can be added to one of them or set up as a new entry with local
 access only. Its address is preselected in the local setup of the new entry,
 also when other gateways are announced; any other address can still be chosen.

@@ -67,6 +67,9 @@ def empty_entry(hass, entry_id="local-first"):
 async def local_setup(hass, entry, *, target=None):
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    if "local_setup" not in result["menu_options"]:
+        # With accesses listed the connections menu offers it (never both).
+        result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     if target is not None:
         assert result["step_id"] == "local_target"

@@ -99,6 +99,8 @@ async def submit(hass, manager, result, data):
 async def start(hass, entry, target):
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    # The local setup is offered in the connections menu.
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_target"
     return await submit(hass, manager, result, {"target": target})
