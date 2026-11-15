@@ -3,7 +3,7 @@
   "family": "pointt_air_conditioner",
   "provenance": {
     "kind": "synthetic",
-    "basis": "app_model_classes",
+    "basis": "compatibility_mapping",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
