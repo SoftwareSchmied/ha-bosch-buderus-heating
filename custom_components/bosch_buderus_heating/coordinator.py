@@ -32,7 +32,11 @@ from homeassistant.helpers.event import async_call_later, async_track_point_in_u
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .circuit_controls import GENERIC_ONLY_POLICIES, room_controller_check_complete
+from .circuit_controls import (
+    GENERIC_ONLY_POLICIES,
+    evidence_answers,
+    room_controller_check_complete,
+)
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
@@ -692,6 +696,9 @@ class BoschBuderusDataUpdateCoordinator(
         # Set once a finished discovery settled the room controller evidence
         # (``circuit_controls.room_controller_check_complete``); never unset.
         self.room_controller_checked = False
+        # The evidence answers of the later searches for missing parts, since
+        # the last full discovery (M1: a failed evidence read is made up).
+        self._room_controller_evidence: dict[str, bool] = {}
         # P46: resources discovered before, and the search for missing ones.
         self.inventory: DiscoveryInventory | None = None
         self.discovery_recovery = DiscoveryRecovery()
@@ -3469,6 +3476,7 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
         self._merge_start_counter_candidates()
+        self._room_controller_evidence = {}
         if room_controller_check_complete(self.discovery_diagnostics):
             # The generic heating circuit settings may appear from now on.
             self.room_controller_checked = True
@@ -4002,6 +4010,14 @@ class BoschBuderusDataUpdateCoordinator(
                     self._queue_manual_setpoint_recovery(path, snapshots)
         if self.inventory is not None and found:
             self.inventory.record(self.gateway, found)
+        if not self.room_controller_checked:
+            # An evidence path the start-up discovery could not read may be
+            # answered by this search; the check need not wait for a restart.
+            self._room_controller_evidence.update(evidence_answers(report))
+            if room_controller_check_complete(
+                self.discovery_diagnostics, self._room_controller_evidence
+            ):
+                self.room_controller_checked = True
         recovery.finish(
             found, now_monotonic, result="success" if found else "nothing_found"
         )
