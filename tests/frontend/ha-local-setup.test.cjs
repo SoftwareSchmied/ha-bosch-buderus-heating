@@ -30,7 +30,10 @@ const path = require("node:path");
     if (process.env.LOCAL_SETUP_OUTPUT) await page.screenshot({path:path.join(process.env.LOCAL_SETUP_OUTPUT, `discovery-${de ? "de" : "en"}.png`)});
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/integration/bosch_buderus_heating");
     await page.getByRole("button", {name: de ? "Konfigurieren" : "Configure", exact: true}).click();
-    await page.getByText(de ? "Lokalen Zugang einrichten" : "Set up local access", {exact: true}).click();
+    // The local setup is offered in the connections menu, not in the main menu.
+    const localSetup = page.getByText(de ? "Lokalen Zugang einrichten" : "Set up local access", {exact: true});
+    await page.getByText(de ? "Verbindungen" : "Connections", {exact: true}).click();
+    await localSetup.filter({visible: true}).click();
     const next = () => page.getByRole("button", {name: /^(Submit|Next|Absenden|Weiter|OK)$/i}).click();
     const choose = async name => {
       const radio = page.getByRole("radio", {name, exact: true});
