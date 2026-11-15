@@ -392,3 +392,67 @@ def test_names_options_and_errors_in_every_language():
         assert set(states) == {"automatic", "forced", "cooling", "off"}
         assert data["exceptions"]["circuit_room_controller"]["message"]
     assert len(list((COMPONENT / "translations").glob("*.json"))) == 19
+
+
+# Controls dialog -------------------------------------------------------------
+
+
+async def _dialog(hass, coordinator):
+    from custom_components.bosch_buderus_heating.config_flow import (
+        BoschBuderusOptionsFlow,
+    )
+
+    options = BoschBuderusOptionsFlow(coordinator.config_entry)
+    options.hass = hass
+    result = await options.async_step_controls()
+    if result.get("step_id") != "operate":
+        result = await options.async_step_operate()
+    return options, result
+
+
+async def test_dialog_writes_with_the_control_type_guard(
+    hass, enable_custom_integrations
+):
+    coordinator, cloud = _setup(hass, "V2")
+    options, result = await _dialog(hass, coordinator)
+    rows = {row["key"]: row for row in next(iter(result["data_schema"].schema.values())).rows}
+    row = rows[SWITCH_MODE]
+    assert [option["value"] for option in row["options"]] == [
+        "automatic",
+        "forced",
+        "cooling",
+        "off",
+    ]
+    assert row["options"][1]["label"]["en"] == "Heating only"
+    assert rows["/heatingCircuits/hc1/cooling/roomTempSetpoint"]["minimum"] == 18
+    result = await options.async_step_operate(
+        {"controls": {"changes": {SWITCH_MODE: "forced"}}}
+    )
+    assert not result["errors"]
+    assert cloud.puts == [(SWITCH_MODE, "forced")]
+    assert set(cloud.bulk_calls[0]) == {SWITCH_MODE, CONTROL_TYPE}
+
+
+async def test_dialog_sends_nothing_after_a_control_type_change(
+    hass, enable_custom_integrations
+):
+    coordinator, cloud = _setup(hass, "V1")
+    options, _ = await _dialog(hass, coordinator)
+    cloud.change(CONTROL_TYPE, value="ISRC")
+    result = await options.async_step_operate(
+        {"controls": {"changes": {THRESHOLD: 18}}}
+    )
+    assert result["errors"] == {"base": "controls_changed"}
+    assert cloud.puts == []
+
+
+async def test_dialog_refuses_a_room_controller_circuit(
+    hass, enable_custom_integrations
+):
+    coordinator, cloud = _setup(hass, "V6")
+    options, _ = await _dialog(hass, coordinator)
+    result = await options.async_step_operate(
+        {"controls": {"changes": {SWITCH_MODE: "off"}}}
+    )
+    assert result["errors"] == {"base": "controls_rejected"}
+    assert cloud.puts == []

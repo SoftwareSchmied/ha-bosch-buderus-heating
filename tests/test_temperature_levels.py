@@ -147,6 +147,18 @@ async def test_changed_heating_level_refuses_the_setback_write(hass):
     assert coordinator.data[ECO].resource.metadata.maximum == 19.5
 
 
+@pytest.mark.parametrize(("changed", "path"), [(COMFORT, ECO), (ECO, AWAY), (AWAY, COMFORT)])
+async def test_a_changed_sibling_level_alone_refuses_the_write(hass, changed, path):
+    """Only the other level changed in the app (its limits follow later):
+    the write is refused unsent all the same."""
+    coordinator, cloud = _setup(hass, "V2")
+    cloud.change(changed, value=cloud.state[changed].value + 0.5)
+    with pytest.raises(ServiceValidationError):
+        await number_entity(hass, coordinator, path).async_set_native_value(20)
+    assert cloud.puts == []
+    assert coordinator.data[changed].resource.value == cloud.state[changed].value
+
+
 @pytest.mark.parametrize(("path", "value"), [(ECO, 21), (COMFORT, 19)])
 async def test_values_beyond_the_coupled_limits_send_nothing(hass, path, value):
     coordinator, cloud = _setup(hass)
