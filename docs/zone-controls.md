@@ -98,7 +98,8 @@ discovery finish:
   devices, a refused second heating circuit and three refused heat-source
   entries whose names are not `hsN`) the discovery needs about 700 paths and
   finishes with about 190 of the 400. A directory read from the allowance
-  has its children read from it too.
+  has its children read from it too. The later search for a missing part
+  (for example a root that answered 503 at the start) has the same bound.
 
 A still larger installation stops at `resource_limit`; the diagnostics then
 name the limit (`resource_limit_scope`).
@@ -174,8 +175,10 @@ reading (0 or more), not compared with the current switch point, because the
 zone's time program is not readable on the known installation.
 
 RRC paths under `/zones/zn{id}`, child locks, pairing and weekly programs are
-outside these controls. Identifier selection, the discovery budget and
-polling intervals are unchanged.
+outside these controls. Identifier selection and polling intervals are
+unchanged; for the discovery on large zone controllers (zone sides first, the
+allowance of 400 paths beyond the 512) see
+[discovery on large zone controllers](#discovery-on-large-zone-controllers).
 
 The [synthetic fixture](../tests/fixtures/contracts/connectkey/zone-controls.json)
 describes two zones with different heating/cooling options, bounds and steps.
@@ -186,12 +189,11 @@ and German/English names and native HA option translations.
 Physical-device confirmation is still outstanding. A future permitted test
 should compare each reported zone with MyBuderus, record the original mode and
 setpoint, verify each selected command in that same zone and restore the
-original settings. I performed no installation or physical writes for P05.
+original settings. I made no physical writes for these controls.
 
-Validation: **1,902 automated cases passed**, including parameterized variants,
-with **96.72% combined statement and branch coverage**. Ruff, formatting and
-strict Mypy passed. The suite includes reproducible packaging and isolated
-ZIP import. These checks do not establish physical-device compatibility.
+The commands, failure cases and recovery are covered by automated tests, with
+Ruff, formatting and strict Mypy. These checks do not establish
+physical-device compatibility.
 
 ## Deutsch
 
@@ -208,8 +210,12 @@ heizt und Raum unter dem aktiven Sollwert. Funk-Raumgeräte zeigen „Batterie
 schwach“ (aktiviert) und das Funksignal in dB (deaktiviert). Die Discovery
 liest die Betriebsarten und Sollwerte der Zonen jetzt direkt nach den
 Zonenverzeichnissen und fragt ein Blatt, das bei einem Funkgerät verweigert
-wurde, bei gleichartigen Geräten nicht erneut ab. Alles ist mit
-automatisierten Tests geprüft, am Gerät noch nicht bestätigt.
+wurde, bei gleichartigen Geräten nicht erneut ab. Sind die 512 gemeinsamen
+Pfade verbraucht, lesen optionale Proben und direkte Lesungen unter
+verweigerten Verzeichnissen mit einem eigenen Kontingent von höchstens 400
+Pfaden weiter; die Suche nach fehlenden Teilen hat dieselbe Grenze. Eine noch
+größere Anlage endet mit `resource_limit` (Diagnose `resource_limit_scope`).
+Alles ist mit automatisierten Tests geprüft, am Gerät noch nicht bestätigt.
 
 Die Auswahl enthält nur die von dieser Ressource angebotenen bekannten
 Optionen `off`, `manual` und `auto`. Teilmengen sind möglich. Unbekannte
@@ -247,16 +253,17 @@ Die bestehende Steuerungsdiagnose in Schema 18 zeigt Eignung, Optionen,
 Grenzen, Anzeigeschritt und Ablehnungsgrund ohne Messwerte, unbekannte
 Optionstexte oder zusätzliche Abfragen. RRC-Zonen, Kindersicherung, Kopplung
 und Wochenprogramme gehören nicht zu diesen Bedienelementen.
-Discovery-Grenzen und Abfrageintervalle bleiben erhalten.
+Die Abfrageintervalle bleiben erhalten; die Discovery großer Zonenregler
+(Zonenseiten zuerst, Kontingent von 400 Pfaden über die 512 hinaus) ist oben
+beschrieben.
 
 Ich habe die Befehle, Fehlerfälle, Erholung und Übersetzungen mit ausdrücklich
 synthetischen Daten geprüft. Die Bestätigung am Gerät steht aus. Bei einem
 später beauftragten Praxistest müssen Zone und App-Rückmeldung einzeln
 verglichen und die ursprünglichen Einstellungen anschließend
-wiederhergestellt werden. Ich habe für P05 keine Anlage verändert.
+wiederhergestellt werden. Ich habe für diese Bedienelemente nichts an einer
+Anlage geschrieben.
 
-**1.902 automatisierte Testfälle** einschließlich parametrisierter Varianten
-bestehen bei **96,72 % kombinierter Code- und Verzweigungsabdeckung**. Ruff,
-Formatprüfung und striktes Mypy bestehen. Reproduzierbarer Paketbau und
-isolierter ZIP-Import sind in der Suite enthalten. Eine Bestätigung am
-Gerät ersetzen diese Prüfungen nicht.
+Befehle, Fehlerfälle und Erholung sind mit automatisierten Tests geprüft,
+dazu Ruff, Formatprüfung und striktes Mypy. Eine Bestätigung am Gerät
+ersetzen diese Prüfungen nicht.

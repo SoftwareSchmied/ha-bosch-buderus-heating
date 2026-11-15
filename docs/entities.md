@@ -619,11 +619,17 @@ The read-only schedule-type sensor recognizes all three known modes: `level`
 is shown as **Temperature level**, `levels` as
 **Temperature Levels**, and `absolute` as **Freely Adjustable Temperatures**.
 The latter means that each schedule period can use an independently chosen
-temperature. Schedule editing itself remains outside the current Home
-Assistant controls.
+temperature. The switch points of a program are changed under **Configure**
+(time programs) or with the action `set_switch_points` on its time-program
+sensor; see [heating controls](heating-controls.md). Changing hot water
+program A was confirmed on a real installation; the other programs are
+expected, untested.
 
-The read-only time-program sensors show the level scheduled by program A (or B)
-for the current local time. They are disabled by default. Their attributes list
+The time-program sensors show the level scheduled by program A (or B) for the
+current local time. Since 0.9.2-beta.2 a sensor is enabled when the gateway
+reports its program writable at its first registration, so the dialog and the
+action have a target; a read-only program's sensor is disabled by default, and
+an existing entry keeps its enablement. Their attributes list
 the switch points per weekday as local wall-clock times (`HH:MM level`), the
 total and per-day limits and the time raster reported by the device. These
 calculated values do not confirm which program is selected or whether manual
