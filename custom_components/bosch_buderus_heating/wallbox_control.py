@@ -366,7 +366,7 @@ def boost_issue(view: WallboxView) -> str | None:
 
 
 def leaf_issue(leaf: Leaf | None) -> str | None:
-    """W2 and D3: written only when reported writeable, available and used."""
+    """Written only when reported writeable, available and used."""
     if leaf is None or leaf.available is False:
         return "wallbox_value_unavailable"
     if not leaf.writeable:
