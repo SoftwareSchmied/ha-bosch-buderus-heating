@@ -67,18 +67,34 @@ DAY_KEYS: Final = tuple(day.lower() for day in DAYS)
 
 
 def _minute_of_day(value: Any) -> int:
-    """``HH:MM`` (seconds ``00`` allowed) as minutes since midnight."""
+    """``HH:MM`` (seconds ``00`` allowed) as minutes since midnight.
+
+    A whole number 0 to 1439 counts as minutes since midnight: YAML reads an
+    unquoted ``12:00`` as the number 720 (hours * 60 + minutes; ``06:30``
+    with its leading zero stays text)."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        if not 0 <= value < 24 * 60:
+            raise vol.Invalid("A time is between 00:00 and 23:59")
+        return value
     clock: dt.time = cv.time(value)
     if clock.second or clock.microsecond:
         raise vol.Invalid("Switch points have whole minutes")
     return clock.hour * 60 + clock.minute
 
 
+def _level(value: Any) -> str:
+    """The level as text; YAML reads an unquoted ``on``/``off`` as a
+    boolean, which stands for that level."""
+    if isinstance(value, bool):
+        return "on" if value else "off"
+    return str(cv.string(value))
+
+
 POINT_SCHEMA: Final = vol.Schema(
     {
         vol.Required("day"): vol.In(DAY_KEYS),
         vol.Required("time"): _minute_of_day,
-        vol.Required("level"): cv.string,
+        vol.Required("level"): _level,
     },
     extra=vol.PREVENT_EXTRA,
 )
