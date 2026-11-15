@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Aanvoer boven setpoint (berekend)"
       },
+      "calculated_cop": {
+        "name": "Actuele COP (berekend)"
+      },
+      "calculated_performance_factor": {
+        "name": "Prestatiefactor (berekend)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperatuurverschil primair circuit (berekend)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperatuurverschil brine (berekend)"
+      },
       "heating_switch_program": {
         "name": "Verwarmingstijdprogramma",
         "state": {

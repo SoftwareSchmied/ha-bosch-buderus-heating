@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Polaz iznad zadane vrijednosti (izračunato)"
       },
+      "calculated_cop": {
+        "name": "Trenutačni COP (izračunato)"
+      },
+      "calculated_performance_factor": {
+        "name": "Faktor učinkovitosti (izračunato)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperaturna razlika primarnog kruga (izračunato)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperaturna razlika rasoline (izračunato)"
+      },
       "heating_switch_program": {
         "name": "Vremenski program grijanja",
         "state": {

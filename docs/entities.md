@@ -1228,8 +1228,10 @@ confirmed this entity on a real device.
 
 The activity of each heating circuit (also the `hvac_action` of the
 climates), the defrosts of a heat pump, net heat counters without the
-defrost dips, the average run time per start and the supply above its
-setpoint are worked out from readings the integration reads anyway. Each
+defrost dips, the average run time per start, the supply above its
+setpoint, the current COP, the performance factors per period and the
+primary circuit spread are worked out from readings the integration reads
+anyway. Each
 entity is named "(calculated)" and lists its inputs in `derived_from`. See
 [Calculated values](calculated-values.md) for the rules, the defaults and
 their limits.

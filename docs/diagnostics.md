@@ -21,6 +21,16 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   [heat generator modules](#heat-generator-modules)).
 - `gateways[].recordings`: the reads of the plant's recordings and the
   optional statistics import (see [plant recordings](recordings.md#diagnostics)).
+- `gateways[].performance`: the history behind the performance factors
+  (see [calculated values](calculated-values.md#performance-factors)):
+  `recordings_attached`, the number of counter entities found
+  (`counter_entities`), the number of days and months per mode and quantity
+  from the recordings (`days_recorded`, `months_recorded`) and from the
+  counters' statistics (`days_counted`), how today's start was found
+  (`today_start`: `midnight`, `statistics` or `null`; `today_modes`;
+  `today_start_lookup` for the last search in the statistics) and the last
+  refresh (`last_refresh`). `{"waiting": "not_started"}` before the first
+  start.
 - The discovery counters of containers read directly
   (`direct_probe_containers`, `direct_probe_paths`,
   `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,

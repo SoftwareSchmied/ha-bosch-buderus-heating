@@ -59,6 +59,7 @@ from .observations import (
     pair_observations,
     pair_summary,
 )
+from .performance_history import performance_diagnostics
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
@@ -779,6 +780,8 @@ def _gateway_diagnostics(
         "calculated_values": calculated_diagnostics(coordinator),
         # Heating circuit settings and the iCom tariff: counts and types only.
         "circuit_controls": circuit_control_diagnostics(coordinator),
+        # The performance factors' history: counts and states, no values.
+        "performance": performance_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         # F1: the firmware update list (read-only); no gateway ID, no links.

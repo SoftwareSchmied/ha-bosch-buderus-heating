@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Ida acima do ponto de ajuste (calculado)"
       },
+      "calculated_cop": {
+        "name": "COP atual (calculado)"
+      },
+      "calculated_performance_factor": {
+        "name": "Fator de desempenho (calculado)"
+      },
+      "calculated_primary_spread": {
+        "name": "Diferencial térmico do circuito primário (calculado)"
+      },
+      "calculated_brine_spread": {
+        "name": "Diferencial térmico da salmoura (calculado)"
+      },
       "heating_switch_program": {
         "name": "Programa horário do aquecimento",
         "state": {

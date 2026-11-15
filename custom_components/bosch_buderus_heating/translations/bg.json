@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Подаване над зададената стойност (изчислено)"
       },
+      "calculated_cop": {
+        "name": "Текущ COP (изчислено)"
+      },
+      "calculated_performance_factor": {
+        "name": "Коефициент на ефективност (изчислено)"
+      },
+      "calculated_primary_spread": {
+        "name": "Температурна разлика в първичния кръг (изчислено)"
+      },
+      "calculated_brine_spread": {
+        "name": "Температурна разлика на солевия разтвор (изчислено)"
+      },
       "heating_switch_program": {
         "name": "Времева програма за отопление",
         "state": {

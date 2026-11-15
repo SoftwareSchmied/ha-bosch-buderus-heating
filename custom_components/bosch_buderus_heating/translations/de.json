@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Vorlauf über Sollwert (berechnet)"
       },
+      "calculated_cop": {
+        "name": "Aktuelle Leistungszahl (berechnet)"
+      },
+      "calculated_performance_factor": {
+        "name": "Arbeitszahl (berechnet)"
+      },
+      "calculated_primary_spread": {
+        "name": "Spreizung Primärkreis (berechnet)"
+      },
+      "calculated_brine_spread": {
+        "name": "Spreizung Sole (berechnet)"
+      },
       "heating_switch_program": {
         "name": "Zeitprogramm Heizen",
         "state": {

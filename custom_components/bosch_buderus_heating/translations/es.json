@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Impulsión por encima de la consigna (calculado)"
       },
+      "calculated_cop": {
+        "name": "COP actual (calculado)"
+      },
+      "calculated_performance_factor": {
+        "name": "Factor de rendimiento (calculado)"
+      },
+      "calculated_primary_spread": {
+        "name": "Salto térmico del circuito primario (calculado)"
+      },
+      "calculated_brine_spread": {
+        "name": "Salto térmico de la salmuera (calculado)"
+      },
       "heating_switch_program": {
         "name": "Programa horario de calefacción",
         "state": {

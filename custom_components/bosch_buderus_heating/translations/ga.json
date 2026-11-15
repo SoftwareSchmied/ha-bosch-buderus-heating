@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Soláthar os cionn an tacphointe (ríofa)"
       },
+      "calculated_cop": {
+        "name": "COP reatha (ríofa)"
+      },
+      "calculated_performance_factor": {
+        "name": "Fachtóir feidhmíochta (ríofa)"
+      },
+      "calculated_primary_spread": {
+        "name": "Difríocht teochta an phríomhchiorcaid (ríofa)"
+      },
+      "calculated_brine_spread": {
+        "name": "Difríocht teochta an sháile (ríofa)"
+      },
       "heating_switch_program": {
         "name": "Sceideal téimh",
         "state": {

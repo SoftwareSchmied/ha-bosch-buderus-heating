@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Framledning över börvärde (beräknad)"
       },
+      "calculated_cop": {
+        "name": "Aktuell COP (beräknad)"
+      },
+      "calculated_performance_factor": {
+        "name": "Värmefaktor (beräknad)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperaturdifferens primärkrets (beräknad)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperaturdifferens köldbärare (beräknad)"
+      },
       "heating_switch_program": {
         "name": "Tidsprogram värme",
         "state": {

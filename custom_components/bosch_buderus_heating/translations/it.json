@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Mandata sopra il setpoint (calcolato)"
       },
+      "calculated_cop": {
+        "name": "COP attuale (calcolato)"
+      },
+      "calculated_performance_factor": {
+        "name": "Fattore di prestazione (calcolato)"
+      },
+      "calculated_primary_spread": {
+        "name": "Differenza di temperatura del circuito primario (calcolato)"
+      },
+      "calculated_brine_spread": {
+        "name": "Differenza di temperatura della salamoia (calcolato)"
+      },
       "heating_switch_program": {
         "name": "Programma orario riscaldamento",
         "state": {

@@ -6743,6 +6743,104 @@
     },
     {
      "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_yesterday",
+     "unit": null
+    },
+    {
+     "capabilities": {
       "state_class": "total_increasing"
      },
      "device_class": "energy",
@@ -6813,6 +6911,104 @@
     },
     {
      "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_yesterday",
+     "unit": null
+    },
+    {
+     "capabilities": {
       "state_class": "total_increasing"
      },
      "device_class": "energy",
@@ -6852,6 +7048,104 @@
      "translation_key": "calculated_net_heat",
      "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_net_heat",
      "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_yesterday",
+     "unit": null
     },
     {
      "capabilities": {

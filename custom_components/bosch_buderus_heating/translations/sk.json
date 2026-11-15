@@ -2066,6 +2066,18 @@
       "calculated_supply_overshoot": {
         "name": "Výstup nad požadovanou hodnotou (vypočítaný)"
       },
+      "calculated_cop": {
+        "name": "Aktuálny COP (vypočítané)"
+      },
+      "calculated_performance_factor": {
+        "name": "Vykurovací faktor (vypočítané)"
+      },
+      "calculated_primary_spread": {
+        "name": "Teplotný rozdiel primárneho okruhu (vypočítané)"
+      },
+      "calculated_brine_spread": {
+        "name": "Teplotný rozdiel soľanky (vypočítané)"
+      },
       "heating_switch_program": {
         "name": "Časový program vykurovania",
         "state": {

@@ -146,6 +146,18 @@
       "calculated_defrost_count": {
         "default": "mdi:snowflake-melt"
       },
+      "calculated_cop": {
+        "default": "mdi:gauge"
+      },
+      "calculated_performance_factor": {
+        "default": "mdi:chart-line"
+      },
+      "calculated_primary_spread": {
+        "default": "mdi:thermometer-lines"
+      },
+      "calculated_brine_spread": {
+        "default": "mdi:thermometer-water"
+      },
       "compressor_status": {
         "default": "mdi:heat-pump-outline",
         "state": {

@@ -1,0 +1,369 @@
+"""Live performance values of a heat pump, worked out from its readings.
+
+* Current COP: the heat output divided by the electrical power of the
+  compressor and the electric heater. The heater turns its electricity into
+  heat one to one, so its power is added to the heat output as well (the
+  heat output reading covers the refrigerant circuit). Only while the
+  compressor runs; unknown while the heat pump defrosts, below
+  ``MIN_POWER_KW`` and above ``MAX_RATIO``.
+* Primary circuit spread: supply (TC1) minus return (TC0) of the heat pump,
+  only while the primary pump runs. TC0 is the return of the heating
+  circuit only while the circuit pump moves at least as much water as the
+  primary pump; the attribute ``return_is_circuit_return`` says so.
+* Brine spread: brine inlet minus brine outlet, while the brine pump runs.
+* The counters since commissioning, per mode.
+
+Every value lists its inputs with their origin (``derived_from``). The local
+reading of a path comes first, then the cloud's (``derived_inputs``); a
+missing input gives no value, never a guessed one.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Final
+
+from .derived import power_kilowatts
+from .derived_activity import (
+    defrost_paths,
+    defrost_state,
+    heat_side,
+    heat_source_input_paths,
+    heat_source_running,
+)
+from .derived_inputs import (
+    Input,
+    Trace,
+    energy_part,
+    first,
+    flag,
+    known_paths,
+    number,
+    read,
+    resource_energy_part,
+)
+from .heat_source_kind import BRINE, classify
+
+if TYPE_CHECKING:
+    from .coordinator import BoschBuderusDataUpdateCoordinator
+
+MODES: Final = ("total", "ch", "dhw")
+COLLECTIONS: Final = {
+    "total": "/heatSources/emon/totalConsumption",
+    "ch": "/heatSources/emon/chConsumption",
+    "dhw": "/heatSources/emon/dhwConsumption",
+}
+PRODUCED: Final = "outputProduced"
+
+# The heat output of the refrigerant circuit (despite its name the thermal
+# output; it matches the heat meter on a real installation).
+HEAT_OUTPUT: Final = "/signals/SRC.CUHP.HP1.CompressorPower"
+COMPRESSOR_POWER: Final = (
+    "/heatSources/compressor/powerElecActual",
+    "/heatSources/hs1/refrigerant/compressorElecPowerActual",
+)
+HEATER_POWER: Final = (
+    "/heatSources/eHeater/powerElecActual",
+    "/heatSources/eHeater/powerElecActualLowResolution",
+)
+# A COP needs at least this electrical power (start and stop of the
+# compressor) and is not shown above this ratio (readings taken at
+# different moments).
+MIN_POWER_KW: Final = 0.1
+MAX_RATIO: Final = 15.0
+# A performance factor needs at least this much electricity in its period.
+MIN_ELECTRICITY_KWH: Final = 0.1
+
+SUPPLY: Final = ("/heatSources/additionalHeater/flowTemp", "/signals/SRC.IntFlowTemp")
+RETURN: Final = ("/heatSources/returnTemperature", "/signals/SRC.CUHP.HP1.ReturnTemp")
+PRIMARY_PUMP: Final = (
+    "/signals/SRC.CUHP.HP1.CHPumpRelay",
+    "/signals/SRC.RelayStatus.CHPump",
+    "/heatSources/hs1/refrigerant/heatCarrierPumpSpeed",
+    "/heatSources/hs1/pumpVolumeFlow",
+    "/signals/SRC.SystemPumpVolumeFlow",
+)
+_RELAYS: Final = frozenset(PRIMARY_PUMP[:2])
+PRIMARY_FLOW: Final = (
+    "/heatSources/hs1/pumpVolumeFlow",
+    "/signals/SRC.SystemPumpVolumeFlow",
+)
+CIRCUIT_FLOW: Final = ("/signals/SRC.HC1.FlowCtrl.PumpVolumeFlow",)
+
+BRINE_OUTLET: Final = re.compile(
+    r"(/heatSources/hs\d+)/brineCircuit/collectorInflowTemp"
+)
+# Into the collector = out of the heat pump (outlet), and the other way.
+INLET: Final = "/brineCircuit/collectorOutflowTemp"
+OUTLET: Final = "/brineCircuit/collectorInflowTemp"
+BRINE_PUMP: Final = "/brineCircuit/pumpSpeed"
+
+# Why a live value is unknown.
+COMPRESSOR_OFF: Final = "compressor_off"
+DEFROSTING: Final = "defrosting"
+INPUTS_MISSING: Final = "inputs_missing"
+IMPLAUSIBLE: Final = "implausible"
+PUMP_OFF: Final = "pump_off"
+
+
+@dataclass(slots=True)
+class LiveResult:
+    """A live value (``None`` when unknown), why not, and its attributes."""
+
+    value: float | None
+    attributes: dict[str, object] = field(default_factory=dict)
+
+
+def _kilowatts(reading: Input | None) -> float | None:
+    if reading is None:
+        return None
+    error_values = (
+        reading.resource.metadata.numeric_error_values
+        if reading.resource is not None
+        else ()
+    )
+    return power_kilowatts(reading.value, reading.unit, error_values)
+
+
+def _known(
+    coordinator: BoschBuderusDataUpdateCoordinator, paths: tuple[str, ...]
+) -> bool:
+    """Whether the plant offers one of the paths at all (cloud or local)."""
+    pattern = re.compile("|".join(re.escape(path) for path in paths))
+    return bool(known_paths(coordinator, pattern))
+
+
+def cop_input_paths(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            (
+                HEAT_OUTPUT,
+                *COMPRESSOR_POWER,
+                *HEATER_POWER,
+                *heat_source_input_paths(coordinator),
+                *defrost_paths(coordinator),
+            )
+        )
+    )
+
+
+def cop_possible(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    """The plant offers a heat output and a compressor power reading."""
+    return _known(coordinator, (HEAT_OUTPUT,)) and _known(coordinator, COMPRESSOR_POWER)
+
+
+def _heater_kw(
+    coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace
+) -> tuple[bool, float | None]:
+    """``(offered, kW)``: a plant without a heater reading adds nothing; a
+    heater reading that is offered but not current gives no COP."""
+    found = first(coordinator, HEATER_POWER, _kilowatts, trace)
+    if found is not None:
+        return True, found[1]
+    return _known(coordinator, HEATER_POWER), None
+
+
+def live_cop(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
+    """The current COP of the heat pump."""
+    trace = Trace()
+    output = _kilowatts(trace.note(read(coordinator, HEAT_OUTPUT)))
+    compressor = first(coordinator, COMPRESSOR_POWER, _kilowatts, trace)
+    heater_offered, heater = _heater_kw(coordinator, trace)
+    attributes: dict[str, object] = {
+        "heat_output_kw": output,
+        "compressor_power_kw": compressor[1] if compressor else None,
+        "heater_power_kw": heater,
+    }
+    if classify(coordinator).kind == BRINE:
+        attributes["brine_pump_included"] = False
+
+    def unknown(reason: str) -> LiveResult:
+        attributes["reason"] = reason
+        attributes["derived_from"] = trace.attribute()
+        return LiveResult(None, attributes)
+
+    defrost = defrost_state(coordinator, trace)
+    if defrost is not None and defrost.active:
+        return unknown(DEFROSTING)
+    running = heat_source_running(coordinator, trace)
+    if running is False:
+        return unknown(COMPRESSOR_OFF)
+    if (
+        running is None
+        or output is None
+        or compressor is None
+        or (heater_offered and heater is None)
+    ):
+        return unknown(INPUTS_MISSING)
+    heater_kw = heater or 0.0
+    electrical = compressor[1] + heater_kw
+    attributes["electrical_power_kw"] = round(electrical, 3)
+    side = heat_side(coordinator, trace)
+    if side is not None:
+        attributes["side"] = side
+    if electrical < MIN_POWER_KW:
+        return unknown(INPUTS_MISSING)
+    cop = (output + heater_kw) / electrical
+    if cop > MAX_RATIO:
+        return unknown(IMPLAUSIBLE)
+    attributes["derived_from"] = trace.attribute()
+    return LiveResult(round(cop, 2), attributes)
+
+
+# --------------------------------------------------------------- spreads
+def _running(reading: Input | None) -> bool | None:
+    """A pump relay, or a pump speed or flow above zero."""
+    if reading is None:
+        return None
+    if reading.path in _RELAYS:
+        return flag(reading)
+    value = number(reading)
+    return None if value is None or value < 0 else value > 0
+
+
+def spread_input_paths() -> tuple[str, ...]:
+    return tuple(dict.fromkeys((*SUPPLY, *RETURN, *PRIMARY_PUMP, *CIRCUIT_FLOW)))
+
+
+def spread_possible(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    return (
+        _known(coordinator, SUPPLY)
+        and _known(coordinator, RETURN)
+        and _known(coordinator, PRIMARY_PUMP)
+    )
+
+
+def primary_spread(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
+    """TC1 - TC0 while the primary pump runs."""
+    trace = Trace()
+    supply = first(coordinator, SUPPLY, number, trace)
+    back = first(coordinator, RETURN, number, trace)
+    pump = first(coordinator, PRIMARY_PUMP, _running, trace)
+    attributes: dict[str, object] = {
+        "supply_temperature": supply[1] if supply else None,
+        "return_temperature": back[1] if back else None,
+    }
+    primary = first(coordinator, PRIMARY_FLOW, number, trace)
+    circuit = first(coordinator, CIRCUIT_FLOW, number, trace)
+    if primary is not None:
+        attributes["primary_flow"] = primary[1]
+    if circuit is not None:
+        attributes["circuit_flow"] = circuit[1]
+    # TC0 is the circuit's return only while the circuit pump (PC1) moves at
+    # least as much water as the primary pump (PC0).
+    attributes["return_is_circuit_return"] = (
+        circuit[1] >= primary[1]
+        if primary is not None and circuit is not None and primary[1] > 0
+        else None
+    )
+    attributes["derived_from"] = trace.attribute()
+    if pump is not None and pump[1] is False:
+        attributes["reason"] = PUMP_OFF
+        return LiveResult(None, attributes)
+    if supply is None or back is None or pump is None:
+        attributes["reason"] = INPUTS_MISSING
+        return LiveResult(None, attributes)
+    return LiveResult(round(supply[1] - back[1], 1), attributes)
+
+
+def brine_roots(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[str, ...]:
+    """Heat sources with both brine temperatures."""
+    roots = []
+    for path in known_paths(coordinator, BRINE_OUTLET):
+        match = BRINE_OUTLET.fullmatch(path)
+        if match is not None and _known(coordinator, (match[1] + INLET,)):
+            roots.append(match[1])
+    return tuple(roots)
+
+
+def brine_input_paths(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str
+) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            (
+                root + INLET,
+                root + OUTLET,
+                root + BRINE_PUMP,
+                *heat_source_input_paths(coordinator),
+            )
+        )
+    )
+
+
+def brine_spread(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str
+) -> LiveResult:
+    """Brine inlet minus outlet while the brine pump (else the compressor)
+    runs."""
+    trace = Trace()
+    inlet = number(trace.note(read(coordinator, root + INLET)))
+    outlet = number(trace.note(read(coordinator, root + OUTLET)))
+    pump = _running(trace.note(read(coordinator, root + BRINE_PUMP)))
+    running = pump if pump is not None else heat_source_running(coordinator, trace)
+    attributes: dict[str, object] = {
+        "inlet_temperature": inlet,
+        "outlet_temperature": outlet,
+        "derived_from": trace.attribute(),
+    }
+    if running is False:
+        attributes["reason"] = PUMP_OFF
+        return LiveResult(None, attributes)
+    if inlet is None or outlet is None or running is None:
+        attributes["reason"] = INPUTS_MISSING
+        return LiveResult(None, attributes)
+    return LiveResult(round(inlet - outlet, 1), attributes)
+
+
+# ------------------------------------------------------------- counters
+@dataclass(frozen=True, slots=True)
+class CounterReading:
+    """Heat and electricity since commissioning of one mode, in kWh."""
+
+    heat: float
+    electricity: float
+    origin: str
+
+
+def lifetime(
+    coordinator: BoschBuderusDataUpdateCoordinator, mode: str
+) -> CounterReading | None:
+    """The produced heat and the electricity (compressor plus heater) of a
+    mode since commissioning, from the device's counters."""
+    reading = read(coordinator, COLLECTIONS[mode])
+    heat = energy_part(reading, PRODUCED)
+    electricity = energy_part(reading, "electricity")
+    if electricity is None:
+        compressor = energy_part(reading, "compressor")
+        heater = energy_part(reading, "eheater")
+        if compressor is not None and heater is not None:
+            electricity = compressor + heater
+    if reading is None or heat is None or electricity is None:
+        return None
+    return CounterReading(heat, electricity, reading.origin)
+
+
+def counter_possible(coordinator: BoschBuderusDataUpdateCoordinator, mode: str) -> bool:
+    """The mode's counter collection offers heat and electricity."""
+    resources = getattr(coordinator, "resources", None) or {}
+    resource = resources.get(COLLECTIONS[mode])
+    if resource is None:
+        return False
+    if resource_energy_part(resource, PRODUCED) is None:
+        return False
+    return resource_energy_part(resource, "electricity") is not None or (
+        resource_energy_part(resource, "compressor") is not None
+        and resource_energy_part(resource, "eheater") is not None
+    )
+
+
+def ratio(heat: float | None, electricity: float | None) -> float | None:
+    """A performance factor: heat over electricity, ``None`` below
+    ``MIN_ELECTRICITY_KWH`` or above ``MAX_RATIO``."""
+    if heat is None or electricity is None or electricity < MIN_ELECTRICITY_KWH:
+        return None
+    result = heat / electricity
+    if result < 0 or result > MAX_RATIO:
+        return None
+    return round(result, 2)
