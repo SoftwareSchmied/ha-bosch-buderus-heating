@@ -595,20 +595,18 @@ def _kept_cloud_paths(
     coordinator: BoschBuderusDataUpdateCoordinator,
 ) -> frozenset[str]:
     """Cloud paths with a registered, reviewed local-only entry."""
-    entry = coordinator.config_entry
-    if entry is None:
+    if coordinator.config_entry is None:
         return frozenset()
-    prefix = f"{coordinator.gateway.gateway_id}{UNIQUE_ID_PART}"
+    gateway_id = coordinator.gateway.gateway_id
     registry = er.async_get(coordinator.hass)
-    paths = {
-        "/" + entity.unique_id.removeprefix(prefix).replace(":", "/")
-        for entity in er.async_entries_for_config_entry(registry, entry.entry_id)
-        if entity.domain == "sensor" and entity.unique_id.startswith(prefix)
-    }
     return frozenset(
         path
-        for path in paths
-        if path in coordinator.resources and reviewed_definition(path) is not None
+        for path in coordinator.resources
+        if reviewed_definition(path) is not None
+        and registry.async_get_entity_id(
+            "sensor", DOMAIN, local_only_unique_id(gateway_id, path)
+        )
+        is not None
     )
 
 
