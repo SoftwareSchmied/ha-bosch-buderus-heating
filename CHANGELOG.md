@@ -54,6 +54,14 @@ entry says how it was tested; most of it with automated tests only.
   [plant recordings](docs/recordings.md).
   - After you remove an entry, a repair offers to delete its imported
     statistics until Home Assistant restarts.
+  - Every hour only the recordings that enabled entities, the import or the
+    performance factors need are read (about nine reads per hour with the
+    default entities on a real installation, before every one that
+    answered). A recording the local access reports as busy at the start is
+    asked again in the same run, and the period entities get their values a
+    few minutes after the start instead of after the first hourly run. Found
+    on a real installation; the changed request plan is tested with
+    automated tests only.
 - **Readings:** a flow below the measuring range is marked with
   `reported_state: low_flow` and two disabled binary sensors; a new sensor
   shows the software version of the outdoor unit.
@@ -127,6 +135,12 @@ entry says how it was tested; most of it with automated tests only.
   [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
   Automated tests in the shape of that report; not yet confirmed on a real
   installation.
+  - A reading found this way that a local access already showed as its own
+    entity (for example the compressor speed and the refrigerant circuit
+    status when the refrigerant directory is refused) keeps that entity with
+    its ID, name, states, statistics and settings; the cloud's value becomes
+    its second source. Found while testing on a real installation; covered
+    by an automated upgrade test from 0.9.1.
 - **Zone modes and setpoints missing on a large zone controller:** discovery
   now reads them first and wastes fewer requests on radio devices, so it
   finishes. Reported by petergoris-netizen in
@@ -136,6 +150,11 @@ entry says how it was tested; most of it with automated tests only.
   local-only entry for the same plant. Automated tests only.
 - **Energy manager setpoints** showed "unknown" instead of a reported 0.
   Automated tests only.
+- **Defrost active (calculated)** now updates its `derived_from` attribute
+  when the same reading switches between the local and the cloud source.
+  Automated tests only.
+- **Set up local access** is offered once, in the connections menu, instead
+  of also in the main menu. Automated tests only.
 - **Sign-in with the address of the SingleKey ID page** now shows a specific
   hint on what to copy instead. Thank you to xmaka for pointing out the
   redirect page in
