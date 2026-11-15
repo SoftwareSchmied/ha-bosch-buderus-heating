@@ -29,8 +29,8 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
 - `pointt_air_conditioners`: one entry per air conditioner on a PointT
   gateway (device type `rac`) with the detected family, the detection
   state, freshness, readable, missing and writable paths, the offered
-  controls, the number of listed functions and the count of sent and
-  refused changes (see [air conditioners on a PointT gateway](pointt-air-conditioners.md#diagnostics)).
+  controls, the number of listed functions, whether the active program was
+  read and the count of sent and refused changes (see [air conditioners on a PointT gateway](pointt-air-conditioners.md#diagnostics)).
 
 The anonymized inventory keeps dropping all of these sections.
 

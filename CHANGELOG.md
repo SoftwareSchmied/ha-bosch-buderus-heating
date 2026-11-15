@@ -20,8 +20,9 @@ Versioning after its first tagged preview.
     value once and is confirmed by reading it back; a mode change on a
     switched-off unit is refused (switch it on first), and auto and heat
     are refused while the unit runs in solar operation, as in the app.
-  - Separate from the air conditioners of the second cloud. Switch points
-    of the air conditioner's programs are not shown or edited yet.
+  - Separate from the air conditioners of the second cloud. The switch
+    points of the active program are shown read-only as an attribute of the
+    active schedule; editing them is not offered yet.
   - I have only checked this with simulated data in automated tests; it is
     expected, untested on a real installation, and I am happy about
     feedback.

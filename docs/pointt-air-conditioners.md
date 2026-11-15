@@ -34,7 +34,8 @@ inventory view while the cloud is unavailable.
 One bulk request every 60 seconds (120 seconds with the cloud-friendly
 profile) reads a fixed list: power, mode, target and room temperature, fan,
 louvres, spot air direction, the five extra functions, both timers, the
-schedule settings, the two function lists and the solar operation state. A
+schedule settings, the two function lists and the solar operation state, and
+from the second cycle on the program the unit names as active. A
 path the unit does not answer leaves its function out. When the unit answers
 no path at all (offline), every entity becomes unavailable.
 
@@ -65,10 +66,13 @@ no path at all (offline), every entity becomes unavailable.
 - **Timers:** only in steps of 30 minutes from the reported minimum, or 0 to
   stop. A timer can switch the unit on or off later without anyone present.
 - **Frost-protection heating** keeps heating while the unit is otherwise off.
-- **Schedules:** only switching the schedule on or off, choosing the active
-  program and ending a temporary change. The switch points of the programs
-  are neither shown nor edited yet; the app keeps program names on the phone
-  only.
+- **Schedules:** switching the schedule on or off, choosing the active
+  program and ending a temporary change. The switch points of the active
+  program (day, time, mode, setpoint, fan) are shown read-only in the
+  attribute `switch_points` of the Active schedule select (kept out of the
+  recorder); a malformed program shows none. Editing switch points is not
+  offered yet. The app keeps program names on the phone only, so none are
+  shown.
 
 ## Changes
 
@@ -92,8 +96,8 @@ removes the control.
 
 `pointt_air_conditioners` lists for each unit the detected family, the
 detection state, freshness, readable and missing paths, writable paths,
-offered controls, the number of listed functions and the count of sent and
-refused changes. No values, program names, serial numbers or identifiers are
+offered controls, the number of listed functions, whether the active program
+was read and the count of sent and refused changes. No values, program names, serial numbers or identifiers are
 included.
 
 ## Deutsch
@@ -117,8 +121,9 @@ deaktiviert, Schalter für Volllast, Schlafmodus, Frostschutz-Heizen (8 bzw.
 10 °C) und Luftreinigung, die Auswahl Spot-Luftführung, Einschalt- und
 Ausschalt-Timer (30-Minuten-Schritte, 0 stoppt), Zeitprogramm aktiv, aktives
 Zeitprogramm, die Taste "Temporäre Abweichung beenden" und den lesenden
-Sensor Solarbetrieb. Schaltpunkte der Programme werden noch nicht angezeigt
-oder bearbeitet.
+Sensor Solarbetrieb. Die Schaltpunkte des aktiven Programms stehen nur lesend
+im Attribut `switch_points` der Auswahl "Aktives Zeitprogramm"; Bearbeiten
+ist noch nicht möglich.
 
 Jede Aktion schreibt genau einen Pfad: frisch lesen, genau ein PUT,
 Rücklesen nach 1, 2, 4 und 8 Sekunden, kein zweiter Versand. Ein
