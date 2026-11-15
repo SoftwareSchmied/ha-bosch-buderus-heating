@@ -368,11 +368,16 @@ async def test_unclear_authentication_sends_no_start(hass):
 
 
 @pytest.mark.parametrize(
-    ("software", "allowed"), [("5.1.0", False), ("5.0.0", True), ("5.0.0", False)]
+    ("software", "allowed"), [("5.1.0", False), ("5.0.0", False), (None, True)]
 )
 async def test_authentication_needs_the_option_and_firmware(hass, software, allowed):
+    """Without the option, or (with it) without a known software, a station
+    that requires authentication gets no command."""
     data = fixture()
-    data["info"]["values"]["softwareVersion"] = software
+    if software is None:
+        del data["info"]["values"]["softwareVersion"]
+    else:
+        data["info"]["values"]["softwareVersion"] = software
     coordinator, fake = await wallbox(
         hass, data, options={OPTION_AUTHENTICATE: allowed}
     )
@@ -387,6 +392,29 @@ async def test_authentication_needs_the_option_and_firmware(hass, software, allo
         await async_start(coordinator, sleep=sleeper())
     assert caught.value.translation_key == "wallbox_authentication_required"
     assert fake.writes() == []
+
+
+async def test_start_below_software_5_1_sends_the_start_alone(hass):
+    """Below software 5.1.0 the manufacturer's app sends ``start`` without
+    ``authenticate`` to a station that requires authentication; so does the
+    integration, when the option allows starts with authentication."""
+    data = fixture()
+    data["info"]["values"]["softwareVersion"] = "5.0.0"
+    coordinator, fake = await wallbox(
+        hass,
+        data,
+        options={OPTION_AUTHENTICATE: True, OPTION_AUTHENTICATION_NAME: "Garage"},
+    )
+    fake.conf(auth="on")
+    await coordinator.async_refresh()
+    coordinator._next.clear()
+    await coordinator.async_refresh()
+    button = WallboxButton(coordinator, _spec("start_charging"))
+    assert button.available
+    settle(fake)
+    fake.calls.clear()
+    await async_start(coordinator, sleep=sleeper())
+    assert fake.writes() == [("POST", "start", {"name": "Garage"})]
 
 
 async def test_pause_sends_one_command_and_confirms_the_station_pause(hass):

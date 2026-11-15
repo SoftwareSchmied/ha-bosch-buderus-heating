@@ -233,7 +233,8 @@
       "local_pending_saved": "Čakajoči poskus je ohranjen. Nadaljujete ga lahko v lokalni nastavitvi.",
       "local_storage_failed": "Zasebnega zapisa nastavitve ni bilo mogoče prebrati ali shraniti. Pred nadaljevanjem preverite shrambo Home Assistant.",
       "already_in_progress": "Nastavitev tega lokalnega prehoda je že v teku.",
-      "cloud_local_first_other_entry": "Ta sistem je že nastavljen prek lokalnega dostopa v drugem vnosu te integracije. Dostop prek oblaka dodajte v tistem vnosu."
+      "cloud_local_first_other_entry": "Ta sistem je že nastavljen prek lokalnega dostopa v drugem vnosu te integracije. Dostop prek oblaka dodajte v tistem vnosu.",
+      "local_entry_not_updated": "Obstoječega vnosa te integracije ni bilo mogoče posodobiti na trenutno različico. Najprej popravite ali odstranite ta vnos; nato je mogoče dodati ta prehod."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Ime za preverjanje pristnosti (neobvezno)"
         },
         "data_description": {
-          "wallbox_authentication": "Privzeto izklopljeno. Samo za polnilnice s programsko opremo 5.1.0 ali novejšo.",
+          "wallbox_authentication": "Privzeto izklopljeno. Od programske opreme 5.1.0 se zagon najprej overi; pri starejši programski opremi se zagon pošlje sam, kot v aplikaciji proizvajalca.",
           "wallbox_authentication_name": "Ime, ki ga aplikacija proizvajalca uporablja za preverjanje pristnosti; lahko ostane prazno."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Ta ogrevalni krog upravlja sobni regulator. Nastavitev je mogoče spremeniti samo tam. Ta sprememba ni bila poslana."
     },
     "circuit_constant_control": {
-      "message": "Ta ogrevalni krog deluje s stalnimi vrednostmi. Njegovih temperaturnih ravni trenutno ni mogoče spremeniti. Ta sprememba ni bila poslana."
+      "message": "Ta ogrevalni krog deluje s stalnimi vrednostmi. Njegovih nastavitev trenutno ni mogoče spremeniti. Ta sprememba ni bila poslana."
     },
     "cooling_not_offered": {
       "message": "Ta ogrevalni krog trenutno ne ponuja hlajenja. Ta sprememba ni bila poslana."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Uporabiti je mogoče samo te nastavitve: {settings}. Nastavitev se zapiše kot način, temperatura in hitrost ventilatorja, na primer „cool 24.0 auto“, ali „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Grelnik vode sprejema spremembe tega časovnega programa le, ko je vklopljen, deluje v načinu časovnega programa in ima časovni pas, kot v aplikaciji proizvajalca. Nič ni bilo poslano."
     }
   },
   "selector": {

@@ -148,6 +148,12 @@ class EnumWritePolicy:
     # change nothing. Off only for controls with flag rules of their own
     # (the zones of a room controller).
     honor_flags: bool = True
+    # The flags decide only about a write, on the reading it is checked
+    # against (read again right before the request): ``used`` false refuses
+    # it (``ControlUnused``), ``available`` false or malformed flags refuse
+    # it as well. The control itself stays (the ConnectKey zones, whose
+    # entities follow rules of their own).
+    write_flags: bool = False
 
     @property
     def switch_values(self) -> tuple[str, str] | None:
@@ -198,6 +204,8 @@ class NumberWritePolicy:
     unused_writable: bool = False
     # As ``EnumWritePolicy.honor_flags``.
     honor_flags: bool = True
+    # As ``EnumWritePolicy.write_flags``.
+    write_flags: bool = False
     # A command value the gateway takes although it lies outside the
     # advertised limits (the clear value -1 of a temporary setpoint). Only
     # this exact value passes without the limit and grid checks, and only

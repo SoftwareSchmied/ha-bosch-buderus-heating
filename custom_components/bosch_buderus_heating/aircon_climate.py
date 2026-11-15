@@ -313,10 +313,18 @@ class AirconClimate(AirconEntity, ClimateEntity):
             set(kwargs) - {ATTR_TEMPERATURE, *_TARGET_FIELDS}
             or isinstance(value, bool)
             or not isinstance(value, int | float)
-            or self._setpoint() is None
+            or (setpoint := self._setpoint()) is None
         ):
             raise invalid_command()
-        await self._write(TEMPERATURE_SETPOINT, float(value), SETPOINT_POLICY)
+        raw = float(value)
+        if {temperature_unit(self), self.hass.config.units.temperature_unit} != {
+            UnitOfTemperature.CELSIUS
+        }:
+            # A converted value, such as 72 °F, never lies exactly on the
+            # unit's grid: use the nearest step, counted from the minimum.
+            _current, minimum, _maximum, step = setpoint
+            raw = round(minimum + round((raw - minimum) / step) * step, 4)
+        await self._write(TEMPERATURE_SETPOINT, raw, SETPOINT_POLICY)
 
     async def _choose(
         self, path: str, offered: dict[str, str], choice: str, policy: Any

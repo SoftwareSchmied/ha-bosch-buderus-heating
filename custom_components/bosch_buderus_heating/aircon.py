@@ -439,6 +439,12 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             if resource is None:
                 raise WriteValidationError("The control cannot be read now")
             self._publish(fresh)
+            if any(
+                guard in self.data.resources and guard not in fresh for guard in guards
+            ):
+                # A reading the change depends on (the unit's on/off state)
+                # exists on this unit but cannot be read now.
+                raise WriteValidationError("A reading of the change cannot be read now")
             try:
                 if isinstance(policy, EnumWritePolicy) and isinstance(value, str):
                     result = await self._write_service.async_write_enum(

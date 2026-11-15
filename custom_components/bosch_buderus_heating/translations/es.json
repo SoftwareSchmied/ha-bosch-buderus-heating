@@ -233,7 +233,8 @@
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "already_in_progress": "La configuración de esta pasarela local ya está en curso.",
-      "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada."
+      "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
+      "local_entry_not_updated": "Una entrada existente de esta integración no se pudo actualizar a la versión actual. Repara o elimina primero esa entrada; después se podrá añadir esta pasarela."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Nombre de autenticación (opcional)"
         },
         "data_description": {
-          "wallbox_authentication": "Desactivado por defecto. Solo para puntos de recarga con software 5.1.0 o posterior.",
+          "wallbox_authentication": "Desactivado por defecto. Desde el software 5.1.0 un inicio se autentica primero; con software anterior el inicio se envía solo, como en la app del fabricante.",
           "wallbox_authentication_name": "El nombre que usa la aplicación del fabricante para la autenticación; puede quedar vacío."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Este circuito de calefacción está controlado por un regulador de ambiente. El ajuste solo se puede cambiar allí. Este cambio no se envió."
     },
     "circuit_constant_control": {
-      "message": "Este circuito de calefacción funciona con valores constantes. Sus niveles de temperatura no se pueden cambiar en este momento. Este cambio no se envió."
+      "message": "Este circuito de calefacción funciona con valores constantes. Sus ajustes no se pueden cambiar en este momento. Este cambio no se envió."
     },
     "cooling_not_offered": {
       "message": "Este circuito de calefacción no ofrece refrigeración en este momento. Este cambio no se envió."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Solo se pueden usar estos ajustes: {settings}. Un ajuste se escribe como modo, temperatura y velocidad del ventilador, por ejemplo «cool 24.0 auto», o «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "El calentador de agua solo acepta cambios en este programa horario mientras está encendido, funciona en modo programa y tiene una zona horaria, como en la app del fabricante. No se envió nada."
     }
   },
   "selector": {

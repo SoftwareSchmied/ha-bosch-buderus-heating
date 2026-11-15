@@ -4,7 +4,7 @@
   "provenance": {
     "kind": "synthetic",
     "basis": "compatibility_mapping",
-    "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight)",
+    "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight); switched on, schedule mode and a time zone, which the app requires before it offers changes",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
@@ -14,6 +14,34 @@
     "source": "behaviour of the manufacturer's app: the WDDW2 program is written as {switchPoints:[...]} with whole degrees within the manualSetpoint range"
   },
   "resources": [
+    {
+      "id": "/system/appliance/enabled",
+      "type": "stringValue",
+      "value": "on",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 0
+    },
+    {
+      "id": "/dhwCircuits/dhw1/operationMode",
+      "type": "stringValue",
+      "value": "scheduling",
+      "allowedValues": [
+        "manual",
+        "scheduling",
+        "eco",
+        "smart"
+      ],
+      "writeable": 0
+    },
+    {
+      "id": "/gateway/tzInfo/timeZone",
+      "type": "stringValue",
+      "value": "Europe/Paris",
+      "writeable": 0
+    },
     {
       "id": "/dhwCircuits/dhw1/manualSetpoint",
       "type": "floatValue",

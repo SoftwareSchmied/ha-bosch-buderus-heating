@@ -22,6 +22,7 @@ from custom_components.bosch_buderus_heating.number import (
 )
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
+    BatchItemResult,
     RateLimited,
     RequestTimeout,
     ResourceReference,
@@ -68,12 +69,29 @@ def entity_for(coordinator, resource):
     return cls(coordinator, builder({resource.path: resource})[0])
 
 
+def gateway_holds(client, *resources):
+    """The gateway's answer to the read of a write's own request: these
+    readings (the state before the write); every other path is missing."""
+    held = {resource.path: resource for resource in resources}
+
+    async def bulk(gateway, paths, **_kwargs):
+        return tuple(
+            BatchItemResult(gateway, path, 200, resource=held[path])
+            if path in held
+            else BatchItemResult(gateway, path, 404)
+            for path in paths
+        )
+
+    client.get_resources_bulk.side_effect = bulk
+
+
 @pytest.mark.parametrize("resource", RESOURCES, ids=lambda r: r.path)
 async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
     environment, resource
 ):
     coordinator, client, _ = environment
     coordinator.data = snapshots(*RESOURCES)
+    gateway_holds(client, *RESOURCES)
     entity = entity_for(coordinator, resource)
     if resource.path.endswith("/operationMode"):
         assert entity.options == [
@@ -119,13 +137,19 @@ async def test_zone_manual_setpoint_between_two_steps_sends_nothing(environment,
     client.put_resource_value.assert_not_awaited()
 
 
-async def test_zone_manual_setpoint_without_a_step_sends_any_value(environment):
-    """Without an advertised step, 0.5 is only the display step."""
+async def test_zone_manual_setpoint_without_a_step_takes_half_degrees(environment):
+    """Without an advertised step the zone takes 0.5 steps counted from the
+    minimum, as the manufacturer's app sets it."""
     coordinator, client, _ = environment
     resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=None))
     coordinator.data = snapshots(resource)
+    gateway_holds(client, resource)
     entity = entity_for(coordinator, resource)
-    target = resource.value + 0.1
+    assert entity.native_step == 0.5
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_native_value(resource.value + 0.1)
+    client.put_resource_value.assert_not_awaited()
+    target = resource.value + 0.5
     client.get_resource.return_value = replace(resource, value=target)
     await entity.async_set_native_value(target)
     client.put_resource_value.assert_awaited_once_with(

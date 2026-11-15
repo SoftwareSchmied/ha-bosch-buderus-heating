@@ -263,14 +263,16 @@ async def test_a_mode_the_zone_does_not_offer_is_refused(hass, plant):
 async def test_a_target_in_a_mode_whose_setpoint_is_unused_names_the_reason(
     hass, plant
 ):
+    """The target's flags may follow the mode, so they are checked on the
+    reading of the target's own write: the mode is sent, and a target the
+    gateway still does not use is refused with the reason."""
     coordinator, cloud = plant
     changed(coordinator, cloud, MANUAL, used=False)
     entity = climate(hass, coordinator)
-    await _refused(
-        entity.async_set_temperature(temperature=21, hvac_mode=HVACMode.HEAT),
-        "control_unused",
-        cloud,
-    )
+    with pytest.raises(ServiceValidationError) as caught:
+        await entity.async_set_temperature(temperature=21, hvac_mode=HVACMode.HEAT)
+    assert caught.value.translation_key == "control_unused"
+    assert cloud.puts == [(MODE, "manual")]
 
 
 async def test_a_mode_that_moved_again_before_the_target_sends_no_target(hass, plant):

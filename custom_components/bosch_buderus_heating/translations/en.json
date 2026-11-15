@@ -233,7 +233,8 @@
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "already_in_progress": "Setup for this local gateway is already in progress.",
-      "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead."
+      "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
+      "local_entry_not_updated": "An existing entry of this integration could not be updated to the current version. Repair or remove that entry first; then this gateway can be added."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Authentication name (optional)"
         },
         "data_description": {
-          "wallbox_authentication": "Off by default. Only for wallboxes with software 5.1.0 or newer.",
+          "wallbox_authentication": "Off by default. From software 5.1.0 a start authenticates first; with older software the start is sent alone, as in the manufacturer's app.",
           "wallbox_authentication_name": "The name the vendor app uses for authentication; may stay empty."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "This heating circuit is controlled by a room controller. The setting can only be changed there. This change was not sent."
     },
     "circuit_constant_control": {
-      "message": "This heating circuit runs at constant values. Its temperature levels cannot be changed at the moment. This change was not sent."
+      "message": "This heating circuit runs at constant values. Its settings cannot be changed at the moment. This change was not sent."
     },
     "cooling_not_offered": {
       "message": "This heating circuit does not offer cooling at the moment. This change was not sent."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Only these settings can be used: {settings}. Write a setting as mode, temperature and fan speed, for example \"cool 24.0 auto\", or \"off\"."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "The water heater accepts changes to this time program only while it is switched on, runs in schedule mode and has a time zone, as in the manufacturer's app. Nothing was sent."
     }
   },
   "selector": {

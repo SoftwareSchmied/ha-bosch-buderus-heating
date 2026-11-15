@@ -349,8 +349,8 @@ gateway reports them:
 | Cooling program | `/heatingCircuits/{hc}/cooling/switchPrograms/A` | `on` or `off` | the circuit's cooling level `cooling/temperatureLevels/on` can be read |
 | Zone programs | `/zones/{zone}/switchPrograms/heating` and `.../cooling` | Temperature as text (or as a number, as read) | range and step are reported |
 | Ventilation program | `/ventilation/zone1/switchPrograms/cp` | `min`, `red`, `nom`, `max`, `dem`, `off` | the levels are listed as references of `ventilationLevels`; only those are offered |
-| WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range |
-| Air conditioner programs (PointT gateway of type `rac`) | `/airConditioning/switchPrograms/program1` ... `program9` | Mode, temperature and fan speed, such as `cool 24.0 auto`, or `off` | the program configuration is readable and writable; see [air conditioners on a PointT gateway](pointt-air-conditioners.md#changing-switch-points) |
+| WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range; the unit is switched on, runs in schedule mode and has a time zone (as in the manufacturer's app) |
+| Air conditioner programs (PointT gateway of type `rac`) | `/airConditioning/switchPrograms/program1` ... `program9` | Mode, temperature and fan speed, such as `cool 24.0 auto`, or `off` | the program configuration is readable; see [air conditioners on a PointT gateway](pointt-air-conditioners.md#changing-switch-points) |
 
 Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
 `maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never assume
@@ -363,6 +363,10 @@ separately. The WDDW2 and air conditioner programs are sent as the object
 `{"switchPoints": [...]}`; all others go out as a raw array. A WDDW2 day
 without points has no setpoint and an air conditioner is off before the
 first point of a day; the others carry the previous day's last point over.
+These two are written as the manufacturer's app writes them: a WDDW2 `off`
+at 00:00 is left out, and an air conditioner day that follows a day ending
+with the unit on gets an explicit `off` at 00:00 (it counts against the
+limits).
 
 The sensor of an absolute or zone program shows the temperature scheduled
 now, a WDDW2 sensor as well; a switched-off point shows no temperature and
@@ -825,7 +829,12 @@ Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
 außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
 gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das
 WDDW2-Programm und die Klimageräte-Programme gehen als Objekt
-`{"switchPoints": [...]}` hinaus, alle anderen als rohes Array.
+`{"switchPoints": [...]}` hinaus, alle anderen als rohes Array. Wie in der
+Hersteller-App lasse ich beim WDDW2-Programm ein `off` um 00:00 weg, und ein
+Klimageräte-Tag nach einem Tag, der mit eingeschaltetem Gerät endet, bekommt
+ein ausdrückliches `off` um 00:00 (es zählt zu den Grenzen). Das
+WDDW2-Programm ist nur änderbar, solange das Gerät eingeschaltet ist, im
+Zeitprogrammbetrieb läuft und eine Zeitzone hat.
 
 Keines dieser Programme wurde an einer echten Anlage gelesen oder geändert;
 ihre Formen, Lesen und Schreiben sind erwartet, ungetestet. Eine Diagnosedatei zeigt die Form (Schlüsselnamen und

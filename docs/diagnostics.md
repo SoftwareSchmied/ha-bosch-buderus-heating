@@ -82,7 +82,8 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   form, otherwise its key names and value types, never values); further
   `edit_issue` tokens (`program_limits_missing`, `levels_unknown`,
   `program_range_missing`, `program_step_missing`, `number_format_unknown`,
-  `point_out_of_range`, `program_mode_not_absolute`, `mixed_setpoints`); the
+  `point_out_of_range`, `program_mode_not_absolute`, `mixed_setpoints`, and
+  for WDDW2 `unit_switched_off`, `not_schedule_mode`, `time_zone_undefined`); the
   counters `cooling`, `zone`, `ventilation` and `wddw2` like `heating`; and
   `program_names` with, per name path, `editable` and `issue`
   (`name_no_value_config`, `name_coding_unknown`, `name_max_length_zero`,

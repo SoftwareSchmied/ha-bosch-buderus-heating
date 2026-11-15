@@ -80,14 +80,22 @@ entry says how it was tested; most of it with automated tests only.
   program types (temperatures, cooling, zones, ventilation, WDDW2 water
   heaters), program names, adding and deleting room controller switch points
   and a weekly view in the schedule dialogs. Automated tests only.
+  - WDDW2 and air conditioner weeks are written as the manufacturer's app
+    writes them; a WDDW2 program can be changed only while the water heater
+    is on, in schedule mode and has a time zone.
 - **Wallboxes:** start and pause charging, current limit, boost, charging
   mode, solar and overload settings, lock, name and prices, all disabled by
   default, plus more readings. Access control and RFID cards are never
   touched. Automated tests only; see [wallboxes](docs/pointt-wallboxes.md).
+  - A wallbox below software 5.1.0 that requires authentication is started
+    like the app does it (start only), when starting with authentication is
+    allowed in the options.
 - **Air conditioners on a PointT gateway:** a climate entity with mode,
   temperature, fan, louvres and Eco, further switches (disabled) and their
   weekly programs. Automated tests only; see
   [air conditioners](docs/pointt-air-conditioners.md).
+  - A program sensor is enabled when the unit reports the program as
+    writable, so the action can use it.
 
 ### Changed
 
@@ -102,8 +110,14 @@ entry says how it was tested; most of it with automated tests only.
   they changed. Automated tests only.
   - This also applies to the manual setpoint and the operating mode; with
     the control type `constants` they are not changed.
-  - A zone's manual setpoint refuses a value between two steps when the
-    zone reports a step.
+  - A zone's manual setpoint takes steps of 0.5 °C, or the step the zone
+    reports, as in the manufacturer's app.
+  - Zone modes and setpoints, also the older zone select and number, check
+    whether the appliance uses them right before sending.
+  - Heating and setback level set at the same time (for example by a scene)
+    are both written.
+  - On a circuit with the control type `constants` the message now speaks of
+    its settings.
 - **Clearing a temporary setpoint** also works on gateways that report limits
   without the clear value (button, disabled by default). Untested on a real
   installation.
@@ -161,7 +175,7 @@ entry says how it was tested; most of it with automated tests only.
   [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131);
   automated tests only.
 - **Discovery next to an entry whose update failed** no longer offers a new
-  local-only entry for the same plant. Automated tests only.
+  local-only entry for the same plant and says why. Automated tests only.
 - **Energy manager setpoints** showed "unknown" instead of a reported 0.
   Automated tests only.
 - **Defrost active (calculated)** now updates its `derived_from` attribute

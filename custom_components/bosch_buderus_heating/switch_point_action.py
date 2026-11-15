@@ -51,10 +51,11 @@ from .switch_program_edit import (
     edit_issue,
     editable_program,
     replace_day,
-    same_points,
+    same_week,
     setpoint_text,
     sorted_points,
     week_issue,
+    wire_week,
 )
 from .switch_program_service import SwitchProgramChanged
 from .switch_programs import DAYS, SwitchPoint, assess_switch_program
@@ -128,6 +129,9 @@ _EDIT_ERRORS: Final = {
     "program_mode_unknown": "switch_points_not_level_program",
     "not_level_program": "switch_points_not_level_program",
     "program_mode_not_absolute": "switch_points_not_level_program",
+    "unit_switched_off": "switch_points_unit_not_ready",
+    "not_schedule_mode": "switch_points_unit_not_ready",
+    "time_zone_undefined": "switch_points_unit_not_ready",
 }
 
 
@@ -294,8 +298,8 @@ async def _async_set_one(entity: Any, data: Mapping[str, Any]) -> dict[str, Any]
         assert program is not None
         if not requested:
             raise _error("switch_points_empty_week")
-        if expected is not None and not same_points(
-            _points(expected, program), program.points
+        if expected is not None and not same_week(
+            program.path, _points(expected, program), program.points
         ):
             raise _error("switch_points_program_changed")
         new = _points(requested, program)
@@ -307,13 +311,16 @@ async def _async_set_one(entity: Any, data: Mapping[str, Any]) -> dict[str, Any]
                 )
         else:
             week = new
-        if (reason := week_issue(week, program)) is not None:
+        if (reason := week_issue(week, program)) is not None or (
+            reason := week_issue(wire_week(program.path, week), program)
+        ) is not None:
+            # The second: with the points the week gains when written.
             raise _week_error(reason, program)
         outcome["switch_points"] = _week_response(week)
         if validate_only:
             outcome["result"] = "validated"
             return None
-        if same_points(week, program.points):
+        if same_week(program.path, week, program.points):
             outcome["result"] = "unchanged"
             return None
         outcome["result"] = "sent"

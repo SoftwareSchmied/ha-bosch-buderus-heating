@@ -233,7 +233,8 @@
       "local_pending_saved": "Il tentativo in sospeso è conservato. Puoi riprenderlo dalla configurazione locale.",
       "local_storage_failed": "Non è stato possibile leggere o salvare il record privato della configurazione. Controlla l'archiviazione di Home Assistant prima di continuare.",
       "already_in_progress": "La configurazione di questo gateway locale è già in corso.",
-      "cloud_local_first_other_entry": "Questo impianto è già configurato tramite il suo accesso locale in un'altra voce di questa integrazione. Aggiungi l'accesso cloud in quella voce."
+      "cloud_local_first_other_entry": "Questo impianto è già configurato tramite il suo accesso locale in un'altra voce di questa integrazione. Aggiungi l'accesso cloud in quella voce.",
+      "local_entry_not_updated": "Una voce esistente di questa integrazione non è stata aggiornata alla versione attuale. Ripara o rimuovi prima quella voce; poi questo gateway potrà essere aggiunto."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Nome di autenticazione (facoltativo)"
         },
         "data_description": {
-          "wallbox_authentication": "Disattivato per impostazione predefinita. Solo per wallbox con software 5.1.0 o successivo.",
+          "wallbox_authentication": "Disattivato per impostazione predefinita. Dal software 5.1.0 un avvio si autentica prima; con software meno recente l'avvio viene inviato da solo, come nell'app del produttore.",
           "wallbox_authentication_name": "Il nome che l'app del produttore usa per l'autenticazione; può restare vuoto."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Questo circuito di riscaldamento è comandato da un regolatore ambiente. L'impostazione può essere modificata solo lì. Questa modifica non è stata inviata."
     },
     "circuit_constant_control": {
-      "message": "Questo circuito di riscaldamento funziona con valori costanti. I suoi livelli di temperatura al momento non possono essere modificati. Questa modifica non è stata inviata."
+      "message": "Questo circuito di riscaldamento funziona con valori costanti. Le sue impostazioni al momento non possono essere modificate. Questa modifica non è stata inviata."
     },
     "cooling_not_offered": {
       "message": "Questo circuito di riscaldamento al momento non offre il raffrescamento. Questa modifica non è stata inviata."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Si possono usare solo queste impostazioni: {settings}. Un'impostazione si scrive come modalità, temperatura e velocità della ventola, ad esempio «cool 24.0 auto», oppure «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Lo scaldacqua accetta modifiche a questo programma orario solo quando è acceso, funziona in modalità programma e ha un fuso orario, come nell'app del produttore. Non è stato inviato nulla."
     }
   },
   "selector": {

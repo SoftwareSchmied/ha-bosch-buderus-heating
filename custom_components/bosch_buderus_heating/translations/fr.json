@@ -233,7 +233,8 @@
       "local_pending_saved": "La tentative en attente est conservée. Vous pouvez la reprendre depuis la configuration locale.",
       "local_storage_failed": "L'enregistrement privé de la configuration n'a pas pu être lu ou enregistré. Vérifiez le stockage de Home Assistant avant de continuer.",
       "already_in_progress": "La configuration de cette passerelle locale est déjà en cours.",
-      "cloud_local_first_other_entry": "Cette installation est déjà configurée via son accès local dans une autre entrée de cette intégration. Ajoutez plutôt l'accès cloud dans cette entrée."
+      "cloud_local_first_other_entry": "Cette installation est déjà configurée via son accès local dans une autre entrée de cette intégration. Ajoutez plutôt l'accès cloud dans cette entrée.",
+      "local_entry_not_updated": "Une entrée existante de cette intégration n'a pas pu être mise à jour vers la version actuelle. Réparez ou supprimez d'abord cette entrée ; cette passerelle pourra ensuite être ajoutée."
     },
     "progress": {
       "local_work": "Vérification de la connexion locale. Veuillez patienter."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Nom d'authentification (facultatif)"
         },
         "data_description": {
-          "wallbox_authentication": "Désactivé par défaut. Uniquement pour les bornes avec le logiciel 5.1.0 ou plus récent.",
+          "wallbox_authentication": "Désactivé par défaut. À partir du logiciel 5.1.0, un démarrage s'authentifie d'abord ; avec un logiciel plus ancien, le démarrage est envoyé seul, comme dans l'application du fabricant.",
           "wallbox_authentication_name": "Le nom que l'application du fabricant utilise pour l'authentification ; peut rester vide."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Ce circuit de chauffage est commandé par un régulateur d'ambiance. Le réglage ne peut être modifié que sur celui-ci. Cette modification n'a pas été envoyée."
     },
     "circuit_constant_control": {
-      "message": "Ce circuit de chauffage fonctionne avec des valeurs constantes. Ses niveaux de température ne peuvent pas être modifiés pour le moment. Cette modification n'a pas été envoyée."
+      "message": "Ce circuit de chauffage fonctionne avec des valeurs constantes. Ses réglages ne peuvent pas être modifiés pour le moment. Cette modification n'a pas été envoyée."
     },
     "cooling_not_offered": {
       "message": "Ce circuit de chauffage ne propose pas de refroidissement pour le moment. Cette modification n'a pas été envoyée."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Seuls ces réglages peuvent être utilisés : {settings}. Un réglage s'écrit sous la forme mode, température et vitesse du ventilateur, par exemple « cool 24.0 auto », ou « off »."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Le chauffe-eau n'accepte les modifications de ce programme horaire que s'il est allumé, fonctionne en mode programme et dispose d'un fuseau horaire, comme dans l'application du fabricant. Rien n'a été envoyé."
     }
   },
   "selector": {

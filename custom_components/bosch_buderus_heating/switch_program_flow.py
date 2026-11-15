@@ -84,6 +84,7 @@ from .switch_program_edit import (
     kind_key,
     replace_day,
     same_points,
+    same_week,
     setpoint_text,
     value_issue,
     week_issue,
@@ -486,7 +487,9 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                 None,
             )
             if action == "review":
-                if same_points(self._sp_draft, choice.program.points):
+                if same_week(
+                    choice.program.path, self._sp_draft, choice.program.points
+                ):
                     errors["base"] = "switch_program_no_changes"
                 else:
                     return await self.async_step_switch_program_confirm()

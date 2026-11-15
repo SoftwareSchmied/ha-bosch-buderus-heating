@@ -233,7 +233,8 @@
       "local_pending_saved": "Oczekująca próba jest zachowana. Możesz ją wznowić z konfiguracji lokalnej.",
       "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
       "already_in_progress": "Konfiguracja dla tej lokalnej bramki jest już w toku.",
-      "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie."
+      "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie.",
+      "local_entry_not_updated": "Nie udało się zaktualizować istniejącego wpisu tej integracji do bieżącej wersji. Najpierw napraw lub usuń ten wpis; potem będzie można dodać tę bramkę."
     },
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Nazwa do uwierzytelnienia (opcjonalna)"
         },
         "data_description": {
-          "wallbox_authentication": "Domyślnie wyłączone. Tylko dla stacji z oprogramowaniem 5.1.0 lub nowszym.",
+          "wallbox_authentication": "Domyślnie wyłączone. Od oprogramowania 5.1.0 start najpierw się uwierzytelnia; przy starszym oprogramowaniu start jest wysyłany sam, tak jak w aplikacji producenta.",
           "wallbox_authentication_name": "Nazwa, której aplikacja producenta używa do uwierzytelnienia; może pozostać pusta."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Ten obieg grzewczy jest sterowany przez regulator pokojowy. Ustawienie można zmienić tylko tam. Ta zmiana nie została wysłana."
     },
     "circuit_constant_control": {
-      "message": "Ten obieg grzewczy pracuje ze stałymi wartościami. Jego poziomów temperatury nie można teraz zmienić. Ta zmiana nie została wysłana."
+      "message": "Ten obieg grzewczy pracuje ze stałymi wartościami. Jego ustawień nie można teraz zmienić. Ta zmiana nie została wysłana."
     },
     "cooling_not_offered": {
       "message": "Ten obieg grzewczy obecnie nie oferuje chłodzenia. Ta zmiana nie została wysłana."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Można używać tylko tych ustawień: {settings}. Ustawienie zapisuje się jako tryb, temperatura i prędkość wentylatora, na przykład „cool 24.0 auto”, lub „off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Podgrzewacz wody przyjmuje zmiany tego programu czasowego tylko wtedy, gdy jest włączony, pracuje w trybie programu i ma ustawioną strefę czasową, tak jak w aplikacji producenta. Nic nie zostało wysłane."
     }
   },
   "selector": {

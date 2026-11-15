@@ -20,8 +20,10 @@ not used (``used: false``) is not offered either. The program type itself is
 never written.
 
 An air conditioner's program (``aircon_program_rules``) is changed only with
-a readable, writable program configuration: its modes, temperature ranges
-and fan speeds, and the limits of the program.
+a readable program configuration: its modes, temperature ranges and fan
+speeds, and the limits of the program. The WDDW2 hot water program is
+changed only while the unit is switched on, runs in schedule mode and has a
+time zone, as in the manufacturer's app (``wddw2_lock``).
 """
 
 from __future__ import annotations
@@ -70,6 +72,10 @@ _LEVEL_LEAF = re.compile(
     r"^(?P<circuit>/[^/]+/[^/]+)/temperatureLevels/(?P<key>[^/]+)$"
 )
 _WDDW2_RANGE = ("/dhwCircuits/dhw1/manualSetpoint", "/dhwCircuits/dhw1/manualsetpoint")
+# What the app checks before it offers the WDDW2 program for changes.
+WDDW2_APPLIANCE = "/system/appliance/enabled"
+WDDW2_OPERATION_MODE = "/dhwCircuits/dhw1/operationMode"
+WDDW2_TIME_ZONE = "/gateway/tzInfo/timeZone"
 
 
 def circuit_path(path: str) -> str:
@@ -264,6 +270,28 @@ def wddw2_range(resources: Mapping[str, Resource]) -> tuple[float, float] | None
     return None
 
 
+def _text(resources: Mapping[str, Resource], path: str) -> str | None:
+    resource = resources.get(path)
+    if resource is None or not resource.has_value:
+        return None
+    return resource.value if isinstance(resource.value, str) else None
+
+
+def wddw2_lock(resources: Mapping[str, Resource]) -> str | None:
+    """Why the WDDW2 water heater's program cannot be changed now, as the
+    manufacturer's app decides it, or ``None``: the unit must be switched on,
+    run in schedule mode and have a time zone. Without a reading of one of
+    them the program is shown, never changed."""
+    if _text(resources, WDDW2_APPLIANCE) != "on":
+        return "unit_switched_off"
+    if _text(resources, WDDW2_OPERATION_MODE) != "scheduling":
+        return "not_schedule_mode"
+    zone = _text(resources, WDDW2_TIME_ZONE)
+    if zone is None or not zone.strip():
+        return "time_zone_undefined"
+    return None
+
+
 def edit_issue(
     resource: Resource | None,
     resources: Mapping[str, Resource],
@@ -293,6 +321,11 @@ def edit_issue(
     if metadata.used is False:
         # Consistent with the write, which refuses such a program.
         return "not_used"
+    if (
+        kind_key(resource.path) == "wddw2"
+        and (lock := wddw2_lock(resources)) is not None
+    ):
+        return lock
     mode_path = program_mode_path(resource.path)
     if mode_path is not None and (
         assessment.value_type == "absolute"
@@ -591,6 +624,50 @@ def same_points(left: Iterable[SwitchPoint], right: Iterable[SwitchPoint]) -> bo
     """Whether two weeks hold the same points, in any order."""
     first, second = tuple(left), tuple(right)
     return len(first) == len(second) and set(first) == set(second)
+
+
+def wire_week(path: str, points: Iterable[SwitchPoint]) -> tuple[SwitchPoint, ...]:
+    """The week as it is written for the program ``path``, sorted.
+
+    The two programs without carry-over start every day switched off, so
+    their weeks are written as the manufacturer's app writes them:
+
+    - WDDW2: an ``off`` point at 00:00 says nothing and is left out.
+    - Air conditioner: a day whose first point lies after 00:00 (or that
+      has none) while the previous day (Sunday before Monday) ends with the
+      unit on gets an explicit ``off`` at 00:00, so a unit that kept the
+      last setting over midnight is off before the day's first point, as
+      the program shows it. It counts against the limits like any point.
+
+    Every other program is written as it is.
+    """
+    week = sorted_points(points)
+    key = kind_key(path)
+    if key == "wddw2":
+        return tuple(
+            point for point in week if not (point.minute == 0 and point.level == "off")
+        )
+    if key != "aircon":
+        return week
+    by_day: list[list[SwitchPoint]] = [[] for _ in DAYS]
+    for point in week:
+        by_day[point.day].append(point)
+    # A day without points ends switched off.
+    ends = [day[-1].level if day else aircon_program_rules.OFF for day in by_day]
+    added = [
+        SwitchPoint(day, 0, aircon_program_rules.OFF)
+        for day, points_of_day in enumerate(by_day)
+        if (not points_of_day or points_of_day[0].minute > 0)
+        and ends[day - 1] != aircon_program_rules.OFF
+    ]
+    return sorted_points((*week, *added))
+
+
+def same_week(
+    path: str, left: Iterable[SwitchPoint], right: Iterable[SwitchPoint]
+) -> bool:
+    """Whether two weeks of the program ``path`` are written the same."""
+    return same_points(wire_week(path, left), wire_week(path, right))
 
 
 def encode_week(

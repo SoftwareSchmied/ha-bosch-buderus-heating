@@ -522,12 +522,16 @@ class HeatingCircuitClimate(
             # C31: a converted value, such as 70 °F, never lies exactly on the
             # gateway's grid. Use the nearest grid value instead of rejecting.
             raw = round(raw / policy.step) * policy.step
+        # The target is read again with the mode and the guards: its limits
+        # and flags come from that reading. A new value of its own since the
+        # last poll does not refuse it; the requested value replaces it.
         await async_set_control(
             self.coordinator,
             target.path,
             raw,
             policy,
-            expected=(mode, target, *context, *guard),
+            expected=(mode, *context, *guard),
+            fresh=(target,),
         )
 
     async def _async_set_temporary(
@@ -559,8 +563,14 @@ class HeatingCircuitClimate(
             temporary.resource.path,
             raw,
             HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
-            expected=(mode, temporary.resource, *guards),
-            fresh=manual_floor_reading(self.coordinator, self.root),
+            expected=(mode, *guards),
+            # Read again with the mode: a temporary setpoint the gateway
+            # ended at a switch point since the last poll does not refuse
+            # the new one.
+            fresh=(
+                temporary.resource,
+                *manual_floor_reading(self.coordinator, self.root),
+            ),
         )
 
 
@@ -626,6 +636,7 @@ def temporary_setpoint(
     *,
     strict: bool,
     policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+    flags: bool = True,
 ) -> TemporarySetpoint | None:
     """The circuit's temporary setpoint, if it can be written.
 
@@ -633,13 +644,15 @@ def temporary_setpoint(
     own. ``strict`` for a change: a fresh reading of a successful cloud
     cycle, as every write needs. ``policy``: the one of a ConnectKey zone's
     side (``root``: ``/zones/zone1/heating``), whose layout is the same.
+    Without ``flags`` (with ``strict``) its flags are left to the write,
+    which reads it again (``fresh_resource``).
     """
     context = context_of(coordinator)
     if context.rrc_plant:
         return None
     path = f"{root}/{TEMPORARY}"
     resource = (
-        fresh_resource(coordinator, path)
+        fresh_resource(coordinator, path, flags=flags)
         if strict
         else valid_resource(coordinator, path)
     )
@@ -726,9 +739,21 @@ def manual_floor_reading(
 ) -> tuple[Resource, ...]:
     """The manual setpoint whose minimum may limit a temporary target, as
     last read: a temporary write reads it again in its request (``fresh``)
-    and checks the target against its current minimum."""
+    and checks the target against its current minimum.
+
+    Only a current reading: some gateways do not answer for the manual
+    setpoint in the mode auto, and its older reading then sets no limit
+    (``_manual_minimum``). Should the gateway not answer for it in the
+    write's own request either, the rule does not apply.
+    """
     snapshot = (coordinator.data or {}).get(f"{root}/manualRoomSetpoint")
-    return (snapshot.resource,) if snapshot is not None else ()
+    if (
+        snapshot is None
+        or not snapshot.available
+        or snapshot.freshness is not Freshness.FRESH
+    ):
+        return ()
+    return (snapshot.resource,)
 
 
 def takes_clear_value(

@@ -233,7 +233,8 @@
       "local_pending_saved": "Der offene Versuch bleibt gespeichert. Du kannst ihn über die lokale Einrichtung fortsetzen.",
       "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
       "already_in_progress": "Die Einrichtung dieses lokalen Gateways läuft bereits.",
-      "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu."
+      "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu.",
+      "local_entry_not_updated": "Ein vorhandener Eintrag dieser Integration konnte nicht auf die aktuelle Version aktualisiert werden. Repariere oder entferne diesen Eintrag zuerst; danach lässt sich dieses Gateway hinzufügen."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Authentifizierungsname (optional)"
         },
         "data_description": {
-          "wallbox_authentication": "Standardmäßig aus. Nur für Wallboxen mit Software 5.1.0 oder neuer.",
+          "wallbox_authentication": "Standardmäßig aus. Ab Software 5.1.0 authentifiziert ein Start zuerst; bei älterer Software wird der Start allein gesendet, wie in der Hersteller-App.",
           "wallbox_authentication_name": "Der Name, den die Hersteller-App zur Authentifizierung verwendet; darf leer bleiben."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Dieser Heizkreis wird über einen Raumregler geregelt. Die Einstellung lässt sich nur dort ändern. Diese Änderung wurde nicht gesendet."
     },
     "circuit_constant_control": {
-      "message": "Dieser Heizkreis läuft mit konstanten Werten. Seine Temperaturstufen lassen sich gerade nicht ändern. Diese Änderung wurde nicht gesendet."
+      "message": "Dieser Heizkreis läuft mit konstanten Werten. Seine Einstellungen lassen sich gerade nicht ändern. Diese Änderung wurde nicht gesendet."
     },
     "cooling_not_offered": {
       "message": "Dieser Heizkreis bietet gerade keinen Kühlbetrieb an. Diese Änderung wurde nicht gesendet."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Nur diese Einstellungen sind möglich: {settings}. Eine Einstellung besteht aus Betriebsart, Temperatur und Lüfterstufe, zum Beispiel „cool 24.0 auto“, oder „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Der Warmwasserbereiter nimmt Änderungen an diesem Zeitprogramm nur an, wenn er eingeschaltet ist, im Zeitprogrammbetrieb läuft und eine Zeitzone hat, wie in der Hersteller-App. Es wurde nichts gesendet."
     }
   },
   "selector": {

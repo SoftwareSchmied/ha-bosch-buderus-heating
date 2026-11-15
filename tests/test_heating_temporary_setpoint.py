@@ -130,14 +130,29 @@ async def test_manual_mode_still_writes_the_manual_setpoint(hass):
     assert entity.extra_state_attributes == {"temporary_override": False}
 
 
-async def test_temporary_changed_on_the_gateway_refuses_the_write(hass):
+@pytest.mark.parametrize("on_gateway", [23.0, -1.0])
+async def test_temporary_changed_on_the_gateway_takes_the_new_target(hass, on_gateway):
+    """The gateway changed or ended the temporary setpoint (at a switch
+    point) since the last poll: the new target is written all the same,
+    against the current reading, in one request."""
+    coordinator, entity, cloud = _circuit(hass)
+    cloud.state[TEMPORARY] = replace(cloud.state[TEMPORARY], value=on_gateway)
+    await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == [(TEMPORARY, 22.0)]
+    assert coordinator.data[TEMPORARY].resource.value == 22.0
+
+
+async def test_temporary_target_is_checked_on_its_current_flags(hass):
+    """Read again with the write: a setting the gateway no longer uses is
+    not written."""
     _, entity, cloud = _circuit(hass)
-    cloud.state[TEMPORARY] = replace(cloud.state[TEMPORARY], value=23.0)
+    cloud.state[TEMPORARY] = replace(
+        cloud.state[TEMPORARY],
+        metadata=replace(cloud.state[TEMPORARY].metadata, used=False),
+    )
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
     assert cloud.puts == []
-    # The fresh reading is shown at once.
-    assert entity.native_target_temperature == 23
 
 
 async def test_unconfirmed_write_is_sent_once_and_reported(hass):

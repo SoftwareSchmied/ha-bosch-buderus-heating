@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
@@ -17,11 +18,16 @@ def fresh_resource(
     path: str,
     *,
     displayed: bool = False,
+    flags: bool = True,
 ) -> Resource | None:
     """A current, usable reading; ``displayed`` prefers a paired local value.
 
     The same checks apply to both sources, and a failed cloud cycle still hides
     the value, so a combined entity never looks current without the cloud.
+
+    Without ``flags`` the ``used`` and ``available`` flags of a valid reading
+    are left to a later check: the reading comes back without them, for a
+    write that reads the setting again and checks its current flags there.
     """
     assumed = getattr(coordinator, "assumed_fresh", None)
     stored: Resource | None = assumed(path) if assumed is not None else None
@@ -48,9 +54,11 @@ def fresh_resource(
         or not resource.has_value
         or resource.has_values
         or not metadata.availability_flags_valid
-        or metadata.available is False
-        or metadata.used is False
     ):
+        return None
+    if not flags:
+        return replace(resource, metadata=replace(metadata, used=None, available=None))
+    if metadata.available is False or metadata.used is False:
         return None
     return resource
 

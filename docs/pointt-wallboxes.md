@@ -155,9 +155,11 @@ installation is designed for it.
 
 **Authentication:** a wallbox that requires authentication (`conf.auth`
 on) starts only after an `authenticate` command. The integration sends it
-only when allowed under **Settings → Wallbox** (off by default), and only
-with software 5.1.0 or newer; then a start sends `authenticate` followed by
-`start`. If the authentication is refused or unclear, no start is sent. The
+only when allowed under **Settings → Wallbox** (off by default). With
+software 5.1.0 or newer a start then sends `authenticate` followed by
+`start`; with older software it sends `start` alone, as the manufacturer's
+app does. Without a known software version nothing is sent. If the
+authentication is refused or unclear, no start is sent. The
 optional authentication name is the name the vendor app uses; it stays in
 the entry options and never appears in diagnostics.
 
@@ -320,8 +322,10 @@ die Installation dafür ausgelegt ist.
 **Authentifizierung:** Eine Wallbox, die eine Authentifizierung verlangt
 (`conf.auth` an), startet erst nach einem `authenticate`-Befehl. Die
 Integration sendet ihn nur, wenn das unter **Einstellungen → Wallbox**
-erlaubt ist (standardmäßig aus), und nur bei Software 5.1.0 oder neuer;
-ein Start sendet dann `authenticate` und danach `start`. Wird die
+erlaubt ist (standardmäßig aus). Ab Software 5.1.0 sendet ein Start dann
+`authenticate` und danach `start`; bei älterer Software sendet er nur
+`start`, wie die Hersteller-App. Ohne bekannte Softwareversion wird nichts
+gesendet. Wird die
 Authentifizierung abgelehnt oder bleibt sie unklar, wird kein Start
 gesendet. Der optionale Authentifizierungsname ist der Name, den die
 Hersteller-App verwendet; er bleibt in den Optionen des Eintrags und

@@ -375,10 +375,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         # Without any entry the integration is not set up yet, so the local
         # runtime cannot be ready: the new entry's own local setup checks it.
         owners = self._local_owner_entries()
-        if (owners and not self.local_available()) or (
-            not owners and self._local_unmigrated_entries()
-        ):
+        if owners and not self.local_available():
             return self.async_abort(reason="local_setup_unavailable")
+        if not owners and self._local_unmigrated_entries():
+            # An entry whose update failed: it, not the data supply, is why.
+            return self.async_abort(reason="local_entry_not_updated")
         try:
             self._local_choices = remember_discovery(self.hass, discovery_info)
         except LocalProbeError, AttributeError:
@@ -424,7 +425,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             self._local_phase = ""
             return await self.async_step_local_setup()
         if self._local_unmigrated_entries():
-            return self.async_abort(reason="local_setup_unavailable")
+            return self.async_abort(reason="local_entry_not_updated")
         if self._local_discovery is not None:
             # The notice may be older than the hint; the address step of the
             # new entry offers the found address again.

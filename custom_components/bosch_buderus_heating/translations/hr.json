@@ -233,7 +233,8 @@
       "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
       "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
       "already_in_progress": "Konfiguracija ovog lokalnog pristupnika već je u tijeku.",
-      "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu."
+      "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
+      "local_entry_not_updated": "Postojeći unos ove integracije nije se mogao ažurirati na trenutačnu verziju. Najprije popravite ili uklonite taj unos; nakon toga ovaj se pristupnik može dodati."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Naziv za autentifikaciju (neobavezno)"
         },
         "data_description": {
-          "wallbox_authentication": "Zadano isključeno. Samo za punjače sa softverom 5.1.0 ili novijim.",
+          "wallbox_authentication": "Zadano isključeno. Od softvera 5.1.0 pokretanje se najprije autentificira; sa starijim softverom pokretanje se šalje samo, kao u aplikaciji proizvođača.",
           "wallbox_authentication_name": "Naziv koji aplikacija proizvođača koristi za autentifikaciju; može ostati prazan."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Ovim krugom grijanja upravlja sobni regulator. Postavka se može promijeniti samo tamo. Ova promjena nije poslana."
     },
     "circuit_constant_control": {
-      "message": "Ovaj krug grijanja radi s konstantnim vrijednostima. Njegove razine temperature trenutačno se ne mogu promijeniti. Ova promjena nije poslana."
+      "message": "Ovaj krug grijanja radi s konstantnim vrijednostima. Njegove postavke trenutačno se ne mogu promijeniti. Ova promjena nije poslana."
     },
     "cooling_not_offered": {
       "message": "Ovaj krug grijanja trenutačno ne nudi hlađenje. Ova promjena nije poslana."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Mogu se koristiti samo ove postavke: {settings}. Postavka se piše kao način rada, temperatura i brzina ventilatora, na primjer „cool 24.0 auto“, ili „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Grijač vode prihvaća promjene ovog vremenskog programa samo dok je uključen, radi u načinu vremenskog programa i ima vremensku zonu, kao u aplikaciji proizvođača. Ništa nije poslano."
     }
   },
   "selector": {

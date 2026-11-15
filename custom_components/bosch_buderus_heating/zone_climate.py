@@ -259,9 +259,11 @@ class ZoneClimate(
 
     # Readings -----------------------------------------------------------
 
-    def _reading(self, path: str, *, strict: bool) -> Resource | None:
+    def _reading(
+        self, path: str, *, strict: bool, flags: bool = True
+    ) -> Resource | None:
         if strict:
-            return fresh_resource(self.coordinator, path)
+            return fresh_resource(self.coordinator, path, flags=flags)
         return valid_resource(self.coordinator, path)
 
     def _circuit(self) -> str | None:
@@ -354,9 +356,11 @@ class ZoneClimate(
             guards.append(snapshot.resource)
         return tuple(guards)
 
-    def _manual(self, side: str, *, strict: bool = False) -> Resource | None:
+    def _manual(
+        self, side: str, *, strict: bool = False, flags: bool = True
+    ) -> Resource | None:
         resource = self._reading(
-            f"{self.root}/{side}/manualRoomSetpoint", strict=strict
+            f"{self.root}/{side}/manualRoomSetpoint", strict=strict, flags=flags
         )
         if resource is None or zone_control_issue(resource) is not None:
             return None
@@ -369,13 +373,14 @@ class ZoneClimate(
         )
 
     def _temporary(
-        self, side: str, *, strict: bool = False
+        self, side: str, *, strict: bool = False, flags: bool = True
     ) -> TemporarySetpoint | None:
         return temporary_setpoint(
             self.coordinator,
             f"{self.root}/{side}",
             strict=strict,
             policy=ZONE_TEMPORARY_SETPOINT_POLICY,
+            flags=flags,
         )
 
     # State --------------------------------------------------------------
@@ -445,9 +450,9 @@ class ZoneClimate(
         return None
 
     def _settable_temporary(
-        self, side: str, *, strict: bool = False
+        self, side: str, *, strict: bool = False, flags: bool = True
     ) -> TemporarySetpoint | None:
-        temporary = self._temporary(side, strict=strict)
+        temporary = self._temporary(side, strict=strict, flags=flags)
         return temporary if temporary is not None and temporary.settable else None
 
     def _target_writable(self) -> bool:
@@ -685,8 +690,10 @@ class ZoneClimate(
             if raw not in ("manual", "auto"):
                 raise self._refusal()  # a target needs manual or auto
             # Checked before anything is sent: the target must be possible in
-            # the requested mode with the current readings.
-            self._raw_target(command.side, raw, float(value), strict=True)
+            # the requested mode with the current readings. Its flags may
+            # follow the mode (a manual setpoint not used in the mode auto):
+            # they are checked on the reading of the target's own write.
+            self._raw_target(command.side, raw, float(value), strict=True, flags=False)
             await self._async_write_mode(command, requested)
             # Only after the confirmed mode, with the readings it published.
             command = self._command()
@@ -695,12 +702,16 @@ class ZoneClimate(
         await self._async_write_target(command, float(value))
 
     def _raw_target(
-        self, side: str, mode: str, value: float, *, strict: bool
+        self, side: str, mode: str, value: float, *, strict: bool, flags: bool = True
     ) -> tuple[Resource, float, Any]:
-        """The resource, value in its unit and policy of a target in a mode."""
+        """The resource, value in its unit and policy of a target in a mode.
+
+        Without ``flags`` the target's ``used`` and ``available`` flags are
+        not checked here but by its write, on the reading of its request.
+        """
         if mode == "auto":
             temporary_path = f"{self.root}/{side}/temporaryRoomSetpoint"
-            temporary = self._settable_temporary(side, strict=strict)
+            temporary = self._settable_temporary(side, strict=strict, flags=flags)
             if temporary is None:
                 raise self._refusal(temporary_path)
             raw = TemperatureConverter.convert(
@@ -716,7 +727,9 @@ class ZoneClimate(
                 raise self._refusal(temporary_path)
             return temporary.resource, raw, ZONE_TEMPORARY_SETPOINT_POLICY
         manual_path = f"{self.root}/{side}/manualRoomSetpoint"
-        manual = self._manual(side, strict=strict) if mode == "manual" else None
+        manual = (
+            self._manual(side, strict=strict, flags=flags) if mode == "manual" else None
+        )
         policy = (
             number_policy_for_resource(manual, context_of(self.coordinator))
             if manual is not None
@@ -746,10 +759,13 @@ class ZoneClimate(
         mode = str(command.mode.value)
         if mode not in ("manual", "auto"):
             raise self._refusal()
-        resource, raw, policy = self._raw_target(command.side, mode, value, strict=True)
+        resource, raw, policy = self._raw_target(
+            command.side, mode, value, strict=True, flags=False
+        )
         # The target is read again with the mode and the guards, and its
-        # limits come from that reading. A change of its own value does not
-        # refuse it: a mode change just sent may move the target with it.
+        # limits and flags come from that reading. A change of its own value
+        # does not refuse it: a mode change just sent may move the target
+        # with it, and may make it used.
         await async_set_control(
             self.coordinator,
             resource.path,

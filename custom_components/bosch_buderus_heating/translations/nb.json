@@ -233,7 +233,8 @@
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "already_in_progress": "Oppsettet for denne lokale gatewayen pågår allerede.",
-      "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet."
+      "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet.",
+      "local_entry_not_updated": "En eksisterende oppføring for denne integrasjonen kunne ikke oppdateres til gjeldende versjon. Reparer eller fjern den oppføringen først; deretter kan denne gatewayen legges til."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Autentiseringsnavn (valgfritt)"
         },
         "data_description": {
-          "wallbox_authentication": "Av som standard. Bare for ladebokser med programvare 5.1.0 eller nyere.",
+          "wallbox_authentication": "Av som standard. Fra programvare 5.1.0 autentiserer en start først; med eldre programvare sendes starten alene, som i produsentens app.",
           "wallbox_authentication_name": "Navnet produsentens app bruker til autentisering; kan stå tomt."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Denne varmekretsen styres av en romregulator. Innstillingen kan bare endres der. Denne endringen ble ikke sendt."
     },
     "circuit_constant_control": {
-      "message": "Denne varmekretsen går med konstante verdier. Temperaturnivåene kan ikke endres for øyeblikket. Denne endringen ble ikke sendt."
+      "message": "Denne varmekretsen går med konstante verdier. Innstillingene kan ikke endres for øyeblikket. Denne endringen ble ikke sendt."
     },
     "cooling_not_offered": {
       "message": "Denne varmekretsen tilbyr ikke kjøling for øyeblikket. Denne endringen ble ikke sendt."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Bare disse innstillingene kan brukes: {settings}. En innstilling skrives som driftsmodus, temperatur og viftehastighet, for eksempel «cool 24.0 auto», eller «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Varmtvannsberederen tar bare imot endringer i dette tidsprogrammet når den er slått på, går i tidsprogramdrift og har en tidssone, som i produsentens app. Ingenting ble sendt."
     }
   },
   "selector": {

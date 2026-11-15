@@ -233,7 +233,8 @@
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "already_in_progress": "De configuratie van deze lokale gateway is al bezig.",
-      "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer."
+      "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
+      "local_entry_not_updated": "Een bestaande vermelding van deze integratie kon niet naar de huidige versie worden bijgewerkt. Herstel of verwijder die vermelding eerst; daarna kan deze gateway worden toegevoegd."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Authenticatienaam (optioneel)"
         },
         "data_description": {
-          "wallbox_authentication": "Standaard uit. Alleen voor laadpalen met software 5.1.0 of nieuwer.",
+          "wallbox_authentication": "Standaard uit. Vanaf software 5.1.0 authenticeert een start eerst; bij oudere software wordt de start alleen verzonden, zoals in de app van de fabrikant.",
           "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven."
         }
       },
@@ -1589,7 +1590,7 @@
       "message": "Dit verwarmingscircuit wordt door een ruimteregelaar geregeld. De instelling kan alleen daar worden gewijzigd. Deze wijziging is niet verzonden."
     },
     "circuit_constant_control": {
-      "message": "Dit verwarmingscircuit werkt met constante waarden. De temperatuurniveaus kunnen op dit moment niet worden gewijzigd. Deze wijziging is niet verzonden."
+      "message": "Dit verwarmingscircuit werkt met constante waarden. De instellingen kunnen op dit moment niet worden gewijzigd. Deze wijziging is niet verzonden."
     },
     "cooling_not_offered": {
       "message": "Dit verwarmingscircuit biedt op dit moment geen koeling. Deze wijziging is niet verzonden."
@@ -1791,6 +1792,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Alleen deze instellingen kunnen worden gebruikt: {settings}. Een instelling wordt geschreven als modus, temperatuur en ventilatorsnelheid, bijvoorbeeld “cool 24.0 auto”, of “off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "De boiler accepteert wijzigingen van dit tijdprogramma alleen als hij is ingeschakeld, in programmabedrijf werkt en een tijdzone heeft, zoals in de app van de fabrikant. Er is niets verzonden."
     }
   },
   "selector": {

@@ -281,7 +281,6 @@ def test_limits_of_the_configuration_count_where_the_program_has_none():
     ("change", "token"),
     [
         ({CONFIGURATION: None}, "program_configuration_missing"),
-        ("not_writable", "configuration_not_writable"),
         ("no_limits", "program_limits_missing"),
         ("only_cleaning", "program_modes_unknown"),
         ("odd_raster", "program_limits_missing"),
@@ -290,9 +289,7 @@ def test_limits_of_the_configuration_count_where_the_program_has_none():
 def test_without_usable_configuration_there_are_no_rules(change, token):
     data = programs()
     configuration = data[CONFIGURATION]
-    if change == "not_writable":
-        configuration["writeable"] = 0
-    elif change == "no_limits":
+    if change == "no_limits":
         for key in (
             "maxNbOfSwitchPoints",
             "maxNbOfSwitchPointsPerDay",
@@ -468,7 +465,17 @@ async def test_dialog_write_sends_the_week_once_and_reads_it_back(hass):
     # Read once more right before the PUT, then read back after 1 s.
     assert unit.gets == [P1, P1]
     assert sleeps.delays == [1]
-    assert assess_switch_program(confirmed).points == week
+    # Tuesday ends with the fan on: Wednesday (no points) starts with an
+    # explicit off at 00:00, as the app writes it.
+    assert body["switchPoints"][-1] == {
+        "dayOfWeek": "We",
+        "time": 0,
+        "parameters": {"operationMode": "off"},
+    }
+    assert assess_switch_program(confirmed).points == (
+        *week,
+        SwitchPoint(2, 0, "off"),
+    )
     assert unit.puts == []
     assert coordinator.program_writes == {"confirmed": 1, "sent": 1}
 
@@ -540,7 +547,7 @@ async def test_lost_answer_is_resolved_by_reading(hass):
         coordinator.resource(P1), week
     )
     assert len(unit.object_puts) == 1
-    assert assess_switch_program(confirmed).points == week
+    assert assess_switch_program(confirmed).points == (*week, SwitchPoint(1, 0, "off"))
 
 
 async def test_unconfirmed_week_is_not_sent_again(hass):
@@ -617,8 +624,10 @@ async def test_action_replaces_the_week(hass):
     )
     result = response[entity.entity_id]
     assert result["result"] == "sent" and result["confirmed"] is True
+    # As written: Monday ends cooling, so Tuesday starts with an explicit off.
     assert result["switch_points"] == {
         "mo": [{"time": "07:00", "level": "cool 23.0 high"}],
+        "tu": [{"time": "00:00", "level": "off"}],
         "fr": [{"time": "18:00", "level": "off"}],
     }
     assert result["previous"]["tu"] == [{"time": "08:00", "level": "fanOnly low"}]
@@ -684,7 +693,7 @@ async def test_action_validate_only_and_expected(hass):
 
 async def test_action_on_a_program_without_configuration(hass):
     unit = ProgramUnit()
-    unit.resources[CONFIGURATION]["writeable"] = 0
+    del unit.resources[CONFIGURATION]
     coordinator, unit, _ = await program_coordinator(hass, unit)
     entity = sensor_of(hass, coordinator)
     with pytest.raises(ServiceValidationError) as err:
@@ -718,7 +727,8 @@ async def test_program_sensor(hass):
     assert entity.unique_id == "rac-gateway-A:airConditioning:switchPrograms:program1"
     assert entity.translation_key == "aircon_switch_program"
     assert entity.translation_placeholders == {"number": "1"}
-    assert not entity.entity_registry_enabled_default
+    # A writable program is enabled when first created (target of the action).
+    assert entity.entity_registry_enabled_default
     assert entity.options == list(STATES)
     assert "fan_only" in STATES and "fanOnly" not in STATES
     assert entity.entity_description.value_kind == "switch_program"
