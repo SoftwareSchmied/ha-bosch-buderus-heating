@@ -254,7 +254,8 @@
           "connection_add_cloud": "Povezivanje pristupa putem oblaka",
           "local_setup": "Postavljanje lokalnog pristupa",
           "rescan": "Ponovno pretraživanje sustava",
-          "recordings": "Zapisi sustava"
+          "recordings": "Zapisi sustava",
+          "wallbox": "Zidni punjač"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Rezultat",
         "description": "Ništa nije izbrisano."
+      },
+      "wallbox": {
+        "title": "Zidni punjač",
+        "description": "Zidni punjač koji zahtijeva autentifikaciju počinje puniti tek nakon autentifikacije integracije. Prije svakog pokretanja tada se šalje jedna dodatna naredba.",
+        "data": {
+          "wallbox_authentication": "Dopusti autentifikaciju prije pokretanja",
+          "wallbox_authentication_name": "Naziv za autentifikaciju (neobavezno)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Zadano isključeno. Samo za punjače sa softverom 5.1.0 ili novijim.",
+          "wallbox_authentication_name": "Naziv koji aplikacija proizvođača koristi za autentifikaciju; može ostati prazan."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Rezultat",
+        "description": "Postavke zidnog punjača su spremljene."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
       "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
       "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Označite i drugu kvačicu ili ostavite prvu neoznačenom da se vratite. Ništa nije poslano.",
-      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno."
+      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno.",
+      "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "Odabrani vremenski program trenutno se ne može pročitati. Ništa nije poslano."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Zidni punjač nije u stanju koje dopušta ovu radnju. Ova promjena nije poslana."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Struja punjenja manja je od 6 A. Najprije postavite struju punjenja. Ova promjena nije poslana."
+    },
+    "wallbox_authentication_required": {
+      "message": "Zidni punjač zahtijeva autentifikaciju prije punjenja. Dopustite je u opcijama integracije (Wallbox). Ova promjena nije poslana."
+    },
+    "wallbox_group_controlled": {
+      "message": "Ovaj zidni punjač pripada grupi za upravljanje opterećenjem koja upravlja ovom funkcijom. Ova promjena nije poslana."
+    },
+    "wallbox_energy_manager": {
+      "message": "Ovim zidnim punjačem upravlja upravitelj energije. Ova promjena nije poslana."
+    },
+    "wallbox_not_manual": {
+      "message": "Struja punjenja može se postaviti samo u normalnom načinu punjenja. Ova promjena nije poslana."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost je aktivan. Najprije završite Boost. Ova promjena nije poslana."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Zidni punjač nije dao trenutačnu vrijednost za ovu funkciju. Ova promjena nije poslana."
+    },
+    "wallbox_not_writeable": {
+      "message": "Zidni punjač ne prijavljuje ovu postavku kao promjenjivu. Ova promjena nije poslana."
+    },
+    "wallbox_firmware": {
+      "message": "Softver zidnog punjača ne nudi ovu funkciju. Ova promjena nije poslana."
+    },
+    "wallbox_meter_missing": {
+      "message": "Ova funkcija treba povezano vanjsko brojilo. Ova promjena nije poslana."
+    },
+    "wallbox_not_offered": {
+      "message": "Ova funkcija nije ponuđena za ovaj zidni punjač. Ova promjena nije poslana."
+    },
+    "wallbox_not_solar": {
+      "message": "Ova postavka vrijedi samo za solarno punjenje. Najprije prebacite način punjenja na solarno. Ova promjena nije poslana."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura odsutnosti"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Ograničenje struje punjenja"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Najveća dopuna iz mreže"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Najmanji solarni višak"
+      },
+      "wallbox_filter_time": {
+        "name": "Vrijeme filtriranja solarnog punjenja"
+      },
+      "wallbox_power_limit": {
+        "name": "Ograničenje snage"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Ograničenje struje faze L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Ograničenje struje faze L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Ograničenje struje faze L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cijena električne energije"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Otkupna cijena"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Način punjenja",
+        "state": {
+          "manual": "Normalno",
+          "solar": "Solarno"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcija kamina"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Dopuna iz mreže pri solarnom punjenju"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prednost kućnoj bateriji"
+      },
+      "wallbox_current_limiter": {
+        "name": "Ograničivač struje"
+      },
+      "wallbox_power_limiter": {
+        "name": "Ograničivač snage"
+      },
+      "wallbox_locked": {
+        "name": "Zidni punjač zaključan"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Proizvedena energija hlađenja"
+      },
+      "wallbox_external_meter": {
+        "name": "Vanjsko brojilo",
+        "state": {
+          "disconnected": "Nije povezano",
+          "connected": "Povezano",
+          "error": "Pogreška"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Najveća struja vanjskog brojila"
+      },
+      "wallbox_currency": {
+        "name": "Simbol valute"
+      },
+      "wallbox_limiter": {
+        "name": "Ograničeno od",
+        "state": {
+          "none": "Ništa",
+          "no_car": "Nema vozila",
+          "derating": "Smanjenje snage",
+          "key": "Prekidač s ključem",
+          "paragraph_14a": "Upravljanje operatora mreže (§14a)",
+          "app": "Aplikacija",
+          "web": "Web sučelje",
+          "energy_manager": "Upravitelj energije",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Raspodjela opterećenja",
+          "watchdog": "Watchdog",
+          "solar": "Solarni višak",
+          "dynamic_load_management": "Dinamičko upravljanje opterećenjem",
+          "static_load_management": "Statičko upravljanje opterećenjem",
+          "meter_fail_safe": "Zaštita pri kvaru brojila",
+          "external_limit": "Vanjsko ograničenje"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Upravitelj energije",
+        "state": {
+          "inactive": "Neaktivno",
+          "active_heating": "Aktivno (grijanje)",
+          "active_hot_water": "Aktivno (topla voda)",
+          "active_energy_manager": "Upravlja zidnim punjačem"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Protok kruga grijanja 1 ispod mjernog područja (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktivan"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Ulaz za mrežno upravljanje aktivan"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Mrežno upravljano punjenje postavljeno"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Mrežno upravljano punjenje aktivno"
+      },
+      "wallbox_relays_available": {
+        "name": "Releji dostupni"
+      },
+      "wallbox_authentication_required": {
+        "name": "Potrebna autentifikacija"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Prijevremeno aktiviraj sljedeću točku uklapanja"
+      },
+      "wallbox_start_charging": {
+        "name": "Pokreni punjenje"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pauziraj punjenje"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Prikazni naziv"
       }
     }
   }

@@ -254,7 +254,8 @@
           "connection_add_cloud": "Cloud-Zugang verbinden",
           "local_setup": "Lokalen Zugang einrichten",
           "rescan": "Anlage neu durchsuchen",
-          "recordings": "Anlagenaufzeichnung"
+          "recordings": "Anlagenaufzeichnung",
+          "wallbox": "Wallbox"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Ergebnis",
         "description": "Es wurde nichts gelöscht."
+      },
+      "wallbox": {
+        "title": "Wallbox",
+        "description": "Eine Wallbox, die eine Authentifizierung verlangt, lädt erst nach einer Authentifizierung durch die Integration. Dafür wird vor jedem Start ein zusätzlicher Befehl gesendet.",
+        "data": {
+          "wallbox_authentication": "Authentifizierung vor einem Start erlauben",
+          "wallbox_authentication_name": "Authentifizierungsname (optional)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Standardmäßig aus. Nur für Wallboxen mit Software 5.1.0 oder neuer.",
+          "wallbox_authentication_name": "Der Name, den die Hersteller-App zur Authentifizierung verwendet; darf leer bleiben."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Ergebnis",
+        "description": "Die Wallbox-Einstellungen sind gespeichert."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
       "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert.",
       "local_token_end_unconfirmed": "Der Widerruf dieses Tokens kann einen lokalen Zugang beenden. Setze auch das zweite Häkchen oder lass das erste frei, um zurückzukehren. Es wurde nichts gesendet.",
-      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt."
+      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt.",
+      "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "Das gewählte Zeitprogramm kann gerade nicht gelesen werden. Es wurde nichts gesendet."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Die Wallbox ist nicht in einem Zustand, der diese Aktion erlaubt. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Der Ladestrom liegt unter 6 A. Bitte zuerst den Ladestrom setzen. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_authentication_required": {
+      "message": "Die Wallbox verlangt vor dem Laden eine Authentifizierung. Sie lässt sich in den Optionen der Integration (Wallbox) erlauben. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_group_controlled": {
+      "message": "Diese Wallbox gehört zu einem Lastmanagement-Verbund, der diese Funktion steuert. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_energy_manager": {
+      "message": "Ein Energiemanager steuert diese Wallbox. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_not_manual": {
+      "message": "Der Ladestrom lässt sich nur in der normalen Ladebetriebsart setzen. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost ist aktiv. Bitte zuerst Boost beenden. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Die Wallbox hat für diese Funktion keinen aktuellen Wert geliefert. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_not_writeable": {
+      "message": "Die Wallbox meldet diese Einstellung nicht als änderbar. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_firmware": {
+      "message": "Die Software der Wallbox bietet diese Funktion nicht an. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_meter_missing": {
+      "message": "Diese Funktion benötigt einen verbundenen externen Zähler. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_not_offered": {
+      "message": "Diese Funktion wird für diese Wallbox nicht angeboten. Diese Änderung wurde nicht gesendet."
+    },
+    "wallbox_not_solar": {
+      "message": "Diese Einstellung gilt nur für das Solarladen. Bitte zuerst die Ladebetriebsart auf Solar stellen. Diese Änderung wurde nicht gesendet."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Abwesenheitstemperatur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Ladestrom-Grenze"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Höchstleistung Netzzuschuss"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Mindest-Solarüberschuss"
+      },
+      "wallbox_filter_time": {
+        "name": "Solar-Filterzeit"
+      },
+      "wallbox_power_limit": {
+        "name": "Leistungsgrenze"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Stromgrenze Phase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Stromgrenze Phase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Stromgrenze Phase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Strompreis"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Einspeisevergütung"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Programm A",
           "b": "Programm B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Ladebetriebsart",
+        "state": {
+          "manual": "Normal",
+          "solar": "Solar"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Kaminfunktion"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Netzzuschuss beim Solarladen"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Heimspeicher bevorzugen"
+      },
+      "wallbox_current_limiter": {
+        "name": "Stromgrenzer"
+      },
+      "wallbox_power_limiter": {
+        "name": "Leistungsgrenzer"
+      },
+      "wallbox_locked": {
+        "name": "Wallbox gesperrt"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Erzeugte Kühlenergie"
+      },
+      "wallbox_external_meter": {
+        "name": "Externer Zähler",
+        "state": {
+          "disconnected": "Nicht verbunden",
+          "connected": "Verbunden",
+          "error": "Fehler"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Höchststrom externer Zähler"
+      },
+      "wallbox_currency": {
+        "name": "Währungssymbol"
+      },
+      "wallbox_limiter": {
+        "name": "Begrenzt durch",
+        "state": {
+          "none": "Nichts",
+          "no_car": "Kein Fahrzeug",
+          "derating": "Leistungsreduzierung",
+          "key": "Schlüsselschalter",
+          "paragraph_14a": "Netzbetreiber-Steuerung (§14a)",
+          "app": "App",
+          "web": "Weboberfläche",
+          "energy_manager": "Energiemanager",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Lastverteilung",
+          "watchdog": "Watchdog",
+          "solar": "Solarüberschuss",
+          "dynamic_load_management": "Dynamisches Lastmanagement",
+          "static_load_management": "Statisches Lastmanagement",
+          "meter_fail_safe": "Zähler-Ausfallschutz",
+          "external_limit": "Externe Begrenzung"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energiemanager",
+        "state": {
+          "inactive": "Inaktiv",
+          "active_heating": "Aktiv (Heizen)",
+          "active_hot_water": "Aktiv (Warmwasser)",
+          "active_energy_manager": "Steuert die Wallbox"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Heizkreis 1 – Durchfluss unter Messbereich (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktiv"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Netzdienlicher Eingang aktiv"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Netzdienliches Laden eingerichtet"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Netzdienliches Laden aktiv"
+      },
+      "wallbox_relays_available": {
+        "name": "Relais vorhanden"
+      },
+      "wallbox_authentication_required": {
+        "name": "Authentifizierung erforderlich"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Nächsten Schaltpunkt vorziehen"
+      },
+      "wallbox_start_charging": {
+        "name": "Ladevorgang starten"
+      },
+      "wallbox_pause_charging": {
+        "name": "Ladevorgang pausieren"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Anzeigename"
       }
     }
   }

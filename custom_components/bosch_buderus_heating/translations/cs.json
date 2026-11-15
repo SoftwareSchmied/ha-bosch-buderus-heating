@@ -254,7 +254,8 @@
           "connection_add_cloud": "Připojit cloudový přístup",
           "local_setup": "Nastavit místní přístup",
           "rescan": "Znovu vyhledat soustavu",
-          "recordings": "Záznam systému"
+          "recordings": "Záznam systému",
+          "wallbox": "Nabíjecí stanice"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Výsledek",
         "description": "Nic nebylo smazáno."
+      },
+      "wallbox": {
+        "title": "Nabíjecí stanice",
+        "description": "Nabíjecí stanice, která vyžaduje ověření, začne nabíjet až po ověření integrací. Před každým spuštěním se pak odešle jeden příkaz navíc.",
+        "data": {
+          "wallbox_authentication": "Povolit ověření před spuštěním",
+          "wallbox_authentication_name": "Název pro ověření (volitelný)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Ve výchozím stavu vypnuto. Jen pro stanice se softwarem 5.1.0 nebo novějším.",
+          "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Výsledek",
+        "description": "Nastavení nabíjecí stanice je uloženo."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
       "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
       "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zaškrtněte i druhé políčko, nebo nechte první nezaškrtnuté a vraťte se. Nic nebylo odesláno.",
-      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno."
+      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
+      "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "Vybraný časový program teď nelze načíst. Nic nebylo odesláno."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Nabíjecí stanice není ve stavu, který tuto akci umožňuje. Tato změna nebyla odeslána."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Nabíjecí proud je nižší než 6 A. Nejprve nastavte nabíjecí proud. Tato změna nebyla odeslána."
+    },
+    "wallbox_authentication_required": {
+      "message": "Nabíjecí stanice vyžaduje před nabíjením ověření. Povolte ho v možnostech integrace (Wallbox). Tato změna nebyla odeslána."
+    },
+    "wallbox_group_controlled": {
+      "message": "Tato nabíjecí stanice patří do skupiny řízení zátěže, která tuto funkci řídí. Tato změna nebyla odeslána."
+    },
+    "wallbox_energy_manager": {
+      "message": "Tuto nabíjecí stanici řídí energetický manažer. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_manual": {
+      "message": "Nabíjecí proud lze nastavit jen v normálním režimu nabíjení. Tato změna nebyla odeslána."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost je aktivní. Nejprve Boost ukončete. Tato změna nebyla odeslána."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Nabíjecí stanice pro tuto funkci nedodala aktuální hodnotu. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_writeable": {
+      "message": "Nabíjecí stanice nehlásí toto nastavení jako měnitelné. Tato změna nebyla odeslána."
+    },
+    "wallbox_firmware": {
+      "message": "Software nabíjecí stanice tuto funkci nenabízí. Tato změna nebyla odeslána."
+    },
+    "wallbox_meter_missing": {
+      "message": "Tato funkce potřebuje připojený externí elektroměr. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_offered": {
+      "message": "Tato funkce není pro tuto nabíjecí stanici nabízena. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_solar": {
+      "message": "Toto nastavení platí jen pro solární nabíjení. Nejprve přepněte režim nabíjení na solární. Tato změna nebyla odeslána."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Teplota při nepřítomnosti"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limit nabíjecího proudu"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximální doplnění ze sítě"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimální solární přebytek"
+      },
+      "wallbox_filter_time": {
+        "name": "Solární filtrační doba"
+      },
+      "wallbox_power_limit": {
+        "name": "Limit výkonu"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Proudový limit fáze L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Proudový limit fáze L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Proudový limit fáze L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cena elektřiny"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Výkupní cena"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Režim nabíjení",
+        "state": {
+          "manual": "Normální",
+          "solar": "Solární"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkce krbu"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Doplnění ze sítě při solárním nabíjení"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Upřednostnit domácí baterii"
+      },
+      "wallbox_current_limiter": {
+        "name": "Omezovač proudu"
+      },
+      "wallbox_power_limiter": {
+        "name": "Omezovač výkonu"
+      },
+      "wallbox_locked": {
+        "name": "Nabíjecí stanice zamčena"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Vyrobená energie chlazení"
+      },
+      "wallbox_external_meter": {
+        "name": "Externí elektroměr",
+        "state": {
+          "disconnected": "Nepřipojen",
+          "connected": "Připojen",
+          "error": "Chyba"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximální proud externího elektroměru"
+      },
+      "wallbox_currency": {
+        "name": "Symbol měny"
+      },
+      "wallbox_limiter": {
+        "name": "Zdroj omezení",
+        "state": {
+          "none": "Nic",
+          "no_car": "Žádné vozidlo",
+          "derating": "Snížení výkonu",
+          "key": "Klíčový spínač",
+          "paragraph_14a": "Řízení provozovatelem sítě (§14a)",
+          "app": "Aplikace",
+          "web": "Webové rozhraní",
+          "energy_manager": "Energetický manažer",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Rozdělování zátěže",
+          "watchdog": "Watchdog",
+          "solar": "Solární přebytek",
+          "dynamic_load_management": "Dynamické řízení zátěže",
+          "static_load_management": "Statické řízení zátěže",
+          "meter_fail_safe": "Ochrana při výpadku elektroměru",
+          "external_limit": "Externí omezení"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energetický manažer",
+        "state": {
+          "inactive": "Neaktivní",
+          "active_heating": "Aktivní (vytápění)",
+          "active_hot_water": "Aktivní (teplá voda)",
+          "active_energy_manager": "Řídí nabíjecí stanici"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Průtok topného okruhu 1 pod rozsahem měření (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktivní"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Vstup pro řízení sítí aktivní"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Nabíjení řízené sítí nastaveno"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Nabíjení řízené sítí aktivní"
+      },
+      "wallbox_relays_available": {
+        "name": "Relé k dispozici"
+      },
+      "wallbox_authentication_required": {
+        "name": "Vyžadováno ověření"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Předsunout další spínací bod"
+      },
+      "wallbox_start_charging": {
+        "name": "Spustit nabíjení"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pozastavit nabíjení"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Zobrazovaný název"
       }
     }
   }

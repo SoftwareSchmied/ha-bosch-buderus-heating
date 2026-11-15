@@ -254,7 +254,8 @@
           "connection_add_cloud": "Connecter l'accès cloud",
           "local_setup": "Configurer l'accès local",
           "rescan": "Rechercher à nouveau dans l'installation",
-          "recordings": "Enregistrements de l'installation"
+          "recordings": "Enregistrements de l'installation",
+          "wallbox": "Borne de recharge"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Résultat",
         "description": "Rien n'a été supprimé."
+      },
+      "wallbox": {
+        "title": "Borne de recharge",
+        "description": "Une borne de recharge qui exige une authentification ne commence à charger qu'après une authentification par l'intégration. Une commande supplémentaire est alors envoyée avant chaque démarrage.",
+        "data": {
+          "wallbox_authentication": "Autoriser l'authentification avant un démarrage",
+          "wallbox_authentication_name": "Nom d'authentification (facultatif)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Désactivé par défaut. Uniquement pour les bornes avec le logiciel 5.1.0 ou plus récent.",
+          "wallbox_authentication_name": "Le nom que l'application du fabricant utilise pour l'authentification ; peut rester vide."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Résultat",
+        "description": "Les réglages de la borne de recharge sont enregistrés."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
       "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié.",
       "local_token_end_unconfirmed": "Révoquer ce jeton peut mettre fin à un accès local. Cochez aussi la deuxième case, ou laissez la première décochée pour revenir. Rien n'a été envoyé.",
-      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé."
+      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé.",
+      "wallbox_name_invalid": "Le nom peut contenir jusqu'à 64 caractères imprimables."
     },
     "abort": {
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "Le programme horaire sélectionné ne peut pas être lu pour le moment. Rien n'a été envoyé."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "La borne de recharge n'est pas dans un état qui permet cette action. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Le courant de charge est inférieur à 6 A. Réglez d'abord le courant de charge. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_authentication_required": {
+      "message": "La borne de recharge exige une authentification avant la charge. Autorisez-la dans les options de l'intégration (Wallbox). Cette modification n'a pas été envoyée."
+    },
+    "wallbox_group_controlled": {
+      "message": "Cette borne fait partie d'un groupe de gestion de charge qui pilote cette fonction. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_energy_manager": {
+      "message": "Un gestionnaire d'énergie pilote cette borne de recharge. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_not_manual": {
+      "message": "Le courant de charge ne peut être réglé qu'en mode de charge normal. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_boost_active": {
+      "message": "Le Boost est actif. Terminez d'abord le Boost. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_value_unavailable": {
+      "message": "La borne de recharge n'a pas fourni de valeur actuelle pour cette fonction. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_not_writeable": {
+      "message": "La borne de recharge n'indique pas ce réglage comme modifiable. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_firmware": {
+      "message": "Le logiciel de la borne de recharge ne propose pas cette fonction. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_meter_missing": {
+      "message": "Cette fonction nécessite un compteur externe connecté. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_not_offered": {
+      "message": "Cette fonction n'est pas proposée pour cette borne de recharge. Cette modification n'a pas été envoyée."
+    },
+    "wallbox_not_solar": {
+      "message": "Ce réglage ne concerne que la charge solaire. Passez d'abord le mode de charge sur solaire. Cette modification n'a pas été envoyée."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Température d'absence"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limite du courant de charge"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Appoint réseau maximal"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Surplus solaire minimal"
+      },
+      "wallbox_filter_time": {
+        "name": "Temps de filtrage solaire"
+      },
+      "wallbox_power_limit": {
+        "name": "Limite de puissance"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Limite de courant phase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Limite de courant phase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Limite de courant phase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Prix de l'électricité"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Tarif d'injection"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Programme A",
           "b": "Programme B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Mode de charge",
+        "state": {
+          "manual": "Normal",
+          "solar": "Solaire"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Fonction cheminée"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Appoint réseau pendant la charge solaire"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Privilégier la batterie domestique"
+      },
+      "wallbox_current_limiter": {
+        "name": "Limiteur de courant"
+      },
+      "wallbox_power_limiter": {
+        "name": "Limiteur de puissance"
+      },
+      "wallbox_locked": {
+        "name": "Borne de recharge verrouillée"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Énergie de rafraîchissement produite"
+      },
+      "wallbox_external_meter": {
+        "name": "Compteur externe",
+        "state": {
+          "disconnected": "Non connecté",
+          "connected": "Connecté",
+          "error": "Erreur"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Courant maximal du compteur externe"
+      },
+      "wallbox_currency": {
+        "name": "Symbole monétaire"
+      },
+      "wallbox_limiter": {
+        "name": "Limité par",
+        "state": {
+          "none": "Rien",
+          "no_car": "Aucun véhicule",
+          "derating": "Réduction de puissance",
+          "key": "Interrupteur à clé",
+          "paragraph_14a": "Pilotage du gestionnaire de réseau (§14a)",
+          "app": "Application",
+          "web": "Interface web",
+          "energy_manager": "Gestionnaire d'énergie",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Répartition de charge",
+          "watchdog": "Watchdog",
+          "solar": "Surplus solaire",
+          "dynamic_load_management": "Gestion de charge dynamique",
+          "static_load_management": "Gestion de charge statique",
+          "meter_fail_safe": "Sécurité en cas de panne du compteur",
+          "external_limit": "Limite externe"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Gestionnaire d'énergie",
+        "state": {
+          "inactive": "Inactif",
+          "active_heating": "Actif (chauffage)",
+          "active_hot_water": "Actif (eau chaude)",
+          "active_energy_manager": "Pilote la borne"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Débit du circuit de chauffage 1 sous la plage de mesure (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost actif"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Entrée de pilotage réseau active"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Charge pilotée par le réseau configurée"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Charge pilotée par le réseau active"
+      },
+      "wallbox_relays_available": {
+        "name": "Relais disponibles"
+      },
+      "wallbox_authentication_required": {
+        "name": "Authentification requise"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Avancer le prochain point de commutation"
+      },
+      "wallbox_start_charging": {
+        "name": "Démarrer la charge"
+      },
+      "wallbox_pause_charging": {
+        "name": "Mettre la charge en pause"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Nom affiché"
       }
     }
   }

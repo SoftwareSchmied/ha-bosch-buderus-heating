@@ -254,7 +254,8 @@
           "connection_add_cloud": "Connect cloud access",
           "local_setup": "Set up local access",
           "rescan": "Search the system again",
-          "recordings": "Plant recordings"
+          "recordings": "Plant recordings",
+          "wallbox": "Wallbox"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Result",
         "description": "Nothing was deleted."
+      },
+      "wallbox": {
+        "title": "Wallbox",
+        "description": "A wallbox that requires authentication starts charging only after the integration has authenticated. One additional command is then sent before every start.",
+        "data": {
+          "wallbox_authentication": "Allow authentication before a start",
+          "wallbox_authentication_name": "Authentication name (optional)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Off by default. Only for wallboxes with software 5.1.0 or newer.",
+          "wallbox_authentication_name": "The name the vendor app uses for authentication; may stay empty."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Result",
+        "description": "The wallbox settings are saved."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "This gateway does not provide a token list. Nothing was changed.",
       "local_tokens_invalid": "The gateway's token list could not be checked (unexpected or too large answer). Nothing was changed.",
       "local_token_end_unconfirmed": "Revoking this token can end a local access. Tick the second box as well, or leave the first box unticked to go back. Nothing was sent.",
-      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed."
+      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed.",
+      "wallbox_name_invalid": "The name may contain up to 64 printable characters."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "The selected schedule cannot be read at the moment. Nothing was sent."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "The wallbox is not in a state that allows this action. This change was not sent."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "The charging current is below 6 A. Set the charging current first. This change was not sent."
+    },
+    "wallbox_authentication_required": {
+      "message": "The wallbox requires authentication before charging. Allow it in the integration options (Wallbox). This change was not sent."
+    },
+    "wallbox_group_controlled": {
+      "message": "This wallbox belongs to a load-management group that controls this function. This change was not sent."
+    },
+    "wallbox_energy_manager": {
+      "message": "An energy manager controls this wallbox. This change was not sent."
+    },
+    "wallbox_not_manual": {
+      "message": "The charging current can only be set in normal charging mode. This change was not sent."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost is active. End boost first. This change was not sent."
+    },
+    "wallbox_value_unavailable": {
+      "message": "The wallbox did not provide a current value for this function. This change was not sent."
+    },
+    "wallbox_not_writeable": {
+      "message": "The wallbox does not report this setting as changeable. This change was not sent."
+    },
+    "wallbox_firmware": {
+      "message": "The wallbox software does not offer this function. This change was not sent."
+    },
+    "wallbox_meter_missing": {
+      "message": "This function needs a connected external meter. This change was not sent."
+    },
+    "wallbox_not_offered": {
+      "message": "This function is not offered for this wallbox. This change was not sent."
+    },
+    "wallbox_not_solar": {
+      "message": "This setting applies to solar charging only. Switch the charging mode to solar first. This change was not sent."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Away temperature"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Charging current limit"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximum grid supplement"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimum solar surplus"
+      },
+      "wallbox_filter_time": {
+        "name": "Solar filter time"
+      },
+      "wallbox_power_limit": {
+        "name": "Power limit"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Current limit phase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Current limit phase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Current limit phase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Electricity price"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Feed-in tariff"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Charging mode",
+        "state": {
+          "manual": "Normal",
+          "solar": "Solar"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Fireplace function"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Grid supplement for solar charging"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prefer home battery"
+      },
+      "wallbox_current_limiter": {
+        "name": "Current limiter"
+      },
+      "wallbox_power_limiter": {
+        "name": "Power limiter"
+      },
+      "wallbox_locked": {
+        "name": "Wallbox locked"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Cooling energy produced"
+      },
+      "wallbox_external_meter": {
+        "name": "External meter",
+        "state": {
+          "disconnected": "Not connected",
+          "connected": "Connected",
+          "error": "Error"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "External meter maximum current"
+      },
+      "wallbox_currency": {
+        "name": "Currency symbol"
+      },
+      "wallbox_limiter": {
+        "name": "Limited by",
+        "state": {
+          "none": "Nothing",
+          "no_car": "No vehicle",
+          "derating": "Derating",
+          "key": "Key switch",
+          "paragraph_14a": "Grid operator control (§14a)",
+          "app": "App",
+          "web": "Web interface",
+          "energy_manager": "Energy manager",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Load balancer",
+          "watchdog": "Watchdog",
+          "solar": "Solar surplus",
+          "dynamic_load_management": "Dynamic load management",
+          "static_load_management": "Static load management",
+          "meter_fail_safe": "Meter fail-safe",
+          "external_limit": "External limit"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energy manager",
+        "state": {
+          "inactive": "Inactive",
+          "active_heating": "Active (heating)",
+          "active_hot_water": "Active (hot water)",
+          "active_energy_manager": "Controls the wallbox"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Heating circuit 1 flow below measuring range (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost active"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Grid-friendly input active"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Grid-friendly charging configured"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Grid-friendly charging active"
+      },
+      "wallbox_relays_available": {
+        "name": "Relays available"
+      },
+      "wallbox_authentication_required": {
+        "name": "Authentication required"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Advance next switch point"
+      },
+      "wallbox_start_charging": {
+        "name": "Start charging"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pause charging"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Display name"
       }
     }
   }

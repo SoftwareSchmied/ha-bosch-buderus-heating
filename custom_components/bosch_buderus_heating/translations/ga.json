@@ -254,7 +254,8 @@
           "connection_add_cloud": "Ceangail rochtain néil",
           "local_setup": "Socraigh rochtain áitiúil",
           "rescan": "Cuardaigh an córas arís",
-          "recordings": "Taifeadtaí an chórais"
+          "recordings": "Taifeadtaí an chórais",
+          "wallbox": "Luchtaire balla"
         }
       },
       "notifications": {
@@ -906,6 +907,22 @@
       "result_recordings_delete_kept": {
         "title": "Toradh",
         "description": "Níor scriosadh aon rud."
+      },
+      "wallbox": {
+        "title": "Luchtaire balla",
+        "description": "Ní thosaíonn luchtaire balla a éilíonn fíordheimhniú ag luchtú go dtí go ndéanann an comhtháthú fíordheimhniú. Seoltar ordú breise amháin ansin roimh gach tosú.",
+        "data": {
+          "wallbox_authentication": "Ceadaigh fíordheimhniú roimh thosú",
+          "wallbox_authentication_name": "Ainm fíordheimhnithe (roghnach)"
+        },
+        "data_description": {
+          "wallbox_authentication": "As de réir réamhshocraithe. Do luchtairí le bogearraí 5.1.0 nó níos nuaí amháin.",
+          "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh socruithe an luchtaire balla."
       }
     },
     "error": {
@@ -1024,7 +1041,8 @@
       "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
       "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
       "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
-      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud."
+      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
+      "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -1540,6 +1558,45 @@
     },
     "switch_program_not_readable": {
       "message": "Ní féidir an sceideal roghnaithe a léamh faoi láthair. Níor seoladh aon rud."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Níl an luchtaire balla i staid a cheadaíonn an gníomh seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Tá an sruth luchtaithe faoi 6 A. Socraigh an sruth luchtaithe ar dtús. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_authentication_required": {
+      "message": "Éilíonn an luchtaire balla fíordheimhniú roimh luchtú. Ceadaigh é i roghanna an chomhtháthaithe (Wallbox). Níor seoladh an t-athrú seo."
+    },
+    "wallbox_group_controlled": {
+      "message": "Baineann an luchtaire balla seo le grúpa bainistíochta ualaigh a rialaíonn an fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_energy_manager": {
+      "message": "Rialaíonn bainisteoir fuinnimh an luchtaire balla seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_manual": {
+      "message": "Ní féidir an sruth luchtaithe a shocrú ach sa ghnáthmhód luchtaithe. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_boost_active": {
+      "message": "Tá Boost gníomhach. Cuir deireadh le Boost ar dtús. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Níor thug an luchtaire balla luach reatha don fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_writeable": {
+      "message": "Ní thuairiscíonn an luchtaire balla go bhfuil an socrú seo inathraithe. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_firmware": {
+      "message": "Ní thairgeann bogearraí an luchtaire balla an fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_meter_missing": {
+      "message": "Teastaíonn méadar seachtrach nasctha don fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_offered": {
+      "message": "Ní thairgtear an fheidhm seo don luchtaire balla seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_solar": {
+      "message": "Ní bhaineann an socrú seo ach le luchtú gréine. Athraigh an mód luchtaithe go gréine ar dtús. Níor seoladh an t-athrú seo."
     }
   },
   "selector": {
@@ -1742,6 +1799,36 @@
       },
       "rrc_away_temperature": {
         "name": "Teocht as baile"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Teorainn an tsrutha luchtaithe"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Uasfhorlíonadh ón eangach"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Íosbharrachas gréine"
+      },
+      "wallbox_filter_time": {
+        "name": "Am scagtha an luchtaithe gréine"
+      },
+      "wallbox_power_limit": {
+        "name": "Teorainn chumhachta"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Teorainn srutha céim L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Teorainn srutha céim L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Teorainn srutha céim L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Praghas leictreachais"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Taraif bheathaithe isteach"
       }
     },
     "select": {
@@ -1874,6 +1961,13 @@
           "a": "Clár A",
           "b": "Clár B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Mód luchtaithe",
+        "state": {
+          "manual": "Gnáth",
+          "solar": "Gréine"
+        }
       }
     },
     "switch": {
@@ -1939,6 +2033,24 @@
       },
       "rrc_fireplace": {
         "name": "Feidhm teallaigh"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Forlíonadh ón eangach le linn luchtú gréine"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Tosaíocht don cheallra baile"
+      },
+      "wallbox_current_limiter": {
+        "name": "Teorantóir srutha"
+      },
+      "wallbox_power_limiter": {
+        "name": "Teorantóir cumhachta"
+      },
+      "wallbox_locked": {
+        "name": "Luchtaire balla faoi ghlas"
       }
     },
     "sensor": {
@@ -2851,6 +2963,51 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Fuinneamh fuaraithe a ghintear"
+      },
+      "wallbox_external_meter": {
+        "name": "Méadar seachtrach",
+        "state": {
+          "disconnected": "Gan nasc",
+          "connected": "Nasctha",
+          "error": "Earráid"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Uasshruth an mhéadair sheachtraigh"
+      },
+      "wallbox_currency": {
+        "name": "Siombail airgeadra"
+      },
+      "wallbox_limiter": {
+        "name": "Teoranaithe ag",
+        "state": {
+          "none": "Faic",
+          "no_car": "Gan feithicil",
+          "derating": "Laghdú cumhachta",
+          "key": "Lasc eochrach",
+          "paragraph_14a": "Rialú an oibreora eangaí (§14a)",
+          "app": "Aip",
+          "web": "Comhéadan gréasáin",
+          "energy_manager": "Bainisteoir fuinnimh",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Cothromú ualaigh",
+          "watchdog": "Watchdog",
+          "solar": "Barrachas gréine",
+          "dynamic_load_management": "Bainistíocht dhinimiciúil ualaigh",
+          "static_load_management": "Bainistíocht statach ualaigh",
+          "meter_fail_safe": "Cosaint ar theip méadair",
+          "external_limit": "Teorainn sheachtrach"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Bainisteoir fuinnimh",
+        "state": {
+          "inactive": "Neamhghníomhach",
+          "active_heating": "Gníomhach (téamh)",
+          "active_hot_water": "Gníomhach (uisce te)",
+          "active_energy_manager": "Rialaíonn sé an luchtaire"
+        }
       }
     },
     "binary_sensor": {
@@ -2941,6 +3098,24 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Sreabhadh an chiorcaid téimh 1 faoi bhun an raoin tomhais (PC1)"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost gníomhach"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Ionchur rialaithe eangaí gníomhach"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Luchtú faoi rialú eangaí socraithe"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Luchtú faoi rialú eangaí gníomhach"
+      },
+      "wallbox_relays_available": {
+        "name": "Athsheachadáin ar fáil"
+      },
+      "wallbox_authentication_required": {
+        "name": "Fíordheimhniú riachtanach"
       }
     },
     "calendar": {
@@ -2991,6 +3166,12 @@
       },
       "rrc_override_advance": {
         "name": "Tabhair an chéad phointe lasctha eile chun tosaigh"
+      },
+      "wallbox_start_charging": {
+        "name": "Tosaigh an luchtú"
+      },
+      "wallbox_pause_charging": {
+        "name": "Cuir an luchtú ar sos"
       }
     },
     "water_heater": {
@@ -3156,6 +3337,11 @@
             }
           }
         }
+      }
+    },
+    "text": {
+      "wallbox_label": {
+        "name": "Ainm taispeána"
       }
     }
   }
