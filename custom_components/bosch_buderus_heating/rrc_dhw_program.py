@@ -21,7 +21,7 @@ import asyncio
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Final
 
-from .pointt import PointTClient, Resource, WriteValidationError
+from .pointt import PointTClient, ProtocolError, Resource, WriteValidationError
 from .pointt.models import JsonValue
 from .rrc_dhw import PROGRAM_WEEK, DhwSwitchPoint, parse_program
 from .rrc_programs import APP_MAX_POINTS_PER_DAY
@@ -197,7 +197,12 @@ class RrcDhwProgramService:
             return None
 
         async def send(_state: None) -> None:
-            await self.client.put_resource_value(gateway_id, path, body)
+            try:
+                await self.client.put_resource_value(gateway_id, path, body)
+            except ProtocolError:
+                # Accepted (2xx) with an answer that cannot be read: only the
+                # read-back tells whether the week was stored.
+                return
 
         async def confirm(_state: None) -> tuple[Resource, ...] | None:
             reading = await self.client.get_resource(gateway_id, path)

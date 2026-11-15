@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from . import rrc
 from .pointt import (
     PointTClient,
+    ProtocolError,
     Resource,
     WriteValidationError,
 )
@@ -648,7 +649,12 @@ class RrcProgramService:
             return None
 
         async def send(_state: None) -> None:
-            await self.client.put_resource_value(gateway_id, day_path, body)
+            try:
+                await self.client.put_resource_value(gateway_id, day_path, body)
+            except ProtocolError:
+                # Accepted (2xx) with an answer that cannot be read: only the
+                # read-back tells whether the day was stored.
+                return
 
         async def confirm(_state: None) -> tuple[Resource, ...] | None:
             confirmed = await self.client.get_resource(gateway_id, expected.path)

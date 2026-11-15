@@ -9,6 +9,7 @@ path as writable (and names the function, where it lists them).
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterable
 from functools import partial
 from typing import Any
@@ -191,7 +192,6 @@ class AirconTimer(AirconControl, NumberEntity):
     _attr_device_class = NumberDeviceClass.DURATION
     _attr_native_unit_of_measurement = UnitOfTime.MINUTES
     _attr_native_min_value = 0.0
-    _attr_native_step = TIMER_STEP_MIN
     _attr_mode = NumberMode.BOX
 
     def __init__(self, coordinator: AirconCoordinator, path: str) -> None:
@@ -209,6 +209,24 @@ class AirconTimer(AirconControl, NumberEntity):
         resource = self.coordinator.resource(self._path)
         maximum = resource.metadata.maximum if resource is not None else None
         return maximum if maximum is not None else TIMER_STEP_MIN
+
+    @property
+    def native_step(self) -> float:
+        """30 minutes from 0 (0 stops the timer). The unit counts its 30-minute
+        grid from its minimum: a minimum off that grid (such as 15) gets the
+        largest step that reaches both 0 and every value of the unit."""
+        resource = self.coordinator.resource(self._path)
+        minimum = resource.metadata.minimum if resource is not None else None
+        if (
+            minimum is None
+            or isinstance(minimum, bool)
+            or not math.isfinite(minimum)
+            or minimum <= 0
+        ):
+            return TIMER_STEP_MIN
+        if not float(minimum).is_integer() or not float(TIMER_STEP_MIN).is_integer():
+            return 1.0
+        return float(math.gcd(int(TIMER_STEP_MIN), int(minimum)))
 
     @property
     def native_value(self) -> float | None:
