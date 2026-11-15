@@ -20,7 +20,10 @@ entities of the K40 heat pump on purpose (new unique IDs only); its empty
 ``/ventilation/zone1`` directory is a valid answer and is not probed, so the
 requests of setup and cycle stay the same. 0.9.2 also adds the 21 calculated
 performance factors of the K40 heat pump on purpose (new unique IDs only, no
-request).
+request). A fresh setup enables the time program sensors the gateway reports
+as writable (existing entities keep their state), and every temperature
+number carries the device class ``temperature`` (an offset
+``temperature_delta``); unique IDs, names and requests stay the same.
 """
 
 from __future__ import annotations
