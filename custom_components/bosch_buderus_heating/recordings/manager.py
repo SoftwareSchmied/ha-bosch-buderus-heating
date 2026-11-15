@@ -16,12 +16,24 @@ Reads (``async_run``):
   entities and the energy series other features use (performance factors).
   A series not read for longer than ``LOCAL_FULL_AFTER`` is read with
   ``all`` again once it is needed. A path that answered 404 is tried again
-  once a day, one that answered 403 not before the next start. After a day
-  without local answers the whole history is read again.
-- The cloud only without a working local access, only for the nine energy
-  paths and within ``CLOUD_BUDGET`` reads per run: today every run,
-  yesterday until it is final, then the older days, months and years still
-  missing.
+  once a day, one that answered 403 not before the next start. A path whose
+  answers fail (another error, no recording) is tried again once a day too
+  (one that answered before only after ``LOCAL_FAILURES`` failures in a
+  row), so it neither blocks the others nor makes every run read the whole
+  history; one whose history does not come within ``READ_SECONDS`` is read
+  by its last two days only. After a day without local answers the whole
+  history is read again. A run without anything to read locally, with the
+  local access answering, never falls back to the cloud.
+- The cloud only without a working local access and only for the nine
+  energy paths, throttled for the many installations without a local
+  access: yesterday until it is final (then at most every
+  ``CLOUD_REREAD``) for the series something needs, today only for the
+  current month and year or the import, and ``CLOUD_BACKFILL`` older days,
+  months and years per hourly run (none in the start run, none after a
+  rate limit until the next day) until the history is complete; at most
+  ``CLOUD_BUDGET`` reads per run. A path whose read fails is left out for
+  ``CLOUD_FAIL_PAUSE`` while the others answer; a rate limit, a pause or no
+  connection ends the run.
 - Nothing is read while no entity, no import and no other feature needs the
   recordings.
 
@@ -75,6 +87,7 @@ from .parse import (
     MAX_KWH_PER_HOUR,
     Rate,
     add_months,
+    is_cloud_recording,
     local_midnight,
     month_start,
     parse_cloud,
@@ -95,7 +108,16 @@ ISSUE_PREFIX: Final = "recordings_statistics_"
 STORE_VERSION: Final = 1
 START_DELAY: Final = 90.0
 RUN_MINUTE: Final = 20
-CLOUD_BUDGET: Final = 30
+CLOUD_BUDGET: Final = 24
+# Older intervals (back-fill) read from the cloud per hourly run.
+CLOUD_BACKFILL: Final = 4
+# A cloud path whose read failed while others answered is left out this long.
+CLOUD_FAIL_PAUSE: Final = timedelta(hours=3)
+# Failed cloud reads that end a run.
+CLOUD_FAILURES_PER_RUN: Final = 3
+# Failed reads in a row after which a local path that answered before is
+# treated as failing (tried again once a day).
+LOCAL_FAILURES: Final = 2
 # Older days whose hours the cloud is asked for (hourly statistics).
 CLOUD_HOUR_DAYS: Final = 7
 RECHECK_MISSING: Final = timedelta(days=1)
@@ -198,7 +220,18 @@ class RecordingsManager:
         self._forbidden: set[tuple[str, str]] = set()
         # When each open cloud interval was read last (not stored).
         self._cloud_read_at: dict[str, float] = {}
+        # Cloud paths left out after a failed read, until then (not stored).
+        self._cloud_deferred: dict[str, float] = {}
+        # The day of the last cloud rate limit: no back-fill until the next.
+        self._cloud_limited: date | None = None
+        self._cloud_runs_ok = 0
+        # Local paths whose whole history was read since the start, those
+        # whose whole history did not come in time, and failures in a row.
+        self._full_read: set[str] = set()
+        self._slow: set[str] = set()
+        self._local_failures: dict[str, int] = {}
         self._full_done = False
+        self.time_zone_on_the_hour: bool | None = None
         self._detected = False
         # The counter entity a calculated value came from, per measure.
         self.counter_entities: dict[str, str] = {}
@@ -525,7 +558,8 @@ class RecordingsManager:
                 continue
             local = self.local_paths.get(series.path)
             cloud = self.cloud_paths.get(series.path)
-            if (local and local[0] == "ok") or (cloud and cloud[0] == "ok"):
+            # A path failing after it answered keeps what was read.
+            if (local and local[0] in ("ok", "failed")) or (cloud and cloud[0] == "ok"):
                 keys.append(series.key)
         return tuple(keys)
 
@@ -567,7 +601,7 @@ class RecordingsManager:
                 if done:
                     report["source"] = LOCAL
                     break
-            if not done and await self._run_cloud(now, zone, report):
+            if not done and await self._run_cloud(now, zone, report, reason):
                 report["source"] = CLOUD
             for ledger in self.ledgers.values():
                 ledger.settle(now, zone)
@@ -606,7 +640,13 @@ class RecordingsManager:
             if self._values_after_run:
                 self._values_after_run = False
                 self._schedule_values()
-            if reason == "start" and self._unsubs and not self.stopped:
+            if (
+                reason == "start"
+                and report["source"] == LOCAL
+                and self._unsubs
+                and not self.stopped
+            ):
+                # Locally only: the cloud's reads stay spread over hours.
                 self._schedule_confirm()
 
     def _local_drivers(self) -> list[Any]:
@@ -632,13 +672,16 @@ class RecordingsManager:
     async def _run_local(
         self, driver: Any, now: datetime, zone: tzinfo, report: dict[str, Any]
     ) -> bool:
+        """Read locally; True when the local access handled the run (it
+        answered, even with nothing to read), so the cloud is not asked."""
         stale = (
             self.last_local_ok is None
             or now.timestamp() - self.last_local_ok > LOCAL_FULL_AFTER.total_seconds()
         )
-        full = not self._full_done or stale
+        if stale:
+            self._full_read.clear()  # the whole history again
         today = now.astimezone(zone).date()
-        wanted = None if full else self.hourly_series()
+        wanted = self.hourly_series()
         todo: list[tuple[Series, bool]] = []
         for series in SERIES:
             path = series.path
@@ -650,20 +693,22 @@ class RecordingsManager:
                 continue
             if (
                 known is not None
-                and state == "missing"
+                and state in ("missing", "failed")
                 and now.timestamp() - float(known[1]) < RECHECK_MISSING.total_seconds()
             ):
                 continue
-            if state == "ok" and wanted is not None and series.key not in wanted:
+            history = path not in self._full_read
+            if state == "ok" and not history and series.key not in wanted:
                 continue  # V5: hourly only what something needs
             # Not read for a while (not needed until now): its history again.
             outdated = (
                 known is not None
                 and now.timestamp() - float(known[1]) > LOCAL_FULL_AFTER.total_seconds()
             )
-            todo.append((series, full or state != "ok" or outdated))
+            whole = (history or state != "ok" or outdated) and path not in self._slow
+            todo.append((series, whole))
         succeeded = False
-        complete = True
+        reachable = True
         busy: list[tuple[Series, bool]] = []
         for attempt in range(BUSY_RETRIES + 1):
             if attempt:
@@ -677,30 +722,60 @@ class RecordingsManager:
                 answer = await read_local(driver, series, local_query(whole, today))
                 report["local_reads"] += 1
                 self._count_outcome(report, LOCAL, answer.outcome)
-                if answer.outcome is Outcome.UNREACHABLE:
-                    return succeeded
-                if answer.outcome is Outcome.BUSY:
+                outcome = answer.outcome
+                if outcome is Outcome.BUSY:
                     busy.append((series, whole))
                     continue
+                if outcome is Outcome.TIMEOUT:
+                    # A slow gateway: this path is read by its last two days
+                    # from now on; timing out even then, it is failing.
+                    if whole:
+                        self._slow.add(series.path)
+                    else:
+                        self._local_failed(series, now)
+                if outcome is Outcome.SERVER_ERROR:
+                    # The local access is paused: this path is failing.
+                    self._local_failed(series, now)
+                if outcome in (
+                    Outcome.UNREACHABLE,
+                    Outcome.TIMEOUT,
+                    Outcome.SERVER_ERROR,
+                ):
+                    reachable = False
+                    break
                 result = self._take_local(series, answer, whole, now, zone)
-                succeeded = succeeded or result is True
-                complete = complete and result is not None
-            if not busy:
+                succeeded = succeeded or result
+            if not reachable or not busy:
                 break
             todo = busy
-        if busy:
+        if busy and reachable:
             report["local_busy_left"] = len(busy)
         if succeeded:
             self.last_local_ok = now.timestamp()
-            if full and complete and not busy:
-                self._full_done = True
-        return succeeded
+        self._full_done = bool(self._full_read) and not self._history_pending()
+        return succeeded or (reachable and not busy)
+
+    def _history_pending(self) -> bool:
+        """A local path still to be read with its whole history: one that
+        answered (or never did) and is neither failing nor slow."""
+        for series in SERIES:
+            path = series.path
+            known = self.local_paths.get(path)
+            if (
+                (LOCAL, path) in self._forbidden
+                or path in self._full_read
+                or path in self._slow
+                or (known is not None and known[0] != "ok")
+            ):
+                continue
+            return True
+        return False
 
     def _take_local(
         self, series: Series, answer: Any, whole: bool, now: datetime, zone: tzinfo
-    ) -> bool | None:
+    ) -> bool:
         """Keep one local answer: True for a kept recording, False for an
-        answer about the path (404, 403, unit), None for a failed read."""
+        answer about the path (404, 403, unit, a failed read)."""
         path = series.path
         if answer.outcome is Outcome.OK:
             read_at = self._now()
@@ -716,50 +791,112 @@ class RecordingsManager:
                     parsed.offset != read_at.astimezone(zone).utcoffset()
                 )
             self.local_paths[path] = ["ok", read_at.timestamp()]
+            self._local_failures.pop(path, None)
+            if whole:
+                self._full_read.add(path)
             return True
         if answer.outcome is Outcome.NOT_FOUND:
             self.local_paths[path] = ["missing", now.timestamp()]
-            return False
-        if answer.outcome is Outcome.FORBIDDEN:
+        elif answer.outcome is Outcome.FORBIDDEN:
             self._forbidden.add((LOCAL, path))
-            return False
-        return None
+        else:
+            self._local_failed(series, now)
+        return False
+
+    def _local_failed(self, series: Series, now: datetime) -> None:
+        """A failed read: tried again once a day; a path that answered
+        before only after ``LOCAL_FAILURES`` failures in a row."""
+        path = series.path
+        known = self.local_paths.get(path)
+        count = self._local_failures.get(path, 0) + 1
+        if known is None or known[0] != "ok" or count >= LOCAL_FAILURES:
+            self.local_paths[path] = ["failed", now.timestamp()]
+            self._local_failures.pop(path, None)
+        else:
+            self._local_failures[path] = count
 
     # --------------------------------------------------------------- cloud
-    def _cloud_tasks(self, today: date) -> list[tuple[Series, str, Rate]]:
-        tasks: list[tuple[Series, str, Rate]] = []
-        candidates = [
+    def running_series(self) -> frozenset[str]:
+        """The series whose today is needed: every series while the import
+        is on, otherwise those of enabled entities of a running period
+        (current month, current year)."""
+        if import_enabled(self.entry):
+            return frozenset(BY_KEY)
+        keys: set[str] = set()
+        wanted = set(self._requested)
+        for spec in self.specs():
+            if (
+                spec.key in wanted
+                and not spec.period.past
+                and (spec.primary or spec.method == RECORDING)
+            ):
+                keys.update(spec.measure.parts)
+        return frozenset(keys)
+
+    def _cloud_candidates(self, now: datetime) -> list[Series]:
+        return [
             series
             for series in SERIES
             if series.cloud
             and (CLOUD, series.path) not in self._forbidden
             and (self.cloud_paths.get(series.path) or [None])[0] != "unit"
+            and self._cloud_deferred.get(series.path, 0.0) <= now.timestamp()
         ]
+
+    def _current_tasks(
+        self, today: date, now: datetime
+    ) -> list[tuple[Series, str, Rate]]:
+        """Yesterday for the series something needs (and once for a path
+        that never answered, to find the series), today for the running
+        periods."""
+        needed = self.hourly_series()
+        running = self.running_series()
         yesterday = today - timedelta(days=1)
-        for series in candidates:
-            for day in (today, yesterday):
-                tasks.append((series, day.isoformat(), Rate.HOUR))
+        tasks: list[tuple[Series, str, Rate]] = []
+        for series in self._cloud_candidates(now):
+            if series.key in running:
+                tasks.append((series, today.isoformat(), Rate.HOUR))
+            if series.key in needed or series.path not in self.cloud_paths:
+                tasks.append((series, yesterday.isoformat(), Rate.HOUR))
+        return tasks
+
+    def _later_tasks(
+        self, today: date, now: datetime
+    ) -> list[tuple[Series, str, Rate]]:
+        """The back-fill of the series something needs: months, years,
+        older months by the day and, for the import, older days by the
+        hour; a past interval whose slots are all final is not read again."""
+        needed = self.hourly_series()
+        hours = import_enabled(self.entry)
         later: list[tuple[Series, str, Rate]] = []
-        for series in candidates:
-            first = month_start(today)
+        first = month_start(today)
+        for series in self._cloud_candidates(now):
+            if series.key not in needed:
+                continue
             for month in (first, add_months(first, -1)):
                 later.append((series, f"{month.year:04d}-{month.month:02d}", Rate.DAY))
             for year in (today.year, today.year - 1):
                 later.append((series, f"{year:04d}", Rate.MONTH))
-            for back in range(2, CLOUD_HOUR_DAYS + 1):
-                later.append(
-                    (series, (today - timedelta(days=back)).isoformat(), Rate.HOUR)
-                )
+            if hours:
+                for back in range(2, CLOUD_HOUR_DAYS + 1):
+                    later.append(
+                        (series, (today - timedelta(days=back)).isoformat(), Rate.HOUR)
+                    )
             ledger = self.ledgers.get(series.key)
             if ledger is not None:
                 for key, cell in sorted(ledger.months.items(), reverse=True):
                     if cell[1] > 0 and key[:7] < f"{add_months(first, -1):%Y-%m}":
                         later.append((series, key[:7], Rate.DAY))
-        # A past interval whose slots are all final is not read again.
-        tasks.extend(
+        return [
             task for task in later if f"{task[0].path}|{task[1]}" not in self.cloud_done
-        )
-        return tasks
+        ]
+
+    def _cloud_tasks(
+        self, today: date, now: datetime | None = None
+    ) -> list[tuple[Series, str, Rate]]:
+        """Every cloud task of a run: the current ones, then the back-fill."""
+        moment = now or self._now()
+        return [*self._current_tasks(today, moment), *self._later_tasks(today, moment)]
 
     def _cloud_complete(
         self, series: Series, interval: str, rate: Rate, today: date, zone: tzinfo
@@ -805,8 +942,21 @@ class RecordingsManager:
         cell = ledger.day(yesterday) if ledger is not None else None
         return cell is None or not cell[4]
 
+    def _backfill_allowed(self, reason: str, today: date) -> bool:
+        """Older intervals only in hourly runs, after a cloud run without a
+        limit, and not on the day of a rate limit."""
+        return (
+            reason == "hourly"
+            and self._cloud_runs_ok > 0
+            and self._cloud_limited != today
+        )
+
     async def _run_cloud(
-        self, now: datetime, zone: tzinfo, report: dict[str, Any]
+        self,
+        now: datetime,
+        zone: tzinfo,
+        report: dict[str, Any],
+        reason: str = "hourly",
     ) -> bool:
         coordinator = self.coordinator()
         if coordinator is None or coordinator.cloud_unavailable():
@@ -818,11 +968,17 @@ class RecordingsManager:
             return False
         client = coordinator.client
         today = now.astimezone(zone).date()
+        tasks = [(*task, False) for task in self._current_tasks(today, now)]
+        if self._backfill_allowed(reason, today):
+            tasks.extend((*task, True) for task in self._later_tasks(today, now))
         budget = CLOUD_BUDGET
+        backfill = CLOUD_BACKFILL
         succeeded = False
-        for series, interval, rate in self._cloud_tasks(today):
+        limited = False
+        failed: list[str] = []
+        for series, interval, rate, older in tasks:
             known = self.cloud_paths.get(series.path)
-            if (CLOUD, series.path) in self._forbidden:
+            if (CLOUD, series.path) in self._forbidden or series.path in failed:
                 continue
             task = f"{series.path}|{interval}"
             last = self._cloud_read_at.get(task)
@@ -838,17 +994,29 @@ class RecordingsManager:
                 and now.timestamp() - float(known[1]) < RECHECK_MISSING.total_seconds()
             ):
                 continue
+            if older and backfill <= 0:
+                report["cloud_backfill_left"] = True
+                continue
             if budget <= 0:
                 report["cloud_budget_used"] = True
                 break
+            if report["cloud_reads"] and coordinator.cloud_unavailable():
+                # Paused or limited meanwhile (the polling's reads).
+                report["cloud"] = "unavailable"
+                break
             budget -= 1
+            if older:
+                backfill -= 1
             answer = await read_cloud(
                 client, coordinator.gateway.gateway_id, series, interval
             )
             report["cloud_reads"] += 1
             self._cloud_read_at[task] = now.timestamp()
-            self._count_outcome(report, CLOUD, answer.outcome)
-            if answer.outcome is Outcome.OK:
+            outcome = answer.outcome
+            if outcome is Outcome.OK and not is_cloud_recording(answer.data):
+                outcome = Outcome.FAILED  # no recording at all: no unit issue
+            self._count_outcome(report, CLOUD, outcome)
+            if outcome is Outcome.OK:
                 read_at = self._now()
                 parsed = parse_cloud(answer.data, series, interval, zone)
                 if parsed is None:
@@ -859,13 +1027,30 @@ class RecordingsManager:
                 succeeded = True
                 if self._cloud_complete(series, interval, rate, today, zone):
                     self.cloud_done.add(task)
-            elif answer.outcome is Outcome.NOT_FOUND:
+            elif outcome is Outcome.NOT_FOUND:
                 self.cloud_paths[series.path] = ["missing", now.timestamp()]
-            elif answer.outcome is Outcome.FORBIDDEN:
+            elif outcome is Outcome.FORBIDDEN:
                 self._forbidden.add((CLOUD, series.path))
+            elif outcome is Outcome.FAILED:
+                # This path only; the others go on, a few failures end it.
+                failed.append(series.path)
+                if len(failed) >= CLOUD_FAILURES_PER_RUN:
+                    break
             else:
-                # A rate limit, a pause or an error: the next run goes on.
+                # A rate limit or no connection: the next run goes on.
+                limited = outcome is Outcome.RATE_LIMITED
+                if limited:
+                    self._cloud_limited = today
                 break
+        if failed and succeeded:
+            # Failing while the others answered: left out for a while. When
+            # nothing answered, the cloud itself failed; no path is left out.
+            until = now.timestamp() + CLOUD_FAIL_PAUSE.total_seconds()
+            for path in failed:
+                self._cloud_deferred[path] = until
+            report["cloud_paths_left_out"] = len(failed)
+        if succeeded and not limited:
+            self._cloud_runs_ok += 1
         limit = f"{today.year - 2:04d}"
         self.cloud_done = {
             item for item in self.cloud_done if item.rpartition("|")[2] >= limit
@@ -892,6 +1077,12 @@ class RecordingsManager:
             async_add_external_statistics,
         )
 
+        self.time_zone_on_the_hour = on_the_hour(now, zone)
+        if not self.time_zone_on_the_hour:
+            # The recorder takes rows on the full UTC hour only; local hours
+            # of a zone with a half-hour offset never are.
+            report["import"] = "time_zone_not_on_the_hour"
+            return
         instance = get_instance(self.hass)
         can_clear = clears_ranges(instance)
         language = self.hass.config.language
@@ -917,6 +1108,12 @@ class RecordingsManager:
                 if earlier is not None:
                     self._begin_import(ledger, wanted, earlier, zone, can_clear)
                 plan = ledger.plan(now, zone, can_clear=can_clear, commit=False)
+                if any(row[0] % HOUR for row in plan.rows):
+                    # A plant clock off the full hour: nothing is written.
+                    report["import_rows_not_on_the_hour"] = (
+                        report.get("import_rows_not_on_the_hour", 0) + 1
+                    )
+                    continue
                 if plan.clear is not None and can_clear:
                     instance.async_clear_statistics(
                         [wanted],
@@ -1114,7 +1311,12 @@ class RecordingsManager:
             chain = [recorded, counted]
         else:
             chain = [counted, recorded]
-        return next((item for item in chain if item is not None), None)
+        # A recorded gap (rule 7) falls back to the next source; with none,
+        # the gap itself (no value).
+        found = [item for item in chain if item is not None]
+        return next(
+            (item for item in found if not item.gap), found[0] if found else None
+        )
 
     def _publish_all(self, now: datetime, zone: tzinfo) -> None:
         today = now.astimezone(zone).date()
@@ -1131,6 +1333,8 @@ class RecordingsManager:
                 continue
             value = candidate.value(spec.measure.mean)
             if value is None:
+                # A gap: no value rather than the last one or a zero.
+                self.published.pop(spec.key, None)
                 continue
             self.published[spec.key] = [
                 candidate.start.isoformat(),
@@ -1244,6 +1448,12 @@ class RecordingsManager:
             "needed": self.needed(),
             "waiting": self.waiting,
             "plant_offset_differs_from_time_zone": self.offset_mismatch,
+            # False: a time zone off the full hour, the import waits.
+            "time_zone_on_the_hour": self.time_zone_on_the_hour,
+            "local_paths_read_by_days_only": len(self._slow),
+            "cloud_paths_left_out": sum(
+                1 for until in self._cloud_deferred.values() if until > now.timestamp()
+            ),
             # The upper bound per hour that applies to energy values.
             "plausibility_limit_kwh_per_hour": MAX_KWH_PER_HOUR,
             "history_read_since_start": self._full_done,
@@ -1281,9 +1491,20 @@ def _paths(value: object) -> dict[str, list[Any]]:
         if key in BY_PATH
         and isinstance(item, list)
         and len(item) == 2
-        and item[0] in ("ok", "missing", "unit")
+        and item[0] in ("ok", "missing", "unit", "failed")
         and isinstance(item[1], int | float)
     }
+
+
+def on_the_hour(now: datetime, zone: tzinfo) -> bool:
+    """Whether local midnight and the hours of ``zone`` fall on full UTC
+    hours (not in zones with a half-hour or 45-minute offset)."""
+    today = now.astimezone(zone).date()
+    return all(
+        (offset := moment.utcoffset()) is not None
+        and offset.total_seconds() % HOUR == 0
+        for moment in (now.astimezone(zone), local_midnight(today, zone))
+    )
 
 
 def clears_ranges(instance: Any) -> bool:

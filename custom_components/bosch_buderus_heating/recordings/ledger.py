@@ -19,7 +19,10 @@ Where an hour is not known and will not come any more, the rest of its day
 is written as one row at that hour from the day's value, and where no day
 is known either, the rest of the month from the month's value. Nothing is
 interpolated; a negative rest (the plant rounds old months to whole kWh) is
-left out. ``c = 0`` is a gap, never a zero.
+left out. ``c = 0`` is a gap, never a zero: it is kept as ``[0, 0]`` (the
+plant's placeholder sum, often 1.0, is dropped), and a slot already final
+with data keeps its value when a later answer has no data for it (rule 12:
+what the plant no longer has stays; counted as ``gap_after_value``).
 
 A plan is worked out on a copy of the import position and taken over
 (``commit``) only once its rows were handed to the recorder, so a failed
@@ -196,7 +199,8 @@ class Ledger:
             if sample.c <= 0:
                 if _start(sample, zone) > read_at:
                     continue  # a placeholder of a slot still to come
-                accepted.append(sample)
+                # A gap: the placeholder sum (often 1.0) is no energy.
+                accepted.append(Sample(sample.rate, sample.day, sample.hour, 0.0, 0.0))
                 continue
             reason = rejection(sample, self.series, now=read_at, zone=zone, floor=floor)
             if reason is not None:
@@ -216,6 +220,7 @@ class Ledger:
         aggregates: dict[date, list[float]] = {}
         for sample in accepted:
             if sample.rate is Rate.HOUR:
+                y, c = sample.y, sample.c
                 if sample.hour is not None:
                     self._put(
                         self.hours,
@@ -225,10 +230,13 @@ class Ledger:
                         sample.hour + HOUR,
                         read,
                     )
+                    cell = self.hours.get(str(sample.hour))
+                    if c <= 0 and cell is not None and cell[4] and cell[1] > 0:
+                        y, c = cell[0], cell[1]  # kept (rule 12): its day too
                 if sample.day not in day_samples:
                     total = aggregates.setdefault(sample.day, [0.0, 0.0])
-                    total[0] += sample.y if sample.c > 0 else 0.0
-                    total[1] += sample.c
+                    total[0] += y if c > 0 else 0.0
+                    total[1] += c
             elif sample.rate is Rate.DAY:
                 end = _ts(local_midnight(sample.day + timedelta(days=1), zone))
                 self._put(self.days, sample.day.isoformat(), sample, source, end, read)
@@ -285,6 +293,11 @@ class Ledger:
         read: float,
     ) -> None:
         cell = table.get(key)
+        if c <= 0 and cell is not None and cell[4] and cell[1] > 0:
+            # Rule 12: a confirmed value stays when the plant later has no
+            # data for it (a reset, a new controller): no correction.
+            self.stats["gap_after_value"] += 1
+            return
         if read < ended + COMPLETE_AFTER:
             # Still running: a live value, replaced by every newer read.
             if cell is not None and (cell[4] or _RANK.get(cell[2], 0) > _RANK[source]):
@@ -463,6 +476,7 @@ class Ledger:
             if (
                 month_cell is not None
                 and month_cell[4]
+                and month_cell[1] > 0
                 and limit >= _ts(local_midnight(month_end, zone))
             ):
                 run_end = day + timedelta(days=1)
@@ -681,7 +695,9 @@ def _cells(value: object) -> dict[str, Cell]:
             and cell[2] in _RANK
         ):
             cells[key] = [
-                float(cell[0]),
+                # A gap kept by an earlier version with the plant's
+                # placeholder sum: no energy.
+                float(cell[0]) if cell[1] > 0 else 0.0,
                 float(cell[1]),
                 cell[2],
                 int(cell[3]),

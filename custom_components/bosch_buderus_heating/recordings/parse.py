@@ -241,12 +241,22 @@ def parse_local(recording: Recording, series: Series, zone: tzinfo) -> Parsed | 
     return parsed
 
 
+def is_cloud_recording(payload: object) -> bool:
+    """Whether a cloud answer has the shape of a recording at all; one that
+    has not is a failed read, not a recording in an unknown unit."""
+    return (
+        isinstance(payload, dict)
+        and payload.get("type") == "yRecording"
+        and isinstance(payload.get("recording"), list)
+    )
+
+
 def parse_cloud(
     payload: object, series: Series, interval: str, zone: tzinfo
 ) -> Parsed | None:
     """The samples of a cloud answer to ``?interval=``; None when the answer
     is no recording or has an unknown unit."""
-    if not isinstance(payload, dict) or payload.get("type") != "yRecording":
+    if not isinstance(payload, dict) or not is_cloud_recording(payload):
         return None
     rows = payload.get("recording")
     if not isinstance(rows, list) or not valid_interval(interval):

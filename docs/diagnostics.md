@@ -28,7 +28,9 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   rows without a product name counted by hardware type (see
   [heat generator modules](#heat-generator-modules)).
 - `gateways[].recordings`: the reads of the plant's recordings and the
-  optional statistics import (see [plant recordings](recordings.md#diagnostics)).
+  optional statistics import, including `time_zone_on_the_hour`,
+  `local_paths_read_by_days_only`, `cloud_paths_left_out` and the state
+  `failed` per recording (see [plant recordings](recordings.md#diagnostics)).
 - `gateways[].performance`: the history behind the performance factors
   (see [calculated values](calculated-values.md#performance-factors)):
   `recordings_attached`, the number of counter entities found

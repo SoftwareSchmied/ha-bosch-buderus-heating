@@ -534,6 +534,7 @@ class PerformanceHistory:
                     result is not None
                     and result.final
                     and result.resolution == "monthly"
+                    and not result.gap  # a month without data is no 0 kWh
                     and result.y >= 0
                 ):
                     only = (
