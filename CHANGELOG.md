@@ -9,595 +9,147 @@ Versioning after its first tagged preview.
 > **Before you update**
 >
 > - This is a pre-release for testing; 0.9.1 stays the stable release.
-> - **From 0.9.x:** nothing special is needed. The storage format stays 4,
->   and existing entities keep their entity IDs, unique IDs, names and
->   settings.
+> - **From 0.9.x:** nothing special is needed. Entity IDs, unique IDs, names
+>   and settings stay as they are.
 > - **From 0.8.x:** make a full Home Assistant backup first. The first start
->   moves the configuration entry to storage format 4, which 0.8.x cannot
->   load; going back is only possible by restoring that backup. Home
+>   moves the entry to storage format 4, which 0.8.x cannot load. Home
 >   Assistant 2026.5.0 or newer is required.
-> - Most new entities are created disabled. Enabled are the everyday ones:
->   the activity of each heating circuit, the defrost entities, the current
->   COP, the main performance factors and the heat and electricity of
->   yesterday from the plant recordings.
-> - Importing the plant recordings into the long-term statistics is off
->   until you switch it on in the options under **Plant recordings**.
-> - The new controls (zone climates, heating circuit settings, further time
->   programs, wallboxes and air conditioners on a PointT gateway) are
->   expected, untested on a real installation. Reports are very welcome.
-> - The diagnostics now use schema 48. Please attach a fresh diagnostics
->   file to reports about this version.
+> - Most new entities are created disabled. The new controls are expected,
+>   untested on a real installation; reports are very welcome.
+> - Please attach a fresh diagnostics file (schema 48) to reports about this
+>   version.
 
-This pre-release adds calculated values (what a heating circuit is doing,
-defrosts, COP and performance factors), the heat pump's own recordings, a
-climate entity per zone of a zone controller, more heating circuit settings
-and time programs, and controls for wallboxes and air conditioners on a
-PointT gateway. It also fixes the discovery of heating circuits whose
-directory is refused and of large zone controllers. Each entry says how it
-was tested; most of it with automated tests only.
+This pre-release adds calculated values, the heat pump's own recordings, a
+climate entity per zone, more heating circuit settings and time programs,
+and controls for wallboxes and air conditioners on a PointT gateway. Each
+entry says how it was tested; most of it with automated tests only.
 
 ### Added
 
-#### Calculated values
-
-All of these are named "(calculated)" and list their inputs in the
-attribute `derived_from`; see [calculated values](docs/calculated-values.md).
-
-- **What a heating circuit is doing:** each heating circuit has a new sensor
-  **Activity (calculated)** (heating, cooling, defrosting, idle, off), and
-  the climate entities of the heating circuits now show `hvac_action`. The
-  zones of a room controller show `defrosting` instead of `heating` while
-  the heat pump of the plant defrosts.
-  - Worked out from the compressor, the 3-way valve, the circuit pump and the
-    circuit's mode, the local reading first. Without the readings it needs,
-    the activity stays unknown instead of being guessed.
-  - I checked it with automated tests and readings recorded on a real
-    air-to-water heat pump; boilers, iCom gateways, room controllers and
-    cooling follow the same rules but are untested.
-- **Defrosts of the heat pump:** a binary sensor **Defrost active
-  (calculated)**, an event **Defrost (calculated)** for every finished
-  defrost (start, end, duration, the hot water and heating stages, the heat
-  taken back and the electricity) and a sensor **Last defrost
-  (calculated)**, all enabled. Four counters (number, time, heat withdrawn,
-  electricity) are disabled by default.
-  - Only a heat pump with evidence that it defrosts gets them: its reported
-    type, a defrost signal, the air inlet temperature or the outdoor fan, or
-    a defrost it has reported. Brine-to-water heat pumps never get them.
-  - Counted only while Home Assistant runs. The energy is approximate,
-    because the counters change only every few minutes, so the event comes
-    up to 10 minutes after the end. The electricity comes twice: from the
-    counters and, with the local access, integrated from the electrical
-    power readings (`electricity_kwh_from_power`).
-  - I replayed a defrost recorded on a real installation in the tests; it
-    has not yet run live.
-- **COP, performance factors and spreads:** a sensor **Current COP
-  (calculated)**, performance factors for today, yesterday, this and the
-  previous month, this and the previous year and since commissioning (each
-  for heating, hot water and in total), and **Primary circuit spread
-  (calculated)** (TC1 minus TC0 while the primary pump runs). Enabled: the
-  current COP, today, this year and since commissioning in total, and the
-  spread; the rest is created disabled but kept up to date.
-  - The current COP is the heat output over the electrical power of
-    compressor and heater, only while the compressor runs and unknown while
-    the heat pump defrosts. It needs the local access.
-  - The earlier days come from the plant recordings (electricity, total
-    heat) and the counters' long-term statistics (heat per mode), so the
-    seasonal performance factor starts with the first recorded day, also on
-    a new installation. The defrost dips are netted.
-  - Brine-to-water heat pumps get an optional, disabled **Brine spread
-    (calculated)**.
-  - I replayed one day recorded on a real installation in the tests: the
-    integrated live heat output and power agree with the counters within
-    3 %. The values have not yet run live on a real installation; the
-    back-fill, the spreads and brine-to-water heat pumps are tested with
-    automated tests only.
-- **Net heat counters:** for each produced-heat counter a disabled counter
-  **Net heat … (calculated)** that holds while the heat pump defrosts and
-  counts again above its highest reading, so it only ever rises. The
-  existing heat counters stay as they are. Tested with automated tests only.
-- **Run time per start and supply above setpoint:** two diagnostic sensors,
-  **Average run time per start, heating (calculated)** and **Supply above
-  setpoint (calculated)** (only while the heat source heats). Tested with
-  automated tests only.
-- **Heat source type:** the **Heat generator** sensor has the new attribute
-  `heat_source_type` (air, brine or water), from readings that exist on only
-  one kind, never from shared signal names. With such evidence but without a
-  named module the sensor is created as well, without a state and with
-  `known: false`. Tested with automated tests and fixtures shaped like a
-  real air-to-water and a real brine-to-water heat pump. Thank you to
+- **What a heating circuit is doing:** a sensor **Activity (calculated)** per
+  heating circuit (heating, cooling, defrosting, idle, off) and `hvac_action`
+  on the climate entities. Checked with readings of a real air-to-water heat
+  pump; boilers, iCom gateways, room controllers and cooling are untested.
+- **Defrosts:** **Defrost active**, an event **Defrost** for every finished
+  defrost and **Last defrost** (all calculated, enabled), plus four counters
+  (disabled). Only heat pumps that defrost get them. A defrost recorded on a
+  real installation is replayed in the tests; not yet confirmed live.
+- **COP and performance factors:** **Current COP (calculated)** with the
+  local access, performance factors from today to since commissioning and
+  the **Primary circuit spread**. Earlier days are filled in from the plant
+  recordings. A day recorded on a real installation is replayed in the tests;
+  not yet confirmed live. See [calculated values](docs/calculated-values.md).
+- **More calculated values:** net heat counters, average run time per start
+  and supply above setpoint, and the attribute `heat_source_type` (air, brine,
+  water) on the **Heat generator** sensor. Automated tests only. Thank you to
   solluh for the diagnostics of a brine-to-water heat pump in the
-  [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111),
-  which also brought the names of its signals.
-
-#### Plant recordings
-
-- **The heat pump's own recordings:** the heat pump records its heat,
-  compressor and heater electricity, starts, working time and the outdoor
-  and supply temperature per hour, day and month. The integration now reads
-  these recordings, from the local data port when a local access is set up
-  and otherwise from the cloud, and shows them for yesterday, the previous
-  and current month and the previous and current year. Total heat produced
-  and total electricity of yesterday are enabled; all other period entities
-  are created disabled. See [plant recordings](docs/recordings.md).
-  - The electricity is the sum of compressor and heater. The heat per mode
-    (heating, hot water) comes from the integration's counters first,
-    because the plant counts an hour in which it switches between the modes
-    for both of them; every energy value has a disabled companion with the
-    other method for comparison.
-  - A past period changes only after a read that confirms the finished
-    day, month or year; the attributes name the period and the source.
-  - Optionally, in the options under **Plant recordings**, the hourly
-    values become statistics of their own (energy dashboard, statistics
-    cards), back to the first recorded day: hourly where the plant still
-    has hours, before that by day and by month. Off by default; it can be
-    switched off again and the imported statistics can be deleted.
-  - I compared the local and the cloud answers with each other and with
-    the counters on a real installation. The reads over days, the import,
-    the switch between local and cloud, the change of summer time and the
-    recordings of gas, hybrid, solar, pool and ventilation systems are
-    tested with automated tests only and not yet confirmed on a real
-    installation.
-
-#### Readings
-
-- **Flow below the measuring range:** a flow reading that reports its
-  low-flow state (65535) still shows "unknown", now with the additional
-  attribute `reported_state: low_flow` next to `measuring_range: below`. A
-  measured 0 stays 0.
-  - Two new diagnostic binary sensors, disabled by default, show it as
-    on/off: *Primary flow below measuring range* and *Heating circuit 1 flow
-    below measuring range (PC1)*. They are created only where the flow
-    reading exists on the plant and send no request of their own.
-  - Tested with automated tests and readings in the form a real gateway
-    sends; the binary sensors are not yet confirmed on a real installation.
-- **Outdoor unit software version:** a new diagnostic sensor shows the
-  software version of the outdoor unit from the module lists the integration
-  already reads (cloud or local), with the product name and hardware type as
-  attributes. Only a module the heat generator model table names as an
-  outdoor unit counts; serial numbers are never read. The version was found
-  in the module list of a real installation; the sensor itself is tested with
-  automated tests.
-
-#### Zone controllers
-
-- **A climate entity per zone:** a zone controller such as an MX400 with
-  radio room thermostats now has one climate entity per zone, with mode
-  (off, heat, auto), target temperature, room temperature and humidity.
-  - In Heat the target is the zone's manual setpoint; in Auto it shows the
-    program's setpoint, and a new target is a temporary setpoint until the
-    next switch point. A button **Clear temporary setpoint** per zone ends
-    it (created disabled when the zone's limits leave the clear value out).
-  - The cooling side is used while the zone's heating circuit reports the
-    cooling season. The circuit of a zone comes from its radio devices.
-  - Before every change I read the zone's mode, the target and the
-    circuit's season and control type again on the appliance; if one of
-    them changed, nothing is sent. Then exactly one request and a read-back,
-    never a second request. A mode together with a temperature sends the
-    mode first and the temperature only after the mode is confirmed.
-  - The action (heating, cooling, idle, off, defrosting) is calculated:
-    heating only while the circuit heats and the room is below the zone's
-    setpoint; unknown without these readings.
-  - The existing zone selects and numbers and the climate of the heating
-    circuit stay as they are; the [zone controls](docs/zone-controls.md)
-    explain the difference.
-  - Thank you to petergoris-netizen for the report and the diagnostics in
-    [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131).
-    I tested it with automated tests and a synthetic fixture in the shape of
-    that report; it is not yet confirmed on a real installation.
-- **Battery and radio signal of radio room devices:** each radio room device
-  of a zone controller gets a diagnostic binary sensor **Battery low**
-  (enabled) and a diagnostic sensor **Radio signal** in dB (disabled). A
-  battery text other than `low` or `ok` stays unknown. Tested with automated
-  tests only.
-
-#### Heating circuit settings
-
-These follow what the circuit reports; I tested them with simulated data in
-automated tests only, so they are expected, untested on a real installation.
-See [heating controls](docs/heating-controls.md#heating-circuit-settings-summerwinter-cooling-and-temperature-levels).
-
-- **Summer/winter switching per heating circuit:** a heating circuit that
-  reports its own summer/winter switching (iCom/KM200 gateways) gets the
-  select **Summer/winter switching** (Automatic, Heating only, Cooling only,
-  Off, as far as the circuit offers them) and the number **Stop heating at
-  outdoor temperature**, both enabled.
-  - The central season switching of a K40 and the settings of a room
-    controller stay as they are.
-  - No change while a room controller runs the circuit (control type
-    `ISRC`).
-  - They appear only after a finished discovery has settled that the
-    gateway is no room controller, so a room controller recognised late
-    never shows them.
-- **Cooling setpoint and cooling threshold:** heat pumps with cooling get
-  the numbers **Cooling: room setpoint** and **Start cooling at outdoor
-  temperature**, disabled by default. The threshold exists only while the
-  circuit's summer/winter switching offers cooling; 0 ("off") is never
-  written as a setpoint.
-- **Away temperature and cooling level:** the number **Away temperature**
-  (enabled) and **Cooling temperature** (disabled). Only the four known
-  level names are operated (heating, setback, away, cooling); a level with
-  another name stays a reading, and the diagnostics count such names.
-- **Variable tariff of iCom gateways, read only:** an iCom gateway is asked
-  once whether its tariff optimisation is on and for the number of its
-  tariff; the diagnostic entities **Variable tariff active** and **Tariff
-  ID** are disabled by default. The tariff's name and prices are not read,
-  and nothing is written.
-
-#### Time programs
-
-- **Action `set_switch_points`:** the integration's first action sets the
-  switch points of weekly programs from automations and scripts. Targets are
-  the program sensors; `mode` replaces the whole week or only the given days,
-  `expected` refuses the change when the program holds other points,
-  `validate_only` only checks. The response lists the previous and the new
-  switch points per target.
-  - Same rules and the same single write as the dialog: a fresh reading as
-    the base, a second reading right before the one PUT, read-back, never
-    a retry. Several targets are handled one after the other.
-  - Program sensors of programs the gateway reports as writable are now
-    enabled when they are first registered; existing entities keep their
-    state.
-  - Tested with automated tests only; expected, untested on a real
-    installation.
-- **Further time programs:** the schedule dialog and the program sensors now
-  also cover heating programs with temperatures (program type `absolute`),
-  the cooling program of a heating circuit, the heating and cooling programs
-  of radio room zones, the ventilation program and the weekly program of
-  WDDW2 water heaters.
-  - A program is changeable only when the gateway reports its limits, its
-    levels or its temperature range and step; no default values are
-    assumed. Otherwise it is shown read-only and the diagnostics name the
-    reason.
-  - Temperatures outside the range or off the step are refused, not
-    rounded.
-  - None of these programs has been read on a real installation yet.
-    Tested with automated tests only; expected, untested on a real
-    installation. I would be glad about a diagnostics file of such a system.
-- **Program names:** the names of the weekly programs A and B are decoded
-  as the gateway codes them (a Base64 name now shows as text), and a text
-  entity **Time program name** changes them where the gateway reports the
-  name writable with a known coding (disabled by default; not on iCom
-  gateways). One write, read-back of the decoded name; a name changed
-  elsewhere meanwhile sends nothing. Tested with automated tests only;
-  expected, untested on a real installation.
-- **Room controller schedules:** in **Configure > RRC heating schedules** a
-  switch point can now be added to a day or deleted, and the hot water week
-  program of the controller can be changed (program levels high, off, low,
-  eco; `low` and `eco` only where the program already uses them). At most
-  six switch points per day; the last switch point of a day stays. Each
-  change is shown before and after and sent once. Tested with automated
-  tests only; expected, untested on a real room controller.
-- **Weekly view:** the schedule dialogs show the week as a read-only table
-  of seven days next to the text, with the level or temperature of each
-  switch point as text and colour and the part carried over from the
-  previous day marked. The view never writes; if it cannot be loaded, the
-  text stays. Tested with automated tests; the browser test runs in the
-  frontend test job.
-
-#### Wallboxes
-
-- **Wallbox controls:** wallboxes can now also be operated, not only read.
-  Every control is disabled by default.
-  - Start and pause charging (buttons), the charging current limit (6 A up
-    to the hardware limit), boost, the charging mode (normal or solar), the
-    solar settings (grid supplement, its maximum, the minimum surplus,
-    prefer home battery, filter time), the overload protection (current and
-    power limiter, the three phase limits, the power limit), the lock, the
-    display name and the electricity and feed-in prices.
-  - A control exists only when the wallbox reports what it needs: a
-    software version that offers the function, and for settings a value it
-    reports as writeable. While the state, a load-management group, an
-    energy manager or a missing meter does not allow a change, the control
-    is unavailable and a change is refused before anything is sent.
-  - Each change reads the wallbox fresh, sends exactly one request and then
-    reads again for up to 20 seconds; it is never repeated. Commands keep
-    five seconds apart. A start after an authentication is sent only when
-    allowed in the new options step **Wallbox** (off by default).
-  - Access control (authentication setting, RFID cards and their
-    teach-in), the charge log and the energy history are never written or
-    read. Boost charges with the full hardware current; the
-    [wallbox documentation](docs/pointt-wallboxes.md) has a warning.
-  - I tested this only with simulated data in automated tests; it is
-    expected but untested on a real wallbox. I am glad about feedback from
-    wallbox owners.
-- **More wallbox readings:** the state of the external meter, the source
-  that limits charging, the energy manager state, grid-friendly charging
-  (configured, active), relays and whether authentication is required, all
-  enabled; boost active, the grid-friendly input, the external meter's
-  maximum current and the currency symbol are disabled by default. Tested
-  with automated tests only.
-
-#### Air conditioners on a PointT gateway
-
-- **Climate entity:** an air conditioner that appears as its own gateway in
-  the account (device type `rac`, Midea units with or without gateway
-  connector, Sharp units) now gets a climate entity with on/off, mode,
-  target temperature, fan, louvres and the Eco preset. See
-  [air conditioners on a PointT gateway](docs/pointt-air-conditioners.md).
-  - Disabled by default: switches for full power, sleep mode,
-    frost-protection heating (8 or 10 °C) and air purification, the spot
-    air direction, switch-on and switch-off timers, the schedule switch,
-    the active schedule and a button to end a temporary override, plus a
-    read-only solar operation sensor.
-  - Options come only from what the unit reports. Each change writes one
-    value once and is confirmed by reading it back; a mode change on a
-    switched-off unit is refused (switch it on first), and auto and heat
-    are refused while the unit runs in solar operation.
-  - Separate from the air conditioners of the second cloud.
-- **Weekly programs:** the switch points of the unit's weekly programs can
-  be changed in the schedule dialog and with the action `set_switch_points`
-  on a new, disabled schedule sensor per program. A switch point holds the
-  mode and, where the mode has them, a temperature and a fan speed, all
-  from the unit's program configuration; without a readable, writable
-  configuration a program is shown, never changed. The whole week is sent
-  once and read back.
-- I have only checked this with simulated data in automated tests; it is
-  expected, untested on a real installation, and I am happy about feedback.
+  [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111).
+- **Plant recordings:** the heat pump's own recordings of heat, electricity,
+  starts, working time and temperatures, read locally or from the cloud and
+  shown for past days, months and years; yesterday's heat and electricity are
+  enabled. Optionally they become long-term statistics for the energy
+  dashboard (**Configure → Plant recordings**, off by default). I compared
+  the local and cloud answers on a real installation; the import and longer
+  runs are tested with automated tests only. See
+  [plant recordings](docs/recordings.md).
+- **Readings:** a flow below the measuring range is marked with
+  `reported_state: low_flow` and two disabled binary sensors; a new sensor
+  shows the software version of the outdoor unit.
+- **Zone controllers:** a climate entity per zone (for example an MX400 with
+  radio room thermostats), a button to clear a temporary setpoint and battery
+  and radio signal entities for the radio devices. Thank you to
+  petergoris-netizen for the report and diagnostics in
+  [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131).
+  Automated tests with data in the shape of that report only.
+- **Heating circuit settings:** summer/winter switching and the outdoor
+  temperature that stops heating (iCom/KM200 gateways), cooling setpoint and
+  threshold, away and cooling temperature, and the variable tariff of iCom
+  gateways (read only). Automated tests only. See
+  [heating controls](docs/heating-controls.md#heating-circuit-settings-summerwinter-cooling-and-temperature-levels).
+- **Time programs:** a new action `set_switch_points` for automations, more
+  program types (temperatures, cooling, zones, ventilation, WDDW2 water
+  heaters), program names, adding and deleting room controller switch points
+  and a weekly view in the schedule dialogs. Automated tests only.
+- **Wallboxes:** start and pause charging, current limit, boost, charging
+  mode, solar and overload settings, lock, name and prices, all disabled by
+  default, plus more readings. Access control and RFID cards are never
+  touched. Automated tests only; see [wallboxes](docs/pointt-wallboxes.md).
+- **Air conditioners on a PointT gateway:** a climate entity with mode,
+  temperature, fan, louvres and Eco, further switches (disabled) and their
+  weekly programs. Automated tests only; see
+  [air conditioners](docs/pointt-air-conditioners.md).
 
 ### Changed
 
-- **Temperature settings in your unit system:** every number entity that
-  holds a temperature (setpoints, levels, supply limits, outdoor thresholds,
-  the boost temperature) now has the device class *temperature*; the offset
-  of a radio room device is a temperature difference. Home Assistant shows
-  them in the temperature unit of your installation.
-  - The step is converted with them (0.5 °C becomes 0.9 °F), and a value set
-    in °F is sent as the exact step in the gateway's unit; a value between
-    two steps is refused, not rounded.
-  - Entity IDs, unique IDs and enablement stay as they were; with metric
-    units nothing changes in the display. Tested with automated tests.
-- **Safer heating-circuit writes:** tested with automated tests and
-  simulated data only; expected, untested on a real installation.
-  - Before every write of a heating-circuit climate (mode, target,
-    temporary setpoint) and of the button **Clear temporary setpoint**, I now
-    also read the circuit's control type on the appliance, together with
-    the mode and the heating context. If it changed since it was shown,
-    nothing is sent. A circuit whose control type has no current reading
-    takes no change.
-  - With the control type `ISRC`, a circuit takes no temporary setpoint and
-    offers no clearing. The manual setpoint stays.
-  - A change of the heating or setback temperature reads the control type
-    and the other levels together with the level itself and checks the value
-    against these fresh limits; the two levels limit each other. With the
-    control type `ISRC` or `constants` no level is changed.
-  - The lower limit of the temporary target, taken from the manual
-    setpoint, stays shown while the last reading of the manual setpoint is
-    still valid. One missed reading no longer hides the target in
-    automatic mode; a change still needs a current reading.
-- **Clearing a temporary setpoint outside the reported limits:** some
-  gateways report limits such as 5 to 30 for the temporary setpoint and use
-  -1 to end it. The button **Clear temporary setpoint** is now created for
-  them as well, disabled by default. It sends -1 exactly once, and any
-  negative reading afterwards confirms that no temporary setpoint is active.
-  Only this one value is allowed outside the limits. Expected, untested on a
-  real installation; I welcome reports.
-- **Flags of every setting:** all controls now follow the `used` and
-  `available` flags when the appliance reports them, not only those of
-  room controllers. A setting reported as not available gets no control; a
-  setting reported as not used keeps its control, and a change is refused
-  before anything is sent, with a general message. Without flags nothing
-  changes. The zone controls of room controllers keep their own rules.
-  Tested with automated tests only.
-- **Icons per state:** icons of many entities now come from Home
-  Assistant's icon translations, among them operating modes, compressor and
-  refrigerant status, heat demand, pressure status and fan levels, with an
-  icon per state where it helps. Entities that had a fixed icon keep it.
-  Entity IDs, names and settings stay as they are; an icon you chose
-  yourself stays.
-- **Names of the local signals:** 36 signals of the local access that
-  showed *Signal …* have names in every language, for example *Compressor
-  start-up sequence*, *Pump PC0 connected to LIN bus*, *Hot water holiday
-  mode*, *Heating stopped: outdoor temperature too low*, *Energy management
-  lower supply setpoint* and, from a brine-to-water heat pump, *High-pressure
-  switch*, *Summary alarm* and the digital inputs. The brine pump speed is
-  *Brine pump speed* instead of *Pump Speed*.
-  - The names follow the manufacturer's manuals, the state names the gateway
-    declares and readings recorded on a real installation; where only the
-    signal name speaks for a meaning, the name says no more than that.
-    Signals whose meaning stays open keep the signal path.
-  - Only names change, and only for entities without a name of your own:
-    entity IDs, unique IDs and the activation stay; the signals stay
-    disabled diagnostic entities.
-  - The four *Permitted* signals of the heat pump are on/off states in every
-    form of the answer, never a temperature. Two of them are named *Outdoor
-    temperature above/below permitted range (heat pump)*.
-  - The current heat demand shows `frost` as *Frost range* instead of *Frost
-    protection*. On a real installation the heat pump reported it during
-    normal heating below about 6.5 °C outdoor temperature; what the
-    manufacturer means by it is not documented.
-- **Composed names as translation keys:** the names of the room controller
-  zone readings and their controls, the energy history statistics and some
-  cloud readings (for example the hot water start thresholds and the energy
-  counters) are now translation keys in all 19 languages instead of German
-  and English text in the code. The names stay the same; like all composed
-  names they follow the Home Assistant system language.
-
-#### Setup and settings dialogs
-
-I tested the following changes with automated tests and simulated data
-only; I have not yet checked them in the browser or on a real installation.
-Details are on the new [settings dialog](docs/dialogs.md) page.
-
-- **Outcomes in the language of your profile:** a finished action (a saved
-  setting, a holiday, a schedule, a planned search) and a connection test now
-  show their outcome on a page of their own, with a fixed text in the
-  language of your user profile. **OK** returns to the menu. The **Back**
-  entries and fixed choices such as a new system without the cloud follow
-  the profile language as well. The list of accesses with their state, the
-  status line of an access and the overviews of a schedule still use the
-  server language, because Home Assistant gives a dialog no access to the
-  profile language for texts built from current data.
-- **Sign in again in the dialog:** **Configure → Connections → cloud access →
-  Sign in again** now opens the SingleKey ID sign-in right there, instead of
-  ending with a hint to look under **Attention required**. Another account
-  is refused and the previous sign-in is kept. A device search that finds
-  the sign-in expired continues with the same sign-in page.
-- **Local access from the connections menu:** **Configure → Connections**
-  now offers **Set up local access** as well.
-- **A way back from selection forms:** the lists of holiday periods,
-  schedules, room controller schedules, systems to operate and gateway tokens
-  start with **← Back**; before, only X helped, and it closed the whole
-  dialog.
-- **"Next" on intermediate steps:** forms after which another form follows
-  now show **Next**.
-- **A shorter local setup:** the last page saves with **OK**, without an
-  extra box. Not confirming a certificate shows a note instead of the same
-  page again; nothing is sent. The second certificate page, for the data
-  port, has its own title.
-- **Shorter descriptions:** the pages for local values, local polling, the
-  cloud polling profile and reconfiguring say what matters in two or three
-  sentences; the details moved to the documentation.
-- **Names instead of identifiers:** the systems of an access and the targets
-  of a local setup are listed by their device name. Room controller programs
-  show their name without the program number, and with several gateways the
-  schedules name their system instead of a model and a number. Two systems
-  with the same name keep their identifier.
-- **Room controller switch points with before and after:** a changed switch
-  point is shown before and after the change first, as for the heating
-  schedules; it is sent only after **OK**.
-- **A found gateway as a new entry:** when Home Assistant finds a gateway
-  and entries exist already, the notice can also set it up as a new entry
-  with local access only. Its address is preselected in the local setup when
-  it is the only gateway found.
-
-#### Diagnostics (schema 48)
-
-The new parts hold no readings, names or identifiers; see
-[diagnostics](docs/diagnostics.md).
-
-- New sections `calculated_values` (the defrost detection), `recordings`
-  (the reads of the plant recordings and the import) and `performance` (the
-  history of the performance factors).
-- `heat_generator` shows the heat source type and its evidence, and counts
-  the module rows without a product name by hardware type.
-- The counters of the containers that discovery read directly, its own
-  allowance for large zone controllers and which limit ended a discovery.
-- `circuit_controls` counts temperature levels with a name that is not
-  operated and says, for an iCom gateway, whether the two tariff paths exist
-  (their type only).
-- `zone_climates` shows per zone whether its climate is shown and can change
-  the mode and the target, and why not; `paths_not_read` counts the device
-  leaves left out because an identical device was refused.
-- `switch_program_writes` lists for every program its kind, setpoint type
-  and the forms of its switch points (key names and value types), the write
-  counters of the new program kinds and, in `program_names`, whether each
-  program name can be changed or why not.
-- The wallbox reports list the wallbox's single values by path (known,
-  writeable, refused, polled) and count the outcomes of commands and
-  settings, without values, labels, names or prices.
-- `pointt_air_conditioners` describes each air conditioner on a PointT
-  gateway: family, detection, freshness, readable and writable paths,
-  offered controls, how many programs were read, why a program cannot be
-  changed and the counts of changes, without values, program IDs or names.
+- **Temperature settings in your unit system:** all temperature numbers have
+  the device class *temperature* and follow the unit of your installation.
+  Entity IDs and settings stay. Automated tests only.
+- **Safer heating circuit writes:** every change reads the circuit's control
+  type and the related values on the appliance first and sends nothing if
+  they changed. Automated tests only.
+- **Clearing a temporary setpoint** also works on gateways that report limits
+  without the clear value (button, disabled by default). Untested on a real
+  installation.
+- **`used` and `available` flags** of the appliance now apply to all
+  settings. Automated tests only.
+- **Icons per state** for many entities; icons you chose stay.
+- **Names for local signals:** many signals of the local access that showed
+  *Signal …* now have names in every language; `frost` of the heat demand
+  shows as *Frost range*.
+- **Translations:** composed names (room controller zones, energy history,
+  some cloud readings) are now translated in all 19 languages.
+- **Settings dialogs:** outcomes in the language of your profile, signing in
+  again right in the dialog, local access from **Connections**, **← Back** in
+  selection lists, **Next** on intermediate steps, a shorter local setup,
+  names instead of identifiers, before and after for room controller switch
+  points, and a found gateway can become a new local-only entry with its
+  address preselected. Automated tests only; see [dialogs](docs/dialogs.md).
+- **Diagnostics (schema 48):** new sections for the calculated values, the
+  plant recordings, the performance factors, the zone climates, the time
+  programs, wallboxes and air conditioners, without readings or names. See
+  [diagnostics](docs/diagnostics.md).
 
 ### Fixed
 
-- **Second heating circuit without name and without target in Auto:** some
-  controllers refuse the directory of a heating circuit while its values stay
-  readable one by one. The integration then never requested the values it
-  only learns from that directory, among them the circuit's name, its current
-  room setpoint, status, summer/winter state and time program. The circuit
-  showed the generic name "Heating circuit 2" and no target temperature in
-  Auto.
-  - Discovery now reads the known children of such a container directly: the
-    children a readable sibling of the same kind lists and the children known
-    for that kind. This works for every advertised heating circuit, hot-water
-    circuit, heat source, solar circuit, ventilation zone and zone, also for
-    refused directories inside them such as a time program directory. An
-    empty or shorter list gets the children a sibling of the same kind lists;
-    an empty directory without such a sibling counts as a valid answer.
-  - Nothing is requested for a circuit the controller does not advertise or
-    a container it answers with "not found". The extra reads happen only
-    during discovery, at most 256 of them, within its usual budget or the
-    allowance for large zone controllers (next entry).
-  - The diagnostics list each container that was read this way, why, and how
-    many of its values were found.
-  - Thank you to markus1783 for the report and the diagnostics in
-    [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
-    I tested it with automated tests in the shape of that report; it is not
-    yet confirmed on a real installation.
-- **Zone modes and setpoints missing on a large zone controller:** on a
-  zone controller with many zones and radio room devices, discovery reached
-  its limit of 512 paths before it read the mode and setpoints of any zone,
-  because the cloud refuses many paths on the way. No zone could therefore
-  be controlled.
-  - The mode and setpoint leaves of each side a zone lists are now read
-    right after the zone directories, also when the side directory itself
-    is refused.
-  - A leaf the cloud refuses on one radio device is no longer requested for
-    every other device that lists exactly the same children; any other
-    answer still requests it on every device. In the shape of the report
-    this saves 88 requests.
-  - When the 512 paths are used up, optional probes and the direct reads of
-    refused containers go on with an allowance of their own of at most 400
-    paths, with the same pauses and limits as every other read. Advertised
-    paths never use it, and a discovery that stays within the 512 paths
-    sends exactly the same requests as before. In the shape of the report
-    the discovery now finishes (816 paths, 304 of them from the allowance).
-  - Reported by petergoris-netizen in
-    [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131).
-    I tested it with automated tests in the shape of that report; it is not
-    yet confirmed on a real installation.
-- **Discovery next to an entry whose update failed:** when an existing entry
-  stays at an older version because its update failed, a discovered
-  gateway no longer offers a new local-only entry for the same plant; the
-  notice ends with "Local setup is not available". Tested with automated
-  tests.
-- **Energy manager setpoints:** the used lower and upper supply setpoints of
-  the energy manager showed "unknown" most of the time although the
-  controller reports 0. A rule hid the 0 while the energy management status
-  reported "not connected". The reported value is now shown, 0 included. No
-  other signal used that rule. Tested with automated tests; not yet
-  confirmed on a real installation.
-- **Sign-in with the address of the SingleKey ID page:** pasting the address
-  of a SingleKey ID page (for example `…/redirection?f=…`) instead of the app
-  address now shows a specific hint: copy the `com.bosch…://` or
-  `com.buderus…://` address from the **Failed to launch** message in the
-  Chrome console. The sign-in link stays valid. The hint, the sign-in guide
-  in the dialog and the [setup guide](docs/setup.md) also cover a SingleKey
-  ID page that announces a redirect that never happens: select the link or
-  button on that page first. Thank you to xmaka for pointing out that
+- **Second heating circuit without name and without target in Auto:** when a
+  controller refuses a circuit's directory, its values are now read directly,
+  for every advertised circuit. Thank you to markus1783 for the report and
+  diagnostics in
+  [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
+  Automated tests in the shape of that report; not yet confirmed on a real
+  installation.
+- **Zone modes and setpoints missing on a large zone controller:** discovery
+  now reads them first and wastes fewer requests on radio devices, so it
+  finishes. Reported by petergoris-netizen in
+  [#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131);
+  automated tests only.
+- **Discovery next to an entry whose update failed** no longer offers a new
+  local-only entry for the same plant. Automated tests only.
+- **Energy manager setpoints** showed "unknown" instead of a reported 0.
+  Automated tests only.
+- **Sign-in with the address of the SingleKey ID page** now shows a specific
+  hint on what to copy instead. Thank you to xmaka for pointing out the
   redirect page in
   [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
-  Tested with automated tests; not yet confirmed with a real sign-in.
+  Automated tests only.
 - **Local setup with a gateway that does not name its brand** (also in
-  0.9.2-beta.1): a K40 gateway of a heat pump of another brand answers
-  `unknown` for its brand, and the local setup stopped with "This gateway
-  brand is not supported". An unknown, empty or unrecognized brand now
-  counts as not reported and no longer stops the setup or the start of the
-  local access; the identity, the certificate check and the firmware check
-  stay required. Thank you to stalar for the report in
+  0.9.2-beta.1). Thank you to stalar for the report in
   [#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132).
-  Tested with automated tests and a synthetic gateway answering `unknown`;
-  not yet confirmed on a real gateway.
+  Automated tests only.
 
 ### Documentation
 
-- New pages: [calculated values](docs/calculated-values.md),
-  [plant recordings](docs/recordings.md), [the settings dialog in
-  detail](docs/dialogs.md) and
-  [air conditioners on a PointT gateway](docs/pointt-air-conditioners.md);
-  the pages on [wallboxes](docs/pointt-wallboxes.md),
-  [zone controls](docs/zone-controls.md) and
-  [heating controls](docs/heating-controls.md) describe the new controls
-  and say what is tested and what is not.
-- **Why is the supply above the setpoint?** A short explanation in
-  [heating controls](docs/heating-controls.md#why-is-the-supply-temperature-above-the-setpoint),
-  from readings of a real installation: the compressor's minimum output,
-  the stop at about 4 K over the setpoint, the start after degree minutes
-  and the influence of the circuit pump and room thermostats.
-- **Values only available in the service menu:** the minimum supply
-  temperature, the pressure setpoint of the heating circuit pump, the limits
-  of the auxiliary heater, the charging delta, the building type and the
-  start and stop thresholds are not available through the interface; see
-  [heating controls](docs/heating-controls.md#values-only-available-in-the-service-menu).
+- New pages on [calculated values](docs/calculated-values.md),
+  [plant recordings](docs/recordings.md), [the settings dialog](docs/dialogs.md)
+  and [air conditioners on a PointT gateway](docs/pointt-air-conditioners.md).
+- Why the supply can be above the setpoint, and which values are only
+  available in the service menu
+  ([heating controls](docs/heating-controls.md#why-is-the-supply-temperature-above-the-setpoint)).
 - **Works with:** the README names two complementary tools, the Heat Pump
   Hydraulic Card and Wärmewacht.
-- **Translations:** the status of the languages other than English and
-  German now simply invites corrections.
-- **Confirmed installations:** a Bosch Compress 7800i LW (CS7800iLW 8 F,
-  brine-to-water heat pump) with a K40RF, firmware 15.00.01, working with
-  the cloud and the local access on 0.9.1, as reported by solluh in the
+- The translation status now simply invites corrections.
+- **Confirmed installation:** a Bosch Compress 7800i LW with a K40RF (cloud
+  and local access on 0.9.1), as reported by solluh in the
   [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111).
 
 ## [0.9.2-beta.1] - 2026-11-14
