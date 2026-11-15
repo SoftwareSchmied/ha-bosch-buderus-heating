@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Configuración sin terminar",
       "description": "La entrada «{title}» aún no tiene ningún acceso. Selecciona **Configurar** en ella y después «Configurar el acceso local» (o conecta un acceso a la nube)."
+    },
+    "local_only_entities_continued": {
+      "title": "Las entidades leen ahora a través del acceso local",
+      "description": "{count} entidades en uso muestran ahora su valor a través del acceso local, con el valor de la nube como segunda fuente: {entities}. Sus ID de entidad, ajustes e historial se mantienen, así que las automatizaciones, los scripts y los paneles siguen funcionando. Sus nombres, categorías y estados siguen ahora el valor local. Puedes ignorar este aviso; desaparece tras el siguiente reinicio."
+    },
+    "local_only_entities_kept": {
+      "title": "Entidades que ya no se proporcionan",
+      "description": "{count} entidades de la nube ya no se proporcionan porque otra entidad de esta integración muestra el mismo valor a través del acceso local (antigua → nueva): {entities}. Las automatizaciones, los scripts y los paneles que usan la entidad antigua deberían usar la nueva. Elimina la entidad antigua cuando ya no la necesites; su historial se mantiene hasta entonces. Puedes ignorar este aviso; vuelve a aparecer en el siguiente reinicio mientras exista la entidad antigua."
     }
   },
   "exceptions": {

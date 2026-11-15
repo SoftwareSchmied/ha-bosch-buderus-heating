@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Konfigurationen är inte klar",
       "description": "Posten “{title}” har ännu ingen åtkomst. Välj **Konfigurera** på den och sedan “Konfigurera lokal åtkomst” (eller anslut en molnåtkomst)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteter läser nu via den lokala åtkomsten",
+      "description": "{count} entiteter som används visar nu sitt värde via den lokala åtkomsten, med molnvärdet som andra källa: {entities}. Deras entitets-ID:n, inställningar och historik finns kvar, så automationer, skript och instrumentpaneler fortsätter att fungera. Deras namn, kategorier och tillstånd följer nu det lokala värdet. Du kan ignorera det här meddelandet; det försvinner efter nästa omstart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteter tillhandahålls inte längre",
+      "description": "{count} molnentiteter tillhandahålls inte längre eftersom en annan entitet i den här integrationen visar samma värde via den lokala åtkomsten (gammal → ny): {entities}. Automationer, skript och instrumentpaneler som använder den gamla entiteten bör använda den nya. Ta bort den gamla entiteten när du inte längre behöver den; dess historik finns kvar tills dess. Du kan ignorera det här meddelandet; det visas igen vid nästa omstart så länge den gamla entiteten finns."
     }
   },
   "exceptions": {

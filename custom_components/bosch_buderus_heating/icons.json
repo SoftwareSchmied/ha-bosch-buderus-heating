@@ -39,6 +39,24 @@
       },
       "aircon_solar_operation": {
         "default": "mdi:solar-power"
+      },
+      "calculated_defrost_active": {
+        "default": "mdi:snowflake-melt",
+        "state": {
+          "off": "mdi:snowflake-off"
+        }
+      },
+      "primary_flow_below_range": {
+        "default": "mdi:water-alert",
+        "state": {
+          "off": "mdi:water-check"
+        }
+      },
+      "circuit_1_flow_below_range": {
+        "default": "mdi:water-alert",
+        "state": {
+          "off": "mdi:water-check"
+        }
       }
     },
     "button": {
@@ -75,6 +93,9 @@
     "event": {
       "system_notifications": {
         "default": "mdi:alert-circle-outline"
+      },
+      "calculated_defrost": {
+        "default": "mdi:snowflake-melt"
       }
     },
     "number": {
@@ -421,6 +442,9 @@
           "fan_only": "mdi:fan",
           "auto": "mdi:thermostat-auto"
         }
+      },
+      "calculated_last_defrost": {
+        "default": "mdi:snowflake-melt"
       }
     },
     "switch": {

@@ -142,7 +142,12 @@ def register_cloud_entity(coordinator, path) -> str:
     )
 
 
-async def test_a_cloud_resource_keeps_its_own_entity(hass: HomeAssistant) -> None:
+async def test_a_cloud_entity_of_a_reviewed_reading_continues_as_local_one(
+    hass: HomeAssistant,
+) -> None:
+    """The cloud was set up first: its entity in use becomes the local-only
+    entity of the reading under the same entity ID, as if the local access
+    had been there first (only the entity ID is the cloud's)."""
     cloud = Resource(
         COMPRESSOR,
         value=800.0,
@@ -152,9 +157,32 @@ async def test_a_cloud_resource_keeps_its_own_entity(hass: HomeAssistant) -> Non
     coordinator = coordinator_with(
         hass, [number(COMPRESSOR, 810.0, unit="W"), number(SETPOINT, 30.0)], cloud
     )
-    # An existing cloud entity that was never a local-only one stays.
-    register_cloud_entity(coordinator, COMPRESSOR)
+    entity_id = register_cloud_entity(coordinator, COMPRESSOR)
+    entities = by_path(track(coordinator))
+    assert set(entities) == {SETPOINT, COMPRESSOR}
+    item = er.async_get(hass).async_get(entity_id)
+    assert item.unique_id == local_only_unique_id("gateway-one", COMPRESSOR)
+    assert entities[COMPRESSOR].unique_id == item.unique_id
+    await coordinator.async_shutdown()
+
+
+async def test_a_cloud_resource_keeps_its_own_entity_with_another_unit(
+    hass: HomeAssistant,
+) -> None:
+    """Its statistics would not continue: the cloud entity stays as it is."""
+    cloud = Resource(
+        COMPRESSOR,
+        value=0.8,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="kW"),
+    )
+    coordinator = coordinator_with(
+        hass, [number(COMPRESSOR, 810.0, unit="W"), number(SETPOINT, 30.0)], cloud
+    )
+    entity_id = register_cloud_entity(coordinator, COMPRESSOR)
     assert set(by_path(track(coordinator))) == {SETPOINT}
+    item = er.async_get(hass).async_get(entity_id)
+    assert item.unique_id.endswith("compressor:powerElecActual")
     await coordinator.async_shutdown()
 
 
@@ -747,7 +775,7 @@ async def test_supply_fan_rotation_with_its_documented_unit_shows_no_value(
     await coordinator.async_shutdown()
 
 
-async def test_ventilation_reading_with_a_cloud_resource_keeps_the_cloud_entity(
+async def test_ventilation_reading_with_a_cloud_entity_continues_it(
     hass: HomeAssistant,
 ) -> None:
     supply = VENT + "/sensors/supplyTemp"
@@ -758,9 +786,12 @@ async def test_ventilation_reading_with_a_cloud_resource_keeps_the_cloud_entity(
         metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
     )
     coordinator = coordinator_with(hass, ventilation_readings(), cloud)
-    register_cloud_entity(coordinator, supply)
+    entity_id = register_cloud_entity(coordinator, supply)
     entities = by_path(track(coordinator))
-    assert supply not in entities
+    assert entities[supply].unique_id == local_only_unique_id("gateway-one", supply)
+    assert er.async_get(hass).async_get(entity_id).unique_id == (
+        entities[supply].unique_id
+    )
     assert VENT + "/sensors/exhaustTemp" in entities
     await coordinator.async_shutdown()
 

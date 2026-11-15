@@ -109,7 +109,10 @@ entry says how it was tested; most of it with automated tests only.
   installation.
 - **`used` and `available` flags** of the appliance now apply to all
   settings. Automated tests only.
-- **Icons per state** for many entities; icons you chose stay.
+- **Icons per state** for many entities; icons you chose stay. They now
+  come from the icon translations, so the state attribute `icon` of these
+  entities is gone; Home Assistant shows the same icons, but a template or
+  card that reads `icon` gets nothing.
 - **Names for local signals:** many signals of the local access that showed
   *Signal …* now have names in every language; `frost` of the heat demand
   shows as *Frost range*.
@@ -143,7 +146,15 @@ entry says how it was tested; most of it with automated tests only.
     by an automated upgrade test from 0.9.1.
   - Such an entity that an earlier version removed or handed over to the
     cloud's sensor comes back at the next start with its entity ID and
-    settings. Automated tests only (Home Assistant 2026.5 and 2026.11).
+    settings. A cloud entity of the same reading that is in use is never
+    removed: it continues as the local-only entity with its entity ID (also
+    a renamed one), settings and statistics, whichever was set up first, and
+    a repair notice names it. Automated tests only (Home Assistant 2026.5 and
+    2026.11).
+  - A local-only reading without a reviewed name that the cloud now offers
+    this way goes to the cloud's sensor as before: with the same unit and
+    state class it keeps its entity ID, otherwise the cloud adds an entity of
+    its own.
 - **Zone modes and setpoints missing on a large zone controller:** discovery
   now reads them first and wastes fewer requests on radio devices, so it
   finishes. Reported by petergoris-netizen in
@@ -167,6 +178,14 @@ entry says how it was tested; most of it with automated tests only.
   0.9.2-beta.1). Thank you to stalar for the report in
   [#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132).
   Automated tests only.
+- **Air conditioners on a PointT gateway set up with 0.9.1** lose the fault
+  and notification entities that version created for them as for a heating
+  system; they are no longer provided. Entities you renamed or placed stay.
+  Automated tests only.
+- **Local state signals keep the order of their states** between starts
+  (for example the gateway's eBUS status and the holiday states); the
+  gateway sends them in a changing order. After the update the order changes
+  once. Found in recordings of a real installation.
 
 ### Documentation
 

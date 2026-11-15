@@ -28,6 +28,12 @@ matched. A gateway that answers nothing is detected again in the next cycle.
 An air conditioner has no heating discovery, no local access and no
 inventory view while the cloud is unavailable.
 
+Up to 0.9.1 such a unit was set up like a heating system, with fault and
+notification entities and a few disabled readings. They are no longer
+provided and are removed at the first start of this version; one you named,
+placed in an area, labelled, hid or switched off stays (as no longer
+provided) until you remove it.
+
 ## Readings
 
 One bulk request every 60 seconds (120 seconds with the cloud-friendly

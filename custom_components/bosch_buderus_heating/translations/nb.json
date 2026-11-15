@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Oppsettet er ikke fullført",
       "description": "Oppføringen «{title}» har ingen tilgang ennå. Velg **Konfigurer** på den og deretter «Sett opp lokal tilgang» (eller koble til en skytilgang)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteter leser nå via den lokale tilgangen",
+      "description": "{count} entiteter i bruk viser nå verdien sin via den lokale tilgangen, med skyverdien som andre kilde: {entities}. Entitets-ID-ene, innstillingene og historikken deres beholdes, så automatiseringer, skript og dashbord fortsetter å virke. Navn, kategorier og tilstander følger nå den lokale verdien. Du kan ignorere denne meldingen; den forsvinner etter neste omstart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteter leveres ikke lenger",
+      "description": "{count} skyentiteter leveres ikke lenger fordi en annen entitet i denne integrasjonen viser samme verdi via den lokale tilgangen (gammel → ny): {entities}. Automatiseringer, skript og dashbord som bruker den gamle entiteten, bør bruke den nye. Fjern den gamle entiteten når du ikke lenger trenger den; historikken beholdes til da. Du kan ignorere denne meldingen; den vises igjen ved neste omstart så lenge den gamle entiteten finnes."
     }
   },
   "exceptions": {

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import TYPE_CHECKING, Final
 
 from .derived import power_kilowatts
@@ -325,6 +326,8 @@ class CounterReading:
     heat: float
     electricity: float
     origin: str
+    # When the collection was read; not part of the comparison.
+    observed_at: datetime | None = field(default=None, compare=False)
 
 
 def lifetime(
@@ -342,7 +345,7 @@ def lifetime(
             electricity = compressor + heater
     if reading is None or heat is None or electricity is None:
         return None
-    return CounterReading(heat, electricity, reading.origin)
+    return CounterReading(heat, electricity, reading.origin, reading.observed_at)
 
 
 def counter_possible(coordinator: BoschBuderusDataUpdateCoordinator, mode: str) -> bool:

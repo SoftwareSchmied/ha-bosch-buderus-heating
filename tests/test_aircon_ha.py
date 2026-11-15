@@ -517,3 +517,59 @@ async def test_standard_function_list_hides_an_unlisted_function(hass):
         "airConditioning:timers:on",
         "airConditioning:timers:off",
     ]
+
+
+async def test_what_091_left_of_an_air_conditioner_is_removed(hass):
+    """0.9.1 set the unit up like a heating system; its fault and
+    notification entities and disabled readings are no longer provided and
+    go, unless customised. The backend's own entries and those of other
+    gateways or integrations stay."""
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.bosch_buderus_heating.aircon_entity import (
+        remove_heating_leftovers,
+    )
+    from custom_components.bosch_buderus_heating.const import DOMAIN
+    from custom_components.bosch_buderus_heating.platform_scope import (
+        PlatformScope,
+    )
+
+    coordinator, _, _ = await make_coordinator(hass)
+    entry = coordinator.config_entry
+    registry = er.async_get(hass)
+
+    def add(domain, unique_id, platform=DOMAIN, **kwargs):
+        return registry.async_get_or_create(
+            domain, platform, unique_id, config_entry=entry, **kwargs
+        ).entity_id
+
+    disabled = er.RegistryEntryDisabler.INTEGRATION
+    leftovers = [
+        add("binary_sensor", f"{GATEWAY}:system_fault"),
+        add("event", f"{GATEWAY}:system_notifications"),
+        add("sensor", f"{GATEWAY}:active_faults"),
+        add("sensor", f"{GATEWAY}:active_notifications"),
+        add("sensor", f"{GATEWAY}:system:bus", disabled_by=disabled),
+        add("sensor", f"{GATEWAY}:system:appliance:model", disabled_by=disabled),
+        add("sensor", f"{GATEWAY}:pv:enable", disabled_by=disabled),
+    ]
+    kept = [
+        add("climate", f"{GATEWAY}:airConditioning:climate"),
+        add("switch", f"{GATEWAY}:airConditioning:sleepMode", disabled_by=disabled),
+        add("binary_sensor", f"{GATEWAY}:pv:enable", disabled_by=disabled),
+        add("sensor", "other-gateway:active_faults"),
+        add("sensor", f"{GATEWAY}:active_faults", platform="other_integration"),
+        add("sensor", f"{entry.entry_id}:request_metrics:total"),
+    ]
+    customised = add("binary_sensor", f"{GATEWAY}:cloud_control")
+    registry.async_update_entity(customised, name="Mine")
+    scope = PlatformScope("", lambda _: None, aircons=(coordinator,))
+    remove_heating_leftovers(scope)
+    for entity_id in leftovers:
+        assert registry.async_get(entity_id) is None, entity_id
+    for entity_id in (*kept, customised):
+        assert registry.async_get(entity_id) is not None, entity_id
+    # Repeating it changes nothing.
+    before = set(registry.entities)
+    remove_heating_leftovers(scope)
+    assert set(registry.entities) == before

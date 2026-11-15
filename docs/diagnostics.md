@@ -16,8 +16,11 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
 - `gateways[].local_only_healed`: local-only entities given back at a start
   since Home Assistant started, as counts: `restored` (an entry an earlier
   version removed), `taken_back` (an entry an earlier version handed over to
-  the cloud's sensor) and `cloud_entries_removed` (the cloud entries left
-  over). See [entities](entities.md).
+  the cloud's sensor), `continued` (a cloud entity in use that continues as
+  the local-only entity under its entity ID), `cloud_entries_removed` (cloud
+  entries the integration had created disabled) and `cloud_entries_kept`
+  (cloud entities in use left next to a registered local-only entity at the
+  last start). See [entities](entities.md).
 - `heat_source_type`, `heat_source_type_evidence` and `unnamed_modules` in
   `gateways[].heat_generator`: the heat source type (`air`, `brine` or
   `water`), the paths or signals it comes from (`reported_defrost` for a

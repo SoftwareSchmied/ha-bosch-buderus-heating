@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Konfiguracja nie została zakończona",
       "description": "Wpis „{title}” nie ma jeszcze żadnego dostępu. Wybierz przy nim **Konfiguruj**, a następnie „Skonfiguruj dostęp lokalny” (albo połącz dostęp przez chmurę)."
+    },
+    "local_only_entities_continued": {
+      "title": "Encje odczytują teraz przez dostęp lokalny",
+      "description": "{count} używanych encji pokazuje teraz swoją wartość przez dostęp lokalny, a wartość z chmury jest drugim źródłem: {entities}. Ich identyfikatory encji, ustawienia i historia pozostają, więc automatyzacje, skrypty i pulpity działają dalej. Ich nazwy, kategorie i stany wynikają teraz z wartości lokalnej. Możesz zignorować to powiadomienie; zniknie po następnym ponownym uruchomieniu."
+    },
+    "local_only_entities_kept": {
+      "title": "Encje nie są już udostępniane",
+      "description": "{count} encji z chmury nie jest już udostępnianych, ponieważ inna encja tej integracji pokazuje tę samą wartość przez dostęp lokalny (stara → nowa): {entities}. Automatyzacje, skrypty i pulpity, które używają starej encji, powinny używać nowej. Usuń starą encję, gdy nie będzie już potrzebna; jej historia pozostaje do tego czasu. Możesz zignorować to powiadomienie; pojawi się ponownie przy następnym ponownym uruchomieniu, dopóki stara encja istnieje."
     }
   },
   "exceptions": {

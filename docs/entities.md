@@ -619,11 +619,17 @@ The read-only schedule-type sensor recognizes all three known modes: `level`
 is shown as **Temperature level**, `levels` as
 **Temperature Levels**, and `absolute` as **Freely Adjustable Temperatures**.
 The latter means that each schedule period can use an independently chosen
-temperature. Schedule editing itself remains outside the current Home
-Assistant controls.
+temperature. The switch points of a program are changed under **Configure**
+(time programs) or with the action `set_switch_points` on its time-program
+sensor; see [heating controls](heating-controls.md). Changing hot water
+program A was confirmed on a real installation; the other programs are
+expected, untested.
 
-The read-only time-program sensors show the level scheduled by program A (or B)
-for the current local time. They are disabled by default. Their attributes list
+The time-program sensors show the level scheduled by program A (or B) for the
+current local time. Since 0.9.2-beta.2 a sensor is enabled when the gateway
+reports its program writable at its first registration, so the dialog and the
+action have a target; a read-only program's sensor is disabled by default, and
+an existing entry keeps its enablement. Their attributes list
 the switch points per weekday as local wall-clock times (`HH:MM level`), the
 total and per-day limits and the time raster reported by the device. These
 calculated values do not confirm which program is selected or whether manual
@@ -818,15 +824,27 @@ source: for a reading both accesses report identically, the setting **Use local
 values for existing entities** decides as for every such reading (with it off
 the cloud value is shown, the local one while there is no current cloud value);
 any other reading shows its local value first and the cloud's only while there
-is none. The attribute `source` names the access shown. A reviewed reading the
-cloud offers before it ever had an entity also gets its local-only entity, as
-long as a local access is set up and switched on; a cloud entity such a reading
-already has stays. If an earlier version removed such a local-only entity or
-handed it over to the cloud's sensor, the next start gives it back: the
-removed entity returns with its entity ID and settings, a handed-over one keeps
-its entity ID and settings and gets its reviewed name and states again, and the
-cloud entry left over is removed unless you changed its name, icon, area,
-labels, visibility or enablement. For other local-only
+is none. The attribute `source` names the access shown. While a local access
+is set up, a reviewed reading ends up with its local-only entity, whichever was
+set up first: a reading new to the entry gets it while the local access is
+switched on. A cloud entity such a reading already has is never removed while
+it is in use (enabled, switched off by you, or with your name, icon, area or
+labels). At the next start it continues as the local-only entity with its
+entity ID (also one you changed), settings and statistics, so automations,
+scripts and dashboards keep working; its name, category and states become the
+reviewed ones, and a repair notice names it. This needs the same native unit,
+the same state class if it had one, and a local-only entity that can be added
+now (a current local reading, or a reading with a fixed form); otherwise the
+cloud entity stays as it is. A cloud entity the integration created disabled
+is removed instead, and the local-only entity is added. If an earlier version
+removed a local-only entity, it returns with its entity ID and settings,
+unless a cloud entity of the same reading is in use (that one continues, as
+above). One an earlier version handed over to the cloud's sensor keeps its
+entity ID and settings and gets its reviewed name and states again (with the
+same native unit and state class; otherwise it stays the cloud's). Next to a
+registered local-only entity, a cloud entity of the same reading that is in
+use is not removed either: it is no longer provided, and a repair notice names
+it together with the entity that shows the reading now. For other local-only
 sensors the cloud entity takes over. When the cloud's
 sensors are set up (at a start, a reload or when a system joins its cloud),
 before any of them is added, the local-only entity continues as the cloud's

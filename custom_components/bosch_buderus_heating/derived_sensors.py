@@ -9,7 +9,8 @@ readings the integration reads anyway (``derived_inputs``).
   heat pump defrosts (the heat taken back from the water). The net counter
   holds during such a dip and counts again only above the highest reading
   so far, so it is a ``total_increasing`` counter. A drop of more than
-  ``RESET_DROP_KWH`` is a replaced or reset counter: the net counter keeps
+  ``RESET_DROP_KWH`` is a replaced or reset counter once a later reading
+  confirms it (a single low reading counts nothing): the net counter keeps
   its total and continues from the new reading. Saved like the estimated
   energy, never lower after a restart. Disabled by default.
 * Average run time per start in heating: the heating operating hours
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from datetime import datetime
 from decimal import Decimal
 from functools import partial
 from math import isfinite
@@ -44,6 +46,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import derived_defrost
+from .counter_drop import DropHold
 from .derived_activity import (
     ACTIVITIES,
     CIRCUIT,
@@ -332,6 +335,9 @@ class NetHeatCounterSensor(_CalculatedSensor):
         self._reference: float | None = None
         self._origin: str | None = None
         self._ready = False
+        # A single reading far below the highest one waits for a second.
+        self._drops = DropHold()
+        self._held: float | None = None
 
     @property
     def available(self) -> bool:
@@ -385,21 +391,32 @@ class NetHeatCounterSensor(_CalculatedSensor):
         if value is None or reading is None:
             return None, None
         self._origin = reading.origin
-        self._count(value)
+        self._count(value, reading.observed_at)
         return None, None
 
-    def _count(self, value: float) -> None:
+    def _count(self, value: float, observed_at: datetime | None = None) -> None:
         total, reference = self._total, self._reference
         if total is None or reference is None:
             # The first reading: the counter starts at the device's value,
             # or continues a restored total from this reading on.
             total = value if total is None else total
             reference = value
+        elif self._drops.held("reset", value < reference - RESET_DROP_KWH, observed_at):
+            # A single low reading (an outlier) counts nothing.
+            if self._held is None:
+                self._held = value
+            return
+        elif value < reference - RESET_DROP_KWH:
+            # Confirmed by a later reading: a replaced or reset counter,
+            # counted on from its first reading.
+            start = self._held if self._held is not None else value
+            total += max(0.0, value - start)
+            reference = max(value, start)
         elif value > reference:
             total += value - reference
             reference = value
-        elif value < reference - RESET_DROP_KWH:
-            reference = value  # a replaced or reset counter
+        if value >= reference - RESET_DROP_KWH:
+            self._held = None
         if (total, reference) != (self._total, self._reference):
             self._total, self._reference = total, reference
             self._store.set(

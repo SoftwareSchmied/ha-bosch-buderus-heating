@@ -146,13 +146,18 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                 # The controller's program name, as in the zone's program
                 # select; the number without one. Shown as plain text in
                 # the dialog descriptions (markdown_literal there).
-                # The name alone; its number only without a name or when
-                # another program has the same one.
+                # The name alone; its number (as "Schedule 3") only without
+                # a name or when another program has the same one.
                 name = names.get(int(match[1]))
+                numbered = name_part(
+                    self.hass.config.language,
+                    "name_part_program_aircon",
+                    number=match[1],
+                )
                 if not name:
-                    label = f"#{match[1]}"
+                    label = numbered
                 elif list(names.values()).count(name) > 1:
-                    label = f"{name} (#{match[1]})"
+                    label = f"{name} ({numbered})"
                 else:
                     label = name
                 if len(coordinators) > 1:

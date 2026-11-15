@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING
 
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -35,6 +37,8 @@ from .writes import (
 
 if TYPE_CHECKING:
     from .platform_scope import PlatformScope
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def option_key(token: str) -> str:
@@ -183,3 +187,48 @@ def track_aircon_entities(
 
         scope.async_on_unload(coordinator.async_add_listener(discover))
         discover()
+
+
+def _aircon_entry(domain: str, key: str) -> bool:
+    """An entry this backend gives its entities (``<gateway>:<key>``)."""
+    return key.startswith("airConditioning:") or (
+        key == "pv:enable" and domain == "binary_sensor"
+    )
+
+
+@callback
+def remove_heating_leftovers(scope: PlatformScope) -> None:
+    """Remove what 0.9.1 left of an air conditioner on a PointT gateway.
+
+    That version set the unit up like a heating system: its faults,
+    notifications and a few disabled readings are no longer provided. Their
+    entries are removed once the air conditioner backend runs, unless the
+    user customised them (the same rule as for a removed gateway); entries
+    of other gateways are never touched.
+    """
+    from . import _user_customised
+
+    removed = 0
+    for coordinator in scope.aircons:
+        entry = coordinator.config_entry
+        if entry is None:
+            continue
+        registry = er.async_get(coordinator.hass)
+        for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+            gateway, separator, key = entity.unique_id.partition(":")
+            if (
+                not separator
+                or entity.platform != DOMAIN
+                or gateway != coordinator.gateway.gateway_id
+                or _aircon_entry(entity.domain, key)
+                or _user_customised(entity)
+            ):
+                continue
+            registry.async_remove(entity.entity_id)
+            removed += 1
+    if removed:
+        _LOGGER.info(
+            "Removed %d entities an earlier version created for an air "
+            "conditioner as for a heating system",
+            removed,
+        )

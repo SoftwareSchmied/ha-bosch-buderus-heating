@@ -3967,6 +3967,13 @@ class BoschBuderusDataUpdateCoordinator(
         recovery = self.discovery_recovery
         now_monotonic = monotonic()
         budget = MAX_DISCOVERY_RESOURCES - len(self.resources)
+        if (
+            len(self.resources) > MAX_DISCOVERY_RESOURCES
+            or self.discovery_diagnostics.extra_probes_requested > 0
+        ):
+            # The start read beyond the shared budget with its allowance
+            # (#131): the search for the missing parts has the same bound.
+            budget += MAX_EXTRA_PROBES
         if budget <= 0:
             self._give_up_recovery("resource_limit")
             return

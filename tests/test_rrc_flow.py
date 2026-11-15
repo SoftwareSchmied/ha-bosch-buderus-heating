@@ -275,8 +275,13 @@ async def test_the_program_dialog_shows_the_controller_program_names(hass, envir
     markup = "![](https://t.invalid/p)"
     listed = program_list(value=[{"id": 3, "name": markup}, {"id": 7, "name": "Bad"}])
     saved = coordinator.data.pop(listed.path)
-    # Without a program list: the number.
-    assert {choice.label for choice in flow._rrc_choices().values()} == {"#3"}
+    # Without a program list: the number, as a translated name.
+    assert {choice.label for choice in flow._rrc_choices().values()} == {"Schedule 3"}
+    hass.config.language = "de"
+    assert {choice.label for choice in flow._rrc_choices().values()} == {
+        "Zeitprogramm 3"
+    }
+    hass.config.language = "en"
     coordinator.data[listed.path] = replace(saved, resource=listed)
     (choice,) = flow._rrc_choices().values()
     assert choice.label == markup
@@ -284,3 +289,8 @@ async def test_the_program_dialog_shows_the_controller_program_names(hass, envir
     shown = week["description_placeholders"]["program"]
     assert _rendered(shown) == markup
     assert "![" not in _strip(shown) and "://" not in _strip(shown)
+    # Two programs with the same name: the number tells them apart.
+    same = program_list(value=[{"id": 3, "name": "Same"}, {"id": 7, "name": "Same"}])
+    coordinator.data[listed.path] = replace(saved, resource=same)
+    (choice,) = flow._rrc_choices().values()
+    assert choice.label == "Same (Schedule 3)"

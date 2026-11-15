@@ -1403,6 +1403,14 @@
     "setup_unfinished": {
       "title": "Configuration non terminée",
       "description": "L'entrée « {title} » n'a pas encore d'accès. Sélectionnez **Configurer** sur celle-ci, puis « Configurer l'accès local » (ou connectez un accès cloud)."
+    },
+    "local_only_entities_continued": {
+      "title": "Les entités lisent désormais via l'accès local",
+      "description": "{count} entités utilisées affichent désormais leur valeur via l'accès local, la valeur du cloud servant de seconde source : {entities}. Leurs identifiants d'entité, réglages et historique sont conservés, donc les automatisations, scripts et tableaux de bord continuent de fonctionner. Leurs noms, catégories et états suivent désormais la valeur locale. Vous pouvez ignorer cet avis ; il disparaît après le prochain redémarrage."
+    },
+    "local_only_entities_kept": {
+      "title": "Entités qui ne sont plus fournies",
+      "description": "{count} entités du cloud ne sont plus fournies, car une autre entité de cette intégration affiche la même valeur via l'accès local (ancienne → nouvelle) : {entities}. Les automatisations, scripts et tableaux de bord qui utilisent l'ancienne entité devraient utiliser la nouvelle. Supprimez l'ancienne entité lorsque vous n'en avez plus besoin ; son historique est conservé jusque-là. Vous pouvez ignorer cet avis ; il réapparaît au prochain redémarrage tant que l'ancienne entité existe."
     }
   },
   "exceptions": {

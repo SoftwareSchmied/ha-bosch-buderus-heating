@@ -97,6 +97,11 @@ HEATER_POWER: Final = "/heatSources/eHeater/powerElecActual"
 # end of the defrost) that is still bridged; the local access reads them
 # about every minute.
 MAX_POWER_GAP: Final = timedelta(seconds=150)
+# Far more than one defrost takes or uses: a counter reading further from
+# its start is an outlier (for example a collection read as 0), not part of
+# the defrost (the shown counters hold such a reading the same way).
+MAX_HEAT_WITHDRAWN_KWH: Final = 3.0
+MAX_ELECTRICITY_KWH: Final = 2.0
 AIR_INLET: Final = "/heatSources/sensors/evaporatorTemp_tl2"
 STAGE_HEATING: Final = "heating"
 STAGE_HOT_WATER: Final = "dhw"
@@ -256,19 +261,30 @@ class DefrostMonitor:
         reading = defrost_state(self._coordinator)
         active = reading.active if reading is not None else None
         observed = reading.source.observed_at or now if reading is not None else now
-        # The source's path and origin are attributes (``derived_from``): a
-        # change of either is written like a change of the state, so the
-        # entity never names another origin than the diagnostics.
-        changed = active != self.active or (
+        if (
             reading is not None
-            and (
-                self.source is None
-                or reading.source.path != self.source.path
-                or reading.source.origin != self.source.origin
+            and self._last_known_at is not None
+            and observed < self._last_known_at
+        ):
+            # Older than the reading used last (the source fell back to a
+            # reading taken before, for example the cloud's while the local
+            # access drops out): like a missing reading it neither ends nor
+            # starts a defrost, and the shown state stays.
+            reading, active, observed, changed = None, None, now, False
+        else:
+            # The source's path and origin are attributes (``derived_from``):
+            # a change of either is written like a change of the state, so
+            # the entity never names another origin than the diagnostics.
+            changed = active != self.active or (
+                reading is not None
+                and (
+                    self.source is None
+                    or reading.source.path != self.source.path
+                    or reading.source.origin != self.source.origin
+                )
             )
-        )
-        self.active = active
-        self.source = reading.source if reading is not None else None
+            self.active = active
+            self.source = reading.source if reading is not None else None
         current = self._current
         if current is not None and current.ended_at is not None:
             self._follow_heat(current)
@@ -376,6 +392,8 @@ class DefrostMonitor:
             value = energy_part(reading, PRODUCED)
             if value is None or reading is None:
                 continue
+            if value < current.heat_start[path] - MAX_HEAT_WITHDRAWN_KWH:
+                continue  # an outlier, not the defrost's dip
             lowest = current.heat_min[path]
             if value < lowest:
                 current.heat_min[path] = value
@@ -426,16 +444,15 @@ class DefrostMonitor:
             else None
         )
         end = current.electricity_end or {}
-        common = set(current.electricity_start) & set(end)
+        parts = [
+            end[key] - current.electricity_start[key]
+            for key in set(current.electricity_start) & set(end)
+        ]
+        # A counter reading further off is an outlier at the start or end:
+        # then the defrost's electricity is unknown.
         electricity = (
-            round(
-                sum(
-                    max(0.0, end[key] - current.electricity_start[key])
-                    for key in common
-                ),
-                2,
-            )
-            if common
+            round(sum(max(0.0, part) for part in parts), 2)
+            if parts and all(-0.01 <= part <= MAX_ELECTRICITY_KWH for part in parts)
             else None
         )
         attributes: dict[str, Any] = {
