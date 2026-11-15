@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "family": "pointt_wallbox_cp0_control",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "app_model_classes",
+    "sources": {
+      "objects": "TelemetryValues, WallboxConfigurationValue, WallboxInformationValue",
+      "single_values": "StringValue, FloatValue, IntegerValue, TypedList, WallboxExternalMeter",
+      "commands": "WallboxCommandModel, WallboxLimitCommandModel"
+    },
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "physical_device_verified": false,
+    "redaction": "Fully constructed from the vendor app's model classes; no device capture."
+  },
+  "telemetry": {
+    "values": {
+      "wbState": "Preparing",
+      "meter": "1250;0.0",
+      "limit": "16",
+      "limiter": "none",
+      "activeChargingTime": 0,
+      "chargingStart": "2026-11-15T09:00:00+01:00",
+      "energymanager": "none",
+      "emStatus": "inactive",
+      "chargePermission": "unreviewed"
+    }
+  },
+  "conf": {
+    "values": {
+      "wallboxMode": "standalone",
+      "chargingStrategy": "default",
+      "locked": "off",
+      "auth": "off",
+      "label": "private-label",
+      "light": "on"
+    }
+  },
+  "info": {
+    "values": {
+      "productName": "Synthetic wallbox",
+      "softwareVersion": "5.1.0",
+      "hwCurrentLimit": "16",
+      "boxSerial": "private-serial",
+      "extmeterSerial": "private-meter-serial",
+      "paragraph14aConfigured": "off",
+      "paragraph14aActive": "off",
+      "relaisAvailable": "on"
+    }
+  },
+  "leaves": {
+    "telemetry/extmeterState": {"id": "/rest/v1/cp0/telemetry/extmeterState", "type": "stringValue", "writeable": 0, "value": "CONNECTED"},
+    "telemetry/forceActive": {"id": "/rest/v1/cp0/telemetry/forceActive", "type": "stringValue", "writeable": 0, "value": "off"},
+    "telemetry/extInputState": {"id": "/rest/v1/cp0/telemetry/extInputState", "type": "stringValue", "writeable": 0, "value": "off"},
+    "info/extmeterCurrentMaximum": {"id": "/rest/v1/cp0/info/extmeterCurrentMaximum", "type": "floatValue", "writeable": 0, "value": 63.0},
+    "info/brand": {"id": "/rest/v1/cp0/info/brand", "type": "stringValue", "writeable": 0, "value": "Synthetic brand"},
+    "conf/chargingStrategy": {"id": "/rest/v1/cp0/conf/chargingStrategy", "type": "stringValue", "writeable": 1, "value": "default"},
+    "conf/locked": {"id": "/rest/v1/cp0/conf/locked", "type": "stringValue", "writeable": 1, "value": "off"},
+    "conf/label": {"id": "/rest/v1/cp0/conf/label", "type": "stringValue", "writeable": 1, "value": "private-label"},
+    "conf/currency": {"id": "/rest/v1/cp0/conf/currency", "type": "stringValue", "writeable": 1, "value": "EUR"},
+    "conf/price": {"id": "/rest/v1/cp0/conf/price", "type": "floatValue", "writeable": 1, "value": 0.3},
+    "conf/feedinPrice": {"id": "/rest/v1/cp0/conf/feedinPrice", "type": "floatValue", "writeable": 1, "value": 0.08},
+    "conf/solarSurplus/supplementEnable": {"id": "/rest/v1/cp0/conf/solarSurplus/supplementEnable", "type": "stringValue", "writeable": 1, "value": "off"},
+    "conf/solarSurplus/supplementLimit": {"id": "/rest/v1/cp0/conf/solarSurplus/supplementLimit", "type": "floatValue", "writeable": 1, "value": 1000.0},
+    "conf/solarSurplus/supplementThreshold": {"id": "/rest/v1/cp0/conf/solarSurplus/supplementThreshold", "type": "floatValue", "writeable": 1, "value": 1400.0},
+    "conf/strategy/powerOffset": {"id": "/rest/v1/cp0/conf/strategy/powerOffset", "type": "floatValue", "writeable": 1, "value": 0.0},
+    "conf/strategy/filterTime": {"id": "/rest/v1/cp0/conf/strategy/filterTime", "type": "integerValue", "writeable": 1, "value": 180},
+    "conf/overloadProtection/currentLimiter": {"id": "/rest/v1/cp0/conf/overloadProtection/currentLimiter", "type": "stringValue", "writeable": 1, "value": "off"},
+    "conf/overloadProtection/currentLimit": {"id": "/rest/v1/cp0/conf/overloadProtection/currentLimit", "type": "arrayData", "writeable": 1, "value": [32.0, 32.0, 32.0]},
+    "conf/overloadProtection/powerLimiter": {"id": "/rest/v1/cp0/conf/overloadProtection/powerLimiter", "type": "stringValue", "writeable": 1, "value": "off"},
+    "conf/overloadProtection/powerLimit": {"id": "/rest/v1/cp0/conf/overloadProtection/powerLimit", "type": "floatValue", "writeable": 1, "value": 11000.0}
+  }
+}

@@ -153,7 +153,8 @@ async def test_actual_wallbox_http_and_native_sensors_share_heating_account(
             assert entities["energy"].state_class is None
             before = len(backend.calls)
             report = wallbox.diagnostics()
-            assert not report["write_support"]
+            assert report["write_support"]
+            assert report["values"]["known"] == []
             assert len(backend.calls) == before
             assert all(
                 text not in json.dumps(report)
