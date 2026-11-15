@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Převzatý záznam systému zůstává ve statistice",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Smazat převzatou statistiku",
+            "description": "Odstraněný záznam převzal {count} statistik ze záznamu systému; Home Assistant si je ponechává. Zvolte **Odeslat**, chcete-li je smazat; tuto akci nelze vrátit. Chcete-li je ponechat, zvolte **Ignorovat**. Toto upozornění po dalším restartu zmizí."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Převzaté statistiky již neexistují. Nic nebylo smazáno."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Soustavy nenalezené v cloudovém účtu",
       "description": "Při posledním přihlášení cloudového přístupu v „{title}“ nebyly nalezeny zapnuté soustavy nebo zařízení (počet: {count}; končící na {systems}). Zůstávají nakonfigurovány a nedostupné, dokud se v účtu znovu neobjeví; poté toto oznámení zmizí.\n\nPokud byly z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup, vypněte je u položky **Použít pro soustavy a zařízení** a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Jejich zařízení a entity zůstávají v Home Assistantu, dokud je neodstraníte. Pokud byla brána vyměněna, ponechte ji zapnutou: samostatné oznámení o opravě nabídne pokračování soustavy i s historií."

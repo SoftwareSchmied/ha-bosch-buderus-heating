@@ -124,6 +124,10 @@ of the month.
   statistics of the entry and switches the import off. Removing the entry
   keeps the imported statistics, as Home Assistant does for every
   statistic; the integration's own record of the recordings is removed.
+  Right after the removal, a repair under **Settings → System → Repairs**
+  offers to delete them (until the next restart of Home Assistant). Later,
+  set up the gateway again and delete them in the options; a new entry for
+  the same gateway uses the same statistics.
 - Values the plant no longer has (after a reset or a new controller) stay
   imported.
 

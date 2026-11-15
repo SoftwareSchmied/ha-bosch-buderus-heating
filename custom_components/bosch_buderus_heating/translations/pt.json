@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Os registos importados permanecem nas estatísticas",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Eliminar as estatísticas importadas",
+            "description": "A entrada removida importou {count} estatísticas dos registos da instalação; o Home Assistant mantém-nas. Selecione **Submeter** para as eliminar; não é possível anular. Para as manter, selecione **Ignorar**. Este aviso desaparece após o próximo reinício."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "As estatísticas importadas já não existem. Nada foi eliminado."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Instalações não encontradas na conta da cloud",
       "description": "O último início de sessão do acesso à cloud em \"{title}\" não encontrou {count} instalações ou dispositivos ativados (terminados em {systems}). Permanecem configurados e indisponíveis até voltarem a aparecer na conta; esta nota desaparece então.\n\nSe foram removidos da conta, abra Configurar → Ligações → o acesso à cloud, desative-os em **Utilizar para instalações e dispositivos** e remova-os com **Esquecer instalações desselecionadas**. Os respetivos dispositivos e entidades permanecem no Home Assistant até os eliminar. Se um gateway foi substituído, mantenha-o ativado: uma nota de reparação separada oferece a possibilidade de continuar a instalação com o seu histórico."

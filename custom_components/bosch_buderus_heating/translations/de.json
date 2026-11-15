@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Übernommene Anlagenaufzeichnung bleibt in der Statistik",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Übernommene Statistik löschen",
+            "description": "Der entfernte Eintrag hat {count} Statistiken aus der Anlagenaufzeichnung übernommen; Home Assistant behält sie. Wähle **OK**, um sie zu löschen; das lässt sich nicht rückgängig machen. Um sie zu behalten, wähle **Ignorieren**. Dieser Hinweis verschwindet nach dem nächsten Neustart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Die übernommenen Statistiken gibt es nicht mehr. Es wurde nichts gelöscht."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anlagen im Cloud-Konto nicht gefunden",
       "description": "Die letzte Anmeldung des Cloud-Zugangs in „{title}“ hat {count} eingeschaltete Anlagen oder Geräte nicht gefunden (endend auf {systems}). Sie bleiben eingerichtet und nicht verfügbar, bis sie wieder im Konto erscheinen; dieser Hinweis verschwindet dann.\n\nWurden sie aus dem Konto entfernt, öffne Konfigurieren → Verbindungen → den Cloud-Zugang, schalte sie unter **Verwendung für Anlagen und Geräte** aus und vergiss sie mit **Abgewählte Anlagen vergessen**. Ihre Geräte und Entitäten bleiben in Home Assistant, bis du sie löschst. Wurde ein Gateway getauscht, lass es eingeschaltet: Ein eigener Reparaturhinweis bietet dann an, die Anlage mit ihrem Verlauf weiterzuführen."

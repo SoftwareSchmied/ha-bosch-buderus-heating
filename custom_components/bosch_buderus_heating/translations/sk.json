@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Prevzatý záznam systému zostáva v štatistike",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Vymazať prevzatú štatistiku",
+            "description": "Odstránený záznam prevzal {count} štatistík zo záznamu systému; Home Assistant si ich ponecháva. Zvoľte **Odoslať**, ak ich chcete vymazať; túto akciu nemožno vrátiť. Ak si ich chcete ponechať, zvoľte **Ignorovať**. Toto upozornenie po najbližšom reštarte zmizne."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Prevzaté štatistiky už neexistujú. Nič nebolo vymazané."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Systémy sa v cloudovom účte nenašli",
       "description": "Posledné prihlásenie cloudového prístupu v „{title}“ nenašlo zapnuté systémy alebo zariadenia (končiace na {systems}). Počet: {count}. Zostávajú nakonfigurované a nedostupné, kým sa v účte opäť neobjavia; potom toto upozornenie zmizne.\n\nAk boli z účtu odstránené, otvorte Konfigurovať → Pripojenia → cloudový prístup, vypnite ich pod **Použiť pre systémy a zariadenia** a odstráňte ich pomocou **Zabudnúť zrušené systémy**. Ich zariadenia a entity zostávajú v Home Assistant, kým ich neodstránite. Ak sa brána vymenila, ponechajte ju zapnutú: samostatné upozornenie na opravu ponúka pokračovanie systému s jeho históriou."

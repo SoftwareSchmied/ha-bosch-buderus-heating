@@ -40,6 +40,7 @@ from weakref import WeakSet
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later, async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -79,6 +80,8 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 OPTION_IMPORT: Final = "recordings_import"
+# The repair offered after an entry with imported statistics was removed.
+ISSUE_PREFIX: Final = "recordings_statistics_"
 STORE_VERSION: Final = 1
 START_DELAY: Final = 90.0
 RUN_MINUTE: Final = 20
@@ -122,6 +125,10 @@ def statistic_id(digest: str, series: Series) -> str:
 
 def store_key(entry_id: str, digest: str) -> str:
     return f"{DOMAIN}.recordings.{entry_id}.{digest}"
+
+
+def statistics_issue_id(digest: str) -> str:
+    return f"{ISSUE_PREFIX}{digest[:12]}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -214,6 +221,8 @@ class RecordingsManager:
 
     async def async_start(self, *, schedule: bool = True) -> None:
         self.digest = await async_gateway_digest(self.hass, self.gateway_id)
+        # The gateway is back: the options delete its statistics again.
+        ir.async_delete_issue(self.hass, DOMAIN, statistics_issue_id(self.digest))
         self._store = Store[dict[str, Any]](
             self.hass,
             STORE_VERSION,
@@ -1163,11 +1172,50 @@ def _earlier_import(
     return (float(total) if isinstance(total, int | float) else 0.0), existing, True
 
 
+async def async_imported_statistics(hass: HomeAssistant, digest: str) -> list[str]:
+    """The imported statistics of a gateway that the recorder has."""
+    from homeassistant.components.recorder.statistics import (
+        async_list_statistic_ids,
+    )
+
+    known = {statistic_id(digest, series) for series in SERIES}
+    listed = await async_list_statistic_ids(hass)
+    return sorted(
+        str(item["statistic_id"])
+        for item in listed
+        if item.get("statistic_id") in known
+    )
+
+
+async def async_offer_statistics_removal(hass: HomeAssistant, gateway_id: str) -> None:
+    """After the last entry of a gateway was removed: offer to delete its
+    imported statistics (a repair, until the next restart), as the options
+    that delete them are gone with the entry."""
+    if "recorder" not in hass.config.components:
+        return
+    digest = await async_gateway_digest(hass, gateway_id)
+    found = await async_imported_statistics(hass, digest)
+    if not found:
+        return
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        statistics_issue_id(digest),
+        is_fixable=True,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="recordings_statistics_left",
+        translation_placeholders={"count": str(len(found))},
+        data={"digest": digest},
+    )
+
+
 async def async_remove_recordings_store(
     hass: HomeAssistant, entry_id: str, gateway_id: str
 ) -> None:
     """Delete the stored recordings of a removed entry's gateway. Imported
-    statistics stay, as Home Assistant keeps them (options: delete)."""
+    statistics stay, as Home Assistant keeps them (options: delete; after
+    the removal a repair offers it)."""
     digest = await async_gateway_digest(hass, gateway_id)
     await Store[dict[str, Any]](
         hass, STORE_VERSION, store_key(entry_id, digest), private=True

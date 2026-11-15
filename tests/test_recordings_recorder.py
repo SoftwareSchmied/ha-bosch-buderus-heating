@@ -515,6 +515,114 @@ async def test_deleting_right_after_the_setup_finds_the_statistics(
     assert heat not in await _rows(hass, heat)
 
 
+async def test_a_removed_entry_offers_to_delete_its_statistics(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    hass: HomeAssistant,
+) -> None:
+    """After the entry is gone its options are gone too: a repair (until the
+    next restart) deletes the gateway's imported statistics on request."""
+    from homeassistant.components.recorder.models import (
+        StatisticData,
+        StatisticMeanType,
+        StatisticMetaData,
+    )
+    from homeassistant.components.recorder.statistics import (
+        async_add_external_statistics,
+    )
+    from homeassistant.data_entry_flow import FlowResultType
+    from homeassistant.helpers import issue_registry as ir
+
+    from custom_components.bosch_buderus_heating.recordings.manager import (
+        async_offer_statistics_removal,
+        statistics_issue_id,
+    )
+    from custom_components.bosch_buderus_heating.repairs import (
+        InvalidRepairFlow,
+        RecordingsStatisticsRepairFlow,
+        async_create_fix_flow,
+    )
+    from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
+        async_gateway_digest,
+    )
+
+    digest = await async_gateway_digest(hass, GW)
+    issue_id = statistics_issue_id(digest)
+    registry = ir.async_get(hass)
+    await async_offer_statistics_removal(hass, GW)
+    assert registry.async_get_issue(DOMAIN, issue_id) is None  # nothing imported
+    heat = statistic_id(digest, BY_KEY["total_heat"])
+    async_add_external_statistics(
+        hass,
+        StatisticMetaData(
+            mean_type=StatisticMeanType.NONE,
+            has_sum=True,
+            name="earlier",
+            source=DOMAIN,
+            statistic_id=heat,
+            unit_class="energy",
+            unit_of_measurement="kWh",
+        ),
+        [StatisticData(start=local(2026, 11, 1).astimezone(UTC), sum=1.0)],
+    )
+    await _rows(hass, heat)
+    await async_offer_statistics_removal(hass, GW)
+    issue = registry.async_get_issue(DOMAIN, issue_id)
+    assert issue is not None and issue.is_fixable and not issue.is_persistent
+    assert issue.translation_placeholders == {"count": "1"}
+    assert GW not in json.dumps(issue.data)
+    assert isinstance(
+        await async_create_fix_flow(hass, issue_id, {"digest": "0" * 16}),
+        InvalidRepairFlow,
+    )
+    flow = await async_create_fix_flow(hass, issue_id, issue.data)
+    assert isinstance(flow, RecordingsStatisticsRepairFlow)
+    flow.hass = hass
+    result = await flow.async_step_init()
+    assert result["type"] is FlowResultType.FORM
+    assert result["description_placeholders"] == {"count": "1"}
+    assert heat in await _rows(hass, heat)  # nothing before the confirmation
+    result = await flow.async_step_confirm({})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert heat not in await _rows(hass, heat)
+    assert registry.async_get_issue(DOMAIN, issue_id) is None
+    # Opened again with nothing left: nothing to do.
+    again = await async_create_fix_flow(hass, issue_id, issue.data)
+    again.hass = hass
+    result = await again.async_step_init()
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "recordings_statistics_gone"
+
+
+async def test_the_gateway_back_withdraws_the_offer(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import issue_registry as ir
+
+    from custom_components.bosch_buderus_heating.recordings.manager import (
+        statistics_issue_id,
+    )
+    from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
+        async_gateway_digest,
+    )
+
+    issue_id = statistics_issue_id(await async_gateway_digest(hass, GW))
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=True,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="recordings_statistics_left",
+    )
+    clock = Clock(local(2026, 11, 14, 10))
+    await _importing(hass, clock)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
 async def test_the_counters_stand_in_and_compare(
     recorder_runtime_annotations,  # noqa: F811
     recorder_mock,

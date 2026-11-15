@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Siirretyt tallenteet jäävät tilastoihin",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Poista siirretyt tilastot",
+            "description": "Poistettu merkintä siirsi {count} tilastoa järjestelmän tallenteista; Home Assistant säilyttää ne. Valitse **Lähetä** poistaaksesi ne; toimintoa ei voi perua. Jos haluat säilyttää ne, valitse **Ohita**. Ilmoitus poistuu seuraavan uudelleenkäynnistyksen jälkeen."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Siirrettyjä tilastoja ei enää ole. Mitään ei poistettu."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Järjestelmiä ei löytynyt pilvitililtä",
       "description": "Merkinnän ”{title}” pilviyhteyden viimeisin kirjautuminen ei löytänyt {count} käytössä olevaa järjestelmää tai laitetta (päätteenä {systems}). Ne pysyvät määritettyinä ja saamattomina, kunnes ne ilmestyvät tilille uudelleen; tämä ilmoitus poistuu silloin.\n\nJos ne poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys, poista ne käytöstä kohdassa **Käytä järjestelmille ja laitteille** ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Niiden laitteet ja entiteetit pysyvät Home Assistantissa, kunnes poistat ne. Jos yhdyskäytävä vaihdettiin, pidä se käytössä: erillinen korjausilmoitus tarjoaa mahdollisuuden jatkaa järjestelmää sen historian kanssa."

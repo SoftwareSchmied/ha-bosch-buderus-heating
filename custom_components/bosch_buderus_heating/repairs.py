@@ -50,6 +50,13 @@ async def async_create_fix_flow(
     data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
     """Create a repair flow for a supported issue."""
+    from .recordings.manager import ISSUE_PREFIX, statistics_issue_id
+
+    if issue_id.startswith(ISSUE_PREFIX):
+        digest = data.get("digest") if data else None
+        if not isinstance(digest, str) or issue_id != statistics_issue_id(digest):
+            return InvalidRepairFlow()
+        return RecordingsStatisticsRepairFlow(issue_id, digest)
     entry_id = data.get("entry_id") if data else None
     if not isinstance(entry_id, str):
         return InvalidRepairFlow()
@@ -343,6 +350,44 @@ class FirmwareCompatibilityRepairFlow(RepairsFlow):
 
         ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
         self.hass.config_entries.async_schedule_reload(entry.entry_id)
+        return self.async_create_entry(data={})
+
+
+class RecordingsStatisticsRepairFlow(RepairsFlow):
+    """Delete the imported recordings of a removed entry's gateway."""
+
+    def __init__(self, issue_id: str, digest: str) -> None:
+        self._issue_id = issue_id
+        self._digest = digest
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        """Start the confirmation step."""
+        return await self.async_step_confirm()
+
+    async def async_step_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        """Delete only after the confirmation; nothing left, nothing done."""
+        from .recordings.manager import async_imported_statistics
+
+        found = (
+            await async_imported_statistics(self.hass, self._digest)
+            if "recorder" in self.hass.config.components
+            else []
+        )
+        if not found:
+            ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
+            return self.async_abort(reason="recordings_statistics_gone")
+        if user_input is None:
+            return self.async_show_form(
+                step_id="confirm", description_placeholders={"count": str(len(found))}
+            )
+        from homeassistant.components.recorder import get_instance
+
+        get_instance(self.hass).async_clear_statistics(found)
+        ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
         return self.async_create_entry(data={})
 
 

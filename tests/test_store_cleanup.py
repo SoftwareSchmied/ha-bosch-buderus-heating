@@ -116,8 +116,22 @@ async def test_removing_an_entry_deletes_its_private_files(
     )
     schedule = local_schedule_path(hass, f"{entry.entry_id}:{target}:local")
     schedule.write_text("{}")
-    await hass.config_entries.async_remove(entry.entry_id)
-    await hass.async_block_till_done()
+    offered = []
+
+    async def offer(_hass, gateway_id):
+        offered.append(gateway_id)
+        if gateway_id == "000123":
+            raise RuntimeError("recorder busy")  # only an offer
+
+    with patch(
+        "custom_components.bosch_buderus_heating.recordings.manager."
+        "async_offer_statistics_removal",
+        offer,
+    ):
+        await hass.config_entries.async_remove(entry.entry_id)
+        await hass.async_block_till_done()
+    # The imported recordings of each gateway no other entry uses.
+    assert offered == sorted(gateways)
     for gateway in gateways:
         assert fault_store_key(entry.entry_id, gateway) not in hass_storage
         assert notification_id(entry.entry_id, gateway) not in hass_storage

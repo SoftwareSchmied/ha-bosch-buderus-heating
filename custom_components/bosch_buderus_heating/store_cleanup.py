@@ -99,7 +99,10 @@ async def async_remove_entry_stores(
     from .estimated_energy import estimated_energy_store
     from .faults import async_remove_fault_store
     from .notifications import async_remove_notification_store
-    from .recordings.manager import async_remove_recordings_store
+    from .recordings.manager import (
+        async_offer_statistics_removal,
+        async_remove_recordings_store,
+    )
     from .rrc_energy_statistics import async_remove_energy_store
 
     gateways = _entry_gateways(entry)
@@ -124,6 +127,16 @@ async def async_remove_entry_stores(
         for gateway_id in _entry_gateways(other)
     }
     if unused := set(gateways) - others:
+        for gateway_id in sorted(unused):
+            try:
+                await async_offer_statistics_removal(hass, gateway_id)
+            except Exception as err:  # only an offer
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Imported recordings could not be listed",
+                    error=err,
+                )
         try:
             await estimated_energy_store(hass).async_forget_gateways(unused)
         except Exception as err:  # the totals are an optional cache

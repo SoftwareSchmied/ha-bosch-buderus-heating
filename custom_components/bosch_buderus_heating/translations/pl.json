@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Przeniesione zapisy pozostają w statystykach",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usuń przeniesione statystyki",
+            "description": "Usunięty wpis przeniósł {count} statystyk z zapisów instalacji; Home Assistant je zachowuje. Wybierz **Prześlij**, aby je usunąć; tej operacji nie można cofnąć. Aby je zachować, wybierz **Ignoruj**. To powiadomienie zniknie po następnym ponownym uruchomieniu."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Przeniesione statystyki już nie istnieją. Niczego nie usunięto."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Instalacje nieznalezione na koncie w chmurze",
       "description": "Ostatnie logowanie dostępu przez chmurę we wpisie „{title}” nie znalazło włączonych instalacji lub urządzeń (liczba: {count}; końcówki: {systems}). Pozostają skonfigurowane i niedostępne, dopóki nie pojawią się ponownie na koncie; wtedy to powiadomienie zniknie.\n\nJeśli zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę, wyłącz je w sekcji **Używaj dla instalacji i urządzeń** i usuń je opcją **Zapomnij odznaczone instalacje**. Ich urządzenia i encje pozostają w Home Assistant, dopóki ich nie usuniesz. Jeśli bramka została wymieniona, pozostaw ją włączoną: osobna naprawa zaproponuje kontynuowanie instalacji z jej historią."
