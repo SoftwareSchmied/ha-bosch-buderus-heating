@@ -382,8 +382,31 @@ def test_identifier_signals_are_never_offered() -> None:
 # ------------------------------------------------- cases from the P45 review
 
 
-async def test_a_cloud_resource_found_later_takes_over(hass: HomeAssistant) -> None:
-    coordinator = coordinator_with(hass, [number(COMPRESSOR, 810.0, unit="W")])
+GENERIC_PATH = "/heatingCircuits/hc1/mixerPosition"
+
+
+def _watts(path: str, value: float) -> Resource:
+    return Resource(
+        path,
+        value=value,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="W"),
+    )
+
+
+@pytest.mark.parametrize("local_values", [False, True])
+async def test_a_reviewed_entity_stays_when_the_cloud_offers_its_reading(
+    hass: HomeAssistant, local_values: bool
+) -> None:
+    """The cloud starts offering a reviewed local-only reading while running:
+    the entity stays (same entry) and shows the paired reading."""
+    from datetime import UTC, datetime
+
+    from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
+
+    coordinator = coordinator_with(
+        hass, [number(COMPRESSOR, 810.0, unit="W")], local_values=local_values
+    )
     registry = er.async_get(hass)
     entity_id = registry.async_get_or_create(
         "sensor",
@@ -392,32 +415,85 @@ async def test_a_cloud_resource_found_later_takes_over(hass: HomeAssistant) -> N
         config_entry=coordinator.config_entry,
     ).entity_id
     (entity,) = track(coordinator)
+    assert entity.available and entity.native_value == 810.0
+    assert entity.extra_state_attributes is None  # local only: no source yet
+    resource = _watts(COMPRESSOR, 800.0)
+    coordinator.resources[COMPRESSOR] = resource
+    coordinator.data[COMPRESSOR] = ResourceSnapshot(resource, True, datetime.now(UTC))
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    # Neither handed over nor removed: the same entry, the same entity.
+    assert (
+        registry.async_get_entity_id(
+            "sensor", DOMAIN, local_only_unique_id("gateway-one", COMPRESSOR)
+        )
+        == entity_id
+    )
     assert entity.available
-    coordinator.resources[COMPRESSOR] = Resource(
-        COMPRESSOR,
-        value=800.0,
+    # The pair rule: local first only with the option on.
+    assert entity.native_value == (810.0 if local_values else 800.0)
+    assert entity.extra_state_attributes == {
+        "source": "local" if local_values else "cloud"
+    }
+    assert entity.native_unit_of_measurement == "W"
+    assert entity.state_class is SensorStateClass.MEASUREMENT
+    # Without a current cloud reading the local one stands in.
+    coordinator.data[COMPRESSOR] = ResourceSnapshot(
+        resource, False, datetime.now(UTC), last_error_category="not_found", ended=True
+    )
+    assert entity.native_value == 810.0
+    assert entity.extra_state_attributes == {"source": "local"}
+    await coordinator.async_shutdown()
+
+
+async def test_a_generic_entity_is_still_handed_over(hass: HomeAssistant) -> None:
+    """Without a reviewed definition the cloud's sensor takes over (8C-c)."""
+    coordinator = coordinator_with(
+        hass, [number(GENERIC_PATH, 40, unit="%", kind="integerValue")]
+    )
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        local_only_unique_id("gateway-one", GENERIC_PATH),
+        config_entry=coordinator.config_entry,
+    ).entity_id
+    (entity,) = track(coordinator)
+    assert entity.available
+    coordinator.resources[GENERIC_PATH] = Resource(
+        GENERIC_PATH,
+        value=40,
         has_value=True,
-        metadata=ResourceMetadata(resource_type="floatValue", unit="W"),
+        metadata=ResourceMetadata(resource_type="integerValue", unit="%"),
     )
     coordinator.async_update_listeners()
-    assert not entity.available
     # Handed over while running (8C-c); without a stored unit: removed.
     await hass.async_block_till_done()
     assert registry.async_get(entity_id) is None
     await coordinator.async_shutdown()
 
 
-async def test_setup_removes_entries_the_cloud_offers_now(hass: HomeAssistant) -> None:
-    cloud = Resource(
-        COMPRESSOR,
-        value=800.0,
+async def test_setup_removes_generic_entries_the_cloud_offers_now(
+    hass: HomeAssistant,
+) -> None:
+    generic = Resource(
+        GENERIC_PATH,
+        value=40,
         has_value=True,
-        metadata=ResourceMetadata(resource_type="floatValue", unit="W"),
+        metadata=ResourceMetadata(resource_type="integerValue", unit="%"),
     )
-    coordinator = coordinator_with(hass, [number(SETPOINT, 30.0)], cloud)
+    coordinator = coordinator_with(
+        hass, [number(SETPOINT, 30.0)], _watts(COMPRESSOR, 800.0), generic
+    )
     registry = er.async_get(hass)
     entry = coordinator.config_entry
     orphan = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        local_only_unique_id("gateway-one", GENERIC_PATH),
+        config_entry=entry,
+    )
+    reviewed = registry.async_get_or_create(
         "sensor",
         DOMAIN,
         local_only_unique_id("gateway-one", COMPRESSOR),
@@ -429,9 +505,14 @@ async def test_setup_removes_entries_the_cloud_offers_now(hass: HomeAssistant) -
         local_only_unique_id("gateway-one", SETPOINT),
         config_entry=entry,
     )
-    track(coordinator)
+    added = by_path(track(coordinator))
     assert registry.async_get(orphan.entity_id) is None
     assert registry.async_get(kept.entity_id) is not None
+    # A reviewed reading keeps its entry and its entity, also before its
+    # first local reading: it shows the cloud's.
+    assert registry.async_get(reviewed.entity_id) is not None
+    assert set(added) == {SETPOINT, COMPRESSOR}
+    assert added[COMPRESSOR].native_value == 800.0
     await coordinator.async_shutdown()
 
 

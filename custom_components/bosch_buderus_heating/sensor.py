@@ -105,6 +105,7 @@ from .local_only_sensor import (
     clean_registered_local_only,
     hand_over_open,
     hand_over_while_running,
+    keeps_local_entity,
     track_local_only_sensors,
 )
 from .outdoor_unit_software import track_outdoor_unit_software_sensor
@@ -667,7 +668,15 @@ def _track_resource_sensors(
     checked: list[Mapping[str, Resource]] = []
     # O83: paths whose failed hand-over was already reported as a warning.
     warned: set[str] = set()
-    async_add_entities([BoschBuderusSensor(coordinator, item) for item in descriptions])
+    # A reviewed local-only entity of the same reading stays its entity; the
+    # cloud reading becomes its second source (``local_only_pair``).
+    async_add_entities(
+        [
+            BoschBuderusSensor(coordinator, item)
+            for item in descriptions
+            if not keeps_local_entity(coordinator, item.resource_path)
+        ]
+    )
 
     @callback
     def recover() -> None:
@@ -684,6 +693,8 @@ def _track_resource_sensors(
         ):
             if description.unique_key not in seen:
                 seen.add(description.unique_key)
+                if keeps_local_entity(coordinator, description.resource_path):
+                    continue  # the reviewed local-only entity stays
                 entities.append(BoschBuderusSensor(coordinator, description))
         if not entities:
             return

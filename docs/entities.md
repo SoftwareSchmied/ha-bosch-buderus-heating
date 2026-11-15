@@ -809,7 +809,17 @@ unknown, never as a number. A reading the local access reports as a number is
 offered for that reason, also while it reports an error marker; its value is
 then unknown. The same rules apply with and without the cloud. The setting **Use local values for existing
 entities** does not affect them. If the cloud offers the same path later (for
-example after a new discovery), its cloud entity takes over. When the cloud's
+example after a new discovery, or when the children of a refused directory are
+read directly), a sensor with a reviewed name and states (for example the
+compressor speed or the refrigerant circuit status) stays as it is: its unique
+ID, entity ID, name, states, statistics and settings do not change and no
+cloud sensor is added for that path. The cloud's value becomes its second
+source: for a reading both accesses report identically, the setting **Use local
+values for existing entities** decides as for every such reading (with it off
+the cloud value is shown, the local one while there is no current cloud value);
+any other reading shows its local value first and the cloud's only while there
+is none. The attribute `source` names the access shown. For other local-only
+sensors the cloud entity takes over. When the cloud's
 sensors are set up (at a start, a reload or when a system joins its cloud),
 before any of them is added, the local-only entity continues as the cloud's
 sensor, with its entity ID, name, area, recorded states and statistics, if
