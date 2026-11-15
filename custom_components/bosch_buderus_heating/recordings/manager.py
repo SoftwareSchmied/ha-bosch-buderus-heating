@@ -14,8 +14,9 @@ Reads (``async_run``):
   the next start. After a day without local answers the whole history is
   read again.
 - The cloud only without a working local access, only for the nine energy
-  paths and within ``CLOUD_BUDGET`` reads per run: today and yesterday
-  first, then the older days, months and years still missing.
+  paths and within ``CLOUD_BUDGET`` reads per run: today every run,
+  yesterday until it is final, then the older days, months and years still
+  missing.
 - Nothing is read while no entity, no import and no other feature needs the
   recordings.
 
@@ -85,8 +86,8 @@ CLOUD_BUDGET: Final = 30
 # Older days whose hours the cloud is asked for (hourly statistics).
 CLOUD_HOUR_DAYS: Final = 7
 RECHECK_MISSING: Final = timedelta(days=1)
-# An open month, year or older day is read again at most this often; today
-# and yesterday are read every run.
+# An open month, year or older day (and yesterday once final) is read again
+# at most this often; today and an open yesterday are read every run.
 CLOUD_REREAD: Final = timedelta(hours=12)
 LOCAL_FULL_AFTER: Final = timedelta(hours=36)
 # Long-term statistics of a counter are complete this long after a period.
@@ -604,21 +605,32 @@ class RecordingsManager:
             first = date(int(interval[:4]), int(interval[5:]), 1)
             if add_months(first, 1) > today - timedelta(days=1):
                 return False
+            # Every day needs a final value (a gap counts): an answer with
+            # the wrong number of slots left none, so it is read again.
             day = first
             while day < add_months(first, 1):
                 cell = ledger.day(day)
-                if cell is not None and not cell[4]:
+                if cell is None or not cell[4]:
                     return False
                 day += timedelta(days=1)
             return True
         year = int(interval)
         if year >= today.year:
             return False
-        return all(
-            bool(cell[4])
-            for key, cell in ledger.months.items()
-            if key.startswith(interval)
-        )
+        months = [ledger.month(date(year, month, 1)) for month in range(1, 13)]
+        return all(cell is not None and bool(cell[4]) for cell in months)
+
+    def _every_run(self, series: Series, interval: str, today: date) -> bool:
+        """Today is read every run, yesterday until its day is final; then
+        like an older day at most every ``CLOUD_REREAD``."""
+        if interval == today.isoformat():
+            return True
+        yesterday = today - timedelta(days=1)
+        if interval != yesterday.isoformat():
+            return False
+        ledger = self.ledgers.get(series.key)
+        cell = ledger.day(yesterday) if ledger is not None else None
+        return cell is None or not cell[4]
 
     async def _run_cloud(
         self, now: datetime, zone: tzinfo, report: dict[str, Any]
@@ -635,7 +647,6 @@ class RecordingsManager:
         today = now.astimezone(zone).date()
         budget = CLOUD_BUDGET
         succeeded = False
-        regular = {today.isoformat(), (today - timedelta(days=1)).isoformat()}
         for series, interval, rate in self._cloud_tasks(today):
             known = self.cloud_paths.get(series.path)
             if (CLOUD, series.path) in self._forbidden:
@@ -643,7 +654,7 @@ class RecordingsManager:
             task = f"{series.path}|{interval}"
             last = self._cloud_read_at.get(task)
             if (
-                interval not in regular
+                not self._every_run(series, interval, today)
                 and last is not None
                 and now.timestamp() - last < CLOUD_REREAD.total_seconds()
             ):

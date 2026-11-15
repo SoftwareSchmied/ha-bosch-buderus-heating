@@ -30,9 +30,10 @@ ventilation systems.
    hour on a typical heat pump).
 2. **Cloud**: only when the local access is missing or does not answer, and
    only for the nine energy recordings (heat, compressor and heater for
-   total, heating and hot water). Every hour today and yesterday, plus at
-   most a few older days, months and years per run until the history is
-   complete (at most 30 reads per run). The cloud's pauses and rate limits
+   total, heating and hot water). Every hour today, and yesterday until it
+   is confirmed (then like an older day at most twice a day), plus at most
+   a few older days, months and years per run until the history is complete
+   (at most 30 reads per run). The cloud's pauses and rate limits
    apply as for every other read.
 3. **Counters of the integration**: where neither recording has a value,
    the period entities use the change of the integration's own counter
