@@ -65,6 +65,11 @@ Reloading is therefore not a way to bypass an active cloud rate limit.
 1. Discover functional resources for **every selected gateway**. Reported
    references take priority over heating-circuit core paths, which in turn
    precede other optional candidates. Existing bounded fault probes remain.
+   The mode and setpoint leaves of each side a ConnectKey zone lists are
+   read right after the zone directories. A leaf the cloud refuses on one
+   radio device is not requested again for devices that list exactly the
+   same children (see
+   [zone controls](zone-controls.md#discovery-on-large-zone-controllers)).
 2. Give supplementary reads a **single 30-second budget for the whole entry**,
    starting only after that functional work. This is not a 30-second limit on
    total setup time and is not 30 seconds per gateway or per path.
@@ -83,6 +88,21 @@ to eight, with roots at depth zero. The supplementary queue also holds at most
 requested path does not consume another distinct-path slot. A `resource_limit`
 or `depth_limit` result is a safety stop for this session, not an ordinary
 temporary failure that will be retried indefinitely.
+
+When the start-up discovery has used up the 512 paths, optional probes and
+the direct reads below refused or incomplete containers may go on with an
+**allowance of their own of at most 400 paths**, outside the 512 and not
+charged to the later search for missing parts. Advertised references and
+catalog paths never use it; when only those are left, the discovery stops
+at `resource_limit` as before. The allowance follows the same rules as every
+discovery read: batches of at most 30 paths, the same pauses after 403 and
+404 answers, the cloud pauses and the rate limit. A discovery that stays
+within the 512 paths never uses it and sends exactly the same requests as
+before. The diagnostics show the allowance (`extra_probe_limit`), its use
+(`extra_probes_requested`) and, after a `resource_limit`, which limit ended
+the discovery (`resource_limit_scope`: `shared_budget` or
+`extra_allowance`). The search for missing parts after the start does not
+get this allowance.
 
 On a room controller, the setting leaves of the listed radio devices are read
 last and have a limit of their own of 192 paths, outside the 512. The first
