@@ -15,6 +15,10 @@ _CLIENT = dict(vars(PointTClient))
 _RESOLVE_HOST = aiohttp.TCPConnector._resolve_host
 # Host names a test tried to look up for a real connection.
 _LOOKUPS: list[str] = []
+# Hosts Home Assistant core itself contacts in the browser tests (the brand
+# image proxy of the frontend). Their lookup is refused as well, but it is
+# not the integration reaching the network, so the test does not fail.
+_CORE_HOSTS = frozenset({"brands.home-assistant.io"})
 
 
 def _local(host: str) -> bool:
@@ -38,7 +42,8 @@ async def _no_real_lookup(self, host, port, traces=None):
     """
     if _local(host):
         return await _RESOLVE_HOST(self, host, port, traces=traces)
-    _LOOKUPS.append(host)
+    if host not in _CORE_HOSTS:
+        _LOOKUPS.append(host)
     raise OSError(f"A test tried to reach {host}")
 
 
