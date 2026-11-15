@@ -256,9 +256,16 @@ class DefrostMonitor:
         reading = defrost_state(self._coordinator)
         active = reading.active if reading is not None else None
         observed = reading.source.observed_at or now if reading is not None else now
+        # The source's path and origin are attributes (``derived_from``): a
+        # change of either is written like a change of the state, so the
+        # entity never names another origin than the diagnostics.
         changed = active != self.active or (
             reading is not None
-            and (self.source is None or reading.source.path != self.source.path)
+            and (
+                self.source is None
+                or reading.source.path != self.source.path
+                or reading.source.origin != self.source.origin
+            )
         )
         self.active = active
         self.source = reading.source if reading is not None else None

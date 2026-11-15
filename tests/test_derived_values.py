@@ -1109,3 +1109,37 @@ async def test_replay_of_a_recorded_defrost(
     # From the compressor power: lower than a constant 675 W would give,
     # as the power fell to 119 W for a minute.
     assert event["electricity_kwh_from_power"] == pytest.approx(0.059, abs=0.001)
+
+
+async def test_the_defrost_entity_names_the_origin_the_monitor_uses(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    """The cloud offers the refrigerant status as well: when the shown source
+    of the same reading changes, the entity is written again, so its
+    ``derived_from`` always matches the diagnostics."""
+    from custom_components.bosch_buderus_heating.derived_defrost import (
+        DefrostActiveBinarySensor,
+    )
+
+    plant = air(hass, freezer)
+    plant.forget(REFRIGERANT).cloud(REFRIGERANT, "heating")
+    monitor = await _monitor(plant)
+    active = DefrostActiveBinarySensor(plant.coordinator, monitor)
+    writes: list[dict[str, object] | None] = []
+    monitor.add_listener(lambda: writes.append(active.extra_state_attributes))
+    monitor.update(plant.at)
+    assert writes == [
+        {"detected_by": REFRIGERANT, "derived_from": {REFRIGERANT: "cloud"}}
+    ]
+    # The same state, now shown from the local access (the pair rule).
+    cloud = plant.coordinator.data[REFRIGERANT]
+    plant.selection.paired[REFRIGERANT] = replace(cloud, source=SnapshotSource.LOCAL)
+    _cycle(plant, monitor, 1)
+    assert monitor.diagnostics()["source_origin"] == "local"
+    assert writes[-1] == {
+        "detected_by": REFRIGERANT,
+        "derived_from": {REFRIGERANT: "local"},
+    }
+    assert len(writes) == 2
+    _cycle(plant, monitor, 1)  # nothing changed: not written again
+    assert len(writes) == 2
