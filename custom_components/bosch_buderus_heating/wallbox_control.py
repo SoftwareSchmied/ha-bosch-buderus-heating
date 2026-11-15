@@ -638,7 +638,13 @@ async def async_start(
     *,
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
 ) -> None:
-    """Start charging; with an allowed authentication first."""
+    """Start charging; with an allowed authentication first.
+
+    With the authentication switched on, the option must allow it. From
+    firmware 5.1.0 ``authenticate`` goes first, then ``start``; below it the
+    app sends ``start`` alone, and so does this. Without a known firmware
+    nothing is sent.
+    """
 
     async def run(session: _Session) -> bool:
         view = await session.view(("telemetry", "conf", "info"))
@@ -649,10 +655,10 @@ async def async_start(
         if view.conf.get("authentication") == "on":
             if not (
                 _option(coordinator, OPTION_AUTHENTICATE) is True
-                and firmware_reaches(view.firmware, FW_AUTHENTICATE)
+                and view.firmware is not None
             ):
                 raise WallboxRejected("wallbox_authentication_required")
-            if await session.send(
+            if firmware_reaches(view.firmware, FW_AUTHENTICATE) and await session.send(
                 lambda: client.post_wallbox_command(
                     session.gateway_id, "authenticate", {"name": name}
                 )

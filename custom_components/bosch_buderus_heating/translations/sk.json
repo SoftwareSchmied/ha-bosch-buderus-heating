@@ -233,7 +233,8 @@
       "local_pending_saved": "Čakajúci pokus zostáva zachovaný. Môžete v ňom pokračovať z lokálneho nastavenia.",
       "local_storage_failed": "Súkromný záznam nastavenia sa nepodarilo prečítať ani uložiť. Pred pokračovaním skontrolujte úložisko Home Assistant.",
       "already_in_progress": "Nastavenie tejto lokálnej brány už prebieha.",
-      "cloud_local_first_other_entry": "Tento systém je už nastavený cez svoj lokálny prístup v inom zázname tejto integrácie. Cloudový prístup pridajte radšej v tomto zázname."
+      "cloud_local_first_other_entry": "Tento systém je už nastavený cez svoj lokálny prístup v inom zázname tejto integrácie. Cloudový prístup pridajte radšej v tomto zázname.",
+      "local_entry_not_updated": "Existujúci záznam tejto integrácie sa nepodarilo aktualizovať na aktuálnu verziu. Najprv tento záznam opravte alebo odstráňte; potom je možné pridať túto bránu."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Názov na overenie (voliteľný)"
         },
         "data_description": {
-          "wallbox_authentication": "Predvolene vypnuté. Len pre stanice so softvérom 5.1.0 alebo novším.",
+          "wallbox_authentication": "Predvolene vypnuté. Od softvéru 5.1.0 sa pri štarte najprv vykoná overenie; pri staršom softvéri sa odošle len štart, rovnako ako v aplikácii výrobcu.",
           "wallbox_authentication_name": "Názov, ktorý aplikácia výrobcu používa na overenie; môže zostať prázdny."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Tento vykurovací okruh je riadený priestorovým regulátorom. Nastavenie je možné zmeniť iba tam. Táto zmena sa neodoslala."
     },
     "circuit_constant_control": {
-      "message": "Tento vykurovací okruh beží s konštantnými hodnotami. Jeho teplotné úrovne momentálne nie je možné zmeniť. Táto zmena sa neodoslala."
+      "message": "Tento vykurovací okruh beží s konštantnými hodnotami. Jeho nastavenia momentálne nie je možné zmeniť. Táto zmena sa neodoslala."
     },
     "cooling_not_offered": {
       "message": "Tento vykurovací okruh momentálne neponúka chladenie. Táto zmena sa neodoslala."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Použiť možno iba tieto nastavenia: {settings}. Nastavenie sa zapisuje ako režim, teplota a rýchlosť ventilátora, napríklad „cool 24.0 auto“, alebo „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Ohrievač vody prijíma zmeny tohto časového programu len vtedy, keď je zapnutý, beží v režime časového programu a má nastavené časové pásmo, rovnako ako v aplikácii výrobcu. Nič nebolo odoslané."
     }
   },
   "selector": {

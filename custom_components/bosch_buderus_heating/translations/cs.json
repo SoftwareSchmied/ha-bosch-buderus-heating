@@ -233,7 +233,8 @@
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "already_in_progress": "Nastavení této místní brány již probíhá.",
-      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce."
+      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
+      "local_entry_not_updated": "Existující záznam této integrace nebylo možné aktualizovat na aktuální verzi. Nejprve tento záznam opravte nebo odeberte; potom lze tuto bránu přidat."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Název pro ověření (volitelný)"
         },
         "data_description": {
-          "wallbox_authentication": "Ve výchozím stavu vypnuto. Jen pro stanice se softwarem 5.1.0 nebo novějším.",
+          "wallbox_authentication": "Ve výchozím stavu vypnuto. Od softwaru 5.1.0 se při startu nejprve provede ověření; u staršího softwaru se odešle jen start, stejně jako v aplikaci výrobce.",
           "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Tento topný okruh je řízen prostorovým regulátorem. Nastavení lze změnit pouze tam. Tato změna nebyla odeslána."
     },
     "circuit_constant_control": {
-      "message": "Tento topný okruh běží s konstantními hodnotami. Jeho teplotní úrovně nyní nelze změnit. Tato změna nebyla odeslána."
+      "message": "Tento topný okruh běží s konstantními hodnotami. Jeho nastavení nyní nelze změnit. Tato změna nebyla odeslána."
     },
     "cooling_not_offered": {
       "message": "Tento topný okruh momentálně nenabízí chlazení. Tato změna nebyla odeslána."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Použít lze pouze tato nastavení: {settings}. Nastavení se zapisuje jako režim, teplota a rychlost ventilátoru, například „cool 24.0 auto“, nebo „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Ohřívač vody přijímá změny tohoto časového programu jen tehdy, když je zapnutý, běží v režimu časového programu a má nastavené časové pásmo, stejně jako v aplikaci výrobce. Nic nebylo odesláno."
     }
   },
   "selector": {

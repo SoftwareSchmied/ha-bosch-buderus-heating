@@ -233,7 +233,8 @@
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "already_in_progress": "Tá socrú don gheata áitiúil seo ar siúl cheana.",
-      "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit."
+      "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
+      "local_entry_not_updated": "Níorbh fhéidir iontráil atá ann cheana den chomhtháthú seo a nuashonrú go dtí an leagan reatha. Deisigh nó bain an iontráil sin ar dtús; ansin is féidir an geata seo a chur leis."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Ainm fíordheimhnithe (roghnach)"
         },
         "data_description": {
-          "wallbox_authentication": "As de réir réamhshocraithe. Do luchtairí le bogearraí 5.1.0 nó níos nuaí amháin.",
+          "wallbox_authentication": "As de réir réamhshocraithe. Ó bhogearraí 5.1.0 ar aghaidh, fíordheimhníonn tosú ar dtús; le bogearraí níos sine seoltar an tosú leis féin, mar atá san aip ón monaróir.",
           "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Is rialaitheoir seomra a rialaíonn an ciorcad téimh seo. Ní féidir an socrú a athrú ach ansin. Níor seoladh an t-athrú seo."
     },
     "circuit_constant_control": {
-      "message": "Ritheann an ciorcad téimh seo ar luachanna seasmhacha. Ní féidir a leibhéil teochta a athrú faoi láthair. Níor seoladh an t-athrú seo."
+      "message": "Ritheann an ciorcad téimh seo ar luachanna seasmhacha. Ní féidir a shocruithe a athrú faoi láthair. Níor seoladh an t-athrú seo."
     },
     "cooling_not_offered": {
       "message": "Ní thairgeann an ciorcad téimh seo fuarú faoi láthair. Níor seoladh an t-athrú seo."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Ní féidir ach na socruithe seo a úsáid: {settings}. Scríobhtar socrú mar mhodh, teocht agus luas an lucht aeraithe, mar shampla “cool 24.0 auto”, nó “off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Ní ghlacann an téitheoir uisce le hathruithe ar an gclár ama seo ach amháin nuair atá sé ar siúl, ag rith i mód cláir agus crios ama aige, mar atá san aip ón monaróir. Níor seoladh aon rud."
     }
   },
   "selector": {

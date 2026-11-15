@@ -37,7 +37,7 @@ async def test_an_entry_of_another_version_stops_the_notice(hass, version):
         DOMAIN, context={"source": "zeroconf"}, data=info()
     )
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "local_setup_unavailable"
+    assert result["reason"] == "local_entry_not_updated"
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
@@ -50,7 +50,7 @@ async def test_an_old_entry_added_meanwhile_stops_the_new_entry(hass):
     _old_entry(hass)
     result = await manager.async_configure(result["flow_id"], {})
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "local_setup_unavailable"
+    assert result["reason"] == "local_entry_not_updated"
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
@@ -61,3 +61,17 @@ async def test_an_ignored_notice_is_no_entry(hass):
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "local_discovered"
+
+
+async def test_the_abort_names_the_entry_that_was_not_updated(hass):
+    """The reason has its own text in every language, about the entry."""
+    import json
+    from pathlib import Path
+
+    folder = Path(__file__).parents[1] / "custom_components/bosch_buderus_heating"
+    files = [folder / "strings.json", *sorted((folder / "translations").glob("*.json"))]
+    assert len(files) == 20
+    for file in files:
+        aborts = json.loads(file.read_text(encoding="utf-8"))["config"]["abort"]
+        assert aborts["local_entry_not_updated"].strip(), file.name
+        assert aborts["local_entry_not_updated"] != aborts["local_setup_unavailable"]

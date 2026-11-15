@@ -233,7 +233,8 @@
       "local_pending_saved": "Det ventende forsøg er bevaret. Du kan genoptage det fra den lokale opsætning.",
       "local_storage_failed": "Den private opsætningspost kunne ikke læses eller gemmes. Kontrollér Home Assistants lagring, før du fortsætter.",
       "already_in_progress": "Opsætningen af denne lokale gateway er allerede i gang.",
-      "cloud_local_first_other_entry": "Dette anlæg er allerede sat op via sin lokale adgang i en anden post i denne integration. Tilføj cloudadgangen i den post i stedet."
+      "cloud_local_first_other_entry": "Dette anlæg er allerede sat op via sin lokale adgang i en anden post i denne integration. Tilføj cloudadgangen i den post i stedet.",
+      "local_entry_not_updated": "En eksisterende post for denne integration kunne ikke opdateres til den aktuelle version. Reparer eller fjern den post først; derefter kan denne gateway tilføjes."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale forbindelse. Vent venligst."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Godkendelsesnavn (valgfrit)"
         },
         "data_description": {
-          "wallbox_authentication": "Slået fra som standard. Kun for ladebokse med software 5.1.0 eller nyere.",
+          "wallbox_authentication": "Slået fra som standard. Fra software 5.1.0 godkender en start først; med ældre software sendes starten alene, som i producentens app.",
           "wallbox_authentication_name": "Navnet, som producentens app bruger til godkendelse; må være tomt."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Denne varmekreds styres af en rumregulator. Indstillingen kan kun ændres der. Denne ændring blev ikke sendt."
     },
     "circuit_constant_control": {
-      "message": "Denne varmekreds kører med konstante værdier. Dens temperaturniveauer kan ikke ændres i øjeblikket. Denne ændring blev ikke sendt."
+      "message": "Denne varmekreds kører med konstante værdier. Dens indstillinger kan ikke ændres i øjeblikket. Denne ændring blev ikke sendt."
     },
     "cooling_not_offered": {
       "message": "Denne varmekreds tilbyder ikke køling i øjeblikket. Denne ændring blev ikke sendt."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Kun disse indstillinger kan bruges: {settings}. En indstilling skrives som tilstand, temperatur og blæserhastighed, for eksempel „cool 24.0 auto“, eller „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Vandvarmeren tager kun imod ændringer af dette tidsprogram, når den er tændt, kører i tidsprogramdrift og har en tidszone, som i producentens app. Der blev ikke sendt noget."
     }
   },
   "selector": {

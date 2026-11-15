@@ -233,7 +233,8 @@
       "local_pending_saved": "Det väntande försöket är sparat. Du kan återuppta det från den lokala konfigurationen.",
       "local_storage_failed": "Den privata konfigurationsposten kunde inte läsas eller sparas. Kontrollera Home Assistants lagring innan du fortsätter.",
       "already_in_progress": "Konfigurationen av den här lokala gatewayen pågår redan.",
-      "cloud_local_first_other_entry": "Den här anläggningen är redan konfigurerad via sin lokala åtkomst i en annan post för den här integrationen. Lägg till molnåtkomsten i den posten i stället."
+      "cloud_local_first_other_entry": "Den här anläggningen är redan konfigurerad via sin lokala åtkomst i en annan post för den här integrationen. Lägg till molnåtkomsten i den posten i stället.",
+      "local_entry_not_updated": "En befintlig post för den här integrationen kunde inte uppdateras till den aktuella versionen. Reparera eller ta bort den posten först; därefter kan den här gatewayen läggas till."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Autentiseringsnamn (valfritt)"
         },
         "data_description": {
-          "wallbox_authentication": "Avstängt som standard. Endast för laddboxar med programvara 5.1.0 eller senare.",
+          "wallbox_authentication": "Avstängt som standard. Från programvara 5.1.0 autentiserar en start först; med äldre programvara skickas starten ensam, som i tillverkarens app.",
           "wallbox_authentication_name": "Namnet som tillverkarens app använder för autentisering; får vara tomt."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Den här värmekretsen styrs av en rumsregulator. Inställningen kan bara ändras där. Den här ändringen skickades inte."
     },
     "circuit_constant_control": {
-      "message": "Den här värmekretsen körs med konstanta värden. Dess temperaturnivåer kan inte ändras just nu. Den här ändringen skickades inte."
+      "message": "Den här värmekretsen körs med konstanta värden. Dess inställningar kan inte ändras just nu. Den här ändringen skickades inte."
     },
     "cooling_not_offered": {
       "message": "Den här värmekretsen erbjuder inte kylning just nu. Den här ändringen skickades inte."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Bara dessa inställningar kan användas: {settings}. En inställning skrivs som läge, temperatur och fläkthastighet, till exempel ”cool 24.0 auto”, eller ”off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Varmvattenberedaren tar bara emot ändringar av det här tidsprogrammet när den är påslagen, går i tidsprogramdrift och har en tidszon, som i tillverkarens app. Inget skickades."
     }
   },
   "selector": {

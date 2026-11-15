@@ -233,7 +233,8 @@
       "local_pending_saved": "A tentativa pendente foi mantida. Pode retomá-la a partir da configuração local.",
       "local_storage_failed": "Não foi possível ler ou guardar o registo privado da configuração. Verifique o armazenamento do Home Assistant antes de continuar.",
       "already_in_progress": "A configuração deste gateway local já está em curso.",
-      "cloud_local_first_other_entry": "Esta instalação já está configurada através do respetivo acesso local noutra entrada desta integração. Adicione o acesso à cloud nessa entrada."
+      "cloud_local_first_other_entry": "Esta instalação já está configurada através do respetivo acesso local noutra entrada desta integração. Adicione o acesso à cloud nessa entrada.",
+      "local_entry_not_updated": "Uma entrada existente desta integração não pôde ser atualizada para a versão atual. Repare ou remova primeiro essa entrada; depois este gateway poderá ser adicionado."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Nome de autenticação (opcional)"
         },
         "data_description": {
-          "wallbox_authentication": "Desativado por predefinição. Apenas para postos com software 5.1.0 ou mais recente.",
+          "wallbox_authentication": "Desativado por predefinição. A partir do software 5.1.0 um arranque autentica-se primeiro; com software mais antigo o arranque é enviado sozinho, como na app do fabricante.",
           "wallbox_authentication_name": "O nome que a aplicação do fabricante usa para a autenticação; pode ficar vazio."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Este circuito de aquecimento é controlado por um regulador ambiente. A definição só pode ser alterada aí. Esta alteração não foi enviada."
     },
     "circuit_constant_control": {
-      "message": "Este circuito de aquecimento funciona com valores constantes. Os seus níveis de temperatura não podem ser alterados de momento. Esta alteração não foi enviada."
+      "message": "Este circuito de aquecimento funciona com valores constantes. As suas definições não podem ser alteradas de momento. Esta alteração não foi enviada."
     },
     "cooling_not_offered": {
       "message": "Este circuito de aquecimento não oferece arrefecimento de momento. Esta alteração não foi enviada."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Só se podem usar estas definições: {settings}. Uma definição escreve-se como modo, temperatura e velocidade do ventilador, por exemplo «cool 24.0 auto», ou «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "O esquentador só aceita alterações a este programa horário enquanto está ligado, funciona em modo de programa e tem um fuso horário, como na app do fabricante. Nada foi enviado."
     }
   },
   "selector": {

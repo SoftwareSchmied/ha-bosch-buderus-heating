@@ -233,7 +233,8 @@
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "already_in_progress": "Tämän paikallisen yhdyskäytävän asennus on jo käynnissä.",
-      "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään."
+      "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
+      "local_entry_not_updated": "Tämän integraation olemassa olevaa merkintää ei voitu päivittää nykyiseen versioon. Korjaa tai poista se merkintä ensin; sen jälkeen tämän yhdyskäytävän voi lisätä."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
@@ -951,7 +952,7 @@
           "wallbox_authentication_name": "Tunnistautumisnimi (valinnainen)"
         },
         "data_description": {
-          "wallbox_authentication": "Oletuksena pois. Vain latausasemille, joiden ohjelmisto on 5.1.0 tai uudempi.",
+          "wallbox_authentication": "Oletuksena pois. Ohjelmistosta 5.1.0 alkaen käynnistys tunnistautuu ensin; vanhemmalla ohjelmistolla käynnistys lähetetään yksin, kuten valmistajan sovelluksessa.",
           "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi."
         }
       },
@@ -1581,7 +1582,7 @@
       "message": "Tätä lämmityspiiriä ohjaa huonesäädin. Asetusta voi muuttaa vain siellä. Tätä muutosta ei lähetetty."
     },
     "circuit_constant_control": {
-      "message": "Tämä lämmityspiiri toimii vakioarvoilla. Sen lämpötilatasoja ei voi muuttaa tällä hetkellä. Tätä muutosta ei lähetetty."
+      "message": "Tämä lämmityspiiri toimii vakioarvoilla. Sen asetuksia ei voi muuttaa tällä hetkellä. Tätä muutosta ei lähetetty."
     },
     "cooling_not_offered": {
       "message": "Tämä lämmityspiiri ei tarjoa jäähdytystä tällä hetkellä. Tätä muutosta ei lähetetty."
@@ -1783,6 +1784,9 @@
     },
     "switch_points_aircon_setting_not_allowed": {
       "message": "Vain nämä asetukset ovat käytettävissä: {settings}. Asetus kirjoitetaan toimintatilana, lämpötilana ja puhaltimen nopeutena, esimerkiksi ”cool 24.0 auto”, tai ”off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Vedenlämmitin hyväksyy tämän aikaohjelman muutokset vain, kun se on päällä, toimii aikaohjelmatilassa ja sillä on aikavyöhyke, kuten valmistajan sovelluksessa. Mitään ei lähetetty."
     }
   },
   "selector": {

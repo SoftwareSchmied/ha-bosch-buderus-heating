@@ -80,7 +80,6 @@ from .wallbox_control import (
     strategy_issue,
 )
 from .wallbox_leaves import (
-    FW_AUTHENTICATE,
     FW_BOOST,
     FW_OVERLOAD,
     FW_SOLAR,
@@ -506,11 +505,14 @@ def _on_off(value: object) -> bool | None:
 
 
 def _authentication_allowed(coordinator: WallboxCoordinator, view: WallboxView) -> bool:
+    """A start with the authentication on: allowed by the option, with a
+    known firmware (``authenticate`` first from 5.1.0, ``start`` alone
+    below it, as the app)."""
     entry = coordinator.config_entry
     return (
         entry is not None
         and entry.options.get(OPTION_AUTHENTICATE) is True
-        and firmware_reaches(view.firmware, FW_AUTHENTICATE)
+        and view.firmware is not None
     )
 
 
