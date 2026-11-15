@@ -342,8 +342,10 @@ See [heating controls](docs/heating-controls.md#heating-circuit-settings-summerw
   of a radio room device is a temperature difference. Home Assistant shows
   them in the temperature unit of your installation.
   - The step is converted with them (0.5 °C becomes 0.9 °F), and a value set
-    in °F is sent as the exact step in the gateway's unit; a value between
-    two steps is refused, not rounded.
+    in °F is sent as the nearest step in the gateway's unit, as the
+    thermostats do.
+  - On installations with °F, automations and scripts that set these
+    numbers now use °F values; please check them after the update.
   - Entity IDs, unique IDs and enablement stay as they were; with metric
     units nothing changes in the display. Tested with automated tests.
 - **Safer heating-circuit writes:** tested with automated tests and

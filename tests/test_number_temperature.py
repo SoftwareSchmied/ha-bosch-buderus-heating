@@ -84,17 +84,21 @@ def test_boost_temperature_is_a_temperature_and_its_duration_not() -> None:
     assert duration.device_class is None
 
 
-def test_snap_moves_only_rounding_errors() -> None:
+def test_snap_takes_the_nearest_step() -> None:
     # 70.7 °F is 21.5 °C up to the float error of the conversion.
     assert snap_to_grid((70.7 - 32) * 5 / 9, 5.0, 0.5) == 21.5
     # 21.47 °C (shown 70.65 °F rounded) still is the step 21.5.
     assert snap_to_grid(21.47, 5.0, 0.5) == 21.5
-    # 70.5 °F = 21.39 °C lies between two steps and stays (the rules refuse it).
-    value = (70.5 - 32) * 5 / 9
-    assert snap_to_grid(value, 5.0, 0.5) == value
+    # 70.5 °F = 21.39 °C lies between two steps: the nearest one, as the
+    # climate entities do with a converted value.
+    assert snap_to_grid((70.5 - 32) * 5 / 9, 5.0, 0.5) == 21.5
+    # 120 °F = 48.89 °C on a 1.0 grid: 49.
+    assert snap_to_grid((120 - 32) * 5 / 9, 25.0, 1.0) == 49.0
     # Counted from the minimum, not from 0.
     assert snap_to_grid(10.29, 10.3, 1.0) == 10.3
+    assert snap_to_grid(10.71, 10.3, 1.0) == 10.3
     assert snap_to_grid(21.5, 5.0, None) == 21.5
+    assert snap_to_grid(21.3, 5.0, 0.0) == 21.3
 
 
 async def test_metric_installation_shows_and_writes_natively(hass) -> None:
@@ -130,12 +134,25 @@ async def test_imperial_installation_converts_value_limits_and_step(hass) -> Non
     assert cloud.puts == [(COOLING_SETPOINT, 21.5)]
 
 
-async def test_imperial_value_between_two_steps_is_refused(hass) -> None:
+async def test_imperial_value_between_two_steps_takes_the_nearest_step(hass) -> None:
     hass.config.units = US_CUSTOMARY_SYSTEM
     coordinator = coordinator_for(hass, variant(SEASON, "V2"))
     cloud = Cloud(coordinator)
     entity = number_entity(hass, coordinator, COOLING_SETPOINT)
+    # 70.5 °F = 21.39 °C: the nearest step 21.5 °C is written.
     native = entity.convert_to_native_value(70.5)
+    assert native == 21.5
+    await entity.async_set_native_value(native)
+    assert cloud.puts == [(COOLING_SETPOINT, 21.5)]
+
+
+async def test_metric_value_between_two_steps_is_still_refused(hass) -> None:
+    hass.config.units = METRIC_SYSTEM
+    coordinator = coordinator_for(hass, variant(SEASON, "V2"))
+    cloud = Cloud(coordinator)
+    entity = number_entity(hass, coordinator, COOLING_SETPOINT)
+    native = entity.convert_to_native_value(21.3)
+    assert native == 21.3
     with pytest.raises(ServiceValidationError):
         await entity.async_set_native_value(native)
     assert cloud.puts == []

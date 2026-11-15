@@ -5,10 +5,11 @@ Every number entity that holds a temperature carries the device class
 Assistant shows it in the unit of the user's unit system. Home Assistant
 converts the value and the limits, but not the step: a step of 0.5 °C stays
 "0.5" in °F. ``TemperatureNumber`` converts the step as a temperature
-difference, and moves a value set in the other unit back onto the native grid
-when it only misses it by the rounding of the conversion. A value that really
-lies between two steps is passed on unchanged, so the write rules still
-refuse it instead of rounding it.
+difference, and moves a value set in the other unit onto the nearest value of
+the native grid, counted from the minimum: a whole value in °F, such as
+120 °F, never lies exactly on a grid in °C (as the climate entities do). A
+value set in the native unit is passed on unchanged, so the write rules still
+refuse one between two steps instead of rounding it.
 """
 
 from __future__ import annotations
@@ -23,10 +24,6 @@ _TEMPERATURE_UNITS = frozenset(UnitOfTemperature)
 _TEMPERATURE_CLASSES = frozenset(
     {NumberDeviceClass.TEMPERATURE, NumberDeviceClass.TEMPERATURE_DELTA}
 )
-# The most a converted value may miss a native step by and still count as
-# that step (in the native unit): the rounding of a value shown with one
-# decimal in the other unit stays below it.
-_SNAP_TOLERANCE = 0.1
 
 
 def temperature_device_class(
@@ -74,11 +71,14 @@ class TemperatureNumber(NumberEntity):
 
 
 def snap_to_grid(value: float, minimum: float, step: float | None) -> float:
-    """``value`` on the nearest step counted from ``minimum`` when it misses
-    that step only by a conversion's rounding; otherwise unchanged."""
-    if step is None or step <= 0 or not math.isfinite(value):
+    """``value`` on the nearest step counted from ``minimum``; unchanged
+    without a usable step."""
+    if (
+        step is None
+        or not math.isfinite(step)
+        or step <= 0
+        or not math.isfinite(value)
+        or not math.isfinite(minimum)
+    ):
         return value
-    nearest = minimum + round((value - minimum) / step) * step
-    if abs(value - nearest) <= min(_SNAP_TOLERANCE, step * 0.45):
-        return round(nearest, 6)
-    return value
+    return round(minimum + round((value - minimum) / step) * step, 6)
