@@ -94,8 +94,10 @@ discovery finish:
   below refused containers go on with an allowance of their own of at most
   400 paths (see [request behavior](request-behavior.md#startup-order-and-time-budgets)).
   In the shape of the report that led to these rules (8 zones, 12 radio
-  devices, a refused second heating circuit and three refused heat sources)
-  the discovery needs 816 paths and finishes with 304 of the 400.
+  devices, a refused second heating circuit and three refused heat-source
+  entries whose names are not `hsN`) the discovery needs about 700 paths and
+  finishes with about 190 of the 400. A directory read from the allowance
+  has its children read from it too.
 
 A still larger installation stops at `resource_limit`; the diagnostics then
 name the limit (`resource_limit_scope`).

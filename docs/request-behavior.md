@@ -92,7 +92,8 @@ temporary failure that will be retried indefinitely.
 When the start-up discovery has used up the 512 paths, optional probes and
 the direct reads below refused or incomplete containers may go on with an
 **allowance of their own of at most 400 paths**, outside the 512 and not
-charged to the later search for missing parts. Advertised references and
+charged to the later search for missing parts. A directory read from the
+allowance has its children read from it too. Other advertised references and
 catalog paths never use it; when only those are left, the discovery stops
 at `resource_limit` as before. The allowance follows the same rules as every
 discovery read: batches of at most 30 paths, the same pauses after 403 and

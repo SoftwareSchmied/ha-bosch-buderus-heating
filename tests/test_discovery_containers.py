@@ -461,6 +461,91 @@ def test_probe_limit_is_counted_not_requested():
     assert probes.refused(f"{HC}/hc3", 403, 1) == []
 
 
+def test_early_containers_leave_direct_reads_for_the_others():
+    """Many refused heat sources first: the heating circuit planned later
+    still gets its direct reads, also below its refused programs."""
+    records: dict = {}
+    probes = ContainerProbes(
+        known_child_suffixes(), known=lambda _: False, records=records
+    )
+    for n in range(1, 13):
+        probes.refused(f"/heatSources/hs{n}", 403, 1)
+    heat_sources = sum(
+        len(record.paths)
+        for container, record in records.items()
+        if container.startswith("/heatSources/")
+    )
+    assert heat_sources == discovery_containers.MAX_DIRECT_PROBES_PER_KIND
+
+    planned = {probe.path for probe in probes.refused(f"{HC}/hc2", 403, 1)}
+    assert {f"{HC}/hc2/name", f"{HC}/hc2/switchPrograms/A"} <= planned
+    nested = probes.refused(f"{HC}/hc2/cooling/switchPrograms", 403, 2)
+    assert [probe.path for probe in nested] == [f"{HC}/hc2/cooling/switchPrograms/A"]
+
+
+def test_one_circuit_has_a_limit_of_its_own():
+    probes = ContainerProbes(
+        known_child_suffixes(),
+        known=lambda _: False,
+        records={},
+        kind_limit=1000,
+        circuit_limit=5,
+    )
+
+    assert len(probes.refused(f"{HC}/hc2", 403, 1)) == 5
+    assert probes.refused(f"{HC}/hc2/switchPrograms", 403, 2) == []
+    assert len(probes.refused(f"{HC}/hc3", 403, 1)) == 5
+
+
+@pytest.mark.parametrize(
+    ("container", "programs"),
+    [
+        ("/zones/zone2/switchPrograms", ("heating", "cooling")),
+        ("/ventilation/zone1/switchPrograms", ("cp",)),
+        ("/heatingCircuits/hc2/cooling/switchPrograms", ("A",)),
+        ("/dhwCircuits/dhw1/switchPrograms", ("A", "B", "program1")),
+    ],
+)
+def test_refused_program_directories_read_their_programs(container, programs):
+    probes = ContainerProbes(known_child_suffixes(), known=lambda _: False, records={})
+
+    planned = [probe.path for probe in probes.refused(container, 403, 2)]
+
+    assert planned == [f"{container}/{program}" for program in programs]
+
+
+def test_every_program_kind_below_a_circuit_is_a_known_child():
+    """The time programs of the register are read directly when their
+    directory is refused, for every circuit of a known kind."""
+    from custom_components.bosch_buderus_heating.switch_programs import KINDS
+
+    examples = {
+        "heating": "/heatingCircuits/hc1/switchPrograms/{p}",
+        "dhw": "/dhwCircuits/dhw1/switchPrograms/{p}",
+        "cooling": "/heatingCircuits/hc1/cooling/switchPrograms/{p}",
+        "zone": "/zones/zone1/switchPrograms/{p}",
+        "ventilation": "/ventilation/zone1/switchPrograms/{p}",
+        "wddw2": "/dhwCircuits/dhw1/switchPrograms/{p}",
+    }
+    suffixes = known_child_suffixes()
+    programs = {
+        "heating": ("A", "B"),
+        "dhw": ("A", "B"),
+        "cooling": ("A",),
+        "zone": ("heating", "cooling"),
+        "ventilation": ("cp",),
+        "wddw2": ("program1",),
+    }
+    for kind in KINDS:
+        if kind.key == "aircon":
+            continue  # not below a circuit
+        for program in programs[kind.key]:
+            path = examples[kind.key].format(p=program)
+            assert kind.pattern.fullmatch(path), path
+            root, _, rest = family_of(path)
+            assert rest in suffixes[root], path
+
+
 def test_value_leaves_and_unknown_roots_are_not_containers():
     probes = ContainerProbes(known_child_suffixes(), known=lambda _: False, records={})
 
