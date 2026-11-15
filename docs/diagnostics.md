@@ -26,6 +26,21 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
   `direct_probes`), described under
   [missing controls](#missing-controls).
+- In `gateways[].switch_program_writes`: per program also `kind`
+  (`heating`, `dhw`, `cooling`, `zone`, `ventilation`, `wddw2`),
+  `value_type` (`level`, `absolute` or `degrees`), `notes` (form tokens
+  such as `program_limits_missing`, `program_range_missing`,
+  `program_step_missing`, `setpoint_property_missing`, `program_empty`) and
+  `point_shapes` (`reviewed` for the known `{dayOfWeek, setpoint, time}`
+  form, otherwise its key names and value types, never values); further
+  `edit_issue` tokens (`program_limits_missing`, `levels_unknown`,
+  `program_range_missing`, `program_step_missing`, `number_format_unknown`,
+  `point_out_of_range`, `program_mode_not_absolute`, `mixed_setpoints`); the
+  counters `cooling`, `zone`, `ventilation` and `wddw2` like `heating`; and
+  `program_names` with, per name path, `editable` and `issue`
+  (`name_no_value_config`, `name_coding_unknown`, `name_max_length_zero`,
+  `name_not_decodable`, `name_write_unproven_icom`, `not_writable`). See
+  [heating controls](heating-controls.md#further-program-kinds).
 
 The anonymized inventory keeps dropping all of these sections.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -41,10 +42,7 @@ def gapless(day) -> bool:
     return (
         segments[0]["start"] == 0
         and segments[-1]["end"] == 1440
-        and all(
-            first["end"] == second["start"]
-            for first, second in zip(segments, segments[1:], strict=False)
-        )
+        and all(first["end"] == second["start"] for first, second in pairwise(segments))
     )
 
 
@@ -68,7 +66,9 @@ def test_six_points_keep_every_narrow_segment():
     monday = days_of("dhw_six_points")[0]
     assert gapless(monday)
     assert sum(segment["point"] for segment in monday["segments"]) == 6
-    assert min(segment["end"] - segment["start"] for segment in monday["segments"]) == 15
+    assert (
+        min(segment["end"] - segment["start"] for segment in monday["segments"]) == 15
+    )
 
 
 def test_rrc_day_without_points_is_marked_not_off():
@@ -109,7 +109,15 @@ def test_kind_without_carry_over_has_no_level_before_the_first_point():
 
 def test_changed_days_are_marked():
     days = days_of("heating_two_points", changed=frozenset({2}))
-    assert [day["changed"] for day in days] == [False, False, True, False, False, False, False]
+    assert [day["changed"] for day in days] == [
+        False,
+        False,
+        True,
+        False,
+        False,
+        False,
+        False,
+    ]
 
 
 def test_view_does_not_depend_on_the_time_zone(monkeypatch):
@@ -170,6 +178,9 @@ async def test_module_is_registered_like_the_other_dialog_modules(hass):
 
 @pytest.mark.parametrize("step", ["switch_program_week", "rrc_schedule"])
 def test_week_steps_label_the_view(step):
-    for path in [COMPONENT / "strings.json", *(COMPONENT / "translations").glob("*.json")]:
+    for path in [
+        COMPONENT / "strings.json",
+        *(COMPONENT / "translations").glob("*.json"),
+    ]:
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["options"]["step"][step]["data"]["week_view"], path

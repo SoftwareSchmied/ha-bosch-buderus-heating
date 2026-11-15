@@ -113,7 +113,11 @@ async def test_replace_days_keeps_the_other_days(gateway):
         {"dayOfWeek": "Mo", "setpoint": "comfort2", "time": 300}
     ]
     assert [item for item in body if item["dayOfWeek"] not in ("Mo", "Tu")] == [
-        {"dayOfWeek": item["dayOfWeek"], "setpoint": item["setpoint"], "time": item["time"]}
+        {
+            "dayOfWeek": item["dayOfWeek"],
+            "setpoint": item["setpoint"],
+            "time": item["time"],
+        }
         for item in before
         if item["dayOfWeek"] not in ("Mo", "Tu")
     ]
@@ -152,10 +156,21 @@ async def test_empty_list_is_refused(gateway):
 @pytest.mark.parametrize(
     ("points", "key", "placeholder"),
     [
-        ([{"day": "mo", "time": "06:05", "level": "eco"}], "switch_points_invalid_time", "raster"),
-        ([{"day": "mo", "time": "06:00", "level": "comfort1"}], "switch_points_level_not_allowed", "levels"),
         (
-            [{"day": "mo", "time": f"{hour:02d}:00", "level": "eco"} for hour in range(7)],
+            [{"day": "mo", "time": "06:05", "level": "eco"}],
+            "switch_points_invalid_time",
+            "raster",
+        ),
+        (
+            [{"day": "mo", "time": "06:00", "level": "comfort1"}],
+            "switch_points_level_not_allowed",
+            "levels",
+        ),
+        (
+            [
+                {"day": "mo", "time": f"{hour:02d}:00", "level": "eco"}
+                for hour in range(7)
+            ],
             "switch_points_too_many_per_day",
             "per_day",
         ),
@@ -390,7 +405,13 @@ async def test_answer_holds_no_path_or_identifier(gateway):
     assert "/heatingCircuits" not in text
     assert "synthetic-gateway" not in text
     assert set(response["sensor.time_program_a"]["switch_points"]) <= {
-        "mo", "tu", "we", "th", "fr", "sa", "su"
+        "mo",
+        "tu",
+        "we",
+        "th",
+        "fr",
+        "sa",
+        "su",
     }
 
 
@@ -443,7 +464,10 @@ def test_services_yaml_matches_the_schema_and_translations():
         "integration": DOMAIN,
         "domain": "sensor",
     }
-    for path in [COMPONENT / "strings.json", *sorted((COMPONENT / "translations").glob("*.json"))]:
+    for path in [
+        COMPONENT / "strings.json",
+        *sorted((COMPONENT / "translations").glob("*.json")),
+    ]:
         import json
 
         data = json.loads(path.read_text(encoding="utf-8"))

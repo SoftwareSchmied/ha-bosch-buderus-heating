@@ -241,7 +241,7 @@ def test_holiday_options_are_translated_and_structurally_aligned() -> None:
         for selector in translations["selector"].values():
             assert all(
                 re.fullmatch(r"[a-z0-9]+(?:[-_][a-z0-9]+)*", option)
-                for option in selector["options"]
+                for option in selector.get("options", selector.get("fields", {}))
             )
 
 

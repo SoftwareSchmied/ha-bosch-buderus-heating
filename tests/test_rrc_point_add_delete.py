@@ -47,11 +47,13 @@ class RrcGateway(CountingGateway):
 
     async def put_value(self, gateway, path, value):
         await super().put_value(gateway, path, value)
-        if path.startswith("/programs/pg3/") and path != WEEK and not self.ignore_writes:
+        if (
+            path.startswith("/programs/pg3/")
+            and path != WEEK
+            and not self.ignore_writes
+        ):
             day = value[0]["d"] if value else None
-            others = [
-                item for item in self.payloads[WEEK]["value"] if item["d"] != day
-            ]
+            others = [item for item in self.payloads[WEEK]["value"] if item["d"] != day]
             self.payloads[WEEK]["value"] = others + copy.deepcopy(value)
 
 
@@ -126,12 +128,17 @@ async def test_deleting_a_point_writes_the_rest_of_the_day(gateway):
     points = day_change(schedule(), "Mo", delete=index)
     await gateway.coordinator.async_write_rrc_day(gateway.read(WEEK), "Mo", points)
     ((_path, body),) = gateway.value_puts
-    assert body == [{"d": "Mo", "t": 360, "Th": 21.0}, {"d": "Mo", "t": 1320, "Th": 16.0}]
+    assert body == [
+        {"d": "Mo", "t": 360, "Th": 21.0},
+        {"d": "Mo", "t": 1320, "Th": 16.0},
+    ]
 
 
 async def test_last_point_of_a_day_stays(gateway):
     index = next(
-        position for position, point in enumerate(schedule().points) if point.day == "We"
+        position
+        for position, point in enumerate(schedule().points)
+        if point.day == "We"
     )
     with pytest.raises(ContractRejected, match="rrc_point_last"):
         await gateway.coordinator.async_write_rrc_day(
@@ -237,7 +244,9 @@ async def open_day(flow, day="mo"):
 async def test_dialog_adds_a_point_after_before_and_after(hass, gateway):
     flow = make_flow(hass, gateway)
     day = await open_day(flow)
-    options = [item["value"] for item in day["data_schema"].schema["point"].config["options"]]
+    options = [
+        item["value"] for item in day["data_schema"].schema["point"].config["options"]
+    ]
     assert options[-1] == "add"
     add = await flow.async_step_rrc_day({"point": "add"})
     assert add["step_id"] == "rrc_add"
@@ -256,7 +265,9 @@ async def test_dialog_adds_a_point_after_before_and_after(hass, gateway):
 async def test_dialog_offers_no_add_on_a_full_day(hass, gateway):
     flow = make_flow(hass, gateway)
     day = await open_day(flow, "tu")
-    options = [item["value"] for item in day["data_schema"].schema["point"].config["options"]]
+    options = [
+        item["value"] for item in day["data_schema"].schema["point"].config["options"]
+    ]
     assert "add" not in options
     refused = await flow.async_step_rrc_day({"point": "add"})
     assert refused["errors"] == {"base": "rrc_point_limit"}

@@ -470,6 +470,11 @@ async def test_diagnostics_have_counters_and_counts_but_no_times(gateway):
         "editable": True,
         "edit_issue": None,
         "points_per_day": [2] * 7,
+        # Block G: the form, without values.
+        "kind": "heating",
+        "value_type": "level",
+        "notes": [],
+        "point_shapes": ["reviewed"],
     }
     text = repr(report)
     for marker in ("495", "1350", "comfort2", "Home office", "08:15"):

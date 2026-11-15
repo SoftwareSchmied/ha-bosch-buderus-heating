@@ -37,7 +37,10 @@ ICON = re.compile(r"^mdi:[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def test_icons_follow_the_home_assistant_shape():
-    assert set(ICONS) == {"entity"}
+    assert set(ICONS) == {"entity", "services"}
+    for name, entry in ICONS["services"].items():
+        assert set(entry) == {"service"}, name
+        assert ICON.fullmatch(entry["service"]), name
     for platform, keys in ICONS["entity"].items():
         for key, entry in keys.items():
             assert set(entry) <= {"default", "state"}, (platform, key)

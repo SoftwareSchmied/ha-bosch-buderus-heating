@@ -82,8 +82,13 @@ async def test_zone_program_point_uses_a_number_field(hass, environment):
 async def test_zone_program_without_step_is_not_offered(hass, environment):
     flow, _gateway = make(hass, environment, "connectkey/zone-switch-programs.json")
     first = await flow.async_step_switch_programs()
-    values = [item["value"] for item in first["data_schema"].schema["program"].config["options"]]
-    assert not any(value.endswith("/zones/zone2/switchPrograms/heating") for value in values)
+    values = [
+        item["value"]
+        for item in first["data_schema"].schema["program"].config["options"]
+    ]
+    assert not any(
+        value.endswith("/zones/zone2/switchPrograms/heating") for value in values
+    )
 
 
 async def test_absolute_program_offers_off_only_where_read(hass, environment):
@@ -106,7 +111,9 @@ async def test_cooling_program_offers_on_and_off(hass, environment):
     assert week["step_id"] == "switch_program_week"
     await flow.async_step_switch_program_week({"action": "edit", "day": "mo"})
     point = await flow.async_step_switch_program_day({"point": "0"})
-    options = [item["value"] for item in point["data_schema"].schema["level"].config["options"]]
+    options = [
+        item["value"] for item in point["data_schema"].schema["level"].config["options"]
+    ]
     assert options == ["on", "off"]
 
 

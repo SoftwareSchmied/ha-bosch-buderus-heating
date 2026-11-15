@@ -95,6 +95,59 @@ Versioning after its first tagged preview.
   in the module list of a real installation; the sensor itself is tested with
   automated tests. A pressure setpoint of the heating circuit pump is not
   available through the interface.
+- **Action `set_switch_points`:** the integration's first action sets the
+  switch points of weekly programs from automations and scripts. Targets are
+  the program sensors; `mode` replaces the whole week or only the given days,
+  `expected` refuses the change when the program holds other points,
+  `validate_only` only checks. The response lists the previous and the new
+  switch points per target.
+  - Same rules and the same single write as the dialog: a fresh reading as
+    the base, a second reading right before the one PUT, read-back, never
+    a retry. Several targets are handled one after the other.
+  - Program sensors of programs the gateway reports as writable are now
+    enabled when they are first registered; existing entities keep their
+    state.
+  - Tested with automated tests only; expected, untested on a real
+    installation. The write behind it is the dialog's.
+- **Further time programs:** the schedule dialog and the program sensors now
+  also cover heating programs with temperatures (program type `absolute`),
+  the cooling program of a heating circuit, the heating and cooling programs
+  of radio room zones, the ventilation program and the weekly program of
+  WDDW2 water heaters.
+  - A program is changeable only when the gateway reports its limits, its
+    levels or its temperature range and step; the app's own default values
+    are never used. Otherwise it is shown read-only and the diagnostics name
+    the reason and its form (key names and value types only).
+  - Temperatures are refused, not rounded, outside the range or step; the
+    WDDW2 program is sent as `{"switchPoints": [...]}`, the others as a raw
+    array.
+  - None of these programs has been read on a real installation; they
+    follow the manufacturer's app. Tested with automated tests only;
+    expected, untested on a real installation. I would be glad about a
+    diagnostics file of such a system.
+- **Program names:** the names of the weekly programs A and B are decoded
+  as the gateway codes them (a Base64 name now shows as text), and a text
+  entity **Time program name** changes them where the gateway reports the
+  name writable with a known coding (disabled by default; not on iCom
+  gateways, whose app does not write names).
+  - One write, read-back of the decoded name; a name changed in the app
+    meanwhile sends nothing. Tested with automated tests only; expected,
+    untested on a real installation.
+- **Room controller schedules:** in **Configure > RRC heating schedules** a
+  switch point can now be added to a day or deleted, and the hot water week
+  program of the controller can be changed (program levels high, off, low,
+  eco; `low` and `eco` only where the program already uses them).
+  - At most six switch points per day, the limit of the manufacturer's app;
+    the last switch point of a day stays. Each change is shown before and
+    after and sent once.
+  - Tested with automated tests only; expected, untested on a real room
+    controller.
+- **Weekly view:** the schedule dialogs show the week as a read-only table
+  of seven days next to the text, with the level or temperature of each
+  switch point as text and colour and the part carried over from the
+  previous day marked. The view never writes; if it cannot be loaded, the
+  text stays. Tested with automated tests; the browser test runs in the
+  frontend test job.
 
 ### Changed
 
@@ -281,6 +334,11 @@ only; I have not yet checked them in the browser or on a real installation.
   evidence in `heat_generator`, and the counters of the containers that
   discovery read directly. They hold no readings, names or identifiers; see
   [diagnostics](docs/diagnostics.md).
+- **Time programs in the diagnostics:** `switch_program_writes` lists for
+  every program its kind, setpoint type, form notes and the forms of its
+  switch points (key names and value types), the write counters of the new
+  program kinds and, in `program_names`, whether each program name can be
+  changed or why not. No times, levels, names or identifiers.
 
 ## [0.9.2-beta.1] - 2026-11-14
 

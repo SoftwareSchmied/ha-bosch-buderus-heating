@@ -623,6 +623,7 @@ def points_per_day(resource: Resource) -> list[int] | None:
 
 
 MAX_POINT_SHAPES = 4
+_REVIEWED_POINT = "dict{dayOfWeek:str,setpoint:str,time:int}"
 
 
 def program_shapes(resource: Resource) -> dict[str, object]:
@@ -632,7 +633,13 @@ def program_shapes(resource: Resource) -> dict[str, object]:
     assessment = assess_switch_program(resource)
     raw = resource.program_fields.get("switchPoints")
     shapes = (
-        sorted({value_shape(item) for item in raw[:MAX_SWITCH_POINTS]})
+        sorted(
+            {
+                # The reviewed form is named, not spelled out.
+                "reviewed" if shape == _REVIEWED_POINT else shape
+                for shape in (value_shape(item) for item in raw[:MAX_SWITCH_POINTS])
+            }
+        )
         if isinstance(raw, list)
         else []
     )
@@ -642,7 +649,5 @@ def program_shapes(resource: Resource) -> dict[str, object]:
         "kind": kind_key(resource.path),
         "value_type": assessment.value_type,
         "notes": list(assessment.notes),
-        "program_fields": sorted(resource.program_fields),
         "point_shapes": shapes,
     }
-

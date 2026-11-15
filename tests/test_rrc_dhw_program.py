@@ -61,7 +61,10 @@ def with_point(week, day, minute, level):
     return replace_day(
         week,
         day,
-        [*(point for point in week if point.day == day), SwitchPoint(day, minute, level)],
+        [
+            *(point for point in week if point.day == day),
+            SwitchPoint(day, minute, level),
+        ],
     )
 
 
@@ -191,7 +194,10 @@ async def test_cloud_pause_sends_nothing(gateway):
 
 
 def test_level_names_are_program_levels_never_temperatures():
-    for path in [COMPONENT / "strings.json", *(COMPONENT / "translations").glob("*.json")]:
+    for path in [
+        COMPONENT / "strings.json",
+        *(COMPONENT / "translations").glob("*.json"),
+    ]:
         options = json.loads(path.read_text(encoding="utf-8"))["selector"][
             "rrc_dhw_level"
         ]["options"]
@@ -220,8 +226,7 @@ async def test_dialog_edits_the_week_and_sends_once(hass, gateway):
     day = await flow.async_step_switch_program_week({"action": "edit", "day": "mo"})
     point = await flow.async_step_switch_program_day({"point": "0"})
     levels = [
-        item["value"]
-        for item in point["data_schema"].schema["level"].config["options"]
+        item["value"] for item in point["data_schema"].schema["level"].config["options"]
     ]
     assert levels == ["high", "off", "low"]
     await flow.async_step_switch_program_point({"time": "05:30", "level": "off"})

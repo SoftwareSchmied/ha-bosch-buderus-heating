@@ -179,7 +179,8 @@ async def test_readonly_or_empty_week_can_be_viewed_without_writes(
     coordinator.data[WEEK] = replace(coordinator.data[WEEK], resource=resource)
     result = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
     assert result["step_id"] == "rrc_readonly"
-    assert not result["data_schema"].schema
+    # TP-07: only the read-only weekly view, nothing to enter.
+    assert [str(key) for key in result["data_schema"].schema] == ["week_view"]
     shown = await flow.async_step_rrc_readonly({})
     # Only shown: back in the main menu, without a note.
     assert shown["type"] is FlowResultType.MENU and shown["step_id"] == "init"

@@ -117,7 +117,9 @@ def shifted(points, day=0, old=None, new=None, level=None):
     for point in points:
         if point.day == day and point.minute == old:
             result.append(
-                SwitchPoint(day, point.minute if new is None else new, level or point.level)
+                SwitchPoint(
+                    day, point.minute if new is None else new, level or point.level
+                )
             )
         else:
             result.append(point)
@@ -230,7 +232,7 @@ def test_diagnostics_learn_the_form_without_values(environment):
     assert program["kind"] == "zone"
     assert program["edit_issue"] == "program_step_missing"
     assert "program_step_missing" in program["notes"]
-    assert program["point_shapes"] == ["dict{dayOfWeek:str,setpoint:str,time:int}"]
+    assert program["point_shapes"] == ["reviewed"]
     text = repr(result)
     for value in ("20.0", "16.0", "420", "1320"):
         assert value not in text
@@ -341,7 +343,9 @@ def test_zone_program_shows_the_scheduled_temperature():
     assert state(assessment, True, 0, 400) == 21.0
     assert state(assessment, True, 0, 600) == 17.5
     (description,) = [
-        item for item in build_sensor_descriptions(data) if item.resource_path == ZONE_HEAT
+        item
+        for item in build_sensor_descriptions(data)
+        if item.resource_path == ZONE_HEAT
     ]
     assert description.native_unit_of_measurement == "°C"
     assert description.options is None
@@ -499,7 +503,11 @@ def test_heating_program_body_stays_a_raw_array():
 
 @pytest.mark.parametrize(
     ("value", "issue"),
-    [("21.5", "value_not_allowed"), ("65", "value_out_of_range"), ("25", "value_out_of_range")],
+    [
+        ("21.5", "value_not_allowed"),
+        ("65", "value_out_of_range"),
+        ("25", "value_out_of_range"),
+    ],
 )
 def test_wddw2_values_are_whole_degrees_in_range(value, issue):
     data = readings("wddw2")
@@ -522,7 +530,11 @@ def test_wddw2_without_range_is_read_only():
 
 def test_wddw2_without_limits_does_not_use_the_app_fallback():
     item = copy.deepcopy(items("wddw2")[WDDW2])
-    for key in ("maxNbOfSwitchPoints", "maxNbOfSwitchPointsPerDay", "switchPointTimeRaster"):
+    for key in (
+        "maxNbOfSwitchPoints",
+        "maxNbOfSwitchPointsPerDay",
+        "switchPointTimeRaster",
+    ):
         del item[key]
     data = readings("wddw2", **{WDDW2: item})
     assert edit_issue(data[WDDW2], data) == "program_limits_missing"
@@ -588,7 +600,9 @@ def test_absolute_program_refuses_level_names_and_level_programs_refuse_numbers(
 
     levels = {path: resource(item) for path, item in LEVEL_PAYLOADS.items()}
     level_program = editable_program(
-        levels[PROGRAM_A], levels, program_mode=levels["/heatingCircuits/hc1/switchProgramMode"]
+        levels[PROGRAM_A],
+        levels,
+        program_mode=levels["/heatingCircuits/hc1/switchProgramMode"],
     )
     assert level_program is not None
     assert value_issue("21.0", level_program) == "level_not_allowed"

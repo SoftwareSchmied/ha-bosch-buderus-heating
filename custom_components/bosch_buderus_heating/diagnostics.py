@@ -61,6 +61,7 @@ from .observations import (
 )
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
+from .program_names import config_issue, is_name_path
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .resource_catalog import (
     PollGroup,
@@ -87,7 +88,6 @@ from .start_counters import (
     structure_summary,
 )
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
-from .program_names import config_issue, is_name_path
 from .switch_program_edit import edit_issue, points_per_day, program_shapes
 from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
