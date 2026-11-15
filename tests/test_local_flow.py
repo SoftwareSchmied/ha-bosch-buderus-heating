@@ -415,6 +415,51 @@ async def test_a_discovered_gateway_without_entry_is_set_up_locally(
     assert later["reason"] == "already_configured"
 
 
+@pytest.mark.parametrize("continued", [False, True])
+async def test_a_new_local_entry_next_to_others_preselects_the_found_gateway(
+    hass, supported, journal, continued
+):
+    """With entries already set up, two gateways are announced (the
+    configured one as well) and the hint may have expired: the gateway the
+    notice was for is still preselected in the new entry's address step."""
+    registered(hass)
+    discovery.remember_discovery(hass, info(name="other", host="192.0.2.7"))
+    manager = hass.config_entries.flow
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        result = await manager.async_init(
+            DOMAIN,
+            context={"source": "zeroconf"},
+            data=info(name="found", host="192.0.2.5"),
+        )
+        assert result["step_id"] == "local_owner"
+        hass.data.pop(discovery._HINTS, None)
+        result = await manager.async_configure(
+            result["flow_id"], {"owner": "new_entry"}
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    entry = result["result"]
+    # The other gateway keeps announcing itself: no single hint to go by.
+    discovery.remember_discovery(hass, info(name="other", host="192.0.2.7"))
+    options = hass.config_entries.options
+    if continued:
+        # The prepared options flow, continued as named in ``next_flow``.
+        step = await options.async_configure(result["next_flow"][1])
+    else:
+        # As the frontend does: a new options flow takes over.
+        step = await options.async_init(entry.entry_id)
+    assert step["step_id"] == "local_address"
+    key = next(iter(step["data_schema"].schema))
+    assert key.default() == "192.0.2.5"
+    hosts = [
+        item["value"]
+        for item in next(iter(step["data_schema"].schema.values())).config["options"]
+    ]
+    assert "192.0.2.5" in hosts
+
+
 async def test_an_untouched_notice_ends_once_its_gateway_is_configured(
     hass, monkeypatch
 ):

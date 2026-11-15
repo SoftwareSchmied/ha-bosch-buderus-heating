@@ -257,6 +257,16 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     def local_available(self) -> bool:
         return setup_support(self.hass) is not None
 
+    def _local_found_address(self) -> str | None:
+        """The address of the gateway this dialog was opened for, if any."""
+        return self._local_choices[0].host if self._local_choices else None
+
+    def _local_preselect(self, host: object) -> None:
+        """Preselect the address a new entry's setup was started for."""
+        if isinstance(host, str) and not self._local_choices:
+            with suppress(ValueError):
+                self._local_choices = (LocalEndpoint(host),)
+
     def _local_management(self) -> ConfigurationManagement:
         entry = self.hass.config_entries.async_get_entry(self._local_owner_id or "")
         if entry is None:
