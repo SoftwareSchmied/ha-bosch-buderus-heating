@@ -21,7 +21,7 @@ from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from itertools import islice
 from time import monotonic
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -135,9 +135,14 @@ from .startup_data import (
     is_startup_path,
 )
 from .startup_reader import StartupReader
-from .switch_program_edit import circuit_path
+from .program_names import ProgramNameService, is_name_path, name_shows
+from .switch_program_edit import program_mode_path
 from .switch_program_edit import contract_of as switch_program_contract
-from .switch_program_service import SwitchProgramService, program_shows
+from .switch_program_service import (
+    SwitchProgramPlan,
+    SwitchProgramService,
+    program_shows,
+)
 from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
 from .write_policies import RRC_HEAT_PUMP_CONTEXT, rrc_kwargs
@@ -1468,6 +1473,24 @@ class BoschBuderusDataUpdateCoordinator(
             late_check=edit_shows(expected, index, minute, temperature),
         )
 
+    async def async_write_program_name(self, expected: Resource, text: str) -> None:
+        """TP-05: write the name of a weekly program once, read it back."""
+        if not is_name_path(expected.path):
+            raise WriteValidationError("Unsupported program name path")
+        service = ProgramNameService(
+            self.client, delays=self.write_read_back_delays()
+        )
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: service.write(
+                self.gateway.gateway_id,
+                expected,
+                text,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=name_shows(expected.path, text),
+        )
+
     async def async_run_rrc_operation(
         self,
         path: str,
@@ -1824,7 +1847,10 @@ class BoschBuderusDataUpdateCoordinator(
 
     def switch_program_mode(self, path: str) -> Resource | None:
         """Z2: the current program type of a heating circuit program, if read."""
-        snapshot = (self.data or {}).get(f"{circuit_path(path)}/switchProgramMode")
+        mode_path = program_mode_path(path)
+        if mode_path is None:
+            return None
+        snapshot = (self.data or {}).get(mode_path)
         if snapshot is None or not _snapshot_is_fresh(snapshot):
             return None
         return snapshot.resource
@@ -1843,9 +1869,52 @@ class BoschBuderusDataUpdateCoordinator(
             self.switch_program_write_stats.rejected(contract, _rejection_token(err))
             raise
 
+    async def async_plan_switch_program(
+        self, path: str, plan: SwitchProgramPlan
+    ) -> tuple[Resource, Resource | None]:
+        """TP-06: read a program fresh, let ``plan`` build the new week from
+        that reading and write it once; see ``switch_point_action``.
+
+        ``plan`` gets the fresh reading, the gateway's readings and the fresh
+        program type; it returns the week, or ``None`` to send nothing (only
+        checked, or the same week). Returns the fresh reading and the
+        confirmed one (``None`` when nothing was sent). The write compares
+        the program once more right before sending (a second reading).
+        """
+        if not is_switch_program_path(path):
+            raise WriteValidationError("Unsupported switch program path")
+        contract = switch_program_contract(path)
+        try:
+            return await self._async_write_switch_program(
+                Resource(path), (), contract, plan=plan
+            )
+        except WriteValidationError as err:
+            self.switch_program_write_stats.rejected(contract, _rejection_token(err))
+            raise
+
+    @overload
     async def _async_write_switch_program(
         self, expected: Resource, points: tuple[SwitchPoint, ...], contract: str
-    ) -> Resource:
+    ) -> Resource: ...
+
+    @overload
+    async def _async_write_switch_program(
+        self,
+        expected: Resource,
+        points: tuple[SwitchPoint, ...],
+        contract: str,
+        *,
+        plan: SwitchProgramPlan,
+    ) -> tuple[Resource, Resource | None]: ...
+
+    async def _async_write_switch_program(
+        self,
+        expected: Resource,
+        points: tuple[SwitchPoint, ...],
+        contract: str,
+        *,
+        plan: SwitchProgramPlan | None = None,
+    ) -> Resource | tuple[Resource, Resource | None]:
         path = expected.path
         stats = self.switch_program_write_stats
         sent = False
@@ -1863,9 +1932,42 @@ class BoschBuderusDataUpdateCoordinator(
                 # Its own token, so the dialog says writing is paused.
                 raise ContractRejected("circuit_breaker")
             snapshot = (self.data or {}).get(path)
-            if snapshot is None or not _snapshot_is_fresh(snapshot):
+            program_mode = self.switch_program_mode(path)
+            fresh: Resource | None = None
+            if plan is not None:
+                # TP-06: the base of the change is a fresh reading, not the
+                # last snapshot; a failed read sends nothing.
+                try:
+                    fresh = await self.client.get_resource(
+                        self.gateway.gateway_id, path
+                    )
+                    if (mode_path := program_mode_path(path)) is not None and (
+                        program_mode is not None or mode_path in self.resources
+                    ):
+                        program_mode = await self._switch_program_service.read_mode(
+                            self.gateway.gateway_id, mode_path
+                        )
+                except RateLimited as err:
+                    self._activate_rate_limit_backoff(err, monotonic())
+                    raise
+                except AuthenticationError:
+                    self._request_reauthentication()
+                    raise
+                planned = plan(fresh, self.switch_program_readings(), program_mode)
+                if planned is None:
+                    return fresh, None
+                expected, points = fresh, planned
+                if snapshot is None:
+                    snapshot = ResourceSnapshot(
+                        resource=fresh,
+                        available=True,
+                        last_success=datetime.now(UTC),
+                        last_attempt=datetime.now(UTC),
+                        source=SnapshotSource.WRITE,
+                    )
+            elif snapshot is None or not _snapshot_is_fresh(snapshot):
                 raise WriteValidationError("The program has no current reading")
-            if snapshot.resource != expected:
+            elif snapshot.resource != expected:
                 raise WriteValidationError("The program changed since it was shown")
             try:
                 confirmed = await self._switch_program_service.async_write(
@@ -1873,7 +1975,7 @@ class BoschBuderusDataUpdateCoordinator(
                     expected,
                     points,
                     self.switch_program_readings(),
-                    program_mode=self.switch_program_mode(path),
+                    program_mode=program_mode,
                     delays=self.write_read_back_delays(),
                     on_sent=on_sent,
                 )
@@ -1933,6 +2035,8 @@ class BoschBuderusDataUpdateCoordinator(
             if sent:
                 stats.confirmed(contract, path)
             self.async_set_updated_data(updated)
+            if fresh is not None:
+                return fresh, confirmed
             return confirmed
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:

@@ -60,7 +60,11 @@ from .discovery_inventory import (
     is_transient_result,
 )
 from .ha_compat import device_by_identifier, identifier_owned_elsewhere
-from .holiday_ui import async_setup_controls_ui, async_setup_holiday_ui
+from .holiday_ui import (
+    async_setup_controls_ui,
+    async_setup_holiday_ui,
+    async_setup_schedule_ui,
+)
 from .local_budget import LocalBudgetError, local_budget_manager
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .log_helpers import log_failure
@@ -116,6 +120,11 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             raise result
     await async_setup_holiday_ui(hass)
     await async_setup_controls_ui(hass)
+    await async_setup_schedule_ui(hass)
+    from .switch_point_action import async_setup_actions
+
+    # TP-06: the integration's action, registered once for all entries.
+    async_setup_actions(hass)
     from .local_identity import install_local_support
     from .update_load import install_update_load
 
@@ -1097,6 +1106,10 @@ def _enable_new_default_entities(
                 if rrc_plant and rrc_contracts.is_mirror(description.resource_path):
                     # A read-only setting without a control is enabled only
                     # when it is first registered; an existing entry stays.
+                    continue
+                if is_switch_program_path(description.resource_path):
+                    # D9: a writable program is enabled when it is first
+                    # registered; an existing entry keeps its state.
                     continue
                 if description.resource_path in _PLANT_DUPLICATE_CANDIDATES:
                     # Whether these repeat another entity depends on the

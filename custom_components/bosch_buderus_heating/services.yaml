@@ -1,0 +1,58 @@
+set_switch_points:
+  target:
+    entity:
+      integration: bosch_buderus_heating
+      domain: sensor
+  fields:
+    mode:
+      required: false
+      default: replace_week
+      selector:
+        select:
+          translation_key: switch_points_mode
+          options:
+            - replace_week
+            - replace_days
+    switch_points:
+      required: true
+      selector:
+        object:
+          translation_key: switch_point
+          multiple: true
+          label_field: time
+          description_field: level
+          fields:
+            day:
+              required: true
+              selector:
+                select:
+                  translation_key: rrc_weekday
+                  options:
+                    - mo
+                    - tu
+                    - we
+                    - th
+                    - fr
+                    - sa
+                    - su
+            time:
+              required: true
+              selector:
+                time: {}
+            level:
+              required: true
+              selector:
+                text: {}
+    expected:
+      required: false
+      advanced: true
+      selector:
+        object:
+          translation_key: switch_point
+          multiple: true
+    validate_only:
+      required: false
+      advanced: true
+      default: false
+      selector:
+        boolean: {}

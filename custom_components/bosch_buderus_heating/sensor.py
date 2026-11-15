@@ -136,10 +136,9 @@ from .start_counters import (
     start_counter_placeholder,
 )
 from .startup_data import startup_placeholder
+from . import switch_program_sensor
 from .switch_programs import (
-    DAYS,
     assess_switch_program,
-    is_dhw_switch_program_path,
     is_switch_program_path,
 )
 from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
@@ -1314,43 +1313,28 @@ def _energy_descriptions(
     return descriptions
 
 
-_SWITCH_PROGRAM_LEVELS = {
-    "heating_switch_program": ("comfort1", "comfort2", "comfort3", "eco", "off"),
-    "dhw_switch_program": ("low", "eco", "high", "off"),
-}
-
-
-def _switch_program_options(resource: Resource) -> list[str]:
-    """Include the known levels and the current program's validated level keys."""
-    key = (
-        "dhw_switch_program"
-        if is_dhw_switch_program_path(resource.path)
-        else "heating_switch_program"
-    )
-    return list(
-        dict.fromkeys(
-            (*_SWITCH_PROGRAM_LEVELS[key], *assess_switch_program(resource).levels)
-        )
-    )
-
-
 def _switch_program_description(
     resource: Resource,
 ) -> BoschBuderusSensorEntityDescription:
-    """Describe one read-only program: the level it currently selects."""
-    translation_key = (
-        "dhw_switch_program"
-        if is_dhw_switch_program_path(resource.path)
-        else "heating_switch_program"
-    )
+    """Describe one program: the level, or the temperature, it schedules now.
+
+    D9: enabled by default where the gateway reports the program writable
+    (the target of the action ``set_switch_points``).
+    """
+    kind = switch_program_sensor.sensor_kind(resource)
     return replace(
         _description(resource, None, "switch_program"),
-        native_unit_of_measurement=None,
-        device_class=SensorDeviceClass.ENUM,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS if kind.numeric else None,
+        device_class=(
+            SensorDeviceClass.TEMPERATURE if kind.numeric else SensorDeviceClass.ENUM
+        ),
         state_class=None,
-        options=_switch_program_options(resource),
-        translation_key=translation_key,
+        options=switch_program_sensor.options(resource, kind.translation_key),
+        translation_key=kind.translation_key,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=switch_program_sensor.enabled_by_default(
+            resource
+        ),
     )
 
 
@@ -1584,7 +1568,7 @@ class BoschBuderusSensor(
     _unknown_enum_warning_logged = False
     _contract_changes: set[str] | None = None
     _switch_timer: CALLBACK_TYPE | None = None
-    _last_switch_level: str | None = None
+    _last_switch_level: str | float | None = None
     _exchange_guard: ExchangeCounterGuard | None = None
     # O30: the unit of the last reading, kept while there is none.
     _held_unit: str | None = None
@@ -1648,10 +1632,13 @@ class BoschBuderusSensor(
         if (
             snapshot is None
             or not snapshot.available
-            or not assess_switch_program(snapshot.resource).supported
+            or assess_switch_program(snapshot.resource).value_type != "level"
+            or self.entity_description.translation_key is None
         ):
             return self.entity_description.options
-        return _switch_program_options(snapshot.resource)
+        return switch_program_sensor.options(
+            snapshot.resource, self.entity_description.translation_key
+        )
 
     @property
     def available(self) -> bool:
@@ -2082,37 +2069,44 @@ class BoschBuderusSensor(
             self._switch_timer = None
         self._last_switch_level = None
 
-    def _switch_program_level(self) -> str | None:
+    def _switch_program_level(self) -> str | float | None:
         """Calculate the scheduled level using the gateway's local clock."""
         snapshot = self._snapshot
         if snapshot is None or not snapshot.available:
             return None
+        now = self._program_clock()
+        level = switch_program_sensor.state(
+            assess_switch_program(snapshot.resource),
+            self.entity_description.device_class is not SensorDeviceClass.ENUM,
+            now.weekday(),
+            now.hour * 60 + now.minute,
+        )
+        if level is None or isinstance(level, float):
+            return level
+        return self._validated_enum_state(level)
+
+    def _program_clock(self) -> datetime:
+        """Now, by the gateway's clock (its time zone when reported)."""
         zone = holiday_timezone(
             self.coordinator.resources,
             dt_util.get_default_time_zone(),
             timezones=self.coordinator.holiday_timezones,
         )
-        now = dt_util.utcnow().astimezone(zone)
-        level = assess_switch_program(snapshot.resource).active_level(
-            now.weekday(), now.hour * 60 + now.minute
-        )
-        return None if level is None else self._validated_enum_state(level)
+        return dt_util.utcnow().astimezone(zone)
 
     def _switch_program_attributes(self) -> dict[str, object] | None:
         """Expose the weekly switch points and reported limits, never a URI."""
         snapshot = self._snapshot
         if snapshot is None or not snapshot.available:
             return None
-        assessment = assess_switch_program(snapshot.resource)
-        if not assessment.supported:
-            return None
-        schedule = assessment.schedule()
-        return {
-            "switch_points": {day: schedule[day] for day in DAYS if day in schedule},
-            "max_switch_points": assessment.max_switch_points,
-            "max_switch_points_per_day": assessment.max_switch_points_per_day,
-            "time_raster_minutes": assessment.time_raster,
-        }
+        now = self._program_clock()
+        return switch_program_sensor.attributes(
+            snapshot.resource,
+            self.coordinator.switch_program_readings(),
+            self.entity_description.device_class is not SensorDeviceClass.ENUM,
+            now.weekday(),
+            now.hour * 60 + now.minute,
+        )
 
     @property
     def device_info(self) -> DeviceInfo:

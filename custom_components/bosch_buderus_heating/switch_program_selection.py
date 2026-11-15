@@ -17,6 +17,7 @@ from collections.abc import Mapping
 from typing import Final
 
 from .pointt.models import JsonScalar, Resource
+from .program_names import display_name
 from .switch_programs import assess_switch_program
 from .write_policies import EnumWritePolicy
 
@@ -84,13 +85,9 @@ def offered_programs(
 
 
 def program_name(resource: Resource | None) -> str | None:
-    """A program name the gateway reports (``switchPrograms/nameA``), if set."""
-    if (
-        resource is None
-        or resource.metadata.resource_type != "stringValue"
-        or not resource.has_value
-        or not isinstance(resource.value, str)
-    ):
-        return None
-    name = resource.value.strip()
-    return name if name and name.isprintable() and len(name) <= 64 else None
+    """A program name the gateway reports (``switchPrograms/nameA``), if set.
+
+    TP-05: decoded as its ``valueConfig`` says (a Base64 name is shown as
+    text); a name that cannot be decoded is not shown.
+    """
+    return display_name(resource)
