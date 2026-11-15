@@ -217,13 +217,13 @@ def year_value(ledger: Ledger, year: int, today: date) -> PeriodValue | None:
         month = add_months(month, 1)
     if not months:
         return None
-    # A month without data adds nothing; a year of gaps only is a gap.
-    recorded = [item for item in months if not item.gap]
+    # A month without data adds nothing (its sum is 0, ``_cell_value``); a
+    # year of gaps only is a gap.
     return PeriodValue(
         date(year, 1, 1),
         date(year + 1, 1, 1),
-        sum(item.y for item in recorded),
-        sum(item.c for item in recorded),
+        sum(item.y for item in months),
+        sum(item.c for item in months),
         all(item.final for item in months) and last == date(year, 12, 1),
         max((item.resolution for item in months), key=_RESOLUTIONS.index),
         frozenset().union(*(item.sources for item in months)),

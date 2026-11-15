@@ -110,6 +110,36 @@ def test_a_day_without_data_is_no_energy_in_any_period() -> None:
     assert plan.rows[-1][3] == pytest.approx(21 * 2.0)
 
 
+def test_a_stored_placeholder_of_an_earlier_version_is_read_as_a_gap() -> None:
+    stored = {
+        "days": {
+            "2026-11-12": [1.0, 0.0, LOCAL, 2, True],
+            "2026-11-13": [2.0, 24.0, LOCAL, 2, True],
+        }
+    }
+    ledger = Ledger(HEAT, stored)
+    assert ledger.days["2026-11-12"][:2] == [0.0, 0.0]
+    assert ledger.days["2026-11-13"][:2] == [2.0, 24.0]
+    assert ledger.start_import(0.0, Z)
+    plan = ledger.plan(local(2026, 11, 20).astimezone(UTC), Z)
+    assert [row[1] for row in plan.rows] == [2.0]
+
+
+def test_a_month_without_data_is_no_rest_for_the_import() -> None:
+    """A month the plant reports without data is no month value: its days
+    before the first known day are gaps, not a negative rest."""
+    ledger = Ledger(HEAT)
+    ledger.months["2026-09-01"] = [30.0, 1.0, LOCAL, 2, True]
+    ledger.months["2026-10-01"] = [0.0, 0.0, LOCAL, 2, True]
+    for day in ("2026-10-20", "2026-10-21"):
+        ledger.days[day] = [12.0, 24.0, LOCAL, 2, True]
+    assert ledger.start_import(0.0, Z)
+    plan = ledger.plan(local(2026, 12, 1).astimezone(UTC), Z)
+    assert ledger.stats["negative_rest"] == 0
+    assert ledger.stats["import_gap_days"] == 19
+    assert [row[1] for row in plan.rows] == [30.0, 12.0, 12.0]
+
+
 def test_a_day_of_gap_hours_only_has_no_value() -> None:
     """A day whose hours are all without data shows no value, not 0 kWh."""
     ledger = Ledger(HEAT)
@@ -156,7 +186,7 @@ def test_a_month_without_data_adds_nothing_to_its_year() -> None:
     ledger = Ledger(HEAT)
     for month, cell in (
         ("2026-01-01", [10.0, 1.0]),
-        ("2026-02-01", [0.0, 0.0]),
+        ("2026-02-01", [1.0, 0.0]),  # a placeholder kept by an older version
         ("2026-03-01", [5.0, 1.0]),
     ):
         ledger.months[month] = [*cell, LOCAL, 2, True]
@@ -192,6 +222,20 @@ async def test_yesterday_without_data_shows_no_value(hass: HomeAssistant) -> Non
     rec.ledgers["total_heat"].days["2026-11-13"] = [0.0, 0.0, LOCAL, 2, True]
     rec._publish_all(clock.now, Z)
     assert name not in rec.published
+    # Where the entity has the counters to fall back on, they stand in.
+    spec = next(item for item in rec.specs() if item.key == name)
+    rec._counted[(spec.measure.key, Period.YESTERDAY)] = PeriodValue(
+        date(2026, 11, 13),
+        date(2026, 11, 14),
+        5.0,
+        1.0,
+        True,
+        "hourly",
+        frozenset({"counters"}),
+    )
+    rec._publish_all(clock.now, Z)
+    assert rec.published[name][2:4] == [5.0, "counters"]
+    rec._counted.clear()
     # Not confirmed yet: the last value stays until it is.
     rec.published[name] = ["2026-11-12", "2026-11-13", 7.0, "local_recording", "daily"]
     rec.ledgers["total_heat"].days["2026-11-13"] = [0.0, 0.0, LOCAL, 1, False]
@@ -595,3 +639,38 @@ async def test_rows_off_the_full_hour_are_never_written(
     assert heat not in rows and rows[outdoor]
     assert rec.ledgers["total_heat"].imp is not None
     assert rec.ledgers["total_heat"].imp["rows"] == []
+
+
+async def test_the_performance_factors_take_no_month_without_data(
+    hass: HomeAssistant, freezer: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A past month the plant reports without data is no month of 0 kWh
+    for the performance factors."""
+    from tests.test_performance import View, _at, _engine, air
+    from tests.test_performance import local as plant_local
+
+    class GapView(View):
+        def monthly(self, key: str, first: date, today: date) -> PeriodValue | None:
+            value = super().monthly(key, first, today)
+            if value is None or first != date(2026, 9, 1):
+                return value
+            return PeriodValue(
+                value.start, value.end, 0.0, 0.0, True, "monthly", value.sources
+            )
+
+    plant = air(hass, freezer)
+    _at(plant, plant_local(2026, 11, 15, 12, 0))
+    months = {date(2026, 9, 1): 300.0, date(2026, 10, 1): 400.0}
+    view = GapView(
+        {"total_heat": {}, "total_electricity": {}},
+        months={"total_heat": dict(months), "total_electricity": dict(months)},
+    )
+    monkeypatch.setattr(
+        "custom_components.bosch_buderus_heating.recordings.recordings_view",
+        lambda _hass, _gateway: view,
+    )
+    engine = await _engine(plant)
+    await engine.async_refresh(full=True)
+    recorded = engine._recorded_months[("total", "heat")]
+    assert date(2026, 10, 1) in recorded
+    assert date(2026, 9, 1) not in recorded

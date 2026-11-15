@@ -695,7 +695,9 @@ def _cells(value: object) -> dict[str, Cell]:
             and cell[2] in _RANK
         ):
             cells[key] = [
-                float(cell[0]),
+                # A gap kept by an earlier version with the plant's
+                # placeholder sum: no energy.
+                float(cell[0]) if cell[1] > 0 else 0.0,
                 float(cell[1]),
                 cell[2],
                 int(cell[3]),
