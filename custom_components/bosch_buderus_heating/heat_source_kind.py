@@ -34,9 +34,15 @@ WATER: Final = "water"
 KINDS: Final = (AIR, BRINE, WATER)
 
 HEAT_PUMP_TYPE: Final = re.compile(r"/heatSources/hs\d+/heatPumpType")
+# By option key. The gateway reports ``air_water``, ``exhaustAir_water``
+# (``exhaustair_water``) and ``liquid_water``; a liquid source is a brine
+# or water circuit, shown as brine (neither defrosts). The other keys are
+# the names the heat pump type sensor shows for them.
 _REPORTED: Final = {
     "air_water": AIR,
+    "exhaustair_water": AIR,
     "exhaust_air": AIR,
+    "liquid_water": BRINE,
     "brine_water": BRINE,
     "water_water": WATER,
 }

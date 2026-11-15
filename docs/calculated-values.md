@@ -65,7 +65,7 @@ climate shows no `hvac_action`.
 ## Defrosts
 
 Only a plant with evidence that it defrosts gets these entities: a heat pump
-whose reported type is `air_water` (or `exhaust_air`), one with a defrost
+whose reported type is `air_water` (or `exhaustAir_water`), one with a defrost
 signal or defrost flag, the air inlet temperature TL2 or the outdoor unit's
 fan, or one whose status has reported a defrost. A brine-to-water heat pump
 shares the controller platform and many signal names (4-way valve, drip pan
@@ -168,8 +168,10 @@ type decides first. Without it only readings that exist on one kind count:
 a defrost signal, defrost flag or reported defrost, TL2 or the outdoor unit's
 fan for air; a reading of the brine circuit (collector temperatures, brine
 pump, pressure, flow) for brine. Names of shared signals never count, and
-contradicting evidence gives no type. `water` is known only from a reported
-type. With such evidence but no module with a product name, the sensor is
+contradicting evidence gives no type. The gateway reports the type as
+`air_water` or `exhaustAir_water` (both `air`) or `liquid_water`, which
+covers brine and water circuits and shows as `brine`; so `water` does not
+come from the gateway's reported type today. With such evidence but no module with a product name, the sensor is
 created all the same, without a state and with `known: false`.
 
 The diagnostics show the type and its evidence (`heat_source_type`,

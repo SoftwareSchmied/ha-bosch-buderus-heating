@@ -329,9 +329,34 @@ def test_heat_source_kind_needs_evidence(
     assert classify(coordinator).kind == "air"
     plant.cloud(BRINE_IN, 6.0, unit="°C")
     assert classify(coordinator).kind is None  # contradicting evidence
-    plant.cloud(PUMP_TYPE, "brine_water")
+    plant.cloud(PUMP_TYPE, "liquid_water")  # as the gateway reports it
     assert classify(coordinator) == classify(coordinator)
     assert classify(coordinator).kind == "brine"  # the reported type decides
+
+
+@pytest.mark.parametrize(
+    ("reported", "kind"),
+    [
+        ("air_water", "air"),
+        ("exhaustAir_water", "air"),
+        ("liquid_water", "brine"),
+        ("brine_water", "brine"),
+        ("Unknown", None),
+    ],
+)
+def test_the_reported_heat_pump_type_decides(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, reported, kind
+) -> None:
+    """The gateway's own values (allowed values of ``heatPumpType``) decide
+    over readings of the other kind, so a liquid source never defrosts."""
+    plant = Plant(hass, freezer)
+    plant.local(TL2, 1.9, unitOfMeasure="C")  # air evidence
+    plant.cloud(BRINE_IN, 6.0, unit="°C")  # brine evidence
+    plant.cloud(PUMP_TYPE, reported)
+    result = classify(plant.coordinator)
+    assert result.kind == kind
+    if kind is not None:
+        assert result.evidence == (PUMP_TYPE,)
 
 
 # ------------------------------------------------------------------ entities

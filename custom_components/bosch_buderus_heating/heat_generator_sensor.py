@@ -46,7 +46,7 @@ from .heat_generator import (
     unnamed_hardware_cloud,
     unnamed_hardware_local,
 )
-from .heat_source_kind import SourceKind, classify
+from .heat_source_kind import KINDS, SourceKind, classify
 from .local_api.models import SystemInfo
 
 if TYPE_CHECKING:
@@ -59,6 +59,7 @@ if TYPE_CHECKING:
 CLOUD_PATH = "/system/info"
 LOCAL_PATH = "/system/basicInfo"
 _STORED_KEY = "heat_generators"
+_KIND_KEY = "heat_source_type"
 # What the sensor of a gateway shows, so the diagnostics name the same answer.
 _SHOWN: WeakKeyDictionary[object, HeatGenerators] = WeakKeyDictionary()
 
@@ -173,17 +174,23 @@ def shown_by(coordinator: object) -> HeatGenerators | None:
 
 @dataclass(frozen=True, slots=True)
 class _Stored(ExtraStoredData):
-    """The read fields of the shown modules; never a serial number."""
+    """The read fields of the shown modules; never a serial number. The heat
+    source kind is kept as well, so it shows from the start on."""
 
     data: dict[str, object] | None
+    kind: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {_STORED_KEY: self.data}
+        return {_STORED_KEY: self.data, _KIND_KEY: self.kind}
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> Self:
         data = value.get(_STORED_KEY)
-        return cls(data if isinstance(data, dict) else None)
+        kind = value.get(_KIND_KEY)
+        return cls(
+            data if isinstance(data, dict) else None,
+            kind if kind in KINDS else None,
+        )
 
 
 class BoschBuderusHeatGeneratorSensor(
@@ -228,21 +235,28 @@ class BoschBuderusHeatGeneratorSensor(
 
     @property
     def extra_restore_state_data(self) -> _Stored:
-        return _Stored(self._shown.to_data() if self._shown is not None else None)
+        return _Stored(
+            self._shown.to_data() if self._shown is not None else None,
+            self._kind.kind,
+        )
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (stored := await self.async_get_last_extra_data()) is not None:
+            restored = _Stored.from_dict(stored.as_dict())
             # Worked out again with the table of this version.
-            self._shown = from_data(_Stored.from_dict(stored.as_dict()).data)
+            self._shown = from_data(restored.data)
             self._remember()
+            if restored.kind is not None:
+                # Shown until the evidence is read again (no evidence paths).
+                self._kind = SourceKind(restored.kind, ())
         self._refresh()
 
     def _refresh(self) -> bool:
         """Take the current answer; True when what is shown changed."""
         kind = classify(self.coordinator)
         kind_changed = kind.kind is not None and kind.kind != self._kind.kind
-        if kind_changed:
+        if kind.kind is not None:
             self._kind = kind
         chosen, _conflict = choose(
             self._inputs.cloud(), self._inputs.local(), self._shown
