@@ -3,7 +3,8 @@
 The **Season switching** select controls the central season setting of one
 gateway, using `/system/seasonOptimizer/mode`. It appears only when that exact
 resource is discovered with string options and write permission. It does not
-create a separate setting for each heating circuit.
+create a separate setting for each heating circuit; for circuits that report
+a switching of their own, see [per heating circuit](#per-heating-circuit).
 
 | Offered code | English label | German label |
 | --- | --- | --- |
@@ -43,6 +44,19 @@ prevents a write. A missing read-back confirmation reports an error rather
 than claiming success. Diagnostics show the control's eligibility, known
 offered options and the count of other options, without exporting current
 settings or unknown option text.
+
+## Per heating circuit
+
+Since 0.9.2 a heating circuit that reports its own summer/winter switching
+(`suWiSwitchMode`, iCom/KM200 gateways) gets the select **Summer/winter
+switching** with the codes it offers among `automatic` (Automatic),
+`forced` (Heating only), `cooling` (Cooling only) and `off` (Off), and the
+number **Stop heating at outdoor temperature** (`suWiThreshold`). A K40
+reports no such paths and keeps the central select above; the circuits of
+a room controller keep their own settings. Write rules, the cooling
+threshold and the locks are described in
+[heating controls](heating-controls.md#heating-circuit-settings-summerwinter-cooling-and-temperature-levels).
+Expected, untested on a real installation.
 
 ## Evidence and limits
 
