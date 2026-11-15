@@ -277,8 +277,15 @@ Versioning after its first tagged preview.
     switched-off unit is refused (switch it on first), and auto and heat
     are refused while the unit runs in solar operation, as in the app.
   - Separate from the air conditioners of the second cloud. The switch
-    points of the active program are shown read-only as an attribute of the
-    active schedule; editing them is not offered yet.
+    points of the active program are shown as an attribute of the active
+    schedule.
+  - The switch points of the unit's weekly programs can be changed in the
+    schedule dialog and with the action `set_switch_points` on a new,
+    disabled schedule sensor per program. A switch point holds the mode and,
+    where the mode has them, a temperature and a fan speed, all from the
+    unit's program configuration; without a readable, writable
+    configuration a program is shown, never changed. The whole week is sent
+    once and read back.
   - I have only checked this with simulated data in automated tests; it is
     expected, untested on a real installation, and I am happy about
     feedback.
@@ -515,6 +522,11 @@ only; I have not yet checked them in the browser or on a real installation.
   - The wallbox reports list the wallbox's single values by path (known,
     writeable, refused, polled) and count the outcomes of commands and
     settings, without values, labels, names or prices.
+  - The new section `pointt_air_conditioners` describes each air conditioner
+    on a PointT gateway: family, detection, freshness, readable and writable
+    paths, offered controls, how many programs were read, why a program
+    cannot be changed and the counts of changes, without values, program
+    IDs or names.
 - **Heating circuit settings in the diagnostics:** the new section
   `circuit_controls` counts temperature levels with a name that is not
   operated and says, for an iCom gateway, whether the two tariff paths exist

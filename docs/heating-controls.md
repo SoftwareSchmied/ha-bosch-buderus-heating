@@ -347,6 +347,7 @@ gateway reports them:
 | Zone programs | `/zones/{zone}/switchPrograms/heating` and `.../cooling` | Temperature as text (or as a number, as read) | range and step are reported |
 | Ventilation program | `/ventilation/zone1/switchPrograms/cp` | `min`, `red`, `nom`, `max`, `dem`, `off` | the levels are listed as references of `ventilationLevels`; only those are offered |
 | WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range |
+| Air conditioner programs (PointT gateway of type `rac`) | `/airConditioning/switchPrograms/program1` ... `program9` | Mode, temperature and fan speed, such as `cool 24.0 auto`, or `off` | the program configuration is readable and writable; see [air conditioners on a PointT gateway](pointt-air-conditioners.md#changing-switch-points) |
 
 Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
 `maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never fall back to
@@ -355,10 +356,10 @@ not offered for changes, and the diagnostics name the reason. A temperature
 outside the range or off the step is refused, never rounded. Off (`"0.0"`)
 is offered only where the program already holds it. The cooling program is
 written as program `A` only, the zone heating and cooling programs
-separately. The WDDW2 program is the only one sent as the object
+separately. The WDDW2 and air conditioner programs are sent as the object
 `{"switchPoints": [...]}`; all others go out as a raw array. A WDDW2 day
-without points has no setpoint; the others carry the previous day's last
-point over.
+without points has no setpoint and an air conditioner is off before the
+first point of a day; the others carry the previous day's last point over.
 
 The sensor of an absolute or zone program shows the temperature scheduled
 now, a WDDW2 sensor as well; a switched-off point shows no temperature and
@@ -741,7 +742,11 @@ nur mit lesbarer Kühlstufe `on`), die Zonenprogramme
 das Lüftungsprogramm `/ventilation/zone1/switchPrograms/cp` (nur die als
 Referenzen von `ventilationLevels` gemeldeten Stufen) und das
 WDDW2-Warmwasserprogramm `/dhwCircuits/dhw1/switchPrograms/program1`
-(ganze Grad als Text oder `off`, Bereich aus `manualSetpoint`).
+(ganze Grad als Text oder `off`, Bereich aus `manualSetpoint`). Dazu kommen
+die Programme von Klimageräten an einem PointT-Gateway
+(`/airConditioning/switchPrograms/program1` bis `program9`, Betriebsart,
+Temperatur und Lüfterstufe wie `cool 24.0 auto` oder `off`; siehe
+[Klimageräte am PointT-Gateway](pointt-air-conditioners.md)).
 
 Änderbar ist ein solches Programm nur mit den gemeldeten Grenzen
 (`maxNbOfSwitchPoints`, `maxNbOfSwitchPointsPerDay`,
@@ -751,8 +756,8 @@ Ersatzwerte der App verwende ich nie. Ohne diese Angaben erscheint das
 Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
 außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
 gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das
-WDDW2-Programm geht als einziges als Objekt `{"switchPoints": [...]}`
-hinaus, alle anderen als rohes Array.
+WDDW2-Programm und die Klimageräte-Programme gehen als Objekt
+`{"switchPoints": [...]}` hinaus, alle anderen als rohes Array.
 
 Keines dieser Programme wurde an einer echten Anlage gelesen oder geändert;
 die Formen folgen der App des Herstellers. Lesen und Schreiben sind

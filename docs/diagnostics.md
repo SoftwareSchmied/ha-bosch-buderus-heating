@@ -92,7 +92,10 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   gateway (device type `rac`) with the detected family, the detection
   state, freshness, readable, missing and writable paths, the offered
   controls, the number of listed functions, whether the active program was
-  read and the count of sent and refused changes (see [air conditioners on a PointT gateway](pointt-air-conditioners.md#diagnostics)).
+  read, the count of sent and refused changes, and for the weekly programs
+  `programs_read`, `program_edit_issues` (tokens such as
+  `program_configuration_missing` or `editable`, no program IDs) and
+  `program_writes` (see [air conditioners on a PointT gateway](pointt-air-conditioners.md#diagnostics)).
 
 The anonymized inventory keeps dropping all of these sections.
 

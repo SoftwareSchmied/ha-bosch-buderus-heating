@@ -54,8 +54,9 @@ get one enabled climate entity named after the device and, disabled by
 default, switches for full power, sleep mode, frost-protection heating
 and air purification, the select spot air direction, switch-on and
 switch-off timers, the schedule switch, the active schedule select, the
-button to end a temporary override and the diagnostic binary sensor
-solar operation. Unique IDs follow `<gateway>:airConditioning:<path>`
+button to end a temporary override, the diagnostic binary sensor
+solar operation and one schedule sensor per program (the target of the
+action `set_switch_points`). Unique IDs follow `<gateway>:airConditioning:<path>`
 (`<gateway>:airConditioning:climate` for the climate entity,
 `<gateway>:pv:enable` for the solar state). Expected, untested on a real
 installation; see [air conditioners on a PointT gateway](pointt-air-conditioners.md).
