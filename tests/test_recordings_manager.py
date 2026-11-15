@@ -206,14 +206,21 @@ async def test_the_start_reads_the_whole_history_then_hourly_the_last_two_days(
     clock.now += timedelta(hours=1)
     rec.request(key("total_heat", Period.YESTERDAY))
     await rec.async_run("hourly")
-    assert {path for path, _ in driver.requests} == {
-        BY_KEY[item].path for item in PLANT
-    }
+    # Hourly only what something needs: here the one enabled entity.
+    assert [path for path, _ in driver.requests] == [BY_KEY["total_heat"].path]
     assert all(
         query
         == {"sampleRate": "PT1H", "startDate": "2026-11-12", "endDate": "2026-11-14"}
         for _, query in driver.requests
     )
+    # Another feature (performance factors) adds the energy series.
+    driver.requests.clear()
+    release = recordings_view(hass, GW).acquire()
+    await rec.async_run("hourly")
+    assert {path for path, _ in driver.requests} == {
+        BY_KEY[item].path for item in PLANT if BY_KEY[item].cloud
+    }
+    release()
     driver.requests.clear()
     clock.now += timedelta(hours=25)
     await rec.async_run("hourly")
@@ -541,3 +548,207 @@ async def test_one_fixed_plausibility_limit_for_every_recording(
     stats = rec.ledgers["total_heat"].stats
     assert (stats["discarded_implausible"] > 0) is discarded
     assert rec.ledgers["total_eheater"].stats["discarded_implausible"] == 0
+
+
+# ------------------------------------- findings of a real installation
+class BusyDriver(Driver):
+    """The local access is busy for some paths at first (as at a start)."""
+
+    def __init__(self, clock: Clock, busy: dict[str, int]) -> None:
+        super().__init__(clock)
+        self.busy = dict(busy)
+
+    async def read_explicit(self, request):
+        left = self.busy.get(request.path, 0)
+        if left > 0:
+            self.busy[request.path] = left - 1
+            self.requests.append((request.path, dict(request.query)))
+            return ReadResult(request, ReadState.DEFERRED, problem=ReadProblem.BUSY)
+        return await super().read_explicit(request)
+
+
+async def test_busy_paths_are_asked_again_within_the_start_run(
+    hass: HomeAssistant, monkeypatch
+) -> None:
+    """Every series (and so every period entity) is known after the first
+    run, also when the local access was busy for some paths at first."""
+    from custom_components.bosch_buderus_heating.recordings import manager as module
+
+    monkeypatch.setattr(module, "BUSY_RETRY_SECONDS", 0)
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    dhw = BY_KEY["ch_heat"].path
+    driver = BusyDriver(clock, {dhw: 2, BY_KEY["outdoor_temperature"].path: 1})
+    rec = await manager(hass, clock, [driver])
+    await rec.async_run("start")
+    assert set(rec.available()) == set(PLANT)
+    assert rec._full_done
+    assert [query for path, query in driver.requests if path == dhw] == [
+        {"sampleRate": "all"}
+    ] * 3
+    assert "local_busy_left" not in rec.runs[-1]
+    # Still busy after the retries: the run says so, the next one reads all.
+    driver = BusyDriver(clock, {dhw: module.BUSY_RETRIES + 1})
+    again = await manager(hass, clock, [driver], entry=MockConfigEntry(domain=DOMAIN))
+    await again.async_run("start")
+    assert again.runs[-1]["local_busy_left"] == 1
+    assert not again._full_done and "ch_heat" not in again.available()
+
+
+async def test_an_entity_added_after_a_run_gets_its_value_without_a_read(
+    hass: HomeAssistant,
+) -> None:
+    """The start run finds the series; their entities are added afterwards
+    and get their values from what is stored, not an hour later."""
+    from tests.ha_test_helpers import async_fire_time_changed
+
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver])
+    await rec.async_run("start")
+    month = key("total_heat", Period.CURRENT_MONTH)
+    yesterday = key("total_heat", Period.YESTERDAY)
+    spec = {item.key: item for item in rec.specs()}
+    assert rec.shown(spec[month]) is None
+    driver.requests.clear()
+    rec.request(month)
+    rec.request(yesterday)
+    async_fire_time_changed(hass, dt_util_now() + timedelta(seconds=2))
+    await hass.async_block_till_done()
+    assert driver.requests == []  # no read
+    assert rec.shown(spec[month]) is not None
+    # Yesterday needs a second read (rule 5): not shown yet.
+    assert rec.shown(spec[yesterday]) is None
+
+
+def dt_util_now() -> datetime:
+    from homeassistant.util import dt as dt_util
+
+    return dt_util.utcnow()
+
+
+async def test_the_start_run_is_confirmed_soon_after(hass: HomeAssistant) -> None:
+    """Yesterday follows a second read of the needed series a few minutes
+    after the start run, unless the hourly run comes first anyway."""
+    from custom_components.bosch_buderus_heating.recordings import manager as module
+    from tests.ha_test_helpers import async_fire_time_changed
+
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=30))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver])
+    yesterday = key("total_heat", Period.YESTERDAY)
+    rec.request(yesterday)
+    # Scheduled runs (the start and hourly timers themselves stay out).
+    rec._unsubs.append(lambda: None)
+    try:
+        await rec.async_run("start")
+        spec = {item.key: item for item in rec.specs()}[yesterday]
+        assert rec.shown(spec) is None
+        due = rec.next_run
+        assert due is not None
+        assert (due - clock.now).total_seconds() == module.CONFIRM_DELAY
+        driver.requests.clear()
+        clock.now += timedelta(seconds=module.CONFIRM_DELAY)
+        async_fire_time_changed(
+            hass, dt_util_now() + timedelta(seconds=module.CONFIRM_DELAY + 1)
+        )
+        await hass.async_block_till_done()
+        await hass.async_block_till_done()
+        assert rec.runs[-1]["reason"] == "confirm"
+        # Only the needed series, the last two days.
+        assert [path for path, _ in driver.requests] == [BY_KEY["total_heat"].path]
+        assert rec.shown(spec) is not None
+        # The diagnostics name the hourly run as the next one (minute 20).
+        assert rec.next_run is not None and rec.next_run.minute == 20
+        assert rec.diagnostics()["next_run_in_seconds"] > 0
+        # Close before the hourly run: no extra confirmation.
+        clock.now = (local(2026, 11, 14, 11) + timedelta(minutes=12)).astimezone(UTC)
+        count = len(rec._unsubs)
+        rec._schedule_confirm()
+        assert len(rec._unsubs) == count
+    finally:
+        rec.stop()
+
+
+async def test_a_series_needed_again_after_a_while_is_read_whole(
+    hass: HomeAssistant,
+) -> None:
+    """V5: series nothing needs are not read hourly; one needed again after
+    more than a day and a half gets its whole history once."""
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver])
+    heat = key("total_heat", Period.YESTERDAY)
+    rec.request(heat)
+    await rec.async_run("start")
+    for _ in range(40):
+        clock.now += timedelta(hours=1)
+        driver.requests.clear()
+        await rec.async_run("hourly")
+        assert BY_KEY["outdoor_temperature"].path not in {
+            path for path, query in driver.requests if query.get("sampleRate") == "PT1H"
+        }
+    driver.requests.clear()
+    clock.now += timedelta(hours=1)
+    rec.request(key("outdoor_temperature", Period.YESTERDAY))
+    await rec.async_run("hourly")
+    asked = dict(driver.requests)
+    assert asked[BY_KEY["outdoor_temperature"].path] == {"sampleRate": "all"}
+    assert asked[BY_KEY["total_heat"].path]["sampleRate"] == "PT1H"
+
+
+async def test_the_import_reads_every_series_hourly(hass: HomeAssistant) -> None:
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={OPTION_IMPORT: True})
+    rec = await manager(hass, clock, [driver], entry=entry)
+    await rec.async_run("start")
+    driver.requests.clear()
+    clock.now += timedelta(hours=1)
+    await rec.async_run("hourly")
+    assert {path for path, _ in driver.requests} >= {
+        BY_KEY[item].path for item in PLANT
+    }
+
+
+async def test_a_comparison_copy_alone_needs_no_hourly_read(
+    hass: HomeAssistant,
+) -> None:
+    """The calculated comparison comes from the counters, not the recording."""
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver])
+    await rec.async_run("start")
+    rec.request(key("total_heat", Period.YESTERDAY, CALCULATED))
+    assert rec.hourly_series() == frozenset()
+    rec.request(key("ch_heat", Period.YESTERDAY, CALCULATED))  # primary
+    assert rec.hourly_series() == {"ch_heat"}
+
+
+async def test_values_wanted_during_a_run_follow_after_it(
+    hass: HomeAssistant,
+) -> None:
+    from tests.ha_test_helpers import async_fire_time_changed
+
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver])
+    await rec.async_run("start")
+    month = key("total_heat", Period.CURRENT_MONTH)
+    rec.running = True  # a run is going on
+    rec.request(month)
+    async_fire_time_changed(hass, dt_util_now() + timedelta(seconds=2))
+    await hass.async_block_till_done()
+    assert rec._values_after_run and month not in rec.published
+    rec.running = False
+    # The run publishes the requested values; a later need follows it.
+    await rec.async_run("manual")
+    assert month in rec.published
+    assert rec._values_unsub is not None  # scheduled after the run
+    async_fire_time_changed(hass, dt_util_now() + timedelta(seconds=4))
+    await hass.async_block_till_done()
+    assert rec._values_unsub is None
+    # And the start timer names the hourly run as the next one.
+    rec.running = True
+    rec._due_start(dt_util_now())
+    assert rec.next_run is not None and rec.next_run.minute == 20
+    rec.running = False

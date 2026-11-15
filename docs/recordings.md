@@ -25,9 +25,20 @@ ventilation systems.
 1. **Local data port** (preferred): with a set-up local access. After every
    start of Home Assistant each recording is read once with its whole
    history (about ten days of hours, the days since recording began and the
-   months). Afterwards, every hour at minute 20, the hours of the last two
-   days are read again for each recording that answered (about 13 reads per
-   hour on a typical heat pump).
+   months). A recording the local access reports as busy is asked again
+   twice within the same run, so all period entities exist after the first
+   run. Afterwards, every hour at minute 20, the hours of the last two days
+   are read again, but only for the recordings something needs: those of
+   enabled period entities and, for the performance factors, the nine energy
+   recordings; with the import switched on every recording. With the default
+   entities that is about nine reads per hour on a typical heat pump (about
+   20 with the import on). A recording that was not read for more than a day
+   and a half is read with its whole history once it is needed again.
+   About five minutes after the start, the needed recordings are read once
+   more (unless the hourly run comes sooner): a past hour only counts after
+   two reads with the same value, so yesterday is shown then instead of
+   after the next hourly run. Entities added after a run get their values
+   right away from what was already read.
 2. **Cloud**: only when the local access is missing or does not answer, and
    only for the nine energy recordings (heat, compressor and heater for
    total, heating and hot water). Every hour today, and yesterday until it

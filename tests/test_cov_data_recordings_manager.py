@@ -290,8 +290,11 @@ class _FlakyDriver(Driver):
     ],
 )
 async def test_the_whole_history_is_read_again_until_every_path_answered(
-    hass: HomeAssistant, state: ReadState, problem: str
+    hass: HomeAssistant, state: ReadState, problem: str, monkeypatch
 ) -> None:
+    from custom_components.bosch_buderus_heating.recordings import manager as module
+
+    monkeypatch.setattr(module, "BUSY_RETRY_SECONDS", 0)
     clock = _clock()
     driver = _FlakyDriver(clock, state, problem)
     rec = await manager(hass, clock, [driver])
@@ -299,12 +302,10 @@ async def test_the_whole_history_is_read_again_until_every_path_answered(
     await rec.async_run("start")
     assert not rec._full_done
     assert "total_heat" not in rec.available()
-    assert (
-        rec.runs[-1]["outcomes"].get(
-            f"local_{'busy' if state is ReadState.DEFERRED else 'failed'}"
-        )
-        == 1
-    )
+    # A busy path is asked again within the run (twice), a failed one not.
+    assert rec.runs[-1]["outcomes"].get(
+        f"local_{'busy' if state is ReadState.DEFERRED else 'failed'}"
+    ) == (1 + module.BUSY_RETRIES if state is ReadState.DEFERRED else 1)
     driver.requests.clear()
     driver.broken = False
     clock.now += timedelta(hours=1)

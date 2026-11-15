@@ -8,11 +8,16 @@ Reads (``async_run``):
 
 - Local first. After every start of Home Assistant every candidate path is
   read once with ``sampleRate=all`` (hours of about ten days, days and
-  months since the recording began); afterwards every hour the hours of
-  yesterday and today (``PT1H``) of the paths that answered. A path that
-  answered 404 is tried again once a day, one that answered 403 not before
-  the next start. After a day without local answers the whole history is
-  read again.
+  months since the recording began); a path the local access reports busy
+  is asked again twice within the same run, so every series (and its
+  entities) is known after the first run. Afterwards every hour the hours
+  of the last two days (``PT1H``), only of the series something needs:
+  every series while the import is on, otherwise the series of enabled
+  entities and the energy series other features use (performance factors).
+  A series not read for longer than ``LOCAL_FULL_AFTER`` is read with
+  ``all`` again once it is needed. A path that answered 404 is tried again
+  once a day, one that answered 403 not before the next start. After a day
+  without local answers the whole history is read again.
 - The cloud only without a working local access, only for the nine energy
   paths and within ``CLOUD_BUDGET`` reads per run: today every run,
   yesterday until it is final, then the older days, months and years still
@@ -22,12 +27,17 @@ Reads (``async_run``):
 
 Runs start ``START_DELAY`` after the setup in the background and then every
 hour at minute ``RUN_MINUTE``, so the hour before has ended for at least 15
-minutes. The import into the long-term statistics runs only when switched
-on in the options.
+minutes. An entity added after a run (the first run finds the series and so
+the entities) gets its value at once from what is stored, without a read;
+a value that needs a second read (yesterday, rule 5) follows from a read of
+the needed series ``CONFIRM_DELAY`` after the start run, unless the hourly
+run comes first anyway. The import into the long-term statistics runs only
+when switched on in the options.
 """
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import logging
 from collections import deque
@@ -38,7 +48,7 @@ from typing import TYPE_CHECKING, Any, Final
 from weakref import WeakSet
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HassJob, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later, async_track_time_change
@@ -96,6 +106,16 @@ LOCAL_FULL_AFTER: Final = timedelta(hours=36)
 # Long-term statistics of a counter are complete this long after a period.
 COUNTER_SETTLE: Final = timedelta(minutes=80)
 RUNS_KEPT: Final = 12
+# A path the local access reports busy is asked again this often per run,
+# this long apart.
+BUSY_RETRIES: Final = 2
+BUSY_RETRY_SECONDS: Final = 15.0
+# Entities added close together get their values worked out once.
+VALUES_DELAY: Final = 1.0
+# After the start run, the series something needs are read once more this
+# much later: a past hour counts only after two reads with the same value
+# (rule 5), so yesterday is shown then instead of after the hourly run.
+CONFIRM_DELAY: Final = 300.0
 _MANAGERS: HassKey[dict[tuple[str, str], RecordingsManager]] = HassKey(
     f"{DOMAIN}_recordings"
 )
@@ -194,6 +214,10 @@ class RecordingsManager:
         self.next_run: datetime | None = None
         self._unsubs: list[CALLBACK_TYPE] = []
         self._schedule_wanted = False
+        # Working out the entities' values without a read (newly added ones).
+        self._values_unsub: CALLBACK_TYPE | None = None
+        self._values_after_run = False
+        self._values_lock = asyncio.Lock()
 
     # ------------------------------------------------------------ lifecycle
     @callback
@@ -243,6 +267,8 @@ class RecordingsManager:
         self.loaded = True
         self.waiting = None
         self._notify()  # entities of the series known from the last run
+        if any(key not in self.published for key in self._requested):
+            self._schedule_values()
         if self.stopped or not schedule:
             return
         self._schedule_wanted = True
@@ -264,7 +290,18 @@ class RecordingsManager:
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
+        if self._values_unsub is not None:
+            self._values_unsub()
+            self._values_unsub = None
         self.next_run = None
+
+    def _next_hourly(self) -> datetime:
+        """The next hourly run (minute ``RUN_MINUTE``, local time)."""
+        now = dt_util.as_local(self._now())
+        due = now.replace(minute=RUN_MINUTE, second=0, microsecond=0)
+        if due <= now:
+            due += timedelta(hours=1)
+        return due
 
     @callback
     def stop(self) -> None:
@@ -276,7 +313,25 @@ class RecordingsManager:
 
     @callback
     def _due_start(self, _now: datetime) -> None:
+        # Afterwards the hourly run is the next one (diagnostics).
+        self.next_run = self._next_hourly()
         self._background("start")
+
+    @callback
+    def _schedule_confirm(self) -> None:
+        """Read the needed series once more soon after the start run."""
+        due = self._now() + timedelta(seconds=CONFIRM_DELAY)
+        if self._next_hourly() - due < timedelta(seconds=CONFIRM_DELAY):
+            return  # the hourly run comes soon enough
+        self._unsubs.append(
+            async_call_later(self.hass, CONFIRM_DELAY, self._due_confirm)
+        )
+        self.next_run = due
+
+    @callback
+    def _due_confirm(self, _now: datetime) -> None:
+        self.next_run = self._next_hourly()
+        self._background("confirm")
 
     @callback
     def _due_hourly(self, now: datetime) -> None:
@@ -341,8 +396,14 @@ class RecordingsManager:
     # ------------------------------------------------------------- demand
     @callback
     def request(self, key: str) -> Callable[[], None]:
-        """An enabled entity needs its value; returns its release."""
+        """An enabled entity needs its value; returns its release.
+
+        An entity without a value yet gets it from what is stored, without
+        a read and without waiting for the next hourly run.
+        """
         self._requested[key] = self._requested.get(key, 0) + 1
+        if key not in self.published:
+            self._schedule_values()
 
         @callback
         def release() -> None:
@@ -368,6 +429,67 @@ class RecordingsManager:
                 self._consumers -= 1
 
         return release
+
+    def hourly_series(self) -> frozenset[str]:
+        """The series read every hour (V5): every series while the import is
+        on; otherwise those of enabled entities (their recorded method) and,
+        while another feature reads the recordings, the energy series."""
+        if import_enabled(self.entry):
+            return frozenset(BY_KEY)
+        keys: set[str] = set()
+        if self._consumers > 0:
+            keys.update(series.key for series in SERIES if series.cloud)
+        wanted = set(self._requested)
+        for spec in self.specs():
+            if spec.key in wanted and (spec.primary or spec.method == RECORDING):
+                keys.update(spec.measure.parts)
+        return frozenset(keys)
+
+    @callback
+    def _schedule_values(self) -> None:
+        if self._values_unsub is not None or self.stopped or not self.loaded:
+            return
+        self._values_unsub = async_call_later(
+            self.hass,
+            VALUES_DELAY,
+            HassJob(self._due_values, "recordings values", cancel_on_shutdown=True),
+        )
+
+    @callback
+    def _due_values(self, _now: datetime) -> None:
+        self._values_unsub = None
+        if self.stopped:
+            return
+        if self.running:
+            # The run publishes too; anything added after it, afterwards.
+            self._values_after_run = True
+            return
+        self.entry.async_create_background_task(
+            self.hass, self.async_refresh_values(), "bosch_buderus_heating_recordings"
+        )
+
+    async def async_refresh_values(self) -> None:
+        """Work out the requested values from the stored series, no read."""
+        if self.stopped or not self.loaded:
+            return
+        now = self._now()
+        zone = dt_util.get_default_time_zone()
+        try:
+            await self._values(now, zone)
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Working out the recordings' values failed",
+                error=err,
+            )
+        self._save()
+        self._notify()
+
+    async def _values(self, now: datetime, zone: tzinfo) -> None:
+        async with self._values_lock:
+            await self._count(now, zone)
+            self._publish_all(now, zone)
 
     def needed(self) -> bool:
         """Read only for an entity, the import or another feature; and once
@@ -466,8 +588,7 @@ class RecordingsManager:
             )
             report["import_failed"] = True
         try:
-            await self._count(now, zone)
-            self._publish_all(now, zone)
+            await self._values(now, zone)
             self._detected = True
         except Exception as err:
             log_failure(
@@ -482,6 +603,11 @@ class RecordingsManager:
             self.running = False
             self._save()
             self._notify()
+            if self._values_after_run:
+                self._values_after_run = False
+                self._schedule_values()
+            if reason == "start" and self._unsubs and not self.stopped:
+                self._schedule_confirm()
 
     def _local_drivers(self) -> list[Any]:
         coordinator = self.coordinator()
@@ -512,8 +638,8 @@ class RecordingsManager:
         )
         full = not self._full_done or stale
         today = now.astimezone(zone).date()
-        succeeded = False
-        complete = True
+        wanted = None if full else self.hourly_series()
+        todo: list[tuple[Series, bool]] = []
         for series in SERIES:
             path = series.path
             if (LOCAL, path) in self._forbidden:
@@ -528,38 +654,76 @@ class RecordingsManager:
                 and now.timestamp() - float(known[1]) < RECHECK_MISSING.total_seconds()
             ):
                 continue
-            whole = full or state != "ok"
-            answer = await read_local(driver, series, local_query(whole, today))
-            report["local_reads"] += 1
-            self._count_outcome(report, LOCAL, answer.outcome)
-            if answer.outcome is Outcome.UNREACHABLE:
-                return succeeded
-            if answer.outcome is Outcome.OK:
-                read_at = self._now()
-                parsed = parse_local(answer.data, series, zone)
-                if parsed is None:
-                    self.local_paths[path] = ["unit", read_at.timestamp()]
+            if state == "ok" and wanted is not None and series.key not in wanted:
+                continue  # V5: hourly only what something needs
+            # Not read for a while (not needed until now): its history again.
+            outdated = (
+                known is not None
+                and now.timestamp() - float(known[1]) > LOCAL_FULL_AFTER.total_seconds()
+            )
+            todo.append((series, full or state != "ok" or outdated))
+        succeeded = False
+        complete = True
+        busy: list[tuple[Series, bool]] = []
+        for attempt in range(BUSY_RETRIES + 1):
+            if attempt:
+                # N3: asked again within the run, so the first run already
+                # knows every series and their entities.
+                await asyncio.sleep(BUSY_RETRY_SECONDS)
+                if self.stopped:
+                    break
+            busy = []
+            for series, whole in todo:
+                answer = await read_local(driver, series, local_query(whole, today))
+                report["local_reads"] += 1
+                self._count_outcome(report, LOCAL, answer.outcome)
+                if answer.outcome is Outcome.UNREACHABLE:
+                    return succeeded
+                if answer.outcome is Outcome.BUSY:
+                    busy.append((series, whole))
                     continue
-                self._ledger(series).merge(
-                    parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
-                )
-                if parsed.offset is not None:
-                    self.offset_mismatch = (
-                        parsed.offset != read_at.astimezone(zone).utcoffset()
-                    )
-                self.local_paths[path] = ["ok", read_at.timestamp()]
-                succeeded = True
-            elif answer.outcome is Outcome.NOT_FOUND:
-                self.local_paths[path] = ["missing", now.timestamp()]
-            elif answer.outcome is Outcome.FORBIDDEN:
-                self._forbidden.add((LOCAL, path))
-            else:
-                complete = False
+                result = self._take_local(series, answer, whole, now, zone)
+                succeeded = succeeded or result is True
+                complete = complete and result is not None
+            if not busy:
+                break
+            todo = busy
+        if busy:
+            report["local_busy_left"] = len(busy)
         if succeeded:
             self.last_local_ok = now.timestamp()
-            if full and complete:
+            if full and complete and not busy:
                 self._full_done = True
         return succeeded
+
+    def _take_local(
+        self, series: Series, answer: Any, whole: bool, now: datetime, zone: tzinfo
+    ) -> bool | None:
+        """Keep one local answer: True for a kept recording, False for an
+        answer about the path (404, 403, unit), None for a failed read."""
+        path = series.path
+        if answer.outcome is Outcome.OK:
+            read_at = self._now()
+            parsed = parse_local(answer.data, series, zone)
+            if parsed is None:
+                self.local_paths[path] = ["unit", read_at.timestamp()]
+                return False
+            self._ledger(series).merge(
+                parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
+            )
+            if parsed.offset is not None:
+                self.offset_mismatch = (
+                    parsed.offset != read_at.astimezone(zone).utcoffset()
+                )
+            self.local_paths[path] = ["ok", read_at.timestamp()]
+            return True
+        if answer.outcome is Outcome.NOT_FOUND:
+            self.local_paths[path] = ["missing", now.timestamp()]
+            return False
+        if answer.outcome is Outcome.FORBIDDEN:
+            self._forbidden.add((LOCAL, path))
+            return False
+        return None
 
     # --------------------------------------------------------------- cloud
     def _cloud_tasks(self, today: date) -> list[tuple[Series, str, Rate]]:
