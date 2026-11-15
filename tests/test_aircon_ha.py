@@ -428,6 +428,15 @@ async def test_active_schedule_select(hass):
     ]()
     select.hass = hass
     assert select.options == ["program1", "program2"]
+    assert select.extra_state_attributes is None
+    await coordinator.async_refresh()
+    assert [
+        point["time"] for point in select.extra_state_attributes["switch_points"]
+    ] == [
+        "07:00",
+        "22:00",
+    ]
+    assert "switch_points" in select._unrecorded_attributes
     await select.async_select_option("program2")
     assert unit.puts == [(ACTIVE_PROGRAM, "program2")]
 

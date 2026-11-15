@@ -27,9 +27,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .aircon_policies import (
+    ACTIVE_PROGRAM,
     ADVANCED_FUNCTION_PATHS,
     ADVANCED_FUNCTIONS,
     POLL_PATHS,
+    PROGRAM_IDS,
+    SCHEDULE_BASE,
     STANDARD_FUNCTION_PATHS,
     STANDARD_FUNCTIONS,
     WRITE_GUARDS,
@@ -111,6 +114,54 @@ def system_type(bus: object, model: object) -> SystemType | None:
     if bus == "Echonet":
         return "sharp"
     return None
+
+
+DAYS: Final = ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
+MAX_SWITCH_POINTS: Final = 7 * 24
+
+
+def program_path(program: object) -> str:
+    return f"{SCHEDULE_BASE}/{program}"
+
+
+def parse_switch_points(resource: Resource | None) -> list[dict[str, object]] | None:
+    """Readable switch points of a program (``switchPoints`` of a
+    ``switchProgram``): day, time and the parameters the unit reports.
+    Anything malformed gives None instead of a partial program."""
+    points = resource.program_fields.get("switchPoints") if resource else None
+    if not isinstance(points, list) or len(points) > MAX_SWITCH_POINTS:
+        return None
+    parsed: list[dict[str, object]] = []
+    for point in points:
+        if not isinstance(point, dict):
+            return None
+        day, minutes = point.get("dayOfWeek"), point.get("time")
+        parameters = point.get("parameters")
+        if (
+            day not in DAYS
+            or isinstance(minutes, bool)
+            or not isinstance(minutes, int)
+            or not 0 <= minutes <= 1440
+            or not isinstance(parameters, dict)
+        ):
+            return None
+        mode, setpoint = (
+            parameters.get("operationMode"),
+            parameters.get("temperatureSetpoint"),
+        )
+        fan = parameters.get("fanSpeed")
+        parsed.append(
+            {
+                "day": day,
+                "time": f"{minutes // 60:02d}:{minutes % 60:02d}",
+                "mode": mode if isinstance(mode, str) else None,
+                "setpoint": float(setpoint)
+                if isinstance(setpoint, int | float) and not isinstance(setpoint, bool)
+                else None,
+                "fan": fan if isinstance(fan, str) else None,
+            }
+        )
+    return parsed
 
 
 @dataclass(frozen=True, slots=True)
@@ -218,8 +269,9 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             if self.system is None:
                 self.error = None
                 return AirconSnapshot(received=monotonic())
+            paths = (*POLL_PATHS, *self._program_paths())
             results = await self.client.get_resources_bulk(
-                self.gateway.gateway_id, POLL_PATHS
+                self.gateway.gateway_id, paths
             )
         except AuthenticationError as err:
             self.error = "authentication"
@@ -237,9 +289,9 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             if item.status == 429 or isinstance(item.error, RateLimited):
                 self.error = "rate_limited"
                 raise UpdateFailed("Air conditioner requests are paused")
-            if item.ok and item.resource is not None and item.path in POLL_PATHS:
+            if item.ok and item.resource is not None and item.path in paths:
                 resources[item.path] = item.resource
-            elif item.path in POLL_PATHS:
+            elif item.path in paths:
                 missing[item.path] = (
                     f"http_{item.status}" if item.status else "invalid_payload"
                 )
@@ -250,6 +302,20 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             raise UpdateFailed("The air conditioner answered no path")
         self.error = None
         return AirconSnapshot(resources, missing, monotonic())
+
+    def _program_paths(self) -> tuple[str, ...]:
+        """The program the unit named active in the last cycle, read along
+        in the same bulk request (its switch points are shown, not edited)."""
+        active = self.data.resources.get(ACTIVE_PROGRAM)
+        value = active.value if active is not None else None
+        return (program_path(value),) if value in PROGRAM_IDS else ()
+
+    def switch_points(self) -> list[dict[str, object]] | None:
+        """The switch points of the active program, or None when unknown."""
+        value = self.value(ACTIVE_PROGRAM)
+        if value not in PROGRAM_IDS:
+            return None
+        return parse_switch_points(self.resource(program_path(value)))
 
     async def _detect(self) -> None:
         results = await self.client.get_resources_bulk(
@@ -403,7 +469,12 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
 
     def diagnostics(self) -> dict[str, object]:
         """Shape and freshness only: no values, names, serials or programs."""
-        resources = self.data.resources
+        # Program IDs stay out of the report; only whether one was read.
+        resources = {
+            path: resource
+            for path, resource in self.data.resources.items()
+            if not path.startswith(f"{SCHEDULE_BASE}/program")
+        }
         functions = {
             key: len(listing.references) if listing is not None else None
             for key, listing in (
@@ -421,7 +492,11 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             "fresh": self.current(),
             "interval_seconds": self.interval,
             "readable_path_count": len(resources),
-            "missing_paths": dict(sorted(self.data.missing.items())),
+            "missing_paths": {
+                path: reason
+                for path, reason in sorted(self.data.missing.items())
+                if not path.startswith(f"{SCHEDULE_BASE}/program")
+            },
             "writable_paths": sorted(
                 path
                 for path, resource in resources.items()
@@ -431,6 +506,7 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
                 path for path in resources if self.control_ready(path)
             ),
             "function_references": functions,
+            "active_program_read": len(resources) < len(self.data.resources),
             "writes_sent": self.writes_sent,
             "writes_refused": self.writes_refused,
         }

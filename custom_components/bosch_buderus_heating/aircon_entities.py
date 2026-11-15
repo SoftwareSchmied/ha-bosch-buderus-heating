@@ -126,6 +126,9 @@ class AirconSwitch(AirconControl, SwitchEntity):
 class AirconSelect(AirconControl, SelectEntity):
     """A choice from the reported options."""
 
+    # The program can be long; it stays out of the recorder.
+    _unrecorded_attributes = frozenset({"switch_points"})
+
     def __init__(
         self,
         coordinator: AirconCoordinator,
@@ -152,6 +155,13 @@ class AirconSelect(AirconControl, SelectEntity):
         return next(
             (key for key, token in self._offered().items() if token == value), None
         )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self._path != ACTIVE_PROGRAM:
+            return None
+        points = self.coordinator.switch_points()
+        return {"switch_points": points} if points is not None else None
 
     async def async_select_option(self, option: str) -> None:
         token = self._offered().get(option)

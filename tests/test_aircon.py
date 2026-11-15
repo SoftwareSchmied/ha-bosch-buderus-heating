@@ -54,6 +54,7 @@ from custom_components.bosch_buderus_heating.writes import (
 )
 from tests.aircon_helpers import (  # noqa: F401
     GATEWAY,
+    B,
     FakeUnit,
     aircon_cleanup,
     fixture,
@@ -114,7 +115,8 @@ async def test_one_bulk_request_per_cycle_after_detection(hass):
     assert len(POLL_PATHS) <= 30
     assert unit.gets == [] and unit.puts == []
     await coordinator.async_refresh()
-    assert unit.bulk_calls[2:] == [POLL_PATHS]
+    # The active program is read along in the same request.
+    assert unit.bulk_calls[2:] == [(*POLL_PATHS, f"{B}/switchPrograms/program1")]
     assert coordinator.current()
     assert coordinator.interval == 60
 
@@ -163,7 +165,7 @@ async def test_missing_path_leaves_its_function_out(hass):
 
 async def test_offline_unit_makes_every_reading_unavailable(hass):
     coordinator, unit, _ = await make_coordinator(hass)
-    for path in POLL_PATHS:
+    for path in (*POLL_PATHS, *unit.resources):
         unit.status[path] = 503
     await coordinator.async_refresh()
     assert not coordinator.last_update_success
@@ -510,8 +512,9 @@ def test_heating_paths_keep_their_policies():
 
 async def test_diagnostics_contain_no_values_names_or_identifiers(hass):
     coordinator, unit, _ = await make_coordinator(hass)
-    unit.resources[ACTIVE_PROGRAM]["value"] = "program2"
+    await coordinator.async_refresh()
     report = coordinator.diagnostics()
+    assert report["active_program_read"] is True
     text = json.dumps(report)
     assert report["system_type"] == "midea"
     assert report["confirmed_on_hardware"] is False
@@ -519,4 +522,41 @@ async def test_diagnostics_contain_no_values_names_or_identifiers(hass):
     assert GATEWAY not in text
     for marker in ("21.5", "22.0", "program1", "rac-midea-default", "Midea"):
         assert marker not in text
-    assert unit.bulk_calls[-1] == POLL_PATHS  # nothing was requested
+    calls = len(unit.bulk_calls)
+    coordinator.diagnostics()
+    assert len(unit.bulk_calls) == calls  # nothing was requested
+
+
+async def test_switch_points_of_the_active_program_are_read(hass):
+    coordinator, _, _ = await make_coordinator(hass)
+    assert coordinator.switch_points() is None  # not read in the first cycle
+    await coordinator.async_refresh()
+    assert coordinator.switch_points() == [
+        {"day": "Mo", "time": "07:00", "mode": "cool", "setpoint": 24.0, "fan": "auto"},
+        {
+            "day": "Mo",
+            "time": "22:00",
+            "mode": "fanOnly",
+            "setpoint": None,
+            "fan": "low",
+        },
+    ]
+
+
+@pytest.mark.parametrize(
+    "points",
+    [
+        [{"dayOfWeek": "Xx", "time": 0, "parameters": {}}],
+        [{"dayOfWeek": "Mo", "time": 1441, "parameters": {}}],
+        [{"dayOfWeek": "Mo", "time": True, "parameters": {}}],
+        [{"dayOfWeek": "Mo", "time": 60}],
+        ["Mo"],
+        {"Mo": 1},
+    ],
+)
+async def test_malformed_program_shows_no_switch_points(hass, points):
+    unit = FakeUnit()
+    unit.resources[f"{B}/switchPrograms/program1"]["switchPoints"] = points
+    coordinator, _, _ = await make_coordinator(hass, unit)
+    await coordinator.async_refresh()
+    assert coordinator.switch_points() is None

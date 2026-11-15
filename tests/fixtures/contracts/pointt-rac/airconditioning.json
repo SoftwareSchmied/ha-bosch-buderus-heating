@@ -297,6 +297,30 @@
         "off"
       ],
       "writeable": 0
+    },
+    "/airConditioning/switchPrograms/program1": {
+      "id": "/airConditioning/switchPrograms/program1",
+      "type": "switchProgram",
+      "writeable": 1,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 420,
+          "parameters": {
+            "operationMode": "cool",
+            "temperatureSetpoint": 24.0,
+            "fanSpeed": "auto"
+          }
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "parameters": {
+            "operationMode": "fanOnly",
+            "fanSpeed": "low"
+          }
+        }
+      ]
     }
   }
 }
