@@ -48,8 +48,8 @@ from .zone_controls import (
     ZONE_MANUAL_PATTERN,
     ZONE_MODE_PATTERN,
     ZONE_MODES,
+    ZONE_TEMPORARY_PATTERN,
     is_zone_control,
-    is_zone_temporary,
     zone_control_issue,
 )
 
@@ -233,6 +233,19 @@ HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
     confirm_if=_temporary_setpoint_cleared,
 )
+# The temporary target of a ConnectKey zone in the mode auto, by the same
+# rules: only the zone's climate entity and its clear button write it (the
+# value -1 ends it, as the manufacturer's app writes it). Its used and
+# available flags apply. Expected, untested on a real device.
+ZONE_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
+    ZONE_TEMPORARY_PATTERN,
+    "C",
+    0.5,
+    strict_grid=True,
+    create_entity=False,
+    sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
+    confirm_if=_temporary_setpoint_cleared,
+)
 NUMBER_WRITE_POLICIES = (
     # ZONE-02, ZONE-05: no change while away or while the zone is locked.
     NumberWritePolicy(
@@ -243,6 +256,7 @@ NUMBER_WRITE_POLICIES = (
         honor_flags=False,
     ),
     NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5, honor_flags=False),
+    ZONE_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False
     ),
@@ -1020,8 +1034,6 @@ def assess_control(
         if softener_capability(resource.path) is not None
         else None
     )
-    if is_zone_temporary(resource.path):
-        return ControlAssessment(None, "zone_override_lifecycle_unverified")
     if (blocked := rrc_contracts.blocked_reason(resource.path)) is not None:
         return ControlAssessment(None, blocked)
     if rrc.is_control(resource.path):

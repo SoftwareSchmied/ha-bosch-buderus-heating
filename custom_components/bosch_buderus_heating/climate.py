@@ -29,6 +29,7 @@ from .const import DOMAIN
 from .ha_compat import temperature_members, temperature_unit
 from .heating_climate import track_heating_climates
 from .platform_scope import PlatformScope, setup_platform
+from .zone_climate import track_zone_climates
 
 
 async def async_setup_entry(
@@ -45,6 +46,7 @@ def _setup_entities(
 ) -> None:
     for coordinator in entry.coordinators:
         track_heating_climates(entry, coordinator, async_add_entities)
+        track_zone_climates(entry, coordinator, async_add_entities)
         rrc_platforms.track(Platform.CLIMATE, entry, coordinator, async_add_entities)
     if (account := entry.bacon) is None:
         return

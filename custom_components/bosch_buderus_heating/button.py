@@ -25,6 +25,7 @@ from .writes import (
     assess_control,
     context_of,
 )
+from .zone_climate import track_zone_clear_buttons
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -59,6 +60,7 @@ def _setup_entities(
             BoschBuderusRegenerationButton,
         )
         track_temporary_clear_buttons(entry, coordinator, async_add_entities)
+        track_zone_clear_buttons(entry, coordinator, async_add_entities)
         rrc_platforms.track(Platform.BUTTON, entry, coordinator, async_add_entities)
 
 

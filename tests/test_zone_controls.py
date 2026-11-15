@@ -234,14 +234,12 @@ async def test_changed_options_bounds_and_step_are_checked_at_write(environment)
 
 
 @pytest.mark.parametrize("mode", ["heating", "cooling"])
-def test_temporary_control_stays_read_only_even_with_writable_metadata(mode):
+def test_temporary_setpoint_keeps_its_reading_and_gets_no_number(mode):
+    """Only the zone climate and its clear button write it."""
     temporary = replace(NUMBER, path=f"/zones/zone2/{mode}/temporaryRoomSetpoint")
     assert len(build_sensor_descriptions({temporary.path: temporary})) == 1
     assert not build_number_descriptions({temporary.path: temporary})
-    assert (
-        _control_diagnostics(temporary)["rejection_reason"]
-        == "zone_override_lifecycle_unverified"
-    )
+    assert _control_diagnostics(temporary)["rejection_reason"] is None
 
 
 @pytest.mark.parametrize(

@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Este circuito de calefacción no tiene ahora ninguna consigna temporal que anular."
     },
+    "zone_climate_command": {
+      "message": "Este comando para la zona no está disponible en este momento. Las temperaturas solo se pueden cambiar en modo manual o en modo automático cuando la zona ofrece una consigna temporal. Seleccione el modo por separado y compruebe que la zona proporciona valores actuales."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Esta zona no tiene ninguna consigna temporal que cancelar en este momento."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "El equipo determina la consigna actual del agua caliente. Puedes ajustar las temperaturas de arranque de los modos por separado en Manejar el equipo."
     },

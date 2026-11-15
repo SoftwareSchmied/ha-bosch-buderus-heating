@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Ovaj krug grijanja trenutačno nema privremenu zadanu vrijednost koju bi bilo moguće poništiti."
     },
+    "zone_climate_command": {
+      "message": "Ova naredba za zonu trenutačno nije dostupna. Temperature se mogu mijenjati samo u ručnom načinu rada ili u automatskom načinu rada kada zona nudi privremenu zadanu vrijednost. Odaberite način rada zasebno i provjerite daje li zona trenutačne vrijednosti."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Ova zona trenutačno nema privremenu zadanu vrijednost koju bi se moglo poništiti."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Uređaj određuje trenutnu zadanu vrijednost tople vode. Zasebne početne temperature načina možete prilagoditi pod Upravljanje uređajem."
     },

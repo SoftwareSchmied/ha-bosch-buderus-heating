@@ -1430,6 +1430,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Dit verwarmingscircuit heeft op dit moment geen tijdelijke instelwaarde die kan worden opgeheven."
     },
+    "zone_climate_command": {
+      "message": "Deze opdracht voor de zone is momenteel niet beschikbaar. Temperaturen kunnen alleen worden gewijzigd in de handmatige modus, of in de automatische modus wanneer de zone een tijdelijk setpoint aanbiedt. Kies de modus afzonderlijk en controleer of de zone actuele waarden levert."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Deze zone heeft momenteel geen tijdelijk setpoint om op te heffen."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Het apparaat bepaalt de huidige instelwaarde voor warm water. Je kunt de afzonderlijke starttemperaturen per modus aanpassen onder Apparaat bedienen."
     },

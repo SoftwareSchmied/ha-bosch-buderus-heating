@@ -147,6 +147,7 @@ from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
 from .write_policies import context_of, rrc_kwargs
+from .zone_radio_devices import ZoneRadioSignalSensor, track_zone_radio_devices
 
 type ValueKind = Literal[
     "value",
@@ -576,6 +577,9 @@ def _setup_entities(
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
+        track_zone_radio_devices(
+            entry, coordinator, async_add_entities, ZoneRadioSignalSensor
+        )
         rrc_platforms.track(Platform.SENSOR, entry, coordinator, async_add_entities)
     async_add_entities(entities)
 
