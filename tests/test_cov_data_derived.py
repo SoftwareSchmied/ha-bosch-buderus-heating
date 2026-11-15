@@ -745,7 +745,7 @@ async def test_the_net_heat_never_falls_over_dips_and_continues_after_a_reset(
     seen: list[float | None] = []
 
     def reading(value: float) -> None:
-        plant.energy(CH, value)
+        plant.later(5).energy(CH, value)
         sensor._refresh()
         seen.append(sensor.native_value)
 
@@ -754,7 +754,8 @@ async def test_the_net_heat_never_falls_over_dips_and_continues_after_a_reset(
     # Dips below the highest reading count nothing; a rise after one counts
     # from the highest reading, not from the bottom of the dip.
     assert seen == [1001.0, 1001.0, 1001.0, 1001.0, 1002.0]
-    # A replaced counter (a big drop) starts again from its new value.
+    # A replaced counter (a big drop, confirmed by the next reading) starts
+    # again from its new value.
     reading(3.0)
     reading(4.5)
     assert seen[-2:] == [1002.0, 1003.5]

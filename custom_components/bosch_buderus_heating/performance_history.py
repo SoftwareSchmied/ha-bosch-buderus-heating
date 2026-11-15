@@ -44,6 +44,7 @@ from homeassistant.util import dt as dt_util
 from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
+from .counter_drop import DropHold, large_drop
 from .derived_store import derived_store
 from .log_helpers import log_failure
 from .performance import COLLECTIONS, MODES, CounterReading, lifetime, ratio
@@ -87,6 +88,8 @@ REFRESH_MINUTE: Final = 25
 # The last reading before midnight is the next day's start when it is at
 # most this old at the first reading after midnight.
 ROLL_GAP: Final = timedelta(minutes=30)
+# Unchanged readings are saved at most this often (their time only).
+SAVE_UNCHANGED: Final = timedelta(minutes=1)
 # Days whose counter statistics are read again every hour.
 RECENT_DAYS: Final = 3
 _ENERGY_UNITS: Final = {"energy": "kWh"}
@@ -194,6 +197,10 @@ class PerformanceHistory:
         self.counter_entities: dict[tuple[str, str], str] = {}
         self._live: dict[str, CounterReading] = {}
         self._last_at: datetime | None = None
+        self._saved_at: datetime | None = None
+        # A single collection reading far below the last one (an outlier)
+        # waits for a later reading before it counts.
+        self._drops = DropHold()
         self._baseline_day: date | None = None
         self._baseline: dict[str, tuple[float, float]] = {}
         self._baseline_method: str | None = None
@@ -334,6 +341,7 @@ class PerformanceHistory:
             mode: reading
             for mode in MODES
             if (reading := lifetime(self.coordinator, mode)) is not None
+            and not self._outlier(mode, reading)
         }
         if not readings:
             return
@@ -341,10 +349,27 @@ class PerformanceHistory:
         if self._baseline_day != today:
             self._roll(today, now)
         elif readings == self._live:
+            # Unchanged (the heat pump stands still): still a reading at this
+            # time, so the next midnight starts the day from it; saved at
+            # most once a minute.
+            self._last_at = now
+            if self._saved_at is None or now - self._saved_at >= SAVE_UNCHANGED:
+                self._saved_at = now
+                self._save()
             return
         self._live.update(readings)
-        self._last_at = now
+        self._last_at = self._saved_at = now
         self._save()
+
+    def _outlier(self, mode: str, reading: CounterReading) -> bool:
+        """A single reading far below the last one of the mode, held until a
+        later reading confirms it (like the shown counters)."""
+        live = self._live.get(mode)
+        dropped = live is not None and (
+            large_drop(reading.heat, live.heat)
+            or large_drop(reading.electricity, live.electricity)
+        )
+        return self._drops.held(mode, dropped, reading.observed_at)
 
     def live_origin(self, mode: str) -> str | None:
         """Where the mode's current counter reading came from."""

@@ -743,7 +743,7 @@ async def test_net_heat_holds_during_a_dip(
     await sensor.async_added_to_hass()
     shown = []
     for value in (1234.16, 1233.60, 1233.90, 1234.50, 50.0, 51.0, 52.5):
-        plant.energy(CH, value)
+        plant.later(5).energy(CH, value)
         sensor._refresh()
         shown.append(sensor.native_value)
     assert shown == [1234.16, 1234.16, 1234.16, 1234.5, 1234.5, 1235.5, 1237.0]
