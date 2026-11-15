@@ -251,9 +251,16 @@ def guard_paths(path: str, policy: object) -> tuple[str, ...]:
 
 def offered(path: str, readings: Mapping[str, Resource]) -> bool:
     """Whether a control of ``path`` is offered with these readings: the
-    cooling threshold only while cooling is offered; every other path."""
+    cooling threshold only while cooling is offered, the away and cooling
+    levels only with a value (the app drops a level without one); every
+    other path."""
     if re.fullmatch(COOLING_THRESHOLD_PATTERN, path):
         return cooling_offered(path, readings)
+    if re.fullmatch(AWAY_TEMPERATURE_PATTERN, path) or re.fullmatch(
+        COOLING_LEVEL_PATTERN, path
+    ):
+        reading = readings.get(path)
+        return reading is not None and reading.has_value
     return True
 
 
