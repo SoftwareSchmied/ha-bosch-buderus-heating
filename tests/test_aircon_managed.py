@@ -131,3 +131,40 @@ async def test_air_conditioner_gateway_runs_its_own_coordinator(hass):
         assert aircon["system_type"] == "midea"
         assert aircon["writes_sent"] == 1
         assert AC not in json.dumps(aircon)
+
+
+async def test_the_091_heating_entries_of_an_air_conditioner_go(hass):
+    """Set up under 0.9.1 like a heating system: those entries are removed
+    when the air conditioner backend runs; the heating gateway keeps its."""
+    registry = er.async_get(hass)
+    old = {}
+
+    def configure(data, options):
+        (entry,) = hass.config_entries.async_entries(DOMAIN)
+        for platform, key in (
+            ("binary_sensor", "system_fault"),
+            ("event", "system_notifications"),
+            ("sensor", "active_faults"),
+            ("sensor", "active_notifications"),
+        ):
+            old[key] = registry.async_get_or_create(
+                platform, DOMAIN, f"{AC}:{key}", config_entry=entry
+            ).entity_id
+        old["heating"] = registry.async_get_or_create(
+            "binary_sensor", DOMAIN, f"{HEAT}:system_fault", config_entry=entry
+        ).entity_id
+
+    backend = AirconBackend()
+    async with running(hass, backend, configure=configure) as (_, _, owner, _):
+        await eventually(lambda: source_for(owner, AC), timeout=10)
+        await owner.start_platforms()
+        await eventually(
+            lambda: registry.async_get_entity_id(
+                "climate", DOMAIN, f"{AC}:airConditioning:climate"
+            ),
+            timeout=10,
+        )
+        for key in ("system_fault", "system_notifications", "active_faults"):
+            assert registry.async_get(old[key]) is None
+        assert registry.async_get(old["active_notifications"]) is None
+        assert registry.async_get(old["heating"]) is not None

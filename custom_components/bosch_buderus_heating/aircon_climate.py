@@ -27,6 +27,7 @@ from .aircon_entity import (
     AirconEntity,
     invalid_command,
     options,
+    remove_heating_leftovers,
     track_aircon_entities,
 )
 from .aircon_policies import (
@@ -89,6 +90,8 @@ def track_aircon_climates(
         if coordinator.data.resources:
             yield "climate", lambda: AirconClimate(coordinator)
 
+    # Once per setup, before the backend's own entities are added.
+    remove_heating_leftovers(scope)
     track_aircon_entities(scope, async_add_entities, build)
 
 

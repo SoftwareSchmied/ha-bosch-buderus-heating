@@ -171,6 +171,10 @@ entry says how it was tested; most of it with automated tests only.
   0.9.2-beta.1). Thank you to stalar for the report in
   [#132](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/132).
   Automated tests only.
+- **Air conditioners on a PointT gateway set up with 0.9.1** lose the fault
+  and notification entities that version created for them as for a heating
+  system; they are no longer provided. Entities you renamed or placed stay.
+  Automated tests only.
 - **Local state signals keep the order of their states** between starts
   (for example the gateway's eBUS status and the holiday states); the
   gateway sends them in a changing order. After the update the order changes
