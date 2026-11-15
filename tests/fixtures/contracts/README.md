@@ -16,7 +16,7 @@ mapping. `physical_device_verified: false`, `firmware: null` and
 | bacon-purifier | Two synthetic Air profiles with different offered capabilities; all seven family/filter mappings are exercised by tests |
 | captures | Anonymized discovery results of real systems with their firmware, each with a pinned `.expected.json` of the entities built from it (`tests/test_captures.py`) |
 | pointt-wallbox | `cp0.json`: the three cp0 objects of a synthetic wallbox; `cp0-control.json`: the objects plus every single value the controls read, following the vendor app's behaviour with constructed values (no device capture) |
-| pointt-rac | `airconditioning.json`: a synthetic air conditioner on a PointT gateway (`/airConditioning` leaves, function lists, solar state) and the five detection cases of `/system/bus` and `/system/appliance/model`, built from the vendor app's value models with constructed values |
+| pointt-rac | `airconditioning.json`: a synthetic air conditioner on a PointT gateway (`/airConditioning` leaves, function lists, solar state) and the five detection cases of `/system/bus` and `/system/appliance/model`, built from the vendor app's value models with constructed values; `switch-programs.json`: two weekly programs and the program configuration (modes with temperature range and fan speeds, limits), constructed values |
 | bacon-dry | Two synthetic Dry capability profiles with different humidity ranges and modes; all three families and six prefixes are exercised by tests |
 
 `readings.json` contains payloads and independently stated expected HA values

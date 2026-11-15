@@ -115,8 +115,14 @@ async def test_one_bulk_request_per_cycle_after_detection(hass):
     assert len(POLL_PATHS) <= 30
     assert unit.gets == [] and unit.puts == []
     await coordinator.async_refresh()
-    # The active program is read along in the same request.
-    assert unit.bulk_calls[2:] == [(*POLL_PATHS, f"{B}/switchPrograms/program1")]
+    # The offered programs are read along in the same request.
+    assert unit.bulk_calls[2:] == [
+        (
+            *POLL_PATHS,
+            f"{B}/switchPrograms/program1",
+            f"{B}/switchPrograms/program2",
+        )
+    ]
     assert coordinator.current()
     assert coordinator.interval == 60
 

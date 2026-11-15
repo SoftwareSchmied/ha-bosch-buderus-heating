@@ -24,6 +24,8 @@ request). A fresh setup enables the time program sensors the gateway reports
 as writable (existing entities keep their state), and every temperature
 number carries the device class ``temperature`` (an offset
 ``temperature_delta``); unique IDs, names and requests stay the same.
+The wallbox and air-conditioner controls of 0.9.2 (including the programs
+of an air conditioner) add no entity and no request to these three plants.
 """
 
 from __future__ import annotations

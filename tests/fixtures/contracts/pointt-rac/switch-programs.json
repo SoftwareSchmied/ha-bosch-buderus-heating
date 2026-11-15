@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "family": "pointt_air_conditioner_switch_programs",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed air conditioner with two weekly programs and the program configuration (one entry per operation mode)",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "physical_device_verified": false,
+    "redaction": "Field names and value shapes follow the behaviour of the vendor app: a program holds switch points with dayOfWeek, time and parameters (operationMode, temperatureSetpoint, fanSpeed) and may report its limits, the configuration lists the modes with their temperature range and fan speeds. The type name of the configuration is not known and constructed here; every time, mode, range and limit is constructed. No device capture, no identifiers."
+  },
+  "resources": {
+    "/airConditioning/switchPrograms/configuration": {
+      "id": "/airConditioning/switchPrograms/configuration",
+      "type": "programConfiguration",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "allowedValues": [
+        {
+          "operationMode": {"type": "stringValue", "allowedValues": ["cool"]},
+          "temperatureSetpoint": {
+            "type": "floatValue",
+            "minValue": 16.0,
+            "maxValue": 30.0,
+            "stepSize": 0.5,
+            "unitOfMeasure": "C"
+          },
+          "fanSpeed": {"type": "stringValue", "allowedValues": ["auto", "low", "mid", "high"]}
+        },
+        {
+          "operationMode": {"type": "stringValue", "allowedValues": ["heat"]},
+          "temperatureSetpoint": {
+            "type": "floatValue",
+            "minValue": 16.0,
+            "maxValue": 30.0,
+            "stepSize": 0.5,
+            "unitOfMeasure": "C"
+          },
+          "fanSpeed": {"type": "stringValue", "allowedValues": ["auto", "low", "mid", "high"]}
+        },
+        {
+          "operationMode": {"type": "stringValue", "allowedValues": ["fanOnly"]},
+          "fanSpeed": {"type": "stringValue", "allowedValues": ["low", "mid", "high"]}
+        },
+        {
+          "operationMode": {"type": "stringValue", "allowedValues": ["dry"]},
+          "temperatureSetpoint": {
+            "type": "floatValue",
+            "minValue": 17.0,
+            "maxValue": 30.0,
+            "unitOfMeasure": "C"
+          }
+        },
+        {
+          "operationMode": {"type": "stringValue", "allowedValues": ["internalCleaning"]}
+        }
+      ]
+    },
+    "/airConditioning/switchPrograms/program1": {
+      "id": "/airConditioning/switchPrograms/program1",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15.0,
+      "switchPoints": [
+        {"dayOfWeek": "Mo", "time": 420, "parameters": {"operationMode": "cool", "temperatureSetpoint": 24.0, "fanSpeed": "auto"}},
+        {"dayOfWeek": "Mo", "time": 1320, "parameters": {"operationMode": "off"}},
+        {"dayOfWeek": "Tu", "time": 480, "parameters": {"operationMode": "fanOnly", "fanSpeed": "low"}}
+      ]
+    },
+    "/airConditioning/switchPrograms/program2": {
+      "id": "/airConditioning/switchPrograms/program2",
+      "type": "switchProgram",
+      "writeable": 1,
+      "switchPoints": [
+        {"dayOfWeek": "Sa", "time": 540, "parameters": {"operationMode": "heat", "temperatureSetpoint": 21.5, "fanSpeed": "mid"}}
+      ]
+    }
+  }
+}
