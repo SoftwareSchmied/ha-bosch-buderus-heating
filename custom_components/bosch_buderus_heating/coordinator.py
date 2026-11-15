@@ -32,7 +32,11 @@ from homeassistant.helpers.event import async_call_later, async_track_point_in_u
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .circuit_controls import GENERIC_ONLY_POLICIES, room_controller_check_complete
+from .circuit_controls import (
+    GENERIC_ONLY_POLICIES,
+    coupled_paths,
+    room_controller_check_complete,
+)
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
@@ -429,6 +433,25 @@ def _snapshot_is_fresh(snapshot: ResourceSnapshot | None) -> bool:
         snapshot is not None
         and snapshot.available
         and snapshot.freshness is Freshness.FRESH
+    )
+
+
+def _guard_changed(
+    before: Resource, reading: Resource, by_value: frozenset[str]
+) -> bool:
+    """Whether ``reading`` differs from the guard ``before`` of a write.
+
+    The written setting itself and a coupled level (``by_value``) count as
+    changed only when their value changed: new limits or flags (for example
+    after a confirmed write of the level that bounds them) are checked on
+    the current reading instead.
+    """
+    if before.path not in by_value:
+        return reading != before
+    return (
+        reading.path != before.path
+        or reading.has_value != before.has_value
+        or not confirms_value(None, reading.value, before.value)
     )
 
 
@@ -1172,18 +1195,26 @@ class BoschBuderusDataUpdateCoordinator(
         policy: EnumWritePolicy | NumberWritePolicy,
         *,
         expected: tuple[Resource, ...] = (),
+        fresh: tuple[Resource, ...] = (),
     ) -> Resource:
         """Write one allowlisted control and publish its confirmed read-back.
 
         The write context (S11) is this coordinator's own: on an RRC
         controller the RRC contract policies, the RRC read-back schedule and
         the write counters apply.
+
+        ``expected``: the readings the write depends on; a change since they
+        were shown sends nothing (the setting itself and a coupled level only
+        by their value).
+        ``fresh``: readings that are read again in the same request and
+        published, for the limits and rules of the write, without refusing
+        it by a change (for example the setting itself after a mode change).
         """
         context = self.control_context()
         contract = self._rrc_write_contract(path, context)
         try:
             return await self._async_write_control(
-                path, value, policy, expected, context, contract
+                path, value, policy, expected, context, contract, fresh
             )
         except WriteValidationError as err:
             if contract is not None:
@@ -1198,6 +1229,7 @@ class BoschBuderusDataUpdateCoordinator(
         expected: tuple[Resource, ...],
         context: ControlContext,
         contract: str | None,
+        fresh: tuple[Resource, ...] = (),
     ) -> Resource:
         sent = False
 
@@ -1207,6 +1239,7 @@ class BoschBuderusDataUpdateCoordinator(
             if contract is not None:
                 self.rrc_write_stats.sent(contract)
 
+        by_value = frozenset({path, *coupled_paths(path, policy)})
         async with self._write_transaction() as window:
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
@@ -1232,20 +1265,24 @@ class BoschBuderusDataUpdateCoordinator(
                 if (
                     not _snapshot_is_fresh(current)
                     or current is None
-                    or current.resource != before
+                    or _guard_changed(before, current.resource, by_value)
                 ):
                     raise WriteValidationError("Control changed since it was shown")
             # S5: an RRC contract setting is checked against the controller's
             # current flags, limits and value, read in the same request as
             # the guards; a change there does not refuse the write by itself.
-            reads = expected
+            reads = expected + tuple(
+                item
+                for item in fresh
+                if all(before.path != item.path for before in expected)
+            )
             if (
                 context.rrc_plant
                 and owns(policy)
                 and not is_control(path)
-                and all(before.path != path for before in expected)
+                and all(before.path != path for before in reads)
             ):
-                reads = (*expected, snapshot.resource)
+                reads = (*reads, snapshot.resource)
             live: dict[str, Resource] = {}
             if reads:
                 try:
@@ -1270,7 +1307,10 @@ class BoschBuderusDataUpdateCoordinator(
                             refreshed, True, datetime.now(UTC)
                         )
                         self.resources[before.path] = refreshed
-                if any(live[before.path] != before for before in expected):
+                if any(
+                    _guard_changed(before, live[before.path], by_value)
+                    for before in expected
+                ):
                     self.async_set_updated_data(changed)
                     raise WriteValidationError("Control changed on the gateway")
                 if any(live[before.path] != before for before in reads):

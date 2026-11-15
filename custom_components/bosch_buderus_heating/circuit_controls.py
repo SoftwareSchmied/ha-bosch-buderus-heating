@@ -23,10 +23,16 @@ temperatures without one), counted from the minimum.
 
 Every write reads the circuit's control type, the setting itself and the
 settings it depends on again right before its one request; a change since
-they were shown sends nothing (``guard_paths``). The heating and setback
-levels limit each other (the heating level's minimum follows the setback
-level and the other way round), so a level write also reads the other
-levels again and checks the value against the current limits.
+they were shown sends nothing (``guard_paths``). Its limits come from that
+reading. The heating and setback levels limit each other (the heating
+level's minimum follows the setback level and the other way round), so a
+level write also reads the other level again: a change of its value sends
+nothing, while new limits after a confirmed write of the other level do not
+refuse it (``coupled_paths``, compared by value).
+
+The operating mode and the manual setpoint of a circuit (the older
+controls besides its climate entity) read the control type again as well
+and take the climate entity's rule: nothing is changed on constant values.
 
 Pure data and checks without Home Assistant imports. Expected, untested on
 a real installation.
@@ -121,6 +127,17 @@ def _level_check(
     return None
 
 
+def _constant_control_check(
+    resource: Resource, _value: JsonScalar, readings: Mapping[str, Resource]
+) -> str | None:
+    """The rule of the circuit's climate entity: a circuit on constant
+    values is only shown. A room controller (``ISRC``) does not lock the
+    mode and the manual setpoint (as the climate entity)."""
+    if _control_type(resource.path, readings) == CONSTANT_CONTROL:
+        return CONSTANT_CONTROL_REFUSAL
+    return None
+
+
 def _cooling_setpoint_check(
     resource: Resource, value: JsonScalar, readings: Mapping[str, Resource]
 ) -> str | None:
@@ -150,6 +167,21 @@ def _cooling_threshold_check(
     return None
 
 
+# The operating mode and the manual setpoint of a heating circuit (before
+# 0.9.2 without the control type rule).
+OPERATION_MODE_POLICY: Final = EnumWritePolicy(
+    r"^/heatingCircuits/[^/]+/operationMode$",
+    frozenset({"stringValue"}),
+    frozenset({"off", "manual", "auto"}),
+    value_check=_constant_control_check,
+)
+MANUAL_SETPOINT_POLICY: Final = NumberWritePolicy(
+    r"^/heatingCircuits/[^/]+/manualRoomSetpoint$",
+    "C",
+    0.5,
+    write_grid=True,
+    value_check=_constant_control_check,
+)
 # Summer/winter switching of a heating circuit: only codes the app knows,
 # at least two of them, and the current one among them.
 SUMMER_WINTER_MODE_POLICY: Final = EnumWritePolicy(
@@ -223,31 +255,44 @@ NUMBER_POLICIES: Final = (
 # Not on a room controller (its contracts have their own rules).
 GENERIC_ONLY_POLICIES: Final = frozenset({*ENUM_POLICIES, *NUMBER_POLICIES})
 # The policies whose writes read their guards again (``guard_paths``).
-GUARDED_POLICIES: Final = frozenset({*GENERIC_ONLY_POLICIES, HEATING_LEVEL_POLICY})
-_LEVEL_POLICIES: Final = frozenset({HEATING_LEVEL_POLICY, AWAY_TEMPERATURE_POLICY})
+GUARDED_POLICIES: Final = frozenset(
+    {
+        *GENERIC_ONLY_POLICIES,
+        HEATING_LEVEL_POLICY,
+        OPERATION_MODE_POLICY,
+        MANUAL_SETPOINT_POLICY,
+    }
+)
+_COUPLED_LEVELS: Final = ("comfort2", "eco")
 
 
 def guard_paths(path: str, policy: object) -> tuple[str, ...]:
     """The readings a write of ``path`` is checked against, the path itself
-    first: the circuit's control type, the summer/winter switching for the
-    thresholds and the other levels for a heating, setback or away level.
-    Paths the plant does not have are skipped by the caller."""
+    first: the circuit's control type and the summer/winter switching for
+    the thresholds and the other coupled level. Paths the plant does not have
+    are skipped by the caller."""
     root = circuit_root(path)
     if root is None or policy not in GUARDED_POLICIES:
         return ()
     paths = [path, f"{root}/{CONTROL_TYPE}"]
     if policy in (SUMMER_WINTER_THRESHOLD_POLICY, COOLING_THRESHOLD_POLICY):
         paths.append(f"{root}/{SUMMER_WINTER_MODE}")
-    if policy in _LEVEL_POLICIES:
-        paths.extend(
-            (
-                f"{root}/temperatureLevels/comfort2",
-                f"{root}/temperatureLevels/eco",
-                f"{root}/temperatureLevels/awayTemperature",
-                f"{root}/awayTemperature",
-            )
-        )
-    return tuple(dict.fromkeys(paths))
+    paths.extend(coupled_paths(path, policy))
+    return tuple(paths)
+
+
+def coupled_paths(path: str, policy: object) -> tuple[str, ...]:
+    """The other one of the heating and setback levels, which bound each
+    other: a guard of a level write compared by its value only (its limits
+    follow the written level). The away temperature bounds neither."""
+    root = circuit_root(path)
+    if root is None or policy is not HEATING_LEVEL_POLICY:
+        return ()
+    return tuple(
+        item
+        for item in (f"{root}/temperatureLevels/{name}" for name in _COUPLED_LEVELS)
+        if item != path
+    )
 
 
 def offered(path: str, readings: Mapping[str, Resource]) -> bool:

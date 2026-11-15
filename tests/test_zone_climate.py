@@ -336,14 +336,13 @@ async def test_unknown_service_keys_send_nothing(hass, plant):
     assert cloud.puts == []
 
 
-@pytest.mark.parametrize("path", [MODE, TEMPORARY, SEASON, CONTROL_TYPE])
+@pytest.mark.parametrize("path", [MODE, SEASON, CONTROL_TYPE])
 async def test_a_change_on_the_gateway_refuses_the_write(hass, plant, path):
     coordinator, cloud = plant
     entity = climate(hass, coordinator)
     resource = cloud.state[path]
     other = {
         MODE: "manual",
-        TEMPORARY: 23.0,
         SEASON: "cooling",
         CONTROL_TYPE: "room",
     }[path]
@@ -351,6 +350,67 @@ async def test_a_change_on_the_gateway_refuses_the_write(hass, plant, path):
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
     assert cloud.puts == []
+
+
+async def test_the_target_is_read_again_and_its_current_limits_decide(hass, plant):
+    """The target itself is read with the mode and the guards: a change of
+    its value does not refuse the write, its current limits apply."""
+    coordinator, cloud = plant
+    entity = climate(hass, coordinator)
+    temporary = cloud.state[TEMPORARY]
+    cloud.state[TEMPORARY] = replace(temporary, value=23.0)
+    await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == [(TEMPORARY, 22.0)]
+    assert TEMPORARY in cloud.bulk_calls[-1]
+    # A lower maximum on the gateway: refused unsent, and shown at once.
+    cloud.state[TEMPORARY] = replace(
+        cloud.state[TEMPORARY],
+        metadata=replace(temporary.metadata, maximum=21.0),
+    )
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=21.5)
+    assert len(cloud.puts) == 1
+    assert coordinator.data[TEMPORARY].resource.metadata.maximum == 21.0
+
+
+async def test_mode_and_temperature_when_the_mode_moves_the_target(hass, plant):
+    """Mode and target in one command: the zone takes over its active
+    setpoint as the manual one when the mode changes. The target is still
+    written after the confirmed mode, against the current reading."""
+    coordinator, cloud = plant
+    original = cloud.put
+
+    async def gateway(gw, path, value):
+        await original(gw, path, value)
+        if path == MODE and value == "manual":
+            cloud.state[MANUAL] = replace(cloud.state[MANUAL], value=20.0)
+
+    coordinator.client.put_resource_value.side_effect = gateway
+    entity = climate(hass, coordinator)
+    await entity.async_set_temperature(temperature=22, hvac_mode=HVACMode.HEAT)
+    assert cloud.puts == [(MODE, "manual"), (MANUAL, 22.0)]
+    assert coordinator.data[MANUAL].resource.value == 22.0
+
+
+async def test_manual_target_in_fahrenheit_takes_the_nearest_step(hass, plant):
+    coordinator, cloud = plant
+    hass.config.units = US_CUSTOMARY_SYSTEM
+    changed(coordinator, cloud, MODE, value="manual")
+    entity = climate(hass, coordinator)
+    # Home Assistant hands over 72 °F in the entity's unit (°C): 22.22 °C.
+    await entity.async_set_temperature(temperature=(72 - 32) * 5 / 9)
+    assert cloud.puts == [(MANUAL, 22.0)]
+
+
+async def test_manual_target_between_two_steps_sends_nothing(hass, plant):
+    coordinator, cloud = plant
+    changed(coordinator, cloud, MODE, value="manual")
+    entity = climate(hass, coordinator)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=21.3)
+    assert cloud.puts == []
+    await entity.async_set_temperature(temperature=21.5)
+    assert cloud.puts == [(MANUAL, 21.5)]
 
 
 async def test_uncertain_put_is_read_back_never_sent_twice(hass, plant):

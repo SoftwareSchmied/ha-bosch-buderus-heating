@@ -76,6 +76,7 @@ from .heating_climate import (
     CLEAR_VALUE,
     TemporarySetpoint,
     clear_outside_limits,
+    manual_floor_reading,
     takes_clear_value,
     temporary_setpoint,
     valid_resource,
@@ -725,11 +726,15 @@ class ZoneClimate(
             raise self._refusal(manual_path)
         native = TEMPERATURE_UNITS[manual.metadata.unit or ""]
         raw = TemperatureConverter.convert(value, temperature_unit(self), native)
-        if policy.write_grid and {
-            temperature_unit(self),
-            self.hass.config.units.temperature_unit,
-        } != {native}:
-            raw = round(raw / policy.step) * policy.step
+        if {temperature_unit(self), self.hass.config.units.temperature_unit} != {
+            native
+        }:
+            # C31: a converted value, such as 70 °F, never lies exactly on the
+            # grid; use the nearest grid value, counted from the minimum.
+            step = assess_control(manual, context_of(self.coordinator)).ui_step
+            base = manual.metadata.minimum or 0.0
+            if step is not None and step > 0:
+                raw = round(base + round((raw - base) / step) * step, 4)
         try:
             # The rules of the write itself, before a mode is sent for it.
             validate_control_value(manual, raw, context_of(self.coordinator))
@@ -742,12 +747,25 @@ class ZoneClimate(
         if mode not in ("manual", "auto"):
             raise self._refusal()
         resource, raw, policy = self._raw_target(command.side, mode, value, strict=True)
+        # The target is read again with the mode and the guards, and its
+        # limits come from that reading. A change of its own value does not
+        # refuse it: a mode change just sent may move the target with it.
         await async_set_control(
             self.coordinator,
             resource.path,
             raw,
             policy,
-            expected=(command.mode, resource, *command.guards),
+            expected=(command.mode, *command.guards),
+            fresh=(
+                resource,
+                *(
+                    manual_floor_reading(
+                        self.coordinator, f"{self.root}/{command.side}"
+                    )
+                    if mode == "auto"
+                    else ()
+                ),
+            ),
         )
 
 
@@ -816,6 +834,9 @@ class ZoneTemporaryClearButton(
     """
 
     _attr_has_entity_name = True
+    # The icon of the heating circuit's clear button (icons.json); the name
+    # is built in the profile language like that button's.
+    _attr_translation_key = "heating_temporary_setpoint_clear"
 
     def __init__(
         self,

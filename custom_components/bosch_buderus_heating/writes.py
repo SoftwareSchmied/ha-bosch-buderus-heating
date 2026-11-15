@@ -114,11 +114,8 @@ RRC_OPERATION_MODE_POLICY = EnumWritePolicy(
     # #113: a used but unavailable mode is shown and locked (``mode_locked``).
     honor_flags=False,
 )
-HEATING_CIRCUIT_OPERATION_MODE_POLICY = EnumWritePolicy(
-    r"^/heatingCircuits/[^/]+/operationMode$",
-    frozenset({"stringValue"}),
-    frozenset({"off", "manual", "auto"}),
-)
+# With the control type rule of the circuit (``circuit_controls``).
+HEATING_CIRCUIT_OPERATION_MODE_POLICY = circuit_controls.OPERATION_MODE_POLICY
 DHW_OPERATION_MODE_POLICY = EnumWritePolicy(
     r"^/dhwCircuits/[^/]+/operationMode$",
     frozenset({"stringValue"}),
@@ -218,6 +215,36 @@ def _temporary_setpoint_cleared(read: object, requested: JsonScalar) -> bool:
     )
 
 
+def _temporary_floor_check(
+    resource: Resource, value: JsonScalar, readings: Mapping[str, Resource]
+) -> str | None:
+    """With an advertised minimum of 0 or below (-1 and 0 end or switch off
+    a temporary setpoint), the manual setpoint's positive minimum in the same
+    unit is the lowest target. The write reads the manual setpoint again in
+    its request (``fresh``), so its current minimum decides."""
+    minimum = resource.metadata.minimum
+    if (
+        minimum is None
+        or minimum > 0
+        or isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or _values_equal(value, TEMPORARY_SETPOINT_CLEAR_VALUE)
+    ):
+        return None
+    manual = readings.get(f"{resource.path.rsplit('/', 1)[0]}/manualRoomSetpoint")
+    if manual is None:
+        return None
+    floor = manual.metadata.minimum
+    if (
+        floor is None
+        or not math.isfinite(floor)
+        or floor <= 0
+        or manual.metadata.unit != resource.metadata.unit
+    ):
+        return None
+    return "write_validation_failed" if value < floor - 1e-7 else None
+
+
 # The temporary target of a heating circuit in the mode auto. Only the
 # circuit's climate entity and its
 # clear button write it, so it has no number of its own and no row in the
@@ -234,6 +261,7 @@ HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     create_entity=False,
     sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
     confirm_if=_temporary_setpoint_cleared,
+    value_check=_temporary_floor_check,
 )
 # The temporary target of a ConnectKey zone in the mode auto, by the same
 # rules: only the zone's climate entity and its clear button write it (the
@@ -247,6 +275,7 @@ ZONE_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     create_entity=False,
     sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
     confirm_if=_temporary_setpoint_cleared,
+    value_check=_temporary_floor_check,
 )
 NUMBER_WRITE_POLICIES = (
     # ZONE-02, ZONE-05: no change while away or while the zone is locked.
@@ -257,7 +286,11 @@ NUMBER_WRITE_POLICIES = (
         value_check=rrc_contract_zone.manual_value_check,
         honor_flags=False,
     ),
-    NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5, honor_flags=False),
+    # An advertised step is a rule of the gateway, counted from the minimum;
+    # without one, 0.5 is only the display step.
+    NumberWritePolicy(
+        ZONE_MANUAL_PATTERN, "C", 0.5, live_step=True, honor_flags=False
+    ),
     ZONE_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False
@@ -268,9 +301,7 @@ NUMBER_WRITE_POLICIES = (
         1.0,
         enabled_by_default=False,
     ),
-    NumberWritePolicy(
-        r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 0.5, write_grid=True
-    ),
+    circuit_controls.MANUAL_SETPOINT_POLICY,
     HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/maxFlowTemp$",

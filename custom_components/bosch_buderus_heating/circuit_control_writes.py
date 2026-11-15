@@ -3,10 +3,12 @@
 The number and select entities and the controls dialog write these settings
 through the coordinator as every other control (one request, read-back, no
 second request). Before the request the coordinator reads the guards again
-on the gateway, in one request with the setting itself: a change since they
-were shown sends nothing, and the setting's own limits come from that
+on the gateway, in one request with the setting itself: a change of a guard
+since it was shown sends nothing, and the setting's own limits come from that
 reading. A guard the plant has but without a current reading sends nothing
-either.
+either. An entity sets a value of its own, so a change
+of the setting's value since the last poll does not refuse it; the controls
+dialog compares it with the value it showed.
 """
 
 from __future__ import annotations
@@ -70,15 +72,34 @@ async def async_set_guarded(
     value: str | float,
     policy: EnumWritePolicy | NumberWritePolicy,
 ) -> None:
-    """``control.async_set_control`` with the guards of the setting."""
-    guards = write_guards(coordinator, path, policy)
+    """``control.async_set_control`` with the guards of the setting; the
+    setting itself is read again with them for its current limits."""
+    guards = write_guards(coordinator, path, policy, include_target=False)
     if guards is None:
         if (down := cloud_down_error(coordinator)) is not None:
             raise down
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="write_validation_failed"
         )
-    await async_set_control(coordinator, path, value, policy, expected=guards)
+    await async_set_control(
+        coordinator,
+        path,
+        value,
+        policy,
+        expected=guards,
+        fresh=_target(coordinator, path, policy),
+    )
+
+
+def _target(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str, policy: object
+) -> tuple[Resource, ...]:
+    """The last reading of a heating circuit setting, read again before its
+    write; none for every other control."""
+    snapshot = (coordinator.data or {}).get(path)
+    if not circuit_controls.guard_paths(path, policy) or snapshot is None:
+        return ()
+    return (snapshot.resource,)
 
 
 def circuit_control_diagnostics(

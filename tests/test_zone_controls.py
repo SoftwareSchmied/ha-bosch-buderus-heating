@@ -90,8 +90,8 @@ async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
         assert entity.native_max_value == resource.metadata.maximum
         assert entity.native_step == (resource.metadata.step_size or 0.5)
         assert entity.native_unit_of_measurement == "°C"
-        # The UI increment is not an unproven API quantization rule.
-        target = resource.value + 0.1
+        # A value on the advertised step, counted from the minimum.
+        target = resource.value + (resource.metadata.step_size or 0.5)
         client.get_resource.return_value = replace(resource, value=target)
         await entity.async_set_native_value(target)
         assert entity.native_value == target
@@ -103,6 +103,33 @@ async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
         coordinator.data[other.path].resource == other
         for other in RESOURCES
         if other.path != resource.path
+    )
+
+
+@pytest.mark.parametrize("step", [0.5, 0.25])
+async def test_zone_manual_setpoint_between_two_steps_sends_nothing(environment, step):
+    """An advertised step is a rule of the gateway, counted from the
+    minimum: a value between two steps is refused instead of being cut."""
+    coordinator, client, _ = environment
+    resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=step))
+    coordinator.data = snapshots(resource)
+    entity = entity_for(coordinator, resource)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_native_value(resource.value + 0.1)
+    client.put_resource_value.assert_not_awaited()
+
+
+async def test_zone_manual_setpoint_without_a_step_sends_any_value(environment):
+    """Without an advertised step, 0.5 is only the display step."""
+    coordinator, client, _ = environment
+    resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=None))
+    coordinator.data = snapshots(resource)
+    entity = entity_for(coordinator, resource)
+    target = resource.value + 0.1
+    client.get_resource.return_value = replace(resource, value=target)
+    await entity.async_set_native_value(target)
+    client.put_resource_value.assert_awaited_once_with(
+        "synthetic-gateway", resource.path, target
     )
 
 
