@@ -1016,3 +1016,24 @@ async def test_an_automation_on_a_renamed_cloud_entity_keeps_working(
         assert state.attributes["source"] == "local"
         coordinator = source_for(owner, GATEWAY)
         assert local_only_heal.diagnostics(coordinator) == counts(continued=1)
+
+
+async def test_a_handed_over_entry_with_other_statistics_stays(
+    hass: HomeAssistant,
+) -> None:
+    """The cloud's sensor gave the handed-over entry a state class the
+    local-only form does not have: taking it back would drop it (and orphan
+    its statistics), so the entry stays the cloud's."""
+    coordinator = coordinator_with(
+        hass, [text(STATUS, "heating", LOCAL_STATES[:9])], status_resource()
+    )
+    registry = er.async_get(hass)
+    entity_id = handed_over_status(registry, coordinator.config_entry, UNIT_GATEWAY)
+    registry.async_update_entity(entity_id, capabilities={"state_class": "measurement"})
+    before = registry_items(registry)
+    heal_registered(coordinator)
+    assert registry_items(registry) == before
+    assert registry.async_get(entity_id).unique_id == cloud_unique_id(
+        UNIT_GATEWAY, STATUS
+    )
+    await coordinator.async_shutdown()

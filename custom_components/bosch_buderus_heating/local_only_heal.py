@@ -227,10 +227,10 @@ def _heal(
         successor, healed = handed, TAKEN_BACK
     elif in_use:
         successor, healed = in_use[0], CONTINUED
-        if not _same_statistics(successor, form, sensors):
-            return  # another unit or state class: the cloud entity stays
     else:
         successor, healed = None, RESTORED if removed else None
+    if successor is not None and not _same_statistics(successor, form, sensors):
+        return  # another unit or state class: the cloud entity stays as it is
     dropped = 0
     for item in entries.values():
         if item is successor:

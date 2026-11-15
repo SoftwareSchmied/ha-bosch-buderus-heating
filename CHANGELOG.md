@@ -151,6 +151,10 @@ entry says how it was tested; most of it with automated tests only.
     a renamed one), settings and statistics, whichever was set up first, and
     a repair notice names it. Automated tests only (Home Assistant 2026.5 and
     2026.11).
+  - A local-only reading without a reviewed name that the cloud now offers
+    this way goes to the cloud's sensor as before: with the same unit and
+    state class it keeps its entity ID, otherwise the cloud adds an entity of
+    its own.
 - **Zone modes and setpoints missing on a large zone controller:** discovery
   now reads them first and wastes fewer requests on radio devices, so it
   finishes. Reported by petergoris-netizen in

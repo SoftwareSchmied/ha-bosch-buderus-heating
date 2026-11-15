@@ -840,7 +840,8 @@ is removed instead, and the local-only entity is added. If an earlier version
 removed a local-only entity, it returns with its entity ID and settings,
 unless a cloud entity of the same reading is in use (that one continues, as
 above). One an earlier version handed over to the cloud's sensor keeps its
-entity ID and settings and gets its reviewed name and states again. Next to a
+entity ID and settings and gets its reviewed name and states again (with the
+same native unit and state class; otherwise it stays the cloud's). Next to a
 registered local-only entity, a cloud entity of the same reading that is in
 use is not removed either: it is no longer provided, and a repair notice names
 it together with the entity that shows the reading now. For other local-only
