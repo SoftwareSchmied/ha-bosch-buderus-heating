@@ -20,7 +20,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 
-from custom_components.bosch_buderus_heating import local_only_heal
+from custom_components.bosch_buderus_heating import (
+    _clear_entry_issues,
+    local_only_heal,
+)
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.local_only_heal import (
     cloud_unique_id,
@@ -740,6 +743,22 @@ async def test_a_renamed_cloud_entity_in_use_keeps_its_entity_id(
     heal_registered(coordinator)
     assert registry_items(registry) == before
     assert local_only_heal.diagnostics(coordinator)["continued"] == 1
+    # Removing the entry removes its notice; another entry's stays.
+    other = local_only_heal.issue_id(
+        "local_only_entities_continued", "other-entry", UNIT_GATEWAY
+    )
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        other,
+        is_fixable=False,
+        severity=ir.IssueSeverity.WARNING,
+        data={"entry_id": "other-entry"},
+        translation_key="local_only_entities_continued",
+    )
+    _clear_entry_issues(hass, entry.entry_id)
+    assert notice(hass, coordinator, "continued") is None
+    assert ir.async_get(hass).async_get_issue(DOMAIN, other) is not None
     await coordinator.async_shutdown()
 
 

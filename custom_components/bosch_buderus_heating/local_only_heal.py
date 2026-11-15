@@ -352,6 +352,8 @@ def _notify(
                 is_fixable=False,
                 is_persistent=False,
                 severity=ir.IssueSeverity.WARNING,
+                # Removing the entry removes its notices.
+                data={"entry_id": entry_id},
                 translation_key=kind,
                 translation_placeholders={
                     "count": str(len(entities)),
