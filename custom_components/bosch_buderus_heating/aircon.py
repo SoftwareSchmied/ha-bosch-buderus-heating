@@ -27,8 +27,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .aircon_policies import (
+    ADVANCED_FUNCTION_PATHS,
     ADVANCED_FUNCTIONS,
     POLL_PATHS,
+    STANDARD_FUNCTION_PATHS,
     STANDARD_FUNCTIONS,
     WRITE_GUARDS,
 )
@@ -178,25 +180,23 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         return resource.value if resource is not None and resource.has_value else None
 
     def referenced(self, path: str) -> bool:
-        """Whether the unit names the function (or does not list any).
+        """Whether the unit names the function in its function list.
 
-        Without a readable function list the readable leaf decides alone.
+        The standard functions (power, mode, setpoint, fan, louvres) are
+        checked against ``standardFunctions``, the five extra functions
+        against ``advancedFunctions``; without a readable list the readable
+        leaf decides alone. Timers, schedules and the solar state are no
+        listed functions.
         """
-        lists = [
-            listing
-            for listing in (
-                self.data.resources.get(STANDARD_FUNCTIONS),
-                self.data.resources.get(ADVANCED_FUNCTIONS),
-            )
-            if listing is not None and listing.references
-        ]
-        if not lists:
+        if path in ADVANCED_FUNCTION_PATHS:
+            listing = self.data.resources.get(ADVANCED_FUNCTIONS)
+        elif path in STANDARD_FUNCTION_PATHS:
+            listing = self.data.resources.get(STANDARD_FUNCTIONS)
+        else:
             return True
-        return any(
-            reference.path == path
-            for listing in lists
-            for reference in listing.references
-        )
+        if listing is None or not listing.references:
+            return True
+        return any(reference.path == path for reference in listing.references)
 
     def control_ready(self, path: str) -> bool:
         """A current, referenced and writable control with a released policy."""

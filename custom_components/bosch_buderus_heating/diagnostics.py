@@ -189,7 +189,7 @@ async def async_get_config_entry_diagnostics(
         "request_metrics": runtime.client.metrics.snapshot(),
         "gateways": gateway_reports,
         "wallboxes": [coordinator.diagnostics() for coordinator in runtime.wallboxes],
-        "air_conditioners": [
+        "pointt_air_conditioners": [
             coordinator.diagnostics() for coordinator in runtime.aircons
         ],
         "bacon": runtime.bacon.diagnostics()
@@ -364,7 +364,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         },
         "gateways": gateways,
         "wallboxes": wallboxes,
-        "air_conditioners": aircons,
+        "pointt_air_conditioners": aircons,
     }
 
 

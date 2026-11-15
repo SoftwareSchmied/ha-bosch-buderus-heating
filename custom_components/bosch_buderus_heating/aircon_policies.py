@@ -54,6 +54,19 @@ ADVANCED_FUNCTION_PATHS: Final = (
     ECO_MODE,
 )
 
+# The functions ``standardFunctions`` lists (each also needs its own leaf).
+STANDARD_FUNCTION_PATHS: Final = frozenset(
+    {
+        AC_CONTROL,
+        OPERATION_MODE,
+        TEMPERATURE_SETPOINT,
+        FAN_SPEED,
+        AIR_FLOW_VERTICAL,
+        AIR_FLOW_HORIZONTAL,
+        QUICK_AIR_FLOWS,
+    }
+)
+
 STRING_TYPES: Final = frozenset({"stringValue"})
 ON_OFF: Final = frozenset({"on", "off"})
 OPERATION_MODES: Final = frozenset({"auto", "cool", "heat", "dry", "fanOnly"})

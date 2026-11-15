@@ -13,6 +13,7 @@ missing capabilities are simply omitted.
 | Water softener WE800i | Cloud | Salt level, soft water, flow, regeneration | Four controls, disabled by default | [Water softener](water-softener.md) |
 | Water heaters (Midea/RWH) | Cloud, selected at setup | Temperatures and state | Operation mode and target temperature | [Water heaters](bacon-water-heaters.md) |
 | Air conditioners (Climate Series) | Cloud, selected at setup | Temperatures and state | On/off, mode, target temperature and the fan settings the device reports | [Air conditioners](bacon-air-conditioners.md) |
+| Air conditioners on a PointT gateway (device type `rac`; Midea, Sharp) | Cloud | Room temperature and state | On/off, mode, target temperature, fan, louvres, Eco; extra functions, timers and schedule settings disabled by default; expected, untested | [Air conditioners on a PointT gateway](pointt-air-conditioners.md) |
 | Air purifiers (seven families) | Cloud, selected at setup | Air quality and filter state | On/off, presets and fan levels the device reports | [Air purifiers](bacon-air-purifiers.md) |
 | Dehumidifiers (Dry 4000i/6000i/8000i) | Cloud, selected at setup | Humidity and state | On/off, mode and target humidity the device reports | [Dehumidifiers](bacon-dehumidifiers.md) |
 | Wallboxes | Cloud | Charging state and energy | read-only | [Wallboxes](pointt-wallboxes.md) |
