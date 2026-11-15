@@ -26,6 +26,7 @@ from .entity_use import entity_use
 from .managed_bacon import BaconDeviceAccess
 from .platform_scope import EntityBuilder, Listener, PlatformScope
 from .wallbox import WallboxCoordinator
+from .aircon import AirconCoordinator
 
 if TYPE_CHECKING:
     from .managed_entry import ManagedEntry
@@ -202,6 +203,9 @@ class _Platform:
                     )
             elif isinstance(value, WallboxCoordinator):
                 scope.wallboxes = (value,)
+                prefix = value.gateway.gateway_id + ":"
+            elif isinstance(value, AirconCoordinator):
+                scope.aircons = (value,)
                 prefix = value.gateway.gateway_id + ":"
             elif isinstance(value, BaconDeviceAccess):
                 if value.client.subject is None:

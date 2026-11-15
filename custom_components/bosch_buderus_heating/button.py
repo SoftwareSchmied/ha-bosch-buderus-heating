@@ -10,6 +10,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .aircon_entities import track_aircon_buttons
 from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
@@ -50,6 +51,7 @@ def _setup_entities(
     """Expose only the reviewed regeneration start command, initially
     disabled, and the clear button of a heating circuit's temporary
     setpoint."""
+    track_aircon_buttons(entry, async_add_entities)
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,

@@ -10,6 +10,7 @@ from .pointt import Gateway, PointTClient, TokenManager
 from .startup_data import StartupSession
 
 if TYPE_CHECKING:
+    from .aircon import AirconCoordinator
     from .bacon.session import BaconAccount
     from .notifications import FaultNotifications
     from .wallbox import WallboxCoordinator
@@ -27,3 +28,4 @@ class BoschBuderusRuntimeData:
     startup: StartupSession | None = None
     bacon: BaconAccount | None = None
     wallboxes: tuple[WallboxCoordinator, ...] = ()
+    aircons: tuple[AirconCoordinator, ...] = ()

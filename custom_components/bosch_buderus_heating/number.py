@@ -17,6 +17,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .aircon_entities import track_aircon_numbers
 from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
 from .bacon import purifier
 from .bacon.purifier_entities import (
@@ -77,6 +78,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create numeric controls only from matching live metadata."""
+    track_aircon_numbers(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS

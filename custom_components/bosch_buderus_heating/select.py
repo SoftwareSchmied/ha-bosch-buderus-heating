@@ -13,6 +13,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .aircon_entities import track_aircon_selects
 from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
 from .bacon.purifier_entities import (
     BaconPurifierColor,
@@ -83,6 +84,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create controls only for verified enum capabilities."""
+    track_aircon_selects(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry,

@@ -90,6 +90,7 @@ from .switch_program_edit import edit_issue, points_per_day
 from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
+from .aircon import AirconCoordinator
 from .water_softener import (
     is_water_softener,
     softener_capability,
@@ -188,6 +189,9 @@ async def async_get_config_entry_diagnostics(
         "request_metrics": runtime.client.metrics.snapshot(),
         "gateways": gateway_reports,
         "wallboxes": [coordinator.diagnostics() for coordinator in runtime.wallboxes],
+        "air_conditioners": [
+            coordinator.diagnostics() for coordinator in runtime.aircons
+        ],
         "bacon": runtime.bacon.diagnostics()
         if runtime.bacon
         else {"configured": False},
@@ -280,6 +284,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
     sources = []
     gateways: list[dict[str, Any]] = []
     wallboxes = []
+    aircons = []
     for key, number in bindings.items():
         binding = snapshot.bindings[key]
         relationship = {
@@ -308,6 +313,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
             )
         elif isinstance(value, WallboxCoordinator):
             wallboxes.append({**value.diagnostics(), **relationship})
+        elif isinstance(value, AirconCoordinator):
+            aircons.append({**value.diagnostics(), **relationship})
     base["config"].pop("brand", None)
     base["config"]["configured_gateway_count"] = sum(
         target.kind == "pointt_object" for target in snapshot.targets.values()
@@ -357,6 +364,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         },
         "gateways": gateways,
         "wallboxes": wallboxes,
+        "air_conditioners": aircons,
     }
 
 

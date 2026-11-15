@@ -150,6 +150,7 @@ async def async_build_local_plant(
     ``None`` when nothing could show the readings (no enabled local access)
     or for a wallbox; then nothing is built, loaded or written.
     """
+    from .aircon import is_aircon_gateway
     from .local_selection import LocalSelection
     from .wallbox import is_wallbox
 
@@ -160,7 +161,7 @@ async def async_build_local_plant(
     stored = inventory.gateway(gateway_id)
     # The stored gateway at any age: its name and model, never a request.
     gateway = stored.gateway if stored is not None else Gateway(gateway_id, model=model)
-    if is_wallbox(gateway):
+    if is_wallbox(gateway) or is_aircon_gateway(gateway):
         return None
     # D1/1A: descriptions kept beyond the age limit, and the resources within
     # it (with their shape); used only where they fit a reading.
