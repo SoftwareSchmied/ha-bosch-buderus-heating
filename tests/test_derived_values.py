@@ -629,6 +629,26 @@ def test_energy_from_power_needs_dense_readings() -> None:
     assert _power_energy([], start, end) is None
 
 
+def test_a_declared_error_value_is_no_defrost_power() -> None:
+    """The power during a defrost skips the device's declared error values,
+    as COP live does."""
+    from custom_components.bosch_buderus_heating.derived_defrost import _kilowatts
+    from custom_components.bosch_buderus_heating.derived_inputs import Input
+
+    resource = Resource(
+        path=POWER,
+        value=6553.5,
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="floatValue", unit="kW", numeric_error_values=(6553.5,)
+        ),
+    )
+    reading = Input(POWER, 6553.5, "cloud", T0, resource, "kW")
+    assert _kilowatts(reading) is None
+    assert _kilowatts(replace(reading, value=2.5)) == 2.5
+    assert _kilowatts(None) is None
+
+
 async def test_an_older_power_reading_is_not_taken(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory
 ) -> None:
