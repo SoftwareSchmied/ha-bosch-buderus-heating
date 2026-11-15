@@ -92,14 +92,15 @@ class ControlUnused(ControlLocked):
         self.contract = contract
 
 
-# The zone controls keep flag rules of their own (``zone_control_issue``,
-# ``rrc.control_issue``); the generic flag rule does not apply to them.
+# The zone controls keep entity rules of their own (``zone_control_issue``);
+# their flags decide about each write, on the reading of its own request.
 ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
     ZONE_MODE_PATTERN,
     frozenset({"stringValue"}),
     ZONE_MODES,
     known_only=True,
     honor_flags=False,
+    write_flags=True,
 )
 # #113: the TC100.2 advertises no allowedValues for userMode; the controller
 # has exactly the two fallback modes.
@@ -286,9 +287,17 @@ NUMBER_WRITE_POLICIES = (
         value_check=rrc_contract_zone.manual_value_check,
         honor_flags=False,
     ),
-    # An advertised step is a rule of the gateway, counted from the minimum;
-    # without one, 0.5 is only the display step.
-    NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5, live_step=True, honor_flags=False),
+    # The advertised step, else 0.5 as in the manufacturer's app, counted
+    # from the minimum; the flags decide about each write.
+    NumberWritePolicy(
+        ZONE_MANUAL_PATTERN,
+        "C",
+        0.5,
+        live_step=True,
+        strict_grid=True,
+        honor_flags=False,
+        write_flags=True,
+    ),
     ZONE_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False
@@ -607,10 +616,12 @@ def _reads_fresh(
 ) -> bool:
     """S5: whether the transaction reads the resource itself before a PUT.
 
-    A zone control always; on an RRC controller every contract setting, so
-    that its flags, limits and value are checked against the controller's
-    current state, not against the reading of the last poll. A caller may
-    pass that current reading as ``current`` instead (the coordinator does).
+    A room controller's zone control always; on an RRC controller every
+    contract setting, so that its flags, limits and value are checked
+    against the controller's current state, not against the reading of the
+    last poll. A caller may pass that current reading as ``current`` instead
+    (the coordinator does; it reads a ConnectKey zone control in the request
+    of its guards).
     """
     return rrc.is_control(path) or (
         _context(context).rrc_plant and rrc_contracts.owns(policy)
@@ -672,6 +683,8 @@ def _validate_enum(
             "The controller does not use this setting now",
             contract=rrc_contracts.owns(policy),
         )
+    if _not_offered(resource, policy):
+        raise WriteValidationError("The gateway does not offer this setting now")
     if not isinstance(request.value, str) or request.value not in assessment.options:
         raise WriteValidationError("Requested enum value is not currently advertised")
     _run_value_check(policy, resource, request.value, related)
@@ -728,11 +741,22 @@ def _locked(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> 
 def _unused(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> bool:
     """An available setting the gateway does not use now: shown, never
     written (``ControlUnused``). Every contract setting and every policy
-    with ``honor_flags``."""
+    with ``honor_flags`` or ``write_flags``."""
     return (
-        (rrc_contracts.owns(policy) or policy.honor_flags)
+        (rrc_contracts.owns(policy) or policy.honor_flags or policy.write_flags)
         and not policy.unused_writable
         and rrc.flag_state(resource) == "unused"
+    )
+
+
+def _not_offered(
+    resource: Resource, policy: EnumWritePolicy | NumberWritePolicy
+) -> bool:
+    """A policy with ``write_flags``: a setting the gateway does not offer
+    now (``available`` false) or with malformed flags is not written."""
+    return policy.write_flags and rrc.flag_state(resource) in (
+        "unavailable",
+        "invalid",
     )
 
 
@@ -759,6 +783,8 @@ def _validate_number(
             "The controller does not use this setting now",
             contract=rrc_contracts.owns(policy),
         )
+    if _not_offered(resource, policy):
+        raise WriteValidationError("The gateway does not offer this setting now")
     if _sentinel_outside_limits(resource, policy, request.value):
         # The policy's command value outside the limits: no limit or grid
         # check applies to it, the contract rule still does.

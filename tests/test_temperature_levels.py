@@ -10,6 +10,7 @@ installation.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -151,15 +152,62 @@ async def test_changed_heating_level_refuses_the_setback_write(hass):
 
 
 @pytest.mark.parametrize(("changed", "path"), [(COMFORT, ECO), (ECO, COMFORT)])
-async def test_a_changed_sibling_level_alone_refuses_the_write(hass, changed, path):
-    """Only the other level changed in the app (its limits follow later):
-    the write is refused unsent all the same."""
+async def test_a_changed_sibling_level_alone_does_not_refuse_the_write(
+    hass, changed, path
+):
+    """Only the other level changed (in the app, or by a write a moment
+    ago): it is read again with the write and shown, and the value is
+    checked against the current limits instead of being refused."""
     coordinator, cloud = _setup(hass, "V2")
     cloud.change(changed, value=cloud.state[changed].value + 0.5)
-    with pytest.raises(ServiceValidationError):
-        await number_entity(hass, coordinator, path).async_set_native_value(20)
-    assert cloud.puts == []
+    await number_entity(hass, coordinator, path).async_set_native_value(20)
+    assert cloud.puts == [(path, 20.0)]
     assert coordinator.data[changed].resource.value == cloud.state[changed].value
+
+
+async def test_coupled_levels_set_at_the_same_time_are_both_written(hass):
+    """A scene sets both levels at once: the second write waits for the
+    first and is checked against the limits the first one left."""
+    coordinator, cloud = _setup(hass)
+    _coupled_gateway(cloud)
+    comfort = number_entity(hass, coordinator, COMFORT)
+    eco = number_entity(hass, coordinator, ECO)
+    bulk = coordinator.client.get_resources_bulk.side_effect
+
+    async def network(*args, **kwargs):
+        await asyncio.sleep(0)  # a real request lets the other call start
+        return await bulk(*args, **kwargs)
+
+    coordinator.client.get_resources_bulk.side_effect = network
+    await asyncio.gather(
+        comfort.async_set_native_value(22), eco.async_set_native_value(18)
+    )
+    assert sorted(cloud.puts) == [(COMFORT, 22.0), (ECO, 18.0)]
+
+
+async def test_coupled_levels_at_the_same_time_keep_the_current_limit(hass):
+    """The second of two levels set at once is checked against the limit
+    the first one moved: a setback level above the new heating level is
+    refused unsent."""
+    coordinator, cloud = _setup(hass)
+    _coupled_gateway(cloud)
+    comfort = number_entity(hass, coordinator, COMFORT)
+    eco = number_entity(hass, coordinator, ECO)
+    bulk = coordinator.client.get_resources_bulk.side_effect
+
+    async def network(*args, **kwargs):
+        await asyncio.sleep(0)
+        return await bulk(*args, **kwargs)
+
+    coordinator.client.get_resources_bulk.side_effect = network
+    results = await asyncio.gather(
+        comfort.async_set_native_value(20),
+        eco.async_set_native_value(20),
+        return_exceptions=True,
+    )
+    # 20 was within the setback level's limit (20.5) when both were shown.
+    assert cloud.puts == [(COMFORT, 20.0)]
+    assert isinstance(results[1], ServiceValidationError)
 
 
 def _coupled_gateway(cloud: Cloud) -> None:

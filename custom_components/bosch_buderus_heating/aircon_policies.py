@@ -115,8 +115,12 @@ def operation_mode_check(
     resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
 ) -> str | None:
     """A mode change needs a switched-on unit (one path per command) and is
-    refused for auto and heat while solar operation is on (as the app)."""
-    if _reading(related, AC_CONTROL) != "on":
+    refused for auto and heat while solar operation is on (as the app).
+
+    A unit without an on/off setting has only its modes; a unit that has one
+    but whose reading the write could not get is refused before this check
+    (``AirconCoordinator.async_write``)."""
+    if AC_CONTROL in related and _reading(related, AC_CONTROL) != "on":
         return SWITCHED_OFF
     if value in PV_BLOCKED_MODES and _reading(related, PV_ENABLE) == "on":
         return PV_MODE_BLOCKED

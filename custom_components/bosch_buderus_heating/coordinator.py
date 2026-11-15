@@ -104,6 +104,8 @@ from .pointt.const import MAX_BULK_PATHS
 from .pointt.exceptions import (
     ProtocolError,
     RequestTimeout,
+    ResourceForbidden,
+    ResourceNotFound,
     ServiceUnavailable,
     SourceStopped,
     TransportError,
@@ -120,6 +122,7 @@ from .resource_catalog import PollGroup, poll_group, slows_when_unused
 from .rrc import (
     DEVICE_LIST,
     PROGRAM_LIST,
+    flag_state,
     in_device_scope,
     is_control,
     profile_evidence,
@@ -443,9 +446,9 @@ def _guard_changed(
     """Whether ``reading`` differs from the guard ``before`` of a write.
 
     The written setting itself and a coupled level (``by_value``) count as
-    changed only when their value changed: new limits or flags (for example
-    after a confirmed write of the level that bounds them) are checked on
-    the current reading instead.
+    changed only when their value or what their ``used`` and ``available``
+    flags say changed: new limits (for example after a confirmed write of
+    the level that bounds them) are checked on the current reading instead.
     """
     if before.path not in by_value:
         return reading != before
@@ -453,6 +456,7 @@ def _guard_changed(
         reading.path != before.path
         or reading.has_value != before.has_value
         or not confirms_value(None, reading.value, before.value)
+        or flag_state(reading) != flag_state(before)
     )
 
 
@@ -488,6 +492,21 @@ def _manual_setpoint_mode_path(path: str) -> str | None:
     ):
         return path.rsplit("/", 1)[0] + "/operationMode"
     return None
+
+
+_MODE_WITH_TARGETS = re.compile(
+    r"^(/heatingCircuits/hc[0-9]+|/zones/zone[0-9]+/(?:heating|cooling))/operationMode$"
+)
+
+
+def _mode_target_paths(path: str) -> tuple[str, ...]:
+    """The targets of a heating circuit's or a zone side's mode, whose flags
+    may follow the mode (the manual setpoint not used in the mode auto)."""
+    match = _MODE_WITH_TARGETS.fullmatch(path)
+    if match is None:
+        return ()
+    root = match.group(1)
+    return (f"{root}/manualRoomSetpoint", f"{root}/temporaryRoomSetpoint")
 
 
 def _manual_mode_active(mode_path: str, snapshots: dict[str, ResourceSnapshot]) -> bool:
@@ -1111,16 +1130,21 @@ class BoschBuderusDataUpdateCoordinator(
         return max(limit, needed)
 
     async def _async_read_write_guards(
-        self, expected: tuple[Resource, ...]
+        self,
+        expected: tuple[Resource, ...],
+        optional: frozenset[str] = frozenset(),
     ) -> dict[str, Resource]:
         """C35: read every resource a write depends on in one bulk request.
 
         Paths the bulk response does not answer are read individually, as
-        before. Nothing here writes.
+        before. Nothing here writes. An ``optional`` path the gateway refuses
+        or does not have (403/404) is left out of the result instead of
+        ending the write: it only adds a rule, which then does not apply.
         """
         gateway_id = self.gateway.gateway_id
         paths = tuple(dict.fromkeys(before.path for before in expected))
         read: dict[str, Resource] = {}
+        absent: set[str] = set()
         try:
             results: Iterable[BatchItemResult] = await self.client.get_resources_bulk(
                 gateway_id, paths
@@ -1144,9 +1168,16 @@ class BoschBuderusDataUpdateCoordinator(
                 and resource.path == item.path
             ):
                 read[item.path] = resource
+            elif item.path in optional and item.status in (403, 404):
+                absent.add(item.path)
         for path in paths:
-            if path not in read:
+            if path in read or path in absent:
+                continue
+            try:
                 read[path] = await self.client.get_resource(gateway_id, path)
+            except ResourceForbidden, ResourceNotFound:
+                if path not in optional:
+                    raise
         return read
 
     def _write_failed(self, path: str, err: BaseException) -> str:
@@ -1280,6 +1311,14 @@ class BoschBuderusDataUpdateCoordinator(
                 for item in fresh
                 if all(before.path != item.path for before in expected)
             )
+            # A reading read only for a rule of the write (neither the
+            # setting nor a guard) may be missing on the gateway now.
+            optional = frozenset(
+                item.path
+                for item in fresh
+                if item.path != path
+                and all(before.path != item.path for before in expected)
+            )
             if (
                 context.rrc_plant
                 and owns(policy)
@@ -1290,7 +1329,7 @@ class BoschBuderusDataUpdateCoordinator(
             live: dict[str, Resource] = {}
             if reads:
                 try:
-                    live = await self._async_read_write_guards(reads)
+                    live = await self._async_read_write_guards(reads, optional)
                 except PointTError as err:
                     # C33: nothing was written. Like any failed read, this
                     # leaves the readings as they are until the next poll.
@@ -1305,7 +1344,9 @@ class BoschBuderusDataUpdateCoordinator(
                     raise
                 changed = dict(self.data or {})
                 for before in reads:
-                    refreshed = live[before.path]
+                    refreshed = live.get(before.path)
+                    if refreshed is None:
+                        continue
                     if refreshed != before and refreshed.path == before.path:
                         changed[before.path] = ResourceSnapshot(
                             refreshed, True, datetime.now(UTC)
@@ -1317,7 +1358,7 @@ class BoschBuderusDataUpdateCoordinator(
                 ):
                     self.async_set_updated_data(changed)
                     raise WriteValidationError("Control changed on the gateway")
-                if any(live[before.path] != before for before in reads):
+                if any(live.get(before.path, before) != before for before in reads):
                     # The setting itself changed: shown at once, checked below.
                     self.async_set_updated_data(changed)
             related: dict[str, Resource] = {}
@@ -1328,6 +1369,9 @@ class BoschBuderusDataUpdateCoordinator(
                     for item, current in (self.data or {}).items()
                     if _snapshot_is_fresh(current)
                 }
+                for item in optional - live.keys():
+                    # Missing on the gateway now: its rule does not apply.
+                    related.pop(item, None)
                 related.update(live)
             # Only an RRC controller's writes carry the RRC context, contract
             # readings and counters; every other write stays as it was.
@@ -1440,6 +1484,10 @@ class BoschBuderusDataUpdateCoordinator(
             if contract is not None and sent:
                 self.rrc_write_stats.confirmed(contract, path)
                 self._follow_up_zone_write(path)
+            elif confirmed.value != snapshot.resource.value:
+                # A new mode may change whether its targets are used: read
+                # them once soon, instead of locking them until their group.
+                self._follow_up_reads(_mode_target_paths(path))
             self._read_circuit_soon(path)
             if self.local_selection is not None:
                 # Local readings of this circuit from before the confirmation
@@ -1488,7 +1536,12 @@ class BoschBuderusDataUpdateCoordinator(
         of with the next cycle. Each write of a series moves the one timer;
         the read goes through the urgent reads of a regular cycle, so the
         lock, the backoff, the breaker and the pauses apply."""
-        paths = [item for item in follow_up_paths(path) if item in self.resources]
+        self._follow_up_reads(follow_up_paths(path))
+
+    def _follow_up_reads(self, candidates: Iterable[str]) -> None:
+        """Read these discovered paths once about five seconds from now,
+        through the urgent reads of a regular cycle (``_follow_up_zone_write``)."""
+        paths = [item for item in candidates if item in self.resources]
         if not paths or self.hass.is_stopping:
             return
         self._zone_follow_up.update(paths)
