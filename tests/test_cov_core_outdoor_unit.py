@@ -1,5 +1,5 @@
 """Outdoor unit software sensor: restore, refresh, source choice and the
-failure shapes of the module lists (0.9.2, N07)."""
+failure shapes of the module lists."""
 
 from __future__ import annotations
 
