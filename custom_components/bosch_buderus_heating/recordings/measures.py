@@ -127,7 +127,9 @@ class EntitySpec:
 
 
 def _kind_slug(series: Series) -> str:
-    return series.key.removeprefix(f"{series.mode}_") if series.mode else series.key
+    if series.mode:
+        return series.key.removeprefix(f"{series.mode}_")
+    return series.kind if series.kind in ("outdoor", "supply") else series.key
 
 
 def _counter(mode: str | None, kind: str) -> Counter | None:
