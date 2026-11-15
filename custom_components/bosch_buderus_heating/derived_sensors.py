@@ -58,6 +58,7 @@ from .derived_activity import (
 from .derived_inputs import (
     Trace,
     energy_part,
+    first,
     number,
     read,
     resource_energy_part,
@@ -67,6 +68,7 @@ from .derived_inputs import (
 from .derived_store import derived_store, stored_number
 from .device import device_info_for_resource, grouped_entity_name
 from .i18n import localize
+from .performance import SUPPLY as HEAT_PUMP_SUPPLY
 from .read_contracts import assess_runtime
 from .start_counters import assess_start_counter
 from .writes import context_of
@@ -251,8 +253,11 @@ class SupplyOvershootSensor(_CalculatedSensor):
         supply: str,
         setpoint: str,
         root: str | None,
+        preferred: tuple[str, ...] = (),
     ) -> None:
         self._supply = supply
+        # Supply paths read first (the heat pump's own supply TC1).
+        self._supplies = (*preferred, supply)
         self._setpoint = setpoint
         self._root = root
         inputs = (
@@ -269,7 +274,7 @@ class SupplyOvershootSensor(_CalculatedSensor):
                 "Vorlauf über Sollwert (berechnet)",
                 "Supply above setpoint (calculated)",
             ),
-            tuple(dict.fromkeys((supply, setpoint, *inputs))),
+            tuple(dict.fromkeys((*self._supplies, setpoint, *inputs))),
         )
 
     @property
@@ -291,7 +296,8 @@ class SupplyOvershootSensor(_CalculatedSensor):
 
     def _derive(self) -> tuple[Any, dict[str, object] | None]:
         trace = Trace()
-        supply = number(trace.note(read(self.coordinator, self._supply)))
+        found = first(self.coordinator, self._supplies, number, trace)
+        supply = found[1] if found is not None else None
         setpoint = number(trace.note(read(self.coordinator, self._setpoint)))
         if supply is None or setpoint is None or not self._heating(trace):
             return None, None
@@ -361,6 +367,11 @@ class NetHeatCounterSensor(_CalculatedSensor):
         ):
             value = _restored(restored.native_value)
             if value is not None and (total is None or value > total):
+                # The restored state is newer than the saved total: the
+                # reading it was counted up to is as much newer, so that
+                # part is not counted again.
+                if total is not None and reference is not None:
+                    reference += value - total
                 total = value
         self._total, self._reference = total, reference
         self._ready = True
@@ -487,7 +498,12 @@ def _candidates(
             (
                 "overshoot:/heatSources",
                 partial(
-                    SupplyOvershootSensor, coordinator, SUPPLY, SUPPLY_SETPOINT, None
+                    SupplyOvershootSensor,
+                    coordinator,
+                    SUPPLY,
+                    SUPPLY_SETPOINT,
+                    None,
+                    HEAT_PUMP_SUPPLY,
                 ),
             )
         )

@@ -30,9 +30,10 @@ ventilation systems.
    hour on a typical heat pump).
 2. **Cloud**: only when the local access is missing or does not answer, and
    only for the nine energy recordings (heat, compressor and heater for
-   total, heating and hot water). Every hour today and yesterday, plus at
-   most a few older days, months and years per run until the history is
-   complete (at most 30 reads per run). The cloud's pauses and rate limits
+   total, heating and hot water). Every hour today, and yesterday until it
+   is confirmed (then like an older day at most twice a day), plus at most
+   a few older days, months and years per run until the history is complete
+   (at most 30 reads per run). The cloud's pauses and rate limits
    apply as for every other read.
 3. **Counters of the integration**: where neither recording has a value,
    the period entities use the change of the integration's own counter
@@ -75,7 +76,9 @@ the new period is confirmed by a read after its end. Just after midnight or
 the first of a month the entity still shows the period before, with its
 dates in the attributes. The values have no state class: they are not
 counters. Some plants round older monthly values to whole kWh; months are
-therefore summed from the days wherever the days are complete.
+therefore summed from the days wherever the days are complete. The current
+month with a day missing shows the sum of the known days, or the plant's
+month value read at the start where that is larger.
 
 ## Import into the statistics
 
@@ -93,26 +96,37 @@ of the month.
 - An hour is imported once it ended at least 15 minutes ago and two reads
   gave the same value; the hour still running is never imported. Every run
   reads the last 48 hours again; a changed hour is imported again from
-  there on, so the sums stay consistent.
+  there on, so the sums stay consistent. Before Home Assistant 2026.11 the
+  recorder cannot clear a range of rows: the rows are written over, and an
+  hour that is now a gap gets a row without energy.
+- A write that fails is tried again in the next run; nothing counts as
+  imported before it was handed to the recorder. A failing recording does
+  not stop the others or the entities' values.
 - Hours without data (`c = 0`, for example while the plant was off) stay
   gaps, never zeros. Nothing is interpolated.
 - Values with a start more than an hour ahead, before the first recorded
-  day, below zero or above 1.5 times the nominal output per hour are
-  discarded and counted in the diagnostics. The nominal output is the power
-  class the **Heat generator** entity knows for the model (the outdoor unit
-  first); without one 60 kW (90 kWh per hour). Days and months are scaled.
-  The diagnostics name the bound that applied.
+  day, below zero or above 90 kWh per hour (1.5 × 60 kW, days and months
+  scaled) are discarded and counted in the diagnostics. The bound only
+  catches obvious garbage; it is the same for every recording. A discarded
+  hour counts as a gap: the other hours of its day are imported, and the
+  day is summed up without it.
 - A day whose hours cannot be placed on a change of summer time is imported
   as one day.
 - Switching the import off keeps what was imported; switching it on again
   goes on from the last imported hour.
 - The statistic IDs are derived from the gateway with a key of this Home
   Assistant: a new entry for the same gateway continues the same statistics
-  and writes the available history again on top of the sum before it.
+  and writes the available history again on top of the sum before it; the
+  earlier rows from there on are replaced (a day the plant now only has as
+  a day leaves no hourly rows behind).
 - **Delete imported statistics** (with a confirmation) removes the imported
   statistics of the entry and switches the import off. Removing the entry
   keeps the imported statistics, as Home Assistant does for every
   statistic; the integration's own record of the recordings is removed.
+  Right after the removal, a repair under **Settings → System → Repairs**
+  offers to delete them (until the next restart of Home Assistant). Later,
+  set up the gateway again and delete them in the options; a new entry for
+  the same gateway uses the same statistics.
 - Values the plant no longer has (after a reset or a new controller) stay
   imported.
 
@@ -123,10 +137,10 @@ identifiers: whether the import is on, the state per recording (`ok`,
 `missing`, `forbidden`, `unit`) for local and cloud, how many hours, days
 and months are known, how many hours the import is behind, discarded values
 with their reason, local and cloud differences, days whose hours could not
-be placed, the last runs (reason, source, number of reads) and whether the
+be placed, the last runs (reason, source, number of reads, and for an
+import that failed the number of recordings) and whether the
 plant's UTC offset differs from the time zone of Home Assistant, and the
-plausibility bound per hour with its source (`heat_generator` or
-`default`).
+plausibility bound per hour.
 
 ## Limits
 

@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Los registros importados permanecen en las estadísticas",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Eliminar las estadísticas importadas",
+            "description": "La entrada eliminada importó {count} estadísticas de los registros de la instalación; Home Assistant las conserva. Selecciona **Enviar** para eliminarlas; no se puede deshacer. Para conservarlas, selecciona **Ignorar**. Este aviso desaparece tras el próximo reinicio."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Las estadísticas importadas ya no existen. No se ha eliminado nada."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Instalaciones no encontradas en la cuenta de la nube",
       "description": "El último inicio de sesión del acceso a la nube en «{title}» no encontró {count} instalaciones o dispositivos activados (que terminan en {systems}). Siguen configurados y no disponibles hasta que vuelvan a aparecer en la cuenta; entonces esta nota desaparece.\n\nSi se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube, desactívalos en **Usar para instalaciones y dispositivos** y quítalos con **Olvidar las instalaciones desmarcadas**. Sus dispositivos y entidades permanecen en Home Assistant hasta que los elimines. Si se cambió una pasarela, mantenla activada: una nota de reparación aparte ofrece continuar la instalación con su historial."

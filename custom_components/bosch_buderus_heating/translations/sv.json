@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Överförd registrering finns kvar i statistiken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Radera den överförda statistiken",
+            "description": "Den borttagna posten har överfört {count} statistiker från anläggningens registrering; Home Assistant behåller dem. Välj **Skicka** för att radera dem; det går inte att ångra. Välj **Ignorera** för att behålla dem. Den här notisen försvinner efter nästa omstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Den överförda statistiken finns inte längre. Inget raderades."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anläggningar som inte hittades i molnkontot",
       "description": "Den senaste inloggningen för molnåtkomsten i “{title}” hittade inte {count} aktiverade anläggningar eller enheter (som slutar på {systems}). De förblir konfigurerade och otillgängliga tills de visas i kontot igen. Då försvinner den här notisen.\n\nOm de har tagits bort från kontot, öppna Konfigurera → Anslutningar → molnåtkomsten, inaktivera dem under **Använd för anläggningar och enheter** och ta bort dem med **Glöm bortvalda anläggningar**. Deras enheter och entiteter finns kvar i Home Assistant tills du tar bort dem. Om en gateway har bytts ut, låt den vara aktiverad: en separat reparationsnotis erbjuder att fortsätta anläggningen med dess historik."

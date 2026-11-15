@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Le registrazioni importate restano nelle statistiche",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Elimina le statistiche importate",
+            "description": "La voce rimossa ha importato {count} statistiche dalle registrazioni dell'impianto; Home Assistant le conserva. Seleziona **Invia** per eliminarle; non si può annullare. Per conservarle, seleziona **Ignora**. Questo avviso scompare dopo il prossimo riavvio."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Le statistiche importate non esistono più. Non è stato eliminato nulla."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Impianti non trovati nell'account cloud",
       "description": "L'ultimo login dell'accesso cloud in \"{title}\" non ha trovato {count} impianti o dispositivi attivi (che terminano con {systems}). Restano configurati e non disponibili finché non compaiono di nuovo nell'account; poi questa nota scompare.\n\nSe sono stati rimossi dall'account, apri Configura → Connessioni → l'accesso cloud, disattivali sotto **Usa per impianti e dispositivi** e rimuovili con **Dimentica gli impianti deselezionati**. I loro dispositivi e le loro entità restano in Home Assistant finché non li elimini. Se un gateway è stato sostituito, mantienilo attivo: una nota di riparazione separata propone di proseguire l'impianto con la sua cronologia."

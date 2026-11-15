@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Les enregistrements importés restent dans les statistiques",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Supprimer les statistiques importées",
+            "description": "L'entrée supprimée a importé {count} statistiques des enregistrements de l'installation ; Home Assistant les conserve. Sélectionnez **Valider** pour les supprimer ; c'est irréversible. Pour les conserver, sélectionnez **Ignorer**. Cet avis disparaît après le prochain redémarrage."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Les statistiques importées n'existent plus. Rien n'a été supprimé."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Installations introuvables dans le compte cloud",
       "description": "La dernière connexion de l'accès cloud dans « {title} » n'a pas trouvé {count} installations ou appareils activés (se terminant par {systems}). Ils restent configurés et indisponibles jusqu'à ce qu'ils réapparaissent dans le compte ; cette note disparaît alors.\n\nS'ils ont été retirés du compte, ouvrez Configurer → Connexions → l'accès cloud, désactivez-les sous **Utiliser pour les installations et appareils** et retirez-les avec **Oublier les installations désélectionnées**. Leurs appareils et entités restent dans Home Assistant jusqu'à ce que vous les supprimiez. Si une passerelle a été remplacée, laissez-la activée : une note de réparation distincte propose de poursuivre l'installation avec son historique."

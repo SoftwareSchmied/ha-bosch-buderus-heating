@@ -18,6 +18,10 @@ Where the values come from:
   between the modes for both). Each falls back to the other source.
   Months without all of their days take the plant's month value.
 
+A day without counter statistics (Home Assistant off) puts its energy into
+the change of the next day; where the recordings fill such a day, the
+counters of the days next to it do not count (no energy twice).
+
 The counters' change includes the dips while the heat pump defrosts (the
 heat taken back from the water), so the defrost is netted. Days with no
 value from any source count as ``missing_days``; days before the first
@@ -185,6 +189,8 @@ class PerformanceHistory:
         self._recorded: dict[tuple[str, str], dict[date, Amount]] = {}
         self._recorded_months: dict[tuple[str, str], dict[date, Amount]] = {}
         self._counted: dict[tuple[str, str], dict[date, float]] = {}
+        # First and last counted day per counter (``_counted_amount``).
+        self._counted_span: dict[tuple[str, str], tuple[date, date]] = {}
         self.counter_entities: dict[tuple[str, str], str] = {}
         self._live: dict[str, CounterReading] = {}
         self._last_at: datetime | None = None
@@ -490,7 +496,9 @@ class PerformanceHistory:
             days: dict[date, Amount] = {}
             for value in view.daily(key, start, yesterday):
                 amount = value.value
-                if amount is not None and amount >= 0:
+                # Only confirmed days: a day still open (yesterday before its
+                # second read) falls back to the counters.
+                if amount is not None and amount >= 0 and value.final:
                     days[value.day] = Amount(amount, _recording_source(value.source))
             recorded[item] = days
             found: dict[date, Amount] = {}
@@ -585,6 +593,10 @@ class PerformanceHistory:
                 known = {day: value for day, value in known.items() if day < start}
             known.update(days)
             self._counted[item] = known
+            if known:
+                self._counted_span[item] = (min(known), max(known))
+            else:
+                self._counted_span.pop(item, None)
         if full:
             self._full_done = True
         return "ok"
@@ -592,12 +604,34 @@ class PerformanceHistory:
     # ------------------------------------------------------------- periods
     def _amount(self, mode: str, quantity: str, day: date) -> Amount | None:
         recorded = self._recorded.get((mode, quantity), {}).get(day)
-        counted_value = self._counted.get((mode, quantity), {}).get(day)
-        counted = Amount(counted_value, COUNTERS) if counted_value is not None else None
+        counted = self._counted_amount((mode, quantity), day)
         if quantity == HEAT and mode != "total":
             # Heat per mode: the counters first (see the module text).
             return counted or recorded
         return recorded or counted
+
+    def _counted_amount(self, item: tuple[str, str], day: date) -> Amount | None:
+        """A day's change of the counters, unless a neighbouring day has no
+        statistics (Home Assistant was off) and the recordings fill it: the
+        change after such a day carries its energy and the day before is
+        partial, so next to a filled day only the recordings count."""
+        days = self._counted.get(item, {})
+        value = days.get(day)
+        if value is None:
+            return None
+        recorded = self._recorded.get(item, {})
+        span = self._counted_span.get(item)
+        if span is None:
+            span = self._counted_span[item] = (min(days), max(days))
+        first, last = span
+        for neighbour in (day - timedelta(days=1), day + timedelta(days=1)):
+            if (
+                first < neighbour < last
+                and neighbour not in days
+                and neighbour in recorded
+            ):
+                return None
+        return Amount(value, COUNTERS)
 
     def _pair(self, mode: str, day: date) -> tuple[Amount, Amount] | None:
         heat = self._amount(mode, HEAT, day)

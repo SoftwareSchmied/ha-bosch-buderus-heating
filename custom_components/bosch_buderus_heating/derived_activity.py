@@ -61,8 +61,8 @@ REFRIGERANT_STATUS: Final = re.compile(r"/heatSources/hs\d+/refrigerant/status")
 COMPRESSOR_STATUS: Final = "/heatSources/compressor/status"
 _DEFROST_STATES: Final = frozenset({"defrost", "passive_defrost"})
 
-# Whether the heat source runs: the compressor signals, the refrigerant
-# circuit status, the compressor status and the heat source's own status.
+# Whether the heat source runs: the compressor (its signals, the refrigerant
+# circuit status, the compressor status) or the heat source's own status.
 COMPRESSOR_SIGNALS: Final = (
     "/signals/SRC.CUHP.HMI.CompressorActive",
     "/signals/SRC.CUHP.HP1.CompressorStatus",
@@ -205,18 +205,34 @@ def _running_of(reading: Input | None) -> bool | None:
     return False if key in _STOPPED_STATES else None
 
 
-def heat_source_running(
+def compressor_running(
     coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace | None = None
 ) -> bool | None:
-    """Whether the compressor or burner runs; ``None`` without a reading."""
+    """Whether the compressor runs; ``None`` without a reading."""
     paths = (
         *COMPRESSOR_SIGNALS,
         *known_paths(coordinator, REFRIGERANT_STATUS),
         COMPRESSOR_STATUS,
-        HEAT_SOURCE_ACTIVE,
     )
     found = first(coordinator, paths, _running_of, trace)
     return found[1] if found is not None else None
+
+
+def heat_source_running(
+    coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace | None = None
+) -> bool | None:
+    """Whether the compressor or the burner runs: running when either
+    runs (a hybrid's boiler heats while the compressor stands), stopped
+    only when every source with a reading stands; ``None`` without one."""
+    compressor = compressor_running(coordinator, trace)
+    if compressor is True:
+        return True
+    burner = first(coordinator, (HEAT_SOURCE_ACTIVE,), _running_of, trace)
+    if burner is not None and burner[1]:
+        return True
+    if compressor is False or burner is not None:
+        return False
+    return None
 
 
 def _side_of(reading: Input | None) -> str | None:

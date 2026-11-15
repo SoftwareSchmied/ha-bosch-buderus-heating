@@ -43,6 +43,7 @@ from custom_components.bosch_buderus_heating.recordings.measures import (
     CALCULATED,
     RECORDING,
 )
+from custom_components.bosch_buderus_heating.recordings.parse import Rate
 from custom_components.bosch_buderus_heating.recordings.series import (
     BY_KEY,
     BY_PATH,
@@ -275,6 +276,71 @@ async def test_without_the_local_access_the_cloud_reads_the_energy_paths(
     assert len(later) <= CLOUD_BUDGET
 
 
+async def test_the_cloud_reads_yesterday_only_until_it_is_final(
+    hass: HomeAssistant,
+) -> None:
+    """V5: cloud only, hourly today (nine paths at most); yesterday until a
+    second read confirmed it, then like an older day."""
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    cloud = Cloud()
+    rec = await manager(hass, clock, [], cloud)
+    rec.request(key("total_heat", Period.YESTERDAY))
+    await rec.async_run("start")
+    yesterday = date(2026, 11, 13)
+    paths = {path for path, _ in cloud.calls} - {
+        "/recordings/heatSources/emon/total/eheater"
+    }
+    opened = []
+    for _ in range(4):
+        open_paths = {
+            ledger.series.path
+            for ledger in rec.ledgers.values()
+            if not (ledger.day(yesterday) or [0, 0, "", 0, False])[4]
+        }
+        opened.append(open_paths)
+        done = len(cloud.calls)
+        clock.now += timedelta(hours=1)
+        await rec.async_run("hourly")
+        calls = cloud.calls[done:]
+        assert {path for path, day in calls if day == "2026-11-13"} == open_paths
+        assert {path for path, day in calls if day == "2026-11-14"} == paths
+    # Open after the start (read once), confirmed by the next run.
+    assert opened[0] and not any(opened[1:])
+    # Twelve hours after its last read (23:20) yesterday is read once more
+    # (late corrections).
+    clock.now += timedelta(hours=9)
+    done = len(cloud.calls)
+    await rec.async_run("hourly")
+    again = {path for path, day in cloud.calls[done:] if day == "2026-11-13"}
+    assert again == paths
+
+
+async def test_a_cloud_interval_counts_as_complete_only_with_every_slot(
+    hass: HomeAssistant,
+) -> None:
+    """A month answered with the wrong number of days (or a year without
+    its months) left no values: it is read again, not marked complete."""
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    rec = await manager(hass, clock, [], Cloud())
+    series = BY_KEY["total_heat"]
+    today = date(2026, 11, 14)
+    ledger = rec._ledger(series)
+    assert not rec._cloud_complete(series, "2026-10", Rate.DAY, today, Z)
+    assert not rec._cloud_complete(series, "2025", Rate.MONTH, today, Z)
+    for offset in range(31):
+        value = 24.0 if offset else 0.0  # the first day a gap
+        day = (date(2026, 10, 1) + timedelta(days=offset)).isoformat()
+        ledger.days[day] = [value, value, "cloud", 1, True]
+    assert rec._cloud_complete(series, "2026-10", Rate.DAY, today, Z)
+    ledger.days["2026-10-31"][4] = False
+    assert not rec._cloud_complete(series, "2026-10", Rate.DAY, today, Z)
+    for month in range(1, 13):
+        ledger.months[date(2025, month, 1).isoformat()] = [1.0, 1.0, "cloud", 1, True]
+    assert rec._cloud_complete(series, "2025", Rate.MONTH, today, Z)
+    del ledger.months["2025-12-01"]
+    assert not rec._cloud_complete(series, "2025", Rate.MONTH, today, Z)
+
+
 @pytest.mark.parametrize(
     "error", [RateLimited(60), ResourceForbidden("/recordings/x", 403)]
 )
@@ -459,45 +525,19 @@ def test_fixed_offsets_helper() -> None:
     assert fixed(local(2026, 7, 1)).utcoffset() == timedelta(hours=2)
 
 
-@pytest.mark.parametrize(
-    ("primary", "limit", "source"),
-    [
-        ({"power_kw": 12, "outdoor_power_kw": 10}, 15.0, "heat_generator"),
-        ({"power_kw": 10, "outdoor_power_kw": None}, 15.0, "heat_generator"),
-        ({"power_kw": None, "outdoor_power_kw": None}, 90.0, "default"),
-        (None, 90.0, "default"),
-    ],
-)
-async def test_the_plausibility_limit_uses_the_heat_generator_power(
-    hass: HomeAssistant, monkeypatch, primary, limit, source
+@pytest.mark.parametrize(("value", "discarded"), [(16.0, False), (91.0, True)])
+async def test_one_fixed_plausibility_limit_for_every_recording(
+    hass: HomeAssistant, monkeypatch, value, discarded
 ) -> None:
-    """Rule 13 with the nominal output of the heat generator sensor (the
-    outdoor unit's power class first); without one 1.5 x 60 kW."""
-    from custom_components.bosch_buderus_heating import heat_generator_sensor
-
-    shown = (
-        SimpleNamespace(attributes=lambda: {"primary": primary})
-        if primary is not None
-        else None
-    )
-    monkeypatch.setattr(heat_generator_sensor, "shown_by", lambda _c: shown)
-    monkeypatch.setattr(
-        heat_generator_sensor.HeatGeneratorInputs,
-        "local",
-        lambda _self: None,
-    )
-    monkeypatch.setattr(
-        heat_generator_sensor.HeatGeneratorInputs,
-        "cloud",
-        lambda _self: None,
-    )
-    monkeypatch.setitem(PLANT, "total_heat", 16.0)  # above 15, below 90
+    """Rule 13: 90 kWh per hour (1.5 x 60 kW) for every energy recording,
+    whatever the heat generator; an hour with a heater above the nominal
+    output of the outdoor unit stays."""
+    monkeypatch.setitem(PLANT, "total_heat", value)
+    monkeypatch.setitem(PLANT, "total_eheater", 9.0)
     clock = Clock(local(2026, 11, 14, 10))
     rec = await manager(hass, clock, [Driver(clock)])
     await rec.async_run("start")
-    report = rec.diagnostics()
-    assert report["plausibility_limit_kwh_per_hour"] == limit
-    assert report["plausibility_limit_source"] == source
-    discarded = rec.ledgers["total_heat"].stats["discarded_implausible"]
-    assert (discarded > 0) is (limit == 15.0)
-    assert rec.ledgers["total_compressor"].stats["discarded_implausible"] == 0
+    assert rec.diagnostics()["plausibility_limit_kwh_per_hour"] == 90.0
+    stats = rec.ledgers["total_heat"].stats
+    assert (stats["discarded_implausible"] > 0) is discarded
+    assert rec.ledgers["total_eheater"].stats["discarded_implausible"] == 0

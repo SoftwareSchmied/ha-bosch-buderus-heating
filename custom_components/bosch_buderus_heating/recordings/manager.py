@@ -14,8 +14,9 @@ Reads (``async_run``):
   the next start. After a day without local answers the whole history is
   read again.
 - The cloud only without a working local access, only for the nine energy
-  paths and within ``CLOUD_BUDGET`` reads per run: today and yesterday
-  first, then the older days, months and years still missing.
+  paths and within ``CLOUD_BUDGET`` reads per run: today every run,
+  yesterday until it is final, then the older days, months and years still
+  missing.
 - Nothing is read while no entity, no import and no other feature needs the
   recordings.
 
@@ -27,6 +28,7 @@ on in the options.
 
 from __future__ import annotations
 
+import inspect
 import logging
 from collections import deque
 from collections.abc import Callable
@@ -38,6 +40,7 @@ from weakref import WeakSet
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later, async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -58,8 +61,8 @@ from .measures import (
     statistic_name,
 )
 from .parse import (
-    DEFAULT_POWER_KW,
-    LIMIT_FACTOR,
+    HOUR,
+    MAX_KWH_PER_HOUR,
     Rate,
     add_months,
     local_midnight,
@@ -77,6 +80,8 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 OPTION_IMPORT: Final = "recordings_import"
+# The repair offered after an entry with imported statistics was removed.
+ISSUE_PREFIX: Final = "recordings_statistics_"
 STORE_VERSION: Final = 1
 START_DELAY: Final = 90.0
 RUN_MINUTE: Final = 20
@@ -84,8 +89,8 @@ CLOUD_BUDGET: Final = 30
 # Older days whose hours the cloud is asked for (hourly statistics).
 CLOUD_HOUR_DAYS: Final = 7
 RECHECK_MISSING: Final = timedelta(days=1)
-# An open month, year or older day is read again at most this often; today
-# and yesterday are read every run.
+# An open month, year or older day (and yesterday once final) is read again
+# at most this often; today and an open yesterday are read every run.
 CLOUD_REREAD: Final = timedelta(hours=12)
 LOCAL_FULL_AFTER: Final = timedelta(hours=36)
 # Long-term statistics of a counter are complete this long after a period.
@@ -120,6 +125,10 @@ def statistic_id(digest: str, series: Series) -> str:
 
 def store_key(entry_id: str, digest: str) -> str:
     return f"{DOMAIN}.recordings.{entry_id}.{digest}"
+
+
+def statistics_issue_id(digest: str) -> str:
+    return f"{ISSUE_PREFIX}{digest[:12]}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,6 +221,8 @@ class RecordingsManager:
 
     async def async_start(self, *, schedule: bool = True) -> None:
         self.digest = await async_gateway_digest(self.hass, self.gateway_id)
+        # The gateway is back: the options delete its statistics again.
+        ir.async_delete_issue(self.hass, DOMAIN, statistics_issue_id(self.digest))
         self._store = Store[dict[str, Any]](
             self.hass,
             STORE_VERSION,
@@ -439,14 +450,31 @@ class RecordingsManager:
             for ledger in self.ledgers.values():
                 ledger.settle(now, zone)
                 ledger.prune(now)
+        except Exception as err:
+            log_failure(
+                _LOGGER, logging.WARNING, "Reading the recordings failed", error=err
+            )
+            report["failed"] = True
+        try:
+            # The import and the entities' values do not depend on each
+            # other: a failed import leaves the values, and the reverse.
             if import_enabled(self.entry):
                 await self._import(now, zone, report)
+        except Exception as err:
+            log_failure(
+                _LOGGER, logging.WARNING, "Importing the recordings failed", error=err
+            )
+            report["import_failed"] = True
+        try:
             await self._count(now, zone)
             self._publish_all(now, zone)
             self._detected = True
         except Exception as err:
             log_failure(
-                _LOGGER, logging.WARNING, "Reading the recordings failed", error=err
+                _LOGGER,
+                logging.WARNING,
+                "Working out the recordings' values failed",
+                error=err,
             )
             report["failed"] = True
         finally:
@@ -513,12 +541,7 @@ class RecordingsManager:
                     self.local_paths[path] = ["unit", read_at.timestamp()]
                     continue
                 self._ledger(series).merge(
-                    parsed,
-                    LOCAL,
-                    read_at=read_at,
-                    zone=zone,
-                    full_history=whole,
-                    energy_limit=self._energy_limit()[0],
+                    parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
                 )
                 if parsed.offset is not None:
                     self.offset_mismatch = (
@@ -591,21 +614,32 @@ class RecordingsManager:
             first = date(int(interval[:4]), int(interval[5:]), 1)
             if add_months(first, 1) > today - timedelta(days=1):
                 return False
+            # Every day needs a final value (a gap counts): an answer with
+            # the wrong number of slots left none, so it is read again.
             day = first
             while day < add_months(first, 1):
                 cell = ledger.day(day)
-                if cell is not None and not cell[4]:
+                if cell is None or not cell[4]:
                     return False
                 day += timedelta(days=1)
             return True
         year = int(interval)
         if year >= today.year:
             return False
-        return all(
-            bool(cell[4])
-            for key, cell in ledger.months.items()
-            if key.startswith(interval)
-        )
+        months = [ledger.month(date(year, month, 1)) for month in range(1, 13)]
+        return all(cell is not None and bool(cell[4]) for cell in months)
+
+    def _every_run(self, series: Series, interval: str, today: date) -> bool:
+        """Today is read every run, yesterday until its day is final; then
+        like an older day at most every ``CLOUD_REREAD``."""
+        if interval == today.isoformat():
+            return True
+        yesterday = today - timedelta(days=1)
+        if interval != yesterday.isoformat():
+            return False
+        ledger = self.ledgers.get(series.key)
+        cell = ledger.day(yesterday) if ledger is not None else None
+        return cell is None or not cell[4]
 
     async def _run_cloud(
         self, now: datetime, zone: tzinfo, report: dict[str, Any]
@@ -622,7 +656,6 @@ class RecordingsManager:
         today = now.astimezone(zone).date()
         budget = CLOUD_BUDGET
         succeeded = False
-        regular = {today.isoformat(), (today - timedelta(days=1)).isoformat()}
         for series, interval, rate in self._cloud_tasks(today):
             known = self.cloud_paths.get(series.path)
             if (CLOUD, series.path) in self._forbidden:
@@ -630,7 +663,7 @@ class RecordingsManager:
             task = f"{series.path}|{interval}"
             last = self._cloud_read_at.get(task)
             if (
-                interval not in regular
+                not self._every_run(series, interval, today)
                 and last is not None
                 and now.timestamp() - last < CLOUD_REREAD.total_seconds()
             ):
@@ -657,13 +690,7 @@ class RecordingsManager:
                 if parsed is None:
                     self.cloud_paths[series.path] = ["unit", read_at.timestamp()]
                     continue
-                self._ledger(series).merge(
-                    parsed,
-                    CLOUD,
-                    read_at=read_at,
-                    zone=zone,
-                    energy_limit=self._energy_limit()[0],
-                )
+                self._ledger(series).merge(parsed, CLOUD, read_at=read_at, zone=zone)
                 self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
                 succeeded = True
                 if self._cloud_complete(series, interval, rate, today, zone):
@@ -702,58 +729,105 @@ class RecordingsManager:
         )
 
         instance = get_instance(self.hass)
+        can_clear = clears_ranges(instance)
         language = self.hass.config.language
         written = 0
+        failed = 0
         for key in self.available():
             ledger = self.ledgers[key]
             series = ledger.series
             wanted = statistic_id(self.digest, series)
-            if not ledger.importing:
-                start = ledger.import_start(zone)
-                if start is None:
-                    continue
-                base = 0.0
-                if not series.mean:
-                    base = await instance.async_add_executor_job(
-                        _sum_before, self.hass, wanted, start
+            try:
+                earlier: tuple[float, list[int], bool] | None = None
+                if not ledger.importing:
+                    start = ledger.import_start(zone)
+                    if start is None:
+                        continue
+                    earlier = await instance.async_add_executor_job(
+                        _earlier_import, self.hass, wanted, start
                     )
-                ledger.start_import(base, zone)
-            plan = ledger.plan(now, zone)
-            if plan.clear is not None:
+                # No await from here on: switched off or deleted meanwhile,
+                # nothing is written (and nothing marked as written).
+                if not import_enabled(self.entry):
+                    break
+                if earlier is not None:
+                    self._begin_import(ledger, wanted, earlier, zone, can_clear)
+                plan = ledger.plan(now, zone, can_clear=can_clear, commit=False)
+                if plan.clear is not None and can_clear:
+                    instance.async_clear_statistics(
+                        [wanted],
+                        start_time=datetime.fromtimestamp(plan.clear[0], UTC),
+                        end_time=datetime.fromtimestamp(plan.clear[1], UTC),
+                    )
+                if plan.rows:
+                    metadata = StatisticMetaData(
+                        mean_type=StatisticMeanType.ARITHMETIC
+                        if series.mean
+                        else StatisticMeanType.NONE,
+                        has_sum=not series.mean,
+                        name=statistic_name(language, series),
+                        source=DOMAIN,
+                        statistic_id=wanted,
+                        unit_class=_UNIT_CLASS[series.quantity],
+                        unit_of_measurement=series.unit,
+                    )
+                    rows = [
+                        StatisticData(
+                            start=datetime.fromtimestamp(start, UTC),
+                            mean=y / c,
+                            min=y / c,
+                            max=y / c,
+                        )
+                        if series.mean
+                        else StatisticData(
+                            start=datetime.fromtimestamp(start, UTC),
+                            sum=total,
+                            state=total,
+                        )
+                        for start, y, c, total in plan.rows
+                    ]
+                    async_add_external_statistics(self.hass, metadata, rows)
+                    written += len(rows)
+                ledger.commit(plan)
+            except Exception as err:  # this series only; tried again next run
+                failed += 1
+                log_failure(
+                    _LOGGER, logging.WARNING, "Importing a recording failed", error=err
+                )
+        report["imported_rows"] = written
+        if failed:
+            report["import_failed_series"] = failed
+
+    def _begin_import(
+        self,
+        ledger: Ledger,
+        wanted: str,
+        earlier: tuple[float, list[int], bool],
+        zone: tzinfo,
+        can_clear: bool,
+    ) -> None:
+        """Start a series' import on top of what an earlier import left (a
+        new entry, a lost state): its rows from the first recorded day on
+        are cleared or, where the recorder cannot clear a range, written
+        again or made neutral; the sum before them continues."""
+        from homeassistant.components.recorder import get_instance
+
+        base, existing, before = earlier
+        stale: list[int] = []
+        if existing:
+            instance = get_instance(self.hass)
+            if can_clear:
                 instance.async_clear_statistics(
                     [wanted],
-                    start_time=datetime.fromtimestamp(plan.clear[0], UTC),
-                    end_time=datetime.fromtimestamp(plan.clear[1], UTC),
+                    start_time=datetime.fromtimestamp(existing[0], UTC),
+                    end_time=datetime.fromtimestamp(existing[-1] + HOUR, UTC),
                 )
-            if not plan.rows:
-                continue
-            metadata = StatisticMetaData(
-                mean_type=StatisticMeanType.ARITHMETIC
-                if series.mean
-                else StatisticMeanType.NONE,
-                has_sum=not series.mean,
-                name=statistic_name(language, series),
-                source=DOMAIN,
-                statistic_id=wanted,
-                unit_class=_UNIT_CLASS[series.quantity],
-                unit_of_measurement=series.unit,
-            )
-            rows = [
-                StatisticData(
-                    start=datetime.fromtimestamp(start, UTC),
-                    mean=y / c,
-                    min=y / c,
-                    max=y / c,
-                )
-                if series.mean
-                else StatisticData(
-                    start=datetime.fromtimestamp(start, UTC), sum=total, state=total
-                )
-                for start, y, c, total in plan.rows
-            ]
-            async_add_external_statistics(self.hass, metadata, rows)
-            written += len(rows)
-        report["imported_rows"] = written
+            elif not before:
+                # Every row is written again from the first day: clear all.
+                instance.async_clear_statistics([wanted])
+            else:
+                stale = existing
+        ledger.start_import(0.0 if ledger.series.mean else base, zone, stale)
 
     async def async_delete_statistics(self) -> int:
         """Remove every imported statistic of this gateway; the import is
@@ -765,32 +839,19 @@ class RecordingsManager:
 
         if not self.recorder_ready():
             return 0
-        prefix = f"{DOMAIN}:rec_{self.digest[:12]}_"
-        known = {statistic_id(self.digest, series) for series in SERIES}
+        if not self.digest:
+            # Asked for before the start finished.
+            self.digest = await async_gateway_digest(self.hass, self.gateway_id)
+        known = sorted(statistic_id(self.digest, series) for series in SERIES)
         listed = await async_list_statistic_ids(self.hass)
-        found = sorted(
-            item["statistic_id"]
-            for item in listed
-            if str(item.get("statistic_id", "")).startswith(prefix)
-            and item["statistic_id"] in known
-        )
-        if found:
-            get_instance(self.hass).async_clear_statistics(found)
+        found = {item.get("statistic_id") for item in listed} & set(known)
         for ledger in self.ledgers.values():
             ledger.stop_import()
+        # All of them: a row a running import has just handed over may not
+        # be listed yet; the recorder clears after it.
+        get_instance(self.hass).async_clear_statistics(known)
         self._save()
         return len(found)
-
-    # ---------------------------------------------------------- plausibility
-    def _energy_limit(self) -> tuple[float, str]:
-        """kWh per hour above which an energy value is no real value: 1.5
-        times the nominal output of the heat generator (the outdoor unit's
-        power class, else the main module's) when the model table knows it,
-        otherwise 1.5 x 60 kW. With the source of the power."""
-        power = _generator_power(self.coordinator())
-        if power is None:
-            return LIMIT_FACTOR * DEFAULT_POWER_KW, "default"
-        return LIMIT_FACTOR * power, "heat_generator"
 
     # ------------------------------------------------------------- counters
     async def _count(self, now: datetime, zone: tzinfo) -> None:
@@ -972,7 +1033,6 @@ class RecordingsManager:
         zone = dt_util.get_default_time_zone()
         today = now.astimezone(zone).date()
         last = self.runs[-1] if self.runs else None
-        limit, limit_source = self._energy_limit()
         series: dict[str, object] = {}
         for item in SERIES:
             local = self.local_paths.get(item.path)
@@ -1020,9 +1080,8 @@ class RecordingsManager:
             "needed": self.needed(),
             "waiting": self.waiting,
             "plant_offset_differs_from_time_zone": self.offset_mismatch,
-            # Which upper bound per hour applied to energy values.
-            "plausibility_limit_kwh_per_hour": limit,
-            "plausibility_limit_source": limit_source,
+            # The upper bound per hour that applies to energy values.
+            "plausibility_limit_kwh_per_hour": MAX_KWH_PER_HOUR,
             "history_read_since_start": self._full_done,
             "entities_with_value": len(self.published),
             "next_run_in_seconds": (
@@ -1049,36 +1108,6 @@ class RecordingsManager:
         }
 
 
-def _generator_power(coordinator: object) -> float | None:
-    """The nominal output in kW of the heat generator a gateway shows (the
-    heat generator sensor), or of its current module list; None unknown."""
-    if coordinator is None:
-        return None
-    from ..heat_generator_sensor import HeatGeneratorInputs, shown_by
-
-    try:
-        generators = shown_by(coordinator)
-        if generators is None:
-            inputs = HeatGeneratorInputs(coordinator)  # type: ignore[arg-type]
-            generators = inputs.local() or inputs.cloud()
-        if generators is None:
-            return None
-        primary = generators.attributes()["primary"]
-    except Exception:  # the default limit then applies
-        return None
-    if not isinstance(primary, dict):
-        return None
-    for key in ("outdoor_power_kw", "power_kw"):
-        value = primary.get(key)
-        if (
-            isinstance(value, int | float)
-            and not isinstance(value, bool)
-            and 0 < value <= 1000
-        ):
-            return float(value)
-    return None
-
-
 def _paths(value: object) -> dict[str, list[Any]]:
     if not isinstance(value, dict):
         return {}
@@ -1093,9 +1122,22 @@ def _paths(value: object) -> dict[str, list[Any]]:
     }
 
 
-def _sum_before(hass: HomeAssistant, wanted: str, start: datetime) -> float:
-    """The sum of an earlier import just before ``start`` (a new entry or a
-    lost state continues it; rows from ``start`` on are written again)."""
+def clears_ranges(instance: Any) -> bool:
+    """Whether the recorder clears a time range of a statistic (Home
+    Assistant 2026.11 on); before, it clears whole statistics only."""
+    try:
+        parameters = inspect.signature(instance.async_clear_statistics).parameters
+    except TypeError, ValueError:
+        return False
+    return "start_time" in parameters and "end_time" in parameters
+
+
+def _earlier_import(
+    hass: HomeAssistant, wanted: str, start: datetime
+) -> tuple[float, list[int], bool]:
+    """What an earlier import left: the sum just before ``start`` (a new
+    entry or a lost state continues it), the starts of its rows from
+    ``start`` on (written again) and whether it has rows before."""
     from homeassistant.components.recorder.statistics import (
         get_last_statistics,
         statistics_during_period,
@@ -1103,33 +1145,77 @@ def _sum_before(hass: HomeAssistant, wanted: str, start: datetime) -> float:
 
     last = get_last_statistics(hass, 1, wanted, False, {"sum"}).get(wanted)
     if not last:
-        return 0.0
+        return 0.0, [], False
     row = last[0]
+    existing: list[int] = []
     if row["start"] >= start.timestamp():
-        # Rows of the earlier import overlap: the last row before ``start``
-        # (the plant keeps about a year and a half).
+        # Rows of the earlier import overlap (the plant keeps about a year
+        # and a half).
         found = statistics_during_period(
             hass,
             start - timedelta(days=800),
-            start,
+            None,
             {wanted},
             "hour",
             None,
             {"sum"},
         ).get(wanted)
-        before = [item for item in found or () if item["start"] < start.timestamp()]
+        rows = list(found or ())
+        before = [item for item in rows if item["start"] < start.timestamp()]
+        existing = sorted(
+            int(item["start"]) for item in rows if item["start"] >= start.timestamp()
+        )
         if not before:
-            return 0.0
+            return 0.0, existing, False
         row = before[-1]
     total = row.get("sum")
-    return float(total) if isinstance(total, int | float) else 0.0
+    return (float(total) if isinstance(total, int | float) else 0.0), existing, True
+
+
+async def async_imported_statistics(hass: HomeAssistant, digest: str) -> list[str]:
+    """The imported statistics of a gateway that the recorder has."""
+    from homeassistant.components.recorder.statistics import (
+        async_list_statistic_ids,
+    )
+
+    known = {statistic_id(digest, series) for series in SERIES}
+    listed = await async_list_statistic_ids(hass)
+    return sorted(
+        str(item["statistic_id"])
+        for item in listed
+        if item.get("statistic_id") in known
+    )
+
+
+async def async_offer_statistics_removal(hass: HomeAssistant, gateway_id: str) -> None:
+    """After the last entry of a gateway was removed: offer to delete its
+    imported statistics (a repair, until the next restart), as the options
+    that delete them are gone with the entry."""
+    if "recorder" not in hass.config.components:
+        return
+    digest = await async_gateway_digest(hass, gateway_id)
+    found = await async_imported_statistics(hass, digest)
+    if not found:
+        return
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        statistics_issue_id(digest),
+        is_fixable=True,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="recordings_statistics_left",
+        translation_placeholders={"count": str(len(found))},
+        data={"digest": digest},
+    )
 
 
 async def async_remove_recordings_store(
     hass: HomeAssistant, entry_id: str, gateway_id: str
 ) -> None:
     """Delete the stored recordings of a removed entry's gateway. Imported
-    statistics stay, as Home Assistant keeps them (options: delete)."""
+    statistics stay, as Home Assistant keeps them (options: delete; after
+    the removal a repair offers it)."""
     digest = await async_gateway_digest(hass, gateway_id)
     await Store[dict[str, Any]](
         hass, STORE_VERSION, store_key(entry_id, digest), private=True

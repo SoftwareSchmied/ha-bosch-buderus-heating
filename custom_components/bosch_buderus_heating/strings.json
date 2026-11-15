@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Imported recordings remain in the statistics",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Delete the imported statistics",
+            "description": "The removed entry imported {count} statistics from the plant recordings; Home Assistant keeps them. Select **Submit** to delete them; this cannot be undone. To keep them, select **Ignore**. This notice disappears after the next restart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "The imported statistics no longer exist. Nothing was deleted."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Systems not found in the cloud account",
       "description": "The last sign-in of the cloud access in \"{title}\" did not find {count} switched-on systems or devices (ending in {systems}). They stay configured and unavailable until they appear in the account again; this note then disappears.\n\nIf they were removed from the account, open Configure → Connections → the cloud access, switch them off under **Use for systems and devices** and remove them with **Forget deselected systems**. Their devices and entities stay in Home Assistant until you delete them. If a gateway was exchanged, keep it switched on: a separate repair note offers to continue the system with its history."

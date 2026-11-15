@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Overført registrering blir værende i statistikken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Slett den overførte statistikken",
+            "description": "Den fjernede oppføringen har overført {count} statistikker fra anleggets registrering; Home Assistant beholder dem. Velg **Send** for å slette dem; det kan ikke angres. Velg **Ignorer** for å beholde dem. Denne meldingen forsvinner etter neste omstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Den overførte statistikken finnes ikke lenger. Ingenting ble slettet."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anlegg ble ikke funnet i skykontoen",
       "description": "Den siste påloggingen for skytilgangen i «{title}» fant ikke {count} påslåtte anlegg eller enheter (som slutter på {systems}). De forblir konfigurert og utilgjengelige til de dukker opp i kontoen igjen; da forsvinner denne meldingen.\n\nHvis de ble fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen, slår dem av under **Bruk for anlegg og enheter** og fjerner dem med **Glem fravalgte anlegg**. Enhetene og entitetene deres blir værende i Home Assistant til du sletter dem. Hvis en gateway ble byttet ut, la den være slått på: en egen reparasjonsmelding tilbyr å fortsette anlegget med historikken."

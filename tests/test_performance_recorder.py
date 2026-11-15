@@ -47,9 +47,12 @@ START = {
 }
 
 
-async def _counter_statistics(hass: HomeAssistant, plant: Plant) -> dict[str, str]:
+async def _counter_statistics(
+    hass: HomeAssistant, plant: Plant, skip: date | None = None
+) -> dict[str, str]:
     """Hourly statistics of four counter entities from ``FIRST`` to the
-    hour before midnight of 14 November."""
+    hour before midnight of 14 November; none on ``skip`` (Home Assistant
+    was off that day, the counters went on)."""
     from homeassistant.components.recorder.models import (
         StatisticData,
         StatisticMeanType,
@@ -82,6 +85,8 @@ async def _counter_statistics(hass: HomeAssistant, plant: Plant) -> dict[str, st
                 hours=hour
             )
             total = rate * (hour + 1)
+            if skip is not None and start.date() == skip:
+                continue
             rows.append(
                 StatisticData(
                     start=start.astimezone(UTC), sum=total, state=START[suffix] + total
@@ -216,3 +221,56 @@ async def test_a_start_during_the_day_takes_the_statistic_at_midnight(
     assert today.electricity == pytest.approx(7.5)
     assert today.ratio == 4.0
     assert engine.diagnostics()["today_start"] == "statistics"
+
+
+async def test_a_day_without_counter_statistics_is_not_counted_twice(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    monkeypatch,
+) -> None:
+    """Home Assistant off for a whole day: the counters' change of the next
+    day carries that day's heat while the recordings fill the day itself.
+    Next to a filled day only the recordings count, so nothing twice."""
+    gap = date(2026, 11, 12)
+    view = View(
+        {
+            "ch_heat": _span(FIRST, date(2026, 11, 14), 24.0),
+            "ch_electricity": _span(FIRST, date(2026, 11, 14), 6.0),
+        }
+    )
+    plant, engine = await _engine(hass, freezer, monkeypatch, view)
+    await _counter_statistics(hass, plant, skip=gap)
+    await engine.async_refresh(full=True)
+    counted = engine._counted[("ch", "heat")]
+    assert gap not in counted
+    assert counted[date(2026, 11, 13)] == pytest.approx(48.0)  # two days
+    month = engine.value(Period.CURRENT_MONTH, "ch")
+    assert month is not None
+    assert month.heat == pytest.approx(5 * 24.0)
+    assert month.ratio == pytest.approx(4.0)
+    # Away from the gap the counters still count first.
+    yesterday = engine.value(Period.YESTERDAY, "ch")
+    assert yesterday is not None and yesterday.heat_sources == {"counters"}
+    before = engine.value(Period.YESTERDAY, "ch", datetime(2026, 11, 14, 9, tzinfo=Z))
+    assert before is not None and before.heat_sources == {"local_recording"}
+
+
+async def test_without_recordings_a_day_without_statistics_moves_to_the_next(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    monkeypatch,
+) -> None:
+    """Nothing fills the day: the next day's change keeps both days' heat
+    (shifted, not lost)."""
+    plant, engine = await _engine(hass, freezer, monkeypatch, None)
+    await _counter_statistics(hass, plant, skip=date(2026, 11, 12))
+    await engine.async_refresh(full=True)
+    month = engine.value(Period.CURRENT_MONTH, "total")
+    assert month is not None
+    # 11 to 14 November from the counters (the first day is partial).
+    assert month.heat == pytest.approx(4 * 48.0)
+    assert month.electricity == pytest.approx(4 * 12.0)

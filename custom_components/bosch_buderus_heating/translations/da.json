@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Overført registrering bliver i statistikken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Slet den overførte statistik",
+            "description": "Den fjernede post har overført {count} statistikker fra anlæggets registrering; Home Assistant beholder dem. Vælg **Send** for at slette dem; det kan ikke fortrydes. Vælg **Ignorer** for at beholde dem. Denne meddelelse forsvinder efter næste genstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Den overførte statistik findes ikke længere. Intet blev slettet."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anlæg ikke fundet på cloudkontoen",
       "description": "Det seneste login for cloudadgangen i \"{title}\" fandt ikke {count} aktiverede anlæg eller enheder (der ender på {systems}). De forbliver konfigureret og utilgængelige, indtil de dukker op på kontoen igen; så forsvinder denne note.\n\nHvis de blev fjernet fra kontoen, skal du åbne Konfigurer → Forbindelser → cloudadgangen, deaktivere dem under **Brug til anlæg og enheder** og fjerne dem med **Glem fravalgte anlæg**. Deres enheder og entiteter bliver i Home Assistant, indtil du sletter dem. Hvis en gateway blev udskiftet, skal du lade den være aktiveret: en separat reparationsnote tilbyder at fortsætte anlægget med dets historik."

@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Preneseni zapisi ostaju u statistici",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Izbriši prenesenu statistiku",
+            "description": "Uklonjeni unos prenio je {count} statistika iz zapisa sustava; Home Assistant ih zadržava. Odaberite **Podnijeti** da ih izbrišete; to se ne može poništiti. Da ih zadržite, odaberite **Zanemari**. Ova obavijest nestaje nakon sljedećeg ponovnog pokretanja."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Prenesene statistike više ne postoje. Ništa nije izbrisano."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Sustavi nisu pronađeni na računu u oblaku",
       "description": "Posljednja prijava pristupa putem oblaka u „{title}” nije pronašla uključene sustave ili uređaje ({count}; završavaju na {systems}). Ostaju konfigurirani i nedostupni dok se ponovno ne pojave na računu; tada ova obavijest nestaje.\n\nAko su uklonjeni s računa, otvorite Konfiguriraj → Veze → pristup putem oblaka, isključite ih pod **Koristi za sustave i uređaje** i uklonite ih pomoću **Zaboravi isključene sustave**. Njihovi uređaji i entiteti ostaju u Home Assistantu dok ih ne izbrišete. Ako je pristupnik zamijenjen, ostavite ga uključenim: zasebna obavijest o popravku nudi nastavak sustava sa spremljenom poviješću."

@@ -334,11 +334,7 @@ class DefrostMonitor:
 
     def _follow_power(self, current: _Defrost) -> None:
         """Take the current power reading once; the heater counts when read."""
-        found = first(
-            self._coordinator,
-            COMPRESSOR_POWER,
-            lambda item: power_kilowatts(item.value, item.unit) if item else None,
-        )
+        found = first(self._coordinator, COMPRESSOR_POWER, _kilowatts)
         if found is None:
             return
         reading, compressor = found
@@ -346,7 +342,7 @@ class DefrostMonitor:
         if when is None:
             return
         heater = read(self._coordinator, HEATER_POWER)
-        extra = power_kilowatts(heater.value, heater.unit) if heater else None
+        extra = _kilowatts(heater)
         current.trace.note(reading)
         if extra is not None:
             current.trace.note(heater)
@@ -839,3 +835,15 @@ def sensors(
         LastDefrostSensor(coordinator, monitor),
         *(DefrostCounterSensor(coordinator, monitor, key) for key in COUNTER_KEYS),
     ]
+
+
+def _kilowatts(reading: Input | None) -> float | None:
+    """A power reading in kW; the device's declared error values never count."""
+    if reading is None:
+        return None
+    errors = (
+        reading.resource.metadata.numeric_error_values
+        if reading.resource is not None
+        else ()
+    )
+    return power_kilowatts(reading.value, reading.unit, errors)

@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Fanann na taifeadtaí iompórtáilte sna staitisticí",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Scrios na staitisticí iompórtáilte",
+            "description": "D'iompórtáil an iontráil a baineadh {count} staitistic ó thaifeadtaí an chórais; coinníonn Home Assistant iad. Roghnaigh **Cuir isteach** chun iad a scriosadh; ní féidir é seo a chealú. Chun iad a choinneáil, roghnaigh **Neamhaird**. Imíonn an fógra seo tar éis an chéad atosaithe eile."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Níl na staitisticí iompórtáilte ann a thuilleadh. Níor scriosadh aon rud."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Córais gan aimsiú sa chuntas néil",
       "description": "Níor aimsigh an síniú isteach is déanaí den rochtain néil in “{title}” {count} córas nó gléas atá casta air (ag críochnú in {systems}). Fanann siad cumraithe agus gan a bheith ar fáil go dtí go mbeidh siad sa chuntas arís; imíonn an nóta seo ansin.\n\nMá baineadh den chuntas iad, oscail Cumraigh → Naisc → an rochtain néil, cas as iad faoi **Úsáid do chórais agus do ghléasanna** agus bain iad le **Déan dearmad ar chórais dhíroghnaithe**. Fanann a ngléasanna agus a n-aonáin in Home Assistant go scriosfaidh tú iad. Má malartaíodh geata, fág air é: tairgeann nóta deisiúcháin ar leith leanúint leis an gcóras lena stair."

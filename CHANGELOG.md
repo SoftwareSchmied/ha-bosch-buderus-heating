@@ -52,6 +52,8 @@ entry says how it was tested; most of it with automated tests only.
   the local and cloud answers on a real installation; the import and longer
   runs are tested with automated tests only. See
   [plant recordings](docs/recordings.md).
+  - After you remove an entry, a repair offers to delete its imported
+    statistics until Home Assistant restarts.
 - **Readings:** a flow below the measuring range is marked with
   `reported_state: low_flow` and two disabled binary sensors; a new sensor
   shows the software version of the outdoor unit.

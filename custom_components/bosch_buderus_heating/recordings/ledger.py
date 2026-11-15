@@ -20,19 +20,27 @@ is written as one row at that hour from the day's value, and where no day
 is known either, the rest of the month from the month's value. Nothing is
 interpolated; a negative rest (the plant rounds old months to whole kWh) is
 left out. ``c = 0`` is a gap, never a zero.
+
+A plan is worked out on a copy of the import position and taken over
+(``commit``) only once its rows were handed to the recorder, so a failed
+write is tried again in the next run instead of being marked as imported.
+Where the recorder cannot clear a range of rows (Home Assistant before
+2026.11), an earlier row that is not written again gets a neutral row with
+the sum before it (``stale``); rows written again replace the old ones.
 """
 
 from __future__ import annotations
 
+import copy
 import math
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta, tzinfo
 from typing import Any, Final
 
 from .parse import (
     HOUR,
-    MAX_KWH_PER_HOUR,
     Parsed,
     Rate,
     Sample,
@@ -55,6 +63,8 @@ DAY_KEEP: Final = timedelta(days=800)
 _EPSILON: Final = 0.0005
 _MAX_STEPS: Final = 24 * 900
 _NEVER: Final = float("inf")
+# Discarded hours that count as gaps (the others are no hour of the history).
+_GAP_REASONS: Final = frozenset({"negative", "implausible"})
 
 type Cell = list[Any]
 
@@ -92,10 +102,13 @@ class DailyValue:
 @dataclass(slots=True)
 class Plan:
     """Rows to write: ``(utc start, y, c, sum after)``; a range to clear
-    first when rows are imported again."""
+    first when rows are imported again; the import position and the counts
+    to take over once the rows are written (``Ledger.commit``)."""
 
     rows: list[tuple[int, float, float, float]] = field(default_factory=list)
     clear: tuple[int, int] | None = None
+    state: dict[str, Any] | None = None
+    stats: Counter[str] = field(default_factory=Counter)
 
 
 class Ledger:
@@ -175,32 +188,24 @@ class Ledger:
         read_at: datetime,
         zone: tzinfo,
         full_history: bool = False,
-        energy_limit: float = MAX_KWH_PER_HOUR,
     ) -> None:
-        """Take the samples of one answer read at ``read_at``; an energy value
-        above ``energy_limit`` kWh per hour (days and months scaled) is
-        discarded."""
+        """Take the samples of one answer read at ``read_at``."""
         floor = date.fromisoformat(self.floor) if self.floor else None
         accepted: list[Sample] = []
-        rejected_days: set[date] = set()
         for sample in parsed.samples:
             if sample.c <= 0:
                 if _start(sample, zone) > read_at:
                     continue  # a placeholder of a slot still to come
                 accepted.append(sample)
                 continue
-            reason = rejection(
-                sample,
-                self.series,
-                now=read_at,
-                zone=zone,
-                floor=floor,
-                energy_limit=energy_limit,
-            )
+            reason = rejection(sample, self.series, now=read_at, zone=zone, floor=floor)
             if reason is not None:
                 self.stats[f"discarded_{reason}"] += 1
-                if sample.rate is Rate.HOUR:
-                    rejected_days.add(sample.day)
+                if sample.rate is Rate.HOUR and reason in _GAP_REASONS:
+                    # A discarded hour is a gap: the other hours of its day
+                    # are imported and the day is summed up without it (an
+                    # hour known before keeps its value).
+                    accepted.append(self._discarded_hour(sample))
                 continue
             accepted.append(sample)
         for key, count in parsed.issues.items():
@@ -233,8 +238,6 @@ class Ledger:
                     self.months, sample.day.isoformat(), sample, source, end, read
                 )
         for day, (y, c) in aggregates.items():
-            if day in rejected_days:
-                continue
             ended: float = (
                 _ts(local_midnight(day + timedelta(days=1), zone))
                 if day in parsed.complete_days
@@ -253,6 +256,12 @@ class Ledger:
                     # The plant no longer has its oldest values (a reset or a
                     # new controller): what was imported stays.
                     self.stats["history_shrunk"] += 1
+
+    def _discarded_hour(self, sample: Sample) -> Sample:
+        cell = self.hours.get(str(sample.hour)) if sample.hour is not None else None
+        if cell is not None and cell[4] and cell[1] > 0:
+            return Sample(sample.rate, sample.day, sample.hour, cell[0], cell[1])
+        return Sample(sample.rate, sample.day, sample.hour, 0.0, 0.0)
 
     def _put(
         self,
@@ -357,8 +366,12 @@ class Ledger:
     def importing(self) -> bool:
         return self.imp is not None
 
-    def start_import(self, base: float, zone: tzinfo) -> bool:
-        """Begin at the first recorded day, continuing the sum ``base``."""
+    def start_import(
+        self, base: float, zone: tzinfo, stale: Iterable[int] = ()
+    ) -> bool:
+        """Begin at the first recorded day, continuing the sum ``base``;
+        ``stale`` are the starts of earlier rows from there on that the
+        recorder keeps (written again or neutral)."""
         first = self.first_start(zone)
         if first is None:
             return False
@@ -369,6 +382,7 @@ class Ledger:
             "parts": [0.0, 0.0, 0.0, 0.0],
             "rows": [],
             "base": [base, None, 0.0, 0.0, 0.0, 0.0],
+            "stale": sorted({int(start) for start in stale}),
         }
         return True
 
@@ -380,14 +394,28 @@ class Ledger:
         first = self.first_start(zone)
         return datetime.fromtimestamp(first, UTC) if first is not None else None
 
-    def plan(self, now: datetime, zone: tzinfo) -> Plan:
-        """The rows that are complete now, and a range to clear first."""
+    def plan(
+        self,
+        now: datetime,
+        zone: tzinfo,
+        *,
+        can_clear: bool = True,
+        commit: bool = True,
+    ) -> Plan:
+        """The rows that are complete now, and a range to clear first.
+
+        Worked out on a copy of the import position; ``commit=False`` leaves
+        the ledger as it was until ``commit``. Without ``can_clear`` the
+        rows that are imported again are remembered as stale.
+        """
         plan = Plan()
-        imp = self.imp
-        if imp is None:
+        if self.imp is None:
             return plan
+        imp = copy.deepcopy(self.imp)
+        imp.setdefault("stale", [])
+        plan.state = imp
         self.settle(now, zone)
-        self._rewind(imp, plan)
+        self._rewind(imp, plan, can_clear)
         cursor = int(imp["next"])
         limit = _ts(now) - COMPLETE_AFTER
         latest = self._latest_start(zone)
@@ -460,12 +488,23 @@ class Ledger:
                 cursor = _ts(local_midnight(run_end, zone))
                 continue
             if latest is not None and latest > cursor:
-                self.stats["import_gap_days"] += 1
+                plan.stats["import_gap_days"] += 1
                 cursor = day_end
                 continue
             break
+        self._neutralize(imp, plan, cursor)
         imp["next"] = cursor
+        if commit:
+            self.commit(plan)
         return plan
+
+    def commit(self, plan: Plan) -> None:
+        """Take over a plan's import position once its rows are written."""
+        if plan.state is not None and self.imp is not None:
+            self.imp = plan.state
+            self.stats.update(plan.stats)
+            plan.state = None
+            plan.stats = Counter()
 
     def _has_hours(self, day: date, zone: tzinfo) -> bool:
         start = _ts(local_midnight(day, zone))
@@ -520,7 +559,7 @@ class Ledger:
                 self._emit(imp, plan, start, y, c, day, kind)
             return
         if y < -_EPSILON:
-            self.stats["negative_rest"] += 1
+            plan.stats["negative_rest"] += 1
             return
         if y > _EPSILON:
             self._emit(imp, plan, start, y, max(c, 0.0), day, kind)
@@ -535,6 +574,7 @@ class Ledger:
         day: date,
         kind: str,
     ) -> None:
+        self._neutralize(imp, plan, start)
         key = day.isoformat()
         parts = imp["parts"]
         if imp["day"] != key:
@@ -550,10 +590,32 @@ class Ledger:
             imp["sum"] = float(imp["sum"]) + y
         total = float(imp["sum"])
         imp["rows"].append([start, y, c, total, key, *parts, kind])
-        self.stats[f"imported_{kind}"] += 1
+        plan.stats[f"imported_{kind}"] += 1
         plan.rows.append((start, y, c, total))
 
-    def _rewind(self, imp: dict[str, Any], plan: Plan) -> None:
+    def _neutralize(self, imp: dict[str, Any], plan: Plan, before: int) -> None:
+        """Earlier rows before ``before`` that were not written again get the
+        sum before them (no energy in that hour); one at ``before`` is
+        replaced by the row written there."""
+        stale = imp.get("stale") or []
+        if not stale or stale[0] > before:
+            return
+        keep = []
+        for start in stale:
+            if start > before:
+                keep.append(start)
+            elif start < before and not self.series.mean:
+                # A mean cannot be neutral: the old mean stays until the hour
+                # is written again (a temperature turned into a gap).
+                total = float(imp["sum"])
+                imp["rows"].append(
+                    [start, 0.0, 0.0, total, imp["day"], *imp["parts"], "n"]
+                )
+                plan.stats["imported_neutral"] += 1
+                plan.rows.append((start, 0.0, 0.0, total))
+        imp["stale"] = keep
+
+    def _rewind(self, imp: dict[str, Any], plan: Plan, can_clear: bool) -> None:
         """Import again from the first row whose final slot changed."""
         rows = imp["rows"]
         for index, row in enumerate(rows):
@@ -592,7 +654,11 @@ class Ledger:
                 imp["sum"], imp["day"] = base[0], base[1]
                 imp["parts"] = list(base[2:6])
             plan.clear = (removed[0][0], removed[-1][0] + HOUR)
-            self.stats["imported_again"] += 1
+            if not can_clear:
+                imp["stale"] = sorted(
+                    {*imp.get("stale", ()), *(int(row[0]) for row in removed)}
+                )
+            plan.stats["imported_again"] += 1
             return
 
 
@@ -635,4 +701,6 @@ def _valid_import(value: object) -> bool:
         and isinstance(value.get("base"), list)
         and len(value["base"]) == 6
         and all(isinstance(row, list) and len(row) == 10 for row in value["rows"])
+        and isinstance(value.get("stale", []), list)
+        and all(type(start) is int for start in value.get("stale", ()))
     )

@@ -1315,6 +1315,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Overgenomen registraties blijven in de statistieken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Overgenomen statistieken verwijderen",
+            "description": "De verwijderde vermelding heeft {count} statistieken uit de registraties van de installatie overgenomen; Home Assistant bewaart ze. Kies **Verzenden** om ze te verwijderen; dit kan niet ongedaan worden gemaakt. Kies **Negeren** om ze te bewaren. Deze melding verdwijnt na de volgende herstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "De overgenomen statistieken bestaan niet meer. Er is niets verwijderd."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Installaties niet gevonden in het cloudaccount",
       "description": "Bij de laatste aanmelding van de cloudtoegang in \"{title}\" zijn {count} ingeschakelde installaties of apparaten niet gevonden (eindigend op {systems}). Ze blijven geconfigureerd en niet beschikbaar totdat ze weer in het account verschijnen; deze melding verdwijnt dan.\n\nAls ze uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang, schakel ze uit onder **Gebruiken voor installaties en apparaten** en verwijder ze met **Niet-geselecteerde installaties vergeten**. Hun apparaten en entiteiten blijven in Home Assistant staan totdat je ze verwijdert. Als een gateway is vervangen, laat die dan ingeschakeld: een aparte reparatiemelding biedt aan om de installatie met haar geschiedenis voort te zetten."
