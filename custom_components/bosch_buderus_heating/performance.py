@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Final
 
 from .derived import power_kilowatts
 from .derived_activity import (
+    compressor_running,
     defrost_paths,
     defrost_state,
     heat_side,
@@ -186,7 +187,7 @@ def live_cop(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
     defrost = defrost_state(coordinator, trace)
     if defrost is not None and defrost.active:
         return unknown(DEFROSTING)
-    running = heat_source_running(coordinator, trace)
+    running = compressor_running(coordinator, trace)
     if running is False:
         return unknown(COMPRESSOR_OFF)
     if (

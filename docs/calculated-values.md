@@ -47,9 +47,11 @@ defrosts. Only the standard actions are used:
 
 The inputs in their order:
 
-- running: the compressor signals (`SRC.CUHP.HMI.CompressorActive`,
-  `SRC.CUHP.HP1.CompressorStatus`), the refrigerant circuit status, the
-  compressor status, the heat source's status (`flameStatus`);
+- running: the compressor (its signals `SRC.CUHP.HMI.CompressorActive`,
+  `SRC.CUHP.HP1.CompressorStatus`, the refrigerant circuit status, the
+  compressor status) or the heat source's status (`flameStatus`, a
+  burner): running when either runs, stopped only when every one with a
+  reading stands;
 - side: the 3-way valve VW1 (`SRC.CUHP.HP1.DHWValve`, then the relay
   `SRC.RelayStatus.3WayValve`), the refrigerant circuit status, the
   compressor status, the central heating status of a boiler (`chStatus`);
@@ -135,8 +137,10 @@ is saved and never falls after a restart. Disabled by default.
 - **Average run time per start, heating (calculated)**: the heating
   operating hours of a heat source divided by its heating starts, in
   minutes. Diagnostic, enabled.
-- **Supply above setpoint (calculated)**: for the heat source, the supply
-  temperature minus the current supply setpoint while the heat source runs
+- **Supply above setpoint (calculated)**: for the heat source, the heat
+  pump's supply after the heater (TC1; where the plant does not report it,
+  the reported supply temperature, which can sit behind a buffer) minus the
+  current supply setpoint while the heat source runs
   for heating (not during hot water or a defrost); for a heating circuit
   with its own supply sensor, its supply temperature minus its supply
   setpoint signal while the circuit heats. In kelvin, diagnostic, enabled.

@@ -814,6 +814,91 @@ async def test_overshoot_only_while_heating(
     assert circuit.native_value is None
 
 
+async def test_overshoot_of_the_heat_source_prefers_the_heat_pump_supply(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    """The heat source's setpoint belongs to the heat pump's supply after
+    the heater (TC1); the reported supply temperature (behind a buffer on
+    some plants) only stands in."""
+    from custom_components.bosch_buderus_heating.derived_sensors import _candidates
+
+    plant = air(hass, freezer)
+    plant.cloud("/heatSources/actualSupplyTemperature", 25.1, unit="°C")
+    plant.local("/heatSources/currentSupplySetpoint", 24.0, unitOfMeasure="C")
+    plant.local("/signals/SRC.IntFlowTemp", 26.8, unitOfMeasure="C")
+    create = dict(_candidates(plant.coordinator))["overshoot:/heatSources"]
+    sensor = create()
+    assert isinstance(sensor, SupplyOvershootSensor)
+    sensor._refresh()
+    assert sensor.native_value == 2.8
+    attributes = sensor.extra_state_attributes or {}
+    assert attributes["supply_temperature"] == 26.8
+    assert "/signals/SRC.IntFlowTemp" in attributes["derived_from"]
+    assert "/heatSources/actualSupplyTemperature" not in attributes["derived_from"]
+    assert sensor.unique_id == "gateway-one:heatSources:calculated_supply_overshoot"
+    plant.forget("/signals/SRC.IntFlowTemp")
+    sensor._refresh()
+    assert sensor.native_value == 1.1
+
+
+def test_a_hybrid_heats_while_its_boiler_burns(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    """Running when the compressor or the burner runs; idle only when every
+    source with a reading stands. COP live follows the compressor alone."""
+    from custom_components.bosch_buderus_heating.derived_activity import (
+        heat_source_running,
+    )
+    from custom_components.bosch_buderus_heating.performance import live_cop
+
+    plant = air(hass, freezer)
+    coordinator = plant.coordinator
+    plant.flag(COMPRESSOR_ACTIVE, False).cloud("/heatSources/flameStatus", "on")
+    assert heat_source_running(coordinator) is True
+    assert circuit_activity(coordinator, ROOT).value == "heating"
+    assert live_cop(coordinator).attributes.get("reason") == "compressor_off"
+    plant.cloud("/heatSources/flameStatus", "off")
+    assert heat_source_running(coordinator) is False
+    assert circuit_activity(coordinator, ROOT).value == "idle"
+    plant.flag(COMPRESSOR_ACTIVE, True)
+    assert circuit_activity(coordinator, ROOT).value == "heating"
+    # A boiler alone: the burner decides.
+    boiler = Plant(hass, freezer)
+    boiler.cloud(MODE, "auto").cloud("/heatSources/flameStatus", "off")
+    boiler.coordinator.local_selection = None
+    assert heat_source_running(boiler.coordinator) is False
+    boiler.cloud("/heatSources/flameStatus", "on")
+    assert heat_source_running(boiler.coordinator) is True
+    assert heat_source_running(Plant(hass, freezer).coordinator) is None
+
+
+async def test_net_heat_restored_newer_than_saved_counts_nothing_twice(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, monkeypatch
+) -> None:
+    """The restored state is newer than the saved total: the reading it was
+    counted up to moves on by as much, so that part is not counted again."""
+    from homeassistant.components.sensor import SensorExtraStoredData
+
+    plant = air(hass, freezer)
+    plant.energy(CH, 1010.0)  # the restored state was counted up to this
+    sensor = NetHeatCounterSensor(plant.coordinator, CH)
+    sensor.hass = hass
+    store = derived_store(hass)
+    await store.async_load()
+    store.set(str(sensor.unique_id), {"total": 1000.0, "reference": 1000.0})
+
+    async def restored():
+        return SensorExtraStoredData(1010.0, "kWh")
+
+    monkeypatch.setattr(sensor, "async_get_last_sensor_data", restored)
+    await sensor.async_added_to_hass()
+    sensor._refresh()
+    assert sensor.native_value == 1010.0
+    plant.energy(CH, 1011.0)
+    sensor._refresh()
+    assert sensor.native_value == 1011.0
+
+
 # ------------------------------------------------------------- climate hooks
 
 
