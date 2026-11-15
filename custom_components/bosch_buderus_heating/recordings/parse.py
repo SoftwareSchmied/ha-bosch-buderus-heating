@@ -33,11 +33,9 @@ from ..local_api.models import Recording, RecordingGroup
 from .series import Quantity, Series, unit_factor
 
 HOUR: Final = 3600
-# A plausible upper bound of one hour's energy: 1.5 times the nominal output
-# of the heat generator (``energy_limit``), 60 kW when it is not known.
-LIMIT_FACTOR: Final = 1.5
-DEFAULT_POWER_KW: Final = 60.0
-MAX_KWH_PER_HOUR: Final = LIMIT_FACTOR * DEFAULT_POWER_KW
+# A plausible upper bound of one hour's energy: 1.5 times a nominal output of
+# 60 kW. The nominal output of a plant is not reliably known here.
+MAX_KWH_PER_HOUR: Final = 1.5 * 60.0
 MAX_STARTS_PER_HOUR: Final = 60.0
 # Readings outside this range are no outdoor or supply temperature.
 TEMPERATURE_RANGE: Final = (-60.0, 110.0)
@@ -331,7 +329,6 @@ def rejection(
     now: datetime,
     zone: tzinfo,
     floor: date | None,
-    energy_limit: float = MAX_KWH_PER_HOUR,
 ) -> str | None:
     """Why a sample with data (``c > 0``) cannot be a real value, or None."""
     if sample_start(sample, zone) > now + timedelta(hours=1):
@@ -346,7 +343,7 @@ def rejection(
     if sample.y < 0:
         return "negative"
     limit = {
-        Quantity.ENERGY: energy_limit,
+        Quantity.ENERGY: MAX_KWH_PER_HOUR,
         Quantity.COUNT: MAX_STARTS_PER_HOUR,
         Quantity.DURATION: 1.01,
     }[series.quantity]

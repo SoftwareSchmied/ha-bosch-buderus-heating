@@ -651,23 +651,3 @@ def test_a_slot_read_once_is_final_once_it_is_48_hours_old() -> None:
     later = at + timedelta(hours=48)
     plan = ledger.plan(later.astimezone(UTC), Z)
     assert len(plan.rows) == 24
-
-
-@pytest.mark.parametrize(
-    ("y", "rejected"), [(14.99, False), (15.0, False), (15.01, True)]
-)
-def test_the_energy_limit_per_hour_follows_the_given_power(y, rejected) -> None:
-    """Rule 13: 1.5 x 10 kW = 15 kWh per hour; days scale with 25 hours."""
-    ledger = Ledger(HEAT)
-    at = local(2026, 11, 20, 12)
-    parsed = parse_local(
-        recording(
-            hours(local(2026, 11, 13), [(y, 1)]),
-            days(date(2026, 11, 14), [(y * 25, 24)]),
-        ),
-        HEAT,
-        Z,
-    )
-    assert parsed is not None
-    ledger.merge(parsed, LOCAL, read_at=at.astimezone(UTC), zone=Z, energy_limit=15.0)
-    assert ledger.stats["discarded_implausible"] == (2 if rejected else 0)

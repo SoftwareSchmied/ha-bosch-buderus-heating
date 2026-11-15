@@ -98,11 +98,9 @@ of the month.
 - Hours without data (`c = 0`, for example while the plant was off) stay
   gaps, never zeros. Nothing is interpolated.
 - Values with a start more than an hour ahead, before the first recorded
-  day, below zero or above 1.5 times the nominal output per hour are
-  discarded and counted in the diagnostics. The nominal output is the power
-  class the **Heat generator** entity knows for the model (the outdoor unit
-  first); without one 60 kW (90 kWh per hour). Days and months are scaled.
-  The diagnostics name the bound that applied.
+  day, below zero or above 90 kWh per hour (1.5 × 60 kW, days and months
+  scaled) are discarded and counted in the diagnostics. The bound only
+  catches obvious garbage; it is the same for every recording.
 - A day whose hours cannot be placed on a change of summer time is imported
   as one day.
 - Switching the import off keeps what was imported; switching it on again
@@ -126,8 +124,7 @@ and months are known, how many hours the import is behind, discarded values
 with their reason, local and cloud differences, days whose hours could not
 be placed, the last runs (reason, source, number of reads) and whether the
 plant's UTC offset differs from the time zone of Home Assistant, and the
-plausibility bound per hour with its source (`heat_generator` or
-`default`).
+plausibility bound per hour.
 
 ## Limits
 

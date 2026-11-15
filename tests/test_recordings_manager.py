@@ -459,45 +459,19 @@ def test_fixed_offsets_helper() -> None:
     assert fixed(local(2026, 7, 1)).utcoffset() == timedelta(hours=2)
 
 
-@pytest.mark.parametrize(
-    ("primary", "limit", "source"),
-    [
-        ({"power_kw": 12, "outdoor_power_kw": 10}, 15.0, "heat_generator"),
-        ({"power_kw": 10, "outdoor_power_kw": None}, 15.0, "heat_generator"),
-        ({"power_kw": None, "outdoor_power_kw": None}, 90.0, "default"),
-        (None, 90.0, "default"),
-    ],
-)
-async def test_the_plausibility_limit_uses_the_heat_generator_power(
-    hass: HomeAssistant, monkeypatch, primary, limit, source
+@pytest.mark.parametrize(("value", "discarded"), [(16.0, False), (91.0, True)])
+async def test_one_fixed_plausibility_limit_for_every_recording(
+    hass: HomeAssistant, monkeypatch, value, discarded
 ) -> None:
-    """Rule 13 with the nominal output of the heat generator sensor (the
-    outdoor unit's power class first); without one 1.5 x 60 kW."""
-    from custom_components.bosch_buderus_heating import heat_generator_sensor
-
-    shown = (
-        SimpleNamespace(attributes=lambda: {"primary": primary})
-        if primary is not None
-        else None
-    )
-    monkeypatch.setattr(heat_generator_sensor, "shown_by", lambda _c: shown)
-    monkeypatch.setattr(
-        heat_generator_sensor.HeatGeneratorInputs,
-        "local",
-        lambda _self: None,
-    )
-    monkeypatch.setattr(
-        heat_generator_sensor.HeatGeneratorInputs,
-        "cloud",
-        lambda _self: None,
-    )
-    monkeypatch.setitem(PLANT, "total_heat", 16.0)  # above 15, below 90
+    """Rule 13: 90 kWh per hour (1.5 x 60 kW) for every energy recording,
+    whatever the heat generator; an hour with a heater above the nominal
+    output of the outdoor unit stays."""
+    monkeypatch.setitem(PLANT, "total_heat", value)
+    monkeypatch.setitem(PLANT, "total_eheater", 9.0)
     clock = Clock(local(2026, 11, 14, 10))
     rec = await manager(hass, clock, [Driver(clock)])
     await rec.async_run("start")
-    report = rec.diagnostics()
-    assert report["plausibility_limit_kwh_per_hour"] == limit
-    assert report["plausibility_limit_source"] == source
-    discarded = rec.ledgers["total_heat"].stats["discarded_implausible"]
-    assert (discarded > 0) is (limit == 15.0)
-    assert rec.ledgers["total_compressor"].stats["discarded_implausible"] == 0
+    assert rec.diagnostics()["plausibility_limit_kwh_per_hour"] == 90.0
+    stats = rec.ledgers["total_heat"].stats
+    assert (stats["discarded_implausible"] > 0) is discarded
+    assert rec.ledgers["total_eheater"].stats["discarded_implausible"] == 0

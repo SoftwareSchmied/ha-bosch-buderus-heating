@@ -32,7 +32,6 @@ from typing import Any, Final
 
 from .parse import (
     HOUR,
-    MAX_KWH_PER_HOUR,
     Parsed,
     Rate,
     Sample,
@@ -175,11 +174,8 @@ class Ledger:
         read_at: datetime,
         zone: tzinfo,
         full_history: bool = False,
-        energy_limit: float = MAX_KWH_PER_HOUR,
     ) -> None:
-        """Take the samples of one answer read at ``read_at``; an energy value
-        above ``energy_limit`` kWh per hour (days and months scaled) is
-        discarded."""
+        """Take the samples of one answer read at ``read_at``."""
         floor = date.fromisoformat(self.floor) if self.floor else None
         accepted: list[Sample] = []
         rejected_days: set[date] = set()
@@ -189,14 +185,7 @@ class Ledger:
                     continue  # a placeholder of a slot still to come
                 accepted.append(sample)
                 continue
-            reason = rejection(
-                sample,
-                self.series,
-                now=read_at,
-                zone=zone,
-                floor=floor,
-                energy_limit=energy_limit,
-            )
+            reason = rejection(sample, self.series, now=read_at, zone=zone, floor=floor)
             if reason is not None:
                 self.stats[f"discarded_{reason}"] += 1
                 if sample.rate is Rate.HOUR:

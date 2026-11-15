@@ -58,8 +58,7 @@ from .measures import (
     statistic_name,
 )
 from .parse import (
-    DEFAULT_POWER_KW,
-    LIMIT_FACTOR,
+    MAX_KWH_PER_HOUR,
     Rate,
     add_months,
     local_midnight,
@@ -513,12 +512,7 @@ class RecordingsManager:
                     self.local_paths[path] = ["unit", read_at.timestamp()]
                     continue
                 self._ledger(series).merge(
-                    parsed,
-                    LOCAL,
-                    read_at=read_at,
-                    zone=zone,
-                    full_history=whole,
-                    energy_limit=self._energy_limit()[0],
+                    parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
                 )
                 if parsed.offset is not None:
                     self.offset_mismatch = (
@@ -657,13 +651,7 @@ class RecordingsManager:
                 if parsed is None:
                     self.cloud_paths[series.path] = ["unit", read_at.timestamp()]
                     continue
-                self._ledger(series).merge(
-                    parsed,
-                    CLOUD,
-                    read_at=read_at,
-                    zone=zone,
-                    energy_limit=self._energy_limit()[0],
-                )
+                self._ledger(series).merge(parsed, CLOUD, read_at=read_at, zone=zone)
                 self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
                 succeeded = True
                 if self._cloud_complete(series, interval, rate, today, zone):
@@ -780,17 +768,6 @@ class RecordingsManager:
             ledger.stop_import()
         self._save()
         return len(found)
-
-    # ---------------------------------------------------------- plausibility
-    def _energy_limit(self) -> tuple[float, str]:
-        """kWh per hour above which an energy value is no real value: 1.5
-        times the nominal output of the heat generator (the outdoor unit's
-        power class, else the main module's) when the model table knows it,
-        otherwise 1.5 x 60 kW. With the source of the power."""
-        power = _generator_power(self.coordinator())
-        if power is None:
-            return LIMIT_FACTOR * DEFAULT_POWER_KW, "default"
-        return LIMIT_FACTOR * power, "heat_generator"
 
     # ------------------------------------------------------------- counters
     async def _count(self, now: datetime, zone: tzinfo) -> None:
@@ -972,7 +949,6 @@ class RecordingsManager:
         zone = dt_util.get_default_time_zone()
         today = now.astimezone(zone).date()
         last = self.runs[-1] if self.runs else None
-        limit, limit_source = self._energy_limit()
         series: dict[str, object] = {}
         for item in SERIES:
             local = self.local_paths.get(item.path)
@@ -1020,9 +996,8 @@ class RecordingsManager:
             "needed": self.needed(),
             "waiting": self.waiting,
             "plant_offset_differs_from_time_zone": self.offset_mismatch,
-            # Which upper bound per hour applied to energy values.
-            "plausibility_limit_kwh_per_hour": limit,
-            "plausibility_limit_source": limit_source,
+            # The upper bound per hour that applies to energy values.
+            "plausibility_limit_kwh_per_hour": MAX_KWH_PER_HOUR,
             "history_read_since_start": self._full_done,
             "entities_with_value": len(self.published),
             "next_run_in_seconds": (
@@ -1047,36 +1022,6 @@ class RecordingsManager:
             ],
             "series": series,
         }
-
-
-def _generator_power(coordinator: object) -> float | None:
-    """The nominal output in kW of the heat generator a gateway shows (the
-    heat generator sensor), or of its current module list; None unknown."""
-    if coordinator is None:
-        return None
-    from ..heat_generator_sensor import HeatGeneratorInputs, shown_by
-
-    try:
-        generators = shown_by(coordinator)
-        if generators is None:
-            inputs = HeatGeneratorInputs(coordinator)  # type: ignore[arg-type]
-            generators = inputs.local() or inputs.cloud()
-        if generators is None:
-            return None
-        primary = generators.attributes()["primary"]
-    except Exception:  # the default limit then applies
-        return None
-    if not isinstance(primary, dict):
-        return None
-    for key in ("outdoor_power_kw", "power_kw"):
-        value = primary.get(key)
-        if (
-            isinstance(value, int | float)
-            and not isinstance(value, bool)
-            and 0 < value <= 1000
-        ):
-            return float(value)
-    return None
 
 
 def _paths(value: object) -> dict[str, list[Any]]:
