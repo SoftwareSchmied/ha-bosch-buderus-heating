@@ -305,7 +305,11 @@ def _evidence_settled(item: object) -> bool:
     ):
         return True
     answer = getattr(item, "fallback_result", None) or getattr(item, "bulk_result", "")
-    return bool(re.fullmatch(r"http_4\d\d", answer)) and answer not in _OPEN_ANSWERS
+    return (
+        isinstance(answer, str)
+        and re.fullmatch(r"http_4\d\d", answer) is not None
+        and answer not in _OPEN_ANSWERS
+    )
 
 
 def evidence_answers(report: object) -> dict[str, bool]:

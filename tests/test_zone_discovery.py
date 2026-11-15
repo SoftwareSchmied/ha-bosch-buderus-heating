@@ -4,8 +4,8 @@ The fixture has the shape of a real report: eight zones with gaps in their
 numbers, twelve radio devices that refuse the same eight leaves each, a
 second heating circuit and three heat sources whose directories are refused
 (their names are outside the ``hsN`` scheme, as the redacted report shows
-them as ``{hs}``), and zone side directories (``heating``, ``cooling``) that are refused while
-their leaves are readable. No payload of a real installation is used.
+them as ``{hs}``), and zone side directories (``heating``, ``cooling``) that
+are refused while their leaves are readable. No payload of a real installation is used.
 """
 
 from __future__ import annotations
@@ -509,9 +509,7 @@ async def test_the_allowance_reads_below_its_own_directories_only():
         if item.source is DiscoveryPathSource.OPTIONAL or path in direct:
             continue
         # Anything else read late lies below a directory read late.
-        assert any(
-            path.startswith(f"{parent}/") for parent in read_late
-        ), path
+        assert any(path.startswith(f"{parent}/") for parent in read_late), path
 
 
 @pytest.mark.parametrize("budget", [1000, 512 + 400])
