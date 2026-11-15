@@ -58,10 +58,12 @@ const path = require("node:path");
     // The confirmation form names the action as its title.
     await page.getByRole("button", {name: texts.submit}).first().click();
     await page.getByText(expected, {exact: false}).first().waitFor();
-    // The dialog stays open: back in the main menu, with the result as its note.
+    // The result is a page of its own in the profile language.
+    await shot(name);
+    // OK leads back to the main menu of the same dialog.
+    await page.getByRole("button", {name: texts.submit}).first().click();
     await menuItem(texts.entry).waitFor();
     await menuItem(texts.connections).waitFor();
-    await shot(name);
   };
   const backFromConnections = async () => {
     await openMenu();
