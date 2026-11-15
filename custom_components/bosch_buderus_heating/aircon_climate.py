@@ -32,6 +32,7 @@ from .aircon_entity import (
 from .aircon_policies import (
     AC_CONTROL,
     AC_CONTROL_POLICY,
+    ADVANCED_FUNCTION_POLICIES,
     AIR_FLOW_HORIZONTAL,
     AIR_FLOW_HORIZONTAL_POLICY,
     AIR_FLOW_VERTICAL,
@@ -44,7 +45,6 @@ from .aircon_policies import (
     ROOM_TEMPERATURE,
     SETPOINT_POLICY,
     TEMPERATURE_SETPOINT,
-    ADVANCED_FUNCTION_POLICIES,
 )
 from .const import DOMAIN
 from .ha_compat import temperature_members, temperature_unit
@@ -206,9 +206,7 @@ class AirconClimate(AirconEntity, ClimateEntity):
 
     def _current(self, path: str, offered: dict[str, str]) -> str | None:
         value = self.coordinator.value(path)
-        return next(
-            (key for key, token in offered.items() if token == value), None
-        )
+        return next((key for key, token in offered.items() if token == value), None)
 
     @property
     def fan_modes(self) -> list[str]:
@@ -354,4 +352,3 @@ class AirconClimate(AirconEntity, ClimateEntity):
             "on" if preset_mode == PRESET_ECO else "off",
             ADVANCED_FUNCTION_POLICIES[ECO_MODE],
         )
-

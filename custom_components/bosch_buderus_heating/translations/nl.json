@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Het gekozen tijdprogramma kan op dit moment niet worden gelezen. Er is niets verzonden."
+    },
+    "aircon_switched_off": {
+      "message": "De airconditioner is uitgeschakeld. Schakel hem eerst in en wijzig daarna de modus. Er is niets verzonden."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "De airconditioner draait op zonnebedrijf, daarom zijn de modi automatisch en verwarmen niet beschikbaar. Er is niets verzonden."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Deze waarde is niet toegestaan voor de airconditioner. Er is niets verzonden."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "De wijziging is verzonden, maar de airconditioner heeft die nog niet bevestigd. Ze kan nog van kracht worden. Ik heb haar niet opnieuw verzonden; de waarde wordt bij de volgende uitlezing bijgewerkt."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Afwezigheidstemperatuur"
+      },
+      "aircon_timer_on": {
+        "name": "Inschakeltimer"
+      },
+      "aircon_timer_off": {
+        "name": "Uitschakeltimer"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Programma A",
           "b": "Programma B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Gerichte luchtstroom",
+        "state": {
+          "off": "Uit",
+          "on": "Aan",
+          "top_left": "Linksboven",
+          "top_center": "Middenboven",
+          "top_right": "Rechtsboven",
+          "bottom_left": "Linksonder",
+          "bottom_center": "Middenonder",
+          "bottom_right": "Rechtsonder"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Actief tijdprogramma",
+        "state": {
+          "program1": "Programma 1",
+          "program2": "Programma 2",
+          "program3": "Programma 3",
+          "program4": "Programma 4",
+          "program5": "Programma 5",
+          "program6": "Programma 6",
+          "program7": "Programma 7",
+          "program8": "Programma 8",
+          "program9": "Programma 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Haardfunctie"
+      },
+      "aircon_full_power": {
+        "name": "Vol vermogen"
+      },
+      "aircon_sleep": {
+        "name": "Slaapstand"
+      },
+      "aircon_setback_8": {
+        "name": "Vorstbeveiligingsverwarming (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Vorstbeveiligingsverwarming (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luchtzuivering"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tijdprogramma actief"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Debiet verwarmingscircuit 1 onder het meetbereik (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Zonnebedrijf"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Volgend schakelpunt vervroegen"
+      },
+      "aircon_end_temporary": {
+        "name": "Tijdelijke afwijking beëindigen"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Afwezigheidsmodus",
               "standby": "Stand-by",
               "unreachable": "Zone- of communicatiefout"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Airconditioner",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Stil",
+              "low": "Laag",
+              "medium": "Gemiddeld",
+              "high": "Hoog",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Uit",
+              "on": "Aan",
+              "auto": "Auto",
+              "swing": "Zwenken",
+              "angle1": "Stand 1",
+              "angle2": "Stand 2",
+              "angle3": "Stand 3",
+              "angle4": "Stand 4",
+              "angle5": "Stand 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Uit",
+              "on": "Aan",
+              "auto": "Auto",
+              "swing": "Zwenken",
+              "left": "Links",
+              "center": "Midden",
+              "right": "Rechts",
+              "wide": "Breed",
+              "ultra_wide": "Extra breed",
+              "fixed": "Vast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Geen",
+              "eco": "Eco"
             }
           }
         }

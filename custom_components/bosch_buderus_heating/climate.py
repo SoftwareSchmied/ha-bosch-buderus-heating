@@ -19,8 +19,8 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
-from .aircon_climate import track_aircon_climates
 from . import BoschBuderusConfigEntry, rrc_platforms
+from .aircon_climate import track_aircon_climates
 from .bacon import rac
 from .bacon.access import BaconAccess
 from .bacon.entity import BaconEntity

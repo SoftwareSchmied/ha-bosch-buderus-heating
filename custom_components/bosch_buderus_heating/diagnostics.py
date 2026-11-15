@@ -23,6 +23,7 @@ from . import (
     rrc_devices,
     rrc_energy_statistics,
 )
+from .aircon import AirconCoordinator
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
 from .cloud_pauses import cloud_pause_store
@@ -90,7 +91,6 @@ from .switch_program_edit import edit_issue, points_per_day
 from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
-from .aircon import AirconCoordinator
 from .water_softener import (
     is_water_softener,
     softener_capability,

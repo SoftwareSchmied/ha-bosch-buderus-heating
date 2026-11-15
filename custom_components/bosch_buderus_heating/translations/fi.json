@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Valittua aikaohjelmaa ei voi lukea juuri nyt. Mitään ei lähetetty."
+    },
+    "aircon_switched_off": {
+      "message": "Ilmalämpöpumppu on pois päältä. Kytke se ensin päälle ja vaihda sitten tila. Mitään ei lähetetty."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Ilmalämpöpumppu toimii aurinkokäytöllä, joten automaatti- ja lämmitystila eivät ole käytettävissä. Mitään ei lähetetty."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Tätä arvoa ei sallita ilmalämpöpumpulle. Mitään ei lähetetty."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Muutos lähetettiin, mutta ilmalämpöpumppu ei ole vielä vahvistanut sitä. Se voi vielä tulla voimaan. En lähettänyt sitä uudelleen; arvo päivittyy seuraavassa luvussa."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Poissaolon lämpötila"
+      },
+      "aircon_timer_on": {
+        "name": "Päällekytkentäajastin"
+      },
+      "aircon_timer_off": {
+        "name": "Poiskytkentäajastin"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Ohjelma A",
           "b": "Ohjelma B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Kohdistettu ilmavirta",
+        "state": {
+          "off": "Pois",
+          "on": "Päällä",
+          "top_left": "Ylhäällä vasemmalla",
+          "top_center": "Ylhäällä keskellä",
+          "top_right": "Ylhäällä oikealla",
+          "bottom_left": "Alhaalla vasemmalla",
+          "bottom_center": "Alhaalla keskellä",
+          "bottom_right": "Alhaalla oikealla"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktiivinen aikaohjelma",
+        "state": {
+          "program1": "Ohjelma 1",
+          "program2": "Ohjelma 2",
+          "program3": "Ohjelma 3",
+          "program4": "Ohjelma 4",
+          "program5": "Ohjelma 5",
+          "program6": "Ohjelma 6",
+          "program7": "Ohjelma 7",
+          "program8": "Ohjelma 8",
+          "program9": "Ohjelma 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Takkatoiminto"
+      },
+      "aircon_full_power": {
+        "name": "Täysi teho"
+      },
+      "aircon_sleep": {
+        "name": "Yötila"
+      },
+      "aircon_setback_8": {
+        "name": "Jäätymisenestolämmitys (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Jäätymisenestolämmitys (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Ilmanpuhdistus"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Aikaohjelma käytössä"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Lämmityspiirin 1 virtaama mittausalueen alapuolella (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Aurinkokäyttö"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Aikaista seuraavaa kytkentäpistettä"
+      },
+      "aircon_end_temporary": {
+        "name": "Lopeta tilapäinen muutos"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Poissa-tila",
               "standby": "Valmiustila",
               "unreachable": "Vyöhykevika tai tiedonsiirtovirhe"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Ilmastointilaite",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automaattinen",
+              "quiet": "Hiljainen",
+              "low": "Matala",
+              "medium": "Keskitaso",
+              "high": "Korkea",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Pois",
+              "on": "Päällä",
+              "auto": "Automaattinen",
+              "swing": "Heilunta",
+              "angle1": "Asento 1",
+              "angle2": "Asento 2",
+              "angle3": "Asento 3",
+              "angle4": "Asento 4",
+              "angle5": "Asento 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Pois",
+              "on": "Päällä",
+              "auto": "Automaattinen",
+              "swing": "Heilunta",
+              "left": "Vasen",
+              "center": "Keski",
+              "right": "Oikea",
+              "wide": "Leveä",
+              "ultra_wide": "Erittäin leveä",
+              "fixed": "Kiinteä"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ei mitään",
+              "eco": "Eco"
             }
           }
         }

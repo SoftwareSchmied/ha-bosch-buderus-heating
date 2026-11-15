@@ -10,6 +10,7 @@ path as writable (and names the function, where it lists them).
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from functools import partial
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -240,9 +241,7 @@ class AirconSolarOperation(AirconEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return {"on": True, "off": False}.get(
-            str(self.coordinator.value(PV_ENABLE))
-        )
+        return {"on": True, "off": False}.get(str(self.coordinator.value(PV_ENABLE)))
 
 
 def _switches(coordinator: AirconCoordinator) -> Iterable[Factory]:
@@ -262,9 +261,7 @@ def _switches(coordinator: AirconCoordinator) -> Iterable[Factory]:
             and coordinator.control_ready(path)
             and assess_control(resource).supports_switch
         ):
-            yield _key(path), lambda path=path, policy=policy: AirconSwitch(
-                coordinator, path, policy
-            )
+            yield _key(path), partial(AirconSwitch, coordinator, path, policy)
 
 
 def _selects(coordinator: AirconCoordinator) -> Iterable[Factory]:
@@ -273,15 +270,16 @@ def _selects(coordinator: AirconCoordinator) -> Iterable[Factory]:
         (ACTIVE_PROGRAM, ACTIVE_PROGRAM_POLICY, "aircon_active_schedule", None),
     ):
         if len(options(coordinator, path, order)) >= 2:
-            yield _key(path), lambda path=path, policy=policy, key=key, order=order: (
-                AirconSelect(coordinator, path, policy, key, order)
+            yield (
+                _key(path),
+                partial(AirconSelect, coordinator, path, policy, key, order),
             )
 
 
 def _timers(coordinator: AirconCoordinator) -> Iterable[Factory]:
     for path in (TIMER_ON, TIMER_OFF):
         if timer_valid(coordinator, path):
-            yield _key(path), lambda path=path: AirconTimer(coordinator, path)
+            yield _key(path), partial(AirconTimer, coordinator, path)
 
 
 def _buttons(coordinator: AirconCoordinator) -> Iterable[Factory]:

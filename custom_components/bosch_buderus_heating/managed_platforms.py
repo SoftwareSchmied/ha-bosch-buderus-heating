@@ -15,6 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import EntityPlatform
 
+from .aircon import AirconCoordinator
 from .bacon.models import device_key
 from .configuration import ConfigurationError
 from .configuration_migration import legacy_cloud_connection_id
@@ -26,7 +27,6 @@ from .entity_use import entity_use
 from .managed_bacon import BaconDeviceAccess
 from .platform_scope import EntityBuilder, Listener, PlatformScope
 from .wallbox import WallboxCoordinator
-from .aircon import AirconCoordinator
 
 if TYPE_CHECKING:
     from .managed_entry import ManagedEntry

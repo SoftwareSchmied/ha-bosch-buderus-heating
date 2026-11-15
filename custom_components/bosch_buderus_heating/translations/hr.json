@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Odabrani vremenski program trenutno se ne može pročitati. Ništa nije poslano."
+    },
+    "aircon_switched_off": {
+      "message": "Klima-uređaj je isključen. Najprije ga uključite, zatim promijenite način rada. Ništa nije poslano."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klima-uređaj radi u solarnom načinu, pa načini automatski i grijanje nisu dostupni. Ništa nije poslano."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Ova vrijednost nije dopuštena za klima-uređaj. Ništa nije poslano."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Promjena je poslana, ali je klima-uređaj još nije potvrdio. Možda će se još primijeniti. Nisam je ponovno poslao; vrijednost se ažurira pri sljedećem očitanju."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura odsutnosti"
+      },
+      "aircon_timer_on": {
+        "name": "Timer uključivanja"
+      },
+      "aircon_timer_off": {
+        "name": "Timer isključivanja"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Usmjereni protok zraka",
+        "state": {
+          "off": "Isključeno",
+          "on": "Uključeno",
+          "top_left": "Gore lijevo",
+          "top_center": "Gore u sredini",
+          "top_right": "Gore desno",
+          "bottom_left": "Dolje lijevo",
+          "bottom_center": "Dolje u sredini",
+          "bottom_right": "Dolje desno"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivni vremenski program",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcija kamina"
+      },
+      "aircon_full_power": {
+        "name": "Puna snaga"
+      },
+      "aircon_sleep": {
+        "name": "Način spavanja"
+      },
+      "aircon_setback_8": {
+        "name": "Grijanje za zaštitu od smrzavanja (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Grijanje za zaštitu od smrzavanja (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Pročišćavanje zraka"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Vremenski program aktivan"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Protok kruga grijanja 1 ispod mjernog područja (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Solarni rad"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Prijevremeno aktiviraj sljedeću točku uklapanja"
+      },
+      "aircon_end_temporary": {
+        "name": "Završi privremenu promjenu"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Način odsutnosti",
               "standby": "Stanje pripravnosti",
               "unreachable": "Greška zone ili komunikacije"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimatizacijski uređaj",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatski",
+              "quiet": "Tiho",
+              "low": "Nizak",
+              "medium": "Srednje",
+              "high": "Visok",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Isključeno",
+              "on": "Uključeno",
+              "auto": "Automatski",
+              "swing": "Njihanje",
+              "angle1": "Položaj 1",
+              "angle2": "Položaj 2",
+              "angle3": "Položaj 3",
+              "angle4": "Položaj 4",
+              "angle5": "Položaj 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Isključeno",
+              "on": "Uključeno",
+              "auto": "Automatski",
+              "swing": "Njihanje",
+              "left": "Lijevo",
+              "center": "Sredina",
+              "right": "Desno",
+              "wide": "Široko",
+              "ultra_wide": "Vrlo široko",
+              "fixed": "Fiksno"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Nema",
+              "eco": "Eco"
             }
           }
         }

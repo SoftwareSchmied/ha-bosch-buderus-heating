@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Izbranega časovnega programa trenutno ni mogoče prebrati. Nič ni bilo poslano."
+    },
+    "aircon_switched_off": {
+      "message": "Klimatska naprava je izklopljena. Najprej jo vklopite, nato spremenite način. Nič ni bilo poslano."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimatska naprava deluje v solarnem načinu, zato načina samodejno in ogrevanje nista na voljo. Nič ni bilo poslano."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Ta vrednost za klimatsko napravo ni dovoljena. Nič ni bilo poslano."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Sprememba je bila poslana, vendar je klimatska naprava še ni potrdila. Morda bo še začela veljati. Ponovno je nisem poslal; vrednost se posodobi ob naslednjem branju."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura odsotnosti"
+      },
+      "aircon_timer_on": {
+        "name": "Časovnik vklopa"
+      },
+      "aircon_timer_off": {
+        "name": "Časovnik izklopa"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Usmerjen pretok zraka",
+        "state": {
+          "off": "Izklopljeno",
+          "on": "Vklopljeno",
+          "top_left": "Zgoraj levo",
+          "top_center": "Zgoraj na sredini",
+          "top_right": "Zgoraj desno",
+          "bottom_left": "Spodaj levo",
+          "bottom_center": "Spodaj na sredini",
+          "bottom_right": "Spodaj desno"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivni časovni program",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcija kamina"
+      },
+      "aircon_full_power": {
+        "name": "Polna moč"
+      },
+      "aircon_sleep": {
+        "name": "Način spanja"
+      },
+      "aircon_setback_8": {
+        "name": "Ogrevanje za zaščito pred zmrzaljo (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Ogrevanje za zaščito pred zmrzaljo (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Čiščenje zraka"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Časovni program aktiven"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Pretok ogrevalnega kroga 1 pod merilnim območjem (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Solarno delovanje"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Predčasno aktiviraj naslednjo preklopno točko"
+      },
+      "aircon_end_temporary": {
+        "name": "Končaj začasno spremembo"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Način odsotnosti",
               "standby": "Pripravljenost",
               "unreachable": "Napaka cone ali komunikacije"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimatska naprava",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Samodejno",
+              "quiet": "Tiho",
+              "low": "Nizek",
+              "medium": "Srednje",
+              "high": "Visok",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Izklopljeno",
+              "on": "Vklopljeno",
+              "auto": "Samodejno",
+              "swing": "Nihanje",
+              "angle1": "Položaj 1",
+              "angle2": "Položaj 2",
+              "angle3": "Položaj 3",
+              "angle4": "Položaj 4",
+              "angle5": "Položaj 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Izklopljeno",
+              "on": "Vklopljeno",
+              "auto": "Samodejno",
+              "swing": "Nihanje",
+              "left": "Levo",
+              "center": "Sredina",
+              "right": "Desno",
+              "wide": "Široko",
+              "ultra_wide": "Zelo široko",
+              "fixed": "Fiksno"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Brez",
+              "eco": "Eco"
             }
           }
         }

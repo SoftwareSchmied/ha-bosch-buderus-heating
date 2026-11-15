@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Det valda tidsprogrammet kan inte läsas just nu. Inget skickades."
+    },
+    "aircon_switched_off": {
+      "message": "Luftkonditioneringen är avstängd. Slå på den först och byt sedan läge. Inget skickades."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Luftkonditioneringen går i soldrift, därför är lägena auto och värme inte tillgängliga. Inget skickades."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Värdet är inte tillåtet för luftkonditioneringen. Inget skickades."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Ändringen skickades, men luftkonditioneringen har inte bekräftat den ännu. Den kan fortfarande träda i kraft. Jag har inte skickat den igen; värdet uppdateras vid nästa avläsning."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Bortatemperatur"
+      },
+      "aircon_timer_on": {
+        "name": "Tillslagstimer"
+      },
+      "aircon_timer_off": {
+        "name": "Frånslagstimer"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Riktat luftflöde",
+        "state": {
+          "off": "Av",
+          "on": "På",
+          "top_left": "Uppe till vänster",
+          "top_center": "Uppe i mitten",
+          "top_right": "Uppe till höger",
+          "bottom_left": "Nere till vänster",
+          "bottom_center": "Nere i mitten",
+          "bottom_right": "Nere till höger"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Eldstadsfunktion"
+      },
+      "aircon_full_power": {
+        "name": "Full effekt"
+      },
+      "aircon_sleep": {
+        "name": "Nattläge"
+      },
+      "aircon_setback_8": {
+        "name": "Frostskyddsvärme (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Frostskyddsvärme (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luftrening"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tidsprogram aktivt"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Flöde värmekrets 1 under mätområdet (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Soldrift"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Tidigarelägg nästa växlingspunkt"
+      },
+      "aircon_end_temporary": {
+        "name": "Avsluta tillfällig ändring"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Bortaläge",
               "standby": "Standby",
               "unreachable": "Zon- eller kommunikationsfel"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Luftkonditionering",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Tyst",
+              "low": "Låg",
+              "medium": "Medel",
+              "high": "Hög",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Svängning",
+              "angle1": "Läge 1",
+              "angle2": "Läge 2",
+              "angle3": "Läge 3",
+              "angle4": "Läge 4",
+              "angle5": "Läge 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Svängning",
+              "left": "Vänster",
+              "center": "Mitten",
+              "right": "Höger",
+              "wide": "Bred",
+              "ultra_wide": "Extra bred",
+              "fixed": "Fast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ingen",
+              "eco": "Eco"
             }
           }
         }

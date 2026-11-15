@@ -13,8 +13,8 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .aircon_entities import track_aircon_selects
 from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
+from .aircon_entities import track_aircon_selects
 from .bacon.purifier_entities import (
     BaconPurifierColor,
 )

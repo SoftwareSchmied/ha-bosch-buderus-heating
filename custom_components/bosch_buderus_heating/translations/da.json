@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Det valgte tidsprogram kan ikke læses lige nu. Der blev ikke sendt noget."
+    },
+    "aircon_switched_off": {
+      "message": "Klimaanlægget er slukket. Tænd det først, og skift derefter tilstand. Intet blev sendt."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimaanlægget kører i soldrift, så tilstandene auto og varme er ikke tilgængelige. Intet blev sendt."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Denne værdi er ikke tilladt for klimaanlægget. Intet blev sendt."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Ændringen blev sendt, men klimaanlægget har endnu ikke bekræftet den. Den kan stadig få virkning. Jeg har ikke sendt den igen; værdien opdateres ved næste aflæsning."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Fraværstemperatur"
+      },
+      "aircon_timer_on": {
+        "name": "Tænd-timer"
+      },
+      "aircon_timer_off": {
+        "name": "Sluk-timer"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Spot-luftretning",
+        "state": {
+          "off": "Fra",
+          "on": "Til",
+          "top_left": "Øverst til venstre",
+          "top_center": "Øverst i midten",
+          "top_right": "Øverst til højre",
+          "bottom_left": "Nederst til venstre",
+          "bottom_center": "Nederst i midten",
+          "bottom_right": "Nederst til højre"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Pejsefunktion"
+      },
+      "aircon_full_power": {
+        "name": "Fuld effekt"
+      },
+      "aircon_sleep": {
+        "name": "Sovetilstand"
+      },
+      "aircon_setback_8": {
+        "name": "Frostbeskyttende opvarmning (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Frostbeskyttende opvarmning (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luftrensning"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tidsprogram aktivt"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Flow varmekreds 1 under måleområdet (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Soldrift"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Fremryk næste koblingspunkt"
+      },
+      "aircon_end_temporary": {
+        "name": "Afslut midlertidig ændring"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Fraværstilstand",
               "standby": "Standby",
               "unreachable": "Zone- eller kommunikationsfejl"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimaanlæg",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Lydsvag",
+              "low": "Lav",
+              "medium": "Mellem",
+              "high": "Høj",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Fra",
+              "on": "Til",
+              "auto": "Auto",
+              "swing": "Sving",
+              "angle1": "Position 1",
+              "angle2": "Position 2",
+              "angle3": "Position 3",
+              "angle4": "Position 4",
+              "angle5": "Position 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Fra",
+              "on": "Til",
+              "auto": "Auto",
+              "swing": "Sving",
+              "left": "Venstre",
+              "center": "Midte",
+              "right": "Højre",
+              "wide": "Bred",
+              "ultra_wide": "Ekstra bred",
+              "fixed": "Fast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ingen",
+              "eco": "Eco"
             }
           }
         }

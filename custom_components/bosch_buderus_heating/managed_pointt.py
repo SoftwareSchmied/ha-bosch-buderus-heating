@@ -15,6 +15,7 @@ from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .aircon import is_aircon_gateway
 from .configuration import ConfigurationError, JsonObject, StoredBinding
 from .connection_runtime import (
     ConnectionPhase,
@@ -35,8 +36,8 @@ from .discovery_inventory import DiscoveryInventory, discovery_inventory
 from .icom_profile import is_icom_gateway
 from .local_selection import LocalSelection
 from .log_helpers import log_failure
-from .managed_updates import SourceUpdates
 from .managed_aircon import ManagedAirconCoordinator
+from .managed_updates import SourceUpdates
 from .managed_wallbox import ManagedWallboxCoordinator
 from .pointt import Gateway, PointTClient
 from .pointt.exceptions import (
@@ -46,7 +47,6 @@ from .pointt.exceptions import (
     SourceStopped,
 )
 from .wallbox import is_wallbox
-from .aircon import is_aircon_gateway
 
 if TYPE_CHECKING:
     from .faults import FaultTracker

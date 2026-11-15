@@ -34,7 +34,14 @@ from .aircon_policies import (
 )
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
-from .pointt import AuthenticationError, Gateway, PointTClient, PointTError, Resource
+from .pointt import (
+    AuthenticationError,
+    Gateway,
+    PointTClient,
+    PointTError,
+    Resource,
+    WriteValidationError,
+)
 from .pointt.const import DEFAULT_TOTAL_TIMEOUT
 from .pointt.exceptions import RateLimited, SourceStopped
 from .write_policies import RRC_READ_BACK_DELAYS
@@ -45,7 +52,6 @@ from .writes import (
     WriteBusy,
     WriteDeadlineExceeded,
     WriteService,
-    WriteValidationError,
     assess_control,
 )
 
@@ -148,9 +154,7 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         self.error: str | None = None
         self.data = AirconSnapshot()
         self._lock = asyncio.Lock()
-        self._write_service = WriteService(
-            client, read_back_schedule=READ_BACK_DELAYS
-        )
+        self._write_service = WriteService(client, read_back_schedule=READ_BACK_DELAYS)
         self.writes_sent = 0
         self.writes_refused = 0
 
@@ -189,7 +193,9 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         if not lists:
             return True
         return any(
-            reference.path == path for listing in lists for reference in listing.references
+            reference.path == path
+            for listing in lists
+            for reference in listing.references
         )
 
     def control_ready(self, path: str) -> bool:
@@ -221,8 +227,8 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         except SourceStopped:
             raise
         except PointTError as err:
-            self.error = "rate_limited" if isinstance(err, RateLimited) else (
-                "request_failed"
+            self.error = (
+                "rate_limited" if isinstance(err, RateLimited) else ("request_failed")
             )
             raise UpdateFailed("Air conditioner request failed") from err
         resources: dict[str, Resource] = {}
@@ -259,8 +265,7 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         if BUS_PATH not in read:
             # Not answered: detected again in the next cycle.
             if any(
-                item.path == BUS_PATH and item.status in (403, 404)
-                for item in results
+                item.path == BUS_PATH and item.status in (403, 404) for item in results
             ):
                 self.detection = "no_air_conditioner"
             return
@@ -372,8 +377,10 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
         read: dict[str, Resource] = {}
         for item in results:
             if item.status == 429 or isinstance(item.error, RateLimited):
-                raise item.error if isinstance(item.error, RateLimited) else (
-                    RateLimited(None)
+                raise (
+                    item.error
+                    if isinstance(item.error, RateLimited)
+                    else (RateLimited(None))
                 )
             if item.ok and item.resource is not None and item.path in paths:
                 read[item.path] = item.resource

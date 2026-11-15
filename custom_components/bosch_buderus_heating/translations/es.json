@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "El programa horario seleccionado no se puede leer en este momento. No se envió nada."
+    },
+    "aircon_switched_off": {
+      "message": "El aire acondicionado está apagado. Enciéndalo primero y después cambie el modo. No se ha enviado nada."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "El aire acondicionado funciona en modo solar, por lo que los modos automático y calor no están disponibles. No se ha enviado nada."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Este valor no está permitido para el aire acondicionado. No se ha enviado nada."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "El cambio se ha enviado, pero el aire acondicionado aún no lo ha confirmado. Puede que todavía se aplique. No lo he vuelto a enviar; el valor se actualiza con la siguiente lectura."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura de ausencia"
+      },
+      "aircon_timer_on": {
+        "name": "Temporizador de encendido"
+      },
+      "aircon_timer_off": {
+        "name": "Temporizador de apagado"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Programa A",
           "b": "Programa B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Dirección de aire puntual",
+        "state": {
+          "off": "Apagado",
+          "on": "Encendido",
+          "top_left": "Arriba a la izquierda",
+          "top_center": "Arriba en el centro",
+          "top_right": "Arriba a la derecha",
+          "bottom_left": "Abajo a la izquierda",
+          "bottom_center": "Abajo en el centro",
+          "bottom_right": "Abajo a la derecha"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Programa horario seleccionado",
+        "state": {
+          "program1": "Programa 1",
+          "program2": "Programa 2",
+          "program3": "Programa 3",
+          "program4": "Programa 4",
+          "program5": "Programa 5",
+          "program6": "Programa 6",
+          "program7": "Programa 7",
+          "program8": "Programa 8",
+          "program9": "Programa 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Función chimenea"
+      },
+      "aircon_full_power": {
+        "name": "Potencia máxima"
+      },
+      "aircon_sleep": {
+        "name": "Modo sueño"
+      },
+      "aircon_setback_8": {
+        "name": "Calefacción antiheladas (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Calefacción antiheladas (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Purificación del aire"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Programa horario activo"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Caudal del circuito de calefacción 1 por debajo del rango de medición (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Funcionamiento solar"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Adelantar el próximo punto de conmutación"
+      },
+      "aircon_end_temporary": {
+        "name": "Finalizar el cambio temporal"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Modo ausente",
               "standby": "En espera",
               "unreachable": "Error de zona o de comunicación"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Aire acondicionado",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automático",
+              "quiet": "Silencioso",
+              "low": "Bajo",
+              "medium": "Medio",
+              "high": "Alto",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Apagado",
+              "on": "Encendido",
+              "auto": "Automático",
+              "swing": "Oscilación",
+              "angle1": "Posición 1",
+              "angle2": "Posición 2",
+              "angle3": "Posición 3",
+              "angle4": "Posición 4",
+              "angle5": "Posición 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Apagado",
+              "on": "Encendido",
+              "auto": "Automático",
+              "swing": "Oscilación",
+              "left": "Izquierda",
+              "center": "Centro",
+              "right": "Derecha",
+              "wide": "Amplio",
+              "ultra_wide": "Muy amplio",
+              "fixed": "Fijo"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ninguno",
+              "eco": "Eco"
             }
           }
         }

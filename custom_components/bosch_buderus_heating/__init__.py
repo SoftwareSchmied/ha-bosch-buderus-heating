@@ -23,6 +23,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
 from . import rrc_platforms
+from .aircon import AirconCoordinator, is_aircon_gateway
 from .auth_diagnostics import async_load_auth_histories
 from .auth_lifecycle import (
     async_wait_for_entry_refresh,
@@ -87,7 +88,6 @@ from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession, is_startup_ent
 from .storage_migration import migrate_entry_storage
 from .switch_programs import is_switch_program_path
 from .wallbox import WallboxCoordinator, is_wallbox
-from .aircon import AirconCoordinator, is_aircon_gateway
 from .write_policies import context_of, rrc_kwargs
 
 if TYPE_CHECKING:

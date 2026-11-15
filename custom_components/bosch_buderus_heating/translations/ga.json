@@ -1540,6 +1540,18 @@
     },
     "switch_program_not_readable": {
       "message": "Ní féidir an sceideal roghnaithe a léamh faoi láthair. Níor seoladh aon rud."
+    },
+    "aircon_switched_off": {
+      "message": "Tá an t-aerchóiritheoir múchta. Las ar dtús é, ansin athraigh an mód. Níor seoladh aon rud."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Tá an t-aerchóiritheoir ag oibriú ar chumhacht gréine, mar sin níl na móid uathoibríoch agus téamh ar fáil. Níor seoladh aon rud."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Ní cheadaítear an luach seo don aerchóiritheoir. Níor seoladh aon rud."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Seoladh an t-athrú, ach níor dheimhnigh an t-aerchóiritheoir é go fóill. D'fhéadfadh sé teacht i bhfeidhm fós. Níor sheol mé arís é; nuashonraítear an luach leis an gcéad léamh eile."
     }
   },
   "selector": {
@@ -1742,6 +1754,12 @@
       },
       "rrc_away_temperature": {
         "name": "Teocht as baile"
+      },
+      "aircon_timer_on": {
+        "name": "Lasc ama chun lasadh"
+      },
+      "aircon_timer_off": {
+        "name": "Lasc ama chun múchadh"
       }
     },
     "select": {
@@ -1874,6 +1892,33 @@
           "a": "Clár A",
           "b": "Clár B"
         }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Treo aeir spotaithe",
+        "state": {
+          "off": "As",
+          "on": "Ar siúl",
+          "top_left": "Barr ar chlé",
+          "top_center": "Barr sa lár",
+          "top_right": "Barr ar dheis",
+          "bottom_left": "Bun ar chlé",
+          "bottom_center": "Bun sa lár",
+          "bottom_right": "Bun ar dheis"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Sceideal roghnaithe",
+        "state": {
+          "program1": "Clár 1",
+          "program2": "Clár 2",
+          "program3": "Clár 3",
+          "program4": "Clár 4",
+          "program5": "Clár 5",
+          "program6": "Clár 6",
+          "program7": "Clár 7",
+          "program8": "Clár 8",
+          "program9": "Clár 9"
+        }
       }
     },
     "switch": {
@@ -1939,6 +1984,24 @@
       },
       "rrc_fireplace": {
         "name": "Feidhm teallaigh"
+      },
+      "aircon_full_power": {
+        "name": "Lánchumhacht"
+      },
+      "aircon_sleep": {
+        "name": "Mód codlata"
+      },
+      "aircon_setback_8": {
+        "name": "Téamh cosanta ar shioc (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Téamh cosanta ar shioc (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Íonú aeir"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Sceideal gníomhach"
       }
     },
     "sensor": {
@@ -2941,6 +3004,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Sreabhadh an chiorcaid téimh 1 faoi bhun an raoin tomhais (PC1)"
+      },
+      "aircon_solar_operation": {
+        "name": "Oibriú gréine"
       }
     },
     "calendar": {
@@ -2991,6 +3057,9 @@
       },
       "rrc_override_advance": {
         "name": "Tabhair an chéad phointe lasctha eile chun tosaigh"
+      },
+      "aircon_end_temporary": {
+        "name": "Cuir deireadh leis an athrú sealadach"
       }
     },
     "water_heater": {
@@ -3097,6 +3166,54 @@
               "away": "Mód as baile",
               "standby": "Fuireachas",
               "unreachable": "Earráid chriosa nó cumarsáide"
+            }
+          }
+        }
+      },
+      "pointt_air_conditioner": {
+        "name": "Aerchóiritheoir",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Uathoibríoch",
+              "quiet": "Ciúin",
+              "low": "Íseal",
+              "medium": "Meánach",
+              "high": "Ard",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "As",
+              "on": "Ar siúl",
+              "auto": "Uathoibríoch",
+              "swing": "Luascadh",
+              "angle1": "Suíomh 1",
+              "angle2": "Suíomh 2",
+              "angle3": "Suíomh 3",
+              "angle4": "Suíomh 4",
+              "angle5": "Suíomh 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "As",
+              "on": "Ar siúl",
+              "auto": "Uathoibríoch",
+              "swing": "Luascadh",
+              "left": "Clé",
+              "center": "Lár",
+              "right": "Deas",
+              "wide": "Leathan",
+              "ultra_wide": "An-leathan",
+              "fixed": "Seasta"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ceann ar bith",
+              "eco": "Eco"
             }
           }
         }

@@ -15,6 +15,9 @@
         "state": {
           "off": "mdi:check-circle-outline"
         }
+      },
+      "aircon_solar_operation": {
+        "default": "mdi:solar-power"
       }
     },
     "button": {
@@ -29,6 +32,9 @@
       },
       "softener_start_regeneration": {
         "default": "mdi:water-sync"
+      },
+      "aircon_end_temporary": {
+        "default": "mdi:calendar-remove"
       }
     },
     "calendar": {
@@ -96,6 +102,12 @@
           "off": "mdi:fan-off",
           "red": "mdi:fan-speed-1"
         }
+      },
+      "aircon_quick_air_flow": {
+        "default": "mdi:weather-windy"
+      },
+      "aircon_active_schedule": {
+        "default": "mdi:calendar-week"
       }
     },
     "sensor": {
@@ -264,6 +276,34 @@
           "eco": "mdi:leaf",
           "off": "mdi:water-boiler-off"
         }
+      }
+    },
+    "switch": {
+      "aircon_full_power": {
+        "default": "mdi:fan-plus"
+      },
+      "aircon_sleep": {
+        "default": "mdi:sleep"
+      },
+      "aircon_setback_8": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "aircon_setback_10": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "aircon_air_purification": {
+        "default": "mdi:air-purifier"
+      },
+      "aircon_schedule_enabled": {
+        "default": "mdi:calendar-clock"
+      }
+    },
+    "number": {
+      "aircon_timer_on": {
+        "default": "mdi:timer-play-outline"
+      },
+      "aircon_timer_off": {
+        "default": "mdi:timer-stop-outline"
       }
     }
   }
