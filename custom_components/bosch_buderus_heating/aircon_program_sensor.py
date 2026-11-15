@@ -3,9 +3,10 @@
 One enum sensor per program the unit reports (``program1`` ... ``program9``):
 the operation mode the program sets now, its switch points and limits as
 attributes. It is the target of the action ``set_switch_points``; the same
-program can be changed in the options dialog. Disabled by default, like
-every additional entity of an air conditioner. Expected, untested on a real
-installation.
+program can be changed in the options dialog. Like the heating programs it
+is enabled when first created if the unit reports the program as writable,
+otherwise disabled; an existing entity keeps its setting. Expected, untested
+on a real installation.
 """
 
 from __future__ import annotations
@@ -47,7 +48,6 @@ class AirconProgramSensor(AirconEntity, SensorEntity):
 
     _attr_translation_key = "aircon_switch_program"
     _attr_device_class = SensorDeviceClass.ENUM
-    _attr_entity_registry_enabled_default = False
     # The program can be long; it stays out of the recorder.
     _unrecorded_attributes = frozenset({"switch_points"})
     entity_description: AirconProgramDescription
@@ -57,6 +57,12 @@ class AirconProgramSensor(AirconEntity, SensorEntity):
         self.entity_description = AirconProgramDescription(key=path, resource_path=path)
         self._attr_translation_placeholders = {"number": path[-1]}
         self._attr_options = list(STATES)
+        # A writable program is a target of the action, as on the heating
+        # circuits; only the first creation uses it.
+        resource = coordinator.resource(path)
+        self._attr_entity_registry_enabled_default = (
+            resource is not None and resource.metadata.writable
+        )
 
     def _assessment(self) -> SwitchProgramAssessment | None:
         resource = self.coordinator.resource(self.entity_description.resource_path)

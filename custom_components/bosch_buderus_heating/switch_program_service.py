@@ -37,6 +37,7 @@ from .switch_program_edit import (
     program_mode_path,
     same_points,
     week_issue,
+    wire_week,
 )
 from .switch_programs import SwitchPoint, assess_switch_program
 from .write_policies import ContractRejected
@@ -62,14 +63,17 @@ class SwitchProgramChanged(ContractRejected):
 def program_shows(
     path: str, points: Sequence[SwitchPoint]
 ) -> Callable[[Resource], bool]:
-    """Whether a reading of ``path`` holds exactly these points (any order)."""
-    desired = tuple(points)
+    """Whether a reading of ``path`` holds exactly these points (any order),
+    both as written (``wire_week``)."""
+    desired = wire_week(path, points)
 
     def shows(resource: Resource) -> bool:
         if resource.path != path:
             return False
         assessment = assess_switch_program(resource)
-        return assessment.supported and same_points(assessment.points, desired)
+        return assessment.supported and same_points(
+            wire_week(path, assessment.points), desired
+        )
 
     return shows
 
@@ -115,8 +119,11 @@ class SwitchProgramService:
             raise ContractRejected("program_not_editable")
         if (reason := week_issue(points, shown)) is not None:
             raise ContractRejected(f"program_{reason}")
-        desired = tuple(points)
         path = expected.path
+        # As written: the points the week gains or loses count as well.
+        desired = wire_week(path, points)
+        if (reason := week_issue(desired, shown)) is not None:
+            raise ContractRejected(f"program_{reason}")
         shows = program_shows(path, desired)
         mode_path = program_mode_path(path)
         reads_mode = mode_path is not None and (

@@ -12,11 +12,13 @@ view handle it like a level. The program is written as ``{"switchPoints":
 What a change may use comes from the unit only: the modes of the program
 configuration (``switchPrograms/configuration``, one entry per mode with its
 temperature range and fan speeds), the limits the program reports (points in
-all and per day, time raster) and the write permission of both. ``off`` ends
-the setting before the next point of the day, as in the app; before the
-first point of a day the unit is off. Nothing is taken from the app's
-fallback values: without a readable configuration and limits a program is
-shown, never changed.
+all and per day, time raster) and the program's own write permission (the
+configuration only describes, as in the app). ``off`` ends the setting
+before the next point of the day, as in the app; before the first point of
+a day the unit is off, and a day whose previous day ends with the unit on
+gets an explicit ``off`` at 00:00 when written, as the app writes it
+(``encode_week``). Nothing is taken from the app's fallback limits: without
+a readable configuration and limits a program is shown, never changed.
 
 Expected, untested on a real installation: the shapes follow the vendor app.
 """
@@ -41,8 +43,8 @@ FAN_SPEEDS: Final = ("auto", "quiet", "low", "mid", "high", "turbo")
 # A room unit: a temperature outside this range is never written, even when
 # the reported range is wider (broken metadata), as for the target.
 PLAUSIBLE_C: Final = (10.0, 40.0)
-# Without a reported step the temperature of a point is a whole degree, the
-# same rule as the unit's target temperature.
+# Without a reported step the temperature of a point is a whole degree,
+# counted from the minimum: the app's program editor moves in steps of 1.
 DEFAULT_STEP: Final = 1.0
 _POINT_FIELDS: Final = frozenset({"dayOfWeek", "time", "parameters"})
 _PARAMETER_FIELDS: Final = frozenset(
@@ -204,10 +206,12 @@ def _celsius(unit: object) -> bool:
     return isinstance(unit, str) and TEMPERATURE_UNITS.get(unit) == "°C"
 
 
-def _mode_rule(
-    item: object, unit_fallback: object, step_fallback: float | None
-) -> ModeRule | None:
-    """One configuration entry; ``None`` for an unknown or broken entry."""
+def _mode_rule(item: object, unit_fallback: object) -> ModeRule | None:
+    """One configuration entry; ``None`` for an unknown or broken entry.
+
+    A range without a unit is in degrees Celsius (the app knows no other
+    unit there); a range in another unit is not used.
+    """
     if not isinstance(item, Mapping):
         return None
     operation = item.get("operationMode")
@@ -225,7 +229,12 @@ def _mode_rule(
         low, high = _number(setpoint.get("minValue")), _number(setpoint.get("maxValue"))
         unit = setpoint.get("unitOfMeasure", unit_fallback)
         reported_step = _number(setpoint.get("stepSize"))
-        if low is None or high is None or low >= high or not _celsius(unit):
+        if (
+            low is None
+            or high is None
+            or low >= high
+            or (unit is not None and not _celsius(unit))
+        ):
             # A range that cannot be used: the mode is not offered.
             return None
         minimum, maximum = max(low, PLAUSIBLE_C[0]), min(high, PLAUSIBLE_C[1])
@@ -234,7 +243,7 @@ def _mode_rule(
         step = (
             reported_step
             if reported_step is not None and reported_step > 0
-            else step_fallback or DEFAULT_STEP
+            else DEFAULT_STEP
         )
     fan = item.get("fanSpeed")
     fan_values = fan.get("allowedValues") if isinstance(fan, Mapping) else None
@@ -290,8 +299,6 @@ def rules(program: Resource, readings: Mapping[str, Resource]) -> AirconRules | 
     configuration = readings.get(CONFIGURATION)
     if configuration is None:
         return "program_configuration_missing"
-    if not configuration.metadata.writable:
-        return "configuration_not_writable"
     entries: JsonValue = configuration.program_fields.get("allowedValues")
     if not isinstance(entries, list):
         return "program_configuration_missing"
@@ -300,16 +307,9 @@ def rules(program: Resource, readings: Mapping[str, Resource]) -> AirconRules | 
         return "program_limits_missing"
     target = readings.get(TEMPERATURE_SETPOINT)
     unit_fallback = target.metadata.unit if target is not None else None
-    step_fallback = (
-        target.metadata.step_size
-        if target is not None
-        and target.metadata.step_size is not None
-        and target.metadata.step_size > 0
-        else None
-    )
     modes: dict[str, ModeRule] = {}
     for item in entries:
-        rule = _mode_rule(item, unit_fallback, step_fallback)
+        rule = _mode_rule(item, unit_fallback)
         if rule is not None and rule.mode not in modes:
             modes[rule.mode] = rule
     if not modes:
