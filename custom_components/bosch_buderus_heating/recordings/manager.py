@@ -27,6 +27,7 @@ on in the options.
 
 from __future__ import annotations
 
+import inspect
 import logging
 from collections import deque
 from collections.abc import Callable
@@ -58,6 +59,7 @@ from .measures import (
     statistic_name,
 )
 from .parse import (
+    HOUR,
     MAX_KWH_PER_HOUR,
     Rate,
     add_months,
@@ -438,14 +440,31 @@ class RecordingsManager:
             for ledger in self.ledgers.values():
                 ledger.settle(now, zone)
                 ledger.prune(now)
+        except Exception as err:
+            log_failure(
+                _LOGGER, logging.WARNING, "Reading the recordings failed", error=err
+            )
+            report["failed"] = True
+        try:
+            # The import and the entities' values do not depend on each
+            # other: a failed import leaves the values, and the reverse.
             if import_enabled(self.entry):
                 await self._import(now, zone, report)
+        except Exception as err:
+            log_failure(
+                _LOGGER, logging.WARNING, "Importing the recordings failed", error=err
+            )
+            report["import_failed"] = True
+        try:
             await self._count(now, zone)
             self._publish_all(now, zone)
             self._detected = True
         except Exception as err:
             log_failure(
-                _LOGGER, logging.WARNING, "Reading the recordings failed", error=err
+                _LOGGER,
+                logging.WARNING,
+                "Working out the recordings' values failed",
+                error=err,
             )
             report["failed"] = True
         finally:
@@ -690,58 +709,105 @@ class RecordingsManager:
         )
 
         instance = get_instance(self.hass)
+        can_clear = clears_ranges(instance)
         language = self.hass.config.language
         written = 0
+        failed = 0
         for key in self.available():
             ledger = self.ledgers[key]
             series = ledger.series
             wanted = statistic_id(self.digest, series)
-            if not ledger.importing:
-                start = ledger.import_start(zone)
-                if start is None:
-                    continue
-                base = 0.0
-                if not series.mean:
-                    base = await instance.async_add_executor_job(
-                        _sum_before, self.hass, wanted, start
+            try:
+                earlier: tuple[float, list[int], bool] | None = None
+                if not ledger.importing:
+                    start = ledger.import_start(zone)
+                    if start is None:
+                        continue
+                    earlier = await instance.async_add_executor_job(
+                        _earlier_import, self.hass, wanted, start
                     )
-                ledger.start_import(base, zone)
-            plan = ledger.plan(now, zone)
-            if plan.clear is not None:
+                # No await from here on: switched off or deleted meanwhile,
+                # nothing is written (and nothing marked as written).
+                if not import_enabled(self.entry):
+                    break
+                if earlier is not None:
+                    self._begin_import(ledger, wanted, earlier, zone, can_clear)
+                plan = ledger.plan(now, zone, can_clear=can_clear, commit=False)
+                if plan.clear is not None and can_clear:
+                    instance.async_clear_statistics(
+                        [wanted],
+                        start_time=datetime.fromtimestamp(plan.clear[0], UTC),
+                        end_time=datetime.fromtimestamp(plan.clear[1], UTC),
+                    )
+                if plan.rows:
+                    metadata = StatisticMetaData(
+                        mean_type=StatisticMeanType.ARITHMETIC
+                        if series.mean
+                        else StatisticMeanType.NONE,
+                        has_sum=not series.mean,
+                        name=statistic_name(language, series),
+                        source=DOMAIN,
+                        statistic_id=wanted,
+                        unit_class=_UNIT_CLASS[series.quantity],
+                        unit_of_measurement=series.unit,
+                    )
+                    rows = [
+                        StatisticData(
+                            start=datetime.fromtimestamp(start, UTC),
+                            mean=y / c,
+                            min=y / c,
+                            max=y / c,
+                        )
+                        if series.mean
+                        else StatisticData(
+                            start=datetime.fromtimestamp(start, UTC),
+                            sum=total,
+                            state=total,
+                        )
+                        for start, y, c, total in plan.rows
+                    ]
+                    async_add_external_statistics(self.hass, metadata, rows)
+                    written += len(rows)
+                ledger.commit(plan)
+            except Exception as err:  # this series only; tried again next run
+                failed += 1
+                log_failure(
+                    _LOGGER, logging.WARNING, "Importing a recording failed", error=err
+                )
+        report["imported_rows"] = written
+        if failed:
+            report["import_failed_series"] = failed
+
+    def _begin_import(
+        self,
+        ledger: Ledger,
+        wanted: str,
+        earlier: tuple[float, list[int], bool],
+        zone: tzinfo,
+        can_clear: bool,
+    ) -> None:
+        """Start a series' import on top of what an earlier import left (a
+        new entry, a lost state): its rows from the first recorded day on
+        are cleared or, where the recorder cannot clear a range, written
+        again or made neutral; the sum before them continues."""
+        from homeassistant.components.recorder import get_instance
+
+        base, existing, before = earlier
+        stale: list[int] = []
+        if existing:
+            instance = get_instance(self.hass)
+            if can_clear:
                 instance.async_clear_statistics(
                     [wanted],
-                    start_time=datetime.fromtimestamp(plan.clear[0], UTC),
-                    end_time=datetime.fromtimestamp(plan.clear[1], UTC),
+                    start_time=datetime.fromtimestamp(existing[0], UTC),
+                    end_time=datetime.fromtimestamp(existing[-1] + HOUR, UTC),
                 )
-            if not plan.rows:
-                continue
-            metadata = StatisticMetaData(
-                mean_type=StatisticMeanType.ARITHMETIC
-                if series.mean
-                else StatisticMeanType.NONE,
-                has_sum=not series.mean,
-                name=statistic_name(language, series),
-                source=DOMAIN,
-                statistic_id=wanted,
-                unit_class=_UNIT_CLASS[series.quantity],
-                unit_of_measurement=series.unit,
-            )
-            rows = [
-                StatisticData(
-                    start=datetime.fromtimestamp(start, UTC),
-                    mean=y / c,
-                    min=y / c,
-                    max=y / c,
-                )
-                if series.mean
-                else StatisticData(
-                    start=datetime.fromtimestamp(start, UTC), sum=total, state=total
-                )
-                for start, y, c, total in plan.rows
-            ]
-            async_add_external_statistics(self.hass, metadata, rows)
-            written += len(rows)
-        report["imported_rows"] = written
+            elif not before:
+                # Every row is written again from the first day: clear all.
+                instance.async_clear_statistics([wanted])
+            else:
+                stale = existing
+        ledger.start_import(0.0 if ledger.series.mean else base, zone, stale)
 
     async def async_delete_statistics(self) -> int:
         """Remove every imported statistic of this gateway; the import is
@@ -753,19 +819,17 @@ class RecordingsManager:
 
         if not self.recorder_ready():
             return 0
-        prefix = f"{DOMAIN}:rec_{self.digest[:12]}_"
-        known = {statistic_id(self.digest, series) for series in SERIES}
+        if not self.digest:
+            # Asked for before the start finished.
+            self.digest = await async_gateway_digest(self.hass, self.gateway_id)
+        known = sorted(statistic_id(self.digest, series) for series in SERIES)
         listed = await async_list_statistic_ids(self.hass)
-        found = sorted(
-            item["statistic_id"]
-            for item in listed
-            if str(item.get("statistic_id", "")).startswith(prefix)
-            and item["statistic_id"] in known
-        )
-        if found:
-            get_instance(self.hass).async_clear_statistics(found)
+        found = {item.get("statistic_id") for item in listed} & set(known)
         for ledger in self.ledgers.values():
             ledger.stop_import()
+        # All of them: a row a running import has just handed over may not
+        # be listed yet; the recorder clears after it.
+        get_instance(self.hass).async_clear_statistics(known)
         self._save()
         return len(found)
 
@@ -1038,9 +1102,22 @@ def _paths(value: object) -> dict[str, list[Any]]:
     }
 
 
-def _sum_before(hass: HomeAssistant, wanted: str, start: datetime) -> float:
-    """The sum of an earlier import just before ``start`` (a new entry or a
-    lost state continues it; rows from ``start`` on are written again)."""
+def clears_ranges(instance: Any) -> bool:
+    """Whether the recorder clears a time range of a statistic (Home
+    Assistant 2026.11 on); before, it clears whole statistics only."""
+    try:
+        parameters = inspect.signature(instance.async_clear_statistics).parameters
+    except TypeError, ValueError:
+        return False
+    return "start_time" in parameters and "end_time" in parameters
+
+
+def _earlier_import(
+    hass: HomeAssistant, wanted: str, start: datetime
+) -> tuple[float, list[int], bool]:
+    """What an earlier import left: the sum just before ``start`` (a new
+    entry or a lost state continues it), the starts of its rows from
+    ``start`` on (written again) and whether it has rows before."""
     from homeassistant.components.recorder.statistics import (
         get_last_statistics,
         statistics_during_period,
@@ -1048,26 +1125,31 @@ def _sum_before(hass: HomeAssistant, wanted: str, start: datetime) -> float:
 
     last = get_last_statistics(hass, 1, wanted, False, {"sum"}).get(wanted)
     if not last:
-        return 0.0
+        return 0.0, [], False
     row = last[0]
+    existing: list[int] = []
     if row["start"] >= start.timestamp():
-        # Rows of the earlier import overlap: the last row before ``start``
-        # (the plant keeps about a year and a half).
+        # Rows of the earlier import overlap (the plant keeps about a year
+        # and a half).
         found = statistics_during_period(
             hass,
             start - timedelta(days=800),
-            start,
+            None,
             {wanted},
             "hour",
             None,
             {"sum"},
         ).get(wanted)
-        before = [item for item in found or () if item["start"] < start.timestamp()]
+        rows = list(found or ())
+        before = [item for item in rows if item["start"] < start.timestamp()]
+        existing = sorted(
+            int(item["start"]) for item in rows if item["start"] >= start.timestamp()
+        )
         if not before:
-            return 0.0
+            return 0.0, existing, False
         row = before[-1]
     total = row.get("sum")
-    return float(total) if isinstance(total, int | float) else 0.0
+    return (float(total) if isinstance(total, int | float) else 0.0), existing, True
 
 
 async def async_remove_recordings_store(

@@ -94,7 +94,12 @@ of the month.
 - An hour is imported once it ended at least 15 minutes ago and two reads
   gave the same value; the hour still running is never imported. Every run
   reads the last 48 hours again; a changed hour is imported again from
-  there on, so the sums stay consistent.
+  there on, so the sums stay consistent. Before Home Assistant 2026.11 the
+  recorder cannot clear a range of rows: the rows are written over, and an
+  hour that is now a gap gets a row without energy.
+- A write that fails is tried again in the next run; nothing counts as
+  imported before it was handed to the recorder. A failing recording does
+  not stop the others or the entities' values.
 - Hours without data (`c = 0`, for example while the plant was off) stay
   gaps, never zeros. Nothing is interpolated.
 - Values with a start more than an hour ahead, before the first recorded
@@ -107,7 +112,9 @@ of the month.
   goes on from the last imported hour.
 - The statistic IDs are derived from the gateway with a key of this Home
   Assistant: a new entry for the same gateway continues the same statistics
-  and writes the available history again on top of the sum before it.
+  and writes the available history again on top of the sum before it; the
+  earlier rows from there on are replaced (a day the plant now only has as
+  a day leaves no hourly rows behind).
 - **Delete imported statistics** (with a confirmation) removes the imported
   statistics of the entry and switches the import off. Removing the entry
   keeps the imported statistics, as Home Assistant does for every

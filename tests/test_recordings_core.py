@@ -339,6 +339,54 @@ def test_a_changed_final_hour_is_imported_again_from_there() -> None:
     assert ledger.stats["late_corrections"] == 1
 
 
+@pytest.mark.parametrize("can_clear", [True, False])
+def test_an_hour_turned_into_a_gap_is_neutral_where_nothing_is_cleared(
+    can_clear,
+) -> None:
+    """Rule 6 on a recorder that clears whole statistics only (before
+    2026.11): an imported hour that is now a gap is not written again, so
+    it gets a neutral row with the sum before it; with a range to clear
+    it is simply gone. A plan is taken over only on ``commit``."""
+    ledger = Ledger(HEAT)
+    base = [(1.0, 1)] * 34
+    at = local(2026, 11, 14, 10) + timedelta(minutes=20)
+    for step in range(2):
+        read(
+            ledger,
+            at + timedelta(hours=step),
+            hours(local(2026, 11, 13), base + [(0.0, 1)] * (step + 1)),
+        )
+    assert ledger.start_import(100.0, Z)
+    assert len(ledger.plan((at + timedelta(hours=1)).astimezone(UTC), Z).rows) == 34
+    changed = list(base)
+    changed[29] = (0.0, 0)  # 14 Nov 05:00 is now a gap
+    for step in (2, 3):
+        read(
+            ledger,
+            at + timedelta(hours=step),
+            hours(local(2026, 11, 13), changed + [(0.0, 1)] * (step + 1)),
+        )
+    now = (at + timedelta(hours=3)).astimezone(UTC)
+    before = json.dumps(ledger.to_dict())
+    plan = ledger.plan(now, Z, can_clear=can_clear, commit=False)
+    assert json.dumps(ledger.to_dict()) == before  # nothing taken over yet
+    gap = utc(local(2026, 11, 14, 5))
+    rows = {row[0]: row for row in plan.rows}
+    assert plan.clear is not None and plan.clear[0] == gap
+    if can_clear:
+        assert gap not in rows
+    else:
+        assert rows[gap] == (gap, 0.0, 0.0, pytest.approx(100.0 + 29))
+    assert rows[gap + 3600][3] == pytest.approx(100.0 + 30)
+    ledger.commit(plan)
+    assert ledger.stats["imported_neutral"] == (0 if can_clear else 1)
+    assert ledger.stats["imported_again"] == 1
+    assert ledger.plan(now, Z, can_clear=can_clear).rows == []
+    assert not ledger.imp["stale"]
+    # Stored and read back, the position is the same.
+    assert Ledger(HEAT, json.loads(json.dumps(ledger.to_dict()))).imp == ledger.imp
+
+
 # --------------------------------------------------------- 7: gaps, c = 0
 def test_c_zero_is_a_gap_and_future_placeholders_are_skipped() -> None:
     """Rule 7: no data is never 0; a placeholder ahead is not kept."""
