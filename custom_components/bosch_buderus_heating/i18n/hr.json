@@ -23,6 +23,17 @@
       "time": "Vrijeme",
       "deleteFailed": "Potvrda brisanja nije se mogla otvoriti. Ponovno učitajte stranicu i pokušajte ponovno.",
       "reopen": "Zatvorite i ponovno otvorite dijalog."
+    },
+    "schedule": {
+      "title": "Tjedni prikaz",
+      "clock": "Vremena prema satu sustava grijanja.",
+      "carried": "nastavlja se od prethodnog dana",
+      "empty": "nema točaka uklapanja",
+      "noLevel": "nema zadane vrijednosti",
+      "changed": "promijenjeno, još nespremljeno",
+      "hours": "Sati",
+      "day": "Dan",
+      "segment": "{day} {start} do {end}: {level}"
     }
   },
   "texts": {

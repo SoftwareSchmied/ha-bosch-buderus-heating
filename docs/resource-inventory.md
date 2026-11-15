@@ -20,11 +20,11 @@ The family fixtures contain separately chosen semantic examples.
 | directory | 28 |
 | excluded | 34 |
 | history | 11 |
-| missing_contract | 45 |
+| missing_contract | 39 |
 | separate_package | 2 |
-| supported_control | 4 |
-| supported_read | 233 |
-| supported_transaction | 4 |
+| supported_control | 6 |
+| supported_read | 230 |
+| supported_transaction | 11 |
 
 The [P03 report](resource-contracts.md) describes duration corrections,
 collection handling, discovery scenarios and the remaining evidence needs.
@@ -123,7 +123,7 @@ No real device capture is claimed for these new examples.
 | R088 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/controlType` | supported_read | device confirmation as applicable |
 | R089 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/operationMode` | supported_read | device confirmation as applicable |
 | R090 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/roomTempSetpoint` | supported_read | device confirmation as applicable |
-| R091 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/switchPrograms/A` | missing_contract | P07 |
+| R091 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/switchPrograms/A` | supported_transaction | writing expected, untested |
 | R092 | connectkey | `/heatingCircuits/hc{circuitNumber}/cooling/temperatureLevels/on` | supported_read | device confirmation as applicable |
 | R093 | connectkey | `/heatingCircuits/hc{circuitNumber}/currentRoomSetpoint` | supported_read | device confirmation as applicable |
 | R094 | connectkey | `/heatingCircuits/hc{circuitNumber}/currentSuWiMode` | supported_read | device confirmation as applicable |
@@ -137,10 +137,10 @@ No real device capture is claimed for these new examples.
 | R102 | connectkey | `/heatingCircuits/hc{circuitNumber}/suWiCoolingThreshold` | supported_read | device confirmation as applicable |
 | R103 | connectkey | `/heatingCircuits/hc{circuitNumber}/suWiSwitchMode` | supported_read | device confirmation as applicable |
 | R104 | connectkey | `/heatingCircuits/hc{circuitNumber}/suWiThreshold` | supported_read | device confirmation as applicable |
-| R105 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/A` | supported_read | read only; other models and editing |
-| R106 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/B` | missing_contract | P07 |
-| R107 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameA` | supported_read | device confirmation as applicable |
-| R108 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameB` | supported_read | device confirmation as applicable |
+| R105 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/A` | supported_transaction | writing expected, untested |
+| R106 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/B` | supported_transaction | writing expected, untested |
+| R107 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameA` | supported_control | writing expected, untested |
+| R108 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameB` | supported_control | writing expected, untested |
 | R109 | connectkey | `/heatingCircuits/hc{circuitNumber}/switchProgramMode` | supported_read | device confirmation as applicable |
 | R110 | connectkey | `/heatingCircuits/hc{circuitNumber}/temperatureLevels/comfort2` | supported_read | device confirmation as applicable |
 | R111 | connectkey | `/heatingCircuits/hc{circuitNumber}/temperatureLevels/eco` | supported_read | device confirmation as applicable |
@@ -212,7 +212,7 @@ No real device capture is claimed for these new examples.
 | R177 | connectkey | `/ventilation/zone1/maxRelativeHumidity` | supported_read | device confirmation as applicable |
 | R178 | connectkey | `/ventilation/zone1/operationMode` | supported_read | device confirmation as applicable |
 | R179 | connectkey | `/ventilation/zone1/sensors/supplyTemp` | supported_read | device confirmation as applicable |
-| R180 | connectkey | `/ventilation/zone1/switchPrograms/cp` | missing_contract | P07 |
+| R180 | connectkey | `/ventilation/zone1/switchPrograms/cp` | supported_transaction | writing expected, untested |
 | R181 | connectkey | `/ventilation/zone1/ventilationLevels` | missing_contract | P03 |
 | R182 | connectkey | `/zones/zone{zoneNumber}/averageActualHumidity` | supported_read | P05 |
 | R183 | connectkey | `/zones/zone{zoneNumber}/averageCurrentTemperature` | supported_read | P05 |
@@ -225,8 +225,8 @@ No real device capture is claimed for these new examples.
 | R190 | connectkey | `/zones/zone{zoneNumber}/heating/manualRoomSetpoint` | supported_control | device confirmation as applicable |
 | R191 | connectkey | `/zones/zone{zoneNumber}/heating/operationMode` | supported_control | device confirmation as applicable |
 | R192 | connectkey | `/zones/zone{zoneNumber}/heating/temporaryRoomSetpoint` | supported_read | P05 |
-| R193 | connectkey | `/zones/zone{zoneNumber}/switchPrograms/cooling` | missing_contract | P07 |
-| R194 | connectkey | `/zones/zone{zoneNumber}/switchPrograms/heating` | missing_contract | P07 |
+| R193 | connectkey | `/zones/zone{zoneNumber}/switchPrograms/cooling` | supported_transaction | writing expected, untested |
+| R194 | connectkey | `/zones/zone{zoneNumber}/switchPrograms/heating` | supported_transaction | writing expected, untested |
 | R195 | connectkey | `/zones/list` | directory | device confirmation as applicable |
 | R196 | connectkey | `/dhwCircuits` | directory | device confirmation as applicable |
 | R197 | connectkey | `/heatingCircuits` | directory | device confirmation as applicable |
@@ -382,7 +382,7 @@ No real device capture is claimed for these new examples.
 | R347 | wddw2 | `/dhwCircuits/dhw1/recirculation/enabled` | supported_read | device confirmation as applicable |
 | R348 | wddw2 | `/dhwCircuits/dhw1/safetyTemperature` | supported_read | device confirmation as applicable |
 | R349 | wddw2 | `/gateway/serialId` | excluded | device confirmation as applicable |
-| R350 | wddw2 | `/dhwCircuits/dhw1/switchPrograms/program1` | missing_contract | P07 |
+| R350 | wddw2 | `/dhwCircuits/dhw1/switchPrograms/program1` | supported_transaction | writing expected, untested |
 | R351 | wddw2 | `/system/systemOfUnits` | supported_read | device confirmation as applicable |
 | R352 | wddw2 | `/dhwCircuits/dhw1/tdMode` | supported_read | device confirmation as applicable |
 | R353 | wddw2 | `/gateway/tzInfo/timeZone` | supported_read | device confirmation as applicable |

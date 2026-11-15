@@ -366,19 +366,24 @@
         "title": "Afficher le programme de chauffage",
         "description": "**{program}**\n\n**Lundi :** {mo}\n\n**Mardi :** {tu}\n\n**Mercredi :** {we}\n\n**Jeudi :** {th}\n\n**Vendredi :** {fr}\n\n**Samedi :** {sa}\n\n**Dimanche :** {su}\n\nChoisissez un jour de la semaine. Les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. ∅ signifie qu'aucun point de commutation n'est enregistré pour ce jour. Les modifications concernent toutes les zones qui utilisent ce programme.",
         "data": {
-          "day": "Jour de la semaine"
+          "day": "Jour de la semaine",
+          "week_view": "Vue hebdomadaire"
         }
       },
       "rrc_readonly": {
         "title": "Afficher le programme de chauffage",
-        "description": "**{program}**\n\n**Lundi :** {mo}\n\n**Mardi :** {tu}\n\n**Mercredi :** {we}\n\n**Jeudi :** {th}\n\n**Vendredi :** {fr}\n\n**Samedi :** {sa}\n\n**Dimanche :** {su}\n\nCe programme ne peut être que consulté ici. Il n'a aucun point de commutation modifiable ou contient des réglages non pris en charge. ∅ signifie qu'aucun point de commutation n'est enregistré. Vous pouvez effectuer des modifications dans l'application du fabricant."
+        "description": "**{program}**\n\n**Lundi :** {mo}\n\n**Mardi :** {tu}\n\n**Mercredi :** {we}\n\n**Jeudi :** {th}\n\n**Vendredi :** {fr}\n\n**Samedi :** {sa}\n\n**Dimanche :** {su}\n\nCe programme ne peut être que consulté ici. Il n'a aucun point de commutation modifiable ou contient des réglages non pris en charge. ∅ signifie qu'aucun point de commutation n'est enregistré. Vous pouvez effectuer des modifications dans l'application du fabricant.",
+        "data": {
+          "week_view": "Vue hebdomadaire"
+        }
       },
       "rrc_point": {
         "title": "Modifier le point de commutation",
         "description": "**{program}**\n\nChoisissez une heure par pas de cinq minutes et une température de 5 à 30 °C par pas de 0,5 °C. L'heure se répète chaque semaine à l'heure locale de l'installation de chauffage. Les modifications concernent toutes les zones associées.",
         "data": {
           "time": "Heure",
-          "temperature": "Température"
+          "temperature": "Température",
+          "delete": "Supprimer ce point de commutation"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Choisir le point de commutation",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nChoisissez un point de commutation pour le modifier ou le supprimer, ou ajoutez-en un. Un jour comporte au plus {per_day} points de commutation (limite de l'application du fabricant, non signalée par le régulateur) ; le dernier point de commutation d'un jour est conservé.",
         "data": {
           "point": "Point de commutation"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.",
         "data": {
           "action": "Étape suivante",
-          "day": "Jour de la semaine"
+          "day": "Jour de la semaine",
+          "week_view": "Vue hebdomadaire"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nCe programme n'est pas le programme actif du circuit de chauffage. Les modifications prennent effet une fois qu'il est sélectionné.",
         "data": {
           "action": "Étape suivante",
-          "day": "Jour de la semaine"
+          "day": "Jour de la semaine",
+          "week_view": "Vue hebdomadaire"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nLe programme de l'eau chaude ne s'applique que lorsque le mode de fonctionnement de l'eau chaude est sur Auto.",
         "data": {
           "action": "Étape suivante",
-          "day": "Jour de la semaine"
+          "day": "Jour de la semaine",
+          "week_view": "Vue hebdomadaire"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Résultat",
         "description": "Rien n'a été supprimé."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Modifier le programme de l'eau chaude",
+        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nLes niveaux sont ceux du programme du régulateur d'ambiance. Le programme s'applique tant que l'eau chaude suit son propre programme. Six points de commutation au plus par jour est la limite de l'application du fabricant, et non une limite signalée par le régulateur.",
+        "data": {
+          "action": "Étape suivante",
+          "day": "Jour de la semaine",
+          "week_view": "Vue hebdomadaire"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Modifier le point de commutation",
+        "description": "**{program}** – **{day}**\n\nChoisissez une heure par pas de {raster} minutes et une température de {minimum} à {maximum} °C par pas de {step} °C. Elle s'applique de cette heure jusqu'au point de commutation suivant.",
+        "data": {
+          "time": "Heure",
+          "value": "Température",
+          "off": "Arrêt au lieu d'une température",
+          "delete": "Supprimer ce point de commutation"
+        }
+      },
+      "rrc_add": {
+        "title": "Ajouter un point de commutation",
+        "description": "**{program}**\n\n{points}\n\nChoisissez une heure par pas de cinq minutes et une température de 5 à 30 °C par pas de 0,5 °C. L'heure se répète chaque semaine à l'heure locale de l'installation de chauffage. Les modifications concernent toutes les zones affectées.",
+        "data": {
+          "time": "Heure",
+          "temperature": "Température"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
       "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié.",
       "local_token_end_unconfirmed": "Révoquer ce jeton peut mettre fin à un accès local. Cochez aussi la deuxième case, ou laissez la première décochée pour revenir. Rien n'a été envoyé.",
-      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé."
+      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé.",
+      "switch_program_value": "Saisissez une température de {minimum} à {maximum} °C par pas de {step} °C.",
+      "switch_program_day_emptied": "Un jour qui a des points de commutation en garde au moins un ; on ne sait pas ce qu'un jour vide signifie pour le régulateur.",
+      "rrc_point_limit": "Ce jour a déjà le nombre maximal de points de commutation que l'application autorise ({per_day}).",
+      "rrc_point_last": "Le dernier point de commutation d'un jour ne peut pas être supprimé ; on ne sait pas ce qu'un jour vide signifie pour le régulateur.",
+      "rrc_point_duplicate": "Ce jour a déjà un point de commutation à cette heure."
     },
     "abort": {
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Le programme horaire sélectionné ne peut pas être lu pour le moment. Rien n'a été envoyé."
+    },
+    "switch_points_no_target": {
+      "message": "Aucun capteur de programme horaire activé de cette intégration n'a été choisi. Activez le capteur de programme horaire et choisissez-le comme cible."
+    },
+    "not_a_program_entity": {
+      "message": "Seuls les capteurs de programme horaire de cette intégration peuvent être choisis."
+    },
+    "switch_points_empty_week": {
+      "message": "La semaine doit comporter au moins un point de commutation."
+    },
+    "switch_points_invalid_time": {
+      "message": "Chaque heure doit être par pas de {raster} minutes, sans secondes."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Un jour a deux points de commutation à la même heure."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Un jour a plus de points de commutation que l'installation de chauffage n'en autorise ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "La semaine a plus de points de commutation que l'installation de chauffage n'en autorise ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Seuls ces niveaux peuvent être utilisés : {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Seules les températures de {minimum} à {maximum} par pas de {step} peuvent être utilisées."
+    },
+    "switch_points_not_writable": {
+      "message": "L'installation de chauffage ne signale pas ce programme horaire comme modifiable."
+    },
+    "switch_points_unused": {
+      "message": "L'installation de chauffage n'utilise pas ce programme horaire pour le moment. Rien n'a été envoyé."
+    },
+    "switch_points_not_level_program": {
+      "message": "Le type de ce programme horaire n'a pas pu être lu ou ne correspond pas à ses points de commutation. Rien n'a été envoyé."
+    },
+    "switch_points_not_editable": {
+      "message": "Ce programme horaire peut seulement être affiché, pas modifié : l'installation de chauffage ne signale pas toutes les limites nécessaires à une modification."
+    },
+    "switch_points_program_changed": {
+      "message": "Le programme horaire a changé entre-temps ou ne correspond plus aux points de commutation attendus. Rien n'a été envoyé."
+    },
+    "switch_points_paused": {
+      "message": "L'écriture vers l'installation de chauffage est suspendue pendant quelques minutes après des lectures échouées répétées. Rien n'a été envoyé."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Le programme horaire a été envoyé, mais n'a pas pu être confirmé par une relecture. Il a pu être appliqué malgré tout ; il n'est pas renvoyé."
+    },
+    "switch_points_rejected": {
+      "message": "L'installation de chauffage a refusé le programme horaire (HTTP {status}). Rien n'a été modifié."
+    },
+    "switch_points_invalid": {
+      "message": "Les points de commutation ne respectent pas les limites du programme horaire."
+    },
+    "program_name_empty": {
+      "message": "Saisissez un nom ; un nom vide n'est pas envoyé."
+    },
+    "program_name_too_long": {
+      "message": "Le nom peut comporter {max} caractères au plus."
+    },
+    "program_name_charset": {
+      "message": "Le nom contient des caractères que l'installation de chauffage ne peut pas enregistrer ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "L'installation de chauffage ne signale pas ce nom comme modifiable."
+    },
+    "program_name_changed": {
+      "message": "Le nom a changé entre-temps. Rien n'a été envoyé."
+    },
+    "program_name_not_confirmed": {
+      "message": "Le nom a été envoyé, mais n'a pas pu être confirmé par une relecture. Il a pu être appliqué malgré tout ; il n'est pas renvoyé."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Retour"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Remplacer toute la semaine",
+        "replace_days": "Remplacer uniquement les jours indiqués"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Jour"
+        },
+        "time": {
+          "name": "Heure"
+        },
+        "level": {
+          "name": "Niveau ou température"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Arrêt",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Élevé",
+        "off": "Arrêt",
+        "low": "Bas",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Ajouter un point de commutation"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "ID du tarif"
+      },
+      "cooling_switch_program": {
+        "name": "Programme horaire du refroidissement",
+        "state": {
+          "on": "Refroidissement",
+          "off": "Arrêt"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Programme horaire de la ventilation",
+        "state": {
+          "min": "Minimal",
+          "red": "Réduit",
+          "nom": "Nominal",
+          "max": "Maximal",
+          "dem": "À la demande",
+          "off": "Arrêt"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Programme horaire (températures)"
+      },
+      "wddw2_switch_program": {
+        "name": "Programme horaire de l'eau chaude (températures)"
+      },
+      "name_part_program_cooling": {
+        "name": "Programme horaire du refroidissement"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Programme horaire du chauffage"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Programme horaire du refroidissement"
+      },
+      "name_part_program_ventilation": {
+        "name": "Programme horaire de la ventilation"
+      },
+      "name_part_program_hot_water": {
+        "name": "Programme horaire de l'eau chaude"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Inconnu"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Nom du programme horaire"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Définir les points de commutation d'un programme horaire",
+      "description": "Définit les points de commutation d'un ou plusieurs programmes horaires hebdomadaires de l'installation de chauffage, relus à neuf et vérifiés selon les limites signalées par l'installation. Chaque programme est envoyé une fois puis relu ; rien n'est répété automatiquement.",
+      "fields": {
+        "mode": {
+          "name": "Mode",
+          "description": "Remplacer toute la semaine, ou seulement les jours qui figurent dans les points de commutation (les autres jours restent tels que lus)."
+        },
+        "switch_points": {
+          "name": "Points de commutation",
+          "description": "Jour (mo à su), heure (HH:MM, selon l'horloge de l'installation de chauffage) et niveau de chaque point de commutation. Pour un programme en températures, le niveau est un nombre comme 21.5."
+        },
+        "expected": {
+          "name": "Points de commutation attendus",
+          "description": "Facultatif : les points de commutation que le programme doit contenir à l'instant. S'il en contient d'autres (par exemple modifiés dans l'application), rien n'est envoyé."
+        },
+        "validate_only": {
+          "name": "Vérifier seulement",
+          "description": "Vérifie les points de commutation et répond, sans rien envoyer."
         }
       }
     }

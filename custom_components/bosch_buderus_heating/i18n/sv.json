@@ -23,6 +23,17 @@
       "time": "Tid",
       "deleteFailed": "Bekräftelsen av borttagningen kunde inte öppnas. Läs in sidan igen och försök på nytt.",
       "reopen": "Stäng och öppna dialogrutan igen."
+    },
+    "schedule": {
+      "title": "Veckovy",
+      "clock": "Tider enligt värmesystemets klocka.",
+      "carried": "fortsätter från föregående dag",
+      "empty": "inga växlingspunkter",
+      "noLevel": "inget börvärde",
+      "changed": "ändrat, ännu inte sparat",
+      "hours": "Timmar",
+      "day": "Dag",
+      "segment": "{day} {start} till {end}: {level}"
     }
   },
   "texts": {

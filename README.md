@@ -38,7 +38,7 @@ access; when it is back, the same entities carry on with their history.
 - Cumulative energy counters, including a calculated environmental energy
 - Controls for operating modes, setpoints, hot water, extra hot water, Silent Mode and away mode, where the system offers them
 - **Operate appliance** dialog with heating-circuit climates and a native hot-water entity
-- Heating and hot water schedules and holiday periods with calendar
+- Heating, hot water, cooling, zone and ventilation schedules with a weekly view and the action `set_switch_points` (beyond hot water program A expected, untested), and holiday periods with calendar
 - Faults, warnings and maintenance messages with bell notifications and events for automations
 - Room controllers of the RRC 2.0 platform: zones, programs, absences, radio devices
 - Optional read-only **local access** that updates many readings more often and keeps them available without the cloud

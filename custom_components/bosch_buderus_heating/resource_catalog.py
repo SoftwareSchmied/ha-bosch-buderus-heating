@@ -825,6 +825,16 @@ _ENGLISH_PATH_NAMES = {
     "/system/variableTariff/supportStatus": "Variable tariff \N{EN DASH} support",
 }
 
+# The weekly programs of the further program kinds, by translation key.
+_PROGRAM_ROOT = re.compile(r"^/(heatingCircuits|dhwCircuits|ventilation|zones)/[^/]+/")
+_FURTHER_PROGRAM_NAMES = {
+    "/heatingCircuits/*/cooling/switchPrograms/A": "name_part_program_cooling",
+    "/zones/*/switchPrograms/heating": "name_part_program_zone_heating",
+    "/zones/*/switchPrograms/cooling": "name_part_program_zone_cooling",
+    "/ventilation/*/switchPrograms/cp": "name_part_program_ventilation",
+    "/dhwCircuits/*/switchPrograms/program1": "name_part_program_hot_water",
+}
+
 # Reviewed names whose meaning depends on the parent resource. A wildcard
 # occupies exactly one circuit/zone ID, never an arbitrary suffix or subtree.
 # Keep both languages together so a technical leaf such as "on" or "gas"
@@ -1678,6 +1688,10 @@ def resource_name(
     app_path = _APP_PATH_ROOT.sub(r"/\1/*/", path)
     if (app_names := _APP_PATH_NAMES.get(app_path)) is not None:
         base = localize(language, *app_names)
+    elif (
+        program := _FURTHER_PROGRAM_NAMES.get(_PROGRAM_ROOT.sub(r"/\1/*/", path))
+    ) is not None:
+        base = name_part(language, program)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
             "comfort2": name_part(language, "name_part_heating_temperature"),

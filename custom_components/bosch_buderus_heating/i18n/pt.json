@@ -23,6 +23,17 @@
       "time": "Hora",
       "deleteFailed": "Não foi possível abrir a confirmação de eliminação. Recarregue a página e tente novamente.",
       "reopen": "Feche e volte a abrir a caixa de diálogo."
+    },
+    "schedule": {
+      "title": "Vista semanal",
+      "clock": "Horas segundo o relógio do sistema de aquecimento.",
+      "carried": "continua do dia anterior",
+      "empty": "sem pontos de comutação",
+      "noLevel": "sem valor de consigna",
+      "changed": "alterado, ainda não guardado",
+      "hours": "Horas",
+      "day": "Dia",
+      "segment": "{day} das {start} às {end}: {level}"
     }
   },
   "texts": {

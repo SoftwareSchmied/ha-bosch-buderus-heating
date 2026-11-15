@@ -80,7 +80,8 @@ async def test_native_flow_uses_hour_minute_and_commits_only_requested_point(
     result = await open_point(flow)
     fields = {str(key): value for key, value in result["data_schema"].schema.items()}
     assert fields["time"].config["type"] == "time"
-    assert list(fields) == ["time", "temperature"]
+    # TP-17: a day with more than one point also offers to delete one.
+    assert list(fields) == ["time", "temperature", "delete"]
     confirm = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
     # Before and after first; nothing is sent yet.
     assert confirm["step_id"] == "rrc_confirm" and confirm["last_step"] is True
@@ -178,7 +179,8 @@ async def test_readonly_or_empty_week_can_be_viewed_without_writes(
     coordinator.data[WEEK] = replace(coordinator.data[WEEK], resource=resource)
     result = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
     assert result["step_id"] == "rrc_readonly"
-    assert not result["data_schema"].schema
+    # TP-07: only the read-only weekly view, nothing to enter.
+    assert [str(key) for key in result["data_schema"].schema] == ["week_view"]
     shown = await flow.async_step_rrc_readonly({})
     # Only shown: back in the main menu, without a note.
     assert shown["type"] is FlowResultType.MENU and shown["step_id"] == "init"

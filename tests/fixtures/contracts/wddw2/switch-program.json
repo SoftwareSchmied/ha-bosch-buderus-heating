@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "family": "wddw2",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "app_model",
+    "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight)",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names follow the app's request and model classes named in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-12: the WDDW2 program is written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off.",
+    "source": "app Wddw2RequestManagerImpl PutSwitchPoints, PutSwitchPoints @SerialName switchPoints, Wddw2ModelMapperImpl setpoint toIntOrNull and manualSetpoint range"
+  },
+  "resources": [
+    {
+      "id": "/dhwCircuits/dhw1/manualSetpoint",
+      "type": "floatValue",
+      "value": 55.0,
+      "unitOfMeasure": "C",
+      "writeable": 1,
+      "minValue": 30.0,
+      "maxValue": 60.0
+    },
+    {
+      "id": "/dhwCircuits/dhw1/switchPrograms/program1",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 360,
+          "setpoint": "55"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "off"
+        }
+      ]
+    }
+  ]
+}

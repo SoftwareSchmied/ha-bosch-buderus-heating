@@ -48,6 +48,7 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .icom_diagnostics import icom_diagnostics
+from .icom_profile import is_icom_gateway
 from .local_only import hybrid_evidence, volume_flow_path
 from .local_probe import GatewayBrand
 from .local_setup_history import cloud_sign_in_history, local_setup_history
@@ -62,6 +63,7 @@ from .observations import (
 from .performance_history import performance_diagnostics
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
+from .program_names import config_issue, is_name_path
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .resource_catalog import (
     PollGroup,
@@ -88,7 +90,7 @@ from .start_counters import (
     structure_summary,
 )
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
-from .switch_program_edit import edit_issue, points_per_day
+from .switch_program_edit import edit_issue, points_per_day, program_shapes
 from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
@@ -1612,6 +1614,8 @@ def switch_program_write_diagnostics(
             "editable": issue is None,
             "edit_issue": issue,
             "points_per_day": points_per_day(snapshot.resource),
+            # Block G: the form of the program, without values.
+            **program_shapes(snapshot.resource),
         }
     return {
         "read_back_delays": list(coordinator.write_read_back_delays()),
@@ -1620,5 +1624,31 @@ def switch_program_write_diagnostics(
         ),
         "heating": stats.snapshot("heating"),
         "dhw": stats.snapshot("dhw"),
+        **{
+            kind: stats.snapshot(kind)
+            for kind in ("cooling", "zone", "ventilation", "wddw2")
+        },
         "programs": programs,
+        "program_names": _program_name_diagnostics(coordinator),
     }
+
+
+def _program_name_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """TP-05: per program name whether it can be changed, or why not; no
+    name, no coding values."""
+    names: dict[str, object] = {}
+    icom = is_icom_gateway(coordinator.gateway)
+    for path, snapshot in sorted((coordinator.data or {}).items()):
+        if not is_name_path(path):
+            continue
+        issue = (
+            "name_write_unproven_icom"
+            if icom
+            else config_issue(snapshot.resource)
+            if snapshot.resource.metadata.writable
+            else "not_writable"
+        )
+        names[path] = {"editable": issue is None, "issue": issue}
+    return names

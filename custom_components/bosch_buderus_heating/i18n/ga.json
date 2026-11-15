@@ -23,6 +23,17 @@
       "time": "Am",
       "deleteFailed": "Níorbh fhéidir an deimhniú scriosta a oscailt. Athlódáil an leathanach agus déan iarracht arís.",
       "reopen": "Dún an dialóg agus oscail arís í."
+    },
+    "schedule": {
+      "title": "Amharc seachtainiúil",
+      "clock": "Amanna de réir chlog an chórais téimh.",
+      "carried": "ar aghaidh ón lá roimhe",
+      "empty": "gan pointí lasctha",
+      "noLevel": "gan luach socraithe",
+      "changed": "athraithe, gan sábháil fós",
+      "hours": "Uaireanta",
+      "day": "Lá",
+      "segment": "{day} {start} go {end}: {level}"
     }
   },
   "texts": {

@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "family": "rrc",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "app_model",
+    "reference": "Constructed hot water week program 1 of a room controller with four points per day, a low point on Saturday and an Off spelling on Sunday",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Point form {d,t,dhw} and type dhwProgram as in the anonymized TC100.2 device tree; every time and level is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-19: the hot water week is written once as {value:[{d,t,dhw}]}, sorted, high/off for new points, low/eco kept only where used, at most six points per day.",
+    "source": "room controller app DhwProgramDayViewModel (6 points per day, new point 12:00 off), week write {value:[{d,t,dhw}]}, DHWSwitchPointStateKt level mapping"
+  },
+  "resources": [
+    {
+      "id": "/dhwCircuits/dhw1/programs/pg1/week",
+      "type": "dhwProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Mo",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Mo",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "Mo",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Mo",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "Tu",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Tu",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "Tu",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Tu",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "We",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "We",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "We",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "We",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "Th",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Th",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "Th",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Th",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "Fr",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Fr",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "Fr",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Fr",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "Sa",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Sa",
+          "t": 480,
+          "dhw": "low"
+        },
+        {
+          "d": "Sa",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Sa",
+          "t": 1320,
+          "dhw": "off"
+        },
+        {
+          "d": "Su",
+          "t": 330,
+          "dhw": "high"
+        },
+        {
+          "d": "Su",
+          "t": 480,
+          "dhw": "off"
+        },
+        {
+          "d": "Su",
+          "t": 1020,
+          "dhw": "high"
+        },
+        {
+          "d": "Su",
+          "t": 1320,
+          "dhw": "Off"
+        }
+      ]
+    }
+  ]
+}

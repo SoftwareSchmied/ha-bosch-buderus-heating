@@ -366,19 +366,24 @@
         "title": "Zeitprogramm ansehen",
         "description": "**{program}**\n\n**Montag:** {mo}\n\n**Dienstag:** {tu}\n\n**Mittwoch:** {we}\n\n**Donnerstag:** {th}\n\n**Freitag:** {fr}\n\n**Samstag:** {sa}\n\n**Sonntag:** {su}\n\nWähle einen Wochentag. Die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. ∅ bedeutet, dass an diesem Tag kein eigener Schaltpunkt gespeichert ist. Änderungen gelten für alle Zonen, die dieses Programm verwenden.",
         "data": {
-          "day": "Wochentag"
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
         }
       },
       "rrc_readonly": {
         "title": "Zeitprogramm ansehen",
-        "description": "**{program}**\n\n**Montag:** {mo}\n\n**Dienstag:** {tu}\n\n**Mittwoch:** {we}\n\n**Donnerstag:** {th}\n\n**Freitag:** {fr}\n\n**Samstag:** {sa}\n\n**Sonntag:** {su}\n\nDieses Programm kann hier nur angezeigt werden. Es enthält keine bearbeitbaren Schaltpunkte oder meldet nicht unterstützte Angaben. ∅ bedeutet, dass kein eigener Schaltpunkt gespeichert ist. Änderungen kannst du in der Hersteller-App vornehmen."
+        "description": "**{program}**\n\n**Montag:** {mo}\n\n**Dienstag:** {tu}\n\n**Mittwoch:** {we}\n\n**Donnerstag:** {th}\n\n**Freitag:** {fr}\n\n**Samstag:** {sa}\n\n**Sonntag:** {su}\n\nDieses Programm kann hier nur angezeigt werden. Es enthält keine bearbeitbaren Schaltpunkte oder meldet nicht unterstützte Angaben. ∅ bedeutet, dass kein eigener Schaltpunkt gespeichert ist. Änderungen kannst du in der Hersteller-App vornehmen.",
+        "data": {
+          "week_view": "Wochenansicht"
+        }
       },
       "rrc_point": {
         "title": "Schaltpunkt bearbeiten",
         "description": "**{program}**\n\nWähle eine Uhrzeit in Schritten von fünf Minuten und eine Temperatur von 5 bis 30 °C in Schritten von 0,5 °C. Die Zeit gilt jede Woche in der Ortszeit der Heizungsanlage. Änderungen gelten für alle zugeordneten Zonen.",
         "data": {
           "time": "Uhrzeit",
-          "temperature": "Temperatur"
+          "temperature": "Temperatur",
+          "delete": "Diesen Schaltpunkt löschen"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Schaltpunkt auswählen",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nWähle einen Schaltpunkt, um ihn zu ändern oder zu löschen, oder füge einen hinzu. Ein Tag hat höchstens {per_day} Schaltpunkte (die Grenze der Hersteller-App, vom Regler nicht gemeldet); der letzte Schaltpunkt eines Tages bleibt.",
         "data": {
           "point": "Schaltpunkt"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.",
         "data": {
           "action": "Nächster Schritt",
-          "day": "Wochentag"
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDieses Programm ist nicht das aktive Programm des Heizkreises. Änderungen wirken erst, wenn es ausgewählt ist.",
         "data": {
           "action": "Nächster Schritt",
-          "day": "Wochentag"
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDas Warmwasserprogramm wirkt nur, solange die Warmwasser-Betriebsart auf Auto steht.",
         "data": {
           "action": "Nächster Schritt",
-          "day": "Wochentag"
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Ergebnis",
         "description": "Es wurde nichts gelöscht."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Warmwasserprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDie Stufen sind die des Programms im Raumregler. Das Programm wirkt, solange das Warmwasser seinem eigenen Programm folgt. Höchstens sechs Schaltpunkte pro Tag ist die Grenze der Hersteller-App, nicht eine vom Regler gemeldete.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag",
+          "week_view": "Wochenansicht"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Schaltpunkt bearbeiten",
+        "description": "**{program}** – **{day}**\n\nWähle eine Uhrzeit in Schritten von {raster} Minuten und eine Temperatur von {minimum} bis {maximum} °C in Schritten von {step} °C. Sie gilt ab dieser Uhrzeit bis zum nächsten Schaltpunkt.",
+        "data": {
+          "time": "Uhrzeit",
+          "value": "Temperatur",
+          "off": "Aus statt einer Temperatur",
+          "delete": "Diesen Schaltpunkt löschen"
+        }
+      },
+      "rrc_add": {
+        "title": "Schaltpunkt hinzufügen",
+        "description": "**{program}**\n\n{points}\n\nWähle eine Uhrzeit in Schritten von fünf Minuten und eine Temperatur von 5 bis 30 °C in Schritten von 0,5 °C. Die Zeit gilt jede Woche in der Ortszeit der Heizungsanlage. Änderungen gelten für alle zugeordneten Zonen.",
+        "data": {
+          "time": "Uhrzeit",
+          "temperature": "Temperatur"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
       "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert.",
       "local_token_end_unconfirmed": "Der Widerruf dieses Tokens kann einen lokalen Zugang beenden. Setze auch das zweite Häkchen oder lass das erste frei, um zurückzukehren. Es wurde nichts gesendet.",
-      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt."
+      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt.",
+      "switch_program_value": "Gib eine Temperatur von {minimum} bis {maximum} °C in Schritten von {step} °C ein.",
+      "switch_program_day_emptied": "Ein Tag mit Schaltpunkten behält mindestens einen; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
+      "rrc_point_limit": "Dieser Tag hat bereits die höchste Anzahl an Schaltpunkten, die die App erlaubt ({per_day}).",
+      "rrc_point_last": "Der letzte Schaltpunkt eines Tages kann nicht gelöscht werden; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
+      "rrc_point_duplicate": "Dieser Tag hat bereits einen Schaltpunkt zu dieser Uhrzeit."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Das gewählte Zeitprogramm kann gerade nicht gelesen werden. Es wurde nichts gesendet."
+    },
+    "switch_points_no_target": {
+      "message": "Es wurde kein aktivierter Zeitprogramm-Sensor dieser Integration gewählt. Aktiviere den Zeitprogramm-Sensor und wähle ihn als Ziel."
+    },
+    "not_a_program_entity": {
+      "message": "Nur die Zeitprogramm-Sensoren dieser Integration können gewählt werden."
+    },
+    "switch_points_empty_week": {
+      "message": "Die Woche braucht mindestens einen Schaltpunkt."
+    },
+    "switch_points_invalid_time": {
+      "message": "Jede Uhrzeit muss in Schritten von {raster} Minuten liegen, ohne Sekunden."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Ein Tag hat zwei Schaltpunkte zur selben Uhrzeit."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Ein Tag hat mehr Schaltpunkte, als die Heizungsanlage erlaubt ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Die Woche hat mehr Schaltpunkte, als die Heizungsanlage erlaubt ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Nur diese Stufen sind möglich: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Nur Temperaturen von {minimum} bis {maximum} in Schritten von {step} sind möglich."
+    },
+    "switch_points_not_writable": {
+      "message": "Die Heizungsanlage meldet dieses Zeitprogramm nicht als änderbar."
+    },
+    "switch_points_unused": {
+      "message": "Die Heizungsanlage nutzt dieses Zeitprogramm gerade nicht. Es wurde nichts gesendet."
+    },
+    "switch_points_not_level_program": {
+      "message": "Die Art dieses Zeitprogramms konnte nicht gelesen werden oder passt nicht zu seinen Schaltpunkten. Es wurde nichts gesendet."
+    },
+    "switch_points_not_editable": {
+      "message": "Dieses Zeitprogramm kann nur angezeigt, nicht geändert werden: Die Heizungsanlage meldet nicht alle Grenzen, die für eine Änderung nötig sind."
+    },
+    "switch_points_program_changed": {
+      "message": "Das Zeitprogramm wurde inzwischen geändert oder passt nicht mehr zu den erwarteten Schaltpunkten. Es wurde nichts gesendet."
+    },
+    "switch_points_paused": {
+      "message": "Das Schreiben an die Heizungsanlage ist nach wiederholten Lesefehlern für einige Minuten pausiert. Es wurde nichts gesendet."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Das Zeitprogramm wurde gesendet, konnte aber durch Zurücklesen nicht bestätigt werden. Es kann trotzdem noch übernommen werden; es wird nicht erneut gesendet."
+    },
+    "switch_points_rejected": {
+      "message": "Die Heizungsanlage hat das Zeitprogramm abgelehnt (HTTP {status}). Es wurde nichts geändert."
+    },
+    "switch_points_invalid": {
+      "message": "Die Schaltpunkte passen nicht zu den Grenzen des Zeitprogramms."
+    },
+    "program_name_empty": {
+      "message": "Gib einen Namen ein; ein leerer Name wird nicht gesendet."
+    },
+    "program_name_too_long": {
+      "message": "Der Name darf höchstens {max} Zeichen haben."
+    },
+    "program_name_charset": {
+      "message": "Der Name enthält Zeichen, die die Heizungsanlage nicht speichern kann ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Die Heizungsanlage meldet diesen Namen nicht als änderbar."
+    },
+    "program_name_changed": {
+      "message": "Der Name wurde inzwischen geändert. Es wurde nichts gesendet."
+    },
+    "program_name_not_confirmed": {
+      "message": "Der Name wurde gesendet, konnte aber durch Zurücklesen nicht bestätigt werden. Er kann trotzdem noch übernommen werden; er wird nicht erneut gesendet."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Zurück"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Ganze Woche ersetzen",
+        "replace_days": "Nur die angegebenen Tage ersetzen"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Tag"
+        },
+        "time": {
+          "name": "Uhrzeit"
+        },
+        "level": {
+          "name": "Stufe oder Temperatur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Aus",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Hoch",
+        "off": "Aus",
+        "low": "Niedrig",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Schaltpunkt hinzufügen"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "Tarif-ID"
+      },
+      "cooling_switch_program": {
+        "name": "Zeitprogramm Kühlung",
+        "state": {
+          "on": "Kühlen",
+          "off": "Aus"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Zeitprogramm Lüftung",
+        "state": {
+          "min": "Minimal",
+          "red": "Reduziert",
+          "nom": "Nennlüftung",
+          "max": "Maximal",
+          "dem": "Bedarfsgeführt",
+          "off": "Aus"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Zeitprogramm (Temperaturen)"
+      },
+      "wddw2_switch_program": {
+        "name": "Zeitprogramm Warmwasser (Temperaturen)"
+      },
+      "name_part_program_cooling": {
+        "name": "Zeitprogramm Kühlung"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Zeitprogramm Heizen"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Zeitprogramm Kühlen"
+      },
+      "name_part_program_ventilation": {
+        "name": "Zeitprogramm Lüftung"
+      },
+      "name_part_program_hot_water": {
+        "name": "Zeitprogramm Warmwasser"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Unbekannt"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Name des Zeitprogramms"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Schaltpunkte eines Zeitprogramms setzen",
+      "description": "Setzt die Schaltpunkte eines oder mehrerer Wochen-Zeitprogramme der Heizungsanlage, frisch gelesen und gegen die gemeldeten Grenzen geprüft. Jedes Programm wird einmal gesendet und zurückgelesen; nichts wird automatisch wiederholt.",
+      "fields": {
+        "mode": {
+          "name": "Art",
+          "description": "Die ganze Woche ersetzen oder nur die Tage, die in den Schaltpunkten vorkommen (die übrigen Tage bleiben wie gelesen)."
+        },
+        "switch_points": {
+          "name": "Schaltpunkte",
+          "description": "Tag (mo bis su), Uhrzeit (HH:MM, nach der Uhr der Heizungsanlage) und Stufe jedes Schaltpunkts. Bei einem Programm mit Temperaturen ist die Stufe eine Zahl wie 21.5."
+        },
+        "expected": {
+          "name": "Erwartete Schaltpunkte",
+          "description": "Optional: die Schaltpunkte, die das Programm gerade haben muss. Hat es andere (zum Beispiel in der App geändert), wird nichts gesendet."
+        },
+        "validate_only": {
+          "name": "Nur prüfen",
+          "description": "Die Schaltpunkte prüfen und antworten, ohne zu senden."
         }
       }
     }

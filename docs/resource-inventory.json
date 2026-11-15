@@ -6245,16 +6245,16 @@
       "family": "connectkey",
       "path": "/heatingCircuits/hc{circuitNumber}/cooling/switchPrograms/A",
       "previous_path": "/heatingCircuits/{hc}/cooling/switchPrograms/A",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "Cooling program A (on/off) read strictly and changed as a raw array only with reported limits and the cooling level on; form from the app, no device response seen.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/heatingCircuits/hc{circuitNumber}/cooling/switchPrograms/A",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -6269,7 +6269,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -6278,12 +6278,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/cooling-switch-programs.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/cooling-switch-programs.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null
@@ -7034,8 +7035,8 @@
       "family": "connectkey",
       "path": "/heatingCircuits/hc{circuitNumber}/switchPrograms/A",
       "previous_path": "/heatingCircuits/{hc}/switchPrograms/A",
-      "disposition": "supported_read",
-      "reason": "Read-only switch-program mapping: strict switchProgram schema (Mo..Su, minutes after local midnight, temperature-level keys, reported limits); the anonymized structure was observed on one physical installation.",
+      "disposition": "supported_transaction",
+      "reason": "Level program A changed as a raw array within the reported limits; absolute programs (switchProgramMode absolute) with reported range and step. Hot water program A confirmed on one installation; heating programs expected, untested.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -7058,7 +7059,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "Read only; no write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -7068,13 +7069,13 @@
           "capture_date": null
         },
         "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-programs-ab.json",
           "tests/fixtures/contracts/connectkey/switch-programs.json"
         ],
-        "family_fixture": "tests/fixtures/contracts/connectkey/switch-programs.json",
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-programs-ab.json",
         "missing_evidence": [
-          "Other models and firmware, program B and further temperature-level keys",
-          "Editing switch points: capacity, conflict handling and read-back are not established; no write is offered",
-          "Behaviour around daylight-saving transitions on the controller"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": {
@@ -7109,16 +7110,16 @@
       "family": "connectkey",
       "path": "/heatingCircuits/hc{circuitNumber}/switchPrograms/B",
       "previous_path": "/heatingCircuits/{hc}/switchPrograms/B",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "Program B read and changed like program A; expected, untested on a real installation.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/heatingCircuits/hc{circuitNumber}/switchPrograms/B",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -7133,7 +7134,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -7142,12 +7143,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-programs-ab.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-programs-ab.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null
@@ -7157,8 +7159,8 @@
       "family": "connectkey",
       "path": "/heatingCircuits/hc{circuitNumber}/switchPrograms/nameA",
       "previous_path": "/heatingCircuits/{hc}/switchPrograms/nameA",
-      "disposition": "supported_read",
-      "reason": "A curated read mapping accepts the stated synthetic schema probe; actual metadata and device verification remain required.",
+      "disposition": "supported_control",
+      "reason": "Name decoded per valueConfig; text control only with a writable name and a complete coding, not on iCom; expected, untested.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -7181,7 +7183,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the coded name, read-back of the decoded name, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -7190,10 +7192,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-program-names.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-program-names.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": {
@@ -7212,8 +7217,8 @@
       "family": "connectkey",
       "path": "/heatingCircuits/hc{circuitNumber}/switchPrograms/nameB",
       "previous_path": "/heatingCircuits/{hc}/switchPrograms/nameB",
-      "disposition": "supported_read",
-      "reason": "A curated read mapping accepts the stated synthetic schema probe; actual metadata and device verification remain required.",
+      "disposition": "supported_control",
+      "reason": "Name decoded per valueConfig; text control only with a writable name and a complete coding, not on iCom; expected, untested.",
       "followup_packages": [],
       "contract": {
         "transport": "PointT",
@@ -7236,7 +7241,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the coded name, read-back of the decoded name, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -7245,10 +7250,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-program-names.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-program-names.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": {
@@ -11102,16 +11110,16 @@
       "family": "connectkey",
       "path": "/ventilation/zone1/switchPrograms/cp",
       "previous_path": "/ventilation/zone1/switchPrograms/cp",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "Ventilation program changed as a raw array only with reported limits and the levels listed in ventilationLevels; form from the app, no device response seen.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/ventilation/zone1/switchPrograms/cp",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -11126,7 +11134,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -11135,12 +11143,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/ventilation-switch-program.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/ventilation-switch-program.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null
@@ -11914,16 +11923,16 @@
       "family": "connectkey",
       "path": "/zones/zone{zoneNumber}/switchPrograms/cooling",
       "previous_path": "/zones/{zone}/switchPrograms/cooling",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "Zone cooling program with absolute temperatures changed as a raw array only with reported limits, range and step; form from the app, no device response seen.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/zones/zone{zoneNumber}/switchPrograms/cooling",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -11938,7 +11947,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -11947,12 +11956,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/zone-switch-programs.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/zone-switch-programs.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null
@@ -11962,16 +11972,16 @@
       "family": "connectkey",
       "path": "/zones/zone{zoneNumber}/switchPrograms/heating",
       "previous_path": "/zones/{zone}/switchPrograms/heating",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "Zone heating program with absolute temperatures changed as a raw array only with reported limits, range and step; form from the app, no device response seen.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/zones/zone{zoneNumber}/switchPrograms/heating",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -11986,7 +11996,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -11995,12 +12005,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/zone-switch-programs.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/zone-switch-programs.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null
@@ -20523,16 +20534,16 @@
       "family": "wddw2",
       "path": "/dhwCircuits/dhw1/switchPrograms/program1",
       "previous_path": "/dhwCircuits/dhw1/switchPrograms/program1",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_transaction",
+      "reason": "WDDW2 program written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off, only with reported limits; form from the app, no device response seen.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/dhwCircuits/dhw1/switchPrograms/program1",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -20547,7 +20558,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "One PUT of the whole week, read-back of the program, never repeated",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -20556,12 +20567,13 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/wddw2/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/wddw2/switch-program.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/wddw2/switch-program.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Physical response for the exact model and firmware",
+          "Writing on a real installation (expected, untested)"
         ]
       },
       "schema_probe": null

@@ -366,19 +366,24 @@
         "title": "Visa värmeprogram",
         "description": "**{program}**\n\n**Måndag:** {mo}\n\n**Tisdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lördag:** {sa}\n\n**Söndag:** {su}\n\nVälj en veckodag. Tiderna upprepas varje vecka i värmesystemets lokala tid. ∅ betyder att ingen växlingspunkt är sparad för den dagen. Ändringar påverkar alla zoner som använder det här programmet.",
         "data": {
-          "day": "Veckodag"
+          "day": "Veckodag",
+          "week_view": "Veckovy"
         }
       },
       "rrc_readonly": {
         "title": "Visa värmeprogram",
-        "description": "**{program}**\n\n**Måndag:** {mo}\n\n**Tisdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lördag:** {sa}\n\n**Söndag:** {su}\n\nDet här programmet kan bara visas här. Det har inga redigerbara växlingspunkter eller innehåller inställningar som inte stöds. ∅ betyder att ingen växlingspunkt är sparad. Du kan göra ändringar i tillverkarens app."
+        "description": "**{program}**\n\n**Måndag:** {mo}\n\n**Tisdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lördag:** {sa}\n\n**Söndag:** {su}\n\nDet här programmet kan bara visas här. Det har inga redigerbara växlingspunkter eller innehåller inställningar som inte stöds. ∅ betyder att ingen växlingspunkt är sparad. Du kan göra ändringar i tillverkarens app.",
+        "data": {
+          "week_view": "Veckovy"
+        }
       },
       "rrc_point": {
         "title": "Redigera växlingspunkt",
         "description": "**{program}**\n\nVälj en tid i femminutersteg och en temperatur från 5 till 30 °C i steg om 0,5 °C. Tiden upprepas varje vecka i värmesystemets lokala tid. Ändringar påverkar alla tilldelade zoner.",
         "data": {
           "time": "Tid",
-          "temperature": "Temperatur"
+          "temperature": "Temperatur",
+          "delete": "Ta bort den här växlingspunkten"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Välj växlingspunkt",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nVälj en växlingspunkt för att ändra eller ta bort den, eller lägg till en. En dag har högst {per_day} växlingspunkter (gränsen i tillverkarens app, inte rapporterad av regulatorn); dagens sista växlingspunkt blir kvar.",
         "data": {
           "point": "Växlingspunkt"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.",
         "data": {
           "action": "Nästa steg",
-          "day": "Veckodag"
+          "day": "Veckodag",
+          "week_view": "Veckovy"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nDet här programmet är inte värmekretsens aktiva program. Ändringar får verkan när det väljs.",
         "data": {
           "action": "Nästa steg",
-          "day": "Veckodag"
+          "day": "Veckodag",
+          "week_view": "Veckovy"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nVarmvattenprogrammet gäller bara så länge varmvattnets driftläge står på Auto.",
         "data": {
           "action": "Nästa steg",
-          "day": "Veckodag"
+          "day": "Veckodag",
+          "week_view": "Veckovy"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Resultat",
         "description": "Inget raderades."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Ändra tidsprogram för varmvatten",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nNivåerna är de från rumsregulatorns program. Programmet gäller medan varmvattnet följer sitt eget program. Högst sex växlingspunkter per dag är gränsen i tillverkarens app, inte en gräns som regulatorn rapporterar.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag",
+          "week_view": "Veckovy"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Redigera växlingspunkt",
+        "description": "**{program}** – **{day}**\n\nVälj en tid i steg om {raster} minuter och en temperatur från {minimum} till {maximum} °C i steg om {step} °C. Den gäller från den här tiden till nästa växlingspunkt.",
+        "data": {
+          "time": "Tid",
+          "value": "Temperatur",
+          "off": "Av i stället för en temperatur",
+          "delete": "Ta bort den här växlingspunkten"
+        }
+      },
+      "rrc_add": {
+        "title": "Lägg till växlingspunkt",
+        "description": "**{program}**\n\n{points}\n\nVälj en tid i femminutersteg och en temperatur från 5 till 30 °C i steg om 0,5 °C. Tiden upprepas varje vecka i värmesystemets lokala tid. Ändringar påverkar alla tilldelade zoner.",
+        "data": {
+          "time": "Tid",
+          "temperature": "Temperatur"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Den här gatewayen erbjuder ingen tokenlista. Ingenting ändrades.",
       "local_tokens_invalid": "Gatewayens tokenlista kunde inte kontrolleras (oväntat eller för stort svar). Ingenting ändrades.",
       "local_token_end_unconfirmed": "Att återkalla denna token kan avsluta en lokal åtkomst. Kryssa även i den andra rutan, eller lämna den första tom för att gå tillbaka. Ingenting skickades.",
-      "connection_remove_unconfirmed": "Kryssa även i ”Ta bort den här åtkomsten”: en token återkallas bara tillsammans med att åtkomsten tas bort. Ingenting skickades eller togs bort."
+      "connection_remove_unconfirmed": "Kryssa även i ”Ta bort den här åtkomsten”: en token återkallas bara tillsammans med att åtkomsten tas bort. Ingenting skickades eller togs bort.",
+      "switch_program_value": "Ange en temperatur från {minimum} till {maximum} °C i steg om {step} °C.",
+      "switch_program_day_emptied": "En dag som har växlingspunkter behåller minst en; vad en tom dag betyder för regulatorn är inte känt.",
+      "rrc_point_limit": "Den här dagen har redan det högsta antal växlingspunkter som appen tillåter ({per_day}).",
+      "rrc_point_last": "Dagens sista växlingspunkt kan inte tas bort; vad en tom dag betyder för regulatorn är inte känt.",
+      "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Det valda tidsprogrammet kan inte läsas just nu. Inget skickades."
+    },
+    "switch_points_no_target": {
+      "message": "Ingen aktiverad tidsprogramsensor från den här integrationen har valts. Aktivera tidsprogramsensorn och välj den som mål."
+    },
+    "not_a_program_entity": {
+      "message": "Bara den här integrationens tidsprogramsensorer kan väljas."
+    },
+    "switch_points_empty_week": {
+      "message": "Veckan behöver minst en växlingspunkt."
+    },
+    "switch_points_invalid_time": {
+      "message": "Varje tid måste ligga i steg om {raster} minuter, utan sekunder."
+    },
+    "switch_points_duplicate_time": {
+      "message": "En dag har två växlingspunkter vid samma tid."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "En dag har fler växlingspunkter än värmesystemet tillåter ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Veckan har fler växlingspunkter än värmesystemet tillåter ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Bara dessa nivåer kan användas: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Bara temperaturer från {minimum} till {maximum} i steg om {step} kan användas."
+    },
+    "switch_points_not_writable": {
+      "message": "Värmesystemet rapporterar inte det här tidsprogrammet som ändringsbart."
+    },
+    "switch_points_unused": {
+      "message": "Värmesystemet använder inte det här tidsprogrammet just nu. Inget skickades."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typen av det här tidsprogrammet kunde inte läsas eller passar inte till dess växlingspunkter. Inget skickades."
+    },
+    "switch_points_not_editable": {
+      "message": "Det här tidsprogrammet kan bara visas, inte ändras: Värmesystemet rapporterar inte alla gränser som behövs för en ändring."
+    },
+    "switch_points_program_changed": {
+      "message": "Tidsprogrammet har ändrats under tiden eller stämmer inte längre med de förväntade växlingspunkterna. Inget skickades."
+    },
+    "switch_points_paused": {
+      "message": "Skrivning till värmesystemet är pausad i några minuter efter upprepade misslyckade avläsningar. Inget skickades."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Tidsprogrammet skickades men kunde inte bekräftas genom att läsas tillbaka. Det kan ändå ha tillämpats; det skickas inte igen."
+    },
+    "switch_points_rejected": {
+      "message": "Värmesystemet avvisade tidsprogrammet (HTTP {status}). Inget ändrades."
+    },
+    "switch_points_invalid": {
+      "message": "Växlingspunkterna passar inte till tidsprogrammets gränser."
+    },
+    "program_name_empty": {
+      "message": "Ange ett namn; ett tomt namn skickas inte."
+    },
+    "program_name_too_long": {
+      "message": "Namnet får ha högst {max} tecken."
+    },
+    "program_name_charset": {
+      "message": "Namnet innehåller tecken som värmesystemet inte kan lagra ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Värmesystemet rapporterar inte det här namnet som ändringsbart."
+    },
+    "program_name_changed": {
+      "message": "Namnet har ändrats under tiden. Inget skickades."
+    },
+    "program_name_not_confirmed": {
+      "message": "Namnet skickades men kunde inte bekräftas genom att läsas tillbaka. Det kan ändå ha tillämpats; det skickas inte igen."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Tillbaka"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Ersätt hela veckan",
+        "replace_days": "Ersätt bara de angivna dagarna"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dag"
+        },
+        "time": {
+          "name": "Tid"
+        },
+        "level": {
+          "name": "Nivå eller temperatur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Av",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Hög",
+        "off": "Av",
+        "low": "Låg",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Lägg till en växlingspunkt"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "Tariff-ID"
+      },
+      "cooling_switch_program": {
+        "name": "Tidsprogram kyla",
+        "state": {
+          "on": "Kylning",
+          "off": "Av"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Tidsprogram ventilation",
+        "state": {
+          "min": "Minimum",
+          "red": "Sänkt",
+          "nom": "Nominell",
+          "max": "Maximum",
+          "dem": "Behovsstyrd",
+          "off": "Av"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Tidsprogram (temperaturer)"
+      },
+      "wddw2_switch_program": {
+        "name": "Tidsprogram varmvatten (temperaturer)"
+      },
+      "name_part_program_cooling": {
+        "name": "Tidsprogram kyla"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Tidsprogram värme"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Tidsprogram kyla"
+      },
+      "name_part_program_ventilation": {
+        "name": "Tidsprogram ventilation"
+      },
+      "name_part_program_hot_water": {
+        "name": "Tidsprogram varmvatten"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Okänd"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Tidsprogrammets namn"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Ange växlingspunkterna för ett tidsprogram",
+      "description": "Anger växlingspunkterna för ett eller flera veckovisa tidsprogram i värmesystemet, nyligen lästa och kontrollerade mot de gränser systemet rapporterar. Varje program skickas en gång och läses tillbaka; inget upprepas automatiskt.",
+      "fields": {
+        "mode": {
+          "name": "Läge",
+          "description": "Ersätt hela veckan, eller bara de dagar som förekommer i växlingspunkterna (övriga dagar förblir som de lästes)."
+        },
+        "switch_points": {
+          "name": "Växlingspunkter",
+          "description": "Dag (mo till su), tid (HH:MM, enligt värmesystemets klocka) och nivå för varje växlingspunkt. För ett program med temperaturer är nivån ett tal som 21.5."
+        },
+        "expected": {
+          "name": "Förväntade växlingspunkter",
+          "description": "Valfritt: de växlingspunkter som programmet måste ha just nu. Om det har andra (till exempel ändrade i appen) skickas inget."
+        },
+        "validate_only": {
+          "name": "Endast kontrollera",
+          "description": "Kontrollerar växlingspunkterna och svarar utan att skicka."
         }
       }
     }

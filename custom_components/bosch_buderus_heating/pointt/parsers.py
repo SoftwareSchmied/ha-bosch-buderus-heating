@@ -263,6 +263,10 @@ SWITCH_PROGRAM_FIELDS = (
     "maxNbOfSwitchPointsPerDay",
     "switchPointTimeRaster",
     "switchPoints",
+    # The range of an absolute program (numbers instead of levels).
+    "switchPointMin",
+    "switchPointMax",
+    "switchPointResolution",
 )
 
 
@@ -329,6 +333,11 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         if data.get("type") == "switchProgram"
         else {}
     )
+    switch_fields = frozenset(program_fields)
+    if data.get("type") == "stringValue" and isinstance(data.get("valueConfig"), dict):
+        # TP-05: the text coding of a name (charset, coding, length); kept
+        # with its content, and still listed as an unknown field.
+        program_fields["valueConfig"] = _json_value(data["valueConfig"])
     return Resource(
         path=resource_path,
         value=_json_value(data.get("value")),
@@ -355,7 +364,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         references=_parse_references(data.get("references")),
         program_fields=program_fields,
         unknown_fields=frozenset(data)
-        - frozenset(program_fields)
+        - switch_fields
         - {
             "id",
             "type",

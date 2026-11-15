@@ -23,6 +23,17 @@
       "time": "Time",
       "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again.",
       "reopen": "Please close and reopen the dialog."
+    },
+    "schedule": {
+      "title": "Weekly view",
+      "clock": "Times by the clock of the heating system.",
+      "carried": "continued from the previous day",
+      "empty": "no switch points",
+      "noLevel": "no setpoint",
+      "changed": "changed, not saved yet",
+      "hours": "Hours",
+      "day": "Day",
+      "segment": "{day} {start} to {end}: {level}"
     }
   }
 }

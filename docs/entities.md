@@ -572,7 +572,9 @@ no entity; a configured name is added dynamically.
 | Operating status | Sensor | `/heatingCircuits/{hc}/overallStatus` | No | No | 60 s |
 | Schedule type | Sensor | `/heatingCircuits/{hc}/switchProgramMode` | Yes | No | 5 min |
 | Schedule name A | Sensor | `/heatingCircuits/{hc}/switchPrograms/nameA` | Yes | No | 5 min |
-| Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
+| Time program A (B) | Diagnostic enum sensor; a program with temperatures (`absolute`) is a temperature sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes; since 0.9.2-beta.2 enabled when the gateway reports it writable (first registration only) | Yes, under Configure (since 0.9.0-alpha.6) and with the action `set_switch_points` | 15/30 min; scheduled level recalculated locally each minute; read back after change |
+| Time program name A (B) | Text control (disabled) | `/heatingCircuits/{hc}/switchPrograms/nameA` | Only with a known `valueConfig` coding, not on iCom | Yes (expected, untested) | 5 min; read back after change |
+| Cooling time program | Diagnostic enum sensor (`on`/`off`) | `/heatingCircuits/{hc}/cooling/switchPrograms/A` | Yes when writable | Yes, when limits and the cooling level `on` are reported (expected, untested) | 15/30 min |
 | Heating temperature (sensor before 0.9.1 *Heating*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
 | Setback temperature (sensor before 0.9.1 *Reduced*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
 | Summer/winter switching (select since 0.9.2) | Sensor (disabled) and select | `/heatingCircuits/{hc}/suWiSwitchMode` | Yes | Yes, not on room controllers (expected, untested) | 5 min; read back after change |
@@ -659,7 +661,10 @@ reported.
 | Start threshold Comfort | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/high` | Yes | Yes | 5 min; read back after change |
 | Start threshold Eco | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/low` | Yes | Yes | 5 min; read back after change |
 | Setpoint level off | Sensor | `/dhwCircuits/{dhw}/temperatureLevels/off` | No | No | 15 min |
-| Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
+| Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes; since 0.9.2-beta.2 enabled when the gateway reports it writable (first registration only) | Yes, under Configure (since 0.9.0-alpha.6) and with the action `set_switch_points` | 15/30 min; scheduled level recalculated locally each minute; read back after change |
+| Hot water time program (WDDW2) | Diagnostic temperature sensor (`off` → no value, attribute `scheduled: off`) | `/dhwCircuits/dhw1/switchPrograms/program1` | Yes when writable | Yes, with limits and the `manualSetpoint` range (expected, untested) | 15/30 min |
+| Heating / cooling time program (zone) | Diagnostic temperature sensors | `/zones/{zone}/switchPrograms/heating`, `.../cooling` | Yes when writable | Yes, with limits, range and step (expected, untested) | 15/30 min |
+| Ventilation time program | Diagnostic enum sensor | `/ventilation/zone1/switchPrograms/cp` | Yes when writable | Yes, with the levels listed in `ventilationLevels` (expected, untested) | 15/30 min |
 
 Number controls use the minimum and maximum reported by the gateway. They are
 created only when both limits are complete and lie within a broad plausibility

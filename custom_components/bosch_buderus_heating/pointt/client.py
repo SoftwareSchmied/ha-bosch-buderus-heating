@@ -236,6 +236,28 @@ class PointTClient:
             resource_path=normalized,
         )
 
+    async def put_resource_object(
+        self, gateway_id: str, path: str, body: dict[str, JsonValue]
+    ) -> None:
+        """Write a JSON object exactly once, without a ``{"value": ...}``
+        envelope (the WDDW2 weekly program ``{"switchPoints": [...]}``);
+        never retried.
+
+        The answer of the gateway is not used: the caller confirms the write
+        by reading the resource again.
+        """
+        if not isinstance(body, dict):
+            raise ValueError("A raw PointT object body is a dict")
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body=body,
+            retryable=False,
+            resource_path=normalized,
+        )
+
     async def post_resource(
         self, gateway_id: str, path: str, value: JsonValue
     ) -> JsonValue:

@@ -366,19 +366,24 @@
         "title": "Prikaz vremenskog programa grijanja",
         "description": "**{program}**\n\n**Ponedjeljak:** {mo}\n\n**Utorak:** {tu}\n\n**Srijeda:** {we}\n\n**Četvrtak:** {th}\n\n**Petak:** {fr}\n\n**Subota:** {sa}\n\n**Nedjelja:** {su}\n\nOdaberite dan u tjednu. Vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. ∅ znači da za taj dan nije spremljena nijedna točka uklapanja. Promjene utječu na svaku zonu koja koristi ovaj vremenski program.",
         "data": {
-          "day": "Dan u tjednu"
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
         }
       },
       "rrc_readonly": {
         "title": "Prikaz vremenskog programa grijanja",
-        "description": "**{program}**\n\n**Ponedjeljak:** {mo}\n\n**Utorak:** {tu}\n\n**Srijeda:** {we}\n\n**Četvrtak:** {th}\n\n**Petak:** {fr}\n\n**Subota:** {sa}\n\n**Nedjelja:** {su}\n\nOvaj se vremenski program ovdje može samo pregledavati. Nema točaka uklapanja koje se mogu uređivati ili sadrži nepodržane postavke. ∅ znači da nije spremljena nijedna točka uklapanja. Promjene možete napraviti u aplikaciji proizvođača."
+        "description": "**{program}**\n\n**Ponedjeljak:** {mo}\n\n**Utorak:** {tu}\n\n**Srijeda:** {we}\n\n**Četvrtak:** {th}\n\n**Petak:** {fr}\n\n**Subota:** {sa}\n\n**Nedjelja:** {su}\n\nOvaj se vremenski program ovdje može samo pregledavati. Nema točaka uklapanja koje se mogu uređivati ili sadrži nepodržane postavke. ∅ znači da nije spremljena nijedna točka uklapanja. Promjene možete napraviti u aplikaciji proizvođača.",
+        "data": {
+          "week_view": "Tjedni prikaz"
+        }
       },
       "rrc_point": {
         "title": "Uređivanje točke uklapanja",
         "description": "**{program}**\n\nOdaberite vrijeme u koracima od pet minuta i temperaturu od 5 do 30 °C u koracima od 0,5 °C. Vrijeme se ponavlja tjedno u lokalnom vremenu sustava grijanja. Promjene utječu na sve dodijeljene zone.",
         "data": {
           "time": "Vrijeme",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Izbriši ovu točku uklapanja"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Odabir točke uklapanja",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nOdaberite točku uklapanja da je promijenite ili izbrišete, ili dodajte novu. Dan ima najviše {per_day} točaka uklapanja (granica aplikacije proizvođača, koju regulator ne prijavljuje); posljednja točka uklapanja u danu ostaje.",
         "data": {
           "point": "Točka uklapanja"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.",
         "data": {
           "action": "Sljedeći korak",
-          "day": "Dan u tjednu"
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nOvaj program nije aktivni program kruga grijanja. Promjene djeluju kada bude odabran.",
         "data": {
           "action": "Sljedeći korak",
-          "day": "Dan u tjednu"
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nProgram tople vode vrijedi samo dok je način rada tople vode postavljen na Automatski.",
         "data": {
           "action": "Sljedeći korak",
-          "day": "Dan u tjednu"
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Rezultat",
         "description": "Ništa nije izbrisano."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Promjena programa tople vode",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nRazine su one iz programa sobnog regulatora. Program vrijedi dok topla voda slijedi vlastiti program. Najviše šest točaka uklapanja dnevno granica je aplikacije proizvođača, a ne granica koju prijavljuje regulator.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu",
+          "week_view": "Tjedni prikaz"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Uređivanje točke uklapanja",
+        "description": "**{program}** – **{day}**\n\nOdaberite vrijeme u koracima od {raster} minuta i temperaturu od {minimum} do {maximum} °C u koracima od {step} °C. Vrijedi od tog vremena do sljedeće točke uklapanja.",
+        "data": {
+          "time": "Vrijeme",
+          "value": "Temperatura",
+          "off": "Isključeno umjesto temperature",
+          "delete": "Izbriši ovu točku uklapanja"
+        }
+      },
+      "rrc_add": {
+        "title": "Dodavanje točke uklapanja",
+        "description": "**{program}**\n\n{points}\n\nOdaberite vrijeme u koracima od pet minuta i temperaturu od 5 do 30 °C u koracima od 0,5 °C. Vrijeme se ponavlja tjedno u lokalnom vremenu sustava grijanja. Promjene utječu na sve dodijeljene zone.",
+        "data": {
+          "time": "Vrijeme",
+          "temperature": "Temperatura"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
       "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
       "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Označite i drugu kvačicu ili ostavite prvu neoznačenom da se vratite. Ništa nije poslano.",
-      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno."
+      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno.",
+      "switch_program_value": "Unesite temperaturu od {minimum} do {maximum} °C u koracima od {step} °C.",
+      "switch_program_day_emptied": "Dan koji ima točke uklapanja zadržava barem jednu; nije poznato što prazan dan znači za regulator.",
+      "rrc_point_limit": "Ovaj dan već ima najveći broj točaka uklapanja koji aplikacija dopušta ({per_day}).",
+      "rrc_point_last": "Posljednja točka uklapanja u danu ne može se izbrisati; nije poznato što prazan dan znači za regulator.",
+      "rrc_point_duplicate": "Ovaj dan već ima točku uklapanja u to vrijeme."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Odabrani vremenski program trenutno se ne može pročitati. Ništa nije poslano."
+    },
+    "switch_points_no_target": {
+      "message": "Nije odabran nijedan omogućeni senzor vremenskog programa ove integracije. Omogućite senzor vremenskog programa i odaberite ga kao cilj."
+    },
+    "not_a_program_entity": {
+      "message": "Mogu se odabrati samo senzori vremenskog programa ove integracije."
+    },
+    "switch_points_empty_week": {
+      "message": "Tjedan treba barem jednu točku uklapanja."
+    },
+    "switch_points_invalid_time": {
+      "message": "Svako vrijeme mora biti u koracima od {raster} minuta, bez sekundi."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Dan ima dvije točke uklapanja u isto vrijeme."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Dan ima više točaka uklapanja nego što sustav grijanja dopušta ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Tjedan ima više točaka uklapanja nego što sustav grijanja dopušta ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Mogu se koristiti samo ove razine: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Mogu se koristiti samo temperature od {minimum} do {maximum} u koracima od {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Sustav grijanja ne prijavljuje ovaj vremenski program kao promjenjiv."
+    },
+    "switch_points_unused": {
+      "message": "Sustav grijanja trenutačno ne koristi ovaj vremenski program. Ništa nije poslano."
+    },
+    "switch_points_not_level_program": {
+      "message": "Vrsta ovog vremenskog programa nije se mogla pročitati ili ne odgovara njegovim točkama uklapanja. Ništa nije poslano."
+    },
+    "switch_points_not_editable": {
+      "message": "Ovaj vremenski program može se samo prikazati, ne i promijeniti: sustav grijanja ne prijavljuje sve granice potrebne za promjenu."
+    },
+    "switch_points_program_changed": {
+      "message": "Vremenski program se u međuvremenu promijenio ili više ne odgovara očekivanim točkama uklapanja. Ništa nije poslano."
+    },
+    "switch_points_paused": {
+      "message": "Zapisivanje u sustav grijanja pauzirano je na nekoliko minuta nakon ponovljenih neuspjelih čitanja. Ništa nije poslano."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Vremenski program je poslan, ali se nije mogao potvrditi ponovnim čitanjem. Možda je ipak primijenjen; ne šalje se ponovno."
+    },
+    "switch_points_rejected": {
+      "message": "Sustav grijanja odbio je vremenski program (HTTP {status}). Ništa nije promijenjeno."
+    },
+    "switch_points_invalid": {
+      "message": "Točke uklapanja ne odgovaraju granicama vremenskog programa."
+    },
+    "program_name_empty": {
+      "message": "Unesite naziv; prazan naziv se ne šalje."
+    },
+    "program_name_too_long": {
+      "message": "Naziv može imati najviše {max} znakova."
+    },
+    "program_name_charset": {
+      "message": "Naziv sadrži znakove koje sustav grijanja ne može pohraniti ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Sustav grijanja ne prijavljuje ovaj naziv kao promjenjiv."
+    },
+    "program_name_changed": {
+      "message": "Naziv se u međuvremenu promijenio. Ništa nije poslano."
+    },
+    "program_name_not_confirmed": {
+      "message": "Naziv je poslan, ali se nije mogao potvrditi ponovnim čitanjem. Možda je ipak primijenjen; ne šalje se ponovno."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Natrag"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Zamijeni cijeli tjedan",
+        "replace_days": "Zamijeni samo navedene dane"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dan"
+        },
+        "time": {
+          "name": "Vrijeme"
+        },
+        "level": {
+          "name": "Razina ili temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Isključeno",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Visoko",
+        "off": "Isključeno",
+        "low": "Nisko",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Dodaj točku uklapanja"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "ID tarife"
+      },
+      "cooling_switch_program": {
+        "name": "Vremenski program hlađenja",
+        "state": {
+          "on": "Hlađenje",
+          "off": "Isključeno"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Vremenski program ventilacije",
+        "state": {
+          "min": "Minimalno",
+          "red": "Smanjeno",
+          "nom": "Nazivno",
+          "max": "Maksimalno",
+          "dem": "Prema potrebi",
+          "off": "Isključeno"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Vremenski program (temperature)"
+      },
+      "wddw2_switch_program": {
+        "name": "Vremenski program tople vode (temperature)"
+      },
+      "name_part_program_cooling": {
+        "name": "Vremenski program hlađenja"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Vremenski program grijanja"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Vremenski program hlađenja"
+      },
+      "name_part_program_ventilation": {
+        "name": "Vremenski program ventilacije"
+      },
+      "name_part_program_hot_water": {
+        "name": "Vremenski program tople vode"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Nepoznato"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Naziv vremenskog programa"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Postavi točke uklapanja vremenskog programa",
+      "description": "Postavlja točke uklapanja jednog ili više tjednih vremenskih programa sustava grijanja, svježe pročitanih i provjerenih prema granicama koje sustav prijavljuje. Svaki se program šalje jednom i čita natrag; ništa se ne ponavlja automatski.",
+      "fields": {
+        "mode": {
+          "name": "Način",
+          "description": "Zamijeni cijeli tjedan ili samo dane koji se pojavljuju u točkama uklapanja (ostali dani ostaju onakvi kako su pročitani)."
+        },
+        "switch_points": {
+          "name": "Točke uklapanja",
+          "description": "Dan (mo do su), vrijeme (HH:MM, prema satu sustava grijanja) i razina svake točke uklapanja. Kod programa s temperaturama razina je broj poput 21.5."
+        },
+        "expected": {
+          "name": "Očekivane točke uklapanja",
+          "description": "Neobavezno: točke uklapanja koje program trenutačno mora imati. Ako ima druge (na primjer promijenjene u aplikaciji), ništa se ne šalje."
+        },
+        "validate_only": {
+          "name": "Samo provjeri",
+          "description": "Provjerava točke uklapanja i odgovara, bez slanja."
         }
       }
     }

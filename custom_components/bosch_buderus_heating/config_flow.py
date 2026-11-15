@@ -1070,7 +1070,11 @@ class BoschBuderusOptionsFlow(
                 "notifications",
                 "holidays",
                 *(["switch_programs"] if self._switch_program_choices() else []),
-                *(["rrc_programs"] if self._rrc_choices() else []),
+                *(
+                    ["rrc_programs"]
+                    if self._rrc_choices() or self._sp_extra_choices()
+                    else []
+                ),
                 *(
                     ["recordings"]
                     if managers_of(self.hass, self._entry.entry_id)

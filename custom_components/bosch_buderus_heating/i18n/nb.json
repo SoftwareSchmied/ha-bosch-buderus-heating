@@ -23,6 +23,17 @@
       "time": "Tidspunkt",
       "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen.",
       "reopen": "Lukk og åpne dialogen på nytt."
+    },
+    "schedule": {
+      "title": "Ukevisning",
+      "clock": "Tidspunkter etter varmeanleggets klokke.",
+      "carried": "fortsetter fra forrige dag",
+      "empty": "ingen koblingspunkter",
+      "noLevel": "ingen settpunktverdi",
+      "changed": "endret, ikke lagret ennå",
+      "hours": "Timer",
+      "day": "Dag",
+      "segment": "{day} {start} til {end}: {level}"
     }
   },
   "texts": {

@@ -67,7 +67,7 @@ clears a temporary setpoint until the next switch point; see
 [room controllers](room-controllers.md#zones) for these functions and what
 is confirmed.
 
-## Editing an existing weekly program
+## Editing a weekly program
 
 Open the integration's **Configure** action, then **RRC heating schedules**.
 Choose a program, weekday and existing point. The dialog accepts hours and
@@ -94,9 +94,14 @@ point; a different `name` does not stop the change, and it is not sent.
 
 The editor permits the reviewed five-minute time raster and 5 to 30 °C in
 0.5 °C steps. It changes one existing point and preserves the other points
-of that day. It does not add or remove points or create programs because
-the supported capacity and those lifecycle operations are not established.
-Empty, unsorted, duplicate or extended formats remain unchanged. Supported
+of that day. Since 0.9.2-beta.2 it also adds a point to a day (default
+12:00 and 15 °C, as in the manufacturer's app; five minutes later while the
+time is taken) and deletes one. A day holds at most six points: that is the
+limit of the manufacturer's room controller app, not one the controller
+reports. The last point of a day is not deleted, because what an empty day
+means for the controller is not known. Each change shows the day before and
+after and then sends the whole day once. Programs are not created, renamed
+or deleted. Empty, unsorted, duplicate or extended formats remain unchanged. Supported
 readable formats can be viewed; unknown fields, a point key other than `d`,
 `t`, `Th` and `name`, or a `name` that is not a whole number prevent
 editing and survive an unchanged parser/encoder round trip. An unsupported shape is not
@@ -107,6 +112,29 @@ conversion. A stored Sunday 02:30 remains 02:30 regardless of the HA time
 zone. The controller's execution during a clock change still needs device
 confirmation. A day with no points is not labelled as heating off.
 The holiday calendar and its existing dialog keep their own semantics.
+
+The schedule view also shows the week as a read-only table (weekly view);
+a day without points is marked as such.
+
+### Hot water week program
+
+The same dialog lists the hot water week program of the controller
+(`/dhwCircuits/dhw1/programs/pg1/week`, points `{d, t, dhw}`) where it can
+be changed, and edits it with the steps of the heating schedules: a draft
+of the whole week, before and after, one PUT of the whole week as
+`{"value": [...]}`, read back with the RRC schedule. The levels are program
+levels (high, off, low, eco), not temperatures: new points get `high` or
+`off`; `low` and `eco` stay where the program already uses them (their
+meaning depends on the heat source) and are never offered otherwise. A
+level as read is kept as read (`Off` stays `Off`). Six points per day (app
+limit), five-minute times, and a day that has points keeps at least one.
+Only program 1 is changed, as in the app; unknown levels or fields keep the
+program read-only. The program applies while the hot water follows its own
+program; this mode is not changed here.
+
+Adding and deleting heating points and changing the hot water program are
+tested with simulated data only and are expected, untested on a real
+controller.
 
 ## Write confirmation and remaining limits
 
@@ -299,8 +327,13 @@ betrifft alle zugeordneten Zonen.
 Ein Punkt enthält Wochentag, Minuten seit Mitternacht und Celsius-Temperatur.
 Der Editor verwendet die belegten fünf Minuten sowie 5 bis 30 °C in
 0,5-°C-Schritten. Ich schreibe nur den betroffenen Tag und erhalte dessen
-übrige Punkte. Neue Programme sowie zusätzliche oder gelöschte Schaltpunkte
-sind mangels belegter Kapazitäts- und Ablaufregeln noch nicht verfügbar.
+übrige Punkte. Seit 0.9.2-beta.2 lassen sich auch Schaltpunkte hinzufügen
+(Vorgabe 12:00 und 15 °C wie in der App) und löschen. Ein Tag hat höchstens
+sechs Punkte; das ist die Grenze der Raumregler-App, nicht eine vom Regler
+gemeldete. Der letzte Punkt eines Tages wird nicht gelöscht, weil unklar ist,
+was ein leerer Tag für den Regler bedeutet. Jede Änderung zeigt den Tag
+vorher und nachher und sendet ihn dann einmal. Programme werden weder
+angelegt noch umbenannt oder gelöscht.
 Unbekannte Zusatzfelder sperren die Bearbeitung und gehen beim unveränderten
 Einlesen und Ausgeben nicht verloren. Lesbare Sonderformen bleiben
 unverändert anzeigbar; ungültige Formen werden nicht als gültiger Plan gezeigt.
@@ -310,7 +343,20 @@ in UTC um. Auch sonntags gespeicherte 02:30 bleiben bei einer anderen
 HA-Zeitzone 02:30. Wie das Gerät während einer Zeitumstellung schaltet,
 muss noch praktisch geprüft werden. Ein Tag ohne eigene Schaltpunkte wird
 nicht als ausgeschaltete Heizung interpretiert. Urlaubskalender und
-Urlaubsdialog bleiben fachlich getrennt.
+Urlaubsdialog bleiben fachlich getrennt. Die Programmansicht zeigt die Woche
+zusätzlich als nur lesende Tabelle (Wochenansicht).
+
+Im selben Dialog lässt sich das Warmwasser-Wochenprogramm des Reglers
+(`/dhwCircuits/dhw1/programs/pg1/week`, Punkte `{d, t, dhw}`) ändern: als
+Entwurf der ganzen Woche, mit Vorher/Nachher, einem PUT der ganzen Woche als
+`{"value": [...]}` und Zurücklesen. Die Stufen sind Programmstufen (hoch, aus,
+niedrig, eco), keine Temperaturen: Neue Punkte erhalten `high` oder `off`;
+`low` und `eco` bleiben nur, wo das Programm sie schon nutzt. Gelesene Werte
+bleiben unverändert (`Off` bleibt `Off`). Sechs Punkte pro Tag (Grenze der
+App), Fünf-Minuten-Zeiten, und ein Tag mit Punkten behält mindestens einen.
+Geändert wird nur Programm 1 wie in der App. Hinzufügen und Löschen von
+Heizpunkten und das Warmwasserprogramm sind nur mit simulierten Daten
+geprüft und an einem echten Regler erwartet, ungetestet.
 
 Vor einem Schreibzugriff prüfe ich die aktuellen Angaben erneut. Beim
 Programm vergleiche ich Woche und Tag mit dem angezeigten Stand.

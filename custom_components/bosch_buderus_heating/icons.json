@@ -127,6 +127,9 @@
       }
     },
     "sensor": {
+      "absolute_switch_program": {
+        "default": "mdi:calendar-clock"
+      },
       "active_faults": {
         "default": "mdi:alert-circle-outline"
       },
@@ -168,6 +171,13 @@
           "heating": "mdi:fire",
           "pool": "mdi:pool",
           "pool_heat": "mdi:pool"
+        }
+      },
+      "cooling_switch_program": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "on": "mdi:snowflake",
+          "off": "mdi:snowflake-off"
         }
       },
       "dhw_switch_program": {
@@ -291,6 +301,12 @@
           "red": "mdi:fan-speed-1"
         }
       },
+      "ventilation_switch_program": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "off": "mdi:fan-off"
+        }
+      },
       "wallbox_state": {
         "default": "mdi:ev-station",
         "state": {
@@ -298,6 +314,14 @@
           "faulted": "mdi:alert-circle",
           "locked": "mdi:lock"
         }
+      },
+      "wddw2_switch_program": {
+        "default": "mdi:calendar-clock"
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "default": "mdi:form-textbox"
       }
     },
     "water_heater": {
@@ -308,6 +332,11 @@
           "off": "mdi:water-boiler-off"
         }
       }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "service": "mdi:calendar-edit"
     }
   }
 }

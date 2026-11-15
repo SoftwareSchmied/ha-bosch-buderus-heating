@@ -366,19 +366,24 @@
         "title": "Ver programa horario de calefacción",
         "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nElige un día de la semana. Las horas se repiten cada semana en la hora local de la instalación de calefacción. ∅ significa que no hay ningún punto de conmutación guardado para ese día. Los cambios afectan a todas las zonas que usan este programa horario.",
         "data": {
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "rrc_readonly": {
         "title": "Ver programa horario de calefacción",
-        "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horario solo se puede ver aquí. No tiene puntos de conmutación editables o contiene ajustes no admitidos. ∅ significa que no hay ningún punto de conmutación guardado. Puedes hacer cambios en la aplicación del fabricante."
+        "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horario solo se puede ver aquí. No tiene puntos de conmutación editables o contiene ajustes no admitidos. ∅ significa que no hay ningún punto de conmutación guardado. Puedes hacer cambios en la aplicación del fabricante.",
+        "data": {
+          "week_view": "Vista semanal"
+        }
       },
       "rrc_point": {
         "title": "Editar punto de conmutación",
         "description": "**{program}**\n\nElige una hora en pasos de cinco minutos y una temperatura de 5 a 30 °C en pasos de 0,5 °C. La hora se repite cada semana en la hora local de la instalación de calefacción. Los cambios afectan a todas las zonas asignadas.",
         "data": {
           "time": "Hora",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Eliminar este punto de conmutación"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Elegir punto de conmutación",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nElige un punto de conmutación para cambiarlo o eliminarlo, o añade uno. Un día tiene como máximo {per_day} puntos de conmutación (el límite de la aplicación del fabricante, no informado por el regulador); el último punto de conmutación de un día se conserva.",
         "data": {
           "point": "Punto de conmutación"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEste programa no es el programa activo del circuito de calefacción. Los cambios surten efecto cuando se selecciona.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEl programa del agua caliente solo se aplica mientras el modo de funcionamiento del agua caliente está en Automático.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Resultado",
         "description": "No se eliminó nada."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Cambiar el programa del agua caliente",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nLos niveles son los del programa del regulador de ambiente. El programa se aplica mientras el agua caliente sigue su propio programa. Un máximo de seis puntos de conmutación por día es el límite de la aplicación del fabricante, no uno informado por el regulador.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Editar punto de conmutación",
+        "description": "**{program}** – **{day}**\n\nElige una hora en pasos de {raster} minutos y una temperatura de {minimum} a {maximum} °C en pasos de {step} °C. Se aplica desde esta hora hasta el siguiente punto de conmutación.",
+        "data": {
+          "time": "Hora",
+          "value": "Temperatura",
+          "off": "Apagado en lugar de una temperatura",
+          "delete": "Eliminar este punto de conmutación"
+        }
+      },
+      "rrc_add": {
+        "title": "Añadir punto de conmutación",
+        "description": "**{program}**\n\n{points}\n\nElige una hora en pasos de cinco minutos y una temperatura de 5 a 30 °C en pasos de 0,5 °C. La hora se repite cada semana en la hora local de la instalación de calefacción. Los cambios afectan a todas las zonas asignadas.",
+        "data": {
+          "time": "Hora",
+          "temperature": "Temperatura"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
       "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
       "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Marca también la segunda casilla o deja la primera sin marcar para volver. No se ha enviado nada.",
-      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada."
+      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada.",
+      "switch_program_value": "Introduce una temperatura de {minimum} a {maximum} °C en pasos de {step} °C.",
+      "switch_program_day_emptied": "Un día que tiene puntos de conmutación conserva al menos uno; no se sabe qué significa un día vacío para el regulador.",
+      "rrc_point_limit": "Este día ya tiene el mayor número de puntos de conmutación que permite la aplicación ({per_day}).",
+      "rrc_point_last": "El último punto de conmutación de un día no se puede eliminar; no se sabe qué significa un día vacío para el regulador.",
+      "rrc_point_duplicate": "Este día ya tiene un punto de conmutación a esta hora."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "El programa horario seleccionado no se puede leer en este momento. No se envió nada."
+    },
+    "switch_points_no_target": {
+      "message": "No se ha elegido ningún sensor de programa horario activado de esta integración. Activa el sensor de programa horario y elígelo como destino."
+    },
+    "not_a_program_entity": {
+      "message": "Solo se pueden elegir los sensores de programa horario de esta integración."
+    },
+    "switch_points_empty_week": {
+      "message": "La semana necesita al menos un punto de conmutación."
+    },
+    "switch_points_invalid_time": {
+      "message": "Cada hora debe estar en pasos de {raster} minutos, sin segundos."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Un día tiene dos puntos de conmutación a la misma hora."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Un día tiene más puntos de conmutación de los que permite la instalación de calefacción ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "La semana tiene más puntos de conmutación de los que permite la instalación de calefacción ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Solo se pueden usar estos niveles: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Solo se pueden usar temperaturas de {minimum} a {maximum} en pasos de {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "La instalación de calefacción no informa de que este programa horario se pueda cambiar."
+    },
+    "switch_points_unused": {
+      "message": "La instalación de calefacción no usa este programa horario en este momento. No se envió nada."
+    },
+    "switch_points_not_level_program": {
+      "message": "No se pudo leer el tipo de este programa horario o no encaja con sus puntos de conmutación. No se envió nada."
+    },
+    "switch_points_not_editable": {
+      "message": "Este programa horario solo se puede mostrar, no cambiar: la instalación de calefacción no informa de todos los límites necesarios para un cambio."
+    },
+    "switch_points_program_changed": {
+      "message": "El programa horario ha cambiado entretanto o ya no coincide con los puntos de conmutación esperados. No se envió nada."
+    },
+    "switch_points_paused": {
+      "message": "La escritura en la instalación de calefacción está en pausa durante unos minutos tras lecturas fallidas repetidas. No se envió nada."
+    },
+    "switch_points_not_confirmed": {
+      "message": "El programa horario se envió, pero no se pudo confirmar volviendo a leerlo. Puede que aun así se haya aplicado; no se envía de nuevo."
+    },
+    "switch_points_rejected": {
+      "message": "La instalación de calefacción rechazó el programa horario (HTTP {status}). No se cambió nada."
+    },
+    "switch_points_invalid": {
+      "message": "Los puntos de conmutación no encajan con los límites del programa horario."
+    },
+    "program_name_empty": {
+      "message": "Introduce un nombre; un nombre vacío no se envía."
+    },
+    "program_name_too_long": {
+      "message": "El nombre puede tener como máximo {max} caracteres."
+    },
+    "program_name_charset": {
+      "message": "El nombre contiene caracteres que la instalación de calefacción no puede guardar ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "La instalación de calefacción no informa de que este nombre se pueda cambiar."
+    },
+    "program_name_changed": {
+      "message": "El nombre ha cambiado entretanto. No se envió nada."
+    },
+    "program_name_not_confirmed": {
+      "message": "El nombre se envió, pero no se pudo confirmar volviendo a leerlo. Puede que aun así se haya aplicado; no se envía de nuevo."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Atrás"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Sustituir toda la semana",
+        "replace_days": "Sustituir solo los días indicados"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Día"
+        },
+        "time": {
+          "name": "Hora"
+        },
+        "level": {
+          "name": "Nivel o temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Apagado",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Alto",
+        "off": "Apagado",
+        "low": "Bajo",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Añadir un punto de conmutación"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "ID de tarifa"
+      },
+      "cooling_switch_program": {
+        "name": "Programa horario de refrigeración",
+        "state": {
+          "on": "Refrigeración",
+          "off": "Apagado"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Programa horario de ventilación",
+        "state": {
+          "min": "Mínimo",
+          "red": "Reducido",
+          "nom": "Nominal",
+          "max": "Máximo",
+          "dem": "Según demanda",
+          "off": "Apagado"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Programa horario (temperaturas)"
+      },
+      "wddw2_switch_program": {
+        "name": "Programa horario del agua caliente (temperaturas)"
+      },
+      "name_part_program_cooling": {
+        "name": "Programa horario de refrigeración"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Programa horario de calefacción"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Programa horario de refrigeración"
+      },
+      "name_part_program_ventilation": {
+        "name": "Programa horario de ventilación"
+      },
+      "name_part_program_hot_water": {
+        "name": "Programa horario del agua caliente"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Desconocido"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Nombre del programa horario"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Establecer los puntos de conmutación de un programa horario",
+      "description": "Establece los puntos de conmutación de uno o más programas horarios semanales de la instalación de calefacción, leídos de nuevo y comprobados con los límites que informa la instalación. Cada programa se envía una vez y se vuelve a leer; nada se repite automáticamente.",
+      "fields": {
+        "mode": {
+          "name": "Modo",
+          "description": "Sustituir toda la semana o solo los días que aparecen en los puntos de conmutación (los demás días quedan como se leyeron)."
+        },
+        "switch_points": {
+          "name": "Puntos de conmutación",
+          "description": "Día (mo a su), hora (HH:MM, según el reloj de la instalación de calefacción) y nivel de cada punto de conmutación. En un programa con temperaturas, el nivel es un número como 21.5."
+        },
+        "expected": {
+          "name": "Puntos de conmutación esperados",
+          "description": "Opcional: los puntos de conmutación que el programa debe tener ahora mismo. Si tiene otros (por ejemplo, cambiados en la aplicación), no se envía nada."
+        },
+        "validate_only": {
+          "name": "Solo comprobar",
+          "description": "Comprueba los puntos de conmutación y responde, sin enviar."
         }
       }
     }

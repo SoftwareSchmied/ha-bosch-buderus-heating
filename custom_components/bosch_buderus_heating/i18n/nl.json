@@ -23,6 +23,17 @@
       "time": "Tijd",
       "deleteFailed": "De bevestiging voor het verwijderen kon niet worden geopend. Laad de pagina opnieuw en probeer het nog eens.",
       "reopen": "Sluit het dialoogvenster en open het opnieuw."
+    },
+    "schedule": {
+      "title": "Weekoverzicht",
+      "clock": "Tijden volgens de klok van de verwarmingsinstallatie.",
+      "carried": "voortgezet vanaf de vorige dag",
+      "empty": "geen schakelpunten",
+      "noLevel": "geen streefwaarde",
+      "changed": "gewijzigd, nog niet opgeslagen",
+      "hours": "Uren",
+      "day": "Dag",
+      "segment": "{day} {start} tot {end}: {level}"
     }
   },
   "texts": {

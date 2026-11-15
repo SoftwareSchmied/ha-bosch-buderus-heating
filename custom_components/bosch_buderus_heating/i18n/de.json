@@ -23,6 +23,17 @@
       "time": "Uhrzeit",
       "deleteFailed": "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut.",
       "reopen": "Bitte schließe den Dialog und öffne ihn erneut."
+    },
+    "schedule": {
+      "title": "Wochenansicht",
+      "clock": "Zeiten nach der Uhr der Heizungsanlage.",
+      "carried": "vom Vortag fortgesetzt",
+      "empty": "keine Schaltpunkte",
+      "noLevel": "kein Sollwert",
+      "changed": "geändert, noch nicht gespeichert",
+      "hours": "Stunden",
+      "day": "Tag",
+      "segment": "{day} {start} bis {end}: {level}"
     }
   }
 }

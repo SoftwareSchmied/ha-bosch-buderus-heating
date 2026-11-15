@@ -366,19 +366,24 @@
         "title": "View heating schedule",
         "description": "**{program}**\n\n**Monday:** {mo}\n\n**Tuesday:** {tu}\n\n**Wednesday:** {we}\n\n**Thursday:** {th}\n\n**Friday:** {fr}\n\n**Saturday:** {sa}\n\n**Sunday:** {su}\n\nChoose a weekday. Times repeat weekly in the heating system's local time. ∅ means no switch point is stored for that day. Changes affect every zone using this schedule.",
         "data": {
-          "day": "Weekday"
+          "day": "Weekday",
+          "week_view": "Weekly view"
         }
       },
       "rrc_readonly": {
         "title": "View heating schedule",
-        "description": "**{program}**\n\n**Monday:** {mo}\n\n**Tuesday:** {tu}\n\n**Wednesday:** {we}\n\n**Thursday:** {th}\n\n**Friday:** {fr}\n\n**Saturday:** {sa}\n\n**Sunday:** {su}\n\nThis schedule can only be viewed here. It has no editable switch points or contains unsupported settings. ∅ means no switch point is stored. You can make changes in the manufacturer app."
+        "description": "**{program}**\n\n**Monday:** {mo}\n\n**Tuesday:** {tu}\n\n**Wednesday:** {we}\n\n**Thursday:** {th}\n\n**Friday:** {fr}\n\n**Saturday:** {sa}\n\n**Sunday:** {su}\n\nThis schedule can only be viewed here. It has no editable switch points or contains unsupported settings. ∅ means no switch point is stored. You can make changes in the manufacturer app.",
+        "data": {
+          "week_view": "Weekly view"
+        }
       },
       "rrc_point": {
         "title": "Edit switch point",
         "description": "**{program}**\n\nChoose a time in five-minute steps and a temperature from 5 to 30 °C in 0.5 °C steps. The time repeats weekly in the heating system's local time. Changes affect all assigned zones.",
         "data": {
           "time": "Time",
-          "temperature": "Temperature"
+          "temperature": "Temperature",
+          "delete": "Delete this switch point"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Choose switch point",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nChoose a switch point to change or delete it, or add one. A day holds at most {per_day} switch points (the limit of the manufacturer's app, not reported by the controller); the last switch point of a day stays.",
         "data": {
           "point": "Switch point"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.",
         "data": {
           "action": "Next step",
-          "day": "Weekday"
+          "day": "Weekday",
+          "week_view": "Weekly view"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThis schedule is not the active one of the heating circuit. Changes take effect once it is selected.",
         "data": {
           "action": "Next step",
-          "day": "Weekday"
+          "day": "Weekday",
+          "week_view": "Weekly view"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe hot water schedule applies only while the hot water operation mode is Auto.",
         "data": {
           "action": "Next step",
-          "day": "Weekday"
+          "day": "Weekday",
+          "week_view": "Weekly view"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Result",
         "description": "Nothing was deleted."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Change hot water schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe levels are those of the room controller's program. The schedule applies while the hot water follows its own program. At most six switch points per day is the limit of the manufacturer's app, not one reported by the controller.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday",
+          "week_view": "Weekly view"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Edit switch point",
+        "description": "**{program}** – **{day}**\n\nChoose a time in steps of {raster} minutes and a temperature from {minimum} to {maximum} °C in steps of {step} °C. It applies from this time until the next switch point.",
+        "data": {
+          "time": "Time",
+          "value": "Temperature",
+          "off": "Off instead of a temperature",
+          "delete": "Delete this switch point"
+        }
+      },
+      "rrc_add": {
+        "title": "Add switch point",
+        "description": "**{program}**\n\n{points}\n\nChoose a time in five-minute steps and a temperature from 5 to 30 °C in 0.5 °C steps. The time repeats weekly in the heating system's local time. Changes affect all assigned zones.",
+        "data": {
+          "time": "Time",
+          "temperature": "Temperature"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "This gateway does not provide a token list. Nothing was changed.",
       "local_tokens_invalid": "The gateway's token list could not be checked (unexpected or too large answer). Nothing was changed.",
       "local_token_end_unconfirmed": "Revoking this token can end a local access. Tick the second box as well, or leave the first box unticked to go back. Nothing was sent.",
-      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed."
+      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed.",
+      "switch_program_value": "Enter a temperature from {minimum} to {maximum} °C in steps of {step} °C.",
+      "switch_program_day_emptied": "A day that has switch points keeps at least one; what an empty day means for the controller is not known.",
+      "rrc_point_limit": "This day already has the highest number of switch points the app allows ({per_day}).",
+      "rrc_point_last": "The last switch point of a day cannot be deleted; what an empty day means for the controller is not known.",
+      "rrc_point_duplicate": "This day already has a switch point at this time."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "The selected schedule cannot be read at the moment. Nothing was sent."
+    },
+    "switch_points_no_target": {
+      "message": "No enabled time program sensor of this integration was chosen. Enable the time program sensor and choose it as the target."
+    },
+    "not_a_program_entity": {
+      "message": "Only the time program sensors of this integration can be chosen."
+    },
+    "switch_points_empty_week": {
+      "message": "The week needs at least one switch point."
+    },
+    "switch_points_invalid_time": {
+      "message": "Each time must be in steps of {raster} minutes, without seconds."
+    },
+    "switch_points_duplicate_time": {
+      "message": "A day has two switch points at the same time."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "A day has more switch points than the heating system allows ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "The week has more switch points than the heating system allows ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Only these levels can be used: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Only temperatures from {minimum} to {maximum} in steps of {step} can be used."
+    },
+    "switch_points_not_writable": {
+      "message": "The heating system does not report this time program as changeable."
+    },
+    "switch_points_unused": {
+      "message": "The heating system does not use this time program at the moment. Nothing was sent."
+    },
+    "switch_points_not_level_program": {
+      "message": "The program type of this time program could not be read or does not fit its switch points. Nothing was sent."
+    },
+    "switch_points_not_editable": {
+      "message": "This time program can only be shown, not changed: the heating system does not report all the limits needed for a change."
+    },
+    "switch_points_program_changed": {
+      "message": "The time program has changed in the meantime or no longer matches the expected switch points. Nothing was sent."
+    },
+    "switch_points_paused": {
+      "message": "Writing to the heating system is paused for a few minutes after repeated failed readings. Nothing was sent."
+    },
+    "switch_points_not_confirmed": {
+      "message": "The time program was sent but could not be confirmed by reading it back. It may still be applied; it is not sent again."
+    },
+    "switch_points_rejected": {
+      "message": "The heating system refused the time program (HTTP {status}). Nothing was changed."
+    },
+    "switch_points_invalid": {
+      "message": "The switch points do not fit the limits of the time program."
+    },
+    "program_name_empty": {
+      "message": "Enter a name; an empty name is not sent."
+    },
+    "program_name_too_long": {
+      "message": "The name can have at most {max} characters."
+    },
+    "program_name_charset": {
+      "message": "The name contains characters that the heating system cannot store ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "The heating system does not report this name as changeable."
+    },
+    "program_name_changed": {
+      "message": "The name has changed in the meantime. Nothing was sent."
+    },
+    "program_name_not_confirmed": {
+      "message": "The name was sent but could not be confirmed by reading it back. It may still be applied; it is not sent again."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Back"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Replace the whole week",
+        "replace_days": "Replace only the given days"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Day"
+        },
+        "time": {
+          "name": "Time"
+        },
+        "level": {
+          "name": "Level or temperature"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Off",
+        "decimal_sign": "."
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "High",
+        "off": "Off",
+        "low": "Low",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Add a switch point"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "Tariff ID"
+      },
+      "cooling_switch_program": {
+        "name": "Cooling time program",
+        "state": {
+          "on": "Cooling",
+          "off": "Off"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Ventilation time program",
+        "state": {
+          "min": "Minimum",
+          "red": "Reduced",
+          "nom": "Nominal",
+          "max": "Maximum",
+          "dem": "Demand-controlled",
+          "off": "Off"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Time program (temperatures)"
+      },
+      "wddw2_switch_program": {
+        "name": "Hot water time program (temperatures)"
+      },
+      "name_part_program_cooling": {
+        "name": "Cooling time program"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Heating time program"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Cooling time program"
+      },
+      "name_part_program_ventilation": {
+        "name": "Ventilation time program"
+      },
+      "name_part_program_hot_water": {
+        "name": "Hot water time program"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Unknown"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Time program name"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Set the switch points of a time program",
+      "description": "Sets the switch points of one or more weekly time programs of the heating system, read fresh and checked against the limits the system reports. Each program is sent once and read back; nothing is repeated automatically.",
+      "fields": {
+        "mode": {
+          "name": "Mode",
+          "description": "Replace the whole week, or only the days that appear in the switch points (the other days stay as read)."
+        },
+        "switch_points": {
+          "name": "Switch points",
+          "description": "Day (mo to su), time (HH:MM, by the clock of the heating system) and level of each switch point. For a program with temperatures the level is a number such as 21.5."
+        },
+        "expected": {
+          "name": "Expected switch points",
+          "description": "Optional: the switch points the program must hold right now. If it holds others (for example changed in the app), nothing is sent."
+        },
+        "validate_only": {
+          "name": "Only check",
+          "description": "Check the switch points and answer, without sending."
         }
       }
     }

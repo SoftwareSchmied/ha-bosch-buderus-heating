@@ -81,15 +81,18 @@ NEXT_STEPS: Final = frozenset(
         "holiday_gateway",
         "holidays",
         "local_tokens",
+        "rrc_add",
         "rrc_day",
         "rrc_programs",
         "rrc_schedule",
         "switch_program_copy",
         "switch_program_day",
         "switch_program_point",
+        "switch_program_point_value",
         "switch_program_week",
         "switch_program_week_dhw",
         "switch_program_week_inactive",
+        "switch_program_week_rrc_dhw",
         "switch_programs",
     }
 )

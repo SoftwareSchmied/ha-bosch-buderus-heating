@@ -366,19 +366,24 @@
         "title": "Zobrazení časového programu topení",
         "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nVyberte den v týdnu. Časy se opakují každý týden v místním čase topné soustavy. ∅ znamená, že pro tento den není uložen žádný spínací bod. Změny se týkají každé zóny, která tento program používá.",
         "data": {
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "rrc_readonly": {
         "title": "Zobrazení časového programu topení",
-        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nTento program lze zde pouze zobrazit. Nemá žádné upravitelné spínací body nebo obsahuje nepodporovaná nastavení. ∅ znamená, že není uložen žádný spínací bod. Změny můžete provést v aplikaci výrobce."
+        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nTento program lze zde pouze zobrazit. Nemá žádné upravitelné spínací body nebo obsahuje nepodporovaná nastavení. ∅ znamená, že není uložen žádný spínací bod. Změny můžete provést v aplikaci výrobce.",
+        "data": {
+          "week_view": "Týdenní přehled"
+        }
       },
       "rrc_point": {
         "title": "Úprava spínacího bodu",
         "description": "**{program}**\n\nZvolte čas v pětiminutových krocích a teplotu od 5 do 30 °C v krocích po 0,5 °C. Čas se opakuje každý týden v místním čase topné soustavy. Změny se týkají všech přiřazených zón.",
         "data": {
           "time": "Čas",
-          "temperature": "Teplota"
+          "temperature": "Teplota",
+          "delete": "Smazat tento spínací bod"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Výběr spínacího bodu",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nZvolte spínací bod, který chcete změnit nebo smazat, nebo přidejte nový. Den má nejvýše {per_day} spínacích bodů (mez aplikace výrobce, regulátorem nehlášená); poslední spínací bod dne zůstává.",
         "data": {
           "point": "Spínací bod"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nTento program není aktivním programem topného okruhu. Změny se projeví, až bude vybrán.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nProgram teplé vody platí jen tehdy, když je provozní režim teplé vody nastaven na Automatický.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Výsledek",
         "description": "Nic nebylo smazáno."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Změna programu teplé vody",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nÚrovně jsou ty z programu pokojového regulátoru. Program platí, dokud se teplá voda řídí vlastním programem. Nejvýše šest spínacích bodů za den je mez aplikace výrobce, nikoli mez hlášená regulátorem.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}** – **{day}**\n\nZvolte čas v krocích po {raster} minutách a teplotu od {minimum} do {maximum} °C v krocích po {step} °C. Platí od tohoto času do dalšího spínacího bodu.",
+        "data": {
+          "time": "Čas",
+          "value": "Teplota",
+          "off": "Vypnuto místo teploty",
+          "delete": "Smazat tento spínací bod"
+        }
+      },
+      "rrc_add": {
+        "title": "Přidat spínací bod",
+        "description": "**{program}**\n\n{points}\n\nZvolte čas v pětiminutových krocích a teplotu od 5 do 30 °C v krocích po 0,5 °C. Čas se opakuje každý týden v místním čase topné soustavy. Změny se týkají všech přiřazených zón.",
+        "data": {
+          "time": "Čas",
+          "temperature": "Teplota"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
       "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
       "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zaškrtněte i druhé políčko, nebo nechte první nezaškrtnuté a vraťte se. Nic nebylo odesláno.",
-      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno."
+      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
+      "switch_program_value": "Zadejte teplotu od {minimum} do {maximum} °C v krocích po {step} °C.",
+      "switch_program_day_emptied": "Den se spínacími body si ponechá alespoň jeden; co znamená prázdný den pro regulátor, není známo.",
+      "rrc_point_limit": "Tento den již má nejvyšší počet spínacích bodů, který aplikace dovoluje ({per_day}).",
+      "rrc_point_last": "Poslední spínací bod dne nelze smazat; co znamená prázdný den pro regulátor, není známo.",
+      "rrc_point_duplicate": "Tento den již má spínací bod v tento čas."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Vybraný časový program teď nelze načíst. Nic nebylo odesláno."
+    },
+    "switch_points_no_target": {
+      "message": "Nebyl zvolen žádný povolený senzor časového programu této integrace. Povolte senzor časového programu a zvolte ho jako cíl."
+    },
+    "not_a_program_entity": {
+      "message": "Zvolit lze pouze senzory časového programu této integrace."
+    },
+    "switch_points_empty_week": {
+      "message": "Týden potřebuje alespoň jeden spínací bod."
+    },
+    "switch_points_invalid_time": {
+      "message": "Každý čas musí být v krocích po {raster} minutách, bez sekund."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Den má dva spínací body ve stejný čas."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Den má více spínacích bodů, než topná soustava dovoluje ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Týden má více spínacích bodů, než topná soustava dovoluje ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Použít lze pouze tyto úrovně: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Použít lze pouze teploty od {minimum} do {maximum} v krocích po {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Topná soustava nehlásí tento časový program jako měnitelný."
+    },
+    "switch_points_unused": {
+      "message": "Topná soustava tento časový program momentálně nepoužívá. Nic nebylo odesláno."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typ tohoto časového programu se nepodařilo přečíst nebo neodpovídá jeho spínacím bodům. Nic nebylo odesláno."
+    },
+    "switch_points_not_editable": {
+      "message": "Tento časový program lze pouze zobrazit, nikoli změnit: topná soustava nehlásí všechny meze potřebné pro změnu."
+    },
+    "switch_points_program_changed": {
+      "message": "Časový program se mezitím změnil nebo již neodpovídá očekávaným spínacím bodům. Nic nebylo odesláno."
+    },
+    "switch_points_paused": {
+      "message": "Zápis do topné soustavy je na několik minut pozastaven po opakovaných neúspěšných čteních. Nic nebylo odesláno."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Časový program byl odeslán, ale nepodařilo se ho potvrdit zpětným přečtením. Může být přesto použit; znovu se neodesílá."
+    },
+    "switch_points_rejected": {
+      "message": "Topná soustava časový program odmítla (HTTP {status}). Nic nebylo změněno."
+    },
+    "switch_points_invalid": {
+      "message": "Spínací body neodpovídají mezím časového programu."
+    },
+    "program_name_empty": {
+      "message": "Zadejte název; prázdný název se neodesílá."
+    },
+    "program_name_too_long": {
+      "message": "Název může mít nejvýše {max} znaků."
+    },
+    "program_name_charset": {
+      "message": "Název obsahuje znaky, které topná soustava neumí uložit ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Topná soustava nehlásí tento název jako měnitelný."
+    },
+    "program_name_changed": {
+      "message": "Název se mezitím změnil. Nic nebylo odesláno."
+    },
+    "program_name_not_confirmed": {
+      "message": "Název byl odeslán, ale nepodařilo se ho potvrdit zpětným přečtením. Může být přesto použit; znovu se neodesílá."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Zpět"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Nahradit celý týden",
+        "replace_days": "Nahradit jen zadané dny"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Den"
+        },
+        "time": {
+          "name": "Čas"
+        },
+        "level": {
+          "name": "Úroveň nebo teplota"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Vypnuto",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Vysoká",
+        "off": "Vypnuto",
+        "low": "Nízká",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Přidat spínací bod"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "ID tarifu"
+      },
+      "cooling_switch_program": {
+        "name": "Časový program chlazení",
+        "state": {
+          "on": "Chlazení",
+          "off": "Vypnuto"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Časový program větrání",
+        "state": {
+          "min": "Minimální",
+          "red": "Snížené",
+          "nom": "Jmenovité",
+          "max": "Maximální",
+          "dem": "Podle potřeby",
+          "off": "Vypnuto"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Časový program (teploty)"
+      },
+      "wddw2_switch_program": {
+        "name": "Časový program teplé vody (teploty)"
+      },
+      "name_part_program_cooling": {
+        "name": "Časový program chlazení"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Časový program topení"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Časový program chlazení"
+      },
+      "name_part_program_ventilation": {
+        "name": "Časový program větrání"
+      },
+      "name_part_program_hot_water": {
+        "name": "Časový program teplé vody"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Neznámý"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Název časového programu"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Nastavit spínací body časového programu",
+      "description": "Nastaví spínací body jednoho nebo více týdenních časových programů topné soustavy, čerstvě načtené a zkontrolované podle mezí, které soustava hlásí. Každý program se odešle jednou a přečte zpět; nic se automaticky neopakuje.",
+      "fields": {
+        "mode": {
+          "name": "Způsob",
+          "description": "Nahradit celý týden, nebo jen dny, které se vyskytují ve spínacích bodech (ostatní dny zůstanou tak, jak byly načteny)."
+        },
+        "switch_points": {
+          "name": "Spínací body",
+          "description": "Den (mo až su), čas (HH:MM, podle hodin topné soustavy) a úroveň každého spínacího bodu. U programu s teplotami je úrovní číslo, například 21.5."
+        },
+        "expected": {
+          "name": "Očekávané spínací body",
+          "description": "Volitelné: spínací body, které musí program právě obsahovat. Pokud obsahuje jiné (například změněné v aplikaci), nic se neodešle."
+        },
+        "validate_only": {
+          "name": "Pouze zkontrolovat",
+          "description": "Zkontroluje spínací body a odpoví, aniž by cokoli odeslal."
         }
       }
     }

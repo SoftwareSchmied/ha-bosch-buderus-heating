@@ -6048,7 +6048,7 @@
       ]
      },
      "device_class": "enum",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
@@ -7743,7 +7743,7 @@
       ]
      },
      "device_class": "enum",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,

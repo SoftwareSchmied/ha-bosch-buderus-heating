@@ -366,19 +366,24 @@
         "title": "Prikaz časovnega programa ogrevanja",
         "description": "**{program}**\n\n**Ponedeljek:** {mo}\n\n**Torek:** {tu}\n\n**Sreda:** {we}\n\n**Četrtek:** {th}\n\n**Petek:** {fr}\n\n**Sobota:** {sa}\n\n**Nedelja:** {su}\n\nIzberite dan v tednu. Časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. ∅ pomeni, da za ta dan ni shranjena nobena preklopna točka. Spremembe vplivajo na vsako cono, ki uporablja ta časovni program.",
         "data": {
-          "day": "Dan v tednu"
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
         }
       },
       "rrc_readonly": {
         "title": "Prikaz časovnega programa ogrevanja",
-        "description": "**{program}**\n\n**Ponedeljek:** {mo}\n\n**Torek:** {tu}\n\n**Sreda:** {we}\n\n**Četrtek:** {th}\n\n**Petek:** {fr}\n\n**Sobota:** {sa}\n\n**Nedelja:** {su}\n\nTa časovni program je tu mogoče le prikazati. Nima preklopnih točk, ki bi jih bilo mogoče urejati, ali vsebuje nepodprte nastavitve. ∅ pomeni, da ni shranjena nobena preklopna točka. Spremembe lahko naredite v aplikaciji proizvajalca."
+        "description": "**{program}**\n\n**Ponedeljek:** {mo}\n\n**Torek:** {tu}\n\n**Sreda:** {we}\n\n**Četrtek:** {th}\n\n**Petek:** {fr}\n\n**Sobota:** {sa}\n\n**Nedelja:** {su}\n\nTa časovni program je tu mogoče le prikazati. Nima preklopnih točk, ki bi jih bilo mogoče urejati, ali vsebuje nepodprte nastavitve. ∅ pomeni, da ni shranjena nobena preklopna točka. Spremembe lahko naredite v aplikaciji proizvajalca.",
+        "data": {
+          "week_view": "Tedenski pogled"
+        }
       },
       "rrc_point": {
         "title": "Urejanje preklopne točke",
         "description": "**{program}**\n\nIzberite čas v korakih po pet minut in temperaturo od 5 do 30 °C v korakih po 0,5 °C. Čas se tedensko ponavlja po lokalnem času ogrevalnega sistema. Spremembe vplivajo na vse dodeljene cone.",
         "data": {
           "time": "Čas",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Izbriši to preklopno točko"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Izbira preklopne točke",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nIzberite preklopno točko, da jo spremenite ali izbrišete, ali dodajte novo. Dan ima največ {per_day} preklopnih točk (meja aplikacije proizvajalca, ki je regulator ne sporoča); zadnja preklopna točka dneva ostane.",
         "data": {
           "point": "Preklopna točka"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.",
         "data": {
           "action": "Naslednji korak",
-          "day": "Dan v tednu"
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nTa program ni aktivni program ogrevalnega kroga. Spremembe začnejo veljati, ko je izbran.",
         "data": {
           "action": "Naslednji korak",
-          "day": "Dan v tednu"
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nProgram tople vode velja samo, dokler je način delovanja tople vode nastavljen na Samodejno.",
         "data": {
           "action": "Naslednji korak",
-          "day": "Dan v tednu"
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Rezultat",
         "description": "Nič ni bilo izbrisano."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Sprememba programa tople vode",
+        "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nRavni so tiste iz programa sobnega regulatorja. Program velja, dokler topla voda sledi svojemu programu. Največ šest preklopnih točk na dan je meja aplikacije proizvajalca, ne meja, ki bi jo sporočal regulator.",
+        "data": {
+          "action": "Naslednji korak",
+          "day": "Dan v tednu",
+          "week_view": "Tedenski pogled"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Urejanje preklopne točke",
+        "description": "**{program}** – **{day}**\n\nIzberite čas v korakih po {raster} minut in temperaturo od {minimum} do {maximum} °C v korakih po {step} °C. Velja od tega časa do naslednje preklopne točke.",
+        "data": {
+          "time": "Čas",
+          "value": "Temperatura",
+          "off": "Izklopljeno namesto temperature",
+          "delete": "Izbriši to preklopno točko"
+        }
+      },
+      "rrc_add": {
+        "title": "Dodajanje preklopne točke",
+        "description": "**{program}**\n\n{points}\n\nIzberite čas v korakih po pet minut in temperaturo od 5 do 30 °C v korakih po 0,5 °C. Čas se tedensko ponavlja po lokalnem času ogrevalnega sistema. Spremembe vplivajo na vse dodeljene cone.",
+        "data": {
+          "time": "Čas",
+          "temperature": "Temperatura"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
       "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno.",
       "local_token_end_unconfirmed": "Preklic tega žetona lahko konča lokalni dostop. Označite še drugo polje ali pustite prvo neoznačeno, da se vrnete. Nič ni bilo poslano.",
-      "connection_remove_unconfirmed": "Označite še »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno."
+      "connection_remove_unconfirmed": "Označite še »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno.",
+      "switch_program_value": "Vnesite temperaturo od {minimum} do {maximum} °C v korakih po {step} °C.",
+      "switch_program_day_emptied": "Dan, ki ima preklopne točke, obdrži vsaj eno; ni znano, kaj prazen dan pomeni za regulator.",
+      "rrc_point_limit": "Ta dan ima že največje število preklopnih točk, ki ga aplikacija dovoljuje ({per_day}).",
+      "rrc_point_last": "Zadnje preklopne točke dneva ni mogoče izbrisati; ni znano, kaj prazen dan pomeni za regulator.",
+      "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Izbranega časovnega programa trenutno ni mogoče prebrati. Nič ni bilo poslano."
+    },
+    "switch_points_no_target": {
+      "message": "Izbran ni bil noben omogočen senzor časovnega programa te integracije. Omogočite senzor časovnega programa in ga izberite kot cilj."
+    },
+    "not_a_program_entity": {
+      "message": "Izbrati je mogoče samo senzorje časovnega programa te integracije."
+    },
+    "switch_points_empty_week": {
+      "message": "Teden potrebuje vsaj eno preklopno točko."
+    },
+    "switch_points_invalid_time": {
+      "message": "Vsak čas mora biti v korakih po {raster} minut, brez sekund."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Dan ima dve preklopni točki ob istem času."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Dan ima več preklopnih točk, kot jih ogrevalni sistem dovoljuje ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Teden ima več preklopnih točk, kot jih ogrevalni sistem dovoljuje ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Uporabiti je mogoče samo te ravni: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Uporabiti je mogoče samo temperature od {minimum} do {maximum} v korakih po {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Ogrevalni sistem tega časovnega programa ne sporoča kot spremenljivega."
+    },
+    "switch_points_unused": {
+      "message": "Ogrevalni sistem tega časovnega programa trenutno ne uporablja. Nič ni bilo poslano."
+    },
+    "switch_points_not_level_program": {
+      "message": "Vrste tega časovnega programa ni bilo mogoče prebrati ali se ne ujema z njegovimi preklopnimi točkami. Nič ni bilo poslano."
+    },
+    "switch_points_not_editable": {
+      "message": "Ta časovni program je mogoče samo prikazati, ne spremeniti: ogrevalni sistem ne sporoča vseh mej, potrebnih za spremembo."
+    },
+    "switch_points_program_changed": {
+      "message": "Časovni program se je medtem spremenil ali se ne ujema več s pričakovanimi preklopnimi točkami. Nič ni bilo poslano."
+    },
+    "switch_points_paused": {
+      "message": "Pisanje v ogrevalni sistem je za nekaj minut ustavljeno po ponavljajočih se neuspelih branjih. Nič ni bilo poslano."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Časovni program je bil poslan, a ga ni bilo mogoče potrditi s ponovnim branjem. Morda je bil kljub temu uveljavljen; ne pošlje se znova."
+    },
+    "switch_points_rejected": {
+      "message": "Ogrevalni sistem je zavrnil časovni program (HTTP {status}). Nič ni bilo spremenjeno."
+    },
+    "switch_points_invalid": {
+      "message": "Preklopne točke se ne ujemajo z mejami časovnega programa."
+    },
+    "program_name_empty": {
+      "message": "Vnesite ime; prazno ime se ne pošlje."
+    },
+    "program_name_too_long": {
+      "message": "Ime ima lahko največ {max} znakov."
+    },
+    "program_name_charset": {
+      "message": "Ime vsebuje znake, ki jih ogrevalni sistem ne more shraniti ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Ogrevalni sistem tega imena ne sporoča kot spremenljivega."
+    },
+    "program_name_changed": {
+      "message": "Ime se je medtem spremenilo. Nič ni bilo poslano."
+    },
+    "program_name_not_confirmed": {
+      "message": "Ime je bilo poslano, a ga ni bilo mogoče potrditi s ponovnim branjem. Morda je bilo kljub temu uveljavljeno; ne pošlje se znova."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Nazaj"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Zamenjaj ves teden",
+        "replace_days": "Zamenjaj samo navedene dneve"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dan"
+        },
+        "time": {
+          "name": "Čas"
+        },
+        "level": {
+          "name": "Raven ali temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Izklopljeno",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Visoka",
+        "off": "Izklopljeno",
+        "low": "Nizka",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Dodaj preklopno točko"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "ID tarife"
+      },
+      "cooling_switch_program": {
+        "name": "Časovni program hlajenja",
+        "state": {
+          "on": "Hlajenje",
+          "off": "Izklopljeno"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Časovni program prezračevanja",
+        "state": {
+          "min": "Najnižje",
+          "red": "Znižano",
+          "nom": "Nazivno",
+          "max": "Najvišje",
+          "dem": "Po potrebi",
+          "off": "Izklopljeno"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Časovni program (temperature)"
+      },
+      "wddw2_switch_program": {
+        "name": "Časovni program tople vode (temperature)"
+      },
+      "name_part_program_cooling": {
+        "name": "Časovni program hlajenja"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Časovni program ogrevanja"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Časovni program hlajenja"
+      },
+      "name_part_program_ventilation": {
+        "name": "Časovni program prezračevanja"
+      },
+      "name_part_program_hot_water": {
+        "name": "Časovni program tople vode"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Neznano"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Ime časovnega programa"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Nastavi preklopne točke časovnega programa",
+      "description": "Nastavi preklopne točke enega ali več tedenskih časovnih programov ogrevalnega sistema, na novo prebrane in preverjene glede na meje, ki jih sistem sporoča. Vsak program se pošlje enkrat in prebere nazaj; nič se ne ponavlja samodejno.",
+      "fields": {
+        "mode": {
+          "name": "Način",
+          "description": "Zamenjaj ves teden ali samo dneve, ki se pojavijo v preklopnih točkah (preostali dnevi ostanejo, kot so bili prebrani)."
+        },
+        "switch_points": {
+          "name": "Preklopne točke",
+          "description": "Dan (mo do su), čas (HH:MM, po uri ogrevalnega sistema) in raven vsake preklopne točke. Pri programu s temperaturami je raven število, na primer 21.5."
+        },
+        "expected": {
+          "name": "Pričakovane preklopne točke",
+          "description": "Neobvezno: preklopne točke, ki jih mora program imeti v tem trenutku. Če ima druge (na primer spremenjene v aplikaciji), se nič ne pošlje."
+        },
+        "validate_only": {
+          "name": "Samo preveri",
+          "description": "Preveri preklopne točke in odgovori brez pošiljanja."
         }
       }
     }

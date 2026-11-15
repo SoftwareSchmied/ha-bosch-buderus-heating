@@ -366,19 +366,24 @@
         "title": "Näytä lämmitysaikaohjelma",
         "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nValitse viikonpäivä. Ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. ∅ tarkoittaa, ettei kyseiselle päivälle ole tallennettu kytkentäpistettä. Muutokset vaikuttavat kaikkiin tätä aikaohjelmaa käyttäviin vyöhykkeisiin.",
         "data": {
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "rrc_readonly": {
         "title": "Näytä lämmitysaikaohjelma",
-        "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nTätä aikaohjelmaa voi vain katsella täällä. Siinä ei ole muokattavia kytkentäpisteitä tai se sisältää tukemattomia asetuksia. ∅ tarkoittaa, ettei kytkentäpistettä ole tallennettu. Voit tehdä muutokset valmistajan sovelluksessa."
+        "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nTätä aikaohjelmaa voi vain katsella täällä. Siinä ei ole muokattavia kytkentäpisteitä tai se sisältää tukemattomia asetuksia. ∅ tarkoittaa, ettei kytkentäpistettä ole tallennettu. Voit tehdä muutokset valmistajan sovelluksessa.",
+        "data": {
+          "week_view": "Viikkonäkymä"
+        }
       },
       "rrc_point": {
         "title": "Muokkaa kytkentäpistettä",
         "description": "**{program}**\n\nValitse aika viiden minuutin portain ja lämpötila 5–30 °C 0,5 °C:n portain. Aika toistuu viikoittain lämmitysjärjestelmän paikallisessa ajassa. Muutokset vaikuttavat kaikkiin liitettyihin vyöhykkeisiin.",
         "data": {
           "time": "Aika",
-          "temperature": "Lämpötila"
+          "temperature": "Lämpötila",
+          "delete": "Poista tämä kytkentäpiste"
         }
       },
       "rrc_confirm": {
@@ -387,7 +392,7 @@
       },
       "rrc_day": {
         "title": "Valitse kytkentäpiste",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nValitse kytkentäpiste muuttaaksesi tai poistaaksesi sen, tai lisää uusi. Päivällä on enintään {per_day} kytkentäpistettä (valmistajan sovelluksen raja, jota säädin ei ilmoita); päivän viimeinen kytkentäpiste säilyy.",
         "data": {
           "point": "Kytkentäpiste"
         }
@@ -404,7 +409,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_week_inactive": {
@@ -412,7 +418,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTämä ohjelma ei ole lämmityspiirin aktiivinen ohjelma. Muutokset tulevat voimaan, kun se valitaan.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_week_dhw": {
@@ -420,7 +427,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nLämpimän käyttöveden aikaohjelma on voimassa vain, kun lämpimän käyttöveden käyttötila on Automaattinen.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_day": {
@@ -906,6 +914,33 @@
       "result_recordings_delete_kept": {
         "title": "Tulos",
         "description": "Mitään ei poistettu."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Muuta käyttöveden aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTasot ovat huonesäätimen ohjelman tasoja. Aikaohjelma on voimassa, kun käyttövesi noudattaa omaa ohjelmaansa. Enintään kuusi kytkentäpistettä päivässä on valmistajan sovelluksen raja, ei säätimen ilmoittama.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Muokkaa kytkentäpistettä",
+        "description": "**{program}** – **{day}**\n\nValitse aika {raster} minuutin portain ja lämpötila {minimum}–{maximum} °C {step} °C:n portain. Se on voimassa tästä ajasta seuraavaan kytkentäpisteeseen asti.",
+        "data": {
+          "time": "Aika",
+          "value": "Lämpötila",
+          "off": "Pois lämpötilan sijaan",
+          "delete": "Poista tämä kytkentäpiste"
+        }
+      },
+      "rrc_add": {
+        "title": "Lisää kytkentäpiste",
+        "description": "**{program}**\n\n{points}\n\nValitse aika viiden minuutin portain ja lämpötila 5–30 °C 0,5 °C:n portain. Aika toistuu viikoittain lämmitysjärjestelmän paikallisessa ajassa. Muutokset vaikuttavat kaikkiin liitettyihin vyöhykkeisiin.",
+        "data": {
+          "time": "Aika",
+          "temperature": "Lämpötila"
+        }
       }
     },
     "error": {
@@ -1024,7 +1059,12 @@
       "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
       "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
       "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Valitse myös toinen valintaruutu tai jätä ensimmäinen tyhjäksi palataksesi. Mitään ei lähetetty.",
-      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu."
+      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu.",
+      "switch_program_value": "Anna lämpötila {minimum}–{maximum} °C {step} °C:n portain.",
+      "switch_program_day_emptied": "Päivä, jolla on kytkentäpisteitä, säilyttää vähintään yhden; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
+      "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
+      "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
+      "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -1555,6 +1595,78 @@
     },
     "switch_program_not_readable": {
       "message": "Valittua aikaohjelmaa ei voi lukea juuri nyt. Mitään ei lähetetty."
+    },
+    "switch_points_no_target": {
+      "message": "Tämän integraation käyttöön otettua aikaohjelma-anturia ei valittu. Ota aikaohjelma-anturi käyttöön ja valitse se kohteeksi."
+    },
+    "not_a_program_entity": {
+      "message": "Valittavissa ovat vain tämän integraation aikaohjelma-anturit."
+    },
+    "switch_points_empty_week": {
+      "message": "Viikolla on oltava vähintään yksi kytkentäpiste."
+    },
+    "switch_points_invalid_time": {
+      "message": "Kunkin ajan on oltava {raster} minuutin portain, ilman sekunteja."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Päivällä on kaksi kytkentäpistettä samaan aikaan."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Päivällä on enemmän kytkentäpisteitä kuin lämmitysjärjestelmä sallii ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Viikolla on enemmän kytkentäpisteitä kuin lämmitysjärjestelmä sallii ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Käytettävissä ovat vain nämä tasot: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Käytettävissä ovat vain lämpötilat {minimum}–{maximum} {step} portain."
+    },
+    "switch_points_not_writable": {
+      "message": "Lämmitysjärjestelmä ei ilmoita tätä aikaohjelmaa muutettavaksi."
+    },
+    "switch_points_unused": {
+      "message": "Lämmitysjärjestelmä ei käytä tätä aikaohjelmaa tällä hetkellä. Mitään ei lähetetty."
+    },
+    "switch_points_not_level_program": {
+      "message": "Tämän aikaohjelman tyyppiä ei voitu lukea tai se ei vastaa sen kytkentäpisteitä. Mitään ei lähetetty."
+    },
+    "switch_points_not_editable": {
+      "message": "Tämä aikaohjelma voidaan vain näyttää, ei muuttaa: lämmitysjärjestelmä ei ilmoita kaikkia muutokseen tarvittavia rajoja."
+    },
+    "switch_points_program_changed": {
+      "message": "Aikaohjelma on muuttunut välissä tai se ei enää vastaa odotettuja kytkentäpisteitä. Mitään ei lähetetty."
+    },
+    "switch_points_paused": {
+      "message": "Kirjoittaminen lämmitysjärjestelmään on tauolla muutaman minuutin toistuneiden epäonnistuneiden lukujen jälkeen. Mitään ei lähetetty."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Aikaohjelma lähetettiin, mutta sitä ei voitu vahvistaa lukemalla se takaisin. Se on voitu silti ottaa käyttöön; sitä ei lähetetä uudelleen."
+    },
+    "switch_points_rejected": {
+      "message": "Lämmitysjärjestelmä hylkäsi aikaohjelman (HTTP {status}). Mitään ei muutettu."
+    },
+    "switch_points_invalid": {
+      "message": "Kytkentäpisteet eivät vastaa aikaohjelman rajoja."
+    },
+    "program_name_empty": {
+      "message": "Anna nimi; tyhjää nimeä ei lähetetä."
+    },
+    "program_name_too_long": {
+      "message": "Nimessä saa olla enintään {max} merkkiä."
+    },
+    "program_name_charset": {
+      "message": "Nimi sisältää merkkejä, joita lämmitysjärjestelmä ei voi tallentaa ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Lämmitysjärjestelmä ei ilmoita tätä nimeä muutettavaksi."
+    },
+    "program_name_changed": {
+      "message": "Nimi on muuttunut välissä. Mitään ei lähetetty."
+    },
+    "program_name_not_confirmed": {
+      "message": "Nimi lähetettiin, mutta sitä ei voitu vahvistaa lukemalla se takaisin. Se on voitu silti ottaa käyttöön; sitä ei lähetetä uudelleen."
     }
   },
   "selector": {
@@ -1666,6 +1778,44 @@
     "navigation": {
       "options": {
         "back": "← Takaisin"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Korvaa koko viikko",
+        "replace_days": "Korvaa vain annetut päivät"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Päivä"
+        },
+        "time": {
+          "name": "Aika"
+        },
+        "level": {
+          "name": "Taso tai lämpötila"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Pois",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Korkea",
+        "off": "Pois",
+        "low": "Matala",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Lisää kytkentäpiste"
       }
     }
   },
@@ -2905,6 +3055,45 @@
       },
       "tariff_id": {
         "name": "Tariffitunnus"
+      },
+      "cooling_switch_program": {
+        "name": "Jäähdytyksen aikaohjelma",
+        "state": {
+          "on": "Jäähdytys",
+          "off": "Pois"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Ilmanvaihdon aikaohjelma",
+        "state": {
+          "min": "Minimi",
+          "red": "Alennettu",
+          "nom": "Nimellinen",
+          "max": "Maksimi",
+          "dem": "Tarveohjattu",
+          "off": "Pois"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Aikaohjelma (lämpötilat)"
+      },
+      "wddw2_switch_program": {
+        "name": "Lämpimän käyttöveden aikaohjelma (lämpötilat)"
+      },
+      "name_part_program_cooling": {
+        "name": "Jäähdytyksen aikaohjelma"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Lämmityksen aikaohjelma"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Jäähdytyksen aikaohjelma"
+      },
+      "name_part_program_ventilation": {
+        "name": "Ilmanvaihdon aikaohjelma"
+      },
+      "name_part_program_hot_water": {
+        "name": "Lämpimän käyttöveden aikaohjelma"
       }
     },
     "binary_sensor": {
@@ -3212,6 +3401,35 @@
               "unknown": "Tuntematon"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Aikaohjelman nimi"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Aseta aikaohjelman kytkentäpisteet",
+      "description": "Asettaa lämmitysjärjestelmän yhden tai useamman viikoittaisen aikaohjelman kytkentäpisteet. Ohjelmat luetaan tuoreina ja tarkistetaan järjestelmän ilmoittamia rajoja vasten. Kukin ohjelma lähetetään kerran ja luetaan takaisin; mitään ei toisteta automaattisesti.",
+      "fields": {
+        "mode": {
+          "name": "Tapa",
+          "description": "Korvaa koko viikko tai vain ne päivät, jotka esiintyvät kytkentäpisteissä (muut päivät jäävät sellaisiksi kuin ne luettiin)."
+        },
+        "switch_points": {
+          "name": "Kytkentäpisteet",
+          "description": "Päivä (mo–su), kellonaika (HH:MM, lämmitysjärjestelmän kellon mukaan) ja kunkin kytkentäpisteen taso. Lämpötiloja käyttävässä ohjelmassa taso on luku, esimerkiksi 21.5."
+        },
+        "expected": {
+          "name": "Odotetut kytkentäpisteet",
+          "description": "Valinnainen: kytkentäpisteet, jotka ohjelmassa on oltava juuri nyt. Jos siinä on muita (esimerkiksi sovelluksessa muutettuja), mitään ei lähetetä."
+        },
+        "validate_only": {
+          "name": "Vain tarkistus",
+          "description": "Tarkistaa kytkentäpisteet ja vastaa lähettämättä mitään."
         }
       }
     }

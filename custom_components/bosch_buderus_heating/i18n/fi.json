@@ -23,6 +23,17 @@
       "time": "Aika",
       "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen.",
       "reopen": "Sulje ikkuna ja avaa se uudelleen."
+    },
+    "schedule": {
+      "title": "Viikkonäkymä",
+      "clock": "Ajat lämmitysjärjestelmän kellon mukaan.",
+      "carried": "jatkuu edellisestä päivästä",
+      "empty": "ei kytkentäpisteitä",
+      "noLevel": "ei asetusarvoa",
+      "changed": "muutettu, ei vielä tallennettu",
+      "hours": "Tunnit",
+      "day": "Päivä",
+      "segment": "{day} {start}–{end}: {level}"
     }
   },
   "texts": {

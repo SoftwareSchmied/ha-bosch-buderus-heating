@@ -335,6 +335,99 @@ shortly afterwards. The heating programs, the selection of the active
 schedule, program B, iCom gateways and programs with absolute temperatures
 are tested with simulated data only and stay expected, untested.
 
+#### Further program kinds
+
+Since 0.9.2-beta.2 the same dialog also lists these programs, where the
+gateway reports them:
+
+| Program | Path | Setpoints | Changeable when |
+|---|---|---|---|
+| Heating program A/B with temperatures | `/heatingCircuits/{hc}/switchPrograms/A` (`B`) with program type `absolute` | Temperature as text, such as `"21.5"`; `"0.0"` is off | the program reports `switchPointMin`, `switchPointMax` and `switchPointResolution`, and the program type reads `absolute` |
+| Cooling program | `/heatingCircuits/{hc}/cooling/switchPrograms/A` | `on` or `off` | the circuit's cooling level `cooling/temperatureLevels/on` can be read |
+| Zone programs | `/zones/{zone}/switchPrograms/heating` and `.../cooling` | Temperature as text (or as a number, as read) | range and step are reported |
+| Ventilation program | `/ventilation/zone1/switchPrograms/cp` | `min`, `red`, `nom`, `max`, `dem`, `off` | the levels are listed as references of `ventilationLevels`; only those are offered |
+| WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range |
+
+Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
+`maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never fall back to
+the app's own default values. A program without them is shown as a sensor,
+not offered for changes, and the diagnostics name the reason. A temperature
+outside the range or off the step is refused, never rounded. Off (`"0.0"`)
+is offered only where the program already holds it. The cooling program is
+written as program `A` only, the zone heating and cooling programs
+separately. The WDDW2 program is the only one sent as the object
+`{"switchPoints": [...]}`; all others go out as a raw array. A WDDW2 day
+without points has no setpoint; the others carry the previous day's last
+point over.
+
+The sensor of an absolute or zone program shows the temperature scheduled
+now, a WDDW2 sensor as well; a switched-off point shows no temperature and
+the attribute `scheduled: off`. The attributes also hold `allowed_levels`
+(level programs) or `min_setpoint`, `max_setpoint` and `setpoint_step`.
+
+None of these programs has been read or changed on a real installation:
+the forms follow the manufacturer's app, and reading and writing them is
+expected, untested. A diagnostics file of such a system shows the form
+(key names and value types, never values) and helps to confirm it.
+
+#### Weekly view
+
+The week step of the dialog (and the RRC schedule view) shows the week as a
+read-only table: seven days from midnight to midnight, one segment per
+switch point, its level or temperature as text and colour, the part
+carried over from the previous day marked. An RRC day without points says
+so and is not shown as off. The view only displays; changes still go
+through the dialog steps. If the view cannot be loaded, the text of the
+week stays as before. Times are those of the heating system's clock.
+
+#### Program names
+
+The names of programs A and B (`switchPrograms/nameA`, `nameB`) are now
+decoded as their `valueConfig` says, so a Base64 name shows as text. Where
+the gateway reports a name as writable with a complete coding (`charset`,
+`codingType` `base64` or `ascii`, `maxLength`), a text entity **Time
+program name** changes it (disabled by default, category configuration).
+The name is read again before the single write and compared with the one
+shown; the read-back compares the decoded name. Too long names and
+characters the coding cannot hold are refused; an empty name is not sent.
+iCom gateways get no name control: their app does not write names. Expected,
+untested on a real installation.
+
+#### Action `bosch_buderus_heating.set_switch_points`
+
+The integration's first action sets the switch points of one or more
+program sensors from automations and scripts:
+
+```yaml
+action: bosch_buderus_heating.set_switch_points
+target:
+  entity_id: sensor.heating_circuit_1_time_program_a
+data:
+  mode: replace_days  # or replace_week (default)
+  switch_points:
+    - {day: sa, time: "08:00", level: comfort2}
+    - {day: sa, time: "22:30", level: eco}
+  validate_only: false
+response_variable: result
+```
+
+`level` is a level key (see the sensor attribute `allowed_levels`) or, for
+programs with temperatures, a number such as `21.5`. `expected` (optional)
+lists the switch points the program must hold now; otherwise nothing is
+sent. The base of every change is a fresh reading of the program; it is
+read a second time right before the single PUT, and a change in between
+sends nothing. The same rules as in the dialog apply. The response holds,
+per target, `result` (`sent`, `unchanged` or `validated`), `confirmed`, the
+previous and the new switch points by weekday, never a path or ID. Several
+targets are handled one after the other; one that fails does not undo
+another one. Nothing is repeated automatically; an automation that repeats
+a call does so on its own account.
+
+Program sensors of programs the gateway reports as writable are now
+enabled by default when they are first registered, so the action finds its
+targets; existing entities keep their state. The action is tested with
+simulated data only; the write behind it is the dialog's.
+
 ## Deutsch
 
 Diese Anleitung beschreibt die Bedienung in Stable **0.8.2**, eingeführt mit **0.8.2-beta.7**,
@@ -636,3 +729,72 @@ der App des Herstellers, und das Zurückstellen dort erschien kurz darauf in
 Home Assistant. Die Heizprogramme, die Auswahl des aktiven Zeitprogramms,
 Programm B, iCom-Gateways und Programme mit absoluten Temperaturen sind nur
 mit simulierten Daten getestet und bleiben erwartet, ungetestet.
+
+#### Weitere Programmarten
+
+Seit 0.9.2-beta.2 bietet derselbe Dialog auch diese Programme an, wo das
+Gateway sie meldet: Heizprogramme A/B mit Temperaturen (Programmart
+`absolute`, Temperaturen als Text wie `"21.5"`, `"0.0"` ist aus), das
+Kühlprogramm `/heatingCircuits/{hc}/cooling/switchPrograms/A` (`on`/`off`,
+nur mit lesbarer Kühlstufe `on`), die Zonenprogramme
+`/zones/{zone}/switchPrograms/heating` und `.../cooling` (Temperaturen),
+das Lüftungsprogramm `/ventilation/zone1/switchPrograms/cp` (nur die als
+Referenzen von `ventilationLevels` gemeldeten Stufen) und das
+WDDW2-Warmwasserprogramm `/dhwCircuits/dhw1/switchPrograms/program1`
+(ganze Grad als Text oder `off`, Bereich aus `manualSetpoint`).
+
+Änderbar ist ein solches Programm nur mit den gemeldeten Grenzen
+(`maxNbOfSwitchPoints`, `maxNbOfSwitchPointsPerDay`,
+`switchPointTimeRaster`) und, bei Temperaturen, mit gemeldetem Bereich und
+Schritt (`switchPointMin`, `switchPointMax`, `switchPointResolution`). Die
+Ersatzwerte der App verwende ich nie. Ohne diese Angaben erscheint das
+Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
+außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
+gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das
+WDDW2-Programm geht als einziges als Objekt `{"switchPoints": [...]}`
+hinaus, alle anderen als rohes Array.
+
+Keines dieser Programme wurde an einer echten Anlage gelesen oder geändert;
+die Formen folgen der App des Herstellers. Lesen und Schreiben sind
+erwartet, ungetestet. Eine Diagnosedatei zeigt die Form (Schlüsselnamen und
+Werttypen, nie Werte).
+
+#### Wochenansicht
+
+Der Wochenschritt des Dialogs (und die RRC-Programmansicht) zeigt die Woche
+als nur lesende Tabelle: sieben Tage von Mitternacht bis Mitternacht, ein
+Abschnitt je Schaltpunkt mit Stufe oder Temperatur als Text und Farbe, der
+Übertrag vom Vortag markiert. Ein RRC-Tag ohne Schaltpunkte wird so
+bezeichnet, nicht als aus. Geändert wird weiter über die Dialogschritte.
+Lädt die Ansicht nicht, bleibt der bisherige Text. Die Zeiten sind die der
+Uhr der Heizungsanlage.
+
+#### Programmnamen
+
+Die Namen der Programme A und B werden jetzt nach ihrem `valueConfig`
+dekodiert (ein Base64-Name erscheint als Text). Meldet das Gateway einen
+Namen als schreibbar mit vollständiger Kodierung, ändert ihn die
+Text-Entität **Name des Zeitprogramms** (standardmäßig deaktiviert). Der Name
+wird vor dem einzigen Schreiben frisch gelesen und verglichen; zurückgelesen
+wird der dekodierte Name. Zu lange Namen und Zeichen, die die Kodierung nicht
+fasst, werden abgelehnt; ein leerer Name wird nicht gesendet. iCom-Gateways
+erhalten keine Namenssteuerung. Erwartet, ungetestet an einer echten Anlage.
+
+#### Aktion `bosch_buderus_heating.set_switch_points`
+
+Die erste Aktion der Integration setzt die Schaltpunkte eines oder mehrerer
+Programm-Sensoren aus Automationen und Skripten (Beispiel im englischen
+Teil). `level` ist eine Stufe (Attribut `allowed_levels`) oder bei
+Programmen mit Temperaturen eine Zahl wie `21.5`. Grundlage ist immer eine
+frische Lesung; direkt vor dem einzigen PUT wird das Programm ein zweites
+Mal gelesen, eine Änderung dazwischen sendet nichts. Es gelten dieselben
+Regeln wie im Dialog. Die Antwort enthält je Ziel `result` (`sent`,
+`unchanged`, `validated`), `confirmed` sowie die bisherigen und neuen
+Schaltpunkte, nie Pfade oder Kennungen. Mehrere Ziele werden nacheinander
+bearbeitet; ein Fehler macht einen Erfolg nicht rückgängig. Nichts wird
+automatisch wiederholt.
+
+Programm-Sensoren schreibbarer Programme sind jetzt beim ersten Anlegen
+standardmäßig aktiviert, damit die Aktion ihre Ziele findet; bestehende
+Entitäten behalten ihren Zustand. Die Aktion ist nur mit simulierten Daten
+getestet; das Schreiben dahinter ist das des Dialogs.

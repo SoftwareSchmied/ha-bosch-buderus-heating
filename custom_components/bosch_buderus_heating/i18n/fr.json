@@ -23,6 +23,17 @@
       "time": "Heure",
       "deleteFailed": "Impossible d'ouvrir la confirmation de suppression. Veuillez recharger la page et réessayer.",
       "reopen": "Veuillez fermer puis rouvrir la boîte de dialogue."
+    },
+    "schedule": {
+      "title": "Vue hebdomadaire",
+      "clock": "Heures selon l'horloge de l'installation de chauffage.",
+      "carried": "se poursuit depuis la veille",
+      "empty": "aucun point de commutation",
+      "noLevel": "aucune consigne",
+      "changed": "modifié, pas encore enregistré",
+      "hours": "Heures",
+      "day": "Jour",
+      "segment": "{day} de {start} à {end} : {level}"
     }
   },
   "texts": {
