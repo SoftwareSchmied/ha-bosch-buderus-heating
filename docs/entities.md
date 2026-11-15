@@ -353,6 +353,8 @@ counters—not holiday dates, names, or raw configuration data.
 | Outdoor temperature | Sensor | `/system/sensors/temperatures/outdoor_t1` | No | No | 15 min |
 | System type | Diagnostic sensor | `/system/type` | No | No | startup only |
 | Variable tariff – support (before 0.9.1 *Support status*) | Diagnostic sensor | `/system/variableTariff/supportStatus` | No | No | startup only |
+| Variable tariff active (iCom, disabled, since 0.9.2) | Diagnostic binary sensor | `/application/tbso/enable` | Yes | No | startup only |
+| Tariff ID (iCom, disabled, since 0.9.2) | Diagnostic sensor, attribute `tariff_selected` | `/application/tbso/electricity/tariffID` | Yes | No | startup only |
 
 The system-pressure sensor also receives the six validated limits as numeric
 attributes with the unit in each attribute name:
@@ -573,6 +575,12 @@ no entity; a configured name is added dynamically.
 | Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
 | Heating temperature (sensor before 0.9.1 *Heating*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
 | Setback temperature (sensor before 0.9.1 *Reduced*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
+| Summer/winter switching (select since 0.9.2) | Sensor (disabled) and select | `/heatingCircuits/{hc}/suWiSwitchMode` | Yes | Yes, not on room controllers (expected, untested) | 5 min; read back after change |
+| Stop heating at outdoor temperature (number since 0.9.2) | Sensor (disabled) and number control | `/heatingCircuits/{hc}/suWiThreshold` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Cooling: room setpoint (number since 0.9.2) | Sensor and number control (disabled) | `/heatingCircuits/{hc}/cooling/roomTempSetpoint` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Start cooling at outdoor temperature (number since 0.9.2) | Sensor (disabled) and number control (disabled), only while cooling is offered | `/heatingCircuits/{hc}/cooling/outdoorThreshold` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Away temperature (number since 0.9.2) | Sensor (disabled) and number control | `/heatingCircuits/{hc}/awayTemperature` or `.../temperatureLevels/awayTemperature` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Cooling temperature (number since 0.9.2) | Sensor (disabled) and number control (disabled) | `/heatingCircuits/{hc}/cooling/temperatureLevels/on` | Yes | Yes (expected, untested) | 5 min; read back after change |
 
 The select is created only when the heating circuit currently reports the
 `stringValue` type, writeability, and all three allowed raw values `off`,

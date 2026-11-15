@@ -72,10 +72,7 @@ def test_every_k40_tariff_child_is_a_disabled_reading():
     resources = variant(K40, "base")
     children = {path for path in resources if path != "/system/variableTariff"}
     assert len(children) == 15
-    sensors = {
-        item.key: item
-        for item in build_sensor_descriptions(resources)
-    }
+    sensors = {item.key: item for item in build_sensor_descriptions(resources)}
     keys = {path.strip("/").replace("/", ":") for path in children}
     # supportStatus is an array: its sensor carries the ":values" suffix.
     assert {key.removesuffix(":values") for key in sensors} == keys
@@ -128,19 +125,20 @@ def test_parsing_of_the_tariff_values():
     assert tariff_id(on[TARIFF_ID_PATH]) == 3
     assert tariff_id(off[TARIFF_ID_PATH]) == 5
     for broken in (3.5, -1, float("nan"), True, "3"):
-        item = parse_resource(
-            {"id": TARIFF_ID_PATH, "type": "floatValue", "value": 1}
-        )
+        item = parse_resource({"id": TARIFF_ID_PATH, "type": "floatValue", "value": 1})
         from dataclasses import replace
 
         assert tariff_id(replace(item, value=broken)) is None
     assert tariff_enabled(None) is None
 
 
-@pytest.mark.parametrize(("key", "state", "number", "chosen"), [
-    ("on", True, 3, True),
-    ("off", False, 5, False),
-])
+@pytest.mark.parametrize(
+    ("key", "state", "number", "chosen"),
+    [
+        ("on", True, 3, True),
+        ("off", False, 5, False),
+    ],
+)
 async def test_entities_show_state_and_number(hass, key, state, number, chosen):
     coordinator = coordinator_for(hass, variant(ICOM, key))
     binary = VariableTariffActiveBinarySensor(coordinator)
@@ -175,9 +173,7 @@ def test_tariff_paths_are_read_once(path):
 
 
 def test_diagnostics_show_types_only(hass):
-    coordinator = coordinator_for(
-        hass, variant(ICOM, "on")
-    )
+    coordinator = coordinator_for(hass, variant(ICOM, "on"))
     report = circuit_control_diagnostics(coordinator)
     assert report["variable_tariff"] == {
         "enable": "stringValue",
@@ -236,10 +232,15 @@ def _requested(client: AsyncMock) -> set[str]:
 
 async def test_icom_discovery_probes_the_tariff_once():
     tree = dict(variant(ICOM, "on"))
-    tree["/system"] = parse_resource({"id": "/system", "type": "refEnum", "references": []})
+    tree["/system"] = parse_resource(
+        {"id": "/system", "type": "refEnum", "references": []}
+    )
     client = _client(tree)
     discovered = await async_discover_resources(
-        client, "gateway", roots=("/system",), gateway=Gateway("gateway", device_type="iCom")
+        client,
+        "gateway",
+        roots=("/system",),
+        gateway=Gateway("gateway", device_type="iCom"),
     )
     assert set(ICOM_TARIFF_PATHS) <= set(discovered)
 
@@ -247,7 +248,9 @@ async def test_icom_discovery_probes_the_tariff_once():
 @pytest.mark.parametrize("status", [403, 404])
 async def test_refused_or_missing_tariff_changes_nothing(status):
     tree: dict[str, object] = {path: status for path in ICOM_TARIFF_PATHS}
-    tree["/system"] = parse_resource({"id": "/system", "type": "refEnum", "references": []})
+    tree["/system"] = parse_resource(
+        {"id": "/system", "type": "refEnum", "references": []}
+    )
     report = DiscoveryDiagnostics()
     discovered = await async_discover_resources(
         _client(tree),
@@ -288,7 +291,9 @@ async def test_server_errors_on_the_tariff_do_not_end_the_discovery():
 @pytest.mark.parametrize("device_type", ["K40", "rrc2", None])
 async def test_other_gateways_are_not_probed(device_type):
     tree = dict(variant(ICOM, "on"))
-    tree["/system"] = parse_resource({"id": "/system", "type": "refEnum", "references": []})
+    tree["/system"] = parse_resource(
+        {"id": "/system", "type": "refEnum", "references": []}
+    )
     client = _client(tree)
     await async_discover_resources(
         client,
@@ -301,7 +306,9 @@ async def test_other_gateways_are_not_probed(device_type):
 
 async def test_rediscovery_does_not_probe_again():
     tree = dict(variant(ICOM, "on"))
-    tree["/system"] = parse_resource({"id": "/system", "type": "refEnum", "references": []})
+    tree["/system"] = parse_resource(
+        {"id": "/system", "type": "refEnum", "references": []}
+    )
     client = _client(tree)
     await async_discover_resources(
         client,

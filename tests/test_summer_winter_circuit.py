@@ -415,7 +415,10 @@ async def test_dialog_writes_with_the_control_type_guard(
 ):
     coordinator, cloud = _setup(hass, "V2")
     options, result = await _dialog(hass, coordinator)
-    rows = {row["key"]: row for row in next(iter(result["data_schema"].schema.values())).rows}
+    rows = {
+        row["key"]: row
+        for row in next(iter(result["data_schema"].schema.values())).rows
+    }
     row = rows[SWITCH_MODE]
     assert [option["value"] for option in row["options"]] == [
         "automatic",

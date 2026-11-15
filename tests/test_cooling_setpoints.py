@@ -169,7 +169,7 @@ async def test_threshold_outside_limits_or_grid_sends_nothing(hass, value):
 
 
 async def test_threshold_unavailable_once_cooling_is_no_longer_offered(hass):
-    coordinator, cloud = _setup(hass)
+    coordinator, _cloud = _setup(hass)
     entity = number_entity(hass, coordinator, COOLING_THRESHOLD)
     assert entity.available
     put_reading(coordinator, variant(FIXTURE, "V1")[SWITCH_MODE])
@@ -187,9 +187,9 @@ async def test_threshold_refused_when_cooling_disappears_on_the_gateway(hass):
         ),
     )
     with pytest.raises(ServiceValidationError):
-        await number_entity(hass, coordinator, COOLING_THRESHOLD).async_set_native_value(
-            25
-        )
+        await number_entity(
+            hass, coordinator, COOLING_THRESHOLD
+        ).async_set_native_value(25)
     assert cloud.puts == []
 
 
@@ -262,9 +262,9 @@ async def test_read_back_with_another_value_is_not_confirmed(hass):
     coordinator, cloud = _setup(hass)
     cloud.stuck[COOLING_THRESHOLD] = 24.0
     with pytest.raises(HomeAssistantError) as error:
-        await number_entity(hass, coordinator, COOLING_THRESHOLD).async_set_native_value(
-            26
-        )
+        await number_entity(
+            hass, coordinator, COOLING_THRESHOLD
+        ).async_set_native_value(26)
     assert error.value.translation_key == "write_not_confirmed"
     assert cloud.puts == [(COOLING_THRESHOLD, 26.0)]
 
@@ -286,7 +286,10 @@ async def test_fahrenheit_is_written_natively(hass):
         resources[COOLING_SETPOINT],
         value=77.0,
         metadata=replace(
-            resources[COOLING_SETPOINT].metadata, unit="F", minimum=64.0, maximum=86.0,
+            resources[COOLING_SETPOINT].metadata,
+            unit="F",
+            minimum=64.0,
+            maximum=86.0,
             step_size=1.0,
         ),
     )

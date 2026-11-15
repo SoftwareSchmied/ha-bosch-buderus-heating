@@ -21,7 +21,6 @@ from unittest.mock import AsyncMock
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -34,6 +33,7 @@ from custom_components.bosch_buderus_heating.number import (
 from custom_components.bosch_buderus_heating.pointt import Gateway, Resource
 from custom_components.bosch_buderus_heating.pointt.models import BatchItemResult
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.select import (
     BoschBuderusSelect,
     build_select_descriptions,
@@ -156,7 +156,9 @@ def coordinator_for(
     return coordinator
 
 
-def put_reading(coordinator: BoschBuderusDataUpdateCoordinator, resource: Resource) -> None:
+def put_reading(
+    coordinator: BoschBuderusDataUpdateCoordinator, resource: Resource
+) -> None:
     coordinator.data[resource.path] = ResourceSnapshot(
         resource, True, datetime.now(UTC)
     )

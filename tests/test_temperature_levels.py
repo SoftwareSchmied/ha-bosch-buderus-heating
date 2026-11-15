@@ -118,7 +118,9 @@ def test_unknown_level_stays_a_reading_and_is_counted(hass):
 
 
 def test_unknown_cooling_level_is_counted():
-    assert unknown_level_count([ROOT + "/cooling/temperatureLevels/x", COOLING_LEVEL]) == 1
+    assert (
+        unknown_level_count([ROOT + "/cooling/temperatureLevels/x", COOLING_LEVEL]) == 1
+    )
     assert unknown_level_count([COMFORT, ECO, AWAY_LEVEL, ROOT + "/x"]) == 0
 
 
@@ -147,7 +149,9 @@ async def test_changed_heating_level_refuses_the_setback_write(hass):
     assert coordinator.data[ECO].resource.metadata.maximum == 19.5
 
 
-@pytest.mark.parametrize(("changed", "path"), [(COMFORT, ECO), (ECO, AWAY), (AWAY, COMFORT)])
+@pytest.mark.parametrize(
+    ("changed", "path"), [(COMFORT, ECO), (ECO, AWAY), (AWAY, COMFORT)]
+)
 async def test_a_changed_sibling_level_alone_refuses_the_write(hass, changed, path):
     """Only the other level changed in the app (its limits follow later):
     the write is refused unsent all the same."""
@@ -226,9 +230,7 @@ async def test_a_missing_or_failing_level_leaves_the_others():
             {"id": ROOT + "/temperatureLevels/party"},
         ],
     }
-    tree: dict[str, object] = {
-        path: parse_resource(item) for path, item in raw.items()
-    }
+    tree: dict[str, object] = {path: parse_resource(item) for path, item in raw.items()}
     tree[AWAY_LEVEL] = 404
     tree[ROOT + "/temperatureLevels/party"] = 503
     tree["/heatingCircuits"] = parse_resource(
