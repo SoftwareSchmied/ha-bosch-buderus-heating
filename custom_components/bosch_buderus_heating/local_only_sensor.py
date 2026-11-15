@@ -567,6 +567,10 @@ def clean_registered_local_only(
         return
     selection = coordinator.local_selection
     if selection is not None:
+        from .local_only_heal import heal_registered
+
+        # Entries an earlier version removed or handed over come back first.
+        heal_registered(coordinator)
         _remove_registered(
             coordinator, everything=not selection.has_configured_local_access
         )
@@ -579,34 +583,35 @@ def keeps_local_entity(
     """A local-only entity with a reviewed definition stays the entity of its
     reading when the cloud offers the path as well (see ``local_only_pair``).
 
-    True while its entry is registered or its entity is being added; the
-    cloud then adds no sensor of its own for the path and nothing is handed
-    over or removed. Never for the read-only local plant view.
+    True while its entry is registered or its entity is being added, and
+    when the local access takes the reading although its entry is not
+    registered (``local_only_heal.local_claims``); the cloud then adds no
+    sensor of its own for the path and nothing is handed over or removed.
+    Never for the read-only local plant view.
     """
     if _plant_view(coordinator) is not None or reviewed_definition(path) is None:
         return False
     if getattr(coordinator, "config_entry", None) is None:
         return False
-    return hand_over_open(coordinator, path)
+    if hand_over_open(coordinator, path):
+        return True
+    from .local_only_heal import local_claims
+
+    return local_claims(coordinator, path)
 
 
 @callback
 def _kept_cloud_paths(
     coordinator: BoschBuderusDataUpdateCoordinator,
 ) -> frozenset[str]:
-    """Cloud paths with a registered, reviewed local-only entry."""
+    """Cloud paths whose reviewed local-only entity stays or comes back."""
     if coordinator.config_entry is None:
         return frozenset()
-    gateway_id = coordinator.gateway.gateway_id
-    registry = er.async_get(coordinator.hass)
     return frozenset(
         path
         for path in coordinator.resources
         if reviewed_definition(path) is not None
-        and registry.async_get_entity_id(
-            "sensor", DOMAIN, local_only_unique_id(gateway_id, path)
-        )
-        is not None
+        and keeps_local_entity(coordinator, path)
     )
 
 

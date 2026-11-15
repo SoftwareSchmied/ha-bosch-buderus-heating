@@ -818,7 +818,15 @@ source: for a reading both accesses report identically, the setting **Use local
 values for existing entities** decides as for every such reading (with it off
 the cloud value is shown, the local one while there is no current cloud value);
 any other reading shows its local value first and the cloud's only while there
-is none. The attribute `source` names the access shown. For other local-only
+is none. The attribute `source` names the access shown. A reviewed reading the
+cloud offers before it ever had an entity also gets its local-only entity, as
+long as a local access is set up and switched on; a cloud entity such a reading
+already has stays. If an earlier version removed such a local-only entity or
+handed it over to the cloud's sensor, the next start gives it back: the
+removed entity returns with its entity ID and settings, a handed-over one keeps
+its entity ID and settings and gets its reviewed name and states again, and the
+cloud entry left over is removed unless you changed its name, icon, area,
+labels, visibility or enablement. For other local-only
 sensors the cloud entity takes over. When the cloud's
 sensors are set up (at a start, a reload or when a system joins its cloud),
 before any of them is added, the local-only entity continues as the cloud's

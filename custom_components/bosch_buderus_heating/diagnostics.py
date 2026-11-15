@@ -51,6 +51,7 @@ from .holidays import (
 from .icom_diagnostics import icom_diagnostics
 from .icom_profile import is_icom_gateway
 from .local_only import hybrid_evidence, volume_flow_path
+from .local_only_heal import diagnostics as local_only_heal_diagnostics
 from .local_probe import GatewayBrand
 from .local_setup_history import cloud_sign_in_history, local_setup_history
 from .observations import (
@@ -788,6 +789,8 @@ def _gateway_diagnostics(
         ),
         # The calculated defrost: states and counts only, no readings.
         "calculated_values": calculated_diagnostics(coordinator),
+        # Local-only entities taken back from the cloud at setup: counts only.
+        "local_only_healed": local_only_heal_diagnostics(coordinator),
         # Heating circuit settings and the iCom tariff: counts and types only.
         "circuit_controls": circuit_control_diagnostics(coordinator),
         # The performance factors' history: counts and states, no values.

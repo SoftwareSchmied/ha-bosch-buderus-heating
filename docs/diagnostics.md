@@ -13,6 +13,11 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   `local` or `cloud` of the source in use, the number of defrosts counted
   and the start of the last one), `null` before the detection runs. See
   [calculated values](calculated-values.md).
+- `gateways[].local_only_healed`: local-only entities given back at a start
+  since Home Assistant started, as counts: `restored` (an entry an earlier
+  version removed), `taken_back` (an entry an earlier version handed over to
+  the cloud's sensor) and `cloud_entries_removed` (the cloud entries left
+  over). See [entities](entities.md).
 - `heat_source_type`, `heat_source_type_evidence` and `unnamed_modules` in
   `gateways[].heat_generator`: the heat source type (`air`, `brine` or
   `water`), the paths or signals it comes from (`reported_defrost` for a

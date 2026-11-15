@@ -124,6 +124,24 @@ async def test_entities_for_readable_local_only_paths(hass: HomeAssistant) -> No
     await coordinator.async_shutdown()
 
 
+def register_cloud_entity(coordinator, path) -> str:
+    """The cloud's own sensor of a path, registered by an earlier start."""
+    from custom_components.bosch_buderus_heating.local_only_heal import (
+        cloud_unique_id,
+    )
+
+    return (
+        er.async_get(coordinator.hass)
+        .async_get_or_create(
+            "sensor",
+            DOMAIN,
+            cloud_unique_id(coordinator.gateway.gateway_id, path),
+            config_entry=coordinator.config_entry,
+        )
+        .entity_id
+    )
+
+
 async def test_a_cloud_resource_keeps_its_own_entity(hass: HomeAssistant) -> None:
     cloud = Resource(
         COMPRESSOR,
@@ -134,7 +152,34 @@ async def test_a_cloud_resource_keeps_its_own_entity(hass: HomeAssistant) -> Non
     coordinator = coordinator_with(
         hass, [number(COMPRESSOR, 810.0, unit="W"), number(SETPOINT, 30.0)], cloud
     )
+    # An existing cloud entity that was never a local-only one stays.
+    register_cloud_entity(coordinator, COMPRESSOR)
     assert set(by_path(track(coordinator))) == {SETPOINT}
+    await coordinator.async_shutdown()
+
+
+async def test_a_reviewed_reading_new_to_the_entry_gets_its_local_entity(
+    hass: HomeAssistant,
+) -> None:
+    """Nothing registered yet: the local access provides the reviewed reading,
+    so its local-only entity takes it and the cloud reading is its second
+    source."""
+    cloud = Resource(
+        COMPRESSOR,
+        value=800.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="W"),
+    )
+    coordinator = coordinator_with(
+        hass,
+        [number(COMPRESSOR, 810.0, unit="W"), number(SETPOINT, 30.0)],
+        cloud,
+    )
+    entities = by_path(track(coordinator))
+    assert set(entities) == {SETPOINT, COMPRESSOR}
+    assert entities[COMPRESSOR].unique_id == local_only_unique_id(
+        "gateway-one", COMPRESSOR
+    )
     await coordinator.async_shutdown()
 
 
@@ -713,6 +758,7 @@ async def test_ventilation_reading_with_a_cloud_resource_keeps_the_cloud_entity(
         metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
     )
     coordinator = coordinator_with(hass, ventilation_readings(), cloud)
+    register_cloud_entity(coordinator, supply)
     entities = by_path(track(coordinator))
     assert supply not in entities
     assert VENT + "/sensors/exhaustTemp" in entities
