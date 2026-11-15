@@ -1,7 +1,8 @@
-"""Read-only wallbox coordinator within a managed PointT source."""
+"""Wallbox coordinator within a managed PointT source."""
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.core import callback
@@ -40,6 +41,14 @@ class ManagedWallboxCoordinator(
 
     def section_fresh(self, section: Section) -> bool:
         return self.source.current() and super().section_fresh(section)
+
+    def leaf_fresh(self, path: str) -> bool:
+        return self.source.current() and super().leaf_fresh(path)
+
+    def control_status(self) -> tuple[str | None, datetime | None]:
+        if not self.source.current():
+            return "cloud_stopped", None
+        return super().control_status()
 
     async def _async_update_data(self) -> dict[Section, SectionSnapshot]:
         return await self._updates.run(super()._async_update_data)

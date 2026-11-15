@@ -232,6 +232,37 @@ Versioning after its first tagged preview.
   previous day marked. The view never writes; if it cannot be loaded, the
   text stays. Tested with automated tests; the browser test runs in the
   frontend test job.
+- **Wallbox controls:** wallboxes can now also be operated, not only read.
+  Every control is disabled by default.
+  - Start and pause charging (buttons), the charging current limit (6 A up
+    to the hardware limit), boost, the charging mode (normal or solar), the
+    solar settings (grid supplement, its maximum, the minimum surplus,
+    prefer home battery, filter time), the overload protection (current and
+    power limiter, the three phase limits, the power limit), the lock, the
+    display name and the electricity and feed-in prices.
+  - A control exists only when the wallbox reports what it needs: the
+    software version from which the vendor app offers the function, and for
+    settings a value it reports as writeable. While the state, a
+    load-management group, an energy manager or a missing meter does not
+    allow a change, the control is unavailable and a change is refused
+    before anything is sent.
+  - Each change reads the wallbox fresh, sends exactly one request and then
+    reads again for up to 20 seconds; it is never repeated. Commands keep
+    five seconds apart. A start after an authentication is sent only when
+    allowed in the new options step **Wallbox** (off by default).
+  - Access control (authentication setting, RFID cards and their
+    teach-in), the charge log and the energy history are never written or
+    read. Boost charges with the full hardware current; the documentation
+    has a warning.
+  - I tested this only with simulated data in automated tests; it is
+    expected but untested on a real wallbox. I am glad about feedback from
+    wallbox owners.
+- **More wallbox readings:** the state of the external meter, the source
+  that limits charging, the energy manager state, grid-friendly charging
+  (configured, active), relays and whether authentication is required, all
+  enabled; boost active, the grid-friendly input, the external meter's
+  maximum current and the currency symbol are disabled by default. Tested
+  with automated tests only.
 
 ### Changed
 
@@ -462,6 +493,9 @@ only; I have not yet checked them in the browser or on a real installation.
   evidence in `heat_generator`, and the counters of the containers that
   discovery read directly. They hold no readings, names or identifiers; see
   [diagnostics](docs/diagnostics.md).
+  - The wallbox reports list the wallbox's single values by path (known,
+    writeable, refused, polled) and count the outcomes of commands and
+    settings, without values, labels, names or prices.
 - **Heating circuit settings in the diagnostics:** the new section
   `circuit_controls` counts temperature levels with a name that is not
   operated and says, for an iCom gateway, whether the two tariff paths exist

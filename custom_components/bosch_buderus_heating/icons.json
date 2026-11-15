@@ -18,6 +18,24 @@
       },
       "variable_tariff_active": {
         "default": "mdi:cash-clock"
+      },
+      "wallbox_boost_active": {
+        "default": "mdi:rocket-launch"
+      },
+      "wallbox_grid_friendly_input": {
+        "default": "mdi:transmission-tower"
+      },
+      "wallbox_grid_friendly_configured": {
+        "default": "mdi:transmission-tower"
+      },
+      "wallbox_grid_friendly_active": {
+        "default": "mdi:transmission-tower"
+      },
+      "wallbox_relays_available": {
+        "default": "mdi:electric-switch"
+      },
+      "wallbox_authentication_required": {
+        "default": "mdi:card-account-details"
       }
     },
     "button": {
@@ -32,6 +50,12 @@
       },
       "softener_start_regeneration": {
         "default": "mdi:water-sync"
+      },
+      "wallbox_start_charging": {
+        "default": "mdi:play"
+      },
+      "wallbox_pause_charging": {
+        "default": "mdi:pause"
       }
     },
     "calendar": {
@@ -62,6 +86,36 @@
       },
       "summer_winter_threshold": {
         "default": "mdi:sun-thermometer-outline"
+      },
+      "wallbox_charging_current_limit": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_supplement_limit": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "wallbox_supplement_threshold": {
+        "default": "mdi:solar-power"
+      },
+      "wallbox_filter_time": {
+        "default": "mdi:timer-outline"
+      },
+      "wallbox_power_limit": {
+        "default": "mdi:flash-alert"
+      },
+      "wallbox_current_limit_l1": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_current_limit_l2": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_current_limit_l3": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_electricity_price": {
+        "default": "mdi:cash"
+      },
+      "wallbox_feed_in_price": {
+        "default": "mdi:cash-plus"
       }
     },
     "select": {
@@ -123,6 +177,12 @@
           "nom": "mdi:fan-speed-2",
           "off": "mdi:fan-off",
           "red": "mdi:fan-speed-1"
+        }
+      },
+      "wallbox_charging_strategy": {
+        "default": "mdi:ev-station",
+        "state": {
+          "solar": "mdi:solar-power"
         }
       }
     },
@@ -317,11 +377,49 @@
       },
       "wddw2_switch_program": {
         "default": "mdi:calendar-clock"
+      },
+      "wallbox_external_meter": {
+        "default": "mdi:meter-electric"
+      },
+      "wallbox_external_meter_maximum_current": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_currency": {
+        "default": "mdi:cash"
+      },
+      "wallbox_limiter": {
+        "default": "mdi:speedometer-slow"
+      },
+      "wallbox_energy_manager": {
+        "default": "mdi:home-lightning-bolt"
+      }
+    },
+    "switch": {
+      "wallbox_boost": {
+        "default": "mdi:rocket-launch"
+      },
+      "wallbox_solar_supplement": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "wallbox_home_battery_priority": {
+        "default": "mdi:home-battery"
+      },
+      "wallbox_current_limiter": {
+        "default": "mdi:current-ac"
+      },
+      "wallbox_power_limiter": {
+        "default": "mdi:flash-alert"
+      },
+      "wallbox_locked": {
+        "default": "mdi:lock"
       }
     },
     "text": {
       "switch_program_name": {
         "default": "mdi:form-textbox"
+      },
+      "wallbox_label": {
+        "default": "mdi:rename"
       }
     },
     "water_heater": {

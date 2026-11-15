@@ -254,7 +254,8 @@
           "connection_add_cloud": "Yhdistä pilviyhteys",
           "local_setup": "Määritä paikallinen yhteys",
           "rescan": "Etsi järjestelmä uudelleen",
-          "recordings": "Järjestelmän tallenteet"
+          "recordings": "Järjestelmän tallenteet",
+          "wallbox": "Latausasema"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Aika",
           "temperature": "Lämpötila"
         }
+      },
+      "wallbox": {
+        "title": "Latausasema",
+        "description": "Tunnistautumista vaativa latausasema aloittaa latauksen vasta integraation tunnistautumisen jälkeen. Silloin ennen jokaista käynnistystä lähetetään yksi lisäkomento.",
+        "data": {
+          "wallbox_authentication": "Salli tunnistautuminen ennen käynnistystä",
+          "wallbox_authentication_name": "Tunnistautumisnimi (valinnainen)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Oletuksena pois. Vain latausasemille, joiden ohjelmisto on 5.1.0 tai uudempi.",
+          "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Tulos",
+        "description": "Latausaseman asetukset on tallennettu."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Päivä, jolla on kytkentäpisteitä, säilyttää vähintään yhden; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
       "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
       "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
-      "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan."
+      "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
+      "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Nimi lähetettiin, mutta sitä ei voitu vahvistaa lukemalla se takaisin. Se on voitu silti ottaa käyttöön; sitä ei lähetetä uudelleen."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Latausasema ei ole tilassa, joka sallii tämän toiminnon. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Latausvirta on alle 6 A. Aseta ensin latausvirta. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_authentication_required": {
+      "message": "Latausasema vaatii tunnistautumisen ennen latausta. Salli se integraation asetuksissa (Wallbox). Tätä muutosta ei lähetetty."
+    },
+    "wallbox_group_controlled": {
+      "message": "Tämä latausasema kuuluu kuormanhallintaryhmään, joka ohjaa tätä toimintoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_energy_manager": {
+      "message": "Energianhallinta ohjaa tätä latausasemaa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_manual": {
+      "message": "Latausvirran voi asettaa vain normaalissa lataustilassa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost on käytössä. Lopeta ensin Boost. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Latausasema ei antanut tälle toiminnolle ajantasaista arvoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_writeable": {
+      "message": "Latausasema ei ilmoita tätä asetusta muutettavaksi. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_firmware": {
+      "message": "Latausaseman ohjelmisto ei tarjoa tätä toimintoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_meter_missing": {
+      "message": "Tämä toiminto tarvitsee yhdistetyn ulkoisen mittarin. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_offered": {
+      "message": "Tätä toimintoa ei tarjota tälle latausasemalle. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_solar": {
+      "message": "Tämä asetus koskee vain aurinkolatausta. Vaihda ensin lataustilaksi aurinko. Tätä muutosta ei lähetetty."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Poissaolon lämpötila"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Latausvirran raja"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Verkosta lisättävä enimmäisteho"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Aurinkoylijäämän vähimmäismäärä"
+      },
+      "wallbox_filter_time": {
+        "name": "Aurinkolatauksen suodatusaika"
+      },
+      "wallbox_power_limit": {
+        "name": "Tehoraja"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Virtaraja vaihe L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Virtaraja vaihe L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Virtaraja vaihe L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Sähkön hinta"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Verkkoon syötön hinta"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Ohjelma A",
           "b": "Ohjelma B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Lataustila",
+        "state": {
+          "manual": "Normaali",
+          "solar": "Aurinko"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Takkatoiminto"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Verkosta lisäys aurinkolatauksessa"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Suosi kotiakkua"
+      },
+      "wallbox_current_limiter": {
+        "name": "Virranrajoitin"
+      },
+      "wallbox_power_limiter": {
+        "name": "Tehonrajoitin"
+      },
+      "wallbox_locked": {
+        "name": "Latausasema lukittu"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Lämpimän käyttöveden aikaohjelma"
+      },
+      "wallbox_external_meter": {
+        "name": "Ulkoinen mittari",
+        "state": {
+          "disconnected": "Ei yhdistetty",
+          "connected": "Yhdistetty",
+          "error": "Virhe"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Ulkoisen mittarin enimmäisvirta"
+      },
+      "wallbox_currency": {
+        "name": "Valuuttasymboli"
+      },
+      "wallbox_limiter": {
+        "name": "Rajoittaja",
+        "state": {
+          "none": "Ei mikään",
+          "no_car": "Ei ajoneuvoa",
+          "derating": "Tehon alennus",
+          "key": "Avainkytkin",
+          "paragraph_14a": "Verkkoyhtiön ohjaus (§14a)",
+          "app": "Sovellus",
+          "web": "Verkkokäyttöliittymä",
+          "energy_manager": "Energianhallinta",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Kuormantasaus",
+          "watchdog": "Watchdog",
+          "solar": "Aurinkoylijäämä",
+          "dynamic_load_management": "Dynaaminen kuormanhallinta",
+          "static_load_management": "Staattinen kuormanhallinta",
+          "meter_fail_safe": "Mittarivian varmistus",
+          "external_limit": "Ulkoinen rajoitus"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energianhallinta",
+        "state": {
+          "inactive": "Ei käytössä",
+          "active_heating": "Käytössä (lämmitys)",
+          "active_hot_water": "Käytössä (lämmin vesi)",
+          "active_energy_manager": "Ohjaa latausasemaa"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Vaihtuva tariffi käytössä"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost käytössä"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Verkko-ohjattu tulo käytössä"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Verkko-ohjattu lataus määritetty"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Verkko-ohjattu lataus käytössä"
+      },
+      "wallbox_relays_available": {
+        "name": "Releet käytettävissä"
+      },
+      "wallbox_authentication_required": {
+        "name": "Tunnistautuminen vaaditaan"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Aikaista seuraavaa kytkentäpistettä"
+      },
+      "wallbox_start_charging": {
+        "name": "Aloita lataus"
+      },
+      "wallbox_pause_charging": {
+        "name": "Keskeytä lataus"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Aikaohjelman nimi"
+      },
+      "wallbox_label": {
+        "name": "Näyttönimi"
       }
     }
   },

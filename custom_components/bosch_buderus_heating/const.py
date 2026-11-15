@@ -66,7 +66,7 @@ PLATFORMS: Final = (
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
-    # TP-05: the names of the weekly programs A/B; disabled by default.
+    # Weekly program names (disabled by default) and the wallbox display name.
     Platform.TEXT,
     # W3 (RRC): the disinfection time; no entity on other gateways.
     Platform.TIME,

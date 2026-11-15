@@ -254,7 +254,8 @@
           "connection_add_cloud": "Σύνδεση πρόσβασης cloud",
           "local_setup": "Ρύθμιση τοπικής πρόσβασης",
           "rescan": "Νέα αναζήτηση στο σύστημα",
-          "recordings": "Καταγραφές συστήματος"
+          "recordings": "Καταγραφές συστήματος",
+          "wallbox": "Φορτιστής τοίχου (wallbox)"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Ώρα",
           "temperature": "Θερμοκρασία"
         }
+      },
+      "wallbox": {
+        "title": "Φορτιστής τοίχου (wallbox)",
+        "description": "Ένας φορτιστής που απαιτεί ταυτοποίηση ξεκινά τη φόρτιση μόνο μετά από ταυτοποίηση από την ενσωμάτωση. Τότε αποστέλλεται μία επιπλέον εντολή πριν από κάθε έναρξη.",
+        "data": {
+          "wallbox_authentication": "Να επιτρέπεται η ταυτοποίηση πριν από την έναρξη",
+          "wallbox_authentication_name": "Όνομα ταυτοποίησης (προαιρετικό)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Απενεργοποιημένο από προεπιλογή. Μόνο για φορτιστές με λογισμικό 5.1.0 ή νεότερο.",
+          "wallbox_authentication_name": "Το όνομα που χρησιμοποιεί η εφαρμογή του κατασκευαστή για ταυτοποίηση· μπορεί να μείνει κενό."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Αποτέλεσμα",
+        "description": "Οι ρυθμίσεις του φορτιστή αποθηκεύτηκαν."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Μια ημέρα που έχει σημεία μεταγωγής κρατά τουλάχιστον ένα· τι σημαίνει μια κενή ημέρα για τον ελεγκτή δεν είναι γνωστό.",
       "rrc_point_limit": "Αυτή η ημέρα έχει ήδη τον μέγιστο αριθμό σημείων μεταγωγής που επιτρέπει η εφαρμογή ({per_day}).",
       "rrc_point_last": "Το τελευταίο σημείο μεταγωγής μιας ημέρας δεν μπορεί να διαγραφεί· τι σημαίνει μια κενή ημέρα για τον ελεγκτή δεν είναι γνωστό.",
-      "rrc_point_duplicate": "Αυτή η ημέρα έχει ήδη σημείο μεταγωγής την ίδια ώρα."
+      "rrc_point_duplicate": "Αυτή η ημέρα έχει ήδη σημείο μεταγωγής την ίδια ώρα.",
+      "wallbox_name_invalid": "Το όνομα μπορεί να περιέχει έως 64 εκτυπώσιμους χαρακτήρες."
     },
     "abort": {
       "no_notification_gateways": "Δεν έχει ρυθμιστεί κανένα σύστημα θέρμανσης.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Το όνομα στάλθηκε, αλλά δεν μπόρεσε να επιβεβαιωθεί με ανάγνωση πίσω. Μπορεί παρ' όλα αυτά να έχει εφαρμοστεί· δεν στέλνεται ξανά."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Ο φορτιστής δεν βρίσκεται σε κατάσταση που επιτρέπει αυτή την ενέργεια. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Το ρεύμα φόρτισης είναι κάτω από 6 A. Ορίστε πρώτα το ρεύμα φόρτισης. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_authentication_required": {
+      "message": "Ο φορτιστής απαιτεί ταυτοποίηση πριν από τη φόρτιση. Επιτρέψτε την στις επιλογές της ενσωμάτωσης (Wallbox). Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_group_controlled": {
+      "message": "Αυτός ο φορτιστής ανήκει σε ομάδα διαχείρισης φορτίου που ελέγχει αυτή τη λειτουργία. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_energy_manager": {
+      "message": "Ένας διαχειριστής ενέργειας ελέγχει αυτόν τον φορτιστή. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_not_manual": {
+      "message": "Το ρεύμα φόρτισης ορίζεται μόνο στην κανονική λειτουργία φόρτισης. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_boost_active": {
+      "message": "Το Boost είναι ενεργό. Τερματίστε πρώτα το Boost. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Ο φορτιστής δεν έδωσε τρέχουσα τιμή για αυτή τη λειτουργία. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_not_writeable": {
+      "message": "Ο φορτιστής δεν δηλώνει αυτή τη ρύθμιση ως μεταβλητή. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_firmware": {
+      "message": "Το λογισμικό του φορτιστή δεν προσφέρει αυτή τη λειτουργία. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_meter_missing": {
+      "message": "Αυτή η λειτουργία χρειάζεται συνδεδεμένο εξωτερικό μετρητή. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_not_offered": {
+      "message": "Αυτή η λειτουργία δεν προσφέρεται για αυτόν τον φορτιστή. Αυτή η αλλαγή δεν στάλθηκε."
+    },
+    "wallbox_not_solar": {
+      "message": "Αυτή η ρύθμιση ισχύει μόνο για ηλιακή φόρτιση. Αλλάξτε πρώτα τη λειτουργία φόρτισης σε ηλιακή. Αυτή η αλλαγή δεν στάλθηκε."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Θερμοκρασία απουσίας"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Όριο ρεύματος φόρτισης"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Μέγιστη συμπλήρωση από το δίκτυο"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Ελάχιστο ηλιακό πλεόνασμα"
+      },
+      "wallbox_filter_time": {
+        "name": "Χρόνος φιλτραρίσματος ηλιακής φόρτισης"
+      },
+      "wallbox_power_limit": {
+        "name": "Όριο ισχύος"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Όριο ρεύματος φάσης L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Όριο ρεύματος φάσης L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Όριο ρεύματος φάσης L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Τιμή ηλεκτρικής ενέργειας"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Τιμή έγχυσης στο δίκτυο"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Πρόγραμμα A",
           "b": "Πρόγραμμα B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Λειτουργία φόρτισης",
+        "state": {
+          "manual": "Κανονική",
+          "solar": "Ηλιακή"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Λειτουργία τζακιού"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Συμπλήρωση από το δίκτυο στην ηλιακή φόρτιση"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Προτεραιότητα στην οικιακή μπαταρία"
+      },
+      "wallbox_current_limiter": {
+        "name": "Περιοριστής ρεύματος"
+      },
+      "wallbox_power_limiter": {
+        "name": "Περιοριστής ισχύος"
+      },
+      "wallbox_locked": {
+        "name": "Φορτιστής τοίχου κλειδωμένος"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Χρονοπρόγραμμα ζεστού νερού"
+      },
+      "wallbox_external_meter": {
+        "name": "Εξωτερικός μετρητής",
+        "state": {
+          "disconnected": "Μη συνδεδεμένος",
+          "connected": "Συνδεδεμένος",
+          "error": "Σφάλμα"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Μέγιστο ρεύμα εξωτερικού μετρητή"
+      },
+      "wallbox_currency": {
+        "name": "Σύμβολο νομίσματος"
+      },
+      "wallbox_limiter": {
+        "name": "Περιορίζεται από",
+        "state": {
+          "none": "Τίποτα",
+          "no_car": "Χωρίς όχημα",
+          "derating": "Μείωση ισχύος",
+          "key": "Διακόπτης με κλειδί",
+          "paragraph_14a": "Έλεγχος από τον διαχειριστή δικτύου (§14a)",
+          "app": "Εφαρμογή",
+          "web": "Διεπαφή web",
+          "energy_manager": "Διαχειριστής ενέργειας",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Κατανομή φορτίου",
+          "watchdog": "Watchdog",
+          "solar": "Ηλιακό πλεόνασμα",
+          "dynamic_load_management": "Δυναμική διαχείριση φορτίου",
+          "static_load_management": "Στατική διαχείριση φορτίου",
+          "meter_fail_safe": "Προστασία σε βλάβη μετρητή",
+          "external_limit": "Εξωτερικός περιορισμός"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Διαχειριστής ενέργειας",
+        "state": {
+          "inactive": "Ανενεργός",
+          "active_heating": "Ενεργός (θέρμανση)",
+          "active_hot_water": "Ενεργός (ζεστό νερό)",
+          "active_energy_manager": "Ελέγχει τον φορτιστή"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Μεταβλητό τιμολόγιο ενεργό"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost ενεργό"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Είσοδος ελέγχου δικτύου ενεργή"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Φόρτιση ελεγχόμενη από το δίκτυο ρυθμισμένη"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Φόρτιση ελεγχόμενη από το δίκτυο ενεργή"
+      },
+      "wallbox_relays_available": {
+        "name": "Διαθέσιμα ρελέ"
+      },
+      "wallbox_authentication_required": {
+        "name": "Απαιτείται ταυτοποίηση"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Πρόωρη μετάβαση στο επόμενο σημείο μεταγωγής"
+      },
+      "wallbox_start_charging": {
+        "name": "Έναρξη φόρτισης"
+      },
+      "wallbox_pause_charging": {
+        "name": "Παύση φόρτισης"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Όνομα του χρονοπρογράμματος"
+      },
+      "wallbox_label": {
+        "name": "Εμφανιζόμενο όνομα"
       }
     }
   },

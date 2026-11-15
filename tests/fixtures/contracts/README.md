@@ -15,6 +15,7 @@ mapping. `physical_device_verified: false`, `firmware: null` and
 | water_softener | Remaining volume, flow, durations and regeneration phase |
 | bacon-purifier | Two synthetic Air profiles with different offered capabilities; all seven family/filter mappings are exercised by tests |
 | captures | Anonymized discovery results of real systems with their firmware, each with a pinned `.expected.json` of the entities built from it (`tests/test_captures.py`) |
+| pointt-wallbox | `cp0.json`: the three cp0 objects of a synthetic wallbox; `cp0-control.json`: the objects plus every single value the controls read, built from the vendor app's model classes with constructed values (no device capture) |
 | bacon-dry | Two synthetic Dry capability profiles with different humidity ranges and modes; all three families and six prefixes are exercised by tests |
 
 `readings.json` contains payloads and independently stated expected HA values

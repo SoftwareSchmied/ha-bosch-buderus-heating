@@ -19,7 +19,7 @@ stable IDs. Existing heating entities and user settings are preserved.
 | Charging power | Last component of `telemetry.meter`, already in kW. |
 | Reported charged energy | First component of `telemetry.meter`, converted from Wh to kWh once. No accumulation or long-term statistics state class. |
 | Active charging time | Reported `activeChargingTime` in minutes, without local extrapolation. |
-| Reported current limit | `telemetry.limit` in A, read-only. This is a limit, not measured current. |
+| Reported current limit | `telemetry.limit` in A. This is a limit, not measured current; the separate control **Charging current limit** changes it. |
 | Charging start | Reported `chargingStart`, accepted only with an explicit UTC offset. |
 | Wallbox role | `conf.wallboxMode`: standalone, leader or follower. This is not the charging strategy. |
 | Hardware current limit | `info.hwCurrentLimit` in A, read-only diagnostic sensor. |
@@ -76,12 +76,102 @@ HTTP and Home Assistant tests; it has not been compared with a physical
 wallbox. Model compatibility, displayed values, cloud response freshness and
 energy resets require that comparison.
 
-Wallboxes stay read-only on purpose. Start, pause, current changes,
-lock/authentication settings, RFID, charging strategies and forced overrides
-are not offered, and neither are charge logs or historical energy import.
-Their admission rules depend on firmware, external energy management, wallbox
-role and active limiters, so the integration provides no generic buttons or
-writable current number for them.
+The controls described below are expected to work but are untested on a
+real wallbox: they were checked only with simulated data in automated tests.
+Feedback from wallbox owners is very welcome.
+
+### Controls and additional readings (0.9.2-beta.2)
+
+Since 0.9.2-beta.2 a wallbox can also be operated. The functions and their
+rules follow the vendor app, because I could not test them on a wallbox:
+expected, untested on a real wallbox. Every control is **disabled by
+default**; enable only what you need.
+
+| Entity | Type | What it does | Exists when |
+| --- | --- | --- | --- |
+| Start charging | button | `cmd/start` | the wallbox reports its software version |
+| Pause charging | button | `cmd/pause` | as above |
+| Charging current limit | number (A) | `cmd/limit`, 6 A up to the hardware current limit, whole amperes | the hardware current limit is 6 to 63 A |
+| Boost | switch | `cmd/force/limit` with the hardware current limit, off with `cmd/force/limitReset` | software 4.0.0 or newer and `telemetry/forceActive` answers |
+| Charging mode | select | `conf/chargingStrategy`: normal (`default`) or solar (`solar-eco`) | software 4.0.0, writable, an external meter is reported |
+| Grid supplement for solar charging, Maximum grid supplement, Minimum solar surplus | switch, number (W) | `conf/solarSurplus/*`; 0 to 11 000 W and 0 to 5 000 W in steps of 100 W | software 5.1.0, writable, external meter |
+| Prefer home battery | switch | `conf/strategy/powerOffset`: on = -100, off = 0; another value shows as unknown | software 5.0.0, writable, external meter |
+| Solar filter time | number (s) | `conf/strategy/filterTime`, 5 to 600 s | as above |
+| Current limiter, Power limiter, Current limit phase L1/L2/L3, Power limit | switch, number | `conf/overloadProtection/*`; phases 16 to 63 A, sent as the whole list of three; power 5 000 W up to 3 × 230 V × the meter's maximum current (43 000 W without it) | software 5.0.0, all four values writable, a connected external meter, a reported brand the app offers the function for |
+| Wallbox locked | switch | `conf/locked` | writable |
+| Display name | text | `conf/label`, 1 to 32 printable characters | writable |
+| Electricity price, Feed-in tariff | number | `conf/price`, `conf/feedinPrice`, 0 to 100 in steps of 0.01 | writable; the feed-in tariff with software 5.0.0 and a connected meter |
+
+A reported range or step of a value (`minValue`, `maxValue`, `stepSize`)
+narrows the ranges above; a value outside or between the steps is refused,
+never rounded.
+
+Additional readings: **External meter** (disconnected, connected, error;
+enabled), **Limited by** (the reported limiting source; enabled), **Energy
+manager** (enabled), **Grid-friendly charging configured** and **active**,
+**Relays available** and **Authentication required** (enabled, from the
+objects already read), and, disabled by default, **Boost active**,
+**Grid-friendly input active**, **External meter maximum current** and
+**Currency symbol**. All are diagnostic entities; unknown codes stay
+unknown.
+
+**Rules for every change:**
+
+- Nothing is sent while the cloud is paused, rate limited or unreachable,
+  or while sign-in is needed.
+- Right before sending, the integration reads the wallbox again
+  (`telemetry`, `conf`, `info` and the value itself). If the state no
+  longer allows the change, nothing is sent.
+- A setting is written only when the wallbox reports it `writeable`
+  (stricter than the vendor app, which does not check this), not when it
+  reports `available: false`, and not when it reports `used: false`.
+- Exactly one request per action, never repeated, also not after a timeout.
+  The integration then reads every two seconds for up to twenty seconds. If
+  the new state does not show, the action is reported as not confirmed; the
+  wallbox may still apply it.
+- Commands keep five seconds apart, as in the vendor app. No change runs
+  while the wallbox is being read.
+- Start is offered only while the vehicle is plugged in and waiting
+  (`Preparing`, paused by the vehicle, or paused by the station for a
+  limiting source the app would also end); pause only while charging.
+- A follower in a load-management group takes no command; a leader only
+  start, pause and the charging current. While an energy manager controls
+  the wallbox, current, boost, charging mode, solar, overload and price
+  settings are refused.
+- The charging current can be changed only in normal mode, not during a
+  boost and not while a group's load management limits the wallbox. Back to
+  normal mode is refused during a boost: end the boost first.
+- The vendor app's own extra steps are not reproduced: no hidden
+  `cmd/limit 6` after a start (below 6 A the start is refused with a
+  message), and no automatic raise of a power limit below 5 000 W.
+- Access control is never written: `conf/auth`, RFID cards and their
+  teach-in are not part of the integration, and the charge log and energy
+  history are not read (personal data).
+
+**Boost warning:** boost charges with the full hardware current limit (up
+to about 11 kW or more). Without overload protection, this may exceed the
+reserve of the house connection. Enable the boost switch only if the
+installation is designed for it.
+
+**Authentication:** a wallbox that requires authentication (`conf.auth`
+on) starts only after an `authenticate` command. The integration sends it
+only when allowed under **Settings → Wallbox** (off by default), and only
+with software 5.1.0 or newer; then a start sends `authenticate` followed by
+`start`. If the authentication is refused or unclear, no start is sent. The
+optional authentication name is the name the vendor app uses; it stays in
+the entry options and never appears in diagnostics.
+
+**Single values and requests:** after setup the integration asks each
+single value once (at most four per polling cycle) to learn whether it
+exists and is writable. A value answered with 403, 404 or 406 is not asked
+again until the wallbox reports new software or the integration starts
+again. Afterwards only values that an enabled entity shows are read again,
+in the configuration interval (5 or 10 minutes). With the default
+entities that is only the external meter state.
+
+The diagnostics list the single values by path (known, writable, refused,
+polled), whether the firmware is known, and counters of the write
+outcomes, never their values, names, labels, brands or prices.
 
 ## Deutsch
 
@@ -103,7 +193,7 @@ Heizungsentitäten und Benutzereinstellungen bleiben bestehen.
 | Ladeleistung | Letzter Bestandteil von `telemetry.meter`, bereits in kW. |
 | Gemeldete geladene Energie | Erster Bestandteil von `telemetry.meter`, einmal von Wh nach kWh umgerechnet. Keine Aufsummierung und keine Statistikklasse für Langzeitwerte. |
 | Aktive Ladezeit | Gemeldete Minuten aus `activeChargingTime`, ohne eigene Hochrechnung. |
-| Gemeldete Stromgrenze | `telemetry.limit` in A. Eine Grenze, kein gemessener Strom und kein Regler. |
+| Gemeldete Stromgrenze | `telemetry.limit` in A. Eine Grenze, kein gemessener Strom; geändert wird sie über die eigene Entität **Ladestrom-Grenze**. |
 | Ladebeginn | `chargingStart`, nur mit eindeutigem UTC-Versatz angenommen. |
 | Rolle im Wallbox-Verbund | `conf.wallboxMode`: eigenständig, führend oder folgend. Keine Ladestrategie. |
 | Hardware-Stromgrenze | `info.hwCurrentLimit` in A als Diagnoseanzeige. |
@@ -147,10 +237,107 @@ HA-Einbindung werden mit synthetischen Antworten geprüft. Ein Geräteabgleich
 hat nicht stattgefunden. Modellkompatibilität, Anzeigen, Aktualität der
 Cloud-Antworten und Rücksetzungen der Energie benötigen Praxisbestätigung.
 
-Wallboxen bleiben bewusst nur lesend eingebunden. Start, Pause,
-Stromänderungen, Sperren, Authentifizierung, RFID, Ladestrategien und
-erzwungene Übersteuerungen bietet die Integration nicht an, ebenso wenig
-Ladeprotokolle oder historische Energieimporte. Die Freigaberegeln hängen
-unter anderem von Firmware, Energiemanagement, Verbundrolle und aktiver
-Begrenzung ab; deshalb gibt es dafür keine allgemeinen Tasten oder
-Stromregler.
+Die unten beschriebenen Bedienfunktionen sollten funktionieren, sind an
+einer echten Wallbox aber ungetestet: Sie wurden nur mit simulierten Daten in
+automatisierten Tests geprüft. Über Rückmeldungen von Wallbox-Besitzern freue
+ich mich.
+
+### Bedienung und zusätzliche Anzeigen (0.9.2-beta.2)
+
+Seit 0.9.2-beta.2 lässt sich eine Wallbox auch bedienen. Funktionen und
+Regeln folgen der Hersteller-App, weil ich sie an keiner Wallbox prüfen
+konnte: erwartet, ungetestet an einer echten Wallbox. Alle Bedienelemente
+sind **standardmäßig deaktiviert**; bitte nur aktivieren, was gebraucht wird.
+
+| Entität | Typ | Wirkung | Entsteht, wenn |
+| --- | --- | --- | --- |
+| Ladevorgang starten | Taste | `cmd/start` | die Wallbox ihre Softwareversion meldet |
+| Ladevorgang pausieren | Taste | `cmd/pause` | wie oben |
+| Ladestrom-Grenze | Zahl (A) | `cmd/limit`, 6 A bis zur Hardware-Stromgrenze, ganze Ampere | die Hardware-Stromgrenze 6 bis 63 A beträgt |
+| Boost | Schalter | `cmd/force/limit` mit der Hardware-Stromgrenze, aus mit `cmd/force/limitReset` | Software 4.0.0 oder neuer und `telemetry/forceActive` antwortet |
+| Ladebetriebsart | Auswahl | `conf/chargingStrategy`: normal (`default`) oder Solar (`solar-eco`) | Software 4.0.0, schreibbar, ein externer Zähler wird gemeldet |
+| Netzzuschuss beim Solarladen, Höchstleistung Netzzuschuss, Mindest-Solarüberschuss | Schalter, Zahl (W) | `conf/solarSurplus/*`; 0 bis 11 000 W und 0 bis 5 000 W in Schritten von 100 W | Software 5.1.0, schreibbar, externer Zähler |
+| Heimspeicher bevorzugen | Schalter | `conf/strategy/powerOffset`: an = -100, aus = 0; andere Werte erscheinen als unbekannt | Software 5.0.0, schreibbar, externer Zähler |
+| Solar-Filterzeit | Zahl (s) | `conf/strategy/filterTime`, 5 bis 600 s | wie oben |
+| Stromgrenzer, Leistungsgrenzer, Stromgrenze Phase L1/L2/L3, Leistungsgrenze | Schalter, Zahl | `conf/overloadProtection/*`; Phasen 16 bis 63 A, immer als ganze Liste aus drei Werten gesendet; Leistung 5 000 W bis 3 × 230 V × Höchststrom des Zählers (ohne Angabe 43 000 W) | Software 5.0.0, alle vier Werte schreibbar, ein verbundener externer Zähler, eine gemeldete Marke, für die die App die Funktion anbietet |
+| Wallbox gesperrt | Schalter | `conf/locked` | schreibbar |
+| Anzeigename | Text | `conf/label`, 1 bis 32 druckbare Zeichen | schreibbar |
+| Strompreis, Einspeisevergütung | Zahl | `conf/price`, `conf/feedinPrice`, 0 bis 100 in Schritten von 0,01 | schreibbar; die Einspeisevergütung mit Software 5.0.0 und verbundenem Zähler |
+
+Meldet ein Wert eigene Grenzen oder Schritte (`minValue`, `maxValue`,
+`stepSize`), engen sie die Bereiche oben ein; Werte außerhalb oder zwischen
+den Schritten werden abgelehnt, nie gerundet.
+
+Zusätzliche Anzeigen: **Externer Zähler** (nicht verbunden, verbunden,
+Fehler; aktiv), **Begrenzt durch** (die gemeldete Begrenzungsquelle; aktiv),
+**Energiemanager** (aktiv), **Netzdienliches Laden eingerichtet** und
+**aktiv**, **Relais vorhanden** und **Authentifizierung erforderlich**
+(aktiv, aus den ohnehin gelesenen Objekten) sowie standardmäßig deaktiviert
+**Boost aktiv**, **Netzdienlicher Eingang aktiv**, **Höchststrom externer
+Zähler** und **Währungssymbol**. Alle sind Diagnose-Entitäten; unbekannte
+Codes bleiben unbekannt.
+
+**Regeln für jede Änderung:**
+
+- Nichts wird gesendet, solange die Cloud pausiert, begrenzt oder nicht
+  erreichbar ist oder eine Anmeldung fehlt.
+- Unmittelbar vor dem Senden liest die Integration die Wallbox neu
+  (`telemetry`, `conf`, `info` und den Wert selbst). Erlaubt der Zustand die
+  Änderung nicht mehr, wird nichts gesendet.
+- Eine Einstellung wird nur geschrieben, wenn die Wallbox sie als
+  `writeable` meldet (strenger als die Hersteller-App, die das nicht prüft),
+  nicht bei `available: false` und nicht bei `used: false`.
+- Genau eine Anfrage je Aktion, nie wiederholt, auch nicht nach einer
+  Zeitüberschreitung. Danach liest die Integration alle zwei Sekunden bis zu
+  zwanzig Sekunden lang. Zeigt sich der neue Zustand nicht, wird die Aktion
+  als nicht bestätigt gemeldet; die Wallbox kann sie trotzdem noch
+  übernehmen.
+- Zwischen zwei Befehlen liegen mindestens fünf Sekunden, wie in der
+  Hersteller-App. Während die Wallbox gelesen wird, läuft keine Änderung.
+- Starten wird nur angeboten, solange das Fahrzeug angesteckt ist und wartet
+  (`Preparing`, vom Fahrzeug pausiert oder von der Ladestation pausiert bei
+  einer Begrenzungsquelle, die auch die App beendet); Pausieren nur während
+  des Ladens.
+- Eine folgende Wallbox im Lastmanagement-Verbund nimmt keinen Befehl an,
+  eine führende nur Start, Pause und Ladestrom. Steuert ein Energiemanager
+  die Wallbox, werden Ladestrom, Boost, Ladebetriebsart sowie Solar-,
+  Überlast- und Preiseinstellungen abgelehnt.
+- Der Ladestrom lässt sich nur in der normalen Betriebsart ändern, nicht
+  während eines Boosts und nicht, solange das Lastmanagement eines Verbunds
+  die Wallbox begrenzt. Der Wechsel zurück in die normale Betriebsart wird
+  während eines Boosts abgelehnt: zuerst den Boost beenden.
+- Eigene Zusatzschritte der Hersteller-App werden nicht nachgebaut: kein
+  verdecktes `cmd/limit 6` nach einem Start (unter 6 A wird der Start mit
+  einem Hinweis abgelehnt) und kein selbsttätiges Anheben einer
+  Leistungsgrenze unter 5 000 W.
+- Zugangsschutz wird nie geschrieben: `conf/auth`, RFID-Karten und ihr
+  Einlernen gehören nicht zur Integration; Ladeprotokoll und
+  Energieverlauf werden nicht gelesen (personenbezogene Daten).
+
+**Warnhinweis Boost:** Boost lädt mit der vollen Hardware-Stromgrenze (bis
+etwa 11 kW oder mehr). Ohne Überlastschutz kann das die Reserve des
+Hausanschlusses übersteigen. Den Boost-Schalter bitte nur aktivieren, wenn
+die Installation dafür ausgelegt ist.
+
+**Authentifizierung:** Eine Wallbox, die eine Authentifizierung verlangt
+(`conf.auth` an), startet erst nach einem `authenticate`-Befehl. Die
+Integration sendet ihn nur, wenn das unter **Einstellungen → Wallbox**
+erlaubt ist (standardmäßig aus), und nur bei Software 5.1.0 oder neuer;
+ein Start sendet dann `authenticate` und danach `start`. Wird die
+Authentifizierung abgelehnt oder bleibt sie unklar, wird kein Start
+gesendet. Der optionale Authentifizierungsname ist der Name, den die
+Hersteller-App verwendet; er bleibt in den Optionen des Eintrags und
+erscheint nie in der Diagnose.
+
+**Einzelwerte und Anfragen:** Nach der Einrichtung fragt die Integration
+jeden Einzelwert einmal ab (höchstens vier je Abfragezyklus), um zu
+erfahren, ob es ihn gibt und ob er schreibbar ist. Ein mit 403, 404 oder
+406 beantworteter Wert wird erst wieder abgefragt, wenn die Wallbox neue
+Software meldet oder die Integration neu startet. Danach werden nur Werte
+erneut gelesen, die eine aktivierte Entität anzeigt, im
+Konfigurationsintervall (5 oder 10 Minuten). Mit den Standard-Entitäten ist
+das nur der Zustand des externen Zählers.
+
+Die Diagnose nennt die Einzelwerte mit ihrem Pfad (bekannt, schreibbar,
+abgelehnt, abgefragt), ob die Firmware bekannt ist, und Zähler der
+Schreibergebnisse, nie Werte, Namen, Etiketten, Marken oder Preise.

@@ -18,6 +18,7 @@ from .heating_climate import track_temporary_clear_buttons
 from .i18n import localize
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     SOFTENER_REGENERATION_POLICY,
     ControlContext,
@@ -51,6 +52,7 @@ def _setup_entities(
     """Expose only the reviewed regeneration start command, initially
     disabled, and the clear button of a heating circuit's temporary
     setpoint."""
+    track_wallbox_entities(Platform.BUTTON, entry, async_add_entities)
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,

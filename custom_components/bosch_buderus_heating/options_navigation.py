@@ -66,6 +66,7 @@ RESULT_REASONS: Final = frozenset(
         "rescan_unavailable",
         "rrc_program_saved",
         "switch_program_saved",
+        "wallbox_saved",
     }
 )
 

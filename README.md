@@ -5,7 +5,7 @@
 <h1 align="center">Bosch/Buderus Home Comfort</h1>
 
 <p align="center">
-  Connect compatible Bosch and Buderus heating, cooling, hot-water, air-treatment and water-softening devices to Home Assistant, with read-only wallbox monitoring.
+  Connect compatible Bosch and Buderus heating, cooling, hot-water, air-treatment and water-softening devices to Home Assistant, including wallboxes.
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@ access; when it is back, the same entities carry on with their history.
 - Faults, warnings and maintenance messages with bell notifications and events for automations
 - Room controllers of the RRC 2.0 platform: zones, programs, absences, radio devices
 - Optional read-only **local access** that updates many readings more often and keeps them available without the cloud
-- Additional device families: water heaters, air conditioners, air purifiers, dehumidifiers, the WE800i water softener and read-only wallboxes
+- Additional device families: water heaters, air conditioners, air purifiers, dehumidifiers, the WE800i water softener and wallboxes (controls expected, untested)
 - Redacted diagnostics and texts in 19 languages
 
 What changed in each version is in the [changelog](CHANGELOG.md) and the
@@ -59,7 +59,7 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 | K30/K30RF gateways (for example MX300 internet module, K30 RF Connect-Key) | ✓ | – | – |
 | iCom gateways (for example KM200, KM100, KM50, MB LAN 2) | ✓ | – | – |
 | RRC 2.0 room controllers (TC100.2; CT200 expected) | ✓ | – | – |
-| Other device families: water heaters, air conditioners, air purifiers, dehumidifiers, WE800i water softener, wallboxes (read only) | expected | – | – |
+| Other device families: water heaters, air conditioners, air purifiers, dehumidifiers, WE800i water softener, wallboxes (readings; controls disabled by default) | expected | – | – |
 
 Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
 

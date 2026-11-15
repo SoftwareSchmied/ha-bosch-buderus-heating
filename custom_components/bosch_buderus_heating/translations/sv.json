@@ -254,7 +254,8 @@
           "connection_add_cloud": "Anslut molnåtkomst",
           "local_setup": "Konfigurera lokal åtkomst",
           "rescan": "Sök igen i anläggningen",
-          "recordings": "Anläggningens registrering"
+          "recordings": "Anläggningens registrering",
+          "wallbox": "Laddbox"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Tid",
           "temperature": "Temperatur"
         }
+      },
+      "wallbox": {
+        "title": "Laddbox",
+        "description": "En laddbox som kräver autentisering börjar ladda först efter en autentisering från integrationen. Då skickas ett extra kommando före varje start.",
+        "data": {
+          "wallbox_authentication": "Tillåt autentisering före en start",
+          "wallbox_authentication_name": "Autentiseringsnamn (valfritt)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Avstängt som standard. Endast för laddboxar med programvara 5.1.0 eller senare.",
+          "wallbox_authentication_name": "Namnet som tillverkarens app använder för autentisering; får vara tomt."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultat",
+        "description": "Laddboxens inställningar har sparats."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "En dag som har växlingspunkter behåller minst en; vad en tom dag betyder för regulatorn är inte känt.",
       "rrc_point_limit": "Den här dagen har redan det högsta antal växlingspunkter som appen tillåter ({per_day}).",
       "rrc_point_last": "Dagens sista växlingspunkt kan inte tas bort; vad en tom dag betyder för regulatorn är inte känt.",
-      "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden."
+      "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden.",
+      "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Namnet skickades men kunde inte bekräftas genom att läsas tillbaka. Det kan ändå ha tillämpats; det skickas inte igen."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Laddboxen är inte i ett läge som tillåter den här åtgärden. Den här ändringen skickades inte."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Laddströmmen är lägre än 6 A. Ställ först in laddströmmen. Den här ändringen skickades inte."
+    },
+    "wallbox_authentication_required": {
+      "message": "Laddboxen kräver autentisering före laddning. Tillåt det i integrationens alternativ (Wallbox). Den här ändringen skickades inte."
+    },
+    "wallbox_group_controlled": {
+      "message": "Den här laddboxen ingår i en laststyrningsgrupp som styr den här funktionen. Den här ändringen skickades inte."
+    },
+    "wallbox_energy_manager": {
+      "message": "En energihanterare styr den här laddboxen. Den här ändringen skickades inte."
+    },
+    "wallbox_not_manual": {
+      "message": "Laddströmmen kan bara ställas in i normalt laddläge. Den här ändringen skickades inte."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost är aktiv. Avsluta Boost först. Den här ändringen skickades inte."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Laddboxen har inte lämnat något aktuellt värde för den här funktionen. Den här ändringen skickades inte."
+    },
+    "wallbox_not_writeable": {
+      "message": "Laddboxen anger inte den här inställningen som ändringsbar. Den här ändringen skickades inte."
+    },
+    "wallbox_firmware": {
+      "message": "Laddboxens programvara erbjuder inte den här funktionen. Den här ändringen skickades inte."
+    },
+    "wallbox_meter_missing": {
+      "message": "Den här funktionen kräver en ansluten extern mätare. Den här ändringen skickades inte."
+    },
+    "wallbox_not_offered": {
+      "message": "Den här funktionen erbjuds inte för den här laddboxen. Den här ändringen skickades inte."
+    },
+    "wallbox_not_solar": {
+      "message": "Den här inställningen gäller bara solladdning. Byt först laddläget till sol. Den här ändringen skickades inte."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Bortatemperatur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Gräns för laddström"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximalt tillskott från nätet"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minsta solöverskott"
+      },
+      "wallbox_filter_time": {
+        "name": "Filtertid för solladdning"
+      },
+      "wallbox_power_limit": {
+        "name": "Effektgräns"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Strömgräns fas L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Strömgräns fas L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Strömgräns fas L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Elpris"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Ersättning för inmatad el"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Laddläge",
+        "state": {
+          "manual": "Normal",
+          "solar": "Sol"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Eldstadsfunktion"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Tillskott från nätet vid solladdning"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prioritera hemmabatteri"
+      },
+      "wallbox_current_limiter": {
+        "name": "Strömbegränsare"
+      },
+      "wallbox_power_limiter": {
+        "name": "Effektbegränsare"
+      },
+      "wallbox_locked": {
+        "name": "Laddbox låst"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Tidsprogram varmvatten"
+      },
+      "wallbox_external_meter": {
+        "name": "Extern mätare",
+        "state": {
+          "disconnected": "Inte ansluten",
+          "connected": "Ansluten",
+          "error": "Fel"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximal ström för extern mätare"
+      },
+      "wallbox_currency": {
+        "name": "Valutasymbol"
+      },
+      "wallbox_limiter": {
+        "name": "Begränsad av",
+        "state": {
+          "none": "Inget",
+          "no_car": "Inget fordon",
+          "derating": "Effektreducering",
+          "key": "Nyckelbrytare",
+          "paragraph_14a": "Styrning från nätägare (§14a)",
+          "app": "App",
+          "web": "Webbgränssnitt",
+          "energy_manager": "Energihanterare",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Lastbalansering",
+          "watchdog": "Watchdog",
+          "solar": "Solöverskott",
+          "dynamic_load_management": "Dynamisk laststyrning",
+          "static_load_management": "Statisk laststyrning",
+          "meter_fail_safe": "Skydd vid mätarfel",
+          "external_limit": "Extern begränsning"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energihanterare",
+        "state": {
+          "inactive": "Inaktiv",
+          "active_heating": "Aktiv (uppvärmning)",
+          "active_hot_water": "Aktiv (varmvatten)",
+          "active_energy_manager": "Styr laddboxen"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Rörlig tariff aktiv"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktiv"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Nätstyrd ingång aktiv"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Nätstyrd laddning konfigurerad"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Nätstyrd laddning aktiv"
+      },
+      "wallbox_relays_available": {
+        "name": "Reläer finns"
+      },
+      "wallbox_authentication_required": {
+        "name": "Autentisering krävs"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Tidigarelägg nästa växlingspunkt"
+      },
+      "wallbox_start_charging": {
+        "name": "Starta laddning"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pausa laddning"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Tidsprogrammets namn"
+      },
+      "wallbox_label": {
+        "name": "Visningsnamn"
       }
     }
   },

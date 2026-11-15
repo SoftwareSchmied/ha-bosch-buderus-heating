@@ -125,7 +125,13 @@ def test_transport_family_is_exact(kind, expected):
 def test_all_documented_wire_states_stay_distinct(raw, expected):
     parsed = parse_section("telemetry", {"values": {"wbState": raw}})
     assert parsed.values["state"] == expected
-    assert all(value is None for key, value in parsed.values.items() if key != "state")
+    # The raw token stays beside the state for the command rules.
+    assert parsed.values["wb_state"] == raw
+    assert all(
+        value is None
+        for key, value in parsed.values.items()
+        if key not in ("state", "wb_state")
+    )
 
 
 @pytest.mark.parametrize(
@@ -429,6 +435,10 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         patch(ROOT + ".PointTClient.get_gateways", AsyncMock(return_value=gateways)),
         patch(ROOT + ".PointTClient.get_wallbox_section", side_effect=read),
         patch(
+            ROOT + ".PointTClient.get_wallbox_leaf",
+            side_effect=ResourceNotFound("private", 404),
+        ),
+        patch(
             ROOT + ".coordinator.async_discover_resources", side_effect=discover
         ) as discovery,
         patch(ROOT + ".coordinator.fault_resource_candidates", return_value=()),
@@ -463,20 +473,23 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
             hass.states.get(entity_id("power")).attributes["unit_of_measurement"]
             == "kW"
         )
-        assert (
-            len(
-                [
-                    e
-                    for e in registry.entities.values()
-                    if e.unique_id.startswith("wallbox-A:")
-                ]
-            )
-            == 8
-        )
-        assert all(
-            e.domain == "sensor"
+        wallbox_entries = [
+            e
             for e in registry.entities.values()
             if e.unique_id.startswith("wallbox-A:")
+        ]
+        # The eight readings, plus start, pause and the charging current: the
+        # controls are disabled by default; no single value answered here.
+        assert len(wallbox_entries) == 11
+        assert sorted(
+            e.unique_id.rsplit(":", 1)[-1]
+            for e in wallbox_entries
+            if e.domain != "sensor"
+        ) == ["charging_current_limit", "pause_charging", "start_charging"]
+        assert all(
+            e.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+            for e in wallbox_entries
+            if e.domain != "sensor"
         )
         texts = await async_get_translations(hass, language, "entity", {DOMAIN})
         prefix = "component." + DOMAIN + ".entity.sensor.wallbox_"

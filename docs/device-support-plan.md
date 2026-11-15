@@ -15,7 +15,7 @@ missing capabilities are simply omitted.
 | Air conditioners (Climate Series) | Cloud, selected at setup | Temperatures and state | On/off, mode, target temperature and the fan settings the device reports | [Air conditioners](bacon-air-conditioners.md) |
 | Air purifiers (seven families) | Cloud, selected at setup | Air quality and filter state | On/off, presets and fan levels the device reports | [Air purifiers](bacon-air-purifiers.md) |
 | Dehumidifiers (Dry 4000i/6000i/8000i) | Cloud, selected at setup | Humidity and state | On/off, mode and target humidity the device reports | [Dehumidifiers](bacon-dehumidifiers.md) |
-| Wallboxes | Cloud | Charging state and energy | read-only | [Wallboxes](pointt-wallboxes.md) |
+| Wallboxes | Cloud | Charging state, energy, limiting source, external meter | Start/pause, charging current, boost, charging mode, solar, overload and price settings, lock and display name; all disabled by default, expected but untested on a real wallbox | [Wallboxes](pointt-wallboxes.md) |
 
 The cloud access signs in with an account of the Bosch or Buderus app. The
 local access recognises gateways of Bosch, Buderus, IVT, Vulcano and Worcester;

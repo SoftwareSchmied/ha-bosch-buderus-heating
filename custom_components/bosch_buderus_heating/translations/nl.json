@@ -254,7 +254,8 @@
           "connection_add_cloud": "Cloudtoegang verbinden",
           "local_setup": "Lokale toegang instellen",
           "rescan": "De installatie opnieuw zoeken",
-          "recordings": "Registraties van de installatie"
+          "recordings": "Registraties van de installatie",
+          "wallbox": "Laadpaal"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Tijd",
           "temperature": "Temperatuur"
         }
+      },
+      "wallbox": {
+        "title": "Laadpaal",
+        "description": "Een laadpaal die authenticatie vereist, begint pas te laden na een authenticatie door de integratie. Vóór elke start wordt dan één extra opdracht verzonden.",
+        "data": {
+          "wallbox_authentication": "Authenticatie vóór een start toestaan",
+          "wallbox_authentication_name": "Authenticatienaam (optioneel)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Standaard uit. Alleen voor laadpalen met software 5.1.0 of nieuwer.",
+          "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultaat",
+        "description": "De instellingen van de laadpaal zijn opgeslagen."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Een dag met schakelpunten behoudt er minstens één; wat een lege dag voor de regelaar betekent, is niet bekend.",
       "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
       "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
-      "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip."
+      "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip.",
+      "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "De naam is verzonden, maar kon niet worden bevestigd door hem terug te lezen. Hij kan toch zijn toegepast; hij wordt niet opnieuw verzonden."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "De laadpaal is niet in een toestand die deze actie toelaat. Deze wijziging is niet verzonden."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "De laadstroom ligt onder 6 A. Stel eerst de laadstroom in. Deze wijziging is niet verzonden."
+    },
+    "wallbox_authentication_required": {
+      "message": "De laadpaal vereist authenticatie vóór het laden. Sta dit toe in de opties van de integratie (Wallbox). Deze wijziging is niet verzonden."
+    },
+    "wallbox_group_controlled": {
+      "message": "Deze laadpaal hoort bij een belastingsbeheergroep die deze functie stuurt. Deze wijziging is niet verzonden."
+    },
+    "wallbox_energy_manager": {
+      "message": "Een energiemanager stuurt deze laadpaal. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_manual": {
+      "message": "De laadstroom kan alleen in de normale laadmodus worden ingesteld. Deze wijziging is niet verzonden."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost is actief. Beëindig eerst Boost. Deze wijziging is niet verzonden."
+    },
+    "wallbox_value_unavailable": {
+      "message": "De laadpaal heeft voor deze functie geen actuele waarde geleverd. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_writeable": {
+      "message": "De laadpaal meldt deze instelling niet als wijzigbaar. Deze wijziging is niet verzonden."
+    },
+    "wallbox_firmware": {
+      "message": "De software van de laadpaal biedt deze functie niet aan. Deze wijziging is niet verzonden."
+    },
+    "wallbox_meter_missing": {
+      "message": "Deze functie heeft een verbonden externe meter nodig. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_offered": {
+      "message": "Deze functie wordt voor deze laadpaal niet aangeboden. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_solar": {
+      "message": "Deze instelling geldt alleen voor zonneladen. Zet de laadmodus eerst op zon. Deze wijziging is niet verzonden."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Afwezigheidstemperatuur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Laadstroomlimiet"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximale netaanvulling"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimaal zonne-overschot"
+      },
+      "wallbox_filter_time": {
+        "name": "Filtertijd zonneladen"
+      },
+      "wallbox_power_limit": {
+        "name": "Vermogenslimiet"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Stroomlimiet fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Stroomlimiet fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Stroomlimiet fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Elektriciteitsprijs"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Terugleververgoeding"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Programma A",
           "b": "Programma B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Laadmodus",
+        "state": {
+          "manual": "Normaal",
+          "solar": "Zon"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Haardfunctie"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Netaanvulling bij zonneladen"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Thuisbatterij voorrang geven"
+      },
+      "wallbox_current_limiter": {
+        "name": "Stroombegrenzer"
+      },
+      "wallbox_power_limiter": {
+        "name": "Vermogensbegrenzer"
+      },
+      "wallbox_locked": {
+        "name": "Laadpaal vergrendeld"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Warmwatertijdprogramma"
+      },
+      "wallbox_external_meter": {
+        "name": "Externe meter",
+        "state": {
+          "disconnected": "Niet verbonden",
+          "connected": "Verbonden",
+          "error": "Fout"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximale stroom externe meter"
+      },
+      "wallbox_currency": {
+        "name": "Valutasymbool"
+      },
+      "wallbox_limiter": {
+        "name": "Begrensd door",
+        "state": {
+          "none": "Niets",
+          "no_car": "Geen voertuig",
+          "derating": "Vermogensreductie",
+          "key": "Sleutelschakelaar",
+          "paragraph_14a": "Sturing door netbeheerder (§14a)",
+          "app": "App",
+          "web": "Webinterface",
+          "energy_manager": "Energiemanager",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Load balancer",
+          "watchdog": "Watchdog",
+          "solar": "Zonne-overschot",
+          "dynamic_load_management": "Dynamisch belastingsbeheer",
+          "static_load_management": "Statisch belastingsbeheer",
+          "meter_fail_safe": "Beveiliging bij meterstoring",
+          "external_limit": "Externe begrenzing"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energiemanager",
+        "state": {
+          "inactive": "Inactief",
+          "active_heating": "Actief (verwarming)",
+          "active_hot_water": "Actief (warm water)",
+          "active_energy_manager": "Stuurt de laadpaal"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Variabel tarief actief"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost actief"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Netgestuurde ingang actief"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Netgestuurd laden ingesteld"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Netgestuurd laden actief"
+      },
+      "wallbox_relays_available": {
+        "name": "Relais aanwezig"
+      },
+      "wallbox_authentication_required": {
+        "name": "Authenticatie vereist"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Volgend schakelpunt vervroegen"
+      },
+      "wallbox_start_charging": {
+        "name": "Laden starten"
+      },
+      "wallbox_pause_charging": {
+        "name": "Laden pauzeren"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Naam van het tijdprogramma"
+      },
+      "wallbox_label": {
+        "name": "Weergavenaam"
       }
     }
   },

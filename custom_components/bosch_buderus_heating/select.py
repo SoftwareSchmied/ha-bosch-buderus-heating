@@ -43,6 +43,7 @@ from .sensor import _semantic_key
 from .switch_program_select import SwitchProgramSelect
 from .switch_program_select import descriptions as switch_program_descriptions
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     DHW_OPERATION_MODE_POLICY,
@@ -85,6 +86,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create controls only for verified enum capabilities."""
+    track_wallbox_entities(Platform.SELECT, entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry,

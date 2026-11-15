@@ -254,7 +254,8 @@
           "connection_add_cloud": "Poveži dostop prek oblaka",
           "local_setup": "Nastavi lokalni dostop",
           "rescan": "Ponovno preišči sistem",
-          "recordings": "Zapisi sistema"
+          "recordings": "Zapisi sistema",
+          "wallbox": "Stenska polnilnica"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Čas",
           "temperature": "Temperatura"
         }
+      },
+      "wallbox": {
+        "title": "Stenska polnilnica",
+        "description": "Stenska polnilnica, ki zahteva preverjanje pristnosti, začne polniti šele po preverjanju s strani integracije. Pred vsakim zagonom se takrat pošlje en dodaten ukaz.",
+        "data": {
+          "wallbox_authentication": "Dovoli preverjanje pristnosti pred zagonom",
+          "wallbox_authentication_name": "Ime za preverjanje pristnosti (neobvezno)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Privzeto izklopljeno. Samo za polnilnice s programsko opremo 5.1.0 ali novejšo.",
+          "wallbox_authentication_name": "Ime, ki ga aplikacija proizvajalca uporablja za preverjanje pristnosti; lahko ostane prazno."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Rezultat",
+        "description": "Nastavitve stenske polnilnice so shranjene."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Dan, ki ima preklopne točke, obdrži vsaj eno; ni znano, kaj prazen dan pomeni za regulator.",
       "rrc_point_limit": "Ta dan ima že največje število preklopnih točk, ki ga aplikacija dovoljuje ({per_day}).",
       "rrc_point_last": "Zadnje preklopne točke dneva ni mogoče izbrisati; ni znano, kaj prazen dan pomeni za regulator.",
-      "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času."
+      "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času.",
+      "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Ime je bilo poslano, a ga ni bilo mogoče potrditi s ponovnim branjem. Morda je bilo kljub temu uveljavljeno; ne pošlje se znova."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Stenska polnilnica ni v stanju, ki dovoljuje to dejanje. Ta sprememba ni bila poslana."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Polnilni tok je manjši od 6 A. Najprej nastavite polnilni tok. Ta sprememba ni bila poslana."
+    },
+    "wallbox_authentication_required": {
+      "message": "Stenska polnilnica pred polnjenjem zahteva preverjanje pristnosti. Dovolite ga v možnostih integracije (Wallbox). Ta sprememba ni bila poslana."
+    },
+    "wallbox_group_controlled": {
+      "message": "Ta stenska polnilnica spada v skupino upravljanja obremenitve, ki upravlja to funkcijo. Ta sprememba ni bila poslana."
+    },
+    "wallbox_energy_manager": {
+      "message": "To stensko polnilnico upravlja upravljalnik energije. Ta sprememba ni bila poslana."
+    },
+    "wallbox_not_manual": {
+      "message": "Polnilni tok je mogoče nastaviti samo v običajnem načinu polnjenja. Ta sprememba ni bila poslana."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost je aktiven. Najprej končajte Boost. Ta sprememba ni bila poslana."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Stenska polnilnica za to funkcijo ni posredovala trenutne vrednosti. Ta sprememba ni bila poslana."
+    },
+    "wallbox_not_writeable": {
+      "message": "Stenska polnilnica te nastavitve ne sporoča kot spremenljive. Ta sprememba ni bila poslana."
+    },
+    "wallbox_firmware": {
+      "message": "Programska oprema stenske polnilnice te funkcije ne ponuja. Ta sprememba ni bila poslana."
+    },
+    "wallbox_meter_missing": {
+      "message": "Ta funkcija potrebuje povezan zunanji števec. Ta sprememba ni bila poslana."
+    },
+    "wallbox_not_offered": {
+      "message": "Ta funkcija za to stensko polnilnico ni na voljo. Ta sprememba ni bila poslana."
+    },
+    "wallbox_not_solar": {
+      "message": "Ta nastavitev velja samo za sončno polnjenje. Najprej preklopite način polnjenja na sončno. Ta sprememba ni bila poslana."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura odsotnosti"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Omejitev polnilnega toka"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Največje dopolnjevanje iz omrežja"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Najmanjši sončni presežek"
+      },
+      "wallbox_filter_time": {
+        "name": "Čas filtriranja sončnega polnjenja"
+      },
+      "wallbox_power_limit": {
+        "name": "Omejitev moči"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Omejitev toka faze L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Omejitev toka faze L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Omejitev toka faze L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cena električne energije"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Odkupna cena"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Način polnjenja",
+        "state": {
+          "manual": "Običajno",
+          "solar": "Sončno"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcija kamina"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Dopolnjevanje iz omrežja pri sončnem polnjenju"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prednost domači bateriji"
+      },
+      "wallbox_current_limiter": {
+        "name": "Omejevalnik toka"
+      },
+      "wallbox_power_limiter": {
+        "name": "Omejevalnik moči"
+      },
+      "wallbox_locked": {
+        "name": "Stenska polnilnica zaklenjena"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Časovni program tople vode"
+      },
+      "wallbox_external_meter": {
+        "name": "Zunanji števec",
+        "state": {
+          "disconnected": "Ni povezan",
+          "connected": "Povezan",
+          "error": "Napaka"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Največji tok zunanjega števca"
+      },
+      "wallbox_currency": {
+        "name": "Simbol valute"
+      },
+      "wallbox_limiter": {
+        "name": "Omejeno z",
+        "state": {
+          "none": "Nič",
+          "no_car": "Ni vozila",
+          "derating": "Zmanjšanje moči",
+          "key": "Stikalo s ključem",
+          "paragraph_14a": "Upravljanje operaterja omrežja (§14a)",
+          "app": "Aplikacija",
+          "web": "Spletni vmesnik",
+          "energy_manager": "Upravljalnik energije",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Porazdelitev obremenitve",
+          "watchdog": "Watchdog",
+          "solar": "Sončni presežek",
+          "dynamic_load_management": "Dinamično upravljanje obremenitve",
+          "static_load_management": "Statično upravljanje obremenitve",
+          "meter_fail_safe": "Zaščita ob okvari števca",
+          "external_limit": "Zunanja omejitev"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Upravljalnik energije",
+        "state": {
+          "inactive": "Neaktiven",
+          "active_heating": "Aktiven (ogrevanje)",
+          "active_hot_water": "Aktiven (topla voda)",
+          "active_energy_manager": "Upravlja stensko polnilnico"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Spremenljiva tarifa aktivna"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktiven"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Vhod za omrežno upravljanje aktiven"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Omrežno upravljano polnjenje nastavljeno"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Omrežno upravljano polnjenje aktivno"
+      },
+      "wallbox_relays_available": {
+        "name": "Releji na voljo"
+      },
+      "wallbox_authentication_required": {
+        "name": "Potrebno preverjanje pristnosti"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Predčasno aktiviraj naslednjo preklopno točko"
+      },
+      "wallbox_start_charging": {
+        "name": "Začni polnjenje"
+      },
+      "wallbox_pause_charging": {
+        "name": "Začasno ustavi polnjenje"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Ime časovnega programa"
+      },
+      "wallbox_label": {
+        "name": "Prikazno ime"
       }
     }
   },

@@ -305,8 +305,8 @@ reuses the existing discovery, polling and confirmed-write coordinator with
 gateway-bound clients. Its account resources remain shared, while stopping a
 source invalidates pending requests and prevents stale consumers from using a
 replacement login. Tests run the actual client against a loopback HTTP server.
-Reported wallboxes use their existing read-only coordinator in the same connection
-scope. `SourceUpdates` shares lifecycle guards and poll cancellation between
+Reported wallboxes use their own coordinator in the same connection
+scope; their commands and settings hold its polling lock (`wallbox_control`). `SourceUpdates` shares lifecycle guards and poll cancellation between
 coordinators while keeping their data models separate. Wallbox polling cannot
 hold the heating supplementary-read queue.
 

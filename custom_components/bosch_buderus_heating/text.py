@@ -1,9 +1,10 @@
-"""TP-05: the names of the weekly programs A and B as text controls.
+"""Text controls: the names of the weekly programs and the wallbox name.
 
-Only where the gateway reports the name writable with a known coding
-(``valueConfig``), and never on an iCom gateway (its app does not write
-names). Disabled by default: changing a name has not been confirmed on a
-real installation.
+Weekly program names (A and B) only where the gateway reports the name
+writable with a known coding (``valueConfig``), and never on an iCom gateway
+(its app does not write names). Disabled by default: changing a name has not
+been confirmed on a real installation. The display name of a wallbox comes
+from the wallbox entities (disabled by default as well).
 """
 
 from __future__ import annotations
@@ -42,6 +43,7 @@ from .program_names import (
     value_config,
 )
 from .resource_catalog import resource_name
+from .wallbox_entities import track_wallbox_entities
 from .write_policies import ContractRejected
 from .writes import ControlContext, WriteBusy
 
@@ -63,6 +65,7 @@ def _setup_entities(
     entry: PlatformScope,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    track_wallbox_entities(Platform.TEXT, entry, async_add_entities)
     for coordinator in entry.coordinators:
         if is_icom_gateway(coordinator.gateway):
             # KC2: the app of an iCom gateway does not write names.

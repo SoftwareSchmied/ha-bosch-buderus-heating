@@ -254,7 +254,8 @@
           "connection_add_cloud": "Pripojiť cloudový prístup",
           "local_setup": "Nastaviť lokálny prístup",
           "rescan": "Znova vyhľadať systém",
-          "recordings": "Záznam systému"
+          "recordings": "Záznam systému",
+          "wallbox": "Nabíjacia stanica"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Čas",
           "temperature": "Teplota"
         }
+      },
+      "wallbox": {
+        "title": "Nabíjacia stanica",
+        "description": "Nabíjacia stanica, ktorá vyžaduje overenie, začne nabíjať až po overení integráciou. Pred každým spustením sa potom odošle jeden príkaz navyše.",
+        "data": {
+          "wallbox_authentication": "Povoliť overenie pred spustením",
+          "wallbox_authentication_name": "Názov na overenie (voliteľný)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Predvolene vypnuté. Len pre stanice so softvérom 5.1.0 alebo novším.",
+          "wallbox_authentication_name": "Názov, ktorý aplikácia výrobcu používa na overenie; môže zostať prázdny."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Výsledok",
+        "description": "Nastavenia nabíjacej stanice sú uložené."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Deň so spínacími bodmi si ponechá aspoň jeden; čo znamená prázdny deň pre regulátor, nie je známe.",
       "rrc_point_limit": "Tento deň už má najvyšší počet spínacích bodov, ktorý aplikácia dovoľuje ({per_day}).",
       "rrc_point_last": "Posledný spínací bod dňa nemožno vymazať; čo znamená prázdny deň pre regulátor, nie je známe.",
-      "rrc_point_duplicate": "Tento deň už má spínací bod v tomto čase."
+      "rrc_point_duplicate": "Tento deň už má spínací bod v tomto čase.",
+      "wallbox_name_invalid": "Názov môže obsahovať najviac 64 tlačiteľných znakov."
     },
     "abort": {
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Názov bol odoslaný, ale nepodarilo sa ho potvrdiť spätným prečítaním. Môže byť napriek tomu použitý; znova sa neodosiela."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Nabíjacia stanica nie je v stave, ktorý túto akciu umožňuje. Táto zmena sa neodoslala."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Nabíjací prúd je nižší ako 6 A. Najprv nastavte nabíjací prúd. Táto zmena sa neodoslala."
+    },
+    "wallbox_authentication_required": {
+      "message": "Nabíjacia stanica vyžaduje pred nabíjaním overenie. Povoľte ho v možnostiach integrácie (Wallbox). Táto zmena sa neodoslala."
+    },
+    "wallbox_group_controlled": {
+      "message": "Táto nabíjacia stanica patrí do skupiny riadenia záťaže, ktorá túto funkciu riadi. Táto zmena sa neodoslala."
+    },
+    "wallbox_energy_manager": {
+      "message": "Túto nabíjaciu stanicu riadi energetický manažér. Táto zmena sa neodoslala."
+    },
+    "wallbox_not_manual": {
+      "message": "Nabíjací prúd sa dá nastaviť len v normálnom režime nabíjania. Táto zmena sa neodoslala."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost je aktívny. Najprv Boost ukončite. Táto zmena sa neodoslala."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Nabíjacia stanica pre túto funkciu nedodala aktuálnu hodnotu. Táto zmena sa neodoslala."
+    },
+    "wallbox_not_writeable": {
+      "message": "Nabíjacia stanica nehlási toto nastavenie ako meniteľné. Táto zmena sa neodoslala."
+    },
+    "wallbox_firmware": {
+      "message": "Softvér nabíjacej stanice túto funkciu neponúka. Táto zmena sa neodoslala."
+    },
+    "wallbox_meter_missing": {
+      "message": "Táto funkcia potrebuje pripojený externý elektromer. Táto zmena sa neodoslala."
+    },
+    "wallbox_not_offered": {
+      "message": "Táto funkcia sa pre túto nabíjaciu stanicu neponúka. Táto zmena sa neodoslala."
+    },
+    "wallbox_not_solar": {
+      "message": "Toto nastavenie platí len pre solárne nabíjanie. Najprv prepnite režim nabíjania na solárny. Táto zmena sa neodoslala."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Teplota pri neprítomnosti"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limit nabíjacieho prúdu"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximálne doplnenie zo siete"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimálny solárny prebytok"
+      },
+      "wallbox_filter_time": {
+        "name": "Solárny filtračný čas"
+      },
+      "wallbox_power_limit": {
+        "name": "Limit výkonu"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Prúdový limit fázy L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Prúdový limit fázy L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Prúdový limit fázy L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cena elektriny"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Výkupná cena"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Režim nabíjania",
+        "state": {
+          "manual": "Normálny",
+          "solar": "Solárny"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcia krbu"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Doplnenie zo siete pri solárnom nabíjaní"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Uprednostniť domácu batériu"
+      },
+      "wallbox_current_limiter": {
+        "name": "Obmedzovač prúdu"
+      },
+      "wallbox_power_limiter": {
+        "name": "Obmedzovač výkonu"
+      },
+      "wallbox_locked": {
+        "name": "Nabíjacia stanica zamknutá"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Časový program teplej vody"
+      },
+      "wallbox_external_meter": {
+        "name": "Externý elektromer",
+        "state": {
+          "disconnected": "Nepripojený",
+          "connected": "Pripojený",
+          "error": "Chyba"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximálny prúd externého elektromera"
+      },
+      "wallbox_currency": {
+        "name": "Symbol meny"
+      },
+      "wallbox_limiter": {
+        "name": "Zdroj obmedzenia",
+        "state": {
+          "none": "Nič",
+          "no_car": "Žiadne vozidlo",
+          "derating": "Zníženie výkonu",
+          "key": "Kľúčový spínač",
+          "paragraph_14a": "Riadenie prevádzkovateľom siete (§14a)",
+          "app": "Aplikácia",
+          "web": "Webové rozhranie",
+          "energy_manager": "Energetický manažér",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Rozdeľovanie záťaže",
+          "watchdog": "Watchdog",
+          "solar": "Solárny prebytok",
+          "dynamic_load_management": "Dynamické riadenie záťaže",
+          "static_load_management": "Statické riadenie záťaže",
+          "meter_fail_safe": "Ochrana pri výpadku elektromera",
+          "external_limit": "Externé obmedzenie"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energetický manažér",
+        "state": {
+          "inactive": "Neaktívny",
+          "active_heating": "Aktívny (vykurovanie)",
+          "active_hot_water": "Aktívny (teplá voda)",
+          "active_energy_manager": "Riadi nabíjaciu stanicu"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Premenlivá tarifa aktívna"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktívny"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Vstup pre riadenie sieťou aktívny"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Nabíjanie riadené sieťou nastavené"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Nabíjanie riadené sieťou aktívne"
+      },
+      "wallbox_relays_available": {
+        "name": "Relé k dispozícii"
+      },
+      "wallbox_authentication_required": {
+        "name": "Vyžaduje sa overenie"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Predsunúť ďalší spínací bod"
+      },
+      "wallbox_start_charging": {
+        "name": "Spustiť nabíjanie"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pozastaviť nabíjanie"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Názov časového programu"
+      },
+      "wallbox_label": {
+        "name": "Zobrazovaný názov"
       }
     }
   },

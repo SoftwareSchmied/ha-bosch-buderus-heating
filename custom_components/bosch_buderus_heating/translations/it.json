@@ -254,7 +254,8 @@
           "connection_add_cloud": "Collega l'accesso cloud",
           "local_setup": "Configura l'accesso locale",
           "rescan": "Cerca di nuovo nell'impianto",
-          "recordings": "Registrazioni dell'impianto"
+          "recordings": "Registrazioni dell'impianto",
+          "wallbox": "Wallbox"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Ora",
           "temperature": "Temperatura"
         }
+      },
+      "wallbox": {
+        "title": "Wallbox",
+        "description": "Una wallbox che richiede un'autenticazione inizia a ricaricare solo dopo un'autenticazione da parte dell'integrazione. Prima di ogni avvio viene quindi inviato un comando aggiuntivo.",
+        "data": {
+          "wallbox_authentication": "Consenti l'autenticazione prima di un avvio",
+          "wallbox_authentication_name": "Nome di autenticazione (facoltativo)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Disattivato per impostazione predefinita. Solo per wallbox con software 5.1.0 o successivo.",
+          "wallbox_authentication_name": "Il nome che l'app del produttore usa per l'autenticazione; può restare vuoto."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Risultato",
+        "description": "Le impostazioni della wallbox sono state salvate."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Un giorno che ha punti di commutazione ne mantiene almeno uno; non è noto cosa significhi un giorno vuoto per il regolatore.",
       "rrc_point_limit": "Questo giorno ha già il numero massimo di punti di commutazione consentito dall'app ({per_day}).",
       "rrc_point_last": "L'ultimo punto di commutazione di un giorno non può essere eliminato; non è noto cosa significhi un giorno vuoto per il regolatore.",
-      "rrc_point_duplicate": "Questo giorno ha già un punto di commutazione a quest'ora."
+      "rrc_point_duplicate": "Questo giorno ha già un punto di commutazione a quest'ora.",
+      "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Il nome è stato inviato, ma non è stato possibile confermarlo rileggendolo. Potrebbe comunque essere stato applicato; non viene inviato di nuovo."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "La wallbox non è in uno stato che consente questa azione. Questa modifica non è stata inviata."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "La corrente di ricarica è inferiore a 6 A. Impostare prima la corrente di ricarica. Questa modifica non è stata inviata."
+    },
+    "wallbox_authentication_required": {
+      "message": "La wallbox richiede un'autenticazione prima della ricarica. Consentirla nelle opzioni dell'integrazione (Wallbox). Questa modifica non è stata inviata."
+    },
+    "wallbox_group_controlled": {
+      "message": "Questa wallbox fa parte di un gruppo di gestione del carico che controlla questa funzione. Questa modifica non è stata inviata."
+    },
+    "wallbox_energy_manager": {
+      "message": "Un gestore energetico controlla questa wallbox. Questa modifica non è stata inviata."
+    },
+    "wallbox_not_manual": {
+      "message": "La corrente di ricarica si può impostare solo nella modalità di ricarica normale. Questa modifica non è stata inviata."
+    },
+    "wallbox_boost_active": {
+      "message": "Il Boost è attivo. Terminare prima il Boost. Questa modifica non è stata inviata."
+    },
+    "wallbox_value_unavailable": {
+      "message": "La wallbox non ha fornito un valore attuale per questa funzione. Questa modifica non è stata inviata."
+    },
+    "wallbox_not_writeable": {
+      "message": "La wallbox non indica questa impostazione come modificabile. Questa modifica non è stata inviata."
+    },
+    "wallbox_firmware": {
+      "message": "Il software della wallbox non offre questa funzione. Questa modifica non è stata inviata."
+    },
+    "wallbox_meter_missing": {
+      "message": "Questa funzione richiede un contatore esterno collegato. Questa modifica non è stata inviata."
+    },
+    "wallbox_not_offered": {
+      "message": "Questa funzione non è offerta per questa wallbox. Questa modifica non è stata inviata."
+    },
+    "wallbox_not_solar": {
+      "message": "Questa impostazione vale solo per la ricarica solare. Passare prima la modalità di ricarica a solare. Questa modifica non è stata inviata."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura di assenza"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limite di corrente di ricarica"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Integrazione massima dalla rete"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Surplus solare minimo"
+      },
+      "wallbox_filter_time": {
+        "name": "Tempo di filtro solare"
+      },
+      "wallbox_power_limit": {
+        "name": "Limite di potenza"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Limite di corrente fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Limite di corrente fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Limite di corrente fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Prezzo dell'elettricità"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Tariffa di immissione"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Programma A",
           "b": "Programma B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Modalità di ricarica",
+        "state": {
+          "manual": "Normale",
+          "solar": "Solare"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Funzione camino"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Integrazione dalla rete nella ricarica solare"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Preferisci la batteria domestica"
+      },
+      "wallbox_current_limiter": {
+        "name": "Limitatore di corrente"
+      },
+      "wallbox_power_limiter": {
+        "name": "Limitatore di potenza"
+      },
+      "wallbox_locked": {
+        "name": "Wallbox bloccata"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Programma orario acqua calda"
+      },
+      "wallbox_external_meter": {
+        "name": "Contatore esterno",
+        "state": {
+          "disconnected": "Non collegato",
+          "connected": "Collegato",
+          "error": "Errore"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Corrente massima del contatore esterno"
+      },
+      "wallbox_currency": {
+        "name": "Simbolo di valuta"
+      },
+      "wallbox_limiter": {
+        "name": "Limitato da",
+        "state": {
+          "none": "Niente",
+          "no_car": "Nessun veicolo",
+          "derating": "Riduzione di potenza",
+          "key": "Interruttore a chiave",
+          "paragraph_14a": "Controllo del gestore di rete (§14a)",
+          "app": "App",
+          "web": "Interfaccia web",
+          "energy_manager": "Gestore energetico",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Bilanciamento del carico",
+          "watchdog": "Watchdog",
+          "solar": "Surplus solare",
+          "dynamic_load_management": "Gestione dinamica del carico",
+          "static_load_management": "Gestione statica del carico",
+          "meter_fail_safe": "Protezione in caso di guasto del contatore",
+          "external_limit": "Limite esterno"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Gestore energetico",
+        "state": {
+          "inactive": "Inattivo",
+          "active_heating": "Attivo (riscaldamento)",
+          "active_hot_water": "Attivo (acqua calda)",
+          "active_energy_manager": "Controlla la wallbox"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Tariffa variabile attiva"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost attivo"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Ingresso di controllo di rete attivo"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Ricarica controllata dalla rete configurata"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Ricarica controllata dalla rete attiva"
+      },
+      "wallbox_relays_available": {
+        "name": "Relè disponibili"
+      },
+      "wallbox_authentication_required": {
+        "name": "Autenticazione richiesta"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Anticipa il prossimo punto di commutazione"
+      },
+      "wallbox_start_charging": {
+        "name": "Avvia ricarica"
+      },
+      "wallbox_pause_charging": {
+        "name": "Metti in pausa la ricarica"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Nome del programma orario"
+      },
+      "wallbox_label": {
+        "name": "Nome visualizzato"
       }
     }
   },

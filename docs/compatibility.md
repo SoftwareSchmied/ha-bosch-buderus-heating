@@ -28,7 +28,7 @@ account, gateway, controller and heating system.
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
 | Room controllers (RRC 2.0) | TC100.2: zone readings and control, programs, temporary setpoint, open window detection, one-day absence, hot water mode, boost, away mode and next switch point confirmed; editing switch points, other absences and hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings untested. CT200: untested. Cloud only, no local access. See [room controllers](room-controllers.md) |
-| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes; see [device families](device-support-plan.md) |
+| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and wallboxes (controls expected, untested); see [device families](device-support-plan.md) |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [checked systems](#checked-systems) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
 

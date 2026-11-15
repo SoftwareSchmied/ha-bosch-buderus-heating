@@ -254,7 +254,8 @@
           "connection_add_cloud": "Forbind cloudadgang",
           "local_setup": "Opsæt lokal adgang",
           "rescan": "Søg i anlægget igen",
-          "recordings": "Anlæggets registrering"
+          "recordings": "Anlæggets registrering",
+          "wallbox": "Ladeboks"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Tidspunkt",
           "temperature": "Temperatur"
         }
+      },
+      "wallbox": {
+        "title": "Ladeboks",
+        "description": "En ladeboks, der kræver godkendelse, begynder først at lade efter en godkendelse fra integrationen. Der sendes så én ekstra kommando før hver start.",
+        "data": {
+          "wallbox_authentication": "Tillad godkendelse før en start",
+          "wallbox_authentication_name": "Godkendelsesnavn (valgfrit)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Slået fra som standard. Kun for ladebokse med software 5.1.0 eller nyere.",
+          "wallbox_authentication_name": "Navnet, som producentens app bruger til godkendelse; må være tomt."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultat",
+        "description": "Ladeboksens indstillinger er gemt."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "En dag med koblingspunkter beholder mindst ét; hvad en tom dag betyder for regulatoren, er ikke kendt.",
       "rrc_point_limit": "Denne dag har allerede det højeste antal koblingspunkter, appen tillader ({per_day}).",
       "rrc_point_last": "Dagens sidste koblingspunkt kan ikke slettes; hvad en tom dag betyder for regulatoren, er ikke kendt.",
-      "rrc_point_duplicate": "Denne dag har allerede et koblingspunkt på dette tidspunkt."
+      "rrc_point_duplicate": "Denne dag har allerede et koblingspunkt på dette tidspunkt.",
+      "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives."
     },
     "abort": {
       "no_notification_gateways": "Der er ikke konfigureret noget varmeanlæg.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Navnet blev sendt, men kunne ikke bekræftes ved at læse det tilbage. Det kan stadig være blevet anvendt; det sendes ikke igen."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Ladeboksen er ikke i en tilstand, der tillader denne handling. Denne ændring blev ikke sendt."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Ladestrømmen er under 6 A. Indstil først ladestrømmen. Denne ændring blev ikke sendt."
+    },
+    "wallbox_authentication_required": {
+      "message": "Ladeboksen kræver godkendelse før opladning. Tillad det i integrationens indstillinger (Wallbox). Denne ændring blev ikke sendt."
+    },
+    "wallbox_group_controlled": {
+      "message": "Denne ladeboks hører til en laststyringsgruppe, der styrer denne funktion. Denne ændring blev ikke sendt."
+    },
+    "wallbox_energy_manager": {
+      "message": "En energistyring styrer denne ladeboks. Denne ændring blev ikke sendt."
+    },
+    "wallbox_not_manual": {
+      "message": "Ladestrømmen kan kun indstilles i normal opladningstilstand. Denne ændring blev ikke sendt."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost er aktiv. Afslut først Boost. Denne ændring blev ikke sendt."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Ladeboksen har ikke leveret en aktuel værdi for denne funktion. Denne ændring blev ikke sendt."
+    },
+    "wallbox_not_writeable": {
+      "message": "Ladeboksen melder ikke denne indstilling som ændringsbar. Denne ændring blev ikke sendt."
+    },
+    "wallbox_firmware": {
+      "message": "Ladeboksens software tilbyder ikke denne funktion. Denne ændring blev ikke sendt."
+    },
+    "wallbox_meter_missing": {
+      "message": "Denne funktion kræver en forbundet ekstern måler. Denne ændring blev ikke sendt."
+    },
+    "wallbox_not_offered": {
+      "message": "Denne funktion tilbydes ikke for denne ladeboks. Denne ændring blev ikke sendt."
+    },
+    "wallbox_not_solar": {
+      "message": "Denne indstilling gælder kun solopladning. Skift først opladningstilstanden til sol. Denne ændring blev ikke sendt."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Fraværstemperatur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Grænse for ladestrøm"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maksimalt tilskud fra nettet"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Mindste solcelleoverskud"
+      },
+      "wallbox_filter_time": {
+        "name": "Filtertid for solopladning"
+      },
+      "wallbox_power_limit": {
+        "name": "Effektgrænse"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Strømgrænse fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Strømgrænse fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Strømgrænse fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Elpris"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Afregningspris for overskudsstrøm"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Opladningstilstand",
+        "state": {
+          "manual": "Normal",
+          "solar": "Sol"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Pejsefunktion"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Tilskud fra nettet ved solopladning"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prioritér husbatteri"
+      },
+      "wallbox_current_limiter": {
+        "name": "Strømbegrænser"
+      },
+      "wallbox_power_limiter": {
+        "name": "Effektbegrænser"
+      },
+      "wallbox_locked": {
+        "name": "Ladeboks låst"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Tidsprogram for varmt brugsvand"
+      },
+      "wallbox_external_meter": {
+        "name": "Ekstern måler",
+        "state": {
+          "disconnected": "Ikke forbundet",
+          "connected": "Forbundet",
+          "error": "Fejl"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maksimal strøm for ekstern måler"
+      },
+      "wallbox_currency": {
+        "name": "Valutasymbol"
+      },
+      "wallbox_limiter": {
+        "name": "Begrænset af",
+        "state": {
+          "none": "Intet",
+          "no_car": "Intet køretøj",
+          "derating": "Effektreduktion",
+          "key": "Nøglekontakt",
+          "paragraph_14a": "Styring fra netselskab (§14a)",
+          "app": "App",
+          "web": "Webgrænseflade",
+          "energy_manager": "Energistyring",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Lastfordeling",
+          "watchdog": "Watchdog",
+          "solar": "Solcelleoverskud",
+          "dynamic_load_management": "Dynamisk laststyring",
+          "static_load_management": "Statisk laststyring",
+          "meter_fail_safe": "Sikring ved målerfejl",
+          "external_limit": "Ekstern begrænsning"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energistyring",
+        "state": {
+          "inactive": "Inaktiv",
+          "active_heating": "Aktiv (opvarmning)",
+          "active_hot_water": "Aktiv (varmt vand)",
+          "active_energy_manager": "Styrer ladeboksen"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Variabel tarif aktiv"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktiv"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Netstyret indgang aktiv"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Netstyret opladning konfigureret"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Netstyret opladning aktiv"
+      },
+      "wallbox_relays_available": {
+        "name": "Relæer til stede"
+      },
+      "wallbox_authentication_required": {
+        "name": "Godkendelse påkrævet"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Fremryk næste koblingspunkt"
+      },
+      "wallbox_start_charging": {
+        "name": "Start opladning"
+      },
+      "wallbox_pause_charging": {
+        "name": "Sæt opladning på pause"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Tidsprogrammets navn"
+      },
+      "wallbox_label": {
+        "name": "Visningsnavn"
       }
     }
   },

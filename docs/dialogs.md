@@ -108,6 +108,14 @@ as messages. Sign-in, device checks and the confirmation after a change can
 add requests outside this schedule. If a polling cycle takes longer than its
 interval, the next one starts later.
 
+## Wallbox
+
+With a wallbox the settings menu has the step **Wallbox**. It allows the
+integration to authenticate before a start (off by default) and takes the
+optional authentication name of the vendor app. Without this permission,
+the start button stays unavailable on a wallbox that requires
+authentication. See [wallboxes](pointt-wallboxes.md).
+
 ## Reconfigure (older entries)
 
 **Reconfigure** reloads the integration and performs a complete resource

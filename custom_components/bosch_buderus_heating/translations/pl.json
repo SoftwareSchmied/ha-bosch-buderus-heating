@@ -254,7 +254,8 @@
           "connection_add_cloud": "Połącz dostęp przez chmurę",
           "local_setup": "Skonfiguruj dostęp lokalny",
           "rescan": "Wyszukaj instalację ponownie",
-          "recordings": "Zapisy instalacji"
+          "recordings": "Zapisy instalacji",
+          "wallbox": "Stacja ładowania"
         }
       },
       "notifications": {
@@ -941,6 +942,22 @@
           "time": "Godzina",
           "temperature": "Temperatura"
         }
+      },
+      "wallbox": {
+        "title": "Stacja ładowania",
+        "description": "Stacja ładowania wymagająca uwierzytelnienia zaczyna ładować dopiero po uwierzytelnieniu przez integrację. Przed każdym startem wysyłane jest wtedy jedno dodatkowe polecenie.",
+        "data": {
+          "wallbox_authentication": "Zezwól na uwierzytelnienie przed startem",
+          "wallbox_authentication_name": "Nazwa do uwierzytelnienia (opcjonalna)"
+        },
+        "data_description": {
+          "wallbox_authentication": "Domyślnie wyłączone. Tylko dla stacji z oprogramowaniem 5.1.0 lub nowszym.",
+          "wallbox_authentication_name": "Nazwa, której aplikacja producenta używa do uwierzytelnienia; może pozostać pusta."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Wynik",
+        "description": "Ustawienia stacji ładowania zostały zapisane."
       }
     },
     "error": {
@@ -1064,7 +1081,8 @@
       "switch_program_day_emptied": "Dzień, który ma punkty przełączenia, zachowuje co najmniej jeden; nie wiadomo, co pusty dzień oznacza dla regulatora.",
       "rrc_point_limit": "Ten dzień ma już największą liczbę punktów przełączenia, jaką dopuszcza aplikacja ({per_day}).",
       "rrc_point_last": "Ostatniego punktu przełączenia dnia nie można usunąć; nie wiadomo, co pusty dzień oznacza dla regulatora.",
-      "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie."
+      "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie.",
+      "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -1667,6 +1685,45 @@
     },
     "program_name_not_confirmed": {
       "message": "Nazwa została wysłana, ale nie udało się jej potwierdzić przez ponowny odczyt. Mogła mimo to zostać zastosowana; nie jest wysyłana ponownie."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Stacja ładowania nie jest w stanie, który pozwala na tę akcję. Ta zmiana nie została wysłana."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Prąd ładowania jest niższy niż 6 A. Najpierw ustaw prąd ładowania. Ta zmiana nie została wysłana."
+    },
+    "wallbox_authentication_required": {
+      "message": "Stacja ładowania wymaga uwierzytelnienia przed ładowaniem. Zezwól na nie w opcjach integracji (Wallbox). Ta zmiana nie została wysłana."
+    },
+    "wallbox_group_controlled": {
+      "message": "Ta stacja ładowania należy do grupy zarządzania obciążeniem, która steruje tą funkcją. Ta zmiana nie została wysłana."
+    },
+    "wallbox_energy_manager": {
+      "message": "Tą stacją ładowania steruje menedżer energii. Ta zmiana nie została wysłana."
+    },
+    "wallbox_not_manual": {
+      "message": "Prąd ładowania można ustawić tylko w normalnym trybie ładowania. Ta zmiana nie została wysłana."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost jest aktywny. Najpierw zakończ Boost. Ta zmiana nie została wysłana."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Stacja ładowania nie podała aktualnej wartości dla tej funkcji. Ta zmiana nie została wysłana."
+    },
+    "wallbox_not_writeable": {
+      "message": "Stacja ładowania nie zgłasza tego ustawienia jako zmienialnego. Ta zmiana nie została wysłana."
+    },
+    "wallbox_firmware": {
+      "message": "Oprogramowanie stacji ładowania nie oferuje tej funkcji. Ta zmiana nie została wysłana."
+    },
+    "wallbox_meter_missing": {
+      "message": "Ta funkcja wymaga podłączonego licznika zewnętrznego. Ta zmiana nie została wysłana."
+    },
+    "wallbox_not_offered": {
+      "message": "Ta funkcja nie jest oferowana dla tej stacji ładowania. Ta zmiana nie została wysłana."
+    },
+    "wallbox_not_solar": {
+      "message": "To ustawienie dotyczy tylko ładowania solarnego. Najpierw przełącz tryb ładowania na solarny. Ta zmiana nie została wysłana."
     }
   },
   "selector": {
@@ -1922,6 +1979,36 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura nieobecności"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limit prądu ładowania"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maksymalne uzupełnienie z sieci"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimalna nadwyżka solarna"
+      },
+      "wallbox_filter_time": {
+        "name": "Czas filtrowania solarnego"
+      },
+      "wallbox_power_limit": {
+        "name": "Limit mocy"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Limit prądu fazy L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Limit prądu fazy L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Limit prądu fazy L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cena energii elektrycznej"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Taryfa za oddawanie energii"
       }
     },
     "select": {
@@ -2063,6 +2150,13 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Tryb ładowania",
+        "state": {
+          "manual": "Normalny",
+          "solar": "Solarny"
+        }
       }
     },
     "switch": {
@@ -2128,6 +2222,24 @@
       },
       "rrc_fireplace": {
         "name": "Funkcja kominkowa"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Uzupełnienie z sieci przy ładowaniu solarnym"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Preferuj magazyn domowy"
+      },
+      "wallbox_current_limiter": {
+        "name": "Ogranicznik prądu"
+      },
+      "wallbox_power_limiter": {
+        "name": "Ogranicznik mocy"
+      },
+      "wallbox_locked": {
+        "name": "Stacja ładowania zablokowana"
       }
     },
     "sensor": {
@@ -3094,6 +3206,51 @@
       },
       "name_part_program_hot_water": {
         "name": "Program czasowy ciepłej wody użytkowej"
+      },
+      "wallbox_external_meter": {
+        "name": "Licznik zewnętrzny",
+        "state": {
+          "disconnected": "Niepodłączony",
+          "connected": "Podłączony",
+          "error": "Błąd"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maksymalny prąd licznika zewnętrznego"
+      },
+      "wallbox_currency": {
+        "name": "Symbol waluty"
+      },
+      "wallbox_limiter": {
+        "name": "Ograniczone przez",
+        "state": {
+          "none": "Nic",
+          "no_car": "Brak pojazdu",
+          "derating": "Obniżenie mocy",
+          "key": "Przełącznik kluczykowy",
+          "paragraph_14a": "Sterowanie operatora sieci (§14a)",
+          "app": "Aplikacja",
+          "web": "Interfejs WWW",
+          "energy_manager": "Menedżer energii",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Równoważenie obciążenia",
+          "watchdog": "Watchdog",
+          "solar": "Nadwyżka solarna",
+          "dynamic_load_management": "Dynamiczne zarządzanie obciążeniem",
+          "static_load_management": "Statyczne zarządzanie obciążeniem",
+          "meter_fail_safe": "Zabezpieczenie przy awarii licznika",
+          "external_limit": "Ograniczenie zewnętrzne"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Menedżer energii",
+        "state": {
+          "inactive": "Nieaktywny",
+          "active_heating": "Aktywny (ogrzewanie)",
+          "active_hot_water": "Aktywny (ciepła woda)",
+          "active_energy_manager": "Steruje stacją ładowania"
+        }
       }
     },
     "binary_sensor": {
@@ -3187,6 +3344,24 @@
       },
       "variable_tariff_active": {
         "name": "Taryfa zmienna aktywna"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktywny"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Wejście sterowania sieciowego aktywne"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Ładowanie sterowane siecią skonfigurowane"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Ładowanie sterowane siecią aktywne"
+      },
+      "wallbox_relays_available": {
+        "name": "Przekaźniki dostępne"
+      },
+      "wallbox_authentication_required": {
+        "name": "Wymagane uwierzytelnienie"
       }
     },
     "calendar": {
@@ -3237,6 +3412,12 @@
       },
       "rrc_override_advance": {
         "name": "Przyspiesz następny punkt przełączenia"
+      },
+      "wallbox_start_charging": {
+        "name": "Rozpocznij ładowanie"
+      },
+      "wallbox_pause_charging": {
+        "name": "Wstrzymaj ładowanie"
       }
     },
     "water_heater": {
@@ -3407,6 +3588,9 @@
     "text": {
       "switch_program_name": {
         "name": "Nazwa programu czasowego"
+      },
+      "wallbox_label": {
+        "name": "Nazwa wyświetlana"
       }
     }
   },

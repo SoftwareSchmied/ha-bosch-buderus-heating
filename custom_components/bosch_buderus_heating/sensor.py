@@ -149,6 +149,7 @@ from .switch_programs import (
 )
 from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
 from .variable_tariff_entities import track_tariff_sensor
+from .wallbox_entities import track_wallbox_entities
 from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
@@ -544,6 +545,7 @@ def _setup_entities(
             purifier.SENSORS,
             sensor=True,
         )
+    track_wallbox_entities(Platform.SENSOR, entry, async_add_entities)
     entities: list[SensorEntity] = []
     entities.extend(
         WallboxSensor(coordinator, description)
