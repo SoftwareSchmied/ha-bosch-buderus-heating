@@ -450,3 +450,17 @@ in automatic mode since 0.9.0, see
 `switchProgramMode` and `/notifications`. Reading most of these works through
 the generic discovery already; writing the pool and the energy histories is
 not part of 0.9.0.
+
+## Wallbox paths (cp0)
+
+All paths below `/rest/v1/cp0/` of a wallbox are known only from the vendor
+app, none from a real wallbox or the official API description; every
+control is expected but untested (see [wallboxes](pointt-wallboxes.md)).
+
+| Path | Use in the integration |
+| --- | --- |
+| `telemetry`, `conf`, `info` (objects) | read; readings, the state rules of the controls |
+| `telemetry/extmeterState`, `telemetry/forceActive`, `telemetry/extInputState`, `info/extmeterCurrentMaximum`, `info/brand`, `conf/currency` | read only |
+| `conf/chargingStrategy`, `conf/locked`, `conf/label`, `conf/price`, `conf/feedinPrice`, `conf/solarSurplus/*`, `conf/strategy/powerOffset`, `conf/strategy/filterTime`, `conf/overloadProtection/*` | read; written with `{"value": ...}` only when reported writeable |
+| `cmd/start`, `cmd/pause`, `cmd/authenticate`, `cmd/limit`, `cmd/force/limit`, `cmd/force/limitReset` | commands; `authenticate` only when allowed in the options |
+| `conf/auth`, `conf/rfid`, `conf/rfid/secure`, `cmd/rfid/teachIn`, `chargelog`, `energyhistory` | never requested |

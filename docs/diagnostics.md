@@ -26,6 +26,14 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
   `direct_probes`), described under
   [missing controls](#missing-controls).
+- In `wallboxes[]`: `write_support` is now `true`; `values` lists the
+  wallbox's single values by their fixed cp0 path (`known`, `writeable`,
+  `refused` with `http_<status>` or `invalid_payload`, `polled` while an
+  enabled entity shows them); `firmware_known` says whether a software
+  version could be read; `write_counts` counts the outcomes of commands and
+  settings (`start_confirmed`, `limit_unchanged`, `boost_not_confirmed`,
+  `locked_refused`, …), never values, labels, names, brands or prices. See
+  [wallboxes](pointt-wallboxes.md).
 
 The anonymized inventory keeps dropping all of these sections.
 
