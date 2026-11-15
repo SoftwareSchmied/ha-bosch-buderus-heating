@@ -37,6 +37,7 @@ from .write_policies import DEFAULT_READ_BACK_DELAY as DEFAULT_READ_BACK_DELAY
 from .write_policies import GENERIC_CONTEXT as GENERIC_CONTEXT
 from .write_policies import RRC_CONTEXT as RRC_CONTEXT
 from .write_policies import RRC_READ_BACK_DELAYS as RRC_READ_BACK_DELAYS
+from .write_policies import UNCHECKED_CONTEXT as UNCHECKED_CONTEXT
 from .write_policies import ContractRejected as ContractRejected
 from .write_policies import ControlContext as ControlContext
 from .write_policies import EnumWritePolicy as EnumWritePolicy
@@ -1039,9 +1040,13 @@ def assess_control(
         )
     except ContractConflict:
         return ControlAssessment(None, "rrc_contract_conflict")
-    if policy in circuit_controls.GENERIC_ONLY_POLICIES and _context(context).rrc_plant:
-        # A room controller's circuit settings follow its contracts only.
-        return ControlAssessment(None, "room_controller_contract_only")
+    if policy in circuit_controls.GENERIC_ONLY_POLICIES:
+        if _context(context).rrc_plant:
+            # A room controller's circuit settings follow its contracts only.
+            return ControlAssessment(None, "room_controller_contract_only")
+        if not _context(context).room_controller_checked:
+            # Not before the gateway is known not to be a room controller.
+            return ControlAssessment(None, "room_controller_check_pending")
     if policy is not None:
         schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):

@@ -104,6 +104,9 @@ Versioning after its first tagged preview.
     controller stay as they are.
   - No change while a room controller runs the circuit (control type
     `ISRC`), as in the manufacturer's app.
+  - They appear only after a finished discovery has settled that the
+    gateway is no room controller, so a room controller recognised late
+    never shows them.
   - I tested it with simulated data in automated tests only; it is
     expected, untested on a real installation.
 - **Cooling setpoint and cooling threshold:** heat pumps with cooling get

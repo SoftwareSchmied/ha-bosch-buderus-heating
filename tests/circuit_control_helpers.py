@@ -134,7 +134,10 @@ def coordinator_for(
     resources: dict[str, Resource],
     *,
     device_type: str = "icom",
+    checked: bool = True,
 ) -> BoschBuderusDataUpdateCoordinator:
+    """A coordinator with these readings; ``checked``: a finished discovery
+    settled that the gateway is no room controller."""
     entry = MockConfigEntry(
         domain=DOMAIN, data={"brand": "buderus", "gateway_ids": ["gateway"]}
     )
@@ -150,6 +153,7 @@ def coordinator_for(
         for path, resource in resources.items()
     }
     coordinator.last_update_success = True
+    coordinator.room_controller_checked = checked
     entry.runtime_data = BoschBuderusRuntimeData(
         client, AsyncMock(), (coordinator.gateway,), (coordinator,)
     )

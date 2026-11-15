@@ -32,6 +32,7 @@ from homeassistant.helpers.event import async_call_later, async_track_point_in_u
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .circuit_controls import GENERIC_ONLY_POLICIES, room_controller_check_complete
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
@@ -140,7 +141,7 @@ from .switch_program_edit import contract_of as switch_program_contract
 from .switch_program_service import SwitchProgramService, program_shows
 from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
-from .write_policies import RRC_HEAT_PUMP_CONTEXT, rrc_kwargs
+from .write_policies import RRC_HEAT_PUMP_CONTEXT, UNCHECKED_CONTEXT, rrc_kwargs
 from .write_window import SendWindow, send_window
 from .writes import (
     GENERIC_CONTEXT,
@@ -672,6 +673,9 @@ class BoschBuderusDataUpdateCoordinator(
         self._unknown_enum_value_counts: Counter[str] = Counter()
         self._contract_changes: Counter[str] = Counter()
         self.discovery_diagnostics = DiscoveryDiagnostics()
+        # Set once a finished discovery settled the room controller evidence
+        # (``circuit_controls.room_controller_check_complete``); never unset.
+        self.room_controller_checked = False
         # P46: resources discovered before, and the search for missing ones.
         self.inventory: DiscoveryInventory | None = None
         self.discovery_recovery = DiscoveryRecovery()
@@ -745,17 +749,23 @@ class BoschBuderusDataUpdateCoordinator(
             or cached[1] is not resources
             or cached[2] != len(resources)
             or cached[3] != self.gateway.device_type
+            or cached[4] != self.room_controller_checked
         ):
             from .device import is_rrc_plant
 
             self._control_context = (
-                self._rrc_control_context() if is_rrc_plant(self) else GENERIC_CONTEXT
+                self._rrc_control_context()
+                if is_rrc_plant(self)
+                else GENERIC_CONTEXT
+                if self.room_controller_checked
+                else UNCHECKED_CONTEXT
             )
             self._control_context_key = (
                 data,
                 resources,
                 len(resources),
                 self.gateway.device_type,
+                self.room_controller_checked,
             )
         return self._control_context
 
@@ -1264,6 +1274,11 @@ class BoschBuderusDataUpdateCoordinator(
             extra: dict[str, Any] = {}
             if context.rrc_plant:
                 extra.update(context=context, on_sent=on_sent)
+            elif (
+                not context.room_controller_checked and policy in GENERIC_ONLY_POLICIES
+            ):
+                # The generic heating circuit settings wait for the check.
+                extra["context"] = context
             if related:
                 extra["related"] = related
             try:
@@ -3294,6 +3309,9 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
         self._merge_start_counter_candidates()
+        if room_controller_check_complete(self.discovery_diagnostics):
+            # The generic heating circuit settings may appear from now on.
+            self.room_controller_checked = True
         if discovery_fully_answered(self.discovery_diagnostics):
             # FAULT-2: a required fault source this tree no longer has is gone.
             self.faults.reconcile_discovery(successful_resources)

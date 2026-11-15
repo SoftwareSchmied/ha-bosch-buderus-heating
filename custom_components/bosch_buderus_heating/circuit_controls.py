@@ -41,6 +41,7 @@ from typing import Final
 
 from .pointt import Resource
 from .pointt.models import JsonScalar
+from .rrc import PRODUCT_TYPE_PATH, ZONE_LIST
 from .write_policies import EnumWritePolicy, NumberWritePolicy
 
 _CIRCUIT_ROOT: Final = re.compile(r"^(/heatingCircuits/[^/]+)/")
@@ -288,6 +289,30 @@ _ICONS: Final = (
 def icon(path: str) -> str | None:
     """The icon of a heating circuit setting of this module, else None."""
     return next((icon for pattern, icon in _ICONS if re.fullmatch(pattern, path)), None)
+
+
+# The readings that show a room controller (``device.is_rrc_plant``).
+ROOM_CONTROLLER_EVIDENCE_PATHS: Final = ("/zones", ZONE_LIST, PRODUCT_TYPE_PATH)
+# Answers that do not settle whether a path exists.
+_OPEN_ANSWERS: Final = frozenset({"http_401", "http_408", "http_429"})
+
+
+def room_controller_check_complete(report: object) -> bool:
+    """Whether a discovery report settles that evidence of a room controller
+    was read: the discovery finished, and each evidence path it requested was
+    found or got a definite client answer (such as 404). A server error, a
+    timeout, a rate limit or a malformed answer leaves it open."""
+    if not getattr(report, "completed", False):
+        return False
+    paths = getattr(report, "paths", {})
+    for path in ROOM_CONTROLLER_EVIDENCE_PATHS:
+        item = paths.get(path)
+        if item is None or item.discovered or item.read_policy != "normal":
+            continue
+        answer = item.fallback_result or item.bulk_result
+        if not re.fullmatch(r"http_4\d\d", answer) or answer in _OPEN_ANSWERS:
+            return False
+    return True
 
 
 def unknown_level_count(paths: Iterable[str]) -> int:

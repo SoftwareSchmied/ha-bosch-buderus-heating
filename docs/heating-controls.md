@@ -267,6 +267,12 @@ Reports are welcome.
 - **Room controllers:** the circuits of a TC100.2 or CT200 keep their own
   settings (see [room controllers](room-controllers.md)); none of these
   entities is created for them.
+- **Only after the room controller check:** these settings are created,
+  offered and written only after a finished discovery got a definite answer
+  whether the gateway is a room controller (its zone list and product type).
+  Until then, for example while a server error leaves that open, they wait,
+  so a room controller recognised late never shows them, not even for a
+  moment.
 
 ### Variable electricity tariff (read only)
 
@@ -558,6 +564,12 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
 - **Raumregler:** Die Kreise eines TC100.2 oder CT200 behalten ihre eigenen
   Einstellungen (siehe [Raumregler](room-controllers.md)); für sie entsteht
   keine dieser Entitäten.
+- **Erst nach der Raumregler-Prüfung:** Diese Einstellungen entstehen, werden
+  angeboten und geschrieben erst, nachdem eine abgeschlossene Erkennung eine
+  eindeutige Antwort darauf erhielt, ob das Gateway ein Raumregler ist
+  (Zonenliste und Produkttyp). Bis dahin, etwa solange ein Serverfehler das
+  offenlässt, warten sie; ein spät erkannter Raumregler zeigt sie so nie, auch
+  nicht kurz.
 
 ### Variabler Stromtarif (nur lesen)
 
