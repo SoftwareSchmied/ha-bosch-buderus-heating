@@ -4,6 +4,59 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.2-beta.2 verification
+
+I am preparing **0.9.2-beta.2 as a pre-release** for testing; **0.9.1 stays
+Stable/Latest**. It adds calculated values, the plant recordings, a climate
+entity per zone, more heating circuit settings and time programs, and
+controls for wallboxes and air conditioners on a PointT gateway. It reads a
+heating circuit whose directory is refused
+([#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130))
+and the zones of a large zone controller
+([#131](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/131)).
+Storage format 4 and Home Assistant 2026.5.0 as the minimum stay; updating
+from 0.9.x needs no new setup. The diagnostics use schema 48.
+
+Automated checks on the release state (2026-11-15, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 14032 passed, 1 skipped (the box test of stable release notes); coverage 97.79 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 14030 passed, 3 skipped (version-dependent) |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 276 files; Ruff clean |
+| Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
+| hassfest and HACS | official hassfest of Home Assistant 2026.11.0; HACS offline checks | no findings |
+| Release tests | local | 65 passed, 1 skipped in the release, repository and write baseline tests (clean clone); the release notes come from this version's CHANGELOG section |
+| Release archive and SHA-256 | local build on a clean clone | built for version 0.9.2-beta.2 with 329 files (2,233,474 bytes) under Linux, without tests or bytecode, twice with the same result; SHA-256 `2f4c8d22156bb182eae1a7c966164c8a4c4b0d85984f5546688581025a467ff0` |
+| GitHub checks | release workflow | pending; the compatibility, minimum version and frontend jobs run there before publishing |
+
+Checks on a real installation with builds of the release candidate (Home
+Assistant 2026.11, each installed after a full Home Assistant backup,
+reading only, without changes to the heating system and with the statistics
+import off):
+
+- The update from 0.9.1 kept the entity IDs; most new entities came
+  disabled. A local-only entity that an earlier build had handed over to
+  the cloud came back with its entity ID and statistics.
+- The final candidate replaced the build before it without adding,
+  removing or renaming an entity, also after an extra restart, and no
+  repair notice appeared.
+- The local state signals changed the order of their states once and kept
+  it over the restart.
+- The plant recordings gave yesterday's heat and electricity right after
+  the start, matching the energy counters; the hourly run made nine local
+  reads.
+- A flow below the measuring range showed "unknown" with
+  `reported_state: low_flow`.
+- The log had no warnings or errors of the integration, and every cloud
+  request succeeded.
+
+Not yet confirmed on a real installation: any of the new controls (heating
+circuit settings, zone climates, time programs, wallboxes, air
+conditioners), the statistics import, the cloud-only recordings, the change
+to and from daylight saving time, and a heating circuit or zone controller
+in the shape of #130 and #131.
+
 ## 0.9.2-beta.1 verification
 
 I am preparing **0.9.2-beta.1 as a pre-release** for testing; **0.9.1 stays

@@ -5,24 +5,33 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.2-beta.2] - 2026-11-15
+
 > [!IMPORTANT]
 > **Before you update**
 >
 > - This is a pre-release for testing; 0.9.1 stays the stable release.
-> - **From 0.9.x:** nothing special is needed. Entity IDs, unique IDs, names
->   and settings stay as they are.
+> - **From 0.9.x:** nothing special is needed. Entity IDs, unique IDs and
+>   settings stay as they are. Many local signals get names instead of
+>   *Signal …*, and entities with icons per state no longer have the state
+>   attribute `icon`.
+> - **With °F:** automations and scripts that set temperature numbers now
+>   use °F values; please check them.
 > - **From 0.8.x:** make a full Home Assistant backup first. The first start
 >   moves the entry to storage format 4, which 0.8.x cannot load. Home
 >   Assistant 2026.5.0 or newer is required.
-> - Most new entities are created disabled. The new controls are expected,
->   untested on a real installation; reports are very welcome.
+> - Most new entities are created disabled, and importing the plant
+>   recordings as statistics is off until you turn it on. The new controls
+>   are expected, untested on a real installation; reports are very welcome.
 > - Please attach a fresh diagnostics file (schema 48) to reports about this
 >   version.
 
 This pre-release adds calculated values, the heat pump's own recordings, a
 climate entity per zone, more heating circuit settings and time programs,
 and controls for wallboxes and air conditioners on a PointT gateway. Each
-entry says how it was tested; most of it with automated tests only.
+entry says how it was tested; most of it with automated tests only. Builds
+of this pre-release ran on a real installation, reading only; none of the
+new controls was used there.
 
 ### Added
 
