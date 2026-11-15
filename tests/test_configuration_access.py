@@ -554,3 +554,38 @@ async def test_a_profile_set_in_the_options_marks_the_icom_switch_as_done(hass):
     assert not management.switch_icom_profile(cloud)
     assert entry.options["connections"][cloud]["polling_profile"] == "standard"
     assert not management.switch_icom_profile("local")
+
+
+async def test_connection_changes_keep_the_recordings_and_wallbox_options(hass):
+    """The import of the recordings and the wallbox options live on the top
+    level of the options. A connection change saved from a dialog opened
+    before they were set starts from the current options and keeps them."""
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        ConfigurationManagement,
+    )
+    from custom_components.bosch_buderus_heating.recordings.manager import (
+        OPTION_IMPORT,
+    )
+    from custom_components.bosch_buderus_heating.wallbox_control import (
+        OPTION_AUTHENTICATE,
+        OPTION_AUTHENTICATION_NAME,
+    )
+
+    entry, _configuration = configured(hass, 4)
+    cloud = legacy_cloud_connection_id(OWNER)
+    management = ConfigurationManagement(hass, entry)
+    edit = management.edit(cloud)
+    extra = {
+        OPTION_IMPORT: True,
+        OPTION_AUTHENTICATE: True,
+        OPTION_AUTHENTICATION_NAME: "synthetic",
+    }
+    hass.config_entries.async_update_entry(entry, options={**entry.options, **extra})
+
+    management.set_polling_profile(edit, PollingProfile.CLOUD_FRIENDLY)
+    management.set_enabled(management.edit(cloud), False)
+
+    assert {key: entry.options[key] for key in extra} == extra
+    assert entry.options["unrelated"] == {"keep": 1}
+    assert entry.options["connections"][cloud]["enabled"] is False
+    assert entry.options["connections"][cloud]["polling_profile"] == "cloud_friendly"
