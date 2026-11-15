@@ -106,6 +106,7 @@ from .pointt.models import BatchItemResult
 from .pointt.redaction import resource_path_template
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
 from .poll_slots import plan_poll_slots
+from .program_names import ProgramNameService, is_name_path, name_shows
 from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group, slows_when_unused
@@ -119,8 +120,18 @@ from .rrc import (
 )
 from .rrc_contract_zone import FOLLOW_UP_DELAY, follow_up_paths
 from .rrc_contracts import contract_for, owns
+from .rrc_dhw_program import RrcDhwProgramService, week_shows
 from .rrc_events import LIST_PATHS as EVENT_LIST_PATHS
-from .rrc_programs import WEEK, RrcProgramService, edit_shows, selection_shows
+from .rrc_programs import (
+    WEEK,
+    RrcProgramService,
+    day_body,
+    day_shows,
+    edit_shows,
+    parse_schedule,
+    projection,
+    selection_shows,
+)
 from .rrc_write import (
     CORE_CONTRACT,
     RrcStructWrite,
@@ -135,9 +146,8 @@ from .startup_data import (
     is_startup_path,
 )
 from .startup_reader import StartupReader
-from .program_names import ProgramNameService, is_name_path, name_shows
-from .switch_program_edit import program_mode_path
 from .switch_program_edit import contract_of as switch_program_contract
+from .switch_program_edit import program_mode_path
 from .switch_program_service import (
     SwitchProgramPlan,
     SwitchProgramService,
@@ -1473,12 +1483,55 @@ class BoschBuderusDataUpdateCoordinator(
             late_check=edit_shows(expected, index, minute, temperature),
         )
 
+    async def async_write_rrc_day(
+        self, expected: Resource, day: str, points: list[tuple[int, float]]
+    ) -> None:
+        """TP-17: write one day of an RRC program with a point added or
+        deleted; see ``rrc_programs.RrcProgramService.write_day``."""
+        schedule = parse_schedule(expected)
+        if WEEK.fullmatch(expected.path) is None or schedule is None:
+            raise WriteValidationError("Unsupported RRC schedule path")
+        desired = projection(day_body(schedule, day, points))
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: self._rrc_program_service.write_day(
+                self.gateway.gateway_id,
+                expected,
+                day,
+                points,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=day_shows(expected.path, day, desired),
+        )
+
+    async def async_write_rrc_dhw_program(
+        self, expected: Resource, points: tuple[SwitchPoint, ...]
+    ) -> None:
+        """TP-19: write the hot water week of an RRC controller once."""
+        service = RrcDhwProgramService(
+            self.client,
+            sleep=self._rrc_program_service.sleep,
+            delays=self._rrc_program_service.delays,
+        )
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: service.write(
+                self.gateway.gateway_id,
+                expected,
+                points,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=week_shows(expected.path, points),
+        )
+
     async def async_write_program_name(self, expected: Resource, text: str) -> None:
         """TP-05: write the name of a weekly program once, read it back."""
         if not is_name_path(expected.path):
             raise WriteValidationError("Unsupported program name path")
         service = ProgramNameService(
-            self.client, delays=self.write_read_back_delays()
+            self.client,
+            sleep=self._switch_program_service.sleep,
+            delays=self.write_read_back_delays(),
         )
         await self.async_run_rrc_operation(
             expected.path,

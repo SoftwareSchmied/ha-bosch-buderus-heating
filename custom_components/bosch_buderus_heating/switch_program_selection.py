@@ -17,7 +17,6 @@ from collections.abc import Mapping
 from typing import Final
 
 from .pointt.models import JsonScalar, Resource
-from .program_names import display_name
 from .switch_programs import assess_switch_program
 from .write_policies import EnumWritePolicy
 
@@ -90,4 +89,7 @@ def program_name(resource: Resource | None) -> str | None:
     TP-05: decoded as its ``valueConfig`` says (a Base64 name is shown as
     text); a name that cannot be decoded is not shown.
     """
+    # Imported here: the write policies import this module.
+    from .program_names import display_name
+
     return display_name(resource)

@@ -42,7 +42,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from . import BoschBuderusConfigEntry, exchange_counters, rrc, rrc_platforms
+from . import (
+    BoschBuderusConfigEntry,
+    exchange_counters,
+    rrc,
+    rrc_platforms,
+    switch_program_sensor,
+)
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -136,7 +142,6 @@ from .start_counters import (
     start_counter_placeholder,
 )
 from .startup_data import startup_placeholder
-from . import switch_program_sensor
 from .switch_programs import (
     assess_switch_program,
     is_switch_program_path,

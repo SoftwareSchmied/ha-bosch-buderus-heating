@@ -67,7 +67,11 @@ def value_config(resource: Resource | None) -> ValueConfig | None:
     raw = resource.program_fields.get("valueConfig")
     if not isinstance(raw, dict):
         return None
-    charset, coding, length = raw.get("charset"), raw.get("codingType"), raw.get("maxLength")
+    charset, coding, length = (
+        raw.get("charset"),
+        raw.get("codingType"),
+        raw.get("maxLength"),
+    )
     if not isinstance(charset, str) or not isinstance(coding, str):
         return None
     normalized = charset.replace("-", "").replace("_", "").upper()

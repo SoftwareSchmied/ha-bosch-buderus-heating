@@ -29,6 +29,7 @@ from homeassistant.core import (
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import service
+from homeassistant.helpers.typing import VolDictType
 
 from .const import DOMAIN
 from .control import cloud_down_error
@@ -78,7 +79,7 @@ POINT_SCHEMA: Final = vol.Schema(
     },
     extra=vol.PREVENT_EXTRA,
 )
-SERVICE_SCHEMA: Final = {
+SERVICE_SCHEMA: Final[VolDictType] = {
     vol.Optional("mode", default="replace_week"): vol.In(MODES),
     vol.Required("switch_points"): vol.All(cv.ensure_list, [POINT_SCHEMA]),
     vol.Optional("expected"): vol.All(cv.ensure_list, [POINT_SCHEMA]),
@@ -147,13 +148,8 @@ def async_setup_actions(hass: HomeAssistant) -> None:
 
 def _is_program_entity(entity: object) -> bool:
     description = getattr(entity, "entity_description", None)
-    return (
-        getattr(description, "value_kind", None) == "switch_program"
-        and callable(
-            getattr(
-                getattr(entity, "coordinator", None), "async_plan_switch_program", None
-            )
-        )
+    return getattr(description, "value_kind", None) == "switch_program" and callable(
+        getattr(getattr(entity, "coordinator", None), "async_plan_switch_program", None)
     )
 
 
@@ -240,7 +236,10 @@ def _week_response(
     days: dict[str, list[dict[str, str]]] = {}
     for point in sorted_points(points):
         days.setdefault(DAY_KEYS[point.day], []).append(
-            {"time": f"{point.minute // 60:02d}:{point.minute % 60:02d}", "level": point.level}
+            {
+                "time": f"{point.minute // 60:02d}:{point.minute % 60:02d}",
+                "level": point.level,
+            }
         )
     return days
 

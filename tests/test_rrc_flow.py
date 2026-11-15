@@ -80,7 +80,8 @@ async def test_native_flow_uses_hour_minute_and_commits_only_requested_point(
     result = await open_point(flow)
     fields = {str(key): value for key, value in result["data_schema"].schema.items()}
     assert fields["time"].config["type"] == "time"
-    assert list(fields) == ["time", "temperature"]
+    # TP-17: a day with more than one point also offers to delete one.
+    assert list(fields) == ["time", "temperature", "delete"]
     confirm = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
     # Before and after first; nothing is sent yet.
     assert confirm["step_id"] == "rrc_confirm" and confirm["last_step"] is True

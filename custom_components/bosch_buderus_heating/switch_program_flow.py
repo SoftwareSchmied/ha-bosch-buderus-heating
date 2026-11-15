@@ -1,21 +1,31 @@
-"""Z2: native options dialogs for the EMS/iCom weekly switch programs.
+"""Z2: native options dialogs for the PointT weekly switch programs.
 
 Choose a program, then a weekday, then change, add or delete its switch
 points, or copy a day onto other days. The changes collect in a draft of
 the whole week; the last step shows the old and the new days and sends the
 week once (``coordinator.async_write_switch_program``). Nothing is sent
 before every rule of ``switch_program_edit`` holds.
+
+Every program kind of ``switch_programs.KINDS`` is offered where its rules
+allow a change; an absolute program (temperatures) gets a number field
+instead of the level choice. The hot water week of an RRC room controller
+(TP-19) is opened from the RRC dialog and uses the same steps with its own
+write. The week step shows a read-only weekly view (TP-07) next to the text.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -49,21 +59,25 @@ from .pointt import (
     WriteValidationError,
 )
 from .resource_catalog import resource_name
+from .schedule_week import ScheduleWeekSelector, week_days
 from .switch_program_edit import (
     EditableProgram,
     circuit_path,
     copy_day,
     day_points,
     editable_program,
+    kind_key,
     replace_day,
     same_points,
+    setpoint_text,
+    value_issue,
     week_issue,
 )
 from .switch_program_selection import program_name
+from .switch_program_sensor import sensor_kind
 from .switch_programs import (
     DAYS,
     SwitchPoint,
-    is_dhw_switch_program_path,
     is_switch_program_path,
 )
 from .write_policies import ContractRejected
@@ -79,6 +93,11 @@ _ISSUE_ERRORS = {
     "too_many_per_day": "switch_program_too_many_per_day",
     "too_many_in_all": "switch_program_too_many_in_all",
     "level_not_allowed": "switch_program_level",
+    "value_not_allowed": "switch_program_value",
+    "value_out_of_range": "switch_program_value",
+    "value_off_step": "switch_program_value",
+    "off_not_offered": "switch_program_value",
+    "day_emptied": "switch_program_day_emptied",
 }
 _ACTIONS = ("edit", "copy", "review")
 # The dialog error of a refusal before sending, by its token.
@@ -108,6 +127,23 @@ class ProgramChoice:
     label: str
     # "dhw", "inactive" (another program of the circuit is active) or "active".
     hint: str
+    # The translations of the level names: ``<category>.<key>`` whose
+    # ``state``/``options`` hold one name per level.
+    labels_key: str = "entity.sensor.heating_switch_program.state"
+    # The write of a program that is not a PointT switch program (RRC hot
+    # water); ``None`` writes through ``async_write_switch_program``.
+    write: Callable[[tuple[SwitchPoint, ...]], Awaitable[object]] | None = None
+    # A day without points has no level (RRC).
+    mark_empty_days: bool = False
+
+
+def _number_label(level: str, decimal: str) -> str:
+    """A setpoint number with the language's decimal sign, e.g. ``21,5 °C``."""
+    try:
+        number = float(level)
+    except ValueError:
+        return level
+    return f"{number:g}".replace(".", decimal or ".") + " °C"
 
 
 def _program_letter(path: str) -> str:
@@ -154,11 +190,14 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                     continue
                 letter = _program_letter(path)
                 circuit = circuit_path(path)
+                kind = kind_key(path)
                 label = grouped_entity_name(
                     coordinator, path, resource_name(path, language=language)
                 )
-                name = program_name(
-                    readings.get(f"{circuit}/switchPrograms/name{letter}")
+                name = (
+                    program_name(readings.get(f"{circuit}/switchPrograms/name{letter}"))
+                    if kind == "heating"
+                    else None
                 )
                 if name is not None:
                     label = f"{label} ({name})"
@@ -171,9 +210,9 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                         number,
                     )
                     label = f"{system} / {label}"
-                if is_dhw_switch_program_path(path):
+                if kind == "dhw":
                     hint = "dhw"
-                else:
+                elif kind == "heating":
                     active = readings.get(f"{circuit}/activeSwitchProgram")
                     hint = (
                         "inactive"
@@ -182,10 +221,25 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                         and active.value != letter
                         else "active"
                     )
+                else:
+                    hint = "active"
                 result[f"{number}:{path}"] = ProgramChoice(
-                    coordinator, snapshot.resource, program, label, hint
+                    coordinator,
+                    snapshot.resource,
+                    program,
+                    label,
+                    hint,
+                    labels_key=(
+                        f"entity.sensor.{sensor_kind(snapshot.resource).translation_key}"
+                        ".state"
+                    ),
                 )
         return result
+
+    def _sp_extra_choices(self) -> dict[str, ProgramChoice]:
+        """Programs edited with these steps but chosen elsewhere (RRC hot
+        water, TP-19); the RRC dialog provides them."""
+        return {}
 
     def _sp_current(self) -> ProgramChoice | None:
         """The chosen program while it is still shown unchanged."""
@@ -193,7 +247,10 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         if choice is None or not any(
             current.coordinator is choice.coordinator
             and current.resource == choice.resource
-            for current in self._switch_program_choices().values()
+            for current in (
+                *self._switch_program_choices().values(),
+                *self._sp_extra_choices().values(),
+            )
         ):
             return None
         return choice
@@ -206,20 +263,37 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
             self.hass, language, "selector", {DOMAIN}
         )
         entities = await async_get_translations(self.hass, language, "entity", {DOMAIN})
+        translations = {**selectors, **entities}
         days = {
             key: selectors.get(f"{prefix}selector.rrc_weekday.options.{key}", key)
             for key in (_day_key(day) for day in range(len(DAYS)))
         }
         choice = self._sp_choice
-        family = (
-            "dhw_switch_program"
-            if choice is not None and is_dhw_switch_program_path(choice.resource.path)
-            else "heating_switch_program"
-        )
-        levels = {
-            level: entities.get(f"{prefix}entity.sensor.{family}.state.{level}", level)
-            for level in (choice.program.levels if choice is not None else ())
+        if choice is None:
+            return days, {}
+        program = choice.program
+        shown = {
+            *program.levels,
+            *(point.level for point in program.points),
+            *(point.level for point in self._sp_draft),
         }
+        if program.numeric:
+            off = selectors.get(
+                f"{prefix}selector.switch_program_value.options.off", "off"
+            )
+            # The decimal sign of the language, from its translation file.
+            decimal = selectors.get(
+                f"{prefix}selector.switch_program_value.options.decimal_sign", "."
+            )
+            levels = {
+                level: off if level in ("0.0", "off") else _number_label(level, decimal)
+                for level in shown
+            }
+        else:
+            levels = {
+                level: translations.get(f"{prefix}{choice.labels_key}.{level}", level)
+                for level in shown
+            }
         return days, levels
 
     @staticmethod
@@ -340,11 +414,24 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         step_id = {
             "dhw": "switch_program_week_dhw",
             "inactive": "switch_program_week_inactive",
+            "rrc_dhw": "switch_program_week_rrc_dhw",
         }.get(choice.hint, "switch_program_week")
+        # TP-07: the same week as a read-only view; its value is not used.
+        view = ScheduleWeekSelector(
+            week_days(
+                self._sp_draft,
+                labels=levels,
+                day_names=days,
+                carry_over=choice.program.carry_over,
+                mark_empty_days=choice.mark_empty_days,
+                changed=frozenset(changed),
+            )
+        )
         return self.async_show_form(
             step_id=step_id,
             data_schema=vol.Schema(
                 {
+                    vol.Optional("week_view"): view,
                     vol.Required("action"): SelectSelector(
                         SelectSelectorConfig(
                             options=list(_ACTIONS),
@@ -371,6 +458,11 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         return await self.async_step_switch_program_week(user_input)
 
     async def async_step_switch_program_week_dhw(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_switch_program_week(user_input)
+
+    async def async_step_switch_program_week_rrc_dhw(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return await self.async_step_switch_program_week(user_input)
@@ -463,11 +555,14 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
             else:
                 time = user_input.get("time")
                 match = _TIME.fullmatch(time) if isinstance(time, str) else None
-                level = user_input.get("level")
+                level = self._sp_entered_level(program, user_input)
                 if match is None:
                     errors["time"] = "switch_program_time"
-                elif level not in program.levels:
-                    errors["level"] = "switch_program_level"
+                elif level is None or value_issue(level, program) is not None:
+                    if program.numeric:
+                        errors["value"] = "switch_program_value"
+                    else:
+                        errors["level"] = "switch_program_level"
                 else:
                     minute = int(match[1]) * 60 + int(match[2])
                     candidate = replace_day(
@@ -483,40 +578,108 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
                     errors["time" if error == "switch_program_time" else "base"] = error
         days, levels = await self._sp_labels()
         time_selector = TextSelector(TextSelectorConfig(type=TextSelectorType.TIME))
-        level_selector = SelectSelector(
-            SelectSelectorConfig(
-                options=[
-                    SelectOptionDict(value=level, label=levels.get(level, level))
-                    for level in program.levels
-                ],
-                mode=SelectSelectorMode.DROPDOWN,
-            )
-        )
-        fields: dict[Any, Any]
+        fields: dict[Any, Any] = {}
         if original is None:
-            fields = {
-                vol.Required("time"): time_selector,
-                vol.Required("level"): level_selector,
-            }
+            fields[vol.Required("time")] = time_selector
         else:
-            fields = {
+            fields[
                 vol.Required(
                     "time",
                     default=f"{original.minute // 60:02d}:{original.minute % 60:02d}",
-                ): time_selector,
-                vol.Required("level", default=original.level): level_selector,
-                vol.Optional("delete", default=False): BooleanSelector(),
-            }
+                )
+            ] = time_selector
+        if program.numeric:
+            fields.update(self._sp_number_fields(program, original))
+        else:
+            level_selector = SelectSelector(
+                SelectSelectorConfig(
+                    options=[
+                        SelectOptionDict(value=level, label=levels.get(level, level))
+                        for level in program.levels
+                    ],
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            )
+            if original is None:
+                fields[vol.Required("level")] = level_selector
+            else:
+                fields[vol.Required("level", default=original.level)] = level_selector
+        if original is not None:
+            fields[vol.Optional("delete", default=False)] = BooleanSelector()
         schema = vol.Schema(fields)
         return self.async_show_form(
-            step_id="switch_program_point",
+            step_id=(
+                "switch_program_point_value"
+                if program.numeric
+                else "switch_program_point"
+            ),
             data_schema=self.add_suggested_values_to_schema(schema, user_input),
             errors=errors,
             description_placeholders={
                 **self._sp_placeholders(choice),
+                **self._sp_range_placeholders(program),
                 "day": days[_day_key(day)],
             },
         )
+
+    async def async_step_switch_program_point_value(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_switch_program_point(user_input)
+
+    @staticmethod
+    def _sp_range_placeholders(program: EditableProgram) -> dict[str, str]:
+        if not program.numeric:
+            return {}
+        return {
+            "minimum": f"{program.minimum:g}",
+            "maximum": f"{program.maximum:g}",
+            "step": f"{program.step:g}",
+        }
+
+    @staticmethod
+    def _sp_number_fields(
+        program: EditableProgram, original: SwitchPoint | None
+    ) -> dict[Any, Any]:
+        """A number field for a temperature, and "off" where it is offered."""
+        assert program.minimum is not None and program.maximum is not None
+        assert program.step is not None
+        number = NumberSelector(
+            NumberSelectorConfig(
+                min=program.minimum,
+                max=program.maximum,
+                step=program.step,
+                unit_of_measurement="°C",
+                mode=NumberSelectorMode.BOX,
+            )
+        )
+        fields: dict[Any, Any] = {}
+        value: float | None = None
+        if original is not None and original.level != program.off_value:
+            try:
+                value = float(original.level)
+            except ValueError:
+                value = None
+        if value is None:
+            fields[vol.Optional("value")] = number
+        else:
+            fields[vol.Optional("value", default=value)] = number
+        if program.off_value is not None:
+            switched_off = original is not None and original.level == program.off_value
+            fields[vol.Optional("off", default=switched_off)] = BooleanSelector()
+        return fields
+
+    @staticmethod
+    def _sp_entered_level(
+        program: EditableProgram, user_input: dict[str, Any]
+    ) -> str | None:
+        """The setpoint text of the entered level or number, or ``None``."""
+        if not program.numeric:
+            level = user_input.get("level")
+            return level if isinstance(level, str) else None
+        if program.off_value is not None and user_input.get("off") is True:
+            return program.off_value
+        return setpoint_text(program, user_input.get("value"))
 
     async def async_step_switch_program_copy(
         self, user_input: dict[str, Any] | None = None
@@ -590,9 +753,12 @@ class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                await choice.coordinator.async_write_switch_program(
-                    choice.resource, self._sp_draft
-                )
+                if choice.write is not None:
+                    await choice.write(self._sp_draft)
+                else:
+                    await choice.coordinator.async_write_switch_program(
+                        choice.resource, self._sp_draft
+                    )
             except RateLimited:
                 errors["base"] = "write_rate_limited"
             except AuthenticationError:

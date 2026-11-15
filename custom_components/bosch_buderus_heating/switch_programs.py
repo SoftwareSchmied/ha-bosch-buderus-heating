@@ -58,7 +58,9 @@ class ProgramKind:
     carry_over: bool = True
 
 
-def _kind(key: str, pattern: str, values: str, body: str, legacy: bool, carry: bool = True) -> ProgramKind:
+def _kind(
+    key: str, pattern: str, values: str, body: str, legacy: bool, carry: bool = True
+) -> ProgramKind:
     return ProgramKind(key, re.compile(pattern), values, body, legacy, carry)  # type: ignore[arg-type]
 
 
@@ -274,7 +276,9 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
     assert match is not None
     reference = fields.get("setpointProperty")
     expected_levels = f"{match['circuit']}/temperatureLevels"
-    reference_ok = isinstance(reference, dict) and reference.get("id") == expected_levels
+    reference_ok = (
+        isinstance(reference, dict) and reference.get("id") == expected_levels
+    )
     max_points = _bounded_int(fields.get("maxNbOfSwitchPoints"), MAX_SWITCH_POINTS)
     max_per_day = _bounded_int(
         fields.get("maxNbOfSwitchPointsPerDay"), MAX_SWITCH_POINTS_PER_DAY
@@ -322,7 +326,9 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
     points, as_text = parsed
     if any(count > max_per_day for count in _per_day(points)):
         return SwitchProgramAssessment(False, "too_many_switch_points")
-    minimum, maximum, step, range_notes = _range(fields) if absolute else (None, None, None, ())
+    minimum, maximum, step, range_notes = (
+        _range(fields) if absolute else (None, None, None, ())
+    )
     return SwitchProgramAssessment(
         True,
         points=points,
@@ -420,10 +426,14 @@ def _parse_points(
             return "invalid_switch_point"
         level = _setpoint(setpoint, value_type, legacy=legacy)
         if level is None:
-            return "mixed_setpoints" if not legacy and _known_other(setpoint) else "invalid_switch_point"
-        if not isinstance(setpoint, str) or value_type != "level":
-            if level != "off":
-                text_forms.add(isinstance(setpoint, str))
+            return (
+                "mixed_setpoints"
+                if not legacy and _known_other(setpoint)
+                else "invalid_switch_point"
+            )
+        if value_type != "level" and level != "off":
+            # The form numbers are read in (text or JSON number).
+            text_forms.add(isinstance(setpoint, str))
         if (DAYS.index(day), minute) in seen:
             return "duplicate_switch_point"
         seen.add((DAYS.index(day), minute))

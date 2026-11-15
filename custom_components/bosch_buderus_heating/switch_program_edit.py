@@ -131,8 +131,11 @@ class EditableProgram:
     off_value: str | None = None
     # Numbers are written as text (True) or as JSON numbers (False).
     numbers_as_text: bool | None = True
+    # "array", "object" (WDDW2) or "value" (RRC hot water week).
     body: str = "array"
     carry_over: bool = True
+    # Days that must keep at least one point (an RRC day as read).
+    keep_days: frozenset[int] = frozenset()
 
     def day(self, day: int) -> tuple[SwitchPoint, ...]:
         return day_points(self.points, day)
@@ -179,11 +182,15 @@ def allowed_levels(
     if kind == "cooling":
         allowed = (
             COOLING_LEVELS
-            if _readable_number(resources.get(f"{circuit}/cooling/temperatureLevels/on"))
+            if _readable_number(
+                resources.get(f"{circuit}/cooling/temperatureLevels/on")
+            )
             else frozenset()
         )
     elif kind == "ventilation":
-        allowed = frozenset(ventilation_levels(resources.get(f"{circuit}/ventilationLevels")))
+        allowed = frozenset(
+            ventilation_levels(resources.get(f"{circuit}/ventilationLevels"))
+        )
     else:
         listed = frozenset(
             match["key"]
@@ -416,7 +423,9 @@ def setpoint_text(program: EditableProgram, value: object) -> str | None:
     text = canonical_number(float(value))
     # An entry with more decimals than the canonical text holds is kept as
     # it is, so the step check refuses it instead of rounding it.
-    return text if math.isclose(float(text), float(value), abs_tol=1e-9) else repr(value)
+    return (
+        text if math.isclose(float(text), float(value), abs_tol=1e-9) else repr(value)
+    )
 
 
 def editable_program(
@@ -499,6 +508,8 @@ def week_issue(
             return "level_not_allowed" if not program.numeric else issue
     if len(points) > program.max_switch_points:
         return "too_many_in_all"
+    if any(not per_day[day] for day in program.keep_days):
+        return "day_emptied"
     return None
 
 
