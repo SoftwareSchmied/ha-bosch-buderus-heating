@@ -77,6 +77,27 @@ Versioning after its first tagged preview.
     recordings of gas, hybrid, solar, pool and ventilation systems are
     tested with automated tests only and not yet confirmed on a real
     installation.
+- **COP, performance factors and spreads:** a sensor **Current COP
+  (calculated)**, performance factors for today, yesterday, this and the
+  previous month, this and the previous year and since commissioning (each
+  for heating, hot water and in total), and **Primary circuit spread
+  (calculated)** (TC1 minus TC0 while the primary pump runs). Enabled: the
+  current COP, today, this year and since commissioning in total, and the
+  spread; the rest is created disabled but kept up to date.
+  - The current COP is the heat output over the electrical power of
+    compressor and heater, only while the compressor runs and unknown while
+    the heat pump defrosts. It needs the local access.
+  - The earlier days come from the plant recordings (electricity, total
+    heat) and the counters' long-term statistics (heat per mode), so the
+    seasonal performance factor starts with the first recorded day also on a
+    new installation. The defrost dips are netted.
+  - Brine-to-water heat pumps get an optional, disabled **Brine spread
+    (calculated)**.
+  - I replayed one day recorded on a real installation in the tests: the
+    integrated live heat output and power agree with the counters within
+    3 %. The values have not yet run live on a real installation; the
+    back-fill, the spreads and brine-to-water heat pumps are tested with
+    automated tests only.
 - **Flow below the measuring range:** a flow reading that reports its
   low-flow state (65535) still shows "unknown", now with the additional
   attribute `reported_state: low_flow` next to `measuring_range: below`. A
@@ -276,8 +297,9 @@ only; I have not yet checked them in the browser or on a real installation.
 ### Diagnostics
 
 - **Diagnostics schema 48:** the diagnostics gain the sections
-  `calculated_values` (the defrost detection) and `recordings` (the reads
-  of the plant recordings and the import), the heat source type and its
+  `calculated_values` (the defrost detection), `recordings` (the reads
+  of the plant recordings and the import) and `performance` (the history of
+  the performance factors), the heat source type and its
   evidence in `heat_generator`, and the counters of the containers that
   discovery read directly. They hold no readings, names or identifiers; see
   [diagnostics](docs/diagnostics.md).

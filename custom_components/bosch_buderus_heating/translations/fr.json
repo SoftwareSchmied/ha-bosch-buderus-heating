@@ -2027,6 +2027,18 @@
       "calculated_supply_overshoot": {
         "name": "Départ au-dessus de la consigne (calculé)"
       },
+      "calculated_cop": {
+        "name": "COP actuel (calculé)"
+      },
+      "calculated_performance_factor": {
+        "name": "Facteur de performance (calculé)"
+      },
+      "calculated_primary_spread": {
+        "name": "Écart de température du circuit primaire (calculé)"
+      },
+      "calculated_brine_spread": {
+        "name": "Écart de température de la saumure (calculé)"
+      },
       "heating_switch_program": {
         "name": "Programme horaire du chauffage",
         "state": {

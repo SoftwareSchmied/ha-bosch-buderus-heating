@@ -2027,6 +2027,18 @@
       "calculated_supply_overshoot": {
         "name": "Fremløb over setpunkt (beregnet)"
       },
+      "calculated_cop": {
+        "name": "Aktuel COP (beregnet)"
+      },
+      "calculated_performance_factor": {
+        "name": "Effektfaktor (beregnet)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperaturdifference primærkreds (beregnet)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperaturdifference brine (beregnet)"
+      },
       "heating_switch_program": {
         "name": "Tidsprogram for opvarmning",
         "state": {

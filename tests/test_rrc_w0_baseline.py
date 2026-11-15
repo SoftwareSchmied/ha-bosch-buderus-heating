@@ -19,7 +19,8 @@ no icon of their own any more (``original_icon`` empty); nothing else changes.
 entities of the K40 heat pump on purpose (new unique IDs only), and its
 setup reads the known children of the empty ``/ventilation/zone1`` directory
 once directly (15 setup requests in one more bulk call, none found); the
-regular cycle stays the same.
+regular cycle stays the same. 0.9.2 also adds the 21 calculated performance
+factors of the K40 heat pump on purpose (new unique IDs only, no request).
 """
 
 from __future__ import annotations

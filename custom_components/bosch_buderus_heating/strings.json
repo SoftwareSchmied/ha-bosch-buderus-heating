@@ -2027,6 +2027,18 @@
       "calculated_supply_overshoot": {
         "name": "Supply above setpoint (calculated)"
       },
+      "calculated_cop": {
+        "name": "Current COP (calculated)"
+      },
+      "calculated_performance_factor": {
+        "name": "Performance factor (calculated)"
+      },
+      "calculated_primary_spread": {
+        "name": "Primary circuit spread (calculated)"
+      },
+      "calculated_brine_spread": {
+        "name": "Brine spread (calculated)"
+      },
       "heating_switch_program": {
         "name": "Heating time program",
         "state": {

@@ -21,6 +21,12 @@ What has been checked and what has not:
   follow the same rules but are untested.
 - The heat source type follows readings seen on a real air-to-water heat
   pump and in the diagnostics of a real brine-to-water heat pump.
+- The current COP and the performance factor of a day were checked with
+  automated tests and a replay of one day recorded on a real air-to-water
+  heat pump (see below). The other periods, the back-fill from the plant
+  recordings and the counters' statistics, the spreads and brine-to-water
+  heat pumps are tested with automated tests only; none of them has run
+  live on a real installation yet.
 
 ## Activity of a heating circuit and `hvac_action`
 
@@ -156,3 +162,112 @@ created all the same, without a state and with `known: false`.
 The diagnostics show the type and its evidence (`heat_source_type`,
 `heat_source_type_evidence`) and, under `unnamed_modules`, the module rows
 without a product name counted by hardware type, never with serial numbers.
+
+## Current COP, performance factors and spreads
+
+| Entity | Content | Default |
+|---|---|---|
+| Current COP (calculated) | Heat output divided by the electrical power, while the compressor runs | enabled |
+| Total – Performance factor today (calculated) | Heat divided by electricity since midnight | enabled |
+| Total – Performance factor this year (calculated) | The same since 1 January: the seasonal performance factor of the calendar year | enabled |
+| Total – Performance factor since commissioning (calculated) | The device's counters as they are | enabled |
+| Total – Performance factor yesterday / this month / previous month / previous year (calculated) | As above for that period | disabled |
+| Heating – … and Hot water – … (calculated) | Every period per mode | disabled |
+| Primary circuit spread (calculated) | Supply TC1 minus return TC0 of the heat pump, in kelvin | enabled |
+| Brine spread (calculated) | Brine inlet minus brine outlet, in kelvin; only on heat pumps with both brine temperatures | disabled |
+
+The ratios have no unit and the state class `measurement`. A disabled
+performance factor is worked out in the background all the same, so it shows
+its value as soon as it is enabled. The entities exist only where their
+readings exist: the current COP needs the heat output and the compressor
+power, the performance factors need a counter with heat and electricity.
+
+### Current COP
+
+The heat output is the thermal output of the refrigerant circuit
+(`SRC.CUHP.HP1.CompressorPower`, a reading of the local access; on a real
+installation it matches the heat meter). The electrical power is the
+compressor's (`compressor/powerElecActual`, else
+`hs1/refrigerant/compressorElecPowerActual`) plus the electric heater's
+(`eHeater/powerElecActual`, else its coarse reading). The heater turns its
+electricity into heat one to one, so its power is added to the heat output
+as well.
+
+The COP is shown only while the compressor runs (the same running rule as
+the activity above). It is unknown, with the attribute `reason`:
+
+- `defrosting` while the heat pump defrosts;
+- `compressor_off` while the compressor stands;
+- `inputs_missing` without a current heat output, compressor or heater
+  reading (a plant without any heater reading adds nothing for the
+  heater), or below 0.1 kW electrical power (start and stop);
+- `implausible` above 15, when readings taken at different moments do not
+  fit together.
+
+The attributes show the heat output, the compressor, heater and total
+electrical power in kW, `side` (`circuit` or `dhw`) and `derived_from`. On a
+brine-to-water heat pump `brine_pump_included: false` says that the brine
+pump's electricity is not part of it. Without the local access there is no
+heat output reading and therefore no current COP.
+
+### Performance factors
+
+A performance factor is the produced heat of a period divided by the
+electricity (compressor plus heater) of the same period, for heating, hot
+water and in total. The counters' change includes the dip while the heat pump
+defrosts, so the heat taken back from the water is netted.
+
+| Period | Heat and electricity from |
+|---|---|
+| Today | The counters now minus the counters at midnight |
+| Earlier days | The plant recordings for the electricity and the total heat, the counters' long-term statistics for the heat per mode; each falls back to the other |
+| Since commissioning | The device's counters |
+
+- The counters at midnight are the last readings before midnight while Home
+  Assistant runs (at most 30 minutes before the first reading of the day).
+  After a start during the day they are the counters' long-term statistic
+  in the hour before midnight. Without either, today stays unknown until
+  the next midnight. The start of the day is saved, so a restart keeps it.
+- The heat per mode comes from the counters first because the plant gives
+  an hour in which it switches between heating and hot water to both modes.
+  A day the counters' statistics cover only partly (the first day of a new
+  counter) never counts.
+- With [plant recordings](recordings.md) the history goes back to the first
+  recorded day, also on a new installation. A month whose days are not all
+  known takes the plant's month value (whole kWh on some plants). Without
+  recordings the counters' long-term statistics are used where Home
+  Assistant has them.
+- Below 0.1 kWh electricity or above 15 a factor is unknown.
+
+Attributes: `period_start`, `period_end` (the last day), `heat_kwh`,
+`electricity_kwh`, `heat_source` and `electricity_source` (`counters`,
+`local_recording`, `cloud_recording`, `local_and_cloud_recording`, joined by
+`+` when the days came from several), `days` (days with a value),
+`missing_days` (days of the period without a value, today included while
+its start is unknown), `first_day` (the first day of the history when it
+lies within the period) and `derived_from` (the counter collection with
+`local` or `cloud`, the recorded paths with `recording`).
+
+A replay of one day recorded on a real air-to-water heat pump (heat output,
+compressor and heater power and the counters as Home Assistant recorded
+them) checks the two methods against each other: the integrated heat output
+and electrical power agree with the counters' increments of the day within
+3 % (about +1 % for the heat and −0.5 % for the electricity), and so does
+their ratio.
+
+### Spreads
+
+- **Primary circuit spread:** supply TC1 (`additionalHeater/flowTemp`, else
+  the signal `SRC.IntFlowTemp`) minus return TC0 (`returnTemperature`, else
+  the signal `SRC.CUHP.HP1.ReturnTemp`), only while the primary pump runs
+  (its relay, else its speed or flow above zero; otherwise `reason:
+  pump_off`). During a defrost the spread is negative: heat flows back into
+  the heat pump. TC0 is the return of the heating circuit only while the
+  circuit pump PC1 moves at least as much water as the primary pump PC0;
+  with more flow in PC0 the supply mixes into the return through the buffer.
+  The attribute `return_is_circuit_return` says which case applies (`null`
+  without both flows); `primary_flow` and `circuit_flow` show the flows.
+- **Brine spread:** brine inlet (`brineCircuit/collectorOutflowTemp`) minus
+  brine outlet (`brineCircuit/collectorInflowTemp`), while the brine pump
+  runs, without a brine pump reading while the compressor runs. Disabled by
+  default.
