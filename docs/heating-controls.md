@@ -235,7 +235,8 @@ Reports are welcome.
   automatic; I keep them writable in every mode, they take effect in the
   mode automatic. The cooling threshold exists only while the circuit's
   summer/winter switching offers cooling.
-- **Cooling setpoint:** the room target of the cooling. 0 means "off" in the
+- **Cooling setpoint:** the room target of the cooling (heat pumps with
+  cooling only). 0 means "off" in the
   app and is never written; when the circuit reports a minimum of 0 or
   below, the lowest value offered is the first value of the grid above 0.
   Without reported limits there is no entity.
@@ -523,7 +524,8 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
   Automatisch; ich lasse sie in jedem Modus schreibbar, wirksam sind sie im
   Modus Automatisch. Die Kühlschwelle gibt es nur, solange die
   Sommer-/Winterumschaltung des Kreises Kühlen anbietet.
-- **Kühl-Sollwert:** die Raum-Solltemperatur der Kühlung. 0 bedeutet in der
+- **Kühl-Sollwert:** die Raum-Solltemperatur der Kühlung (nur Wärmepumpen
+  mit Kühlung). 0 bedeutet in der
   App „aus“ und wird nie geschrieben; meldet der Kreis ein Minimum von 0
   oder darunter, ist der kleinste angebotene Wert der erste Rasterwert über
   0. Ohne gemeldete Grenzen gibt es keine Entität.
