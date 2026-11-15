@@ -20,8 +20,10 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
+from .circuit_control_writes import async_set_guarded
+from .circuit_controls import SUMMER_WINTER_MODE_POLICY, SUMMER_WINTER_VALUES
 from .const import DOMAIN
-from .control import HeldCapabilities, async_set_control, track_control_entities
+from .control import HeldCapabilities, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -159,6 +161,8 @@ def build_select_descriptions(
             translation_key = "auxiliary_heater_operation_mode"
         elif policy is VENTILATION_FAN_LEVEL_POLICY:
             translation_key = "ventilation_exhaust_fan_level"
+        elif policy is SUMMER_WINTER_MODE_POLICY:
+            translation_key = "summer_winter_switching"
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key, policy, context))
@@ -208,6 +212,7 @@ def _option_map(
         "season_switching": ("off", "automatic", "forcedHeat", "forcedCool"),
         "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
         "ventilation_exhaust_fan_level": VENTILATION_FAN_LEVELS,
+        "summer_winter_switching": SUMMER_WINTER_VALUES,
     }.get(translation_key, ())
     ordered = tuple(value for value in preferred if value in advertised)
     ordered += tuple(value for value in advertised if value not in ordered)
@@ -336,7 +341,8 @@ class BoschBuderusSelect(
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="select_option_unavailable"
             )
-        await async_set_control(
+        # The settings of a heating circuit read their guards again.
+        await async_set_guarded(
             self.coordinator,
             self.entity_description.resource_path,
             raw,

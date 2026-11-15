@@ -125,9 +125,49 @@ Versioning after its first tagged preview.
   (enabled) and a diagnostic sensor **Radio signal** in dB (disabled). A
   battery text other than `low` or `ok` stays unknown. Tested with automated
   tests only.
+- **Summer/winter switching per heating circuit:** a heating circuit that
+  reports its own summer/winter switching (iCom/KM200 gateways) gets the
+  select **Summer/winter switching** (Automatic, Heating only, Cooling only,
+  Off, as far as the circuit offers them) and the number **Stop heating at
+  outdoor temperature**, both enabled.
+  - The central season switching of a K40 and the settings of a room
+    controller stay as they are.
+  - No change while a room controller runs the circuit (control type
+    `ISRC`), as in the manufacturer's app.
+  - They appear only after a finished discovery has settled that the
+    gateway is no room controller, so a room controller recognised late
+    never shows them.
+  - I tested it with simulated data in automated tests only; it is
+    expected, untested on a real installation.
+- **Cooling setpoint and cooling threshold:** heat pumps with cooling get
+  the numbers **Cooling: room setpoint** and **Start cooling at outdoor
+  temperature**, disabled by default.
+  - The threshold exists only while the circuit's summer/winter switching
+    offers cooling; 0 ("off" in the app) is never written as a setpoint.
+  - Tested with simulated data in automated tests only; expected, untested
+    on a real installation.
+- **Away temperature and cooling level:** the number **Away temperature**
+  (enabled) and **Cooling temperature** (disabled). Only the four level
+  names the manufacturer's app knows are operated (heating, setback, away,
+  cooling); a level with another name stays a reading, and the diagnostics
+  count such names. Tested with simulated data in automated tests only;
+  expected, untested on a real installation.
+- **Variable tariff of iCom gateways, read only:** an iCom gateway is asked
+  once whether its tariff optimisation is on and for the number of its
+  tariff; the diagnostic entities **Variable tariff active** and **Tariff
+  ID** are disabled by default. The tariff's name and prices are not read,
+  and nothing is written. Tested with simulated data in automated tests
+  only; expected, untested on a real installation.
 
 ### Changed
 
+- **Heating and setback level writes:** a change of the heating or setback
+  temperature now reads the circuit's control type and the other levels on
+  the appliance together with the level itself, and checks the value against
+  these fresh limits; the two levels limit each other. If one of them
+  changed since it was shown, nothing is sent. With the control type `ISRC`
+  or `constants` no level is changed. Tested with automated tests and
+  simulated data only.
 - **Safer heating-circuit writes:**
   - Before every write of a heating-circuit climate (mode, target,
     temporary setpoint) and of the button "Clear temporary setpoint", I now
@@ -331,6 +371,10 @@ only; I have not yet checked them in the browser or on a real installation.
 
 ### Diagnostics
 
+- **Heating circuit settings in the diagnostics:** the new section
+  `circuit_controls` counts temperature levels with a name that is not
+  operated and says, for an iCom gateway, whether the two tariff paths exist
+  (their type only, no values).
 - **Diagnostics schema 48:** the diagnostics gain the sections
   `calculated_values` (the defrost detection) and `recordings` (the reads
   of the plant recordings and the import), the heat source type and its

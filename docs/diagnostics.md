@@ -51,6 +51,12 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   exactly the same children (see
   [zone controls](zone-controls.md#discovery-on-large-zone-controllers)).
 
+- `gateways[].circuit_controls`: `unknown_temperature_levels`, the number
+  of heating circuit temperature levels with a name that is not operated
+  (no names), and `variable_tariff`, for the two tariff paths of an iCom
+  gateway only their type, `missing` or `not_probed` (no values; see
+  [heating controls](heating-controls.md#variable-electricity-tariff-read-only)).
+
 The anonymized inventory keeps dropping all of these sections.
 
 Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in

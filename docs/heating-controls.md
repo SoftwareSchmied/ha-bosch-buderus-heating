@@ -204,6 +204,92 @@ This practical check also caught lost keyboard focus after Apply. I corrected
 it and verified Escape directly after Apply and Reload values in the real
 browser and the automated Home Assistant test, without an extra click.
 
+### Heating circuit settings: summer/winter, cooling and temperature levels
+
+Since 0.9.2 a heating circuit gets these settings as number and select
+entities (category configuration) and as rows in the controls dialog, when
+the circuit reports them writable and with limits or options. They follow
+the manufacturer's app. I tested them only with simulated data in
+automated tests; they are **expected, untested on a real installation**.
+Reports are welcome.
+
+| Setting | Path | Entity | Enabled by default |
+| --- | --- | --- | --- |
+| Summer/winter switching | `suWiSwitchMode` | select | yes |
+| Stop heating at outdoor temperature | `suWiThreshold` | number | yes |
+| Cooling: room setpoint | `cooling/roomTempSetpoint` | number | no |
+| Start cooling at outdoor temperature | `cooling/outdoorThreshold` | number | no |
+| Away temperature | `awayTemperature` or `temperatureLevels/awayTemperature` | number | yes |
+| Cooling temperature | `cooling/temperatureLevels/on` | number | no |
+| Heating temperature, setback temperature | `temperatureLevels/comfort2`, `eco` | number | yes (since 0.9.0) |
+
+- **Summer/winter switching** of one circuit (iCom/KM200 gateways): the
+  options are the codes the circuit offers among `automatic`
+  (Automatic), `forced` (Heating only), `cooling` (Cooling only) and `off`
+  (Off); another code is left out, as in the app. The central season
+  switching of a K40 stays as it is (see [season switching](season-switching.md)).
+  After switching to cooling only, the circuit's climate becomes
+  unavailable while the circuit cools.
+- **Heating limit and cooling threshold:** the outdoor temperatures where
+  heating stops and cooling starts. The app shows them only in the mode
+  automatic; I keep them writable in every mode, they take effect in the
+  mode automatic. The cooling threshold exists only while the circuit's
+  summer/winter switching offers cooling.
+- **Cooling setpoint:** the room target of the cooling (heat pumps with
+  cooling only). 0 means "off" in the
+  app and is never written; when the circuit reports a minimum of 0 or
+  below, the lowest value offered is the first value of the grid above 0.
+  Without reported limits there is no entity.
+- **Temperature levels:** only the four level names the app knows are
+  operated: heating (`comfort2`), setback (`eco`), away (`awayTemperature`)
+  and cooling (`on`). A level with another name stays a reading; the
+  diagnostics count such names without showing them. A level without a
+  value gets no entity. A level value applies to every switch point of the
+  weekly programs that uses this level.
+- **Steps:** the step the circuit reports, else 1.0 for the thresholds and
+  0.5 for the temperatures, counted from the reported minimum. A value off
+  the grid or outside the limits is refused, not rounded.
+- **Write rules:** each change reads the circuit's control type, the setting
+  itself and the settings it depends on again on the appliance, in one
+  request, right before its one write: the summer/winter switching for the
+  two thresholds, the other levels for the heating, setback and away level.
+  If one of them changed since it was shown, nothing is sent. The heating
+  and setback levels limit each other (the heating level's minimum follows
+  the setback level and the other way round); the limits of a level write
+  therefore come from this fresh reading. Since 0.9.2 this also applies to
+  the heating and setback levels that exist since 0.9.0. The value is then
+  confirmed by reading it back and never sent again.
+- **Locks:** with the control type `ISRC` (a room controller runs the
+  circuit) none of these settings is changed, as in the app. With the
+  control type `constants` no temperature level is changed. A setting the
+  circuit reports as not available gets no control; one it reports as not
+  used refuses changes.
+- **Room controllers:** the circuits of a TC100.2 or CT200 keep their own
+  settings (see [room controllers](room-controllers.md)); none of these
+  entities is created for them.
+- **Only after the room controller check:** these settings are created,
+  offered and written only after a finished discovery got a definite answer
+  whether the gateway is a room controller (its zone list and product type).
+  Until then, for example while a server error leaves that open, they wait,
+  so a room controller recognised late never shows them, not even for a
+  moment.
+
+### Variable electricity tariff (read only)
+
+Since 0.9.2 an iCom gateway is asked once during discovery whether its
+tariff optimisation is on (`/application/tbso/enable`) and for the number
+of its tariff (`/application/tbso/electricity/tariffID`). If it answers,
+the diagnostic entities **Variable tariff active** and **Tariff ID** appear,
+both disabled by default. The tariff's name comes from a separate service
+of the manufacturer, which this integration does not use; the number 5
+means "no tariff chosen" and gives the attribute `tariff_selected: false`.
+A refusal, a missing path or a server error counts as "not there" and does
+not affect the rest of the discovery. Nothing is written: in the app,
+choosing a tariff takes several requests and also changes the heating
+circuits. The tariff readings of a K30/K40 (`/system/variableTariff/*`)
+stay as they were since 0.9.0, as disabled diagnostic sensors. Expected,
+untested on a real installation.
+
 ### Heating and hot water schedules
 
 Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
@@ -411,6 +497,95 @@ damit nicht praktisch bestätigt.
 Dabei fiel außerdem ein verlorener Tastaturfokus nach Übernehmen auf. Ich habe
 ihn korrigiert und Escape direkt nach Übernehmen und Werte neu laden im realen
 Browser sowie im automatisierten Home-Assistant-Test ohne weiteren Klick geprüft.
+
+### Heizkreis-Einstellungen: Sommer/Winter, Kühlen und Temperaturstufen
+
+Seit 0.9.2 erhält ein Heizkreis diese Einstellungen als Zahlen- und
+Auswahlentitäten (Kategorie Konfiguration) und als Zeilen im
+Bedienungsdialog, wenn der Kreis sie schreibbar und mit Grenzen oder
+Optionen meldet. Sie folgen der Hersteller-App. Ich habe sie nur mit
+simulierten Daten in automatisierten Tests geprüft; sie sind **erwartet,
+aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
+
+| Einstellung | Pfad | Entität | Standardmäßig aktiv |
+| --- | --- | --- | --- |
+| Sommer-/Winterumschaltung | `suWiSwitchMode` | Auswahl | ja |
+| Heizbetrieb bis Außentemperatur | `suWiThreshold` | Zahl | ja |
+| Kühlen: Raum-Solltemperatur | `cooling/roomTempSetpoint` | Zahl | nein |
+| Kühlbetrieb ab Außentemperatur | `cooling/outdoorThreshold` | Zahl | nein |
+| Abwesenheitstemperatur | `awayTemperature` oder `temperatureLevels/awayTemperature` | Zahl | ja |
+| Kühltemperatur | `cooling/temperatureLevels/on` | Zahl | nein |
+| Heiztemperatur, Absenktemperatur | `temperatureLevels/comfort2`, `eco` | Zahl | ja (seit 0.9.0) |
+
+- **Sommer-/Winterumschaltung** eines Kreises (iCom/KM200-Gateways): Die
+  Optionen sind die vom Kreis angebotenen Codes aus `automatic`
+  (Automatisch), `forced` (Nur Heizbetrieb), `cooling` (Nur Kühlbetrieb)
+  und `off` (Aus); andere Codes werden wie in der App ausgelassen. Die
+  zentrale Saisonumschaltung einer K40 bleibt unverändert (siehe
+  [Saisonumschaltung](season-switching.md)). Nach dem Wechsel auf „Nur
+  Kühlbetrieb“ ist die Klimaentität des Kreises nicht verfügbar, solange er
+  kühlt.
+- **Heizgrenze und Kühlschwelle:** die Außentemperaturen, bei denen das
+  Heizen endet und das Kühlen beginnt. Die App zeigt sie nur im Modus
+  Automatisch; ich lasse sie in jedem Modus schreibbar, wirksam sind sie im
+  Modus Automatisch. Die Kühlschwelle gibt es nur, solange die
+  Sommer-/Winterumschaltung des Kreises Kühlen anbietet.
+- **Kühl-Sollwert:** die Raum-Solltemperatur der Kühlung (nur Wärmepumpen
+  mit Kühlung). 0 bedeutet in der
+  App „aus“ und wird nie geschrieben; meldet der Kreis ein Minimum von 0
+  oder darunter, ist der kleinste angebotene Wert der erste Rasterwert über
+  0. Ohne gemeldete Grenzen gibt es keine Entität.
+- **Temperaturstufen:** Bedient werden nur die vier Stufen, die die App
+  kennt: Heizen (`comfort2`), Absenken (`eco`), Abwesend (`awayTemperature`)
+  und Kühlen (`on`). Eine Stufe mit anderem Namen bleibt ein Messwert; die
+  Diagnose zählt solche Namen, ohne sie zu zeigen. Eine Stufe ohne Wert
+  erhält keine Entität. Der Wert einer Stufe gilt für alle Schaltpunkte der
+  Wochenprogramme, die diese Stufe verwenden.
+- **Raster:** der vom Kreis gemeldete Schritt, sonst 1,0 für die Schwellen
+  und 0,5 für die Temperaturen, gezählt ab dem gemeldeten Minimum. Ein Wert
+  neben dem Raster oder außerhalb der Grenzen wird abgelehnt, nicht
+  gerundet.
+- **Schreibregeln:** Jede Änderung liest die Regelungsart des Kreises, die
+  Einstellung selbst und die Einstellungen, von denen sie abhängt, in einer
+  Anfrage direkt vor dem einen Schreiben erneut an der Anlage: die
+  Sommer-/Winterumschaltung für die beiden Schwellen, die anderen Stufen für
+  Heiz-, Absenk- und Abwesenheitsstufe. Hat sich davon etwas seit der
+  Anzeige geändert, wird nichts gesendet. Heiz- und Absenkstufe begrenzen
+  sich gegenseitig (das Minimum der Heizstufe folgt der Absenkstufe und
+  umgekehrt); die Grenzen beim Schreiben einer Stufe stammen deshalb aus
+  dieser frischen Lesung. Seit 0.9.2 gilt das auch für die Heiz- und
+  Absenkstufe, die es seit 0.9.0 gibt. Danach wird der Wert durch Rücklesen
+  bestätigt und nie erneut gesendet.
+- **Sperren:** Mit der Regelungsart `ISRC` (ein Raumregler führt den Kreis)
+  wird wie in der App keine dieser Einstellungen geändert. Mit der
+  Regelungsart `constants` wird keine Temperaturstufe geändert. Eine als
+  nicht verfügbar gemeldete Einstellung erhält keine Steuerung, eine als
+  nicht genutzt gemeldete lehnt Änderungen ab.
+- **Raumregler:** Die Kreise eines TC100.2 oder CT200 behalten ihre eigenen
+  Einstellungen (siehe [Raumregler](room-controllers.md)); für sie entsteht
+  keine dieser Entitäten.
+- **Erst nach der Raumregler-Prüfung:** Diese Einstellungen entstehen, werden
+  angeboten und geschrieben erst, nachdem eine abgeschlossene Erkennung eine
+  eindeutige Antwort darauf erhielt, ob das Gateway ein Raumregler ist
+  (Zonenliste und Produkttyp). Bis dahin, etwa solange ein Serverfehler das
+  offenlässt, warten sie; ein spät erkannter Raumregler zeigt sie so nie, auch
+  nicht kurz.
+
+### Variabler Stromtarif (nur lesen)
+
+Seit 0.9.2 fragt die Integration ein iCom-Gateway bei der Erkennung einmal,
+ob seine Tarifoptimierung eingeschaltet ist (`/application/tbso/enable`),
+und nach der Nummer seines Tarifs (`/application/tbso/electricity/tariffID`).
+Antwortet es, erscheinen die Diagnose-Entitäten **Variabler Tarif aktiv**
+und **Tarif-ID**, beide standardmäßig deaktiviert. Den Namen des Tarifs
+liefert ein eigener Dienst des Herstellers, den diese Integration nicht
+nutzt; die Nummer 5 bedeutet „kein Tarif gewählt“ und ergibt das Attribut
+`tariff_selected: false`. Eine Ablehnung, ein fehlender Pfad oder ein
+Serverfehler gilt als „nicht vorhanden“ und beeinflusst die übrige Erkennung
+nicht. Geschrieben wird nichts: In der App braucht die Wahl eines Tarifs
+mehrere Anfragen und ändert dabei auch die Heizkreise. Die Tarifwerte einer
+K30/K40 (`/system/variableTariff/*`) bleiben wie seit 0.9.0 deaktivierte
+Diagnose-Sensoren. Erwartet, aber an einer echten Anlage ungetestet.
 
 ### Zeitprogramme Heizung und Warmwasser
 

@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "Spotřebič toto nastavení momentálně nepoužívá. Tato změna nebyla odeslána."
     },
+    "circuit_room_controller": {
+      "message": "Tento topný okruh je řízen prostorovým regulátorem. Nastavení lze změnit pouze tam. Tato změna nebyla odeslána."
+    },
+    "circuit_constant_control": {
+      "message": "Tento topný okruh běží s konstantními hodnotami. Jeho teplotní úrovně nyní nelze změnit. Tato změna nebyla odeslána."
+    },
+    "cooling_not_offered": {
+      "message": "Tento topný okruh momentálně nenabízí chlazení. Tato změna nebyla odeslána."
+    },
     "rrc_setting_unused": {
       "message": "Prostorový regulátor toto nastavení momentálně nepoužívá, proto nebylo změněno."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Maximální výstupní teplota"
       },
+      "summer_winter_threshold": {
+        "name": "Zastavit topení při venkovní teplotě"
+      },
+      "cooling_room_setpoint": {
+        "name": "Chlazení: požadovaná pokojová teplota"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Zahájit chlazení při venkovní teplotě"
+      },
+      "away_temperature": {
+        "name": "Teplota při nepřítomnosti"
+      },
+      "cooling_temperature": {
+        "name": "Teplota chlazení"
+      },
       "softener_salt_threshold": {
         "name": "Práh upozornění na sůl"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Stupeň ventilátoru 3",
           "max": "Stupeň ventilátoru 4",
           "dem": "Podle potřeby"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Letní/zimní přepínání",
+        "state": {
+          "automatic": "Automatický",
+          "forced": "Pouze topení",
+          "cooling": "Pouze chlazení",
+          "off": "Vypnuto"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Vyrobená energie chlazení"
+      },
+      "tariff_id": {
+        "name": "ID tarifu"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Průtok topného okruhu 1 pod rozsahem měření (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Proměnný tarif aktivní"
       }
     },
     "calendar": {

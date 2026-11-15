@@ -1074,6 +1074,7 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         patch.object(sensor, "track_recording_sensors", Mock()),
         patch.object(sensor, "track_heat_generator_sensor", Mock()),
         patch.object(sensor, "track_outdoor_unit_software_sensor", Mock()),
+        patch.object(sensor, "track_tariff_sensor", Mock()),
         patch.object(sensor, "track_radio_devices", Mock()),
         # The RRC package trackers need a real coordinator.
         patch.object(sensor.rrc_platforms, "track", Mock()),

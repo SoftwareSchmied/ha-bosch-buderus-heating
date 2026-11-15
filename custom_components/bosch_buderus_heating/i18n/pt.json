@@ -639,6 +639,7 @@
     "used by another access": "usado por outro acesso",
     "It is most likely the token this access uses: revoking it ends this local access.": "É provavelmente o token que este acesso usa: revogá-lo termina este acesso local.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "É provavelmente o token de outro acesso local a este gateway: revogá-lo termina esse acesso.",
-    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Não é possível saber com certeza que token um acesso usa, por exemplo quando outro Home Assistant usa este gateway. Revogar um token em uso termina o acesso local que o usa."
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Não é possível saber com certeza que token um acesso usa, por exemplo quando outro Home Assistant usa este gateway. Revogar um token em uso termina o acesso local que o usa.",
+    "Cooling temperature": "Temperatura de arrefecimento"
   }
 }

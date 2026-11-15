@@ -63,6 +63,7 @@ from .sensor import (
     _values_scalar_keys,
 )
 from .start_counters import is_start_counter_path
+from .variable_tariff_entities import track_tariff_binary_sensor
 from .water_softener import low_salt, softener_capability, softener_value
 from .write_policies import context_of, rrc_kwargs
 from .zone_radio_devices import (
@@ -119,6 +120,7 @@ def _setup_entities(
     for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
         track_flow_range_sensors(entry, coordinator, async_add_entities)
+        track_tariff_binary_sensor(entry, coordinator, async_add_entities)
         track_defrost_entities(
             entry, coordinator, async_add_entities, defrost_binary_sensors
         )

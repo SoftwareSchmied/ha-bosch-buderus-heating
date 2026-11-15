@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "El equipo no utiliza este ajuste en este momento. Este cambio no se envió."
     },
+    "circuit_room_controller": {
+      "message": "Este circuito de calefacción está controlado por un regulador de ambiente. El ajuste solo se puede cambiar allí. Este cambio no se envió."
+    },
+    "circuit_constant_control": {
+      "message": "Este circuito de calefacción funciona con valores constantes. Sus niveles de temperatura no se pueden cambiar en este momento. Este cambio no se envió."
+    },
+    "cooling_not_offered": {
+      "message": "Este circuito de calefacción no ofrece refrigeración en este momento. Este cambio no se envió."
+    },
     "rrc_setting_unused": {
       "message": "El regulador de ambiente no utiliza este ajuste en este momento, por lo que no se cambió."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Temperatura de impulsión máxima"
       },
+      "summer_winter_threshold": {
+        "name": "Fin de la calefacción a la temperatura exterior"
+      },
+      "cooling_room_setpoint": {
+        "name": "Refrigeración: consigna de ambiente"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "away_temperature": {
+        "name": "Temperatura de ausencia"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura de refrigeración"
+      },
       "softener_salt_threshold": {
         "name": "Umbral de aviso de sal"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Nivel de ventilación 3",
           "max": "Nivel de ventilación 4",
           "dem": "Según demanda"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Conmutación verano/invierno",
+        "state": {
+          "automatic": "Automática",
+          "forced": "Solo calefacción",
+          "cooling": "Solo refrigeración",
+          "off": "Apagada"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Energía de refrigeración producida"
+      },
+      "tariff_id": {
+        "name": "ID de tarifa"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Caudal del circuito de calefacción 1 por debajo del rango de medición (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Tarifa variable activa"
       }
     },
     "calendar": {

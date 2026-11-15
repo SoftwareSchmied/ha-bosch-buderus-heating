@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "The appliance does not use this setting at the moment. This change was not sent."
     },
+    "circuit_room_controller": {
+      "message": "This heating circuit is controlled by a room controller. The setting can only be changed there. This change was not sent."
+    },
+    "circuit_constant_control": {
+      "message": "This heating circuit runs at constant values. Its temperature levels cannot be changed at the moment. This change was not sent."
+    },
+    "cooling_not_offered": {
+      "message": "This heating circuit does not offer cooling at the moment. This change was not sent."
+    },
     "rrc_setting_unused": {
       "message": "The room controller does not use this setting at the moment, so it was not changed."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Maximum supply temperature"
       },
+      "summer_winter_threshold": {
+        "name": "Stop heating at outdoor temperature"
+      },
+      "cooling_room_setpoint": {
+        "name": "Cooling: room setpoint"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Start cooling at outdoor temperature"
+      },
+      "away_temperature": {
+        "name": "Away temperature"
+      },
+      "cooling_temperature": {
+        "name": "Cooling temperature"
+      },
       "softener_salt_threshold": {
         "name": "Salt alert threshold"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Fan level 3",
           "max": "Fan level 4",
           "dem": "Demand"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Summer/winter switching",
+        "state": {
+          "automatic": "Automatic",
+          "forced": "Heating only",
+          "cooling": "Cooling only",
+          "off": "Off"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Cooling energy produced"
+      },
+      "tariff_id": {
+        "name": "Tariff ID"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Heating circuit 1 flow below measuring range (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Variable tariff active"
       }
     },
     "calendar": {

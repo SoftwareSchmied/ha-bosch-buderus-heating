@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "Het apparaat gebruikt deze instelling op dit moment niet. Deze wijziging is niet verzonden."
     },
+    "circuit_room_controller": {
+      "message": "Dit verwarmingscircuit wordt door een ruimteregelaar geregeld. De instelling kan alleen daar worden gewijzigd. Deze wijziging is niet verzonden."
+    },
+    "circuit_constant_control": {
+      "message": "Dit verwarmingscircuit werkt met constante waarden. De temperatuurniveaus kunnen op dit moment niet worden gewijzigd. Deze wijziging is niet verzonden."
+    },
+    "cooling_not_offered": {
+      "message": "Dit verwarmingscircuit biedt op dit moment geen koeling. Deze wijziging is niet verzonden."
+    },
     "rrc_setting_unused": {
       "message": "De kamerregelaar gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Maximale aanvoertemperatuur"
       },
+      "summer_winter_threshold": {
+        "name": "Verwarming stoppen bij buitentemperatuur"
+      },
+      "cooling_room_setpoint": {
+        "name": "Koelen: kamerinstelwaarde"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "away_temperature": {
+        "name": "Afwezigheidstemperatuur"
+      },
+      "cooling_temperature": {
+        "name": "Koeltemperatuur"
+      },
       "softener_salt_threshold": {
         "name": "Drempel zoutmelding"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Ventilatorstand 3",
           "max": "Ventilatorstand 4",
           "dem": "Vraaggestuurd"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Zomer-/winteromschakeling",
+        "state": {
+          "automatic": "Automatisch",
+          "forced": "Alleen verwarmen",
+          "cooling": "Alleen koelen",
+          "off": "Uit"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Opgewekte koelenergie"
+      },
+      "tariff_id": {
+        "name": "Tarief-ID"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Debiet verwarmingscircuit 1 onder het meetbereik (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Variabel tarief actief"
       }
     },
     "calendar": {

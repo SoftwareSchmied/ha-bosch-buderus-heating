@@ -15,6 +15,9 @@
         "state": {
           "off": "mdi:check-circle-outline"
         }
+      },
+      "variable_tariff_active": {
+        "default": "mdi:cash-clock"
       }
     },
     "button": {
@@ -42,6 +45,23 @@
     "event": {
       "system_notifications": {
         "default": "mdi:alert-circle-outline"
+      }
+    },
+    "number": {
+      "away_temperature": {
+        "default": "mdi:home-export-outline"
+      },
+      "cooling_outdoor_threshold": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "cooling_room_setpoint": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "cooling_temperature": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "summer_winter_threshold": {
+        "default": "mdi:sun-thermometer-outline"
       }
     },
     "select": {
@@ -84,6 +104,14 @@
         "state": {
           "auto": "mdi:volume-medium",
           "off": "mdi:volume-high"
+        }
+      },
+      "summer_winter_switching": {
+        "default": "mdi:sun-snowflake-variant",
+        "state": {
+          "forced": "mdi:fire",
+          "cooling": "mdi:snowflake",
+          "off": "mdi:power"
         }
       },
       "ventilation_exhaust_fan_level": {
@@ -236,6 +264,9 @@
           "forced_heat": "mdi:fire",
           "heating": "mdi:fire"
         }
+      },
+      "tariff_id": {
+        "default": "mdi:cash-clock"
       },
       "ventilation_fan_level": {
         "default": "mdi:fan",

@@ -143,6 +143,7 @@ from .switch_programs import (
     is_switch_program_path,
 )
 from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
+from .variable_tariff_entities import track_tariff_sensor
 from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
@@ -576,6 +577,7 @@ def _setup_entities(
         track_recording_sensors(entry, coordinator, async_add_entities)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
+        track_tariff_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
         track_zone_radio_devices(
             entry, coordinator, async_add_entities, ZoneRadioSignalSensor

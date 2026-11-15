@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "Apparaten använder inte den här inställningen just nu. Den här ändringen skickades inte."
     },
+    "circuit_room_controller": {
+      "message": "Den här värmekretsen styrs av en rumsregulator. Inställningen kan bara ändras där. Den här ändringen skickades inte."
+    },
+    "circuit_constant_control": {
+      "message": "Den här värmekretsen körs med konstanta värden. Dess temperaturnivåer kan inte ändras just nu. Den här ändringen skickades inte."
+    },
+    "cooling_not_offered": {
+      "message": "Den här värmekretsen erbjuder inte kylning just nu. Den här ändringen skickades inte."
+    },
     "rrc_setting_unused": {
       "message": "Rumsregulatorn använder inte den här inställningen just nu, så den ändrades inte."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Maximal framledningstemperatur"
       },
+      "summer_winter_threshold": {
+        "name": "Avbryt värme vid utomhustemperatur"
+      },
+      "cooling_room_setpoint": {
+        "name": "Kyla: rumsbörvärde"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Starta kyla vid utomhustemperatur"
+      },
+      "away_temperature": {
+        "name": "Bortatemperatur"
+      },
+      "cooling_temperature": {
+        "name": "Kyltemperatur"
+      },
       "softener_salt_threshold": {
         "name": "Tröskel för saltlarm"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Fläktsteg 3",
           "max": "Fläktsteg 4",
           "dem": "Behovsstyrd"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Sommar-/vinteromkoppling",
+        "state": {
+          "automatic": "Automatisk",
+          "forced": "Endast värme",
+          "cooling": "Endast kyla",
+          "off": "Av"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Producerad kylenergi"
+      },
+      "tariff_id": {
+        "name": "Tariff-ID"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Flöde värmekrets 1 under mätområdet (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Rörlig tariff aktiv"
       }
     },
     "calendar": {

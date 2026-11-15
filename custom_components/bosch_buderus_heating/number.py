@@ -17,7 +17,13 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
+from . import (
+    BoschBuderusConfigEntry,
+    circuit_controls,
+    rrc,
+    rrc_contracts,
+    rrc_platforms,
+)
 from .bacon import purifier
 from .bacon.purifier_entities import (
     BaconPurifierNumber,
@@ -25,7 +31,9 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
-from .control import HeldCapabilities, async_set_control, track_control_entities
+from .circuit_control_writes import async_set_guarded, offered_on
+from .circuit_controls import display_minimum, offered
+from .control import HeldCapabilities, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -110,6 +118,8 @@ def build_number_descriptions(
             or minimum is None
             or maximum is None
             or not policy.create_entity
+            # The cooling threshold only while the circuit offers cooling.
+            or not offered(resource.path, resources)
         ):
             continue
         contract = rrc_contracts.owns(policy)
@@ -127,12 +137,15 @@ def build_number_descriptions(
                 name=name,
                 resource_path=resource.path,
                 write_policy=policy,
-                native_min_value=minimum,
+                native_min_value=display_minimum(policy, minimum, assessment.ui_step),
                 native_max_value=maximum,
                 native_step=assessment.ui_step,
                 native_unit_of_measurement=_policy_unit(policy, assessment.unit),
                 mode=NumberMode.BOX,
-                icon=control_icon(resource.path, numeric=True, contract=contract),
+                # The heating circuit settings take theirs from icons.json.
+                icon=None
+                if circuit_controls.icon(resource.path)
+                else control_icon(resource.path, numeric=True, contract=contract),
                 entity_category=control_category(
                     resource.path, numeric=True, contract=contract
                 ),
@@ -209,15 +222,16 @@ class BoschBuderusNumber(
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
             and self._policy(snapshot.resource) is not None
+            and offered_on(self.coordinator, self.entity_description.resource_path)
         )
 
     @property
     def native_min_value(self) -> float:
         snapshot = self._snapshot
-        if snapshot is not None and self._policy(snapshot.resource):
+        if snapshot is not None and (policy := self._policy(snapshot.resource)):
             minimum = snapshot.resource.metadata.minimum
             if minimum is not None:
-                return minimum
+                return display_minimum(policy, minimum, self.native_step)
         return super().native_min_value
 
     @property
@@ -271,7 +285,8 @@ class BoschBuderusNumber(
         return super().native_unit_of_measurement
 
     async def async_set_native_value(self, value: float) -> None:
-        await async_set_control(
+        # The settings of a heating circuit read their guards again.
+        await async_set_guarded(
             self.coordinator,
             self.entity_description.resource_path,
             value,
@@ -314,4 +329,15 @@ def _number_identity(path: str) -> tuple[str, str]:
         "high": ("hot_water_comfort", "Startschwelle Komfort"),
         "low": ("hot_water_eco", "Startschwelle Eco"),
         "setpointTemp": ("pool_setpoint_temperature", "Pool-Solltemperatur"),
+        "suWiThreshold": (
+            "summer_winter_threshold",
+            "Heizbetrieb bis Außentemperatur",
+        ),
+        "roomTempSetpoint": ("cooling_room_setpoint", "Kühlen: Raum-Solltemperatur"),
+        "outdoorThreshold": (
+            "cooling_outdoor_threshold",
+            "Kühlbetrieb ab Außentemperatur",
+        ),
+        "awayTemperature": ("away_temperature", "Abwesenheitstemperatur"),
+        "on": ("cooling_temperature", "Kühltemperatur"),
     }[tail]

@@ -639,6 +639,7 @@
     "used by another access": "koristi ga drugi pristup",
     "It is most likely the token this access uses: revoking it ends this local access.": "To je najvjerojatnije token koji koristi ovaj pristup: njegovim opozivom ovaj lokalni pristup završava.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "To je najvjerojatnije token drugog lokalnog pristupa ovom pristupniku: njegovim opozivom taj pristup završava.",
-    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Koji token pristup koristi ne može se sa sigurnošću utvrditi, na primjer kad drugi Home Assistant koristi ovaj pristupnik. Opozivom tokena u upotrebi završava lokalni pristup koji ga koristi."
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Koji token pristup koristi ne može se sa sigurnošću utvrditi, na primjer kad drugi Home Assistant koristi ovaj pristupnik. Opozivom tokena u upotrebi završava lokalni pristup koji ga koristi.",
+    "Cooling temperature": "Temperatura hlađenja"
   }
 }

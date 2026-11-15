@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "Die Anlage nutzt diese Einstellung gerade nicht. Diese Änderung wurde nicht gesendet."
     },
+    "circuit_room_controller": {
+      "message": "Dieser Heizkreis wird über einen Raumregler geregelt. Die Einstellung lässt sich nur dort ändern. Diese Änderung wurde nicht gesendet."
+    },
+    "circuit_constant_control": {
+      "message": "Dieser Heizkreis läuft mit konstanten Werten. Seine Temperaturstufen lassen sich gerade nicht ändern. Diese Änderung wurde nicht gesendet."
+    },
+    "cooling_not_offered": {
+      "message": "Dieser Heizkreis bietet gerade keinen Kühlbetrieb an. Diese Änderung wurde nicht gesendet."
+    },
     "rrc_setting_unused": {
       "message": "Der Raumregler nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Maximale Vorlauftemperatur"
       },
+      "summer_winter_threshold": {
+        "name": "Heizbetrieb bis Außentemperatur"
+      },
+      "cooling_room_setpoint": {
+        "name": "Kühlen: Raum-Solltemperatur"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Kühlbetrieb ab Außentemperatur"
+      },
+      "away_temperature": {
+        "name": "Abwesenheitstemperatur"
+      },
+      "cooling_temperature": {
+        "name": "Kühltemperatur"
+      },
       "softener_salt_threshold": {
         "name": "Salz-Warnschwelle"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Lüfterstufe 3",
           "max": "Lüfterstufe 4",
           "dem": "Bedarf"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Sommer-/Winterumschaltung",
+        "state": {
+          "automatic": "Automatisch",
+          "forced": "Nur Heizbetrieb",
+          "cooling": "Nur Kühlbetrieb",
+          "off": "Aus"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Erzeugte Kühlenergie"
+      },
+      "tariff_id": {
+        "name": "Tarif-ID"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Heizkreis 1 – Durchfluss unter Messbereich (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Variabler Tarif aktiv"
       }
     },
     "calendar": {

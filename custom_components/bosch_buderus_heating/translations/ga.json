@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "Ní úsáideann an trealamh an socrú seo faoi láthair. Níor seoladh an t-athrú seo."
     },
+    "circuit_room_controller": {
+      "message": "Is rialaitheoir seomra a rialaíonn an ciorcad téimh seo. Ní féidir an socrú a athrú ach ansin. Níor seoladh an t-athrú seo."
+    },
+    "circuit_constant_control": {
+      "message": "Ritheann an ciorcad téimh seo ar luachanna seasmhacha. Ní féidir a leibhéil teochta a athrú faoi láthair. Níor seoladh an t-athrú seo."
+    },
+    "cooling_not_offered": {
+      "message": "Ní thairgeann an ciorcad téimh seo fuarú faoi láthair. Níor seoladh an t-athrú seo."
+    },
     "rrc_setting_unused": {
       "message": "Ní úsáideann an rialaitheoir seomra an socrú seo faoi láthair, mar sin níor athraíodh é."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Uasteocht an tsreafa"
       },
+      "summer_winter_threshold": {
+        "name": "Stop an téamh ag teocht lasmuigh"
+      },
+      "cooling_room_setpoint": {
+        "name": "Fuarú: socphointe an tseomra"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "away_temperature": {
+        "name": "Teocht as baile"
+      },
+      "cooling_temperature": {
+        "name": "Teocht fuaraithe"
+      },
       "softener_salt_threshold": {
         "name": "Tairseach rabhaidh salainn"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Leibhéal an fhean 3",
           "max": "Leibhéal an fhean 4",
           "dem": "Éileamh"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Aistriú samhraidh/geimhridh",
+        "state": {
+          "automatic": "Uathoibríoch",
+          "forced": "Téamh amháin",
+          "cooling": "Fuarú amháin",
+          "off": "As"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Fuinneamh fuaraithe a ghintear"
+      },
+      "tariff_id": {
+        "name": "ID taraife"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Sreabhadh an chiorcaid téimh 1 faoi bhun an raoin tomhais (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Taraif athraitheach gníomhach"
       }
     },
     "calendar": {

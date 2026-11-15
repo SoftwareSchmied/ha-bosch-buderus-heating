@@ -858,6 +858,18 @@ _APP_PATH_NAMES = {
         "Energiepreis-Erinnerung fällig",
         "Energy price reminder due",
     ),
+    "/heatingCircuits/*/awayTemperature": (
+        "Abwesenheitstemperatur",
+        "Away temperature",
+    ),
+    "/heatingCircuits/*/temperatureLevels/awayTemperature": (
+        "Abwesenheitstemperatur",
+        "Away temperature",
+    ),
+    "/heatingCircuits/*/cooling/outdoorThreshold": (
+        "Kühlbetrieb ab Außentemperatur",
+        "Start cooling at outdoor temperature",
+    ),
     "/heatingCircuits/*/cooling/roomTempSetpoint": (
         "Kühlen: Raum-Solltemperatur",
         "Cooling: room setpoint",
@@ -1407,7 +1419,13 @@ _HOURLY_CONTAINER_PATTERN = re.compile(r"^/(?:solarCircuits|ventilation)/[^/]+$"
 # O40: settled cloud values that the 60-second group read only because their
 # names contain "status" or "temperature".
 _STATIC_SETTLED_PATHS = frozenset(
-    {"/system/iSRC/installationStatus", "/system/variableTariff/supportStatus"}
+    {
+        "/system/iSRC/installationStatus",
+        "/system/variableTariff/supportStatus",
+        # The variable tariff of an iCom gateway, read once (0.9.2).
+        "/application/tbso/enable",
+        "/application/tbso/electricity/tariffID",
+    }
 )
 _SLOW_SETTLED_PATHS = frozenset(
     {"/system/sensors/temperatures/outdoorTemperatureSource", "/gateway/update/status"}

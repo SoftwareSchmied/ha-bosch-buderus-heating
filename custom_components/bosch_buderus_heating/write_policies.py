@@ -57,8 +57,15 @@ class ControlContext:
     # a hybrid plant (``/heatSources/type``); a policy with
     # ``heat_pump_options`` then always offers them.
     heat_pump: bool = False
+    # False until a finished discovery got a definite answer for the room
+    # controller evidence (``circuit_controls.room_controller_check_complete``):
+    # the generic heating circuit settings wait for it, so a room controller
+    # recognised late never shows them for a moment.
+    room_controller_checked: bool = True
 
 
+# A gateway whose room controller check is still open.
+UNCHECKED_CONTEXT: Final = ControlContext(room_controller_checked=False)
 GENERIC_CONTEXT: Final = ControlContext()
 RRC_CONTEXT: Final = ControlContext(rrc_plant=True)
 RRC_HEAT_PUMP_CONTEXT: Final = ControlContext(rrc_plant=True, heat_pump=True)

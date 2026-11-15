@@ -6,7 +6,7 @@ import re
 
 from homeassistant.const import EntityCategory
 
-from . import rrc_contracts
+from . import circuit_controls, rrc_contracts
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import grouped_entity_name
 from .i18n import localize
@@ -25,6 +25,12 @@ _LABELS = {
     "awayMode/enabled": ("Abwesenheit", "Away mode"),
     "seasonOptimizer/mode": ("Saisonumschaltung", "Season switching"),
     "additionalHeater/operationMode": ("Zuheizer", "Auxiliary heater"),
+    "awayTemperature": ("Abwesenheitstemperatur", "Away temperature"),
+    "cooling/outdoorThreshold": (
+        "Kühlbetrieb ab Außentemperatur",
+        "Start cooling at outdoor temperature",
+    ),
+    "cooling/temperatureLevels/on": ("Kühltemperatur", "Cooling temperature"),
 }
 
 
@@ -104,6 +110,9 @@ def control_icon(
         return icon
     if not _heating_presentation(path):
         return None
+    if (icon := circuit_controls.icon(path)) is not None:
+        # The entities take the same icon from icons.json.
+        return icon
     if path.endswith("/chargeDuration"):
         return "mdi:timer-outline"
     if numeric:
@@ -133,6 +142,8 @@ def control_category(
     ):
         return EntityCategory.CONFIG
     if path.startswith("/dhwCircuits/") and path.endswith("/operationMode"):
+        return EntityCategory.CONFIG
+    if path.startswith("/heatingCircuits/") and path.endswith("/suWiSwitchMode"):
         return EntityCategory.CONFIG
     if numeric and not path.endswith("/manualRoomSetpoint"):
         return EntityCategory.CONFIG

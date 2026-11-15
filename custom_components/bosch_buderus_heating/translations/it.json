@@ -1475,6 +1475,15 @@
     "control_unused": {
       "message": "L'apparecchio al momento non utilizza questa impostazione. Questa modifica non è stata inviata."
     },
+    "circuit_room_controller": {
+      "message": "Questo circuito di riscaldamento è comandato da un regolatore ambiente. L'impostazione può essere modificata solo lì. Questa modifica non è stata inviata."
+    },
+    "circuit_constant_control": {
+      "message": "Questo circuito di riscaldamento funziona con valori costanti. I suoi livelli di temperatura al momento non possono essere modificati. Questa modifica non è stata inviata."
+    },
+    "cooling_not_offered": {
+      "message": "Questo circuito di riscaldamento al momento non offre il raffrescamento. Questa modifica non è stata inviata."
+    },
     "rrc_setting_unused": {
       "message": "Il regolatore ambiente al momento non utilizza questa impostazione, quindi non è stata modificata."
     },
@@ -1692,6 +1701,21 @@
       "maximum_supply_temperature": {
         "name": "Temperatura di mandata massima"
       },
+      "summer_winter_threshold": {
+        "name": "Fine del riscaldamento alla temperatura esterna"
+      },
+      "cooling_room_setpoint": {
+        "name": "Raffrescamento: setpoint ambiente"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Avvia il raffrescamento alla temperatura esterna"
+      },
+      "away_temperature": {
+        "name": "Temperatura di assenza"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura di raffrescamento"
+      },
       "softener_salt_threshold": {
         "name": "Soglia di allarme sale"
       },
@@ -1811,6 +1835,15 @@
           "nom": "Livello di ventilazione 3",
           "max": "Livello di ventilazione 4",
           "dem": "In base alla richiesta"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Commutazione estate/inverno",
+        "state": {
+          "automatic": "Automatica",
+          "forced": "Solo riscaldamento",
+          "cooling": "Solo raffrescamento",
+          "off": "Spenta"
         }
       },
       "rrc_user_mode": {
@@ -2857,6 +2890,9 @@
       },
       "name_part_cooling_energy_produced": {
         "name": "Energia di raffrescamento prodotta"
+      },
+      "tariff_id": {
+        "name": "ID tariffa"
       }
     },
     "binary_sensor": {
@@ -2947,6 +2983,9 @@
       },
       "circuit_1_flow_below_range": {
         "name": "Portata circuito di riscaldamento 1 sotto il campo di misura (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Tariffa variabile attiva"
       }
     },
     "calendar": {

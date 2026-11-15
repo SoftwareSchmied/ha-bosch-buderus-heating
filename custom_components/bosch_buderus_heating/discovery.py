@@ -22,6 +22,7 @@ from .discovery_zones import (
     zone_side_paths,
 )
 from .holidays import HOLIDAY_RESOURCE_PATHS
+from .icom_profile import is_icom_gateway
 from .legacy_holidays import (
     ICOM_FIELDS,
     ICOM_HOLIDAY_ROOT,
@@ -65,6 +66,7 @@ from .rrc import (
 )
 from .rrc_contract_absence import EVENT_LISTS
 from .startup_data import LICENSE_PATH, StartupGatewayData, is_startup_path
+from .variable_tariff import ICOM_TARIFF_PATHS
 from .water_softener import (
     SOFTENER_CAPABILITIES,
     SOFTENER_CIRCUIT,
@@ -351,6 +353,7 @@ _NOT_READ_POLICIES = frozenset(
         "rrc_5xx_assumed_missing",
         "rrc_device_setting_limit",
         "rrc_event_entry",
+        "optional_5xx_assumed_missing",
     }
 )
 
@@ -910,6 +913,10 @@ async def async_discover_resources(
         enable_rrc_profile(evidence, 1)
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
+    if is_icom_gateway(gateway) and not rediscovery:
+        # The variable tariff of an iCom gateway: two leaves, probed once.
+        for tariff_path in ICOM_TARIFF_PATHS:
+            schedule(tariff_path, 1, DiscoveryPathSource.OPTIONAL)
 
     if softener_profile and not rediscovery:
         schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
@@ -1174,6 +1181,12 @@ async def _recover_invalid_bulk_results(
             recovered.append(result)
             continue
 
+        if fallback_reason == "item_5xx" and result.path in ICOM_TARIFF_PATHS:
+            # A tariff leaf the gateway does not answer counts as missing; it
+            # neither counts towards the outage series nor ends it.
+            diagnostics.paths[result.path].read_policy = "optional_5xx_assumed_missing"
+            recovered.append(result)
+            continue
         diagnostics.fallback_started(result.path, fallback_reason)
         _LOGGER.debug(
             "Retrying recoverable PointT discovery item %s with one individual "
