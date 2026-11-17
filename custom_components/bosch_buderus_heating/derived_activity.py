@@ -262,7 +262,36 @@ def heat_side(
         CENTRAL_HEATING_STATUS,
     )
     found = first(coordinator, paths, _side_of, trace)
-    return found[1] if found is not None else None
+    if found is None:
+        return None
+    side = found[1]
+    # The valve and the refrigerant circuit's status arrive one after the
+    # other: at the end of a hot water charge the valve is already back on
+    # the heating side while the status still says hot water or has stopped.
+    # Contradicting readings give no heat to the circuit.
+    from_valve = found[0].path in (DHW_VALVE, DHW_VALVE_RELAY)
+    if (
+        side == CIRCUIT
+        and from_valve
+        and _status_contradicts_circuit(coordinator, trace)
+    ):
+        return OTHER
+    return side
+
+
+def _status_contradicts_circuit(
+    coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace | None
+) -> bool:
+    for path in (*known_paths(coordinator, REFRIGERANT_STATUS), COMPRESSOR_STATUS):
+        reading = read(coordinator, path)
+        key = state(reading)
+        if key is None:
+            continue
+        if key in _STOPPED_STATES or _STATE_SIDES.get(key, CIRCUIT) != CIRCUIT:
+            if trace is not None:
+                trace.note(reading)
+            return True
+    return False
 
 
 def _cooling(
@@ -290,6 +319,14 @@ def circuit_pump_paths(root: str) -> tuple[str, ...]:
         else ()
     )
     return (root + "/pumpStatus", *relay, root + "/pumpModulation")
+
+
+def circuit_has_pump(coordinator: BoschBuderusDataUpdateCoordinator, root: str) -> bool:
+    """Whether the plant offers a pump value of the circuit at all (cloud or
+    local): without one the activity cannot be told while the heat source
+    runs for heating."""
+    pattern = re.compile("|".join(re.escape(path) for path in circuit_pump_paths(root)))
+    return bool(known_paths(coordinator, pattern))
 
 
 def _pump_of(reading: Input | None) -> bool | None:

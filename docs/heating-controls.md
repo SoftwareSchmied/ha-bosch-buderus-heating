@@ -207,6 +207,34 @@ This practical check also caught lost keyboard focus after Apply. I corrected
 it and verified Escape directly after Apply and Reload values in the real
 browser and the automated Home Assistant test, without an extra click.
 
+### Heating-circuit climates in HomeKit
+
+The Home Assistant HomeKit bridge shows a climate entity with two
+temperatures: the current temperature and the target. Two things can look
+wrong on a plant without room sensors; both come from how the bridge treats
+the values, not from a reading of the appliance.
+
+- **21 degrees as the current temperature.** A heating circuit reports a
+  current temperature only when the controller has a room temperature for it
+  (`roomtemperature`). Without one, the climate reports none, which is what
+  Home Assistant expects. As far as I can tell from the HomeKit integration,
+  the bridge then keeps a fixed start value of 21 degrees for the current
+  temperature, so the large number on the tile is that placeholder. The
+  target on the tile is the real one. I do not fill the current temperature
+  with the supply or outdoor temperature, because neither is a room
+  temperature. How to hide the tile is a setting of the bridge, not of this
+  integration.
+- **Target at night.** In automatic mode the target is the setpoint the
+  controller currently applies (day, night or setback per its program).
+  A controller that reports 0 for a circuit that is switched off in that
+  period gives a target of 0. As far as I can tell, the bridge ignores a
+  target of 0 and keeps the last one it had, so HomeKit can keep showing the
+  day value at night. Home Assistant itself shows what the controller
+  reports.
+
+Observed in the diagnostics and screenshots of a user's boiler plant; not
+tested with a bridge on my side.
+
 ### Heating circuit settings: summer/winter, cooling and temperature levels
 
 Since 0.9.2 a heating circuit gets these settings as number and select
@@ -663,6 +691,33 @@ damit nicht praktisch bestätigt.
 Dabei fiel außerdem ein verlorener Tastaturfokus nach Übernehmen auf. Ich habe
 ihn korrigiert und Escape direkt nach Übernehmen und Werte neu laden im realen
 Browser sowie im automatisierten Home-Assistant-Test ohne weiteren Klick geprüft.
+
+### Klimaentitäten der Heizkreise in HomeKit
+
+Die HomeKit-Bridge von Home Assistant zeigt eine Klimaentität mit zwei
+Temperaturen: aktuelle Temperatur und Zieltemperatur. Auf einer Anlage ohne
+Raumfühler können zwei Dinge falsch aussehen; beides liegt an der Behandlung
+der Werte durch die Bridge, nicht an einer Lesung des Geräts.
+
+- **21 Grad als aktuelle Temperatur.** Ein Heizkreis meldet eine aktuelle
+  Temperatur nur, wenn der Regler dafür eine Raumtemperatur hat
+  (`roomtemperature`). Ohne sie meldet die Klimaentität keine, wie es Home
+  Assistant erwartet. Soweit ich es aus der HomeKit-Integration lese, behält
+  die Bridge dann einen festen Startwert von 21 Grad für die aktuelle
+  Temperatur; die große Zahl auf der Kachel ist dieser Platzhalter. Das Ziel
+  auf der Kachel ist das echte. Ich fülle die aktuelle Temperatur nicht mit
+  Vorlauf- oder Außentemperatur, weil beides keine Raumtemperatur ist. Die
+  Kachel auszublenden ist eine Einstellung der Bridge, nicht dieser
+  Integration.
+- **Ziel in der Nacht.** Im Automatikbetrieb ist das Ziel der Sollwert, den
+  der Regler gerade anwendet (Tag, Nacht oder Absenkung laut Programm). Meldet
+  der Regler für einen in dieser Zeit abgeschalteten Kreis den Wert 0, ist das
+  Ziel 0. Soweit ich es lese, ignoriert die Bridge ein Ziel von 0 und behält
+  das letzte, daher kann HomeKit nachts weiter den Tageswert zeigen. Home
+  Assistant selbst zeigt, was der Regler meldet.
+
+Beobachtet in der Diagnose und den Screenshots einer Gasheizungsanlage eines
+Nutzers; mit einer Bridge bei mir nicht getestet.
 
 ### Heizkreis-Einstellungen: Sommer/Winter, Kühlen und Temperaturstufen
 
