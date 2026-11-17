@@ -1253,10 +1253,16 @@ All values are cumulative energy in kWh, not instantaneous power.
 | Total – Electric auxiliary-heater consumption | Sensor | `/heatSources/emon/totalConsumption` → `eheater` | No | No | 5 min |
 | Total – Electricity consumption | Sensor | `/heatSources/emon/totalConsumption` → `electricity`, otherwise `compressor + eheater` | No | No | 5 min |
 | Total – Environmental energy (calculated) | Sensor | `/heatSources/emon/totalConsumption` → `outputProduced - compressor - eheater` | No | No | 5 min |
+| Heating – Environmental energy (calculated) | Sensor | `/heatSources/emon/chConsumption` → `outputProduced - compressor - eheater` | No | No | 5 min |
+| Hot water – Environmental energy (calculated) | Sensor | `/heatSources/emon/dhwConsumption` → `outputProduced - compressor - eheater` | No | No | 5 min |
+| Pool – Environmental energy (calculated) | Sensor | `/heatSources/emon/poolConsumption` → `outputProduced - compressor - eheater` | No | No | 5 min |
 
 Calculated environmental energy is created only when all three required raw
-values are present and valid. A negative or incomplete result is not exposed
-as a measurement.
+values are present and valid, for the total, heating, hot water and pool (the
+same formula in each area, as in the manufacturer's app). The entities of
+heating, hot water and pool are disabled by default; cooling has no
+environmental energy. A negative or incomplete result is not exposed as a
+measurement and does not start a new meter cycle.
 
 The total-electricity entity reports `value_source: direct` when PointT
 provides `electricity`. When it falls back to the complete sum of `compressor`

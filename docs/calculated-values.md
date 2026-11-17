@@ -203,7 +203,7 @@ without a product name counted by hardware type, never with serial numbers.
 | Total – Performance factor today (calculated) | Heat divided by electricity since midnight | enabled |
 | Total – Performance factor this year (calculated) | The same since 1 January: the seasonal performance factor of the calendar year | enabled |
 | Total – Performance factor since commissioning (calculated) | The device's counters as they are | enabled |
-| Total – Performance factor yesterday / this month / previous month / previous year (calculated) | As above for that period | disabled |
+| Total – Performance factor yesterday / this month / previous month / previous year (calculated) | As above for that period | enabled on a new installation; an existing entity keeps its state |
 | Heating – … and Hot water – … (calculated) | Every period per mode | disabled |
 | Primary circuit spread (calculated) | Supply TC1 minus return TC0 of the heat pump, in kelvin | enabled |
 | Brine spread (calculated) | Brine inlet minus brine outlet, in kelvin; only on heat pumps with both brine temperatures | disabled |

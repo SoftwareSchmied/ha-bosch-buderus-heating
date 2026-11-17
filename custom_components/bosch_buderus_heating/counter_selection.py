@@ -37,6 +37,7 @@ from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
 from .energy_contracts import assess_energy, is_energy_collection
+from .environmental_energy import NO_ENVIRONMENTAL_ENERGY_PATHS
 from .log_helpers import log_failure
 from .read_contracts import assess_runtime, is_runtime_path
 from .start_counters import assess_start_counter, is_start_counter_path
@@ -108,7 +109,11 @@ def counter_vector(resource: Resource) -> dict[str, float] | None:
             readings["=total_electricity"] = math.fsum(
                 (readings["compressor"], readings["eheater"])
             )
-        if {"outputProduced", "compressor", "eheater"} <= readings.keys():
+        if {
+            "outputProduced",
+            "compressor",
+            "eheater",
+        } <= readings.keys() and resource.path not in NO_ENVIRONMENTAL_ENERGY_PATHS:
             readings["=environmental_energy"] = math.fsum(
                 (
                     readings["outputProduced"],

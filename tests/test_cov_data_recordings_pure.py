@@ -463,8 +463,10 @@ def test_only_energy_with_a_counter_has_a_comparison_entity() -> None:
     assert len(specs) == 2 * len(Period)
     assert sum(spec.key.endswith(":calculated") for spec in specs) == len(Period)
     enabled = [spec for spec in specs if spec.enabled_default]
-    assert len(enabled) == 1
-    assert enabled[0].period is Period.YESTERDAY and enabled[0].primary
+    # D-DEF: every period of the total is on by default (the method of the
+    # plant's own recording); the comparison copies stay off.
+    assert {spec.period for spec in enabled} == set(Period)
+    assert all(spec.primary for spec in enabled) and len(enabled) == len(Period)
 
 
 def test_every_series_has_a_statistic_name_in_both_languages() -> None:

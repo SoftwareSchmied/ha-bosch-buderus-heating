@@ -67,7 +67,11 @@ HEAT_SOURCES: Final = "/heatSources"
 ENABLED_FACTORS: Final = frozenset(
     {
         (Period.TODAY, "total"),
+        (Period.YESTERDAY, "total"),
+        (Period.CURRENT_MONTH, "total"),
+        (Period.PREVIOUS_MONTH, "total"),
         (Period.CURRENT_YEAR, "total"),
+        (Period.PREVIOUS_YEAR, "total"),
         (Period.SINCE_COMMISSIONING, "total"),
     }
 )
