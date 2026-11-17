@@ -103,7 +103,18 @@ async def test_entities_options_and_diagnostics(
         ]
         assert ours, "the period entities exist"
         enabled = sorted(item.unique_id for item in ours if not item.disabled_by)
-        assert enabled == sorted([YESTERDAY_HEAT, YESTERDAY_POWER])
+        # The totals of heat and electricity are enabled for every period.
+        assert enabled == sorted(
+            f"{GW}:recordings:heatSources:emon:total:{measure}:{period}"
+            for measure in ("outputProduced", "electricity")
+            for period in (
+                "yesterday",
+                "current_month",
+                "previous_month",
+                "current_year",
+                "previous_year",
+            )
+        )
         heat = registry.async_get_entity_id(
             "sensor", "bosch_buderus_heating", YESTERDAY_HEAT
         )
