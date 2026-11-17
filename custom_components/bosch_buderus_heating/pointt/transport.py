@@ -394,6 +394,7 @@ class PointTTransport:
                 attempt=attempt,
                 retry=attempt > 1,
                 fallback_reason=fallback_reason,
+                resource_path=resource_path,
             )
         return result, request_sequence
 

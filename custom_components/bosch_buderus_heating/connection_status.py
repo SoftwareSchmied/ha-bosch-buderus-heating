@@ -155,6 +155,8 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
     from .connection_runtime import ConnectionPhase
     from .coordinator import BoschBuderusDataUpdateCoordinator
     from .local_state import LocalCondition
+    from .managed_aircon import ManagedAirconCoordinator
+    from .managed_wallbox import ManagedWallboxCoordinator
 
     connections = _runtime(entry)
     if _options(entry, "connections").get(connection_id, {}).get("enabled") is False:
@@ -185,13 +187,19 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
             data
             for key in bindings
             if isinstance(
-                data := connections.source_data(key), BoschBuderusDataUpdateCoordinator
+                data := connections.source_data(key),
+                BoschBuderusDataUpdateCoordinator
+                | ManagedWallboxCoordinator
+                | ManagedAirconCoordinator,
             )
         ]
+        # Wallbox and air-conditioner coordinators count as managed sources
+        # too, so an account without a heat pump is not stuck in "starting".
         last = _latest(
             [
                 item.last_success
                 for data in coordinators
+                if isinstance(data, BoschBuderusDataUpdateCoordinator)
                 for item in (data.data or {}).values()
                 if item.last_success is not None
             ]
