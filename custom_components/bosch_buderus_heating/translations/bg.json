@@ -2312,6 +2312,12 @@
       "rrc_child_lock": {
         "name": "Детска ключалка"
       },
+      "rrc_auto_away": {
+        "name": "Автоматично отсъствие"
+      },
+      "rrc_notification_light": {
+        "name": "Светлина за известия"
+      },
       "rrc_extra_dhw": {
         "name": "Екстра гореща вода"
       },
@@ -3099,6 +3105,18 @@
       "rrc_whisper_mode": {
         "name": "Тиха работа на вентила"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Прогноза за прибиране"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Настройка на датчика за присъствие"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Общ соларен добив"
+      },
+      "rrc_hot_water_system": {
+        "name": "Система за топла вода"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Резултат от термичната дезинфекция"
       },
@@ -3459,6 +3477,12 @@
       },
       "rrc_valve_problem": {
         "name": "Проблем с вентила"
+      },
+      "rrc_coming_home": {
+        "name": "Очаква се прибиране"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Хидравлично балансиране"
       },
       "rrc_locking_error": {
         "name": "Повреда, изискваща нулиране"

@@ -121,6 +121,8 @@
     "Central heating status": "État du chauffage central",
     "certificate changed, set up again": "certificat modifié, à reconfigurer",
     "Child lock": "Verrouillage enfants",
+    "Automatic absence": "Absence automatique",
+    "Notification light": "Voyant de notification",
     "Clear temporary setpoint": "Annuler la consigne temporaire",
     "Advance next switch point": "Avancer le prochain point de commutation",
     "cloud": "cloud",

@@ -2312,6 +2312,12 @@
       "rrc_child_lock": {
         "name": "Verrouillage enfants"
       },
+      "rrc_auto_away": {
+        "name": "Absence automatique"
+      },
+      "rrc_notification_light": {
+        "name": "Voyant de notification"
+      },
       "rrc_extra_dhw": {
         "name": "Eau chaude supplémentaire"
       },
@@ -3099,6 +3105,18 @@
       "rrc_whisper_mode": {
         "name": "Fonctionnement silencieux de la vanne"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prévision du retour à la maison"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Réglage du détecteur de présence"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Rendement solaire total"
+      },
+      "rrc_hot_water_system": {
+        "name": "Système d'eau chaude"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Résultat de la désinfection thermique"
       },
@@ -3459,6 +3477,12 @@
       },
       "rrc_valve_problem": {
         "name": "Problème de vanne"
+      },
+      "rrc_coming_home": {
+        "name": "Retour à la maison attendu"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Équilibrage hydraulique"
       },
       "rrc_locking_error": {
         "name": "Défaut verrouillant"

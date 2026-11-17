@@ -2312,6 +2312,12 @@
       "rrc_child_lock": {
         "name": "Child lock"
       },
+      "rrc_auto_away": {
+        "name": "Automatic absence"
+      },
+      "rrc_notification_light": {
+        "name": "Notification light"
+      },
       "rrc_extra_dhw": {
         "name": "Extra hot water"
       },
@@ -3099,6 +3105,18 @@
       "rrc_whisper_mode": {
         "name": "Whisper mode"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Coming home prediction"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Presence sensor setting"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Total solar yield"
+      },
+      "rrc_hot_water_system": {
+        "name": "Hot water system"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Thermal disinfection result"
       },
@@ -3459,6 +3477,12 @@
       },
       "rrc_valve_problem": {
         "name": "Valve problem"
+      },
+      "rrc_coming_home": {
+        "name": "Coming home expected"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulic balancing"
       },
       "rrc_locking_error": {
         "name": "Locking fault"

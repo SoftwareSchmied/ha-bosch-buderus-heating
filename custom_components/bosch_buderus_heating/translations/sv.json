@@ -2312,6 +2312,12 @@
       "rrc_child_lock": {
         "name": "Barnlås"
       },
+      "rrc_auto_away": {
+        "name": "Automatiskt bortaläge"
+      },
+      "rrc_notification_light": {
+        "name": "Notifieringslampa"
+      },
       "rrc_extra_dhw": {
         "name": "Extra varmvatten"
       },
@@ -3099,6 +3105,18 @@
       "rrc_whisper_mode": {
         "name": "Tyst ventildrift"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prognos för hemkomst"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Inställning för närvarosensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Total solavkastning"
+      },
+      "rrc_hot_water_system": {
+        "name": "Varmvattensystem"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Resultat av termisk desinfektion"
       },
@@ -3459,6 +3477,12 @@
       },
       "rrc_valve_problem": {
         "name": "Ventilproblem"
+      },
+      "rrc_coming_home": {
+        "name": "Hemkomst väntas"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulisk injustering"
       },
       "rrc_locking_error": {
         "name": "Fel som kräver återställning"

@@ -121,6 +121,8 @@
     "Central heating status": "Lämmityksen tila",
     "certificate changed, set up again": "varmenne muuttui, määritä uudelleen",
     "Child lock": "Lapsilukko",
+    "Automatic absence": "Automaattinen poissaolo",
+    "Notification light": "Ilmoitusvalo",
     "Clear temporary setpoint": "Poista väliaikainen asetusarvo",
     "Advance next switch point": "Aikaista seuraavaa kytkentäpistettä",
     "cloud": "pilvi",
