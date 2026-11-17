@@ -2103,3 +2103,18 @@ async def test_new_holiday_date_only_gateway_rejects_reversed_dates(
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.start_date == "2030-08-01" and written.end_date == "2030-08-02"
     assert written.fix_temperature == 19.0
+
+
+async def test_an_entry_not_set_up_since_the_update_is_still_in_the_older_format(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    """Why the reconfigure path of the older format stays: only the setup
+    converts an entry, a flow can start for one that was never set up."""
+    entry = _reconfigure_entry(hass)
+    assert entry.state is config_entries.ConfigEntryState.NOT_LOADED
+    assert entry.version < 4
+    result = await _start_reconfigure(
+        hass, entry, AsyncMock(return_value=(Gateway("gateway-one"),))
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"

@@ -60,6 +60,11 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
   `direct_probes`), described under
   [missing controls](#missing-controls).
+- `gateways[].activity_inputs_missing` (since 0.9.2-beta.3): per heating
+  circuit (`hc1`, `hc2` …) the inputs of the calculated activity that the
+  plant does not offer, today `["pump"]` when the circuit has no pump value.
+  Such a circuit has no **Activity (calculated)** sensor. Circuits with all
+  inputs are not listed; the object is empty for a room-controller plant.
 - `gateways[].zone_climates`, only for a zone controller: per zone
   (`zone1`, `zone2` …) its current `side` (`heating`, `cooling`, `null`
   while the season is unknown), whether the climate is `available`, whether

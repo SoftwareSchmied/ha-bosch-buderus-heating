@@ -198,6 +198,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     assert gateway_report["device_class"] == "k40rf"
     assert gateway_report["discovery"]["completed"]
     assert gateway_report["discovery"]["advertised_references"] == 1
+    assert gateway_report["activity_inputs_missing"] == {}
     assert gateway_report["discovery"]["groups"] == {
         "/heatingCircuits/hc2": {
             "catalog_paths": 0,

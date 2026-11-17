@@ -190,3 +190,30 @@ def test_a_circuit_without_a_pump_value_has_no_activity_while_the_source_runs(
 ) -> None:
     plant = air(hass, freezer).forget(PUMP)
     assert circuit_activity(plant.coordinator, ROOT).value is None
+
+
+async def test_the_diagnostics_list_the_circuits_without_a_pump_value(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    from custom_components.bosch_buderus_heating.derived_activity import (
+        activity_inputs_missing,
+    )
+
+    plant = air(hass, freezer)
+    assert activity_inputs_missing(plant.coordinator) == {}
+    plant.forget(PUMP)
+    assert activity_inputs_missing(plant.coordinator) == {"hc1": ["pump"]}
+    plant.cloud(ROOT + "/pumpModulation", 0.0, unit="%")
+    assert activity_inputs_missing(plant.coordinator) == {}
+
+
+async def test_the_gateway_report_carries_the_missing_activity_inputs(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    from custom_components.bosch_buderus_heating.diagnostics import (
+        _gateway_diagnostics,
+    )
+
+    plant = air(hass, freezer).forget(PUMP)
+    report = _gateway_diagnostics(1, plant.coordinator)
+    assert report["activity_inputs_missing"] == {"hc1": ["pump"]}

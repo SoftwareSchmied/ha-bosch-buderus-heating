@@ -373,6 +373,11 @@ class BoschBuderusConfigFlow(
         """Update gateway selection, brand, and safe polling cadence."""
         if self._reconfigure_entry is None:
             self._reconfigure_entry = self._get_reconfigure_entry()
+            # An entry is only converted to version 4 when it is set up
+            # (``async_migrate_entry``); one that has not been set up since
+            # the update (disabled, or its setup failed) is still in the
+            # older format, and Home Assistant starts a reconfigure flow for
+            # it without checking that. That path below therefore stays.
             if self._reconfigure_entry.version == 4:
                 return self.async_abort(reason="connection_settings_required")
             configuration = EntryConfiguration(self._reconfigure_entry)

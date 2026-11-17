@@ -329,6 +329,26 @@ def circuit_has_pump(coordinator: BoschBuderusDataUpdateCoordinator, root: str) 
     return bool(known_paths(coordinator, pattern))
 
 
+_CIRCUIT_MODE = re.compile(r"/heatingCircuits/(hc\d+)/operationMode")
+
+
+def activity_inputs_missing(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, list[str]]:
+    """Per heating circuit the inputs of its activity the plant does not
+    offer (today only ``pump``); circuits with all inputs are left out. For
+    the diagnostics: it tells why a circuit has no activity sensor."""
+    missing: dict[str, list[str]] = {}
+    for path in known_paths(coordinator, _CIRCUIT_MODE):
+        circuit = _CIRCUIT_MODE.fullmatch(path)
+        if circuit is None:
+            continue
+        root = path.removesuffix("/operationMode")
+        if not circuit_has_pump(coordinator, root):
+            missing[circuit[1]] = ["pump"]
+    return missing
+
+
 def _pump_of(reading: Input | None) -> bool | None:
     if reading is None:
         return None

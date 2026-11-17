@@ -22,13 +22,13 @@ from homeassistant.helpers import entity_registry as er
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.recordings.manager import (
     OPTION_IMPORT,
     START_DELAY,
     managers_of,
 )
 from tests.helpers.options_menu import menu_note, outcome
-from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from tests.helpers.rrc_cloud import RrcCloud, load_tree
 from tests.test_rrc_energy_statistics import (
     GW,

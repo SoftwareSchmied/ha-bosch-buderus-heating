@@ -7,13 +7,16 @@ device.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
+from zoneinfo import ZoneInfo
 
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import EntityCategory
+from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -253,7 +256,16 @@ NOW = datetime(2026, 11, 17, 12, 0, tzinfo=UTC)
         ("2026-11-10T07:03+15:00", None),
         ("2000-01-01T00:00Z", None),  # the controller's null year
         ("1999-12-31T23:59Z", None),
-        ("2026-11-10T07:03", None),  # no offset: not guessed
+        (
+            "2026-11-10T07:03",
+            datetime(2026, 11, 10, 7, 3, tzinfo=ZoneInfo("Europe/Berlin")),
+        ),
+        (
+            "2026-11-10T07:03:09",
+            datetime(2026, 11, 10, 7, 3, 9, tzinfo=ZoneInfo("Europe/Berlin")),
+        ),
+        ("2000-00-00T00:00", None),
+        ("2030-01-01T00:00", None),  # the future without offset
         ("2030-01-01T00:00Z", None),  # the future
         ("2026-11-18T11:00Z", datetime(2026, 11, 18, 11, 0, tzinfo=UTC)),  # clock ahead
         ("", None),
@@ -263,7 +275,28 @@ NOW = datetime(2026, 11, 17, 12, 0, tzinfo=UTC)
     ],
 )
 def test_the_time_is_parsed_strictly(text, expected):
-    assert connection_lost_time(text, NOW) == expected
+    with _local_zone("Europe/Berlin"):
+        assert connection_lost_time(text, NOW) == expected
+
+
+@contextmanager
+def _local_zone(name):
+    previous = dt_util.get_default_time_zone()
+    dt_util.set_default_time_zone(ZoneInfo(name))
+    try:
+        yield
+    finally:
+        dt_util.set_default_time_zone(previous)
+
+
+def test_a_time_without_offset_follows_the_home_assistant_time_zone():
+    text = "2026-11-10T07:03"
+    with _local_zone("Europe/Berlin"):
+        berlin = connection_lost_time(text, NOW)
+    with _local_zone("America/New_York"):
+        new_york = connection_lost_time(text, NOW)
+    assert berlin == datetime(2026, 11, 10, 6, 3, tzinfo=UTC)
+    assert new_york == datetime(2026, 11, 10, 12, 3, tzinfo=UTC)
 
 
 def test_only_short_printable_text_can_be_shown():
@@ -291,13 +324,14 @@ async def test_a_time_with_offset_is_a_timestamp_with_its_text(hass, coordinator
     assert entity.extra_state_attributes == {"raw_value": "2026-11-10T07:03Z"}
 
 
-async def test_a_time_without_offset_stays_unknown_but_shows_its_text(
+async def test_a_time_without_offset_is_read_as_home_assistant_local_time(
     hass, coordinator
 ):
+    await hass.config.async_set_time_zone("Europe/Berlin")
     show(coordinator, lost("2026-11-10T07:03"))
     entity = ZoneRadioConnectionLostSensor(coordinator, "device1")
     assert entity.available
-    assert entity.native_value is None
+    assert entity.native_value == datetime(2026, 11, 10, 6, 3, tzinfo=UTC)
     assert entity.extra_state_attributes == {"raw_value": "2026-11-10T07:03"}
 
 

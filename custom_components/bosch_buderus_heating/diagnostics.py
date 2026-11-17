@@ -38,6 +38,7 @@ from .coordinator import (
     Freshness,
     ResourceSnapshot,
 )
+from .derived_activity import activity_inputs_missing
 from .derived_defrost import calculated_diagnostics
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
@@ -755,6 +756,11 @@ def _gateway_diagnostics(
             **coordinator.cloud_rate_summary(),
         },
         "discovery": _discovery_diagnostics(coordinator),
+        # Per heating circuit the inputs of the calculated activity the plant
+        # does not offer (no pump value: no activity sensor).
+        "activity_inputs_missing": (
+            {} if context.rrc_plant else activity_inputs_missing(coordinator)
+        ),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
         # Only for a zone controller; other gateways keep their report.
         **(

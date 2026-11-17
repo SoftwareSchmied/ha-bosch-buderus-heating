@@ -79,9 +79,9 @@ diagnostic entities: **Battery low** (binary sensor, enabled; on for
 default). A third diagnostic entity, **RF connection lost since**, is a
 timestamp: the controller keeps the placeholder `2000-00-00T00:00` while the
 connection was never lost, which is no date, so the sensor shows unknown. A
-text with a time zone offset becomes the timestamp; a text without one stays
-unknown and is shown as the attribute `raw_value`, because the controller
-reports it without a time zone and I do not guess one. The sensor keeps the
+text with a time zone offset keeps it; a text without one is a local time of
+the controller and is read in the Home Assistant time zone. The text as
+reported is shown as the attribute `raw_value` (not for the placeholder). The sensor keeps the
 identity of the text sensor it replaces. Battery states without an alarm
 (`BAT_MEDIUM`, `BAT_FOTA_FORBIDDEN`) and for a device without a battery
 (`NO_BAT`, `NOT_BAT`) stay unknown with their `reported_state`.
@@ -256,7 +256,8 @@ Zonenname, sonst „Zone N“); hat eine Zone mehrere Funkgeräte, folgt
 „Raumgerät N“. Kennungen und Entity-IDs bleiben, der neue Name zeigt sich nach
 dem Neuladen. „Funkverbindung unterbrochen seit“ ist ein Zeitstempel; der
 Platzhalter `2000-00-00T00:00` („nie unterbrochen“) ist kein Datum und zeigt
-unbekannt, ein Text ohne Zeitzone bleibt unbekannt und steht als Attribut
+unbekannt, ein Text ohne Zeitzone gilt als Ortszeit des Reglers und wird in
+der Zeitzone von Home Assistant gelesen; der gemeldete Text steht als Attribut
 `raw_value`. Der Sollwert einer Zone besteht nur in ihrer aktuellen
 Betriebsart (manuell: `manualRoomSetpoint`, Automatik:
 `temporaryRoomSetpoint`); nach einem Moduswechsel lese ich den Sollwert der
