@@ -2104,6 +2104,18 @@
       },
       "aircon_timer_off": {
         "name": "Таймер за изключване"
+      },
+      "hybrid_electricity_price": {
+        "name": "Цена на електроенергията"
+      },
+      "hybrid_gas_price": {
+        "name": "Цена на газта"
+      },
+      "hybrid_oil_price": {
+        "name": "Цена на мазута"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Изкупна цена"
       }
     },
     "select": {
@@ -2292,6 +2304,17 @@
           "program7": "Програма 7",
           "program8": "Програма 8",
           "program9": "Програма 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Стратегия за хибридно регулиране",
+        "state": {
+          "cost": "Оптимизиран по разходи",
+          "max_renewable_share": "Оптимизиран за термопомпата",
+          "heat_pump_preferred": "Предпочитана термопомпа",
+          "environment": "Най-щадящ климата",
+          "boiler_only": "Само котел",
+          "bivalent_alternative": "Бивалентен алтернативен"
         }
       }
     },
@@ -3446,6 +3469,17 @@
       },
       "name_part_program_aircon": {
         "name": "Времева програма {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Стратегия за хибридно регулиране",
+        "state": {
+          "cost": "Оптимизиран по разходи",
+          "max_renewable_share": "Оптимизиран за термопомпата",
+          "heat_pump_preferred": "Предпочитана термопомпа",
+          "environment": "Най-щадящ климата",
+          "boiler_only": "Само котел",
+          "bivalent_alternative": "Бивалентен алтернативен"
+        }
       }
     },
     "binary_sensor": {

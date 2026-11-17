@@ -2104,6 +2104,18 @@
       },
       "aircon_timer_off": {
         "name": "Lasc ama chun múchadh"
+      },
+      "hybrid_electricity_price": {
+        "name": "Praghas leictreachais"
+      },
+      "hybrid_gas_price": {
+        "name": "Praghas gháis"
+      },
+      "hybrid_oil_price": {
+        "name": "Praghas ola"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Taraif bheathaithe isteach"
       }
     },
     "select": {
@@ -2292,6 +2304,17 @@
           "program7": "Clár 7",
           "program8": "Clár 8",
           "program9": "Clár 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Straitéis rialaithe hibrideach",
+        "state": {
+          "cost": "Optamaithe do chostas",
+          "max_renewable_share": "Optamaithe don chaidéal teasa",
+          "heat_pump_preferred": "Caidéal teasa mar rogha",
+          "environment": "An rogha is cairdiúla don aeráid",
+          "boiler_only": "Coire amháin",
+          "bivalent_alternative": "Malartach débhalbhach"
         }
       }
     },
@@ -3446,6 +3469,17 @@
       },
       "name_part_program_aircon": {
         "name": "Sceideal {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Straitéis rialaithe hibrideach",
+        "state": {
+          "cost": "Optamaithe do chostas",
+          "max_renewable_share": "Optamaithe don chaidéal teasa",
+          "heat_pump_preferred": "Caidéal teasa mar rogha",
+          "environment": "An rogha is cairdiúla don aeráid",
+          "boiler_only": "Coire amháin",
+          "bivalent_alternative": "Malartach débhalbhach"
+        }
       }
     },
     "binary_sensor": {

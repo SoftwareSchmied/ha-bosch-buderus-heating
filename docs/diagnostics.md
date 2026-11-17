@@ -772,6 +772,14 @@ schema does not establish a write increment. Reference-device safety-envelope
 fields were removed. Non-finite bounds are exported as `null`. These fields
 never include the current setpoint.
 
+For the hybrid control strategy and the energy prices (`/heatSources/hybrid/controlStrategy`,
+`/system/energyTariff/*`; 0.9.2-beta.3) `control` has a further block `hybrid`,
+without any price or the current strategy. For a price it holds `unit_class`
+(`none`, `empty`, `text` for a plain reported unit or `other`), `step_size` and
+`step_size_valid` as reported, and `minimum` and `maximum`. For the strategy it
+holds `advertised_options` (the reported values that are plain tokens, at most
+16), `advertised_option_count` and `known_strategies`. The schema number stays 48.
+
 | Rejection reason | Meaning |
 | --- | --- |
 | `no_scalar_control_policy` | The function has no implemented scalar write contract. |

@@ -9,7 +9,14 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from functools import lru_cache
 
-from . import circuit_controls, hc_controls_extra, rrc, rrc_contract_zone, rrc_contracts
+from . import (
+    circuit_controls,
+    hc_controls_extra,
+    hybrid_controls,
+    rrc,
+    rrc_contract_zone,
+    rrc_contracts,
+)
 from .aircon_policies import AIRCON_ENUM_POLICIES, AIRCON_NUMBER_POLICIES
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
@@ -319,6 +326,8 @@ NUMBER_WRITE_POLICIES = (
     ),
     POOL_SETPOINT_POLICY,
     FILTER_RUN_TIME_POLICY,
+    # Hybrid plants: the energy prices.
+    hybrid_controls.PRICE_POLICY,
     # Heating circuit settings besides the climate entity (0.9.2).
     *circuit_controls.NUMBER_POLICIES,
     # Boost, season thresholds and further circuit settings (0.9.2).
@@ -871,7 +880,9 @@ def _number_rejection_reason(
         return "not_writable"
     if metadata.resource_type != "floatValue":
         return "unsupported_resource_type"
-    if policy.accepted_units is not None:
+    if policy.free_unit:
+        pass
+    elif policy.accepted_units is not None:
         if (metadata.unit or "") not in policy.accepted_units:
             return "unsupported_unit"
     elif policy.unit in {"%", "d"}:
@@ -894,6 +905,10 @@ def _number_rejection_reason(
     if minimum > maximum:
         return "inverted_bounds"
     if not _plausible_bounds(minimum, maximum, metadata.unit, policy.unit):
+        return "implausible_bounds"
+    if policy.plausible_range is not None and not (
+        policy.plausible_range[0] <= minimum and maximum <= policy.plausible_range[1]
+    ):
         return "implausible_bounds"
     if (policy.live_step or policy.strict_grid) and (
         not metadata.step_size_valid
@@ -1181,6 +1196,8 @@ _ENUM_POLICIES = (
     SOFTENER_REGENERATION_POLICY,
     # Z1: the active weekly program of a heating circuit (A/B).
     ACTIVE_SWITCH_PROGRAM_POLICY,
+    # Hybrid plants: the control strategy.
+    hybrid_controls.STRATEGY_POLICY,
     *STRING_SWITCH_POLICIES,
     # The summer/winter switching of a heating circuit (0.9.2).
     *circuit_controls.ENUM_POLICIES,

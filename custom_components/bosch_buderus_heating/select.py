@@ -13,7 +13,13 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
+from . import (
+    BoschBuderusConfigEntry,
+    hybrid_controls,
+    rrc,
+    rrc_contracts,
+    rrc_platforms,
+)
 from .aircon_entities import track_aircon_selects
 from .bacon.purifier_entities import (
     BaconPurifierColor,
@@ -170,6 +176,8 @@ def build_select_descriptions(
             translation_key = "summer_winter_switching"
         elif policy is COOLING_MODE_POLICY:
             translation_key = "cooling_operation_mode"
+        elif policy is hybrid_controls.STRATEGY_POLICY:
+            translation_key = hybrid_controls.TRANSLATION_KEY
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key, policy, context))
@@ -221,6 +229,7 @@ def _option_map(
         "ventilation_operation_mode": VENTILATION_OPERATION_MODES,
         "summer_winter_switching": SUMMER_WINTER_VALUES,
         "cooling_operation_mode": COOLING_MODES,
+        hybrid_controls.TRANSLATION_KEY: hybrid_controls.STRATEGIES,
     }.get(translation_key, ())
     ordered = tuple(value for value in preferred if value in advertised)
     ordered += tuple(value for value in advertised if value not in ordered)

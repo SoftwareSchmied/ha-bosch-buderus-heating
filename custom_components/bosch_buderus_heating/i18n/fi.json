@@ -16,7 +16,8 @@
       "empty": "Ohjauksia ei ole tällä hetkellä saatavilla.",
       "pending": "Muutokset kirjoitetaan vasta, kun valitset Käytä.",
       "reopen": "Sulje ikkuna ja avaa se uudelleen.",
-      "reloadFailed": "Arvoja ei voitu ladata uudelleen."
+      "reloadFailed": "Arvoja ei voitu ladata uudelleen.",
+      "hybrid": "Hybridi"
     },
     "holiday": {
       "date": "Päivämäärä",
@@ -449,7 +450,6 @@
     "Pump": "Pumppu",
     "Pump speed setpoint": "Pumpun nopeuden asetusarvo",
     "PV contact status": "PV-koskettimen tila",
-    "PV electricity price": "PV-sähkön hinta",
     "PV surplus available": "PV-ylijäämää saatavilla",
     "Radiator thermostat": "Patteritermostaatti",
     "Radio connection to a device lost": "Radioyhteys laitteeseen katkesi",
@@ -665,6 +665,7 @@
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ei voida varmasti tietää, mitä tunnusta yhteys käyttää, esimerkiksi kun toinen Home Assistant käyttää tätä yhdyskäytävää. Käytössä olevan tunnuksen peruminen päättää sitä käyttävän paikallisen yhteyden.",
     "Cooling temperature": "Jäähdytyslämpötila",
     "Air quality demand": "Ilmanlaadun tarve",
-    "Humidity demand": "Kosteuden tarve"
+    "Humidity demand": "Kosteuden tarve",
+    "Feed-in tariff": "Verkkoon syötön hinta"
   }
 }

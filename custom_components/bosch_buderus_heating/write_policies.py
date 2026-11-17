@@ -195,6 +195,11 @@ class NumberWritePolicy:
     # The metadata units accepted instead of the family of ``unit`` (for
     # example {"", "other"} for a dimensionless setting).
     accepted_units: frozenset[str] | None = None
+    # Any unit the resource reports is accepted (a price in the currency of
+    # the plant); the number shows it as reported, see ``hybrid_controls``.
+    free_unit: bool = False
+    # Both limits must lie within (low, high), whatever the unit.
+    plausible_range: tuple[float, float] | None = None
     # S4: values must lie on the grid of the advertised step (or ``step``
     # without one), counted from ``minValue``; others are refused, not rounded.
     strict_grid: bool = False

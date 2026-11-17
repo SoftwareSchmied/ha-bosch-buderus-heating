@@ -2104,6 +2104,18 @@
       },
       "aircon_timer_off": {
         "name": "Switch-off timer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Electricity price"
+      },
+      "hybrid_gas_price": {
+        "name": "Gas price"
+      },
+      "hybrid_oil_price": {
+        "name": "Oil price"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Feed-in tariff"
       }
     },
     "select": {
@@ -2292,6 +2304,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid control strategy",
+        "state": {
+          "cost": "Cost optimized",
+          "max_renewable_share": "Heat pump optimized",
+          "heat_pump_preferred": "Heat pump preferred",
+          "environment": "Most climate friendly",
+          "boiler_only": "Boiler only",
+          "bivalent_alternative": "Bivalent alternative"
         }
       }
     },
@@ -3446,6 +3469,17 @@
       },
       "name_part_program_aircon": {
         "name": "Schedule {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid control strategy",
+        "state": {
+          "cost": "Cost optimized",
+          "max_renewable_share": "Heat pump optimized",
+          "heat_pump_preferred": "Heat pump preferred",
+          "environment": "Most climate friendly",
+          "boiler_only": "Boiler only",
+          "bivalent_alternative": "Bivalent alternative"
+        }
       }
     },
     "binary_sensor": {

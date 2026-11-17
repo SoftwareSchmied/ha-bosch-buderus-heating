@@ -16,7 +16,8 @@
       "empty": "Trenutno ni na voljo nobenega upravljanja.",
       "pending": "Spremembe se zapišejo šele, ko izberete Uporabi.",
       "reopen": "Zaprite pogovorni okvir in ga znova odprite.",
-      "reloadFailed": "Vrednosti ni bilo mogoče znova naložiti."
+      "reloadFailed": "Vrednosti ni bilo mogoče znova naložiti.",
+      "hybrid": "Hibrid"
     },
     "holiday": {
       "date": "Datum",
@@ -449,7 +450,6 @@
     "Pump": "Črpalka",
     "Pump speed setpoint": "Nastavljena vrednost hitrosti črpalke",
     "PV contact status": "Stanje stika PV",
-    "PV electricity price": "Cena električne energije PV",
     "PV surplus available": "Presežek PV na voljo",
     "Radiator thermostat": "Termostatska glava",
     "Radio connection to a device lost": "Radijska povezava z napravo je izgubljena",
@@ -665,6 +665,7 @@
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Katerega žetona uporablja dostop, ni mogoče zanesljivo ugotoviti, na primer ko ta prehod uporablja drug Home Assistant. Preklic žetona v uporabi konča lokalni dostop, ki ga uporablja.",
     "Cooling temperature": "Temperatura hlajenja",
     "Air quality demand": "Zahteva po kakovosti zraka",
-    "Humidity demand": "Zahteva po vlažnosti"
+    "Humidity demand": "Zahteva po vlažnosti",
+    "Feed-in tariff": "Odkupna cena"
   }
 }

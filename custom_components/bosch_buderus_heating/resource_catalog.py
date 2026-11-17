@@ -937,7 +937,7 @@ _APP_PATH_NAMES = {
     "/system/energyTariff/electricity": ("Strompreis", "Electricity price"),
     "/system/energyTariff/gas": ("Gaspreis", "Gas price"),
     "/system/energyTariff/oil": ("Ölpreis", "Oil price"),
-    "/system/energyTariff/pv": ("PV-Strompreis", "PV electricity price"),
+    "/system/energyTariff/pv": ("Einspeisevergütung", "Feed-in tariff"),
     "/system/lowNoise/mode": (
         "Leiser Betrieb: Betriebsart",
         "Low-noise operation mode",

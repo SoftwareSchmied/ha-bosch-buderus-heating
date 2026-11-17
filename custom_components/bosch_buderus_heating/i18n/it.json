@@ -16,7 +16,8 @@
       "empty": "Al momento non sono disponibili comandi.",
       "pending": "Le modifiche vengono scritte solo quando selezioni Applica.",
       "reopen": "Chiudi e riapri la finestra di dialogo.",
-      "reloadFailed": "Non è stato possibile ricaricare i valori."
+      "reloadFailed": "Non è stato possibile ricaricare i valori.",
+      "hybrid": "Ibrido"
     },
     "holiday": {
       "date": "Data",
@@ -449,7 +450,6 @@
     "Pump": "Pompa",
     "Pump speed setpoint": "Setpoint velocità della pompa",
     "PV contact status": "Stato contatto PV",
-    "PV electricity price": "Prezzo dell'elettricità PV",
     "PV surplus available": "Surplus PV disponibile",
     "Radiator thermostat": "Testina termostatica",
     "Radio connection to a device lost": "Collegamento radio con un dispositivo perso",
@@ -665,6 +665,7 @@
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Non si può sapere con certezza quale token usa un accesso, ad esempio quando un altro Home Assistant usa questo gateway. Revocare un token in uso termina l'accesso locale che lo usa.",
     "Cooling temperature": "Temperatura di raffrescamento",
     "Air quality demand": "Richiesta in base alla qualità dell'aria",
-    "Humidity demand": "Richiesta in base all'umidità"
+    "Humidity demand": "Richiesta in base all'umidità",
+    "Feed-in tariff": "Tariffa di immissione"
   }
 }

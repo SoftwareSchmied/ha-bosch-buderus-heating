@@ -2104,6 +2104,18 @@
       },
       "aircon_timer_off": {
         "name": "Sluk-timer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Elpris"
+      },
+      "hybrid_gas_price": {
+        "name": "Gaspris"
+      },
+      "hybrid_oil_price": {
+        "name": "Oliepris"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Afregningspris for overskudsstrøm"
       }
     },
     "select": {
@@ -2292,6 +2304,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid reguleringsstrategi",
+        "state": {
+          "cost": "Omkostningsoptimeret",
+          "max_renewable_share": "Varmepumpeoptimeret",
+          "heat_pump_preferred": "Varmepumpe foretrukket",
+          "environment": "Mest klimavenlig",
+          "boiler_only": "Kun kedel",
+          "bivalent_alternative": "Bivalent alternativ"
         }
       }
     },
@@ -3446,6 +3469,17 @@
       },
       "name_part_program_aircon": {
         "name": "Tidsprogram {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid reguleringsstrategi",
+        "state": {
+          "cost": "Omkostningsoptimeret",
+          "max_renewable_share": "Varmepumpeoptimeret",
+          "heat_pump_preferred": "Varmepumpe foretrukket",
+          "environment": "Mest klimavenlig",
+          "boiler_only": "Kun kedel",
+          "bivalent_alternative": "Bivalent alternativ"
+        }
       }
     },
     "binary_sensor": {

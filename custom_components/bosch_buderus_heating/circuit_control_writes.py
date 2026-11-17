@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from homeassistant.exceptions import ServiceValidationError
 
-from . import circuit_controls, hc_controls_extra, variable_tariff
+from . import circuit_controls, hc_controls_extra, hybrid_controls, variable_tariff
 from .circuit_controls import (
     CONSTANT_CONTROL,
     CONSTANT_CONTROL_REFUSAL,
@@ -94,7 +94,15 @@ def offered_on(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> boo
         for item, snapshot in data.items()
         if item.startswith("/heatingCircuits/")
     }
-    return circuit_controls.offered(path, readings)
+    # The oil price only while no gas price is reported.
+    prices = {
+        item: snapshot.resource
+        for item, snapshot in data.items()
+        if hybrid_controls.is_price_path(item)
+    }
+    return circuit_controls.offered(path, readings) and hybrid_controls.offered(
+        path, prices
+    )
 
 
 async def async_set_guarded(

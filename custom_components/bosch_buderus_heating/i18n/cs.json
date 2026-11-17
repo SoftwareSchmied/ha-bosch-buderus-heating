@@ -16,7 +16,8 @@
       "empty": "Momentálně není k dispozici žádné ovládání.",
       "pending": "Změny se zapíší až po výběru možnosti Použít.",
       "reopen": "Zavřete prosím dialog a znovu jej otevřete.",
-      "reloadFailed": "Hodnoty se nepodařilo znovu načíst."
+      "reloadFailed": "Hodnoty se nepodařilo znovu načíst.",
+      "hybrid": "Hybrid"
     },
     "holiday": {
       "date": "Datum",
@@ -449,7 +450,6 @@
     "Pump": "Čerpadlo",
     "Pump speed setpoint": "Požadované otáčky čerpadla",
     "PV contact status": "Stav kontaktu PV",
-    "PV electricity price": "Cena elektřiny z PV",
     "PV surplus available": "Přebytek PV k dispozici",
     "Radiator thermostat": "Termostatická hlavice",
     "Radio connection to a device lost": "Rádiové spojení se zařízením bylo ztraceno",
@@ -665,6 +665,7 @@
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Který token přístup používá, nelze s jistotou poznat, například když tuto bránu používá jiný Home Assistant. Odvoláním používaného tokenu skončí místní přístup, který ho používá.",
     "Cooling temperature": "Teplota chlazení",
     "Air quality demand": "Požadavek podle kvality vzduchu",
-    "Humidity demand": "Požadavek podle vlhkosti"
+    "Humidity demand": "Požadavek podle vlhkosti",
+    "Feed-in tariff": "Výkupní cena"
   }
 }

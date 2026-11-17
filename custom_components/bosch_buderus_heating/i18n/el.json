@@ -16,7 +16,8 @@
       "empty": "Δεν υπάρχουν διαθέσιμα χειριστήρια αυτή τη στιγμή.",
       "pending": "Οι αλλαγές εγγράφονται μόνο όταν επιλέξετε Εφαρμογή.",
       "reopen": "Κλείστε και ανοίξτε ξανά το παράθυρο.",
-      "reloadFailed": "Δεν ήταν δυνατή η επαναφόρτωση των τιμών."
+      "reloadFailed": "Δεν ήταν δυνατή η επαναφόρτωση των τιμών.",
+      "hybrid": "Υβριδικό"
     },
     "holiday": {
       "date": "Ημερομηνία",
@@ -449,7 +450,6 @@
     "Pump": "Κυκλοφορητής",
     "Pump speed setpoint": "Τιμή ρύθμισης στροφών κυκλοφορητή",
     "PV contact status": "Κατάσταση επαφής PV",
-    "PV electricity price": "Τιμή ρεύματος PV",
     "PV surplus available": "Διαθέσιμο πλεόνασμα PV",
     "Radiator thermostat": "Θερμοστατική κεφαλή",
     "Radio connection to a device lost": "Χάθηκε η ασύρματη σύνδεση με συσκευή",
@@ -665,6 +665,7 @@
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ποιο διακριτικό χρησιμοποιεί μια πρόσβαση δεν μπορεί να διαπιστωθεί με βεβαιότητα, για παράδειγμα όταν άλλο Home Assistant χρησιμοποιεί αυτή την πύλη. Η ανάκληση ενός διακριτικού σε χρήση τερματίζει την τοπική πρόσβαση που το χρησιμοποιεί.",
     "Cooling temperature": "Θερμοκρασία ψύξης",
     "Air quality demand": "Ζήτηση βάσει ποιότητας αέρα",
-    "Humidity demand": "Ζήτηση βάσει υγρασίας"
+    "Humidity demand": "Ζήτηση βάσει υγρασίας",
+    "Feed-in tariff": "Τιμή έγχυσης στο δίκτυο"
   }
 }

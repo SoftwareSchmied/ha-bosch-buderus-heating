@@ -2104,6 +2104,18 @@
       },
       "aircon_timer_off": {
         "name": "Temporizador de desligar"
+      },
+      "hybrid_electricity_price": {
+        "name": "Preço da eletricidade"
+      },
+      "hybrid_gas_price": {
+        "name": "Preço do gás"
+      },
+      "hybrid_oil_price": {
+        "name": "Preço do gasóleo"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Tarifa de injeção"
       }
     },
     "select": {
@@ -2292,6 +2304,17 @@
           "program7": "Programa 7",
           "program8": "Programa 8",
           "program9": "Programa 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Estratégia de regulação híbrida",
+        "state": {
+          "cost": "Otimizado por custos",
+          "max_renewable_share": "Otimizado para a bomba de calor",
+          "heat_pump_preferred": "Bomba de calor preferencial",
+          "environment": "Mais ecológico",
+          "boiler_only": "Só caldeira",
+          "bivalent_alternative": "Bivalente alternativo"
         }
       }
     },
@@ -3446,6 +3469,17 @@
       },
       "name_part_program_aircon": {
         "name": "Programa horário {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Estratégia de regulação híbrida",
+        "state": {
+          "cost": "Otimizado por custos",
+          "max_renewable_share": "Otimizado para a bomba de calor",
+          "heat_pump_preferred": "Bomba de calor preferencial",
+          "environment": "Mais ecológico",
+          "boiler_only": "Só caldeira",
+          "bivalent_alternative": "Bivalente alternativo"
+        }
       }
     },
     "binary_sensor": {

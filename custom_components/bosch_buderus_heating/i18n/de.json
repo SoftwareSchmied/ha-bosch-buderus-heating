@@ -16,7 +16,8 @@
       "empty": "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
       "pending": "Änderungen werden erst mit Übernehmen geschrieben.",
       "reopen": "Bitte schließe den Dialog und öffne ihn erneut.",
-      "reloadFailed": "Die Werte konnten nicht neu geladen werden."
+      "reloadFailed": "Die Werte konnten nicht neu geladen werden.",
+      "hybrid": "Hybrid"
     },
     "holiday": {
       "date": "Datum",

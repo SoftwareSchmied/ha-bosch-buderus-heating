@@ -45,6 +45,7 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 from . import (
     BoschBuderusConfigEntry,
     exchange_counters,
+    hybrid_controls,
     rrc,
     rrc_platforms,
     switch_program_sensor,
@@ -335,6 +336,7 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
     "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
     "pv_contact_state": ("inactive", "active"),
     "data_processing_status": ("in_progress", "completed"),
+    "hybrid_control_strategy": tuple(hybrid_controls.STRATEGY_KEYS.values()),
     "season_optimizer_mode": (
         "off",
         "heating",
@@ -2639,6 +2641,7 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         "/heatSources/currentEmergencyMode": "on_off_state",
         "/heatSources/emStatus": "energy_management_status",
         "/heatSources/flameStatus": "on_off_state",
+        hybrid_controls.STRATEGY_PATH: hybrid_controls.TRANSLATION_KEY,
         "/heatSources/pvContactState": "pv_contact_state",
         "/heatSources/smartFunction/active": "on_off_state",
         "/heatSources/smartFunction/enabled": "on_off_state",

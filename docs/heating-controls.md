@@ -402,6 +402,68 @@ unit allowed writing it. The ventilation readings `demand/*`, `sensors/exhaustTe
 `extractTemp`, `outdoorTemp`, `internalAirQuality` and `internalHumidity` are
 available as disabled diagnostic sensors. Expected, untested on a real plant.
 
+### Hybrid systems: strategy and energy prices
+
+On a hybrid system (a heat pump with a gas or oil boiler) that reports the
+control strategy and the energy prices as writable, three kinds of controls
+appear. They are **expected, untested on a real installation**, and like
+the other new controls they are created **disabled**. Enable them in the
+entity settings; they are in the *Configuration* category and also in the
+**Hybrid** tab of **Operate appliance**.
+
+- **Hybrid control strategy** (a selection on the heat source device):
+  offers the strategies the system reports that the integration knows. The
+  names follow the manufacturer's app: *Cost optimized* (the system chooses
+  by energy prices and efficiency), *Heat pump optimized*, *Heat pump
+  preferred* (the boiler only helps when the heat pump does not suffice and
+  for defrosting; comfort can suffer), *Most climate friendly* (comfort can
+  suffer), *Boiler only* (the heat pump stays off) and *Bivalent
+  alternative* (switching at the bivalence point). Without a list of
+  offered values or with fewer than two usable ones there is no selection.
+- **Electricity price**, **Gas price** (or **Oil price** when no gas price
+  is reported, as in the app) and **Feed-in tariff** (numbers on the plant
+  device): shown only when the system reports the price as writable with
+  both limits. The limits, the step (a hundredth without one) and the unit
+  are the ones the system reports; the number shows that unit and converts
+  nothing. A value outside the limits or off the step is refused, not
+  rounded: the system would store it rounded and the change could never be
+  confirmed.
+
+Every change is read again on the system right before it is sent, sent
+once, and confirmed by reading it back; it is never repeated. A value the
+system already holds is not sent again. Details for automations:
+
+- Use the unit the app shows. If the app shows euro per kilowatt hour, a
+  price of 30 cent is `0.30`, not `30`.
+- Prices below the lower limit (negative spot prices, for example) are
+  refused; limit them in the automation first, as in the example below.
+- A market price without taxes and fees leads to a wrong cost decision;
+  use the price you actually pay.
+- Change a price only when it changes. How often the system accepts prices
+  and how quickly the cost-optimized strategy reacts to them has not been
+  checked.
+- The bivalence point and the price reminder stay read-only. Prices set
+  from Home Assistant do not reset the reminder in the app.
+
+```yaml
+automation:
+  - alias: Hybrid electricity price
+    triggers:
+      - trigger: state
+        entity_id: sensor.my_hourly_price
+    actions:
+      - action: number.set_value
+        target:
+          entity_id: number.plant_electricity_price
+        data:
+          value: "{{ [states('sensor.my_hourly_price') | float(0.3), 0] | max | round(2) }}"
+```
+
+The existing sensors **Hybrid control strategy**, the price sensors and the
+bivalence point stay as they were; the strategy sensor now shows the
+translated strategy name, and the PV price is named **Feed-in tariff** (the
+entity IDs do not change).
+
 ### Heating and hot water schedules
 
 Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
@@ -975,6 +1037,57 @@ Schreiben erlaubte. Die Lüftungswerte `demand/*`, `sensors/exhaustTemp`,
 `extractTemp`, `outdoorTemp`, `internalAirQuality` und `internalHumidity`
 gibt es als deaktivierte Diagnose-Sensoren. Erwartet, an einer echten Anlage
 ungetestet.
+
+### Hybridanlagen: Strategie und Energiepreise
+
+Meldet eine Hybridanlage (Wärmepumpe mit Gas- oder Ölkessel) die
+Regelungsstrategie und die Energiepreise als schreibbar, erscheinen drei Arten
+von Bedienelementen. Sie sind **erwartet, an einer echten Anlage
+ungetestet** und wie die anderen neuen Bedienelemente **standardmäßig
+deaktiviert**. Aktiviere sie in den Entitäts-Einstellungen; sie stehen in
+der Kategorie *Konfiguration* und im Reiter **Hybrid** von **Anlage
+bedienen**.
+
+- **Hybrid-Regelungsstrategie** (Auswahl am Gerät des Wärmeerzeugers):
+  bietet die Strategien an, die die Anlage meldet und die die Integration
+  kennt. Die Namen folgen der App des Herstellers: *Kostenoptimiert* (die
+  Anlage wählt nach Energiepreisen und Wirkungsgrad), *Wärmepumpe
+  optimiert*, *Wärmepumpe bevorzugt* (der Kessel hilft nur, wenn die
+  Wärmepumpe nicht reicht, und beim Abtauen; der Komfort kann leiden), *Am
+  klimafreundlichsten* (der Komfort kann leiden), *Nur Kessel* (die
+  Wärmepumpe bleibt aus) und *Bivalent alternativ* (Umschaltung am
+  Bivalenzpunkt). Ohne Liste der angebotenen Werte oder mit weniger als zwei
+  nutzbaren gibt es keine Auswahl.
+- **Strompreis**, **Gaspreis** (oder **Ölpreis**, wenn kein Gaspreis
+  gemeldet wird, wie in der App) und **Einspeisevergütung** (Zahlen am Gerät
+  der Anlage): nur sichtbar, wenn die Anlage den Preis als schreibbar mit
+  beiden Grenzen meldet. Grenzen, Schrittweite (ein Hundertstel ohne Angabe)
+  und Einheit sind die der Anlage; die Zahl zeigt diese Einheit und rechnet
+  nichts um. Ein Wert außerhalb der Grenzen oder neben der Schrittweite wird
+  abgelehnt, nicht gerundet: Die Anlage würde ihn gerundet speichern, und
+  die Änderung ließe sich nie bestätigen.
+
+Jede Änderung wird unmittelbar vor dem Senden auf der Anlage neu gelesen,
+einmal gesendet und durch erneutes Lesen bestätigt; sie wird nie
+wiederholt. Ein Wert, den die Anlage schon hat, wird nicht erneut gesendet.
+Hinweise für Automationen:
+
+- Nimm die Einheit, die die App zeigt. Zeigt die App Euro je Kilowattstunde,
+  sind 30 Cent `0.30`, nicht `30`.
+- Preise unter der unteren Grenze (etwa negative Spotpreise) werden
+  abgelehnt; begrenze sie vorher in der Automation, wie im Beispiel oben.
+- Ein Börsenpreis ohne Abgaben und Gebühren führt zu einer falschen
+  Kostenentscheidung; nimm den Preis, den du tatsächlich zahlst.
+- Ändere einen Preis nur, wenn er sich ändert. Wie oft die Anlage Preise
+  annimmt und wie schnell die kostenoptimierte Strategie darauf reagiert,
+  wurde nicht geprüft.
+- Bivalenzpunkt und Preis-Erinnerung bleiben nur lesbar. Preise aus Home
+  Assistant setzen die Erinnerung in der App nicht zurück.
+
+Die vorhandenen Sensoren **Hybrid-Regelungsstrategie**, die Preissensoren
+und der Bivalenzpunkt bleiben wie sie waren; der Strategie-Sensor zeigt
+jetzt den übersetzten Namen der Strategie, und der PV-Preis heißt
+**Einspeisevergütung** (die Entitäts-IDs ändern sich nicht).
 
 ### Zeitprogramme Heizung und Warmwasser
 

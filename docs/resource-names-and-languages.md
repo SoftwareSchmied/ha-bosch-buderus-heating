@@ -78,7 +78,7 @@ aktuelle Systemsprache wie üblich auch die erstmalige Entitäts-ID prägen.
 | `/system/energyTariff/electricity` | Strompreis | Electricity price |
 | `/system/energyTariff/gas` | Gaspreis | Gas price |
 | `/system/energyTariff/oil` | Ölpreis | Oil price |
-| `/system/energyTariff/pv` | PV-Strompreis | PV electricity price |
+| `/system/energyTariff/pv` | Einspeisevergütung | Feed-in tariff |
 | `/system/lowNoise/mode` | Leiser Betrieb: Betriebsart | Low-noise operation mode |
 | `/system/seasonOptimizer/coolingThreshold` | Kühlbetrieb ab Außentemperatur | Start cooling at outdoor temperature |
 | `/system/seasonOptimizer/heatingThreshold` | Heizbetrieb bis Außentemperatur | Stop heating at outdoor temperature |

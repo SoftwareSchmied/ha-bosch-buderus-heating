@@ -164,6 +164,18 @@
       },
       "circuit_cooling_threshold": {
         "default": "mdi:snowflake-thermometer"
+      },
+      "hybrid_electricity_price": {
+        "default": "mdi:flash"
+      },
+      "hybrid_gas_price": {
+        "default": "mdi:fire"
+      },
+      "hybrid_oil_price": {
+        "default": "mdi:oil"
+      },
+      "hybrid_feed_in_price": {
+        "default": "mdi:transmission-tower-export"
       }
     },
     "select": {
@@ -251,6 +263,17 @@
           "auto": "mdi:calendar-clock",
           "manual": "mdi:hand-back-right",
           "off": "mdi:snowflake-off"
+        }
+      },
+      "hybrid_control_strategy": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "cost": "mdi:cash-multiple",
+          "max_renewable_share": "mdi:heat-pump-outline",
+          "heat_pump_preferred": "mdi:heat-pump-outline",
+          "environment": "mdi:leaf",
+          "boiler_only": "mdi:fire",
+          "bivalent_alternative": "mdi:swap-horizontal"
         }
       }
     },
@@ -474,6 +497,17 @@
       },
       "calculated_last_defrost": {
         "default": "mdi:snowflake-melt"
+      },
+      "hybrid_control_strategy": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "cost": "mdi:cash-multiple",
+          "max_renewable_share": "mdi:heat-pump-outline",
+          "heat_pump_preferred": "mdi:heat-pump-outline",
+          "environment": "mdi:leaf",
+          "boiler_only": "mdi:fire",
+          "bivalent_alternative": "mdi:swap-horizontal"
+        }
       }
     },
     "switch": {
