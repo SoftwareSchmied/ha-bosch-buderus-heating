@@ -164,12 +164,15 @@ async def test_no_activity_sensor_without_a_pump_value_but_with_one_it_is_added(
 ) -> None:
     plant = air(hass, freezer).forget(PUMP)
     added: list[Any] = []
-    track_calculated_sensors(_entry(), plant.coordinator, added.extend)
+    entry = _entry()
+    track_calculated_sensors(entry, plant.coordinator, added.extend)
     assert "calculated_activity" not in {e.translation_key for e in added}
     # The pump value shows up later (the local access finds it): added then.
     plant.local(PUMP, "on")
     plant.coordinator.async_update_listeners()
     assert [e.translation_key for e in added].count("calculated_activity") == 1
+    for unsubscribe in entry.listeners:  # no refresh timer is left behind
+        unsubscribe()
 
 
 async def test_an_activity_sensor_already_registered_stays(
@@ -179,8 +182,11 @@ async def test_an_activity_sensor_already_registered_stays(
     unique = "gateway-one:heatingCircuits:hc1:calculated_activity"
     existing = registry.async_get_or_create("sensor", DOMAIN, unique)
     plant = air(hass, freezer).forget(PUMP)
-    track_calculated_sensors(_entry(), plant.coordinator, lambda _items: None)
+    entry = _entry()
+    track_calculated_sensors(entry, plant.coordinator, lambda _items: None)
     plant.coordinator.async_update_listeners()
+    for unsubscribe in entry.listeners:  # no refresh timer is left behind
+        unsubscribe()
     kept = registry.async_get(existing.entity_id)
     assert kept is not None and kept.unique_id == unique
 

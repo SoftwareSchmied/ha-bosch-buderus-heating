@@ -162,6 +162,13 @@ def configure_for(hass, *, local_values: bool):
 _READ_TIMES = itertools.count(100.0)
 
 
+async def local_ready(owner) -> None:
+    """The local source builds its context in a task of its own; wait for it."""
+    from tests.test_managed_pointt import eventually
+
+    await eventually(lambda: "local" in owner.connections._contexts)
+
+
 def publish_local(owner, speed: int, status: str) -> None:
     runtime = owner.connections
     context = runtime._contexts["local"]
@@ -232,6 +239,7 @@ async def test_upgrade_keeps_the_local_only_entities_of_probed_readings(
         before = {key: snapshot(registry, key) for key in (SPEED_ID, STATUS_ID)}
         hass.bus.async_listen(er.EVENT_ENTITY_REGISTRY_UPDATED, note)
         await owner.start_platforms()
+        await local_ready(owner)
         publish_local(owner, 41, "defrost")
         # Discovery reads the refused directory's children directly.
         await eventually(

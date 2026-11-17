@@ -46,6 +46,7 @@ from tests.test_local_only_upgrade import (
     STATUS,
     STATUS_ID,
     RefusedRefrigerantBackend,
+    local_ready,
     publish_local,
 )
 from tests.test_managed_platforms import native
@@ -244,6 +245,7 @@ async def test_the_entities_an_earlier_candidate_gave_away_come_back(
             publish_local(owner, 41, "defrost")
         await owner.start_platforms()
         if not known_at_start:
+            await local_ready(owner)
             publish_local(owner, 41, "defrost")
             await eventually(probed)
         await eventually(lambda: native(owner, "sensor", SPEED_ID) is not None)
@@ -932,6 +934,7 @@ async def test_the_setup_order_gives_the_same_entities(hass, first) -> None:
     backend = RefusedRefrigerantBackend()
     async with running(hass, backend, configure=configure) as (_, _, owner, _):
         await owner.start_platforms()
+        await local_ready(owner)
         publish_local(owner, 41, "defrost")
         await eventually(probed)
         # The compressor speed is disabled by default, the status enabled.
@@ -1021,6 +1024,7 @@ async def test_an_automation_on_a_renamed_cloud_entity_keeps_working(
     backend = RefusedRefrigerantBackend()
     async with running(hass, backend, configure=configure) as (_, _, owner, _):
         await owner.start_platforms()
+        await local_ready(owner)
         publish_local(owner, 41, "defrost")
         await eventually(probed)
         await eventually(lambda: native(owner, "sensor", SPEED_ID) is not None)
@@ -1028,6 +1032,7 @@ async def test_an_automation_on_a_renamed_cloud_entity_keeps_working(
             "sensor.my_compressor_speed"
         )
         await eventually(lambda: "41" in seen)
+        await local_ready(owner)
         publish_local(owner, 44, "defrost")
         source_for(owner, GATEWAY).async_update_listeners()
         await eventually(lambda: "44" in seen)
