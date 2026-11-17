@@ -159,6 +159,12 @@ installation. Other released controls use the same tested write/read-back servic
 are additionally constrained by current gateway metadata. Their individual
 effects have not all been tested on physical equipment.
 
+Before any change of a control, the integration reads that setting from the
+gateway once more and checks value, limits, options and the in-use, available
+and writable flags on that fresh reading, not on the last poll. If the reading
+fails or no longer allows the change, nothing is sent. Otherwise exactly one
+request is sent, followed by the read-back, without an automatic retry.
+
 Default activation is defined explicitly:
 
 - **Enabled:** temperatures and operating states, all available energy
