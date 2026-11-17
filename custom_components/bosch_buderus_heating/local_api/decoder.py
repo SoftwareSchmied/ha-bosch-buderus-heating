@@ -243,9 +243,11 @@ def _decode(raw: dict[str, Any]) -> ResourceData:
                 SystemModule(
                     row["Tok"],
                     row["Id"],
-                    row["Ver"],
-                    _identifier(row["ModuleSerialNumber"]),
-                    row["ModuleHwIdentStr"],
+                    row.get("Ver"),
+                    _identifier(row["ModuleSerialNumber"])
+                    if "ModuleSerialNumber" in row
+                    else None,
+                    row.get("ModuleHwIdentStr"),
                     row.get("ProductSerialNumber"),
                     row.get("ProductName"),
                 )

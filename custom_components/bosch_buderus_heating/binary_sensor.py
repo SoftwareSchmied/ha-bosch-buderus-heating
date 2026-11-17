@@ -34,6 +34,7 @@ from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .faults import (
     MAX_FAULT_ATTRIBUTES,
+    fault_code_search_url,
     fault_severity_label,
     fault_summary,
     no_active_faults_label,
@@ -398,6 +399,10 @@ class BoschBuderusSystemFaultBinarySensor(
                 tracker.active_faults[0].severity,
                 self.coordinator.hass.config.language,
             )
+            for item in tracker.active_faults:
+                if (url := fault_code_search_url(item)) is not None:
+                    attributes["code_search_url"] = url
+                    break
         else:
             attributes["summary"] = no_active_faults_label(
                 self.coordinator.hass.config.language

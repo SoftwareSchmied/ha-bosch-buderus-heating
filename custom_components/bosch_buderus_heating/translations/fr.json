@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Choisir l'installation",
-        "description": "Sélectionnez l'installation à connecter en local. L'identité de sa passerelle sera vérifiée avant l'enregistrement.",
+        "description": "Sélectionnez le système de chauffage à connecter en local : la pompe à chaleur ou la chaudière, pas une wallbox ni un climatiseur. L'identité de sa passerelle sera vérifiée avant l'enregistrement.",
         "data": {
           "target": "Installation / passerelle"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "La version du micrologiciel n'a pas pu être vérifiée.",
       "local_old_firmware": "Mettez à jour le micrologiciel de la passerelle avant de configurer la connexion locale.",
       "local_unsupported_brand": "Cette marque de passerelle n'est pas prise en charge par l'interface locale documentée.",
-      "local_incomplete_system": "Les informations système de la passerelle ne sont pas encore complètes. Relancez la vérification de lecture plus tard.",
+      "local_incomplete_system": "La passerelle collecte encore ses informations système. Cela peut prendre quelques minutes. Attendez environ cinq minutes, puis relancez la vérification de lecture.",
       "local_invalid_response": "Une réponse nécessaire de la passerelle n'a pas pu être vérifiée.",
       "local_identity_unverified": "Cette installation n'a pas encore été associée de manière univoque. La première configuration nécessite un accès cloud disponible et des identifiants de passerelle et de module concordants issus des deux interfaces. Les liens vérifiés peuvent ensuite être utilisés sans le cloud.",
       "local_identity_conflict": "L'identité de la passerelle est en conflit avec l'installation sélectionnée ou une autre configuration.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Choisir l'installation",
-        "description": "Sélectionnez l'installation à connecter en local. L'identité de sa passerelle sera vérifiée avant l'enregistrement.",
+        "description": "Sélectionnez le système de chauffage à connecter en local : la pompe à chaleur ou la chaudière, pas une wallbox ni un climatiseur. L'identité de sa passerelle sera vérifiée avant l'enregistrement.",
         "data": {
           "target": "Installation / passerelle"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "La version du micrologiciel n'a pas pu être vérifiée.",
       "local_old_firmware": "Mettez à jour le micrologiciel de la passerelle avant de configurer la connexion locale.",
       "local_unsupported_brand": "Cette marque de passerelle n'est pas prise en charge par l'interface locale documentée.",
-      "local_incomplete_system": "Les informations système de la passerelle ne sont pas encore complètes. Relancez la vérification de lecture plus tard.",
+      "local_incomplete_system": "La passerelle collecte encore ses informations système. Cela peut prendre quelques minutes. Attendez environ cinq minutes, puis relancez la vérification de lecture.",
       "local_invalid_response": "Une réponse nécessaire de la passerelle n'a pas pu être vérifiée.",
       "local_identity_unverified": "Cette installation n'a pas encore été associée de manière univoque. La première configuration nécessite un accès cloud disponible et des identifiants de passerelle et de module concordants issus des deux interfaces. Les liens vérifiés peuvent ensuite être utilisés sans le cloud.",
       "local_identity_conflict": "L'identité de la passerelle est en conflit avec l'installation sélectionnée ou une autre configuration.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Nouvelle installation (local uniquement)"
+        "new_plant": "Nouvelle installation (passerelle absente de votre compte)"
       }
     },
     "local_owner": {

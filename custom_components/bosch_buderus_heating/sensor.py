@@ -80,6 +80,7 @@ from .exchange_counters import (
 from .faults import (
     MAX_FAULT_ATTRIBUTES,
     ActiveFault,
+    fault_code_search_url,
     fault_severity_label,
     fault_summary,
     no_active_faults_label,
@@ -1112,6 +1113,11 @@ def _fault_list_attributes(
                 ),
                 "time_source": fault.time_source.value,
                 "summary": fault_summary(fault, language),
+                **(
+                    {"code_search_url": url}
+                    if (url := fault_code_search_url(fault)) is not None
+                    else {}
+                ),
             }
             for fault in visible
         ],

@@ -7,6 +7,7 @@ from dataclasses import replace
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
@@ -943,3 +944,33 @@ async def test_the_only_installation_is_preselected(hass, supported, journal):
     ]
     result = await submit(hass, manager, result, {"target": target})
     assert result["step_id"] == "local_address"
+
+
+async def test_two_installations_are_listed_and_none_is_preselected(
+    hass, supported, journal
+):
+    """#137: with two installations (for example a heat pump and a wallbox)
+    nothing is preselected, so the choice stays with the user."""
+    entry, management, _, target = registered(hass)
+    current = management.current()
+    other = "second-installation"
+    both = replace(
+        current, targets={**current.targets, other: replace(current.targets[target])}
+    )
+    manager = hass.config_entries.options
+    with patch(
+        "custom_components.bosch_buderus_heating.configuration_management"
+        ".ConfigurationManagement.current",
+        return_value=both,
+    ):
+        result = await manager.async_init(entry.entry_id)
+        result = await submit(hass, manager, result, {"next_step_id": "connections"})
+        result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
+    assert result["step_id"] == "local_target"
+    ((field, selector),) = result["data_schema"].schema.items()
+    assert field.default is vol.UNDEFINED
+    assert [option["value"] for option in selector.config["options"]] == [
+        target,
+        other,
+        flow.NEW_PLANT,
+    ]

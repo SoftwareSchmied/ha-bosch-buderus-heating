@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Choose the installation",
-        "description": "Select the installation whose K40 or K40RF gateway you want to connect locally, usually the heat pump or the boiler. Its gateway identity will be checked before saving.",
+        "description": "Select the heating system you want to connect locally: the heat pump or boiler, not a wallbox or air conditioner. Its gateway identity will be checked before saving.",
         "data": {
           "target": "Installation / gateway"
         }
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Choose the installation",
-        "description": "Select the installation whose K40 or K40RF gateway you want to connect locally, usually the heat pump or the boiler. Its gateway identity will be checked before saving.",
+        "description": "Select the heating system you want to connect locally: the heat pump or boiler, not a wallbox or air conditioner. Its gateway identity will be checked before saving.",
         "data": {
           "target": "Installation / gateway"
         }

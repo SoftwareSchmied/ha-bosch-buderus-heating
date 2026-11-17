@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Výber inštalácie",
-        "description": "Vyberte inštaláciu, ktorá sa má pripojiť lokálne. Identita jej brány sa pred uložením overí.",
+        "description": "Vyberte vykurovací systém, ktorý sa má pripojiť lokálne: tepelné čerpadlo alebo kotol, nie wallbox ani klimatizáciu. Identita jeho brány sa pred uložením overí.",
         "data": {
           "target": "Inštalácia / brána"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "Verziu firmvéru sa nepodarilo overiť.",
       "local_old_firmware": "Pred nastavením lokálneho pripojenia aktualizujte firmvér brány.",
       "local_unsupported_brand": "Značka tejto brány nie je podporovaná zdokumentovaným lokálnym rozhraním.",
-      "local_incomplete_system": "Informácie o systéme brány ešte nie sú úplné. Skúste kontrolu čítania zopakovať neskôr.",
+      "local_incomplete_system": "Brána ešte zbiera informácie o systéme. Môže to trvať niekoľko minút. Počkajte asi päť minút a potom kontrolu čítania zopakujte.",
       "local_invalid_response": "Potrebnú odpoveď brány sa nepodarilo overiť.",
       "local_identity_unverified": "Tento systém ešte nebol jednoznačne priradený. Prvé nastavenie vyžaduje dostupný cloudový prístup a zhodné identifikátory brány a modulu z oboch rozhraní. Overené prepojenia je potom možné používať aj bez cloudu.",
       "local_identity_conflict": "Identita brány je v konflikte s vybranou inštaláciou alebo iným nastavením.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Výber inštalácie",
-        "description": "Vyberte inštaláciu, ktorá sa má pripojiť lokálne. Identita jej brány sa pred uložením overí.",
+        "description": "Vyberte vykurovací systém, ktorý sa má pripojiť lokálne: tepelné čerpadlo alebo kotol, nie wallbox ani klimatizáciu. Identita jeho brány sa pred uložením overí.",
         "data": {
           "target": "Inštalácia / brána"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "Verziu firmvéru sa nepodarilo overiť.",
       "local_old_firmware": "Pred nastavením lokálneho pripojenia aktualizujte firmvér brány.",
       "local_unsupported_brand": "Značka tejto brány nie je podporovaná zdokumentovaným lokálnym rozhraním.",
-      "local_incomplete_system": "Informácie o systéme brány ešte nie sú úplné. Skúste kontrolu čítania zopakovať neskôr.",
+      "local_incomplete_system": "Brána ešte zbiera informácie o systéme. Môže to trvať niekoľko minút. Počkajte asi päť minút a potom kontrolu čítania zopakujte.",
       "local_invalid_response": "Potrebnú odpoveď brány sa nepodarilo overiť.",
       "local_identity_unverified": "Tento systém ešte nebol jednoznačne priradený. Prvé nastavenie vyžaduje dostupný cloudový prístup a zhodné identifikátory brány a modulu z oboch rozhraní. Overené prepojenia je potom možné používať aj bez cloudu.",
       "local_identity_conflict": "Identita brány je v konflikte s vybranou inštaláciou alebo iným nastavením.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Nový systém (iba lokálne)"
+        "new_plant": "Nový systém (brána nie je v účte)"
       }
     },
     "local_owner": {

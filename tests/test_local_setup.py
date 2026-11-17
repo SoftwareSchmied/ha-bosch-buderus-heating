@@ -101,6 +101,48 @@ async def verified(monkeypatch, snapshot, edit, *, gateway="000123"):
     )
 
 
+async def test_the_read_check_accepts_a_module_without_serial_number(monkeypatch):
+    """#139: a K40RF on firmware 15.00.01 reports a burner module this way."""
+    snapshot, _, target = starting()
+    edit = begin(snapshot, target)
+    rows = [
+        {
+            "ModuleHwIdentStr": "Burner module 239",
+            "Tok": "8",
+            "Ver": "1.3.0+1",
+            "Id": "65519",
+        },
+        {
+            "Tok": "",
+            "Id": "",
+            "Ver": "",
+            "ModuleSerialNumber": "",
+            "ModuleHwIdentStr": "",
+        },
+    ]
+
+    async def read(context, token, binding, *, is_current):
+        return LocalProbeExchange(
+            tuple(
+                response(path, context=context, gatewayId="000123", values=rows)
+                if path == ProbePath.SYSTEM
+                else response(path, context=context)
+                for path in ProbePath
+            )
+        )
+
+    monkeypatch.setattr(setup, "read_local_probe", read)
+    proof = await verify_local_setup(
+        edit,
+        import_local_token(TOKEN),
+        resource_pin(edit),
+        current=lambda: snapshot,
+        is_active=lambda: True,
+    )
+    assert proof.system is not None
+    assert proof.system.modules[0].serial_number is None
+
+
 def proposal(edit, proof, *snapshots, pairs=PAIRS, contract=CONTRACT):
     return prepare_local_configuration(
         edit, proof, snapshots, verified_namespace_pairs=pairs, contract_id=contract

@@ -137,6 +137,16 @@ The examples are checked against their meaning, not only against the schema
 | `/ventilation/…/supplyFanRotation` | misspelled unit `rpm"` | kept on the reading, never used as a measurement |
 | `/devices/{deviceId}/type` | value outside its own allowed values | text shown as reported |
 
+### Known deviations of real firmware
+
+These come from reports of real gateways, not from the official examples. The
+read check accepts them only as named here; every other deviation from the
+pinned schema is still rejected.
+
+| Resource | Deviation | Handling |
+| --- | --- | --- |
+| `/system/basicInfo` | a module row without `ModuleSerialNumber`, `ModuleHwIdentStr` or `Ver` (reported for a burner module of a K40RF on firmware 15.00.01) | accepted; the missing value stays missing, nothing is filled in. A module without a serial number is left out of the identity comparison. A `null` or wrongly typed value and a missing `Tok` or `Id` are still rejected |
+
 ## Checked systems
 
 | System | Gateway firmware | Access | Evidence |

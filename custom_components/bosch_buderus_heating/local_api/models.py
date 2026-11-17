@@ -95,9 +95,9 @@ class ConfigurationValue:
 class SystemModule:
     token: str
     id: str
-    version: str
-    serial_number: str | int
-    hardware: str
+    version: str | None
+    serial_number: str | int | None
+    hardware: str | None
     product_serial: str | None
     product_name: str | None
 

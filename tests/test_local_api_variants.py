@@ -170,3 +170,98 @@ def test_report_alias_keeps_other_schema_constraints(changes):
     ]
     with pytest.raises(LocalResourceError):
         read(raw)
+
+
+# A module row as a K40RF on firmware 15.00.01 reports it: no serial number.
+_BURNER_ROW = {
+    "ModuleHwIdentStr": "Burner module 239",
+    "Tok": "8",
+    "Ver": "1.3.0+1",
+    "Id": "65519",
+}
+_EMPTY_ROW = {
+    "Tok": "",
+    "Id": "",
+    "Ver": "",
+    "ModuleSerialNumber": "",
+    "ModuleHwIdentStr": "",
+}
+_OPTIONAL_FIELDS = ["ModuleSerialNumber", "ModuleHwIdentStr", "Ver"]
+
+
+def _basic_info(*extra):
+    raw = example("/system/basicInfo")
+    raw["values"].extend(json.loads(json.dumps(row)) for row in extra)
+    return raw
+
+
+def test_a_module_without_serial_number_is_decoded_as_missing():
+    plain = read(example("/system/basicInfo")).data
+    raw = _basic_info(_BURNER_ROW, _EMPTY_ROW)
+    before = json.dumps(raw)
+    observation = read(raw)
+    modules = observation.data.modules
+    assert modules[: len(plain.modules)] == plain.modules
+    burner, empty = modules[len(plain.modules) :]
+    assert burner.serial_number is None
+    assert (burner.hardware, burner.version) == ("Burner module 239", "1.3.0+1")
+    assert (empty.serial_number, empty.hardware, empty.version) == ("", "", "")
+    assert json.dumps(raw) == before
+    assert all(
+        "ModuleSerialNumber" not in row
+        for row in observation.document["values"]
+        if row["Id"] == "65519"
+    )
+
+
+@pytest.mark.parametrize("field", _OPTIONAL_FIELDS)
+def test_each_descriptive_module_field_may_be_missing(field):
+    row = {**_BURNER_ROW, "ModuleSerialNumber": "0001"}
+    del row[field]
+    module = read(_basic_info(row)).data.modules[-1]
+    attribute = {
+        "ModuleSerialNumber": "serial_number",
+        "ModuleHwIdentStr": "hardware",
+        "Ver": "version",
+    }[field]
+    assert getattr(module, attribute) is None
+    assert module.token == "8" and module.id == "65519"
+
+
+@pytest.mark.parametrize("field", ["Tok", "Id"])
+def test_a_module_without_its_key_is_still_rejected(field):
+    row = {**_BURNER_ROW}
+    del row[field]
+    with pytest.raises(LocalResourceError):
+        read(_basic_info(row))
+
+
+@pytest.mark.parametrize("field", _OPTIONAL_FIELDS)
+@pytest.mark.parametrize("value", [None, [], True])
+def test_a_wrongly_typed_descriptive_field_is_still_rejected(field, value):
+    with pytest.raises(LocalResourceError):
+        read(_basic_info({**_BURNER_ROW, "ModuleSerialNumber": "0001", field: value}))
+
+
+def test_a_fractional_serial_number_is_still_invalid_metadata():
+    with pytest.raises(LocalResourceError):
+        read(_basic_info({**_BURNER_ROW, "ModuleSerialNumber": 12.25}))
+
+
+@pytest.mark.parametrize(
+    ("path", "field"),
+    [("/notifications", "dcd"), ("/devices/device1/errors", "errorType")],
+)
+def test_the_missing_field_allowance_is_limited_to_the_module_list(path, field):
+    raw = example(path)
+    del raw["values"][0][field]
+    with pytest.raises(LocalResourceError):
+        read(raw)
+
+
+def test_the_basic_info_row_without_serial_number_is_read_by_the_resource_reader():
+    from custom_components.bosch_buderus_heating.local_api.models import SystemModule
+
+    observation = read(_basic_info(_BURNER_ROW))
+    assert isinstance(observation.data, SystemInfo)
+    assert all(isinstance(m, SystemModule) for m in observation.data.modules)

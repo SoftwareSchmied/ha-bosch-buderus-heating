@@ -54,6 +54,12 @@ FAULT_SOURCE_GONE_READS = 2
 FAULT_UNVERIFIED_AFTER = timedelta(hours=24)
 FAULT_UNVERIFIED_READS = 12
 FAULT_SOURCE_ISSUE_PREFIX = "fault_source_removed_"
+# The manufacturer's own search for error codes (the page the documentation
+# links as well). No code text of it is kept here.
+FAULT_CODE_SEARCH_URL = (
+    "https://www.bosch-homecomfort.com/de/de/wohngebaeude/"
+    "service-und-support/bosch-fehlercode-suche/"
+)
 # A wall clock set back by more than this no longer confirms a held state.
 _CLOCK_SKEW = timedelta(seconds=60)
 
@@ -528,6 +534,24 @@ def fault_summary(fault: ActiveFault, language: str | None) -> str:
     return localize(language, "Unbekannte Störung", "Unknown fault")
 
 
+def fault_code_search_url(fault: ActiveFault) -> str | None:
+    """Return the official code search for a fault this integration cannot explain.
+
+    Only a real fault with a code and no verified summary gets the link; the
+    page, not this integration, names the causes. Notices (maintenance,
+    warning, information) are no faults and get none.
+    """
+    if (
+        not fault.code
+        or fault.severity in _NOTICE_SEVERITIES
+        or (fault.code, fault.subcode.upper() if fault.subcode else None)
+        in _KNOWN_SUMMARIES
+        or (fault.code, None) in _KNOWN_SUMMARIES
+    ):
+        return None
+    return FAULT_CODE_SEARCH_URL
+
+
 def fault_severity_label(severity: FaultSeverity, language: str | None) -> str:
     """Return a localized display label while retaining stable enum values."""
     labels = _SEVERITY_LABELS[severity]
@@ -586,6 +610,7 @@ class FaultTracker:
         self._unverified_unseen: dict[str, tuple[datetime, int]] = {}
         self._removed_sources = 0
         self._hass = hass
+        self._entry_id = entry_id
         self._issue_id = (
             FAULT_SOURCE_ISSUE_PREFIX
             + entry_id
@@ -1092,6 +1117,8 @@ class FaultTracker:
                 self._hass,
                 DOMAIN,
                 self._issue_id,
+                # The entry named here removes the note with itself.
+                data={"entry_id": self._entry_id},
                 is_fixable=False,
                 is_persistent=False,
                 severity=ir.IssueSeverity.WARNING,

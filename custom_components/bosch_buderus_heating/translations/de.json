@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Anlage auswählen",
-        "description": "Wähle die Anlage, deren K40- oder K40RF-Gateway du lokal verbinden willst, meist die Wärmepumpe oder den Heizkessel. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "description": "Wähle das Heizsystem, das du lokal verbinden willst: die Wärmepumpe oder den Heizkessel, nicht Wallbox oder Klimagerät. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
         "data": {
           "target": "Anlage / Gateway"
         }
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Anlage auswählen",
-        "description": "Wähle die Anlage, deren K40- oder K40RF-Gateway du lokal verbinden willst, meist die Wärmepumpe oder den Heizkessel. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "description": "Wähle das Heizsystem, das du lokal verbinden willst: die Wärmepumpe oder den Heizkessel, nicht Wallbox oder Klimagerät. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
         "data": {
           "target": "Anlage / Gateway"
         }

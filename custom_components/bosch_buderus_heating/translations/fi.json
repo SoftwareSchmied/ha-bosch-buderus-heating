@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Valitse asennus",
-        "description": "Valitse asennus, johon yhdistetään paikallisesti. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
+        "description": "Valitse lämmitysjärjestelmä, jonka haluat yhdistää paikallisesti: lämpöpumppu tai kattila, ei latausasema eikä ilmastointilaite. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
         "data": {
           "target": "Asennus / yhdyskäytävä"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "Laiteohjelmistoversiota ei voitu varmistaa.",
       "local_old_firmware": "Päivitä yhdyskäytävän laiteohjelmisto ennen paikallisen yhteyden määrittämistä.",
       "local_unsupported_brand": "Dokumentoitu paikallinen rajapinta ei tue tämän merkkistä yhdyskäytävää.",
-      "local_incomplete_system": "Yhdyskäytävän järjestelmätiedot eivät ole vielä täydelliset. Yritä lukutarkistusta myöhemmin uudelleen.",
+      "local_incomplete_system": "Yhdyskäytävä kerää vielä järjestelmätietojaan. Siihen voi mennä muutama minuutti. Odota noin viisi minuuttia ja yritä sitten lukutarkistusta uudelleen.",
       "local_invalid_response": "Tarvittavaa yhdyskäytävän vastausta ei voitu varmistaa.",
       "local_identity_unverified": "Tätä järjestelmää ei ole vielä yhdistetty yksiselitteisesti. Ensimmäinen asennus vaatii käytettävissä olevan pilviyhteyden sekä yhteensopivat yhdyskäytävän ja moduulin tunnukset molemmista rajapinnoista. Varmennettuja linkkejä voi sen jälkeen käyttää ilman pilveä.",
       "local_identity_conflict": "Yhdyskäytävän tunnus on ristiriidassa valitun asennuksen tai toisen määrityksen kanssa.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Valitse asennus",
-        "description": "Valitse asennus, johon yhdistetään paikallisesti. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
+        "description": "Valitse lämmitysjärjestelmä, jonka haluat yhdistää paikallisesti: lämpöpumppu tai kattila, ei latausasema eikä ilmastointilaite. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
         "data": {
           "target": "Asennus / yhdyskäytävä"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "Laiteohjelmistoversiota ei voitu varmistaa.",
       "local_old_firmware": "Päivitä yhdyskäytävän laiteohjelmisto ennen paikallisen yhteyden määrittämistä.",
       "local_unsupported_brand": "Dokumentoitu paikallinen rajapinta ei tue tämän merkkistä yhdyskäytävää.",
-      "local_incomplete_system": "Yhdyskäytävän järjestelmätiedot eivät ole vielä täydelliset. Yritä lukutarkistusta myöhemmin uudelleen.",
+      "local_incomplete_system": "Yhdyskäytävä kerää vielä järjestelmätietojaan. Siihen voi mennä muutama minuutti. Odota noin viisi minuuttia ja yritä sitten lukutarkistusta uudelleen.",
       "local_invalid_response": "Tarvittavaa yhdyskäytävän vastausta ei voitu varmistaa.",
       "local_identity_unverified": "Tätä järjestelmää ei ole vielä yhdistetty yksiselitteisesti. Ensimmäinen asennus vaatii käytettävissä olevan pilviyhteyden sekä yhteensopivat yhdyskäytävän ja moduulin tunnukset molemmista rajapinnoista. Varmennettuja linkkejä voi sen jälkeen käyttää ilman pilveä.",
       "local_identity_conflict": "Yhdyskäytävän tunnus on ristiriidassa valitun asennuksen tai toisen määrityksen kanssa.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Uusi järjestelmä (vain paikallinen)"
+        "new_plant": "Uusi järjestelmä (yhdyskäytävä ei ole tililläsi)"
       }
     },
     "local_owner": {

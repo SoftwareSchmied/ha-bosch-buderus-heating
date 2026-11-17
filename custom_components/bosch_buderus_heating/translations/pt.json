@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Escolher a instalação",
-        "description": "Selecione a instalação a ligar localmente. A identidade do gateway será verificada antes de guardar.",
+        "description": "Selecione o sistema de aquecimento a ligar localmente: a bomba de calor ou a caldeira, não um wallbox nem um aparelho de ar condicionado. A identidade do gateway será verificada antes de guardar.",
         "data": {
           "target": "Instalação / gateway"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "Não foi possível verificar a versão do firmware.",
       "local_old_firmware": "Atualize o firmware do gateway antes de configurar a ligação local.",
       "local_unsupported_brand": "Esta marca de gateway não é suportada pela interface local documentada.",
-      "local_incomplete_system": "As informações do sistema do gateway ainda não estão completas. Repita mais tarde a verificação de leitura.",
+      "local_incomplete_system": "O gateway ainda está a recolher as informações do sistema. Isto pode demorar alguns minutos. Aguarde cerca de cinco minutos e repita a verificação de leitura.",
       "local_invalid_response": "Não foi possível verificar uma resposta necessária do gateway.",
       "local_identity_unverified": "Esta instalação ainda não foi associada de forma inequívoca. A primeira configuração requer um acesso à cloud disponível e identificadores de gateway e de módulo coincidentes em ambas as interfaces. As associações verificadas podem depois ser utilizadas sem a cloud.",
       "local_identity_conflict": "A identidade do gateway está em conflito com a instalação selecionada ou com outra configuração.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Escolher a instalação",
-        "description": "Selecione a instalação a ligar localmente. A identidade do gateway será verificada antes de guardar.",
+        "description": "Selecione o sistema de aquecimento a ligar localmente: a bomba de calor ou a caldeira, não um wallbox nem um aparelho de ar condicionado. A identidade do gateway será verificada antes de guardar.",
         "data": {
           "target": "Instalação / gateway"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "Não foi possível verificar a versão do firmware.",
       "local_old_firmware": "Atualize o firmware do gateway antes de configurar a ligação local.",
       "local_unsupported_brand": "Esta marca de gateway não é suportada pela interface local documentada.",
-      "local_incomplete_system": "As informações do sistema do gateway ainda não estão completas. Repita mais tarde a verificação de leitura.",
+      "local_incomplete_system": "O gateway ainda está a recolher as informações do sistema. Isto pode demorar alguns minutos. Aguarde cerca de cinco minutos e repita a verificação de leitura.",
       "local_invalid_response": "Não foi possível verificar uma resposta necessária do gateway.",
       "local_identity_unverified": "Esta instalação ainda não foi associada de forma inequívoca. A primeira configuração requer um acesso à cloud disponível e identificadores de gateway e de módulo coincidentes em ambas as interfaces. As associações verificadas podem depois ser utilizadas sem a cloud.",
       "local_identity_conflict": "A identidade do gateway está em conflito com a instalação selecionada ou com outra configuração.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Nova instalação (apenas local)"
+        "new_plant": "Nova instalação (gateway não está na conta)"
       }
     },
     "local_owner": {

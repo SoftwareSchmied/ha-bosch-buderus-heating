@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Velg anlegget",
-        "description": "Velg anlegget som skal kobles til lokalt. Gateway-identiteten kontrolleres før lagring.",
+        "description": "Velg varmesystemet du vil koble til lokalt: varmepumpen eller kjelen, ikke en ladeboks eller et klimaanlegg. Gateway-identiteten kontrolleres før lagring.",
         "data": {
           "target": "Anlegg / gateway"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "Fastvareversjonen kunne ikke verifiseres.",
       "local_old_firmware": "Oppdater gatewayens fastvare før du setter opp den lokale tilkoblingen.",
       "local_unsupported_brand": "Dette gateway-merket støttes ikke av det dokumenterte lokale grensesnittet.",
-      "local_incomplete_system": "Gatewayens anleggsinformasjon er ikke fullstendig ennå. Prøv lesesjekken igjen senere.",
+      "local_incomplete_system": "Gatewayen samler fortsatt anleggsinformasjonen sin. Det kan ta noen minutter. Vent omtrent fem minutter, og prøv så lesesjekken igjen.",
       "local_invalid_response": "Et nødvendig svar fra gatewayen kunne ikke verifiseres.",
       "local_identity_unverified": "Dette anlegget er ikke entydig sammenlignet ennå. Det første oppsettet krever en tilgjengelig skytilgang og samsvarende gateway- og modulidentifikatorer fra begge grensesnittene. Verifiserte koblinger kan deretter brukes uten skyen.",
       "local_identity_conflict": "Gateway-identiteten er i konflikt med det valgte anlegget eller et annet oppsett.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Velg anlegget",
-        "description": "Velg anlegget som skal kobles til lokalt. Gateway-identiteten kontrolleres før lagring.",
+        "description": "Velg varmesystemet du vil koble til lokalt: varmepumpen eller kjelen, ikke en ladeboks eller et klimaanlegg. Gateway-identiteten kontrolleres før lagring.",
         "data": {
           "target": "Anlegg / gateway"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "Fastvareversjonen kunne ikke verifiseres.",
       "local_old_firmware": "Oppdater gatewayens fastvare før du setter opp den lokale tilkoblingen.",
       "local_unsupported_brand": "Dette gateway-merket støttes ikke av det dokumenterte lokale grensesnittet.",
-      "local_incomplete_system": "Gatewayens anleggsinformasjon er ikke fullstendig ennå. Prøv lesesjekken igjen senere.",
+      "local_incomplete_system": "Gatewayen samler fortsatt anleggsinformasjonen sin. Det kan ta noen minutter. Vent omtrent fem minutter, og prøv så lesesjekken igjen.",
       "local_invalid_response": "Et nødvendig svar fra gatewayen kunne ikke verifiseres.",
       "local_identity_unverified": "Dette anlegget er ikke entydig sammenlignet ennå. Det første oppsettet krever en tilgjengelig skytilgang og samsvarende gateway- og modulidentifikatorer fra begge grensesnittene. Verifiserte koblinger kan deretter brukes uten skyen.",
       "local_identity_conflict": "Gateway-identiteten er i konflikt med det valgte anlegget eller et annet oppsett.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Nytt anlegg (bare lokalt)"
+        "new_plant": "Nytt anlegg (gatewayen finnes ikke i kontoen din)"
       }
     },
     "local_owner": {

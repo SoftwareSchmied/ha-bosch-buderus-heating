@@ -150,6 +150,12 @@ which lists possible causes and remedies, or in the troubleshooting chapter of
 your appliance's installation and service manual, which has the complete list.
 The appliance display remains authoritative.
 
+For a fault with a code that has no verified summary, the fault entities carry
+the attribute `code_search_url` with the link of that search: the fault binary
+sensor, the entries of the fault list sensor and the fault event. The
+attribute is missing for verified codes and for maintenance, warning and
+information messages. The integration keeps no code table of the manufacturer.
+
 ## Home Assistant bell notifications
 
 Fault notifications are enabled by default. Open **Configure**, then
