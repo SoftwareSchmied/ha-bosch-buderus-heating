@@ -560,3 +560,38 @@ async def test_no_test_for_an_access_without_appliances(hass: HomeAssistant) -> 
     result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert result.startswith("Not tested: the access is not running")
     runtime.client.get_gateways.assert_not_awaited()
+
+
+# ---------------------------------- accounts with a wallbox or air conditioner only
+
+
+def _managed(kind, *, ok=True):
+    from custom_components.bosch_buderus_heating.managed_aircon import (
+        ManagedAirconCoordinator,
+    )
+    from custom_components.bosch_buderus_heating.managed_wallbox import (
+        ManagedWallboxCoordinator,
+    )
+
+    coordinator = (
+        ManagedWallboxCoordinator if kind == "wallbox" else ManagedAirconCoordinator
+    ).__new__(
+        ManagedWallboxCoordinator if kind == "wallbox" else ManagedAirconCoordinator
+    )
+    coordinator.last_update_success = ok
+    coordinator.data = None
+    return coordinator
+
+
+@pytest.mark.parametrize("kind", ["wallbox", "aircon"])
+@pytest.mark.parametrize(
+    ("ok", "expected"), [(True, "verbunden"), (False, "nicht erreichbar")]
+)
+async def test_cloud_account_without_heat_pump_is_not_starting(
+    hass: HomeAssistant, kind, ok, expected
+) -> None:
+    hass.config.language = "de"
+    runtime = Runtime(hass)
+    runtime.coordinator = _managed(kind, ok=ok)
+    assert expected in label(hass, entry_with(runtime), CLOUD, 1)
+    assert "startet" not in label(hass, entry_with(runtime), CLOUD, 1)

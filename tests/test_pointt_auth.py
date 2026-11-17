@@ -745,3 +745,82 @@ async def test_refusal_without_definite_error_keeps_the_sign_in(
     finally:
         await runner.cleanup()
     assert calls == 2
+
+
+async def test_slow_token_endpoint_answers_within_the_token_timeout() -> None:
+    """A refresh that takes longer than the old 30 s total still succeeds."""
+    posts = 0
+
+    async def handler(_request: web.Request) -> web.Response:
+        nonlocal posts
+        posts += 1
+        await asyncio.sleep(0.5)
+        return web.json_response(
+            {"access_token": "a", "refresh_token": "r2", "expires_in": 3600}
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = OAuthClient(session, token_url=url)
+            # The token endpoint may take 40 to 80 s; its total covers that.
+            assert client._timeout.total == pointt_const.TOKEN_TOTAL_TIMEOUT == 90.0
+            assert client._timeout.total > pointt_const.DEFAULT_TOTAL_TIMEOUT
+            assert client._timeout.connect == pointt_const.DEFAULT_CONNECT_TIMEOUT
+            assert client._timeout.connect == 10.0
+            tokens = await client.refresh("old")
+    finally:
+        await runner.cleanup()
+    assert tokens.refresh_token == "r2"
+    assert posts == 1
+
+
+async def test_slow_token_answer_is_waited_for_not_retried(monkeypatch) -> None:
+    """An answer later than the old total succeeds with one request."""
+    from custom_components.bosch_buderus_heating.pointt import RequestTimeout
+
+    posts = 0
+
+    async def handler(_request: web.Request) -> web.Response:
+        nonlocal posts
+        posts += 1
+        await asyncio.sleep(1.5)
+        return web.json_response(
+            {"access_token": "a", "refresh_token": "r2", "expires_in": 3600}
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            # Scale: the old timeout (total 1 s) fails, the token timeout
+            # (total 3 s) waits for the answer; both keep one request each.
+            monkeypatch.setattr(pointt_const, "TOKEN_TOTAL_TIMEOUT", 3.0)
+            monkeypatch.setattr(
+                "custom_components.bosch_buderus_heating.pointt.auth.TOKEN_TOTAL_TIMEOUT",
+                3.0,
+            )
+            slow = OAuthClient(session, token_url=url)
+            assert (await slow.refresh("old")).refresh_token == "r2"
+            assert posts == 1
+            monkeypatch.setattr(
+                "custom_components.bosch_buderus_heating.pointt.auth.TOKEN_TOTAL_TIMEOUT",
+                1.0,
+            )
+            fast = OAuthClient(session, token_url=url)
+            with pytest.raises(RequestTimeout):
+                await fast.refresh("old")
+            await asyncio.sleep(0.1)
+            assert posts == 2  # the timed-out refresh was not sent again
+    finally:
+        await runner.cleanup()
+
+
+async def test_connect_timeout_stays_fast() -> None:
+    """Only the total is longer; an unreachable endpoint fails by connect."""
+    from custom_components.bosch_buderus_heating.pointt import ServiceUnavailable
+
+    async with aiohttp.ClientSession() as session:
+        client = OAuthClient(session, token_url="http://127.0.0.1:9/token")
+        assert client._timeout.connect == 10.0
+        with pytest.raises(ServiceUnavailable):
+            await asyncio.wait_for(client.refresh("old"), 10)

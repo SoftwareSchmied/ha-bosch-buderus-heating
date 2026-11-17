@@ -1187,6 +1187,14 @@ it; `bulk_size` and the item-result counters show that logical work separately.
 This distinction is useful when PointT returns HTTP 200 for the bulk envelope
 but an inner gateway reports a 5xx status.
 
+Write requests and single-resource reads carry a `path_category` in
+`recent_requests`: only the first segment of the resource path (for example
+`heatingCircuits` or `dhwCircuits`), never a circuit number, schedule letter,
+gateway or other identifier. `writes_by_path_category` and
+`resource_errors_by_path_category` (single reads answered with 403, 404 or 406)
+count the same categories over the whole observation, so a failed or written
+resource group can be attributed even after `recent_requests` has rolled over.
+
 ### Optional diagnostic entities
 
 Three diagnostic sensors are created disabled by default. They expose the total

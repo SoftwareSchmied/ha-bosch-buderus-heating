@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -29,6 +30,7 @@ class _RequestEvent:
     retry: bool
     bulk_size: int
     fallback_reason: str | None
+    path_category: str | None = None
     bulk_items_total: int = 0
     bulk_items_successful: int = 0
     bulk_items_failed: int = 0
@@ -53,6 +55,8 @@ class _RequestEvent:
             result["bulk_size"] = self.bulk_size
         if self.fallback_reason is not None:
             result["fallback_reason"] = self.fallback_reason
+        if self.path_category is not None:
+            result["path_category"] = self.path_category
         if self.bulk_items_total:
             result.update(
                 {
@@ -129,6 +133,9 @@ class RequestMetrics:
     bulk_items_by_server_status_class: Counter[str] = field(default_factory=Counter)
     bulk_items_by_gateway_status_class: Counter[str] = field(default_factory=Counter)
     fallback_requests_by_reason: Counter[str] = field(default_factory=Counter)
+    # Which part of the resource tree writes and failed single reads hit.
+    writes_by_path_category: Counter[str] = field(default_factory=Counter)
+    resource_errors_by_path_category: Counter[str] = field(default_factory=Counter)
     _sequence: int = 0
     _recent_requests: deque[_RequestEvent] = field(
         default_factory=lambda: deque(maxlen=MAX_RECENT_REQUESTS)
@@ -148,6 +155,7 @@ class RequestMetrics:
         attempt: int = 1,
         retry: bool = False,
         fallback_reason: str | None = None,
+        resource_path: str | None = None,
     ) -> int:
         """Record one actual HTTP attempt using bounded categorical data only."""
         now = monotonic()
@@ -155,6 +163,14 @@ class RequestMetrics:
         safe_duration = max(0.0, duration_ms)
         safe_type = request_type or _request_type(category, method)
         self._sequence += 1
+        path_category = None
+        if safe_type != "bulk":
+            path_category = resource_path_category(resource_path)
+            if path_category is not None:
+                if safe_type == "write":
+                    self.writes_by_path_category[path_category] += 1
+                if outcome == "resource_error":
+                    self.resource_errors_by_path_category[path_category] += 1
 
         self.requests_total += 1
         self.requests_by_category[category] += 1
@@ -185,6 +201,7 @@ class RequestMetrics:
             retry=retry,
             bulk_size=max(0, bulk_size),
             fallback_reason=fallback_reason,
+            path_category=path_category,
         )
         self._recent_requests.append(event)
 
@@ -304,6 +321,12 @@ class RequestMetrics:
             "requests_by_category": dict(sorted(self.requests_by_category.items())),
             "requests_by_type": dict(sorted(self.requests_by_type.items())),
             "requests_by_method": dict(sorted(self.requests_by_method.items())),
+            "writes_by_path_category": dict(
+                sorted(self.writes_by_path_category.items())
+            ),
+            "resource_errors_by_path_category": dict(
+                sorted(self.resource_errors_by_path_category.items())
+            ),
             "responses_by_status_class": dict(
                 sorted(self.responses_by_status_class.items())
             ),
@@ -485,6 +508,21 @@ def request_category(path: str) -> str:
     if normalized.startswith("gateways/"):
         return "gateway_metadata"
     return "other"
+
+
+_PATH_CATEGORY = re.compile(r"[A-Za-z][A-Za-z0-9]{0,31}")
+
+
+def resource_path_category(path: str | None) -> str | None:
+    """First segment of a resource path, e.g. ``heatingCircuits``.
+
+    It names the part of the resource tree without circuit numbers, schedule
+    letters, or any identifier; anything else becomes ``other``.
+    """
+    if not path:
+        return None
+    segment = path.split("?", 1)[0].strip("/").split("/", 1)[0]
+    return segment if _PATH_CATEGORY.fullmatch(segment) else "other"
 
 
 def bulk_resource_count(body: object) -> int:
