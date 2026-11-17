@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Bloqueo infantil"
       },
+      "rrc_auto_away": {
+        "name": "Ausencia automática"
+      },
+      "rrc_notification_light": {
+        "name": "Luz de notificaciones"
+      },
       "rrc_extra_dhw": {
         "name": "Agua caliente extra"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Funcionamiento silencioso de la válvula"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Previsión de regreso a casa"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Ajuste del sensor de presencia"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Rendimiento solar total"
+      },
+      "rrc_hot_water_system": {
+        "name": "Sistema de agua caliente"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Resultado de la desinfección térmica"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Problema de válvula"
+      },
+      "rrc_coming_home": {
+        "name": "Regreso a casa previsto"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Equilibrado hidráulico"
       },
       "rrc_locking_error": {
         "name": "Avería con rearme manual"

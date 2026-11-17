@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Lapsilukko"
       },
+      "rrc_auto_away": {
+        "name": "Automaattinen poissaolo"
+      },
+      "rrc_notification_light": {
+        "name": "Ilmoitusvalo"
+      },
       "rrc_extra_dhw": {
         "name": "Lisälämmin käyttövesi"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Venttiilin hiljainen käyttö"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Kotiinpaluun ennuste"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Läsnäolotunnistimen asetus"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Aurinkotuotto yhteensä"
+      },
+      "rrc_hot_water_system": {
+        "name": "Käyttövesijärjestelmä"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Lämpödesinfioinnin tulos"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Venttiilin ongelma"
+      },
+      "rrc_coming_home": {
+        "name": "Kotiinpaluu odotettavissa"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulinen tasapainotus"
       },
       "rrc_locking_error": {
         "name": "Kuittausta vaativa vika"

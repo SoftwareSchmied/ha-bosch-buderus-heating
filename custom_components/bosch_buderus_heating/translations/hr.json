@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Dječja brava"
       },
+      "rrc_auto_away": {
+        "name": "Automatska odsutnost"
+      },
+      "rrc_notification_light": {
+        "name": "Svjetlo za obavijesti"
+      },
       "rrc_extra_dhw": {
         "name": "Dodatna topla voda"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Tihi rad ventila"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prognoza povratka kući"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Postavka senzora prisutnosti"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Ukupni solarni prinos"
+      },
+      "rrc_hot_water_system": {
+        "name": "Sustav tople vode"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Rezultat termičke dezinfekcije"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Problem s ventilom"
+      },
+      "rrc_coming_home": {
+        "name": "Očekuje se povratak kući"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hidrauličko uravnoteženje"
       },
       "rrc_locking_error": {
         "name": "Smetnja koja zahtijeva poništavanje"

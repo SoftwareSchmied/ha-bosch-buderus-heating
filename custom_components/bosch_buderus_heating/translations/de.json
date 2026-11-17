@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Kindersicherung"
       },
+      "rrc_auto_away": {
+        "name": "Auto-Abwesenheit"
+      },
+      "rrc_notification_light": {
+        "name": "Benachrichtigungslicht"
+      },
       "rrc_extra_dhw": {
         "name": "Extra-Warmwasser"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Flüstermodus"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prognose Heimkehr"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Einstellung Präsenzsensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Solar-Gesamtertrag"
+      },
+      "rrc_hot_water_system": {
+        "name": "Warmwassersystem"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Ergebnis der thermischen Desinfektion"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Ventilproblem"
+      },
+      "rrc_coming_home": {
+        "name": "Heimkehr erwartet"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulischer Abgleich"
       },
       "rrc_locking_error": {
         "name": "Verriegelnde Störung"

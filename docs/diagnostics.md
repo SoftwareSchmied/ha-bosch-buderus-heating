@@ -1025,7 +1025,8 @@ It was added in 0.9.0-alpha.5 within schema 44. The functions are described in
   `temporary_setpoint`, `away_mode` or `operation_mode`) and
   `confirmed_on` (`tc100_2`) for a group with confirmed functions,
   otherwise `unconfirmed`. A function not named there is expected,
-  untested;
+  untested. The group `extras` (automatic absence, notification light and
+  further readings) is always `unconfirmed`;
 - `read_back_delays`: the read-back after a change, `[1, 2, 4, 8]` seconds;
 - `awaiting_late_confirmation`: changes sent but not confirmed yet that a
   later regular reading may still confirm;

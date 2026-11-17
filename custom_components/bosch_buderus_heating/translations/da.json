@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Børnesikring"
       },
+      "rrc_auto_away": {
+        "name": "Automatisk fravær"
+      },
+      "rrc_notification_light": {
+        "name": "Notifikationslys"
+      },
       "rrc_extra_dhw": {
         "name": "Ekstra varmt vand"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Lydsvag ventildrift"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prognose for hjemkomst"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Indstilling af tilstedeværelsessensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Samlet solvarmeudbytte"
+      },
+      "rrc_hot_water_system": {
+        "name": "Varmtvandssystem"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Resultat af termisk desinfektion"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Ventilproblem"
+      },
+      "rrc_coming_home": {
+        "name": "Hjemkomst forventet"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulisk afbalancering"
       },
       "rrc_locking_error": {
         "name": "Fejl der kræver nulstilling"

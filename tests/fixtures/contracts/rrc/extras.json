@@ -1,0 +1,238 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "observed_structure",
+  "reference": "Further settings and readings of an RRC 2.0 room controller, laid over ct200-shapes.json",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-17",
+  "redaction": "Constructed values only. Leaf names, JSON types, units and the writeable flag follow the anonymized TC100.2 tree of issue 122 (names and types, no values). The wire format of the flags (\"true\"/\"false\") is an assumption taken from the other flags of the controller. The list of users of the automatic absence is not part of this fixture.",
+  "physical_device_verified": false,
+  "contract": "These resources replace the containers of the same path in ct200-shapes.json and add their leaves."
+ },
+ "resources": [
+  {
+   "id": "/gateway",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/productType"
+    },
+    {
+     "id": "/gateway/versionFirmware"
+    },
+    {
+     "id": "/gateway/versionFirmwareBuild"
+    },
+    {
+     "id": "/gateway/versionHardware"
+    },
+    {
+     "id": "/gateway/userPassword"
+    },
+    {
+     "id": "/gateway/user"
+    },
+    {
+     "id": "/gateway/installer"
+    },
+    {
+     "id": "/gateway/update"
+    },
+    {
+     "id": "/gateway/hmip"
+    },
+    {
+     "id": "/gateway/notificationLight"
+    },
+    {
+     "id": "/gateway/pirSensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/notificationLight",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/notificationLight/enabled"
+    },
+    {
+     "id": "/gateway/notificationLight/activate"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/notificationLight/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "true",
+   "used": "true"
+  },
+  {
+   "id": "/gateway/notificationLight/activate",
+   "type": "notificationStruct",
+   "writeable": 1,
+   "recordable": 0,
+   "value": []
+  },
+  {
+   "id": "/gateway/pirSensitivity",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "medium"
+  },
+  {
+   "id": "/system",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors"
+    },
+    {
+     "id": "/system/awayMode"
+    },
+    {
+     "id": "/system/location"
+    },
+    {
+     "id": "/system/autoAway"
+    },
+    {
+     "id": "/system/appliance"
+    },
+    {
+     "id": "/system/hydraulicBalancing"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/autoAway/enabled"
+    },
+    {
+     "id": "/system/autoAway/comingHome"
+    },
+    {
+     "id": "/system/autoAway/users"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false",
+   "used": "true"
+  },
+  {
+   "id": "/system/autoAway/comingHome",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/autoAway/comingHome/active"
+    },
+    {
+     "id": "/system/autoAway/comingHome/prediction"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway/comingHome/active",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/system/autoAway/comingHome/prediction",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "mins",
+   "minValue": 0,
+   "maxValue": 1440,
+   "stepSize": 1,
+   "value": 25
+  },
+  {
+   "id": "/system/hydraulicBalancing",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/hydraulicBalancing/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/system/hydraulicBalancing/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "true"
+  },
+  {
+   "id": "/solarCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/solarCircuits/sc1"
+    }
+   ]
+  },
+  {
+   "id": "/solarCircuits/sc1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/solarCircuits/sc1/totalSolarGain"
+    }
+   ]
+  },
+  {
+   "id": "/solarCircuits/sc1/totalSolarGain",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "kWh",
+   "minValue": 0,
+   "maxValue": 1000000,
+   "stepSize": 1,
+   "value": 1234.5
+  },
+  {
+   "id": "/dhwCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/operationMode"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/hotWaterSystem"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/hotWaterSystem",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "storage"
+  }
+ ]
+}

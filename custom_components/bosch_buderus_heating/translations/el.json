@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Κλείδωμα για παιδιά"
       },
+      "rrc_auto_away": {
+        "name": "Αυτόματη απουσία"
+      },
+      "rrc_notification_light": {
+        "name": "Φωτισμός ειδοποιήσεων"
+      },
       "rrc_extra_dhw": {
         "name": "Έξτρα ζεστό νερό"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Αθόρυβη λειτουργία βαλβίδας"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Πρόβλεψη επιστροφής στο σπίτι"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Ρύθμιση αισθητήρα παρουσίας"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Συνολική ηλιακή απόδοση"
+      },
+      "rrc_hot_water_system": {
+        "name": "Σύστημα ζεστού νερού"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Αποτέλεσμα θερμικής απολύμανσης"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Πρόβλημα βαλβίδας"
+      },
+      "rrc_coming_home": {
+        "name": "Αναμένεται επιστροφή στο σπίτι"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Υδραυλική εξισορρόπηση"
       },
       "rrc_locking_error": {
         "name": "Βλάβη με μανδάλωση"

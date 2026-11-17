@@ -159,6 +159,7 @@ async def test_rrc_write_waits_longer_and_counts_a_late_confirmation(
             "circuit",
             "system",
             "devices",
+            "extras",
             "core",
         }
         writes = features["contracts"]["core"]["writes"]

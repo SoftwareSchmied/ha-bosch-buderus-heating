@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Kinderslot"
       },
+      "rrc_auto_away": {
+        "name": "Automatische afwezigheid"
+      },
+      "rrc_notification_light": {
+        "name": "Meldingslicht"
+      },
       "rrc_extra_dhw": {
         "name": "Extra warm water"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Stille klepaandrijving"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Voorspelling thuiskomst"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Instelling aanwezigheidssensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Totale zonne-opbrengst"
+      },
+      "rrc_hot_water_system": {
+        "name": "Warmwatersysteem"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Resultaat thermische desinfectie"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Klepprobleem"
+      },
+      "rrc_coming_home": {
+        "name": "Thuiskomst verwacht"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulische balancering"
       },
       "rrc_locking_error": {
         "name": "Vergrendelende storing"

@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Blokada rodzicielska"
       },
+      "rrc_auto_away": {
+        "name": "Automatyczna nieobecność"
+      },
+      "rrc_notification_light": {
+        "name": "Światło powiadomień"
+      },
       "rrc_extra_dhw": {
         "name": "Dodatkowa ciepła woda"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Cicha praca zaworu"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Prognoza powrotu do domu"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Ustawienie czujnika obecności"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Całkowity uzysk solarny"
+      },
+      "rrc_hot_water_system": {
+        "name": "System ciepłej wody"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Wynik dezynfekcji termicznej"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Problem z zaworem"
+      },
+      "rrc_coming_home": {
+        "name": "Oczekiwany powrót do domu"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Zrównoważenie hydrauliczne"
       },
       "rrc_locking_error": {
         "name": "Usterka wymagająca resetu"

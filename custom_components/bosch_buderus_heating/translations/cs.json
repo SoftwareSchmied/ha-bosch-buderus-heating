@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Dětský zámek"
       },
+      "rrc_auto_away": {
+        "name": "Automatická nepřítomnost"
+      },
+      "rrc_notification_light": {
+        "name": "Oznamovací světlo"
+      },
       "rrc_extra_dhw": {
         "name": "Extra ohřev"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Tichý chod ventilu"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Předpověď návratu domů"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Nastavení čidla přítomnosti"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Celkový solární zisk"
+      },
+      "rrc_hot_water_system": {
+        "name": "Systém teplé vody"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Výsledek termické dezinfekce"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Problém s ventilem"
+      },
+      "rrc_coming_home": {
+        "name": "Očekává se návrat domů"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulické vyvážení"
       },
       "rrc_locking_error": {
         "name": "Porucha vyžadující reset"

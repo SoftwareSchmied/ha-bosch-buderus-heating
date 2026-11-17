@@ -2353,6 +2353,12 @@
       "rrc_child_lock": {
         "name": "Glas leanaí"
       },
+      "rrc_auto_away": {
+        "name": "Neamhláithreacht uathoibríoch"
+      },
+      "rrc_notification_light": {
+        "name": "Solas fógraí"
+      },
       "rrc_extra_dhw": {
         "name": "Uisce te breise"
       },
@@ -3140,6 +3146,18 @@
       "rrc_whisper_mode": {
         "name": "Oibriú ciúin na comhla"
       },
+      "rrc_coming_home_prediction": {
+        "name": "Réamhaisnéis ar fhilleadh abhaile"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Socrú an braiteora láithreachta"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Aschur gréine iomlán"
+      },
+      "rrc_hot_water_system": {
+        "name": "Córas uisce te"
+      },
       "rrc_thermal_disinfection_result": {
         "name": "Toradh an díghalrúcháin theirmigh"
       },
@@ -3500,6 +3518,12 @@
       },
       "rrc_valve_problem": {
         "name": "Fadhb comhla"
+      },
+      "rrc_coming_home": {
+        "name": "Súil le filleadh abhaile"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Cothromú hiodrálach"
       },
       "rrc_locking_error": {
         "name": "Locht a éilíonn athshocrú"
