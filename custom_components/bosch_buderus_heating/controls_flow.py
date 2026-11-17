@@ -16,7 +16,7 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.helpers.translation import async_get_translations
 
-from . import rrc_contracts
+from . import hybrid_controls, rrc_contracts
 from .circuit_control_writes import offered_on, write_guards
 from .circuit_controls import display_minimum
 from .const import DOMAIN
@@ -103,11 +103,13 @@ class ControlsSelector(ObjectSelector):
 
 
 # Tabs: heating circuits, then hot water, then the remaining system settings.
-_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1}
+_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1, "hybrid": 3}
 
 
 def control_group(path: str) -> str:
     """The dialog tab of a control path."""
+    if path in hybrid_controls.CONTROL_PATHS:
+        return "hybrid"
     parts = path.strip("/").split("/")
     if parts[0] in _GROUP_RANK and len(parts) > 1:
         return "/".join(parts[:2])
@@ -147,6 +149,8 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
                 "/system/seasonOptimizer/mode",
                 "/heatSources/additionalHeater/operationMode",
             }
+            # Hybrid plants: the strategy and the energy prices.
+            or path in hybrid_controls.CONTROL_PATHS
             or (context.rrc_plant and rrc_contracts.in_dialog(path))
         ):
             continue
@@ -353,6 +357,8 @@ def _translation_key(path: str) -> str:
         return "season_switching"
     if path.startswith("/heatingCircuits/") and path.endswith("/suWiSwitchMode"):
         return "summer_winter_switching"
+    if path == hybrid_controls.STRATEGY_PATH:
+        return hybrid_controls.TRANSLATION_KEY
     return ""
 
 
@@ -671,7 +677,9 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                     else None,
                     "maximum": assessment.maximum,
                     "step": assessment.ui_step,
-                    "unit": {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
+                    "unit": (hybrid_controls.display_unit(assessment.unit) or "")
+                    if hybrid_controls.is_price_path(path)
+                    else {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
                         assessment.unit or "", assessment.unit or ""
                     ),
                     "icon": control_icon(
@@ -688,7 +696,9 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                     and not (
                         path.startswith("/heatingCircuits/")
                         and path.endswith(("/operationMode", "/manualRoomSetpoint"))
-                    ),
+                    )
+                    # The strategy and the prices are main settings of a hybrid plant.
+                    and path not in hybrid_controls.CONTROL_PATHS,
                     "available": current.get(path) == resource,
                 }
             )

@@ -16,7 +16,8 @@
       "empty": "Trenutno ni na voljo nobenega upravljanja.",
       "pending": "Spremembe se zapišejo šele, ko izberete Uporabi.",
       "reopen": "Zaprite pogovorni okvir in ga znova odprite.",
-      "reloadFailed": "Vrednosti ni bilo mogoče znova naložiti."
+      "reloadFailed": "Vrednosti ni bilo mogoče znova naložiti.",
+      "hybrid": "Hibrid"
     },
     "holiday": {
       "date": "Datum",
@@ -443,7 +444,6 @@
     "Pump": "Črpalka",
     "Pump speed setpoint": "Nastavljena vrednost hitrosti črpalke",
     "PV contact status": "Stanje stika PV",
-    "PV electricity price": "Cena električne energije PV",
     "PV surplus available": "Presežek PV na voljo",
     "Radiator thermostat": "Termostatska glava",
     "Radio connection to a device lost": "Radijska povezava z napravo je izgubljena",
@@ -657,6 +657,7 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "To je najverjetneje žeton, ki ga uporablja ta dostop: njegov preklic konča ta lokalni dostop.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "To je najverjetneje žeton drugega lokalnega dostopa do tega prehoda: njegov preklic konča tisti dostop.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Katerega žetona uporablja dostop, ni mogoče zanesljivo ugotoviti, na primer ko ta prehod uporablja drug Home Assistant. Preklic žetona v uporabi konča lokalni dostop, ki ga uporablja.",
-    "Cooling temperature": "Temperatura hlajenja"
+    "Cooling temperature": "Temperatura hlajenja",
+    "Feed-in tariff": "Odkupna cena"
   }
 }

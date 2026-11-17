@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Χρονοδιακόπτης απενεργοποίησης"
+      },
+      "hybrid_electricity_price": {
+        "name": "Τιμή ηλεκτρικής ενέργειας"
+      },
+      "hybrid_gas_price": {
+        "name": "Τιμή αερίου"
+      },
+      "hybrid_oil_price": {
+        "name": "Τιμή πετρελαίου"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Τιμή έγχυσης στο δίκτυο"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Πρόγραμμα 7",
           "program8": "Πρόγραμμα 8",
           "program9": "Πρόγραμμα 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Στρατηγική υβριδικής ρύθμισης",
+        "state": {
+          "cost": "Βελτιστοποίηση κόστους",
+          "max_renewable_share": "Βελτιστοποίηση αντλίας θερμότητας",
+          "heat_pump_preferred": "Προτίμηση αντλίας θερμότητας",
+          "environment": "Πιο φιλικό προς το κλίμα",
+          "boiler_only": "Μόνο λέβητας",
+          "bivalent_alternative": "Εναλλακτική δισθενής λειτουργία"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Χρονοπρόγραμμα {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Στρατηγική υβριδικής ρύθμισης",
+        "state": {
+          "cost": "Βελτιστοποίηση κόστους",
+          "max_renewable_share": "Βελτιστοποίηση αντλίας θερμότητας",
+          "heat_pump_preferred": "Προτίμηση αντλίας θερμότητας",
+          "environment": "Πιο φιλικό προς το κλίμα",
+          "boiler_only": "Μόνο λέβητας",
+          "bivalent_alternative": "Εναλλακτική δισθενής λειτουργία"
+        }
       }
     },
     "binary_sensor": {

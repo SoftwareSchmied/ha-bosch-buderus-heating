@@ -16,7 +16,8 @@
       "empty": "Ahora mismo no hay controles disponibles.",
       "pending": "Los cambios solo se escriben cuando seleccionas Aplicar.",
       "reopen": "Cierra y vuelve a abrir el cuadro de diálogo.",
-      "reloadFailed": "No se pudieron volver a cargar los valores."
+      "reloadFailed": "No se pudieron volver a cargar los valores.",
+      "hybrid": "Híbrido"
     },
     "holiday": {
       "date": "Fecha",
@@ -443,7 +444,6 @@
     "Pump": "Bomba",
     "Pump speed setpoint": "Consigna de velocidad de la bomba",
     "PV contact status": "Estado del contacto PV",
-    "PV electricity price": "Precio de la electricidad PV",
     "PV surplus available": "Excedente PV disponible",
     "Radiator thermostat": "Cabezal termostático",
     "Radio connection to a device lost": "Conexión por radio con un dispositivo perdida",
@@ -657,6 +657,7 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Probablemente es el token que usa este acceso: revocarlo termina este acceso local.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Probablemente es el token de otro acceso local a esta pasarela: revocarlo termina ese acceso.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "No se puede saber con certeza qué token usa un acceso, por ejemplo cuando otro Home Assistant usa esta pasarela. Revocar un token en uso termina el acceso local que lo usa.",
-    "Cooling temperature": "Temperatura de refrigeración"
+    "Cooling temperature": "Temperatura de refrigeración",
+    "Feed-in tariff": "Tarifa de inyección"
   }
 }

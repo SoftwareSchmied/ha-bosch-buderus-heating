@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Časovnik izklopa"
+      },
+      "hybrid_electricity_price": {
+        "name": "Cena električne energije"
+      },
+      "hybrid_gas_price": {
+        "name": "Cena plina"
+      },
+      "hybrid_oil_price": {
+        "name": "Cena olja"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Odkupna cena"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategija hibridne regulacije",
+        "state": {
+          "cost": "Optimizirano glede na stroške",
+          "max_renewable_share": "Optimizirano za toplotno črpalko",
+          "heat_pump_preferred": "Prednost toplotne črpalke",
+          "environment": "Najbolj podnebju prijazno",
+          "boiler_only": "Samo kotel",
+          "bivalent_alternative": "Bivalentna alternativa"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Časovni program {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategija hibridne regulacije",
+        "state": {
+          "cost": "Optimizirano glede na stroške",
+          "max_renewable_share": "Optimizirano za toplotno črpalko",
+          "heat_pump_preferred": "Prednost toplotne črpalke",
+          "environment": "Najbolj podnebju prijazno",
+          "boiler_only": "Samo kotel",
+          "bivalent_alternative": "Bivalentna alternativa"
+        }
       }
     },
     "binary_sensor": {

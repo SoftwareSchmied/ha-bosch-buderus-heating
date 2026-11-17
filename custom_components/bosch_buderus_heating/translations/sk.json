@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Časovač vypnutia"
+      },
+      "hybrid_electricity_price": {
+        "name": "Cena elektriny"
+      },
+      "hybrid_gas_price": {
+        "name": "Cena plynu"
+      },
+      "hybrid_oil_price": {
+        "name": "Cena oleja"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Výkupná cena"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Stratégia riadenia hybridu",
+        "state": {
+          "cost": "Optimalizácia nákladov",
+          "max_renewable_share": "Optimalizácia pre tepelné čerpadlo",
+          "heat_pump_preferred": "Prednosť tepelného čerpadla",
+          "environment": "Najšetrnejší ku klíme",
+          "boiler_only": "Iba kotol",
+          "bivalent_alternative": "Bivalentná alternatíva"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Časový program {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Stratégia riadenia hybridu",
+        "state": {
+          "cost": "Optimalizácia nákladov",
+          "max_renewable_share": "Optimalizácia pre tepelné čerpadlo",
+          "heat_pump_preferred": "Prednosť tepelného čerpadla",
+          "environment": "Najšetrnejší ku klíme",
+          "boiler_only": "Iba kotol",
+          "bivalent_alternative": "Bivalentná alternatíva"
+        }
       }
     },
     "binary_sensor": {

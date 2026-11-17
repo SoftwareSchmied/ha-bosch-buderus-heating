@@ -16,7 +16,8 @@
       "empty": "Ingen kontroller er tilgjengelige akkurat nå.",
       "pending": "Endringer skrives først når du velger Bruk.",
       "reopen": "Lukk og åpne dialogen på nytt.",
-      "reloadFailed": "Verdiene kunne ikke lastes på nytt."
+      "reloadFailed": "Verdiene kunne ikke lastes på nytt.",
+      "hybrid": "Hybrid"
     },
     "holiday": {
       "date": "Dato",
@@ -443,7 +444,6 @@
     "Pump": "Pumpe",
     "Pump speed setpoint": "Settpunkt for pumpehastighet",
     "PV contact status": "Status for PV-kontakt",
-    "PV electricity price": "PV-strømpris",
     "PV surplus available": "PV-overskudd tilgjengelig",
     "Radiator thermostat": "Radiatortermostat",
     "Radio connection to a device lost": "Radioforbindelsen til en enhet er tapt",
@@ -657,6 +657,7 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Det er sannsynligvis tokenen denne tilgangen bruker: tilbakekalles den, avsluttes denne lokale tilgangen.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Det er sannsynligvis tokenen til en annen lokal tilgang til denne gatewayen: tilbakekalles den, avsluttes den tilgangen.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Hvilken token en tilgang bruker, kan ikke fastslås sikkert, for eksempel når en annen Home Assistant bruker denne gatewayen. Tilbakekalles en token i bruk, avsluttes den lokale tilgangen som bruker den.",
-    "Cooling temperature": "Kjøletemperatur"
+    "Cooling temperature": "Kjøletemperatur",
+    "Feed-in tariff": "Pris for innmatet strøm"
   }
 }

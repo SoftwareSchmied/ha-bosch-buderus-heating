@@ -16,7 +16,8 @@
       "empty": "В момента няма налично управление.",
       "pending": "Промените се записват само когато изберете Приложи.",
       "reopen": "Моля, затворете и отворете диалоговия прозорец отново.",
-      "reloadFailed": "Стойностите не можаха да бъдат презаредени."
+      "reloadFailed": "Стойностите не можаха да бъдат презаредени.",
+      "hybrid": "Хибриден"
     },
     "holiday": {
       "date": "Дата",
@@ -443,7 +444,6 @@
     "Pump": "Помпа",
     "Pump speed setpoint": "Зададена скорост на помпата",
     "PV contact status": "Състояние на PV контакта",
-    "PV electricity price": "Цена на PV електроенергията",
     "PV surplus available": "Налице е PV излишък",
     "Radiator thermostat": "Радиаторен термостат",
     "Radio connection to a device lost": "Загубена радиовръзка с устройство",
@@ -657,6 +657,7 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Най-вероятно това е токенът, който този достъп използва: отмяната му прекратява този локален достъп.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Най-вероятно това е токенът на друг локален достъп до този шлюз: отмяната му прекратява онзи достъп.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Кой токен използва даден достъп, не може да се определи със сигурност, например когато друг Home Assistant използва този шлюз. Отмяната на използван токен прекратява локалния достъп, който го използва.",
-    "Cooling temperature": "Температура на охлаждане"
+    "Cooling temperature": "Температура на охлаждане",
+    "Feed-in tariff": "Изкупна цена"
   }
 }

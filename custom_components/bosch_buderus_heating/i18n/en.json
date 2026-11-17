@@ -16,7 +16,8 @@
       "empty": "No controls are currently available.",
       "pending": "Changes are written only when you select Apply.",
       "reopen": "Please close and reopen the dialog.",
-      "reloadFailed": "The values could not be reloaded."
+      "reloadFailed": "The values could not be reloaded.",
+      "hybrid": "Hybrid"
     },
     "holiday": {
       "date": "Date",

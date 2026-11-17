@@ -16,7 +16,8 @@
       "empty": "Er is momenteel geen bediening beschikbaar.",
       "pending": "Wijzigingen worden pas geschreven wanneer je Toepassen selecteert.",
       "reopen": "Sluit het dialoogvenster en open het opnieuw.",
-      "reloadFailed": "De waarden konden niet opnieuw worden geladen."
+      "reloadFailed": "De waarden konden niet opnieuw worden geladen.",
+      "hybrid": "Hybride"
     },
     "holiday": {
       "date": "Datum",
@@ -443,7 +444,6 @@
     "Pump": "Pomp",
     "Pump speed setpoint": "Instelwaarde pomptoerental",
     "PV contact status": "Status PV-contact",
-    "PV electricity price": "PV-elektriciteitsprijs",
     "PV surplus available": "PV-overschot beschikbaar",
     "Radiator thermostat": "Radiatorthermostaat",
     "Radio connection to a device lost": "Radioverbinding met een apparaat verloren",
@@ -657,6 +657,7 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Dit is waarschijnlijk het token dat deze toegang gebruikt: intrekken beëindigt deze lokale toegang.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Dit is waarschijnlijk het token van een andere lokale toegang tot deze gateway: intrekken beëindigt die toegang.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Welk token een toegang gebruikt, is niet met zekerheid te zeggen, bijvoorbeeld als een andere Home Assistant deze gateway gebruikt. Het intrekken van een gebruikt token beëindigt de lokale toegang die het gebruikt.",
-    "Cooling temperature": "Koeltemperatuur"
+    "Cooling temperature": "Koeltemperatuur",
+    "Feed-in tariff": "Terugleververgoeding"
   }
 }

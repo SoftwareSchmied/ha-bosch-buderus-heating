@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Poiskytkentäajastin"
+      },
+      "hybrid_electricity_price": {
+        "name": "Sähkön hinta"
+      },
+      "hybrid_gas_price": {
+        "name": "Kaasun hinta"
+      },
+      "hybrid_oil_price": {
+        "name": "Öljyn hinta"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Verkkoon syötön hinta"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Ohjelma 7",
           "program8": "Ohjelma 8",
           "program9": "Ohjelma 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridisäätöstrategia",
+        "state": {
+          "cost": "Kustannusoptimoitu",
+          "max_renewable_share": "Lämpöpumppuoptimoitu",
+          "heat_pump_preferred": "Lämpöpumppu ensisijainen",
+          "environment": "Ilmastoystävällisin",
+          "boiler_only": "Vain kattila",
+          "bivalent_alternative": "Bivalentti vaihtoehtoinen"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Aikaohjelma {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridisäätöstrategia",
+        "state": {
+          "cost": "Kustannusoptimoitu",
+          "max_renewable_share": "Lämpöpumppuoptimoitu",
+          "heat_pump_preferred": "Lämpöpumppu ensisijainen",
+          "environment": "Ilmastoystävällisin",
+          "boiler_only": "Vain kattila",
+          "bivalent_alternative": "Bivalentti vaihtoehtoinen"
+        }
       }
     },
     "binary_sensor": {

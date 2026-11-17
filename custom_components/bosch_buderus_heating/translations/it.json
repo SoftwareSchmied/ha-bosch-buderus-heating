@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Timer di spegnimento"
+      },
+      "hybrid_electricity_price": {
+        "name": "Prezzo dell'elettricità"
+      },
+      "hybrid_gas_price": {
+        "name": "Prezzo del gas"
+      },
+      "hybrid_oil_price": {
+        "name": "Prezzo del gasolio"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Tariffa di immissione"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Programma 7",
           "program8": "Programma 8",
           "program9": "Programma 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategia di regolazione ibrida",
+        "state": {
+          "cost": "Ottimizzato sui costi",
+          "max_renewable_share": "Ottimizzato per la pompa di calore",
+          "heat_pump_preferred": "Pompa di calore preferita",
+          "environment": "Più rispettoso del clima",
+          "boiler_only": "Solo caldaia",
+          "bivalent_alternative": "Bivalente alternativo"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Programma orario {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategia di regolazione ibrida",
+        "state": {
+          "cost": "Ottimizzato sui costi",
+          "max_renewable_share": "Ottimizzato per la pompa di calore",
+          "heat_pump_preferred": "Pompa di calore preferita",
+          "environment": "Più rispettoso del clima",
+          "boiler_only": "Solo caldaia",
+          "bivalent_alternative": "Bivalente alternativo"
+        }
       }
     },
     "binary_sensor": {

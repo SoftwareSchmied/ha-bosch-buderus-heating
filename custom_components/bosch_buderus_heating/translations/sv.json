@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Frånslagstimer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Elpris"
+      },
+      "hybrid_gas_price": {
+        "name": "Gaspris"
+      },
+      "hybrid_oil_price": {
+        "name": "Oljepris"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Ersättning för inmatad el"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridregleringsstrategi",
+        "state": {
+          "cost": "Kostnadsoptimerad",
+          "max_renewable_share": "Värmepumpsoptimerad",
+          "heat_pump_preferred": "Värmepump i första hand",
+          "environment": "Mest klimatvänlig",
+          "boiler_only": "Endast panna",
+          "bivalent_alternative": "Bivalent alternativ"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Tidsprogram {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridregleringsstrategi",
+        "state": {
+          "cost": "Kostnadsoptimerad",
+          "max_renewable_share": "Värmepumpsoptimerad",
+          "heat_pump_preferred": "Värmepump i första hand",
+          "environment": "Mest klimatvänlig",
+          "boiler_only": "Endast panna",
+          "bivalent_alternative": "Bivalent alternativ"
+        }
       }
     },
     "binary_sensor": {

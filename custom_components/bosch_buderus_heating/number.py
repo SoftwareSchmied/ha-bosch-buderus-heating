@@ -20,6 +20,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import (
     BoschBuderusConfigEntry,
     circuit_controls,
+    hybrid_controls,
     rrc,
     rrc_contracts,
     rrc_platforms,
@@ -125,6 +126,8 @@ def build_number_descriptions(
             or not policy.create_entity
             # The cooling threshold only while the circuit offers cooling.
             or not offered(resource.path, resources)
+            # The oil price only without a gas price.
+            or not hybrid_controls.offered(resource.path, resources)
         ):
             continue
         contract = rrc_contracts.owns(policy)
@@ -134,7 +137,7 @@ def build_number_descriptions(
                 resource.path
             )
         else:
-            key, name = _number_identity(resource.path)
+            key, name = _identity(resource.path)
         assessment = assess_control(resource, context)
         unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
@@ -179,6 +182,9 @@ def _policy_unit(policy: NumberWritePolicy, unit: str | None) -> str | None:
     resource's."""
     if policy.ui_unit_override is not None:
         return policy.ui_unit_override or None
+    if policy.free_unit:
+        # A price: the unit the plant reports, none when it reports none.
+        return hybrid_controls.display_unit(unit)
     return _native_unit(unit)
 
 
@@ -359,3 +365,9 @@ def _number_identity(path: str) -> tuple[str, str]:
         "awayTemperature": ("away_temperature", "Abwesenheitstemperatur"),
         "on": ("cooling_temperature", "Kühltemperatur"),
     }[tail]
+
+
+def _identity(path: str) -> tuple[str, str]:
+    if (key := hybrid_controls.PRICE_KEYS.get(path)) is not None:
+        return key, resource_name(path)
+    return _number_identity(path)

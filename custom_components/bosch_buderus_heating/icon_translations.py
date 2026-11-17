@@ -14,6 +14,7 @@ TRANSLATED_SELECT_ICONS: Final = frozenset(
         "auxiliary_heater_operation_mode",
         "heating_circuit_operation_mode",
         "hot_water_operation_mode",
+        "hybrid_control_strategy",
         "season_switching",
         "silent_mode",
         "summer_winter_switching",

@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from . import (
     BoschBuderusConfigEntry,
+    hybrid_controls,
     recordings,
     rrc,
     rrc_boost,
@@ -1403,6 +1404,9 @@ def _control_diagnostics(
             if assessment.unit in {"C", "F", "K", "°C", "°F", "mins", "min", "s", "h"}
             else None,
         )
+    if resource.path in hybrid_controls.CONTROL_PATHS:
+        # The reported limits, step, unit class and strategies; no values.
+        result["hybrid"] = hybrid_controls.diagnostics(resource)
     return result
 
 

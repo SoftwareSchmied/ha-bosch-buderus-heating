@@ -246,6 +246,7 @@ class BoschBuderusControls extends HTMLElement {
   }
   _group(group) {
     if (group === "system") return this._text("system");
+    if (group === "hybrid") return this._text("hybrid");
     const [family, id] = group.split("/");
     const number = id.match(/\d+$/)?.[0] || id;
     return (

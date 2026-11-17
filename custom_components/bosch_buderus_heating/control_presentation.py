@@ -6,7 +6,7 @@ import re
 
 from homeassistant.const import EntityCategory
 
-from . import circuit_controls, rrc_contracts
+from . import circuit_controls, hybrid_controls, rrc_contracts
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import grouped_entity_name
 from .i18n import localize
@@ -133,6 +133,8 @@ def control_category(
 ) -> EntityCategory | None:
     if contract and (category := rrc_contracts.category(path)) is not None:
         return EntityCategory(category)
+    if path in hybrid_controls.CONTROL_PATHS:
+        return EntityCategory.CONFIG
     if not _heating_presentation(path):
         return EntityCategory.CONFIG if numeric else None
     # Keep the original controls available for automations while combined

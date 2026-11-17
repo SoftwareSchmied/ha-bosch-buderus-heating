@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Uitschakeltimer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Elektriciteitsprijs"
+      },
+      "hybrid_gas_price": {
+        "name": "Gasprijs"
+      },
+      "hybrid_oil_price": {
+        "name": "Olieprijs"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Terugleververgoeding"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Programma 7",
           "program8": "Programma 8",
           "program9": "Programma 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybride regelstrategie",
+        "state": {
+          "cost": "Kostengeoptimaliseerd",
+          "max_renewable_share": "Warmtepompgeoptimaliseerd",
+          "heat_pump_preferred": "Warmtepomp voorkeur",
+          "environment": "Meest klimaatvriendelijk",
+          "boiler_only": "Alleen ketel",
+          "bivalent_alternative": "Bivalent alternatief"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Tijdprogramma {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybride regelstrategie",
+        "state": {
+          "cost": "Kostengeoptimaliseerd",
+          "max_renewable_share": "Warmtepompgeoptimaliseerd",
+          "heat_pump_preferred": "Warmtepomp voorkeur",
+          "environment": "Meest klimaatvriendelijk",
+          "boiler_only": "Alleen ketel",
+          "bivalent_alternative": "Bivalent alternatief"
+        }
       }
     },
     "binary_sensor": {

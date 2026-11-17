@@ -2086,6 +2086,18 @@
       },
       "aircon_timer_off": {
         "name": "Časovač vypnutí"
+      },
+      "hybrid_electricity_price": {
+        "name": "Cena elektřiny"
+      },
+      "hybrid_gas_price": {
+        "name": "Cena plynu"
+      },
+      "hybrid_oil_price": {
+        "name": "Cena oleje"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Výkupní cena"
       }
     },
     "select": {
@@ -2260,6 +2272,17 @@
           "program7": "Program 7",
           "program8": "Program 8",
           "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategie hybridní regulace",
+        "state": {
+          "cost": "Optimalizace nákladů",
+          "max_renewable_share": "Optimalizace pro tepelné čerpadlo",
+          "heat_pump_preferred": "Přednost tepelného čerpadla",
+          "environment": "Nejšetrnější ke klimatu",
+          "boiler_only": "Pouze kotel",
+          "bivalent_alternative": "Bivalentní alternativní"
         }
       }
     },
@@ -3387,6 +3410,17 @@
       },
       "name_part_program_aircon": {
         "name": "Časový program {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategie hybridní regulace",
+        "state": {
+          "cost": "Optimalizace nákladů",
+          "max_renewable_share": "Optimalizace pro tepelné čerpadlo",
+          "heat_pump_preferred": "Přednost tepelného čerpadla",
+          "environment": "Nejšetrnější ke klimatu",
+          "boiler_only": "Pouze kotel",
+          "bivalent_alternative": "Bivalentní alternativní"
+        }
       }
     },
     "binary_sensor": {

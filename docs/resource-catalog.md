@@ -228,6 +228,8 @@ PointT codes and app display names for operation mode:
 | `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
 | `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |
 | `/heatSources/additionalHeater/operationMode` | Auxiliary-heater operation mode | R/W | Select: Off, On, Auto; only for the exact live capability |
+| `/heatSources/hybrid/controlStrategy` | Hybrid control strategy | R/W | Select over the reported values the integration knows (at least two); created disabled, expected but untested on a real installation |
+| `/system/energyTariff/electricity`, `gas`, `oil`, `pv` | Electricity, gas, oil price and feed-in tariff | R/W | Numbers within the reported limits and step, in the reported unit; the oil price only without a gas price; created disabled, expected but untested on a real installation |
 | `/heatSources/additionalHeater/primary/status` | Primary auxiliary-heater status | R | Optional operating state |
 | `/heatSources/additionalHeater/primary/type` | Primary auxiliary-heater type | R | Static diagnostic, disabled by default |
 | `/heatSources/currentEmergencyMode` | Emergency mode | R | Optional operating state |
