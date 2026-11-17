@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Aloita jäähdytys ulkolämpötilassa"
       },
+      "circuit_cooling_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "season_cooling_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "season_heating_threshold": {
+        "name": "Lopeta lämmitys ulkolämpötilassa"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-lämpötila"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-kesto"
+      },
       "away_temperature": {
         "name": "Poissaolon lämpötila"
       },
@@ -2160,6 +2175,14 @@
           "off": "Pois"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Jäähdytys: käyttötila",
+        "state": {
+          "off": "Pois",
+          "manual": "Manuaalinen",
+          "auto": "Automaattinen"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuaalinen",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Poissa-tila"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Avoimen ikkunan tunnistus"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Asetusarvon optimointi"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Lomatila"

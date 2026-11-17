@@ -376,6 +376,8 @@ counters—not holiday dates, names, or raw configuration data.
 | Heat generator | Diagnostic sensor, enabled (see [heat generator models](#heat-generator-models)) | module list of `/system/info` (cloud) or `/system/basicInfo` (local access) | No | No | with these reads, no own request |
 | System bus | Diagnostic sensor | `/system/bus` | No | No | 15 min |
 | Season switching | Select | `/system/seasonOptimizer/mode` | Capability-dependent | Yes, with advertised options and write permission | 5 min; read back after change |
+| Stop heating at outdoor temperature (central, number since 0.9.2-beta.3) | Number control (disabled), only with limits | `/system/seasonOptimizer/heatingThreshold` | Yes where reported | Yes (expected, untested) | 5 min; read back after change |
+| Start cooling at outdoor temperature (central, number since 0.9.2-beta.3) | Number control (disabled), only when the path is found | `/system/seasonOptimizer/coolingThreshold` | Yes where reported | Yes (expected, untested) | 5 min; read back after change |
 | Current heating/cooling status (disabled) | Diagnostic sensor | `/system/globalSeasonOptimizer/currentMode` | No | No | 60 s |
 | iSRC support (disabled) | Diagnostic sensor | `/system/iSRC/supportStatus` | No | No | startup only |
 | Outdoor temperature source | Diagnostic sensor | `/system/sensors/temperatures/outdoorTemperatureSource` | No | No | 15 min |
@@ -612,6 +614,14 @@ no entity; a configured name is added dynamically.
 | Start cooling at outdoor temperature (number since 0.9.2) | Sensor (disabled) and number control (disabled), only while cooling is offered | `/heatingCircuits/{hc}/cooling/outdoorThreshold` | Yes | Yes (expected, untested) | 5 min; read back after change |
 | Away temperature (number since 0.9.2) | Sensor (disabled) and number control | `/heatingCircuits/{hc}/awayTemperature` or `.../temperatureLevels/awayTemperature` | Yes | Yes (expected, untested) | 5 min; read back after change |
 | Cooling temperature (number since 0.9.2) | Sensor (disabled) and number control (disabled) | `/heatingCircuits/{hc}/cooling/temperatureLevels/on` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Boost (switch since 0.9.2-beta.3) | Sensor (disabled) and switch (disabled), only with exactly the values `on` and `off` advertised, not on room controllers | `/heatingCircuits/{hc}/boostMode` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Boost duration (number since 0.9.2-beta.3) | Sensor (disabled) and number control (disabled), only with limits | `/heatingCircuits/{hc}/boostDuration` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Boost temperature (number since 0.9.2-beta.3) | Sensor (disabled) and number control (disabled), only with limits | `/heatingCircuits/{hc}/boostTemperature` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Cooling: operation mode (select since 0.9.2-beta.3; before, the name read as a second operating mode) | Sensor and select (disabled), only with the advertised modes `off`, `manual`, `auto` | `/heatingCircuits/{hc}/cooling/operationMode` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Cooling: control type (renamed in 0.9.2-beta.3) | Sensor (disabled) | `/heatingCircuits/{hc}/cooling/controlType` | Yes | No | 5 min |
+| Setpoint optimization (switch since 0.9.2-beta.3) | Sensor (disabled) and switch (disabled), not on room controllers | `/heatingCircuits/{hc}/setpointOptimization` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Open window detection (switch since 0.9.2-beta.3) | Switch (disabled), only when the path is found, not on room controllers | `/heatingCircuits/{hc}/openWindowDetection/enabled` | Yes | Yes (expected, untested) | 5 min; read back after change |
+| Cooling threshold of a circuit (number since 0.9.2-beta.3) | Number control (disabled), only when the path is found | `/heatingCircuits/{hc}/suWiCoolingThreshold` | Yes | Yes (expected, untested) | 5 min; read back after change |
 
 The select is created only when the heating circuit currently reports the
 `stringValue` type, writeability, and all three allowed raw values `off`,

@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Začetek hlajenja pri zunanji temperaturi"
       },
+      "circuit_cooling_threshold": {
+        "name": "Začetek hlajenja pri zunanji temperaturi"
+      },
+      "season_cooling_threshold": {
+        "name": "Začetek hlajenja pri zunanji temperaturi"
+      },
+      "season_heating_threshold": {
+        "name": "Ustavi ogrevanje pri zunanji temperaturi"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Temperatura Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Trajanje Boost"
+      },
       "away_temperature": {
         "name": "Temperatura odsotnosti"
       },
@@ -2160,6 +2175,14 @@
           "off": "Izklopljeno"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Hlajenje: način delovanja",
+        "state": {
+          "off": "Izklopljeno",
+          "manual": "Ročno",
+          "auto": "Samodejno"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Ročno",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Način odsotnosti"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Zaznavanje odprtega okna"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimizacija nastavljene vrednosti"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Način počitnic"

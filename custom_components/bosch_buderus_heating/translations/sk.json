@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Spustiť chladenie pri vonkajšej teplote"
       },
+      "circuit_cooling_threshold": {
+        "name": "Spustiť chladenie pri vonkajšej teplote"
+      },
+      "season_cooling_threshold": {
+        "name": "Spustiť chladenie pri vonkajšej teplote"
+      },
+      "season_heating_threshold": {
+        "name": "Zastaviť vykurovanie pri vonkajšej teplote"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Teplota Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Trvanie Boost"
+      },
       "away_temperature": {
         "name": "Teplota pri neprítomnosti"
       },
@@ -2160,6 +2175,14 @@
           "off": "Vypnuté"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Chladenie: prevádzkový režim",
+        "state": {
+          "off": "Vypnuté",
+          "manual": "Manuálne",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuálne",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Režim neprítomnosti"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detekcia otvoreného okna"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimalizácia požadovanej hodnoty"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Režim dovolenky"

@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Start cooling at outdoor temperature"
       },
+      "circuit_cooling_threshold": {
+        "name": "Start cooling at outdoor temperature"
+      },
+      "season_cooling_threshold": {
+        "name": "Start cooling at outdoor temperature"
+      },
+      "season_heating_threshold": {
+        "name": "Stop heating at outdoor temperature"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost temperature"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost duration"
+      },
       "away_temperature": {
         "name": "Away temperature"
       },
@@ -2160,6 +2175,14 @@
           "off": "Off"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Cooling: operation mode",
+        "state": {
+          "off": "Off",
+          "manual": "Manual",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manual",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Away mode"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Open window detection"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Setpoint optimization"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Holiday mode"

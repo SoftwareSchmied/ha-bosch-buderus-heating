@@ -149,6 +149,21 @@
       },
       "aircon_timer_off": {
         "default": "mdi:timer-stop-outline"
+      },
+      "heating_circuit_boost_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "heating_circuit_boost_temperature": {
+        "default": "mdi:thermometer-high"
+      },
+      "season_heating_threshold": {
+        "default": "mdi:sun-thermometer-outline"
+      },
+      "season_cooling_threshold": {
+        "default": "mdi:snowflake-thermometer"
+      },
+      "circuit_cooling_threshold": {
+        "default": "mdi:snowflake-thermometer"
       }
     },
     "select": {
@@ -223,6 +238,14 @@
       },
       "aircon_active_schedule": {
         "default": "mdi:calendar-week"
+      },
+      "cooling_operation_mode": {
+        "default": "mdi:snowflake",
+        "state": {
+          "auto": "mdi:calendar-clock",
+          "manual": "mdi:hand-back-right",
+          "off": "mdi:snowflake-off"
+        }
       }
     },
     "sensor": {
@@ -483,6 +506,15 @@
       },
       "aircon_schedule_enabled": {
         "default": "mdi:calendar-clock"
+      },
+      "heating_circuit_boost": {
+        "default": "mdi:rocket-launch-outline"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "default": "mdi:tune-vertical"
+      },
+      "heating_circuit_window_detection": {
+        "default": "mdi:window-open"
       }
     },
     "text": {

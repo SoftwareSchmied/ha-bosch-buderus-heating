@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Tosú an fhuaraithe ag teocht lasmuigh"
       },
+      "circuit_cooling_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "season_cooling_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "season_heating_threshold": {
+        "name": "Stop an téamh ag teocht lasmuigh"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Teocht Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Fad Boost"
+      },
       "away_temperature": {
         "name": "Teocht as baile"
       },
@@ -2160,6 +2175,14 @@
           "off": "As"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Fuarú: mód oibríochta",
+        "state": {
+          "off": "As",
+          "manual": "Láimhe",
+          "auto": "Uathoibríoch"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Láimhe",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Mód as baile"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Brath fuinneoige oscailte"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Barrfheabhsú socphointe"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Mód saoire"

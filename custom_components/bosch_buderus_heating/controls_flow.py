@@ -342,6 +342,8 @@ def _missing_cloud_reason(entry: ConfigEntry) -> str:
 
 def _translation_key(path: str) -> str:
     if path.endswith("/operationMode"):
+        if path.startswith("/heatingCircuits/") and "/cooling/" in path:
+            return "cooling_operation_mode"
         if path.startswith("/heatingCircuits/"):
             return "heating_circuit_operation_mode"
         if path.startswith("/dhwCircuits/"):

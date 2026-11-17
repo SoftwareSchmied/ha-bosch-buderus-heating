@@ -888,6 +888,28 @@ _APP_PATH_NAMES = {
         "Kühlen: Temperaturstufe",
         "Cooling: target temperature level",
     ),
+    # Own names for the cooling paths of a circuit, so that they are not read
+    # as the heating circuit's second operating mode, control type or setpoint.
+    "/heatingCircuits/*/cooling/operationMode": (
+        "Kühlen: Betriebsart",
+        "Cooling: operation mode",
+    ),
+    "/heatingCircuits/*/cooling/controlType": (
+        "Kühlen: Regelungsart",
+        "Cooling: control type",
+    ),
+    "/heatingCircuits/*/cooling/manualRoomSetpoint": (
+        "Kühlen: Manueller Sollwert",
+        "Cooling: manual setpoint",
+    ),
+    "/heatingCircuits/*/cooling/temporaryRoomSetpoint": (
+        "Kühlen: Vorübergehender Raum-Sollwert",
+        "Cooling: temporary room setpoint",
+    ),
+    "/heatingCircuits/*/openWindowDetection/enabled": (
+        "Fenster-offen-Erkennung",
+        "Open window detection",
+    ),
     "/heatingCircuits/*/suWiCoolingThreshold": (
         "Kühlbetrieb ab Außentemperatur",
         "Start cooling at outdoor temperature",

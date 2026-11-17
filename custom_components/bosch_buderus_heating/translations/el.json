@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Έναρξη ψύξης σε εξωτερική θερμοκρασία"
       },
+      "circuit_cooling_threshold": {
+        "name": "Έναρξη ψύξης σε εξωτερική θερμοκρασία"
+      },
+      "season_cooling_threshold": {
+        "name": "Έναρξη ψύξης σε εξωτερική θερμοκρασία"
+      },
+      "season_heating_threshold": {
+        "name": "Παύση θέρμανσης σε εξωτερική θερμοκρασία"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Θερμοκρασία Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Διάρκεια Boost"
+      },
       "away_temperature": {
         "name": "Θερμοκρασία απουσίας"
       },
@@ -2160,6 +2175,14 @@
           "off": "Ανενεργό"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Ψύξη: τρόπος λειτουργίας",
+        "state": {
+          "off": "Ανενεργό",
+          "manual": "Χειροκίνητο",
+          "auto": "Αυτόματο"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Χειροκίνητο",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Λειτουργία απουσίας"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Ανίχνευση ανοιχτού παραθύρου"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Βελτιστοποίηση τιμής ρύθμισης"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Λειτουργία διακοπών"

@@ -33,6 +33,7 @@ from .coordinator import (
 )
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
+from .hc_controls_extra import COOLING_MODE_POLICY, COOLING_MODES
 from .i18n import localize
 from .icon_translations import TRANSLATED_SELECT_ICONS
 from .platform_scope import PlatformScope, setup_platform
@@ -167,6 +168,8 @@ def build_select_descriptions(
             translation_key = "ventilation_exhaust_fan_level"
         elif policy is SUMMER_WINTER_MODE_POLICY:
             translation_key = "summer_winter_switching"
+        elif policy is COOLING_MODE_POLICY:
+            translation_key = "cooling_operation_mode"
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key, policy, context))
@@ -217,6 +220,7 @@ def _option_map(
         "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
         "ventilation_exhaust_fan_level": VENTILATION_FAN_LEVELS,
         "summer_winter_switching": SUMMER_WINTER_VALUES,
+        "cooling_operation_mode": COOLING_MODES,
     }.get(translation_key, ())
     ordered = tuple(value for value in preferred if value in advertised)
     ordered += tuple(value for value in advertised if value not in ordered)
