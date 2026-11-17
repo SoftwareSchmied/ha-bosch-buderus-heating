@@ -3266,8 +3266,8 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
-     "original_name": "System \u2013 Enabled",
+     "original_icon": "mdi:map-marker-radius-outline",
+     "original_name": "System \u2013 Automatic absence",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:system:autoAway:enabled",
      "unit": null
@@ -4705,6 +4705,18 @@
     {
      "capabilities": null,
      "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:map-marker-radius-outline",
+     "original_name": "System \u2013 Automatic absence",
+     "translation_key": "rrc_auto_away",
+     "unique_id": "gateway-one:system:autoAway:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
      "disabled_by": null,
      "domain": "switch",
      "entity_category": null,
@@ -5677,6 +5689,23 @@
      "translation_key": "hot_water_eco",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 8.0,
+      "min": 1.0,
+      "mode": "box",
+      "step": 1.0
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": null,
+     "original_name": "HC 1: Boost duration",
+     "translation_key": "heating_circuit_boost_duration",
+     "unique_id": "gateway-one:heatingCircuits:hc1:boostDuration:control",
+     "unit": "h"
     },
     {
      "capabilities": {
@@ -8100,6 +8129,18 @@
      "original_name": "DHW 1: Reduce on alarm",
      "translation_key": "reduce_temperature_on_alarm",
      "unique_id": "gateway-one:dhwCircuits:dhw1:reduceTempOnAlarm:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": null,
+     "original_name": "HC 1: Boost",
+     "translation_key": "heating_circuit_boost",
+     "unique_id": "gateway-one:heatingCircuits:hc1:boostMode:control",
      "unit": null
     },
     {
