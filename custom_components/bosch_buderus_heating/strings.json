@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Choose the installation",
-        "description": "Select the installation to connect locally. Its gateway identity will be checked before saving.",
+        "description": "Select the installation whose K40 or K40RF gateway you want to connect locally, usually the heat pump or the boiler. Its gateway identity will be checked before saving.",
         "data": {
           "target": "Installation / gateway"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "The firmware version could not be verified.",
       "local_old_firmware": "Update the gateway firmware before setting up the local connection.",
       "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
-      "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
+      "local_incomplete_system": "The gateway is still collecting its system information. This can take a few minutes. Wait about five minutes, then try the read check again.",
       "local_invalid_response": "A required gateway response could not be verified.",
       "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
       "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Choose the installation",
-        "description": "Select the installation to connect locally. Its gateway identity will be checked before saving.",
+        "description": "Select the installation whose K40 or K40RF gateway you want to connect locally, usually the heat pump or the boiler. Its gateway identity will be checked before saving.",
         "data": {
           "target": "Installation / gateway"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "The firmware version could not be verified.",
       "local_old_firmware": "Update the gateway firmware before setting up the local connection.",
       "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
-      "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
+      "local_incomplete_system": "The gateway is still collecting its system information. This can take a few minutes. Wait about five minutes, then try the read check again.",
       "local_invalid_response": "A required gateway response could not be verified.",
       "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
       "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "New system (local only)"
+        "new_plant": "New system (gateway not in your account)"
       }
     },
     "local_owner": {

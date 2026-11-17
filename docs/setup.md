@@ -232,19 +232,30 @@ pauses the local access (see [compatibility](compatibility.md#checked-systems)).
 
 1. Choose **Cloud and local access** when adding the integration, or add the
    local access later with **Set up local access** in the entry's options.
-2. Select the discovered gateway address or enter its IP address or hostname.
-3. Confirm the gateway certificate when Home Assistant asks for it.
-4. Sign in with the device label: enter **Login** and **Pass** from the label
+2. With a cloud access, choose the installation in **Choose the installation**:
+   the one whose K40 or K40RF gateway you connect, usually the heat pump or
+   the boiler, not a wallbox. The list shows the device names; if only one
+   installation fits, it is preselected. **New system (gateway not in your
+   account)** is only for a gateway that is not in your account; for a
+   gateway that is, it would set the system up a second time.
+3. Select the discovered gateway address or enter its IP address or hostname.
+4. Confirm the gateway certificate when Home Assistant asks for it.
+5. Sign in with the device label: enter **Login** and **Pass** from the label
    on the gateway. The login is shown as you type it; the pass field can be
    shown with its eye symbol. Spaces and line breaks at the start or end, for
    example from copying, are removed. Home Assistant does not save them.
-5. Release the local sign-in on the gateway: press the Wi-Fi and wireless
+6. Release the local sign-in on the gateway: press the Wi-Fi and wireless
    buttons together for 1 second, wait for the blue signal and continue within
    five minutes. After a typo, press the buttons again, because the gateway
    accepts a sign-in only within five minutes after the release.
-6. Confirm the certificate once more. The gateway has its own certificate for
+7. Confirm the certificate once more. The gateway has its own certificate for
    the sign-in port 9442 and for the data port 9443, so this page can appear
    twice.
+
+If the read check reports that the gateway's system information is not
+complete yet, the gateway is still collecting it. On a K40RF with firmware
+15.00.01 this took about ten minutes during the first local setup. Wait a few
+minutes and try the read check again; there is no need to start over.
 
 If Home Assistant shows more than one "Discovered" card for the gateway, open
 the one of Bosch/Buderus Home Comfort.

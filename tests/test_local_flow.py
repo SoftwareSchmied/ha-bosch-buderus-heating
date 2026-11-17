@@ -924,3 +924,22 @@ async def test_owner_removed_while_token_form_is_open_never_saves(
     result = await submit(hass, manager, result, {"token": TOKEN})
     assert result["errors"]["base"] == "local_configuration_changed"
     assert not journal._path.exists()
+
+
+async def test_the_only_installation_is_preselected(hass, supported, journal):
+    """#137: with one installation that fits, it is preselected and a new
+    system stays a choice of its own."""
+    entry, _, _, target = registered(hass)
+    manager = hass.config_entries.options
+    result = await manager.async_init(entry.entry_id)
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
+    result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
+    assert result["step_id"] == "local_target"
+    assert result["data_schema"]({})["target"] == target
+    selector = next(iter(result["data_schema"].schema.values()))
+    assert [option["value"] for option in selector.config["options"]] == [
+        target,
+        flow.NEW_PLANT,
+    ]
+    result = await submit(hass, manager, result, {"target": target})
+    assert result["step_id"] == "local_address"

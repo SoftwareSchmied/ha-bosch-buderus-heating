@@ -528,11 +528,18 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             # P49b step 7: an entry without any plant sets one up locally.
             user_input = {"target": NEW_PLANT}
         if user_input is None:
+            # One installation fits: it is preselected (#137); a new system
+            # stays a choice of its own.
+            field = (
+                vol.Required("target", default=next(iter(targets)))
+                if len(targets) == 1
+                else vol.Required("target")
+            )
             return self._local_form(
                 "local_target",
                 vol.Schema(
                     {
-                        vol.Required("target"): SelectSelector(
+                        field: SelectSelector(
                             SelectSelectorConfig(
                                 options=[
                                     # The device name the user knows, not the
