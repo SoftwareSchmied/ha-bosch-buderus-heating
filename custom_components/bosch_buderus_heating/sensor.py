@@ -71,6 +71,10 @@ from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import is_dhw_safety_path
 from .energy_contracts import assess_energy, is_energy_collection
 from .enum_translation import enum_value_to_ha
+from .environmental_energy import (
+    ENABLED_BY_DEFAULT as ENVIRONMENTAL_ENABLED_BY_DEFAULT,
+)
+from .environmental_energy import environmental_energy, has_environmental_energy
 from .estimated_energy import track_estimated_energy_sensors
 from .exchange_counters import (
     COUNTER_STATE_CLASSES,
@@ -220,7 +224,6 @@ _SYSTEM_PRESSURE_RANGE_PATH = "/heatSources/systemPressureRange"
 _HEATING_CIRCUIT_ROOM_TEMPERATURE = re.compile(
     r"^/heatingCircuits/(?P<circuit>[^/]+)/roomtemperature$"
 )
-_ENERGY_BALANCE_EPSILON = 1e-9
 # A4: volume flows (pump, brine circuit, hot water) carry the translations of
 # their measuring range attribute.
 _VOLUME_FLOW = re.compile(r"volumeflow$", re.IGNORECASE)
@@ -1342,18 +1345,19 @@ def _energy_descriptions(
         descriptions.append(
             _description(resource, "total_electricity", "total_electricity")
         )
-    if resource.path == "/heatSources/emon/totalConsumption" and {
+    if has_environmental_energy(resource.path) and {
         "compressor",
         "eheater",
         "outputProduced",
     }.issubset(keys):
-        descriptions.append(
-            _description(
-                resource,
-                "environmental_energy",
-                "environmental_energy",
-            )
+        description = _description(
+            resource,
+            "environmental_energy",
+            "environmental_energy",
         )
+        if resource.path not in ENVIRONMENTAL_ENABLED_BY_DEFAULT:
+            description = replace(description, entity_registry_enabled_default=False)
+        descriptions.append(description)
     return descriptions
 
 
@@ -1801,16 +1805,7 @@ class BoschBuderusSensor(
                 return None
             return fsum((compressor, auxiliary))
         if description.value_kind == "environmental_energy":
-            values = _energy_values(resource)
-            produced = values.get("outputProduced")
-            compressor = values.get("compressor")
-            auxiliary = values.get("eheater")
-            if produced is None or compressor is None or auxiliary is None:
-                return None
-            environmental = fsum((produced, -compressor, -auxiliary))
-            if environmental < -_ENERGY_BALANCE_EPSILON:
-                return None
-            return max(0.0, environmental)
+            return environmental_energy(_energy_values(resource))
         if description.value_kind == "unknown_number":
             value = resource.value
             if (

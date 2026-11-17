@@ -291,10 +291,15 @@ async def test_the_sensors_their_ids_and_defaults(
     enabled = sorted(
         key for key, item in factors.items() if item.entity_registry_enabled_default
     )
+    # D-DEF: every period of the total, no mode.
     assert enabled == [
+        "factor:total:current_month",
         "factor:total:current_year",
+        "factor:total:previous_month",
+        "factor:total:previous_year",
         "factor:total:since_commissioning",
         "factor:total:today",
+        "factor:total:yesterday",
     ]
     today = factors["factor:total:today"]
     assert today.unique_id == (

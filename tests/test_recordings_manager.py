@@ -439,11 +439,14 @@ async def test_entities_default_and_comparison_methods(hass: HomeAssistant) -> N
     specs = rec.specs()
     enabled = sorted(spec.key for spec in specs if spec.enabled_default)
     assert enabled == sorted(
-        [
-            key("total_heat", Period.YESTERDAY),
-            key("total_electricity", Period.YESTERDAY),
-        ]
+        key(measure, period)
+        for measure in ("total_heat", "total_electricity")
+        for period in Period
     )
+    # Not the parts of the electricity, not a mode, not a comparison copy.
+    assert key("total_compressor", Period.CURRENT_MONTH) not in enabled
+    assert key("ch_heat", Period.CURRENT_MONTH) not in enabled
+    assert key("total_heat", Period.CURRENT_MONTH, CALCULATED) not in enabled
     by_key = {spec.key: spec for spec in specs}
     # The heat per mode comes from the counters first.
     assert by_key[key("ch_heat", Period.YESTERDAY, CALCULATED)].primary

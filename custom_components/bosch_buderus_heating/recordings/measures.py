@@ -119,11 +119,7 @@ class EntitySpec:
 
     @property
     def enabled_default(self) -> bool:
-        return (
-            self.primary
-            and self.period is Period.YESTERDAY
-            and self.measure.key in ("total_heat", "total_electricity")
-        )
+        return self.primary and self.measure.key in ("total_heat", "total_electricity")
 
 
 def _kind_slug(series: Series) -> str:

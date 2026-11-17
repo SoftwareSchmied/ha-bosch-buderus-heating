@@ -307,14 +307,17 @@ Derived total values:
 
 - **Total electricity consumption:** direct `electricity`, or
   `compressor + eheater` only when both components are complete.
-- **Total environmental energy:**
+- **Environmental energy:**
   `outputProduced - compressor - eheater`, only for complete, finite,
-  non-negative inputs and a non-negative result. The entity is named
-  **Total – Environmental energy (calculated)** so it cannot be confused with
-  a value supplied directly by PointT.
-- Do not calculate environmental energy separately for heating, hot water, or
-  cooling. PointT's allocation of standby consumption can create misleading
-  negative results for those areas.
+  non-negative inputs and a non-negative result, for the total, heating, hot
+  water and pool collections alike (the same calculation the manufacturer's
+  app uses). The entities are named, for example, **Total – Environmental
+  energy (calculated)** so they cannot be confused with a value supplied
+  directly by PointT. A negative result (the parts are read at different
+  times, and standby consumption is allocated per area) is not shown and never
+  starts a new meter cycle. The entities of heating, hot water and pool are
+  created disabled; cooling has none, as its collection has no auxiliary
+  heater and the app shows no environmental energy for it.
 - A cooling response with HTTP 200 and only zero-valued counters does not prove
   that cooling equipment exists.
 

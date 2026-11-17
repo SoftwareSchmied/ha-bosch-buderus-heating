@@ -90,9 +90,11 @@ after every start to find the recordings of the plant.
 
 For each recording there are five entities, for example *Total – Heat
 produced yesterday (system recording)*. The electricity of a mode is the
-sum of its compressor and heater recordings. Enabled by default are only
-**total heat produced yesterday** and **total electricity yesterday**; all
-others are created disabled.
+sum of its compressor and heater recordings. Enabled by default are
+**total heat produced** and **total electricity** for all five periods
+(yesterday, current and previous month, current and previous year); all
+others are created disabled. An installation that already has these
+entities keeps their state; the defaults apply to new entities only.
 
 The plant splits the heat into heating and hot water by hour; in an hour in
 which it switches between the two, both modes get the heat of that hour, so

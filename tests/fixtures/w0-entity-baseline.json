@@ -6869,6 +6869,20 @@
     },
     {
      "capabilities": {
+      "state_class": "total"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Environmental energy (calculated)",
+     "translation_key": null,
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:environmental_energy",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
       "state_class": "total_increasing"
      },
      "device_class": "energy",
@@ -7037,6 +7051,20 @@
     },
     {
      "capabilities": {
+      "state_class": "total"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Environmental energy (calculated)",
+     "translation_key": null,
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:environmental_energy",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
       "state_class": "total_increasing"
      },
      "device_class": "energy",
@@ -7054,7 +7082,7 @@
       "state_class": "measurement"
      },
      "device_class": null,
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
@@ -7082,7 +7110,7 @@
       "state_class": "measurement"
      },
      "device_class": null,
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
@@ -7096,7 +7124,7 @@
       "state_class": "measurement"
      },
      "device_class": null,
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
@@ -7138,7 +7166,7 @@
       "state_class": "measurement"
      },
      "device_class": null,
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
