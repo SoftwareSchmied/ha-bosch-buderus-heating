@@ -11,7 +11,6 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 from time import monotonic
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -333,14 +332,57 @@ async def test_heating_circuits_keep_their_own_rules(zone):
 
 async def test_a_zone_target_is_not_polled_before_its_series_found_it(zone):
     coordinator, client = zone
-    pending = SimpleNamespace(path=TEMPORARY)
-    coordinator._manual_setpoint_candidates[pending.path] = MODE
-    # Auto mode, the candidate is not a resource yet: the regular cycle must
-    # not add it to its reads (the series reads it, within its budget).
-    coordinator.data[MODE] = fresh(mode("auto"))
-    client.get_resources_bulk.side_effect = None
-    client.get_resources_bulk.return_value = (success(mode("auto")),)
+    circuit_mode = "/heatingCircuits/hc2/operationMode"
+    circuit_target = "/heatingCircuits/hc2/manualRoomSetpoint"
+    coordinator.resources[circuit_mode] = mode("manual", circuit_mode)
+    coordinator.data[circuit_mode] = fresh(mode("manual", circuit_mode))
+    # The zone is in manual but its manual setpoint is not known yet; neither
+    # is the manual setpoint of the circuit. Both wait for their first read.
+    coordinator.resources.pop(MANUAL)
+    coordinator.data.pop(MANUAL)
+    coordinator._paths_by_group[PollGroup.CONTROL] = (MODE, circuit_mode)
+    coordinator._manual_setpoint_candidates[circuit_target] = circuit_mode
+    coordinator._manual_setpoint_candidates[MANUAL] = MODE
+
+    async def read(gateway, paths, **_kwargs):
+        return tuple(
+            success(
+                mode("manual", path)
+                if path.endswith("operationMode")
+                else setpoint(path)
+            )
+            for path in paths
+        )
+
+    client.get_resources_bulk.side_effect = read
     coordinator._next_update[PollGroup.CONTROL] = 0
     coordinator.data = await coordinator._async_update_data_locked()
-    for call_args in client.get_resources_bulk.await_args_list:
-        assert TEMPORARY not in call_args.args[1]
+    requested = {
+        path
+        for item in client.get_resources_bulk.await_args_list
+        for path in item.args[1]
+    }
+    # A circuit's candidate is read by the regular cycle (the harness works) ...
+    assert circuit_target in requested
+    # ... a zone's setpoint only by its own bounded series.
+    assert MANUAL not in requested
+
+
+async def test_a_series_ends_when_the_mode_changed_meanwhile(zone):
+    coordinator, client = zone
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    async def sleep(_delay):
+        entered.set()
+        await release.wait()
+
+    with patch(SLEEP, side_effect=sleep):
+        apply(coordinator, success(mode("auto")))
+        task = coordinator._manual_setpoint_tasks[TEMPORARY]
+        await entered.wait()
+        # The mode moves without a poll result that would cancel the series.
+        coordinator.data[MODE] = fresh(mode("manual"))
+        release.set()
+        await task
+    client.get_resources_bulk.assert_not_awaited()

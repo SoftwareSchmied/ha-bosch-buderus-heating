@@ -41,11 +41,10 @@ def printable_text(value: object) -> str | None:
 def connection_lost_time(text: str, now: datetime | None = None) -> datetime | None:
     """The instant of a valid text with an offset, ``None`` otherwise.
 
-    ``None`` for the placeholder, a calendar-invalid date, a date before the
+    ``None`` for the placeholder (month and day 00 are no calendar date, it
+    needs no rule of its own), a calendar-invalid date, a date before the
     controller's null year, a time in the future and a text without offset.
     """
-    if text == PLACEHOLDER:
-        return None
     match = _PATTERN.fullmatch(text)
     if match is None:
         return None
