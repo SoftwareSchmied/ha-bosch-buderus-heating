@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Gewenste temperatuur zwembad"
       },
+      "filter_maximum_run_time": {
+        "name": "Maximale filterlooptijd"
+      },
       "heating_temperature": {
         "name": "Verwarmingstemperatuur"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Ventilatorstand afvoer",
+      "ventilation_operation_mode": {
+        "name": "Bedrijfsmodus ventilatie",
         "state": {
+          "time": "Tijdprogramma",
           "off": "Uit",
           "min": "Ventilatorstand 1",
           "red": "Ventilatorstand 2",
           "nom": "Ventilatorstand 3",
           "max": "Ventilatorstand 4",
-          "dem": "Vraaggestuurd"
+          "dem": "Vraaggestuurd",
+          "party": "Feest",
+          "power_vent": "Intensieve ventilatie",
+          "fireplace": "Open haard",
+          "fall_asleep": "Inslapen",
+          "freefct": "Vrije functie"
         }
       },
       "summer_winter_switching": {

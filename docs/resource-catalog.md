@@ -357,7 +357,7 @@ containers; they are never generated as an assumed numeric sequence.
 | System | appliance state/model/firmware, health, iSRC installation state, power guard/limitation, low-noise and silent mode, season optimizer thresholds/mode, additional system temperatures, units, energy tariff, and variable-tariff state |
 | Solar | collector and tank temperatures, maximum temperature, limit state, pump modulation, and yield |
 | Pool | current and target temperature, enabled state, and auxiliary-heater mode |
-| Ventilation | manual fan target and per-zone fan level, filter lifetime, air-quality/humidity limits, mode, supply temperature, and ventilation level |
+| Ventilation | manual fan target and per-zone fan level, filter lifetime, air-quality/humidity limits, mode, supply temperature, and ventilation level; disabled diagnostic readings of the demand, exhaust, extract and outdoor air temperature, indoor air quality and humidity; writable: mode and filter run time |
 | Zones and room devices | current and target climate values, child lock, heating/cooling modes, battery, signal, connection state, errors, assignment, and static product information |
 | Photovoltaics | enabled and surplus-available states |
 

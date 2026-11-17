@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Pool target temperature"
       },
+      "filter_maximum_run_time": {
+        "name": "Maximum filter run time"
+      },
       "heating_temperature": {
         "name": "Heating temperature"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Exhaust fan level",
+      "ventilation_operation_mode": {
+        "name": "Ventilation operating mode",
         "state": {
+          "time": "Time program",
           "off": "Off",
           "min": "Fan level 1",
           "red": "Fan level 2",
           "nom": "Fan level 3",
           "max": "Fan level 4",
-          "dem": "Demand"
+          "dem": "Demand",
+          "party": "Party",
+          "power_vent": "Intensive ventilation",
+          "fireplace": "Fireplace",
+          "fall_asleep": "Falling asleep",
+          "freefct": "Free function"
         }
       },
       "summer_winter_switching": {

@@ -657,6 +657,8 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Dit is waarschijnlijk het token dat deze toegang gebruikt: intrekken beëindigt deze lokale toegang.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Dit is waarschijnlijk het token van een andere lokale toegang tot deze gateway: intrekken beëindigt die toegang.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Welk token een toegang gebruikt, is niet met zekerheid te zeggen, bijvoorbeeld als een andere Home Assistant deze gateway gebruikt. Het intrekken van een gebruikt token beëindigt de lokale toegang die het gebruikt.",
-    "Cooling temperature": "Koeltemperatuur"
+    "Cooling temperature": "Koeltemperatuur",
+    "Air quality demand": "Vraag naar luchtkwaliteit",
+    "Humidity demand": "Vraag naar luchtvochtigheid"
   }
 }

@@ -17,6 +17,6 @@ TRANSLATED_SELECT_ICONS: Final = frozenset(
         "season_switching",
         "silent_mode",
         "summer_winter_switching",
-        "ventilation_exhaust_fan_level",
+        "ventilation_operation_mode",
     }
 )

@@ -657,6 +657,8 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Πιθανότατα είναι το διακριτικό που χρησιμοποιεί αυτή η πρόσβαση: η ανάκλησή του τερματίζει αυτή την τοπική πρόσβαση.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Πιθανότατα είναι το διακριτικό άλλης τοπικής πρόσβασης σε αυτή την πύλη: η ανάκλησή του τερματίζει εκείνη την πρόσβαση.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ποιο διακριτικό χρησιμοποιεί μια πρόσβαση δεν μπορεί να διαπιστωθεί με βεβαιότητα, για παράδειγμα όταν άλλο Home Assistant χρησιμοποιεί αυτή την πύλη. Η ανάκληση ενός διακριτικού σε χρήση τερματίζει την τοπική πρόσβαση που το χρησιμοποιεί.",
-    "Cooling temperature": "Θερμοκρασία ψύξης"
+    "Cooling temperature": "Θερμοκρασία ψύξης",
+    "Air quality demand": "Ζήτηση βάσει ποιότητας αέρα",
+    "Humidity demand": "Ζήτηση βάσει υγρασίας"
   }
 }

@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Température cible de la piscine"
       },
+      "filter_maximum_run_time": {
+        "name": "Durée d'utilisation maximale du filtre"
+      },
       "heating_temperature": {
         "name": "Température de chauffage"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Niveau de ventilation d'extraction",
+      "ventilation_operation_mode": {
+        "name": "Mode de fonctionnement de la ventilation",
         "state": {
+          "time": "Programme horaire",
           "off": "Arrêt",
           "min": "Niveau de ventilation 1",
           "red": "Niveau de ventilation 2",
           "nom": "Niveau de ventilation 3",
           "max": "Niveau de ventilation 4",
-          "dem": "Selon la demande"
+          "dem": "Selon la demande",
+          "party": "Fête",
+          "power_vent": "Ventilation intensive",
+          "fireplace": "Cheminée",
+          "fall_asleep": "Endormissement",
+          "freefct": "Fonction libre"
         }
       },
       "summer_winter_switching": {

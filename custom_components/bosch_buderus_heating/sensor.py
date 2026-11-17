@@ -243,7 +243,7 @@ _PRESSURE_STATUS_OPTIONS = (
 _PERCENTAGE_DEVICE_CLASS_PATTERNS = (
     (
         re.compile(
-            r"^(?:/heatingCircuits/[^/]+/actualHumidity|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/actualHumidity|/ventilation/zone[^/]+/maxRelativeHumidity)$"
+            r"^(?:/heatingCircuits/[^/]+/actualHumidity|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/actualHumidity|/ventilation/zone[^/]+/(?:maxRelativeHumidity|sensors/internalHumidity))$"
         ),
         SensorDeviceClass.HUMIDITY,
     ),

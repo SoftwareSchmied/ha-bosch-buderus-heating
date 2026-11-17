@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Επιθυμητή θερμοκρασία πισίνας"
       },
+      "filter_maximum_run_time": {
+        "name": "Μέγιστος χρόνος λειτουργίας φίλτρου"
+      },
       "heating_temperature": {
         "name": "Θερμοκρασία θέρμανσης"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Αυτόματο"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Βαθμίδα ανεμιστήρα εξαγωγής",
+      "ventilation_operation_mode": {
+        "name": "Λειτουργία αερισμού",
         "state": {
+          "time": "Χρονοπρόγραμμα",
           "off": "Ανενεργό",
           "min": "Βαθμίδα ανεμιστήρα 1",
           "red": "Βαθμίδα ανεμιστήρα 2",
           "nom": "Βαθμίδα ανεμιστήρα 3",
           "max": "Βαθμίδα ανεμιστήρα 4",
-          "dem": "Κατά ζήτηση"
+          "dem": "Κατά ζήτηση",
+          "party": "Πάρτι",
+          "power_vent": "Εντατικός αερισμός",
+          "fireplace": "Τζάκι",
+          "fall_asleep": "Αποκοίμιση",
+          "freefct": "Ελεύθερη λειτουργία"
         }
       },
       "summer_winter_switching": {

@@ -91,6 +91,7 @@ from .start_counters import is_start_counter_path, registered_start_counter_path
 from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession, is_startup_entity_path
 from .storage_migration import migrate_entry_storage
 from .switch_programs import is_switch_program_path
+from .ventilation_controls import is_retired_fan_level_select
 from .wallbox import WallboxCoordinator, is_wallbox
 from .write_policies import context_of, rrc_kwargs
 
@@ -1031,12 +1032,15 @@ def _remove_retired_entities(
                 semantic_path = resource.path.strip("/").replace("/", ":")
                 retired_unique_ids.add(f"{gateway_id}:{semantic_path}")
 
+    gateway_ids = {coordinator.gateway.gateway_id for coordinator in coordinators}
     entity_registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
         if keep_customised and _user_customised(entity):
             continue
         if (
             entity.unique_id in retired_unique_ids
+            # The exhaust fan level select of earlier versions (a sensor now).
+            or is_retired_fan_level_select(entity.domain, entity.unique_id, gateway_ids)
             or entity.unique_id in observed_resource_paths
             or _former_field_entity(entity.unique_id, field_structures, present)
         ):

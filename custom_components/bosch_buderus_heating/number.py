@@ -347,6 +347,7 @@ def _number_identity(path: str) -> tuple[str, str]:
         "high": ("hot_water_comfort", "Startschwelle Komfort"),
         "low": ("hot_water_eco", "Startschwelle Eco"),
         "setpointTemp": ("pool_setpoint_temperature", "Pool-Solltemperatur"),
+        "maxRunTime": ("filter_maximum_run_time", "Maximale Filterlaufzeit"),
         "suWiThreshold": (
             "summer_winter_threshold",
             "Heizbetrieb bis Außentemperatur",

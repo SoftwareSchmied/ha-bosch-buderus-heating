@@ -1333,13 +1333,13 @@ been confirmed on physical equipment.
 | Variable tariff | `/system/variableTariff/ch/*`, `dhw/*`, `currentPriceCatagorization`, `priceInfo`, `tariffId` | Current category, optimization state, price-dependent setpoints, and status | 60 s to 15 min |
 | Solar | `/solarCircuits/{sc}/collectorTemperature`, `dhwTankBottomTemperature`, `maxCylinderTemperature`, `maxTemperatureReached`, `pumpModulation`, `solarYield` | Temperatures, pump output, limit state, and yield | 60 s; yield 5 min |
 | Pool | `/pool/currentTemp`, `setpointTemp`, `enabled`, `additionalHeater/poolMode` | Temperature, target, enabled state, and auxiliary-heater mode; a target number (°C, reported limits and step) and an on/off switch when the cloud reports them writable (the switch only for exactly `on`/`off`) | 60 s to 15 min; read-back after a change |
-| Ventilation | `/ventilation/operationModes/manual/fanSetpoint`, `/ventilation/{zone}/*` | Fan levels, filter time, air-quality/humidity limits, mode, and supply temperature; an exhaust fan level select when the cloud reports it writable and offers only the documented levels `off`, `min`, `red`, `nom`, `max`, `dem`; from 0.9.0 it is created disabled, because no ventilation unit has confirmed it yet | 60 s to 15 min; read-back after a change |
+| Ventilation | `/ventilation/operationModes/manual/fanSetpoint`, `/ventilation/{zone}/*` | Fan levels, filter time, air-quality/humidity limits, mode, and supply temperature; since 0.9.2-beta.3 an operating mode select (enabled by default; only the modes the unit lists, see [ventilation](heating-controls.md#ventilation-operating-mode-and-filter-time)) and a maximum filter run time number (disabled), both when the cloud reports them writable; the exhaust fan level is a read-only sensor, and the read-only demand, air-quality, humidity and temperature readings are disabled diagnostic sensors | 60 s to 15 min; read-back after a change |
 | Room zones | `/zones/{zone}/*` | Average temperature/humidity, target, child lock, heating/cooling mode and temporary setpoint; since 0.9.2 a climate entity per zone and a "Clear temporary setpoint" button (see [zone controls](zone-controls.md#zone-climate)) | 60 s to 15 min; read-back after a change |
 | Room devices | `/devices/{device}/*` | Room temperature/humidity, battery, connection state, errors, and static device information; since 0.9.2 a **Battery low** binary sensor (diagnostic, enabled), a **Radio signal** sensor in dB (diagnostic, disabled) and, from 0.9.2-beta.3, **RF connection lost since** as a timestamp (unknown while the controller reports its placeholder); on a zone controller the entities are named after the device's zone (see [zone controls](zone-controls.md#radio-room-devices)) | 60 s to startup only |
 | Photovoltaics | `/pv/enable`, `/pv/surplusAvailable` | Enabled and surplus states | 60 s to 15 min |
 
-Summer bypass activation, the ventilation operating mode and the pool mode
-are not offered as controls.
+Summer bypass activation, filter reset and the pool mode are not offered as
+controls.
 
 Known percentage resources receive a semantic Home Assistant device class only
 when both their exact PointT path and `%` unit match. This covers heating-circuit,

@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Ønsket pooltemperatur"
       },
+      "filter_maximum_run_time": {
+        "name": "Maksimal filterlevetid"
+      },
       "heating_temperature": {
         "name": "Opvarmningstemperatur"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Niveau for udsugningsblæser",
+      "ventilation_operation_mode": {
+        "name": "Ventilationens driftsform",
         "state": {
+          "time": "Tidsprogram",
           "off": "Fra",
           "min": "Blæserniveau 1",
           "red": "Blæserniveau 2",
           "nom": "Blæserniveau 3",
           "max": "Blæserniveau 4",
-          "dem": "Efter behov"
+          "dem": "Efter behov",
+          "party": "Fest",
+          "power_vent": "Intensiv ventilation",
+          "fireplace": "Pejs",
+          "fall_asleep": "Indsovning",
+          "freefct": "Fri funktion"
         }
       },
       "summer_winter_switching": {

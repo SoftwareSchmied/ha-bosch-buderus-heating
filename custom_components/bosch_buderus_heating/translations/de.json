@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Pool-Solltemperatur"
       },
+      "filter_maximum_run_time": {
+        "name": "Maximale Filterlaufzeit"
+      },
       "heating_temperature": {
         "name": "Heiztemperatur"
       },
@@ -2140,15 +2143,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Abluft-Lüfterstufe",
+      "ventilation_operation_mode": {
+        "name": "Lüftungsbetriebsart",
         "state": {
+          "time": "Zeitprogramm",
           "off": "Aus",
           "min": "Lüfterstufe 1",
           "red": "Lüfterstufe 2",
           "nom": "Lüfterstufe 3",
           "max": "Lüfterstufe 4",
-          "dem": "Bedarf"
+          "dem": "Bedarf",
+          "party": "Party",
+          "power_vent": "Intensivlüftung",
+          "fireplace": "Kamin",
+          "fall_asleep": "Einschlafen",
+          "freefct": "Freie Funktion"
         }
       },
       "summer_winter_switching": {

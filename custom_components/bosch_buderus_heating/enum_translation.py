@@ -71,6 +71,10 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         "notSupportedPairingEnabled": "not_supported_pairing_enabled",
         "inEvaluation": "in_evaluation",
     },
+    "ventilation_operation_mode": {
+        "powerVent": "power_vent",
+        "fallAsleep": "fall_asleep",
+    },
     "season_optimizer_mode": {
         "forcedHeat": "forced_heat",
         "forcedCool": "forced_cool",

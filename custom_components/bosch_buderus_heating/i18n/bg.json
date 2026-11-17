@@ -657,6 +657,8 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Най-вероятно това е токенът, който този достъп използва: отмяната му прекратява този локален достъп.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Най-вероятно това е токенът на друг локален достъп до този шлюз: отмяната му прекратява онзи достъп.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Кой токен използва даден достъп, не може да се определи със сигурност, например когато друг Home Assistant използва този шлюз. Отмяната на използван токен прекратява локалния достъп, който го използва.",
-    "Cooling temperature": "Температура на охлаждане"
+    "Cooling temperature": "Температура на охлаждане",
+    "Air quality demand": "Потребност според качеството на въздуха",
+    "Humidity demand": "Потребност според влажността"
   }
 }
