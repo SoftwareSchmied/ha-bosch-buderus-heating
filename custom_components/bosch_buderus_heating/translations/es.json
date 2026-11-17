@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Elegir la instalación",
-        "description": "Selecciona la instalación que se conectará de forma local. Se comprobará la identidad de su pasarela antes de guardar.",
+        "description": "Selecciona el sistema de calefacción que quieres conectar de forma local: la bomba de calor o la caldera, no una wallbox ni un aire acondicionado. Se comprobará la identidad de su pasarela antes de guardar.",
         "data": {
           "target": "Instalación / pasarela"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "No se pudo verificar la versión del firmware.",
       "local_old_firmware": "Actualiza el firmware de la pasarela antes de configurar la conexión local.",
       "local_unsupported_brand": "La interfaz local documentada no admite la marca de esta pasarela.",
-      "local_incomplete_system": "La información de la instalación de la pasarela aún no está completa. Vuelve a probar la comprobación de lectura más tarde.",
+      "local_incomplete_system": "La pasarela todavía está recopilando la información de su instalación. Puede tardar unos minutos. Espera unos cinco minutos y vuelve a probar la comprobación de lectura.",
       "local_invalid_response": "No se pudo verificar una respuesta necesaria de la pasarela.",
       "local_identity_unverified": "Esta instalación aún no se ha emparejado de forma inequívoca. La primera configuración requiere un acceso a la nube disponible e identificadores de pasarela y de módulo coincidentes de ambas interfaces. Los vínculos verificados se pueden usar después sin la nube.",
       "local_identity_conflict": "La identidad de la pasarela entra en conflicto con la instalación seleccionada o con otra configuración.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Elegir la instalación",
-        "description": "Selecciona la instalación que se conectará de forma local. Se comprobará la identidad de su pasarela antes de guardar.",
+        "description": "Selecciona el sistema de calefacción que quieres conectar de forma local: la bomba de calor o la caldera, no una wallbox ni un aire acondicionado. Se comprobará la identidad de su pasarela antes de guardar.",
         "data": {
           "target": "Instalación / pasarela"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "No se pudo verificar la versión del firmware.",
       "local_old_firmware": "Actualiza el firmware de la pasarela antes de configurar la conexión local.",
       "local_unsupported_brand": "La interfaz local documentada no admite la marca de esta pasarela.",
-      "local_incomplete_system": "La información de la instalación de la pasarela aún no está completa. Vuelve a probar la comprobación de lectura más tarde.",
+      "local_incomplete_system": "La pasarela todavía está recopilando la información de su instalación. Puede tardar unos minutos. Espera unos cinco minutos y vuelve a probar la comprobación de lectura.",
       "local_invalid_response": "No se pudo verificar una respuesta necesaria de la pasarela.",
       "local_identity_unverified": "Esta instalación aún no se ha emparejado de forma inequívoca. La primera configuración requiere un acceso a la nube disponible e identificadores de pasarela y de módulo coincidentes de ambas interfaces. Los vínculos verificados se pueden usar después sin la nube.",
       "local_identity_conflict": "La identidad de la pasarela entra en conflicto con la instalación seleccionada o con otra configuración.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Instalación nueva (solo local)"
+        "new_plant": "Instalación nueva (pasarela no incluida en tu cuenta)"
       }
     },
     "local_owner": {

@@ -93,6 +93,25 @@ def test_a_name_equal_to_a_serial_or_a_long_number_is_no_name() -> None:
     assert unnamed_hardware_cloud(values) == {"XCU": 1, "unknown": 5}
 
 
+def test_a_local_module_that_reports_no_serial_number_is_counted_by_hardware() -> None:
+    """#139: missing descriptive fields are None, never a placeholder."""
+    module = SimpleNamespace(
+        product_name=None,
+        serial_number=None,
+        product_serial=None,
+        hardware="Burner module 239",
+        version=None,
+    )
+    bare = SimpleNamespace(
+        product_name=None, serial_number=None, hardware=None, version=None
+    )
+    assert rows_from_local([module, bare]) == ()
+    assert unnamed_hardware_local([module, bare]) == {
+        "Burner module 239": 1,
+        "unknown": 1,
+    }
+
+
 def test_local_modules_hide_serial_numbers_in_name_fields() -> None:
     module = SimpleNamespace(
         product_name="SN-9", serial_number="sn-9", product_serial=None, hardware="HW"

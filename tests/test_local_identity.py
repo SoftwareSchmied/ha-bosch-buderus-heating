@@ -113,6 +113,33 @@ def test_extra_metadata_modules_and_changed_firmware_do_not_change_identity():
         compare_systems(replace(SYSTEM, modules=(MODULE, MODULE)), cloud, "000123")
 
 
+UNREPORTED = SystemModule(
+    "8", "65519", "1.3.0+1", None, "Burner module 239", None, None
+)
+
+
+@pytest.mark.parametrize("cloud_serial", [None, "", "00099999999999999999999999"])
+def test_a_local_module_without_serial_number_is_left_out_of_the_comparison(
+    cloud_serial,
+):
+    """#139: the other modules still prove the identity."""
+    cloud = cloud_system()
+    row = {"Tok": "8", "Id": "65519", "ModuleHwIdentStr": "Burner module 239"}
+    if cloud_serial is not None:
+        row["ModuleSerialNumber"] = cloud_serial
+    cloud["values"].append(row)
+    compare_systems(replace(SYSTEM, modules=(MODULE, UNREPORTED)), cloud, "000123")
+
+
+def test_a_system_with_only_unreported_modules_proves_no_identity():
+    cloud = cloud_system()
+    cloud["values"] = [
+        {"Tok": "8", "Id": "65519", "ModuleHwIdentStr": "Burner module 239"}
+    ]
+    with pytest.raises(ConfigurationError, match="identity_contract_required"):
+        compare_systems(replace(SYSTEM, modules=(UNREPORTED,)), cloud, "000123")
+
+
 class IdentityBackend(Backend):
     def __init__(self):
         super().__init__()

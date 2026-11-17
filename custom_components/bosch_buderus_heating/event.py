@@ -20,6 +20,7 @@ from .device import device_info_for_resource
 from .faults import (
     FaultEventType,
     FaultLifecycleEvent,
+    fault_code_search_url,
     fault_severity_label,
     fault_summary,
 )
@@ -135,6 +136,8 @@ class BoschBuderusNotificationEvent(
         }
         if fault.code is not None:
             attributes["code"] = fault.code
+        if (url := fault_code_search_url(fault)) is not None:
+            attributes["code_search_url"] = url
         if fault.subcode is not None:
             attributes["subcode"] = fault.subcode
         if fault.occurred_at is not None:

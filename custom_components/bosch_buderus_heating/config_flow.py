@@ -321,17 +321,16 @@ class BoschBuderusConfigFlow(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select the application brand."""
-        if self.VERSION == 4:
-            try:
-                claim_cloud_setup(
-                    self.hass, self.flow_id, cast(dict[str, Any], self.context)
-                )
-            except ConfigurationError as error:
-                return self.async_abort(
-                    reason=str(error)
-                    if str(error) in CLAIM_ABORTS
-                    else "configuration_changed"
-                )
+        try:
+            claim_cloud_setup(
+                self.hass, self.flow_id, cast(dict[str, Any], self.context)
+            )
+        except ConfigurationError as error:
+            return self.async_abort(
+                reason=str(error)
+                if str(error) in CLAIM_ABORTS
+                else "configuration_changed"
+            )
         if user_input is not None:
             self._brand = Brand(user_input[CONF_BRAND])
             return self._start_authorization()
@@ -501,7 +500,7 @@ class BoschBuderusConfigFlow(
             elif self._brand is None or self._tokens is None:
                 return self.async_abort(reason="invalid_flow")
             else:
-                if self.VERSION == 4 and self._reconfigure_entry is None:
+                if self._reconfigure_entry is None:
                     return await self._create_managed_cloud(selected)
                 duplicate = self._find_duplicate_entry(set(selected))
                 if duplicate is not None:
@@ -673,7 +672,7 @@ class BoschBuderusConfigFlow(
             return self.async_abort(reason="invalid_flow")
         if self._managed_edit is not None and self._reauth_entry is not None:
             return await self._async_finish_managed_reauth()
-        if self.VERSION == 4 and monotonic() < self._discovery_retry_at:
+        if monotonic() < self._discovery_retry_at:
             return self.async_show_form(
                 step_id="retry", errors={"base": "cloud_rate_limited"}
             )
@@ -696,15 +695,13 @@ class BoschBuderusConfigFlow(
         except AuthenticationError:
             return self._restart_authorization(error="invalid_auth")
         except RateLimited as error:
-            if self.VERSION == 4:
-                delay = error.retry_after
-                if delay is None or not math.isfinite(delay):
-                    delay = 300.0
-                self._discovery_retry_at = monotonic() + bounded_cloud_pause(delay)
-                return self.async_show_form(
-                    step_id="retry", errors={"base": "cloud_rate_limited"}
-                )
-            return self.async_show_form(step_id="retry", errors={"base": "unknown"})
+            delay = error.retry_after
+            if delay is None or not math.isfinite(delay):
+                delay = 300.0
+            self._discovery_retry_at = monotonic() + bounded_cloud_pause(delay)
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cloud_rate_limited"}
+            )
         except RequestTimeout, ServiceUnavailable:
             return self.async_show_form(
                 step_id="retry", errors={"base": "cannot_connect"}
@@ -740,10 +737,9 @@ class BoschBuderusConfigFlow(
                 data_updates=tokens_to_data(self._tokens),
                 reason="reauth_successful",
             )
-        if self.VERSION == 4:
-            self._new_cloud_listing = CloudDiscovery(
-                self._gateways, self._bacon_ids, self._bacon_account
-            )
+        self._new_cloud_listing = CloudDiscovery(
+            self._gateways, self._bacon_ids, self._bacon_account
+        )
         return await self.async_step_gateways()
 
     async def _async_finish_managed_reauth(self) -> ConfigFlowResult:

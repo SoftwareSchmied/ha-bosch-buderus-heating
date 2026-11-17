@@ -40,6 +40,13 @@ const path = require("node:path");
       await radio.check();
     };
     // The installation is offered by its name, not by its gateway identifier.
+    // The only installation is preselected; the step describes the heating
+    // system and the last choice says what it is for.
+    const only = page.getByRole("radio", {name: "MX400", exact: true});
+    await only.waitFor();
+    assert.equal(await only.isChecked(), true, "the only installation is preselected");
+    await page.getByText(de ? "nicht Wallbox oder Klimagerät" : "not a wallbox or air conditioner", {exact: false}).first().waitFor();
+    await page.getByText(de ? "Neue Anlage (Gateway nicht im Konto)" : "New system (gateway not in your account)", {exact: true}).waitFor();
     await choose("MX400");
     await next();
     const address = page.getByLabel(de ? "IP-Adresse oder Hostname" : "IP address or hostname", {exact:true});

@@ -36,7 +36,7 @@ access, and local access only. With cloud and local access, the new entry's
 options open directly at the local setup (Home Assistant 2026.5 or newer). With
 local access only, an entry without any access is created and its options open
 at the local setup of a new system. The installation step also offers **New
-system (local only)** in entries that already have systems. A new system needs
+system (gateway not in your account)** in entries that already have systems. A new system needs
 no cloud comparison: its gateway must not belong to any configured system, in
 this or another entry, under any identity. It is stored as a local installation
 with the gateway's local identity, the reported brand and controller model
