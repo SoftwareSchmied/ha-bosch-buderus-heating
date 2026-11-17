@@ -327,6 +327,9 @@ _UNDERSTOOD_PATTERNS = tuple(
         r"^/solarCircuits/[^/]+(?:/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature|maxTemperatureReached|pumpModulation|solarYield))?$",
         r"^/pool/(?:additionalHeater/poolMode|currentTemp|enabled|setpointTemp)$",
         r"^/ventilation/(?:operationModes/manual/fanSetpoint|zone[^/]+(?:/(?:exhaustFanLevel|maxIndoorAirQuality|maxRelativeHumidity|operationMode|ventilationLevels|filter/(?:maxRunTime|remainingTime)|sensors/supplyTemp))?)$",
+        # Read-only diagnostic readings of a ventilation unit, disabled by
+        # default (not in the default-enabled patterns below).
+        r"^/ventilation/zone[^/]+/(?:demand/(?:indoorAirQuality|relativeHumidity)|sensors/(?:exhaustTemp|extractTemp|internalAirQuality|internalHumidity|outdoorTemp))$",
         r"^/zones/zone[^/]+(?:/(?:averageActualHumidity|averageCurrentTemperature|childLock|currentRoomSetpoint|icon|name|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|operationMode|temporaryRoomSetpoint)))?$",
         r"^/devices/(?!list$)[^/]+(?:/(?:actualHumidity|assignedHC|battery|errors|name|productName|rfTimeofConnectionLost|roomtemperature|signal|type|versionFirmware|zoneId))?$",
         r"^/pv/(?:enable|surplusAvailable)$",
@@ -427,7 +430,7 @@ _APP_RESOURCE_SCHEMA_RULES = (
     ),
     _EntitySchemaRule(
         re.compile(
-            r"^(?:/heatingCircuits/[^/]+/(?:actualSupplyTemperature|awayTemperature|boostTemperature|roomtemperature|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint|cooling/(?:manualRoomSetpoint|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on)|/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|inletTemperature|manualsetpoint|outletTemperature|outTemp|sensor/(?:airBoxTemperature|exhaustFlueGasTemperature|externalTankTemperature|heatExchangerFlueGasTemperature|heatExchangerTemperature))|/system/(?:awayMode/temperature|sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)|seasonOptimizer/(?:coolingThreshold|heatingThreshold)|variableTariff/ch/(?:currentSetpoint|highPriceDelta|lowPriceDelta|midPriceSetpoint))|/heatSources/(?:hybrid/bivalentSetpoint|poolSetpointTemperature|poolTemperature)|/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature)|/pool/(?:currentTemp|setpointTemp)|/ventilation/zone[^/]+/sensors/supplyTemp|/zones/zone[^/]+/(?:averageCurrentTemperature|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|temporaryRoomSetpoint))|/devices/(?!list$)[^/]+/roomtemperature)$"
+            r"^(?:/heatingCircuits/[^/]+/(?:actualSupplyTemperature|awayTemperature|boostTemperature|roomtemperature|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint|cooling/(?:manualRoomSetpoint|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on)|/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|inletTemperature|manualsetpoint|outletTemperature|outTemp|sensor/(?:airBoxTemperature|exhaustFlueGasTemperature|externalTankTemperature|heatExchangerFlueGasTemperature|heatExchangerTemperature))|/system/(?:awayMode/temperature|sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)|seasonOptimizer/(?:coolingThreshold|heatingThreshold)|variableTariff/ch/(?:currentSetpoint|highPriceDelta|lowPriceDelta|midPriceSetpoint))|/heatSources/(?:hybrid/bivalentSetpoint|poolSetpointTemperature|poolTemperature)|/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature)|/pool/(?:currentTemp|setpointTemp)|/ventilation/zone[^/]+/sensors/(?:supplyTemp|exhaustTemp|extractTemp|outdoorTemp)|/zones/zone[^/]+/(?:averageCurrentTemperature|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|temporaryRoomSetpoint))|/devices/(?!list$)[^/]+/roomtemperature)$"
         ),
         frozenset({"floatValue"}),
         frozenset({"C"}),
@@ -948,6 +951,34 @@ _APP_PATH_NAMES = {
         "Stop heating at outdoor temperature",
     ),
     "/ventilation/*/sensors/supplyTemp": ("Zulufttemperatur", "Supply air temperature"),
+    "/ventilation/*/sensors/exhaustTemp": (
+        "Fortlufttemperatur",
+        "Exhaust air temperature",
+    ),
+    "/ventilation/*/sensors/extractTemp": (
+        "Ablufttemperatur",
+        "Extract air temperature",
+    ),
+    "/ventilation/*/sensors/outdoorTemp": (
+        "Außenlufttemperatur",
+        "Outdoor air temperature",
+    ),
+    "/ventilation/*/sensors/internalAirQuality": (
+        "Luftqualität innen",
+        "Indoor air quality",
+    ),
+    "/ventilation/*/sensors/internalHumidity": (
+        "Luftfeuchtigkeit innen",
+        "Indoor humidity",
+    ),
+    "/ventilation/*/demand/indoorAirQuality": (
+        "Bedarf nach Luftqualität",
+        "Air quality demand",
+    ),
+    "/ventilation/*/demand/relativeHumidity": (
+        "Bedarf nach Luftfeuchtigkeit",
+        "Humidity demand",
+    ),
     "/system/awayMode/temperature": ("Abwesenheitstemperatur", "Away temperature"),
     "/dhwCircuits/*/sensor/airBoxTemperature": (
         "Lufttemperatur im Gerätegehäuse",

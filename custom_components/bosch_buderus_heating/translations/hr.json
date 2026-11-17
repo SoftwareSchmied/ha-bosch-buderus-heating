@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Ciljna temperatura bazena"
       },
+      "filter_maximum_run_time": {
+        "name": "Maksimalno vrijeme rada filtra"
+      },
       "heating_temperature": {
         "name": "Temperatura grijanja"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Automatski"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Stupanj ventilatora otpadnog zraka",
+      "ventilation_operation_mode": {
+        "name": "Način rada prozračivanja",
         "state": {
+          "time": "Vremenski program",
           "off": "Isključeno",
           "min": "Stupanj ventilatora 1",
           "red": "Stupanj ventilatora 2",
           "nom": "Stupanj ventilatora 3",
           "max": "Stupanj ventilatora 4",
-          "dem": "Prema potrebi"
+          "dem": "Prema potrebi",
+          "party": "Zabava",
+          "power_vent": "Intenzivno prozračivanje",
+          "fireplace": "Kamin",
+          "fall_asleep": "Uspavljivanje",
+          "freefct": "Slobodna funkcija"
         }
       },
       "summer_winter_switching": {

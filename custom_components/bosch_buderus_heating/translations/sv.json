@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Önskad temperatur pool"
       },
+      "filter_maximum_run_time": {
+        "name": "Maximal filterdrifttid"
+      },
       "heating_temperature": {
         "name": "Värmetemperatur"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Frånluftsfläktens steg",
+      "ventilation_operation_mode": {
+        "name": "Ventilationens driftläge",
         "state": {
+          "time": "Tidsprogram",
           "off": "Av",
           "min": "Fläktsteg 1",
           "red": "Fläktsteg 2",
           "nom": "Fläktsteg 3",
           "max": "Fläktsteg 4",
-          "dem": "Behovsstyrd"
+          "dem": "Behovsstyrd",
+          "party": "Fest",
+          "power_vent": "Intensivventilation",
+          "fireplace": "Eldstad",
+          "fall_asleep": "Insomning",
+          "freefct": "Fri funktion"
         }
       },
       "summer_winter_switching": {

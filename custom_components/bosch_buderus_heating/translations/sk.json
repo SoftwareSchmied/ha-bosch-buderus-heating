@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Požadovaná teplota bazéna"
       },
+      "filter_maximum_run_time": {
+        "name": "Maximálna doba prevádzky filtra"
+      },
       "heating_temperature": {
         "name": "Teplota vykurovania"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Stupeň odsávacieho ventilátora",
+      "ventilation_operation_mode": {
+        "name": "Prevádzkový režim vetrania",
         "state": {
+          "time": "Časový program",
           "off": "Vypnuté",
           "min": "Stupeň ventilátora 1",
           "red": "Stupeň ventilátora 2",
           "nom": "Stupeň ventilátora 3",
           "max": "Stupeň ventilátora 4",
-          "dem": "Podľa potreby"
+          "dem": "Podľa potreby",
+          "party": "Párty",
+          "power_vent": "Intenzívne vetranie",
+          "fireplace": "Krb",
+          "fall_asleep": "Zaspávanie",
+          "freefct": "Voľná funkcia"
         }
       },
       "summer_winter_switching": {

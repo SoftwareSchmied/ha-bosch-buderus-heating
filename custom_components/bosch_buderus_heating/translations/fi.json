@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Altaan tavoitelämpötila"
       },
+      "filter_maximum_run_time": {
+        "name": "Suodattimen enimmäiskäyttöaika"
+      },
       "heating_temperature": {
         "name": "Lämmityslämpötila"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Automaattinen"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Poistopuhaltimen taso",
+      "ventilation_operation_mode": {
+        "name": "Ilmanvaihdon käyttötila",
         "state": {
+          "time": "Aikaohjelma",
           "off": "Pois",
           "min": "Puhallintaso 1",
           "red": "Puhallintaso 2",
           "nom": "Puhallintaso 3",
           "max": "Puhallintaso 4",
-          "dem": "Tarvepohjainen"
+          "dem": "Tarvepohjainen",
+          "party": "Juhlat",
+          "power_vent": "Tehotuuletus",
+          "fireplace": "Takka",
+          "fall_asleep": "Nukahtaminen",
+          "freefct": "Vapaa toiminto"
         }
       },
       "summer_winter_switching": {

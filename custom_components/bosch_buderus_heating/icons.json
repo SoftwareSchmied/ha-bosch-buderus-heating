@@ -216,15 +216,21 @@
           "off": "mdi:power"
         }
       },
-      "ventilation_exhaust_fan_level": {
+      "ventilation_operation_mode": {
         "default": "mdi:fan",
         "state": {
           "dem": "mdi:fan-auto",
+          "fall_asleep": "mdi:sleep",
+          "fireplace": "mdi:fireplace",
+          "freefct": "mdi:fan-chevron-up",
           "max": "mdi:fan-speed-3",
           "min": "mdi:fan-speed-1",
           "nom": "mdi:fan-speed-2",
           "off": "mdi:fan-off",
-          "red": "mdi:fan-speed-1"
+          "party": "mdi:party-popper",
+          "power_vent": "mdi:fan-plus",
+          "red": "mdi:fan-speed-1",
+          "time": "mdi:fan-clock"
         }
       },
       "wallbox_charging_strategy": {

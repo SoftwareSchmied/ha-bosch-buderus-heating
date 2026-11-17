@@ -45,6 +45,7 @@ from .sensor import _semantic_key
 from .switch_program_select import SwitchProgramSelect
 from .switch_program_select import descriptions as switch_program_descriptions
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
+from .ventilation_controls import VENTILATION_OPERATION_MODES
 from .wallbox_entities import track_wallbox_entities
 from .writes import (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
@@ -54,8 +55,7 @@ from .writes import (
     SEASON_SWITCHING_POLICY,
     SILENT_MODE_POLICY,
     STRING_SWITCH_POLICIES,
-    VENTILATION_FAN_LEVEL_POLICY,
-    VENTILATION_FAN_LEVELS,
+    VENTILATION_OPERATION_MODE_POLICY,
     ZONE_OPERATION_MODE_POLICY,
     ControlContext,
     EnumWritePolicy,
@@ -164,8 +164,8 @@ def build_select_descriptions(
             translation_key = "season_switching"
         elif policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
             translation_key = "auxiliary_heater_operation_mode"
-        elif policy is VENTILATION_FAN_LEVEL_POLICY:
-            translation_key = "ventilation_exhaust_fan_level"
+        elif policy is VENTILATION_OPERATION_MODE_POLICY:
+            translation_key = "ventilation_operation_mode"
         elif policy is SUMMER_WINTER_MODE_POLICY:
             translation_key = "summer_winter_switching"
         elif policy is COOLING_MODE_POLICY:
@@ -218,7 +218,7 @@ def _option_map(
         "silent_mode": ("off", "auto", "on"),
         "season_switching": ("off", "automatic", "forcedHeat", "forcedCool"),
         "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
-        "ventilation_exhaust_fan_level": VENTILATION_FAN_LEVELS,
+        "ventilation_operation_mode": VENTILATION_OPERATION_MODES,
         "summer_winter_switching": SUMMER_WINTER_VALUES,
         "cooling_operation_mode": COOLING_MODES,
     }.get(translation_key, ())

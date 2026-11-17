@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Temperatura zadana basenu"
       },
+      "filter_maximum_run_time": {
+        "name": "Maksymalny czas pracy filtra"
+      },
       "heating_temperature": {
         "name": "Temperatura grzania"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Automatyczny"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Bieg wentylatora wyciągowego",
+      "ventilation_operation_mode": {
+        "name": "Tryb pracy wentylacji",
         "state": {
+          "time": "Program czasowy",
           "off": "Wyłączony",
           "min": "Bieg wentylatora 1",
           "red": "Bieg wentylatora 2",
           "nom": "Bieg wentylatora 3",
           "max": "Bieg wentylatora 4",
-          "dem": "Na żądanie"
+          "dem": "Na żądanie",
+          "party": "Impreza",
+          "power_vent": "Wentylacja intensywna",
+          "fireplace": "Kominek",
+          "fall_asleep": "Zasypianie",
+          "freefct": "Funkcja dowolna"
         }
       },
       "summer_winter_switching": {

@@ -56,7 +56,8 @@ from custom_components.bosch_buderus_heating.select import build_select_descript
 from custom_components.bosch_buderus_heating.sensor import build_sensor_descriptions
 from custom_components.bosch_buderus_heating.write_policies import RRC_CONTEXT
 from custom_components.bosch_buderus_heating.writes import (
-    VENTILATION_FAN_LEVEL_POLICY,
+    FILTER_RUN_TIME_POLICY,
+    VENTILATION_OPERATION_MODE_POLICY,
     assess_control,
 )
 from tests.helpers.rrc_cloud import Clock, cloud_patches, load_tree
@@ -534,8 +535,7 @@ async def test_an_existing_setting_sensor_stays_disabled(
 # ------------------------------------------------- other defaults
 
 
-def test_the_ventilation_fan_level_select_is_created_disabled() -> None:
-    assert VENTILATION_FAN_LEVEL_POLICY.enabled_by_default is False
+def test_the_ventilation_fan_level_has_no_select_any_more() -> None:
     path = "/ventilation/zone1/exhaustFanLevel"
     resources = {
         path: _resource(
@@ -546,9 +546,15 @@ def test_the_ventilation_fan_level_select_is_created_disabled() -> None:
             allowed_values=("off", "min", "red", "nom", "max", "dem"),
         )
     }
-    descriptions = build_select_descriptions(resources)
-    assert descriptions
-    assert all(not item.entity_registry_enabled_default for item in descriptions)
+    assert assess_control(resources[path]).policy is None
+    assert not build_select_descriptions(resources)
+
+
+def test_the_ventilation_mode_select_is_enabled_and_the_filter_time_disabled() -> None:
+    # The mode select is the one control created enabled on purpose (the
+    # user's exception); the filter time stays disabled like new controls.
+    assert VENTILATION_OPERATION_MODE_POLICY.enabled_by_default is True
+    assert FILTER_RUN_TIME_POLICY.enabled_by_default is False
 
 
 def test_the_room_controller_hot_water_level_is_the_hot_water_temperature() -> None:

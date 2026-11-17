@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Teocht sprice an linn snámha"
       },
+      "filter_maximum_run_time": {
+        "name": "Uasmhéid ama oibre an scagaire"
+      },
       "heating_temperature": {
         "name": "Teocht téimh"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Uathoibríoch"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Leibhéal an fhean sceite",
+      "ventilation_operation_mode": {
+        "name": "Mód oibríochta na haeráile",
         "state": {
+          "time": "Clár ama",
           "off": "As",
           "min": "Leibhéal an fhean 1",
           "red": "Leibhéal an fhean 2",
           "nom": "Leibhéal an fhean 3",
           "max": "Leibhéal an fhean 4",
-          "dem": "Éileamh"
+          "dem": "Éileamh",
+          "party": "Cóisir",
+          "power_vent": "Aeráil dhian",
+          "fireplace": "Teallach",
+          "fall_asleep": "Titim ina chodladh",
+          "freefct": "Feidhm saor"
         }
       },
       "summer_winter_switching": {

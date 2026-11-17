@@ -661,6 +661,8 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Det er sannsynligvis tokenen denne tilgangen bruker: tilbakekalles den, avsluttes denne lokale tilgangen.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Det er sannsynligvis tokenen til en annen lokal tilgang til denne gatewayen: tilbakekalles den, avsluttes den tilgangen.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Hvilken token en tilgang bruker, kan ikke fastslås sikkert, for eksempel når en annen Home Assistant bruker denne gatewayen. Tilbakekalles en token i bruk, avsluttes den lokale tilgangen som bruker den.",
-    "Cooling temperature": "Kjøletemperatur"
+    "Cooling temperature": "Kjøletemperatur",
+    "Air quality demand": "Behov etter luftkvalitet",
+    "Humidity demand": "Behov etter luftfuktighet"
   }
 }

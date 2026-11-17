@@ -1955,6 +1955,9 @@
       "pool_setpoint_temperature": {
         "name": "Ønsket bassengtemperatur"
       },
+      "filter_maximum_run_time": {
+        "name": "Maksimal filterlevetid"
+      },
       "heating_temperature": {
         "name": "Oppvarmingstemperatur"
       },
@@ -2155,15 +2158,21 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Avtrekksviftetrinn",
+      "ventilation_operation_mode": {
+        "name": "Ventilasjonens driftsmodus",
         "state": {
+          "time": "Tidsprogram",
           "off": "Av",
           "min": "Viftetrinn 1",
           "red": "Viftetrinn 2",
           "nom": "Viftetrinn 3",
           "max": "Viftetrinn 4",
-          "dem": "Behovsstyrt"
+          "dem": "Behovsstyrt",
+          "party": "Fest",
+          "power_vent": "Intensivventilasjon",
+          "fireplace": "Peis",
+          "fall_asleep": "Innsovning",
+          "freefct": "Fri funksjon"
         }
       },
       "summer_winter_switching": {

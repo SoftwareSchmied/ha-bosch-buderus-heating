@@ -32,6 +32,10 @@ from .pointt.models import JsonScalar
 from .rrc_contracts import ContractConflict
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
+from .ventilation_controls import FILTER_RUN_TIME_POLICY as FILTER_RUN_TIME_POLICY
+from .ventilation_controls import (
+    VENTILATION_OPERATION_MODE_POLICY as VENTILATION_OPERATION_MODE_POLICY,
+)
 from .water_softener import softener_capability, softener_schema_issue, softener_unit
 from .write_policies import DEFAULT_READ_BACK_ATTEMPTS as DEFAULT_READ_BACK_ATTEMPTS
 from .write_policies import DEFAULT_READ_BACK_DELAY as DEFAULT_READ_BACK_DELAY
@@ -157,18 +161,6 @@ WDDW2_HOLIDAY_POLICY = EnumWritePolicy(
     frozenset({"stringValue"}),
     frozenset({"on", "off"}),
     known_only=True,
-)
-# The exhaust fan levels documented for the local interface; any other
-# advertised level makes the whole control unavailable. Not tested on a
-# ventilation unit yet, so the select is created disabled.
-VENTILATION_FAN_LEVELS = ("off", "min", "red", "nom", "max", "dem")
-VENTILATION_FAN_LEVEL_POLICY = EnumWritePolicy(
-    r"^/ventilation/zone[^/]+/exhaustFanLevel$",
-    frozenset({"stringValue"}),
-    frozenset(VENTILATION_FAN_LEVELS),
-    known_only=True,
-    options_rule="subset",
-    enabled_by_default=False,
 )
 POOL_ENABLED_POLICY = EnumWritePolicy(
     r"^/pool/enabled$",
@@ -326,6 +318,7 @@ NUMBER_WRITE_POLICIES = (
         write_grid=True,
     ),
     POOL_SETPOINT_POLICY,
+    FILTER_RUN_TIME_POLICY,
     # Heating circuit settings besides the climate entity (0.9.2).
     *circuit_controls.NUMBER_POLICIES,
     # Boost, season thresholds and further circuit settings (0.9.2).
@@ -1184,7 +1177,7 @@ _ENUM_POLICIES = (
     SILENT_MODE_POLICY,
     SEASON_SWITCHING_POLICY,
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
-    VENTILATION_FAN_LEVEL_POLICY,
+    VENTILATION_OPERATION_MODE_POLICY,
     SOFTENER_REGENERATION_POLICY,
     # Z1: the active weekly program of a heating circuit (A/B).
     ACTIVE_SWITCH_PROGRAM_POLICY,

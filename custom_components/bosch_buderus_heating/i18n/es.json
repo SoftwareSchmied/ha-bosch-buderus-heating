@@ -661,6 +661,8 @@
     "It is most likely the token this access uses: revoking it ends this local access.": "Probablemente es el token que usa este acceso: revocarlo termina este acceso local.",
     "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Probablemente es el token de otro acceso local a esta pasarela: revocarlo termina ese acceso.",
     "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "No se puede saber con certeza qué token usa un acceso, por ejemplo cuando otro Home Assistant usa esta pasarela. Revocar un token en uso termina el acceso local que lo usa.",
-    "Cooling temperature": "Temperatura de refrigeración"
+    "Cooling temperature": "Temperatura de refrigeración",
+    "Air quality demand": "Demanda por calidad del aire",
+    "Humidity demand": "Demanda por humedad"
   }
 }

@@ -372,6 +372,36 @@ circuits. The tariff readings of a K30/K40 (`/system/variableTariff/*`)
 stay as they were since 0.9.0, as disabled diagnostic sensors. Expected,
 untested on a real installation.
 
+### Ventilation (operating mode and filter time)
+
+Where the gateway reports a ventilation unit (`/ventilation/{zone}`), since
+0.9.2-beta.3 the integration offers:
+
+- A select **Ventilation operating mode** on `/ventilation/{zone}/operationMode`,
+  with the modes the manufacturer's app knows: `time` (time program), `off`,
+  `min`, `red`, `nom`, `max` (fan levels 1 to 4), `dem` (demand), `party`,
+  `powerVent` (intensive ventilation), `fireplace`, `fallAsleep` and `freefct`
+  (free function). Only modes the unit itself lists are offered; the mode
+  `exhaustOnly` (exhaust air only) is never offered, as the app hides it too.
+  The fan level is changed through this mode, not through `exhaustFanLevel`,
+  which stays a read-only sensor. **This select is enabled by default**, unlike
+  other new controls. Please note that `off` stops the ventilation of the
+  whole unit and `fireplace` changes the air supply for the fireplace function;
+  choose them deliberately.
+- A number **Maximum filter run time** on `/ventilation/{zone}/filter/maxRunTime`
+  (in months), disabled by default and only with the limits the unit reports.
+  The integration does not reset the filter: the app does that with a separate
+  command that is not read or written here.
+
+Every change reads the setting from the gateway first, sends exactly one
+request and reads it back; a change is not sent again. Nothing is created
+where the gateway does not report the path, does not allow writing it, or
+reports no matching modes or limits. Earlier versions could create a select on
+`exhaustFanLevel` (disabled); it is removed at the next start, because no
+unit allowed writing it. The ventilation readings `demand/*`, `sensors/exhaustTemp`,
+`extractTemp`, `outdoorTemp`, `internalAirQuality` and `internalHumidity` are
+available as disabled diagnostic sensors. Expected, untested on a real plant.
+
 ### Heating and hot water schedules
 
 Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
@@ -911,6 +941,40 @@ nicht. Geschrieben wird nichts: In der App braucht die Wahl eines Tarifs
 mehrere Anfragen und ändert dabei auch die Heizkreise. Die Tarifwerte einer
 K30/K40 (`/system/variableTariff/*`) bleiben wie seit 0.9.0 deaktivierte
 Diagnose-Sensoren. Erwartet, aber an einer echten Anlage ungetestet.
+
+### Lüftung (Betriebsart und Filterlaufzeit)
+
+Meldet das Gateway eine Lüftungseinheit (`/ventilation/{zone}`), bietet die
+Integration seit 0.9.2-beta.3 an:
+
+- Ein Auswahlfeld **Lüftungsbetriebsart** auf `/ventilation/{zone}/operationMode`
+  mit den Betriebsarten, die die App des Herstellers kennt: `time`
+  (Zeitprogramm), `off`, `min`, `red`, `nom`, `max` (Lüfterstufen 1 bis 4),
+  `dem` (Bedarf), `party`, `powerVent` (Intensivlüftung), `fireplace`,
+  `fallAsleep` (Einschlafen) und `freefct` (freie Funktion). Angeboten werden
+  nur Betriebsarten, die die Einheit selbst auflistet; `exhaustOnly` (nur
+  Abluft) wird nie angeboten, die App blendet es ebenfalls aus. Die
+  Lüfterstufe wird über diese Betriebsart geändert, nicht über
+  `exhaustFanLevel`, das ein reiner Sensor bleibt. **Dieses Auswahlfeld ist
+  standardmäßig aktiviert**, anders als andere neue Steuerungen. Bitte
+  beachten: `off` schaltet die Lüftung der ganzen Einheit aus, `fireplace`
+  ändert die Luftführung für die Kaminfunktion; wählen Sie sie bewusst.
+- Eine Zahl **Maximale Filterlaufzeit** auf `/ventilation/{zone}/filter/maxRunTime`
+  (in Monaten), standardmäßig deaktiviert und nur mit den Grenzen, die die
+  Einheit meldet. Der Filter wird von der Integration nicht zurückgesetzt:
+  Die App macht das mit einem eigenen Befehl, der hier weder gelesen noch
+  geschrieben wird.
+
+Jede Änderung liest die Einstellung zuerst vom Gateway, sendet genau eine
+Anfrage und liest sie zurück; eine Änderung wird nicht erneut gesendet. Es
+entsteht nichts, wenn das Gateway den Pfad nicht meldet, das Schreiben nicht
+erlaubt oder keine passenden Betriebsarten oder Grenzen meldet. Frühere
+Versionen konnten ein (deaktiviertes) Auswahlfeld auf `exhaustFanLevel`
+anlegen; es wird beim nächsten Start entfernt, weil keine Einheit das
+Schreiben erlaubte. Die Lüftungswerte `demand/*`, `sensors/exhaustTemp`,
+`extractTemp`, `outdoorTemp`, `internalAirQuality` und `internalHumidity`
+gibt es als deaktivierte Diagnose-Sensoren. Erwartet, an einer echten Anlage
+ungetestet.
 
 ### Zeitprogramme Heizung und Warmwasser
 
