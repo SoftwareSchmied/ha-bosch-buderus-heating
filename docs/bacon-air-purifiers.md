@@ -89,9 +89,8 @@ measurement statistics, never a cumulative counter or a predicted end date.
 Metadata, state and sensor messages use the shared connection. New metadata
 can add optional entities while running. Existing identities survive missing
 capabilities, reconnects and reloads, including user names and disabled flags.
-Online status comes from the newest information message and stays usable
-while a non-retained device message on any channel arrived within the last
-hour. Reported state fields expire after 15 minutes and sensor fields after
+Online status comes from the newest information message (see
+[the connection foundation](bacon-connection.md)). Reported state fields expire after 15 minutes and sensor fields after
 one hour; old, duplicate and retained sensor messages do not refresh
 readings. Sensor envelopes contain timestamped items; the newest item extends
 non-null fields in the existing sample. Omitted fields retain their own age

@@ -385,12 +385,13 @@ def test_reconnect_does_not_carry_readings_older_than_their_limit():
         account.connected = True
         account._start_generation()
         emit(account, "topics/info", data["info"], retained=True)
-        # Retained messages never extend an age or prove a live device.
+        # Retained messages never extend the age of a reading.
         emit(account, "topics/sensor", data["sensor"], retained=True)
         account.expire_values(device)
         assert "currentTemp" not in device.sensor
         assert "tempSetpoint" not in device.state.reported
-        assert not account.available("serial-A")
+        # The stored information alone keeps the device available (issue 136).
+        assert account.available("serial-A")
 
 
 def test_membership_loss_still_clears_readings():

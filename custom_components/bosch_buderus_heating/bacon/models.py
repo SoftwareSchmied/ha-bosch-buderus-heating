@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 CLAIM_URL = "https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/devices"
+LIVE_URL = "https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live"
 BROKER = "broker.euc1.bacon.bosch-tt-cw.com"
 MAX_BYTES = 128 * 1024
 MAX_DEVICES = 128
@@ -138,6 +139,8 @@ class Device:
     info_received_at: float = 0
     # Last device-originated, non-retained message on any channel.
     alive_at: float | None = None
+    # Last answer to our own state read (never a sign of life); diagnostics only.
+    state_answered_at: float | None = None
     model: str | None = None
     state: Shadow | None = field(default=None, repr=False)
     metadata: dict[str, Any] = field(default_factory=dict, repr=False)

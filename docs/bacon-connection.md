@@ -89,23 +89,44 @@ shown once received on the current connection, also from a retained message.
 Information without a device type keeps the known model. A changed type clears
 state, measurements and metadata of the previous model and requests the
 device's metadata and state again without reconnecting. Devices
-may send information only on change, so any non-retained message from the
-device counts as a sign of life: information, a new sensor sample or a state
-update with newly reported fields. The status stays usable while the last sign
-of life is at most one hour old. Retained messages, duplicate timestamps,
-metadata, desired-only acknowledgements and the responses to the integration's
-own state reads never count as a sign of life. A reconnect, for example after
-a token renewal, is the integration's own connection event and not device
-silence: the device is unavailable while the connection is down, and the
-information redelivered on the new connection makes it available again as long
-as the last sign of life is at most one hour old. The last measurements and
-reported state stay visible across the reconnect and still expire by their
-own age (measurements after one hour, state after 15 minutes). After a longer
-silence the device stays unavailable until a new sign of life arrives. A
-membership loss or a re-added device starts without earlier readings. A re-added device, or one
-that returns to the account, takes its online status from the redelivered
-information even if its timestamp is unchanged; that alone is no sign of
-life. This rule needs real-device validation.
+send information only on change and some stay silent for hours, so the
+online status of the newest information message is enough for availability, as
+in the HomeCom Easy app, which also takes online or offline from the stored
+information only. The stored message redelivered on a new connection counts.
+There is no limit on its age. The state read every five minutes and the
+per-field limits (measurements one hour, reported state 15 minutes) decide how
+current values are. Messages from the device itself are still recorded as the
+last sign of life, but only for diagnostics: information, a new sensor sample
+or a state update with newly reported fields. Retained messages, duplicate
+timestamps, metadata, desired-only acknowledgements and the responses to the
+integration's own state reads never count as a sign of life. Before this
+change a sign of life at most one hour old was required; real units that send
+nothing on their own for hours then turned unavailable although the cloud
+reported them online. A membership loss, a connection loss that is not a
+planned token renewal, or an offline message still makes the device
+unavailable. A membership loss or a re-added device starts without earlier
+readings. A re-added device, or one that returns to the account, takes its
+online status from the redelivered information even if its timestamp is
+unchanged.
+
+The hourly token renewal reconnects at once. For a grace window of 90 seconds
+the devices stay available and entities write no unavailable state, with the
+readings of the previous connection; the information redelivered on the new
+connection ends the window earlier. Writing is blocked during the window. If
+the reconnect fails, the devices become unavailable at once; if no information
+arrives within the window, when it ends. Any other connection loss makes the
+devices unavailable immediately.
+
+While the connection stands and a device is selected, I report the account as
+an active client with an empty `POST
+https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, right after
+subscribing and then every 300 seconds, as HomeCom Easy does while it is open.
+It uses the same token, the shared request slot and the shared cloud pause. A
+401 renews the token once; a 429 starts the shared pause without ending the
+connection; a 404, 405, 403 or a second 401 stops the report for the rest of
+that connection and is logged once; other failures never end the connection.
+This report is expected to make the devices send measurements more often. It is
+untested on a real unit; the effect has to be confirmed with a real device.
 
 Sensor envelopes contain an optional deviceType and an items array. Each
 item has its own integer timestamp. The newest unambiguous item extends
@@ -148,7 +169,8 @@ Assistant write service is exposed.
 ## Diagnostics and validation
 
 Schema 21 adds aggregate connection, availability, received-state and metadata
-counts, error categories and unconfirmed-command counts. Planned token renewals
+counts (0.9.2 adds `renewal_grace`, `live_report` and `availability`, see
+[diagnostics](diagnostics.md)), error categories and unconfirmed-command counts. Planned token renewals
 are counted as `renewals`, apart from `reconnects`. It exports no token,
 subject, identifier, model, sensor contents, network information or device name.
 Diagnostics cause no cloud requests.
@@ -237,21 +259,42 @@ Verbindung empfangene Offline-Meldung zeigt das Gerät als getrennt, auch nach
 einem Neustart und ohne Ablauf nach einer Stunde. Eine Informationsmeldung ohne
 Gerätetyp lässt das bekannte Modell unverändert; nach einem echten
 Modellwechsel fordere ich Metadaten und Zustand ohne Neuverbindung erneut an.
-Weil Geräte Informationen
-oft nur bei Änderungen senden, zählt jede nicht gespeicherte Meldung des
-Geräts als Lebenszeichen: Information, neue Messwerte oder ein neu gemeldeter
-Zustand. Antworten auf meine eigenen Zustandsabfragen zählen nicht. Nach
-einer Stunde ohne Lebenszeichen oder bei Geräteentfernung wird die Anzeige
-nicht verfügbar, ebenso während eines Verbindungsabbruchs. Nach dem
-Wiederverbinden, etwa bei einer Token-Erneuerung, genügt die erneut
-zugestellte Informationsmeldung, solange das letzte Lebenszeichen höchstens
-eine Stunde zurückliegt. Die letzten Messwerte und der gemeldete Zustand
-bleiben dabei sichtbar. Nach einer Geräteentfernung oder einem erneut
-hinzugefügten Gerät beginnt die Anzeige ohne frühere Werte. Messwerte verfallen
-einzeln nach einer Stunde, gemeldete Zustandswerte nach 15 Minuten. Die Einheit des
-Informationszeitstempels ist noch nicht belegt. Ich verwende ihn deshalb
-nur für die Reihenfolge. Gespeicherte Meldungen beweisen keinen aktuellen
-Gerätezustand. Diese vorsichtige Regel benötigt noch eine Geräteprüfung.
+Geräte senden Informationen nur bei Änderungen, manche stundenlang nichts. Für
+die Verfügbarkeit genügt deshalb der Online-Status der neuesten
+Informationsmeldung, wie in der HomeCom-Easy-App; die beim Wiederverbinden erneut
+zugestellte gespeicherte Meldung zählt, ohne Altersgrenze. Wie aktuell Werte sind,
+bestimmen die Zustandsabfrage alle fünf Minuten und die Fristen je Wert (Messwerte
+eine Stunde, gemeldeter Zustand 15 Minuten). Meldungen des Geräts selbst
+speichere ich weiter als letztes Lebenszeichen, aber nur für die Diagnose. Antworten
+auf meine eigenen Zustandsabfragen, gespeicherte Meldungen und Metadaten zählen
+dabei nicht. Früher verlangte ich ein höchstens eine Stunde altes Lebenszeichen;
+reale Geräte, die stundenlang nichts von selbst senden, wurden dadurch nicht
+verfügbar, obwohl die Cloud sie als online führte. Geräteentfernung, ein
+Verbindungsverlust (außer der geplanten Token-Erneuerung) oder eine
+Offline-Meldung machen das Gerät weiterhin nicht verfügbar. Nach einer
+Geräteentfernung oder einem erneut hinzugefügten Gerät beginnt die Anzeige ohne
+frühere Werte. Die Einheit des Informationszeitstempels ist noch nicht belegt;
+ich verwende ihn nur für die Reihenfolge.
+
+Die stündliche Token-Erneuerung verbindet sofort neu. Für ein Kulanzfenster von
+90 Sekunden bleiben die Geräte mit den Werten der vorherigen Verbindung verfügbar
+und die Entitäten schreiben keinen Zustand „nicht verfügbar“; die erneut
+zugestellte Informationsmeldung beendet das Fenster früher. Schreiben ist in
+dieser Zeit gesperrt. Scheitert das Wiederverbinden, werden die Geräte sofort
+nicht verfügbar, kommt keine Information, mit Ablauf des Fensters. Jeder andere
+Verbindungsverlust macht sie sofort nicht verfügbar.
+
+Solange die Verbindung steht und ein Gerät ausgewählt ist, melde ich das Konto
+als aktiven Client mit einem leeren `POST` an
+`https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, direkt nach dem
+Abonnement und dann alle 300 Sekunden, wie HomeCom Easy bei geöffneter App. Dabei
+gelten dasselbe Token, der gemeinsame Anfrageplatz und die gemeinsame Cloud-Pause.
+Ein 401 erneuert das Token einmal, ein 429 startet die gemeinsame Pause ohne die
+Verbindung zu beenden, ein 404, 405, 403 oder ein zweites 401 stoppt die Meldung
+für den Rest dieser Verbindung (einmal im Protokoll vermerkt); andere Fehler
+beenden die Verbindung nie. Erwartet wird, dass die Geräte dadurch Messwerte
+häufiger senden. Das ist auf einem echten Gerät ungetestet und muss dort
+bestätigt werden.
 
 Die interne Schreibgrundlage prüft Zustand, offene Änderungen und eine
 verpflichtende Prüfung durch den jeweiligen Geräteadapter. Erst ein neuerer
