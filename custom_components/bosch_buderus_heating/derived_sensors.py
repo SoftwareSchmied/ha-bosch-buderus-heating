@@ -4,7 +4,8 @@ Each one is named "(calculated)" and lists its inputs with their origin in
 the attribute ``derived_from``. None of them sends a request: they combine
 readings the integration reads anyway (``derived_inputs``).
 
-* Activity of each heating circuit (``derived_activity``), enabled.
+* Activity of each heating circuit that has a pump value (``derived_activity``),
+  enabled.
 * Net heat per mode and in total: the produced-heat counters fall while the
   heat pump defrosts (the heat taken back from the water). The net counter
   holds during such a dip and counts again only above the highest reading
@@ -52,6 +53,7 @@ from .derived_activity import (
     CIRCUIT,
     HEATING,
     circuit_activity,
+    circuit_has_pump,
     circuit_input_paths,
     defrost_state,
     heat_side,
@@ -259,6 +261,7 @@ class SupplyOvershootSensor(_CalculatedSensor):
         preferred: tuple[str, ...] = (),
     ) -> None:
         self._supply = supply
+        self._inputs_current = False
         # Supply paths read first (the heat pump's own supply TC1).
         self._supplies = (*preferred, supply)
         self._setpoint = setpoint
@@ -297,11 +300,18 @@ class SupplyOvershootSensor(_CalculatedSensor):
             and heat_side(self.coordinator, trace) == CIRCUIT
         )
 
+    @property
+    def available(self) -> bool:
+        """While the supply temperature and its setpoint are current; at
+        standstill the value is unknown (like the COP), not unavailable."""
+        return self._inputs_current
+
     def _derive(self) -> tuple[Any, dict[str, object] | None]:
         trace = Trace()
         found = first(self.coordinator, self._supplies, number, trace)
         supply = found[1] if found is not None else None
         setpoint = number(trace.note(read(self.coordinator, self._setpoint)))
+        self._inputs_current = supply is not None and setpoint is not None
         if supply is None or setpoint is None or not self._heating(trace):
             return None, None
         return round(supply - setpoint, 1), {
@@ -473,9 +483,13 @@ def _candidates(
         if match is None or rrc_plant:
             continue
         root = match[1]
-        found.append(
-            (f"activity:{root}", partial(CircuitActivitySensor, coordinator, root))
-        )
+        if circuit_has_pump(coordinator, root):
+            # Without a pump value of the circuit the activity is unknown
+            # whenever the heat source runs; no sensor then (one already in
+            # the registry stays).
+            found.append(
+                (f"activity:{root}", partial(CircuitActivitySensor, coordinator, root))
+            )
         supply = root + "/actualSupplyTemperature"
         number_text = root.removeprefix("/heatingCircuits/hc")
         setpoint = f"/signals/SC.HC{number_text}.FlowTempSetp"

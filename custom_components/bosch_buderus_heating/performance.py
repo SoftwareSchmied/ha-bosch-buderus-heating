@@ -107,6 +107,7 @@ DEFROSTING: Final = "defrosting"
 INPUTS_MISSING: Final = "inputs_missing"
 IMPLAUSIBLE: Final = "implausible"
 PUMP_OFF: Final = "pump_off"
+TOO_LITTLE_ELECTRICITY: Final = "too_little_electricity"
 
 
 @dataclass(slots=True)
@@ -371,3 +372,12 @@ def ratio(heat: float | None, electricity: float | None) -> float | None:
     if result < 0 or result > MAX_RATIO:
         return None
     return round(result, 2)
+
+
+def unknown_reason(electricity: float) -> str:
+    """Why a period's performance factor has no value: too little electricity
+    in the period so far (for instance just after midnight) or a ratio that
+    is not plausible."""
+    if electricity < MIN_ELECTRICITY_KWH:
+        return TOO_LITTLE_ELECTRICITY
+    return IMPLAUSIBLE

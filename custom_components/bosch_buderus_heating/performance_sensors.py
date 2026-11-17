@@ -44,6 +44,7 @@ from .performance import (
     primary_spread,
     spread_input_paths,
     spread_possible,
+    unknown_reason,
 )
 from .performance_history import (
     COUNTERS,
@@ -299,6 +300,7 @@ class PerformanceFactorSensor(
             "missing_days",
             "first_day",
             "derived_from",
+            "reason",
         }
     )
 
@@ -359,6 +361,8 @@ class PerformanceFactorSensor(
         if result.first_day is not None:
             attributes["first_day"] = result.first_day.isoformat()
         attributes["derived_from"] = self._derived_from(result)
+        if result.ratio is None:
+            attributes["reason"] = unknown_reason(result.electricity)
         return attributes
 
     def _derived_from(self, result: PeriodResult) -> dict[str, str]:

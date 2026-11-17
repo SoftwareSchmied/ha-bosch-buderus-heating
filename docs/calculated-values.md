@@ -62,6 +62,19 @@ Without a current reading of the circuit's mode the sensor is unavailable;
 with the mode but without the inputs the rule needs, it is unknown and the
 climate shows no `hvac_action`.
 
+The sensor is created only for a heating circuit for which the plant offers
+a pump value (`pumpStatus`, the pump relay signal or `pumpModulation`, cloud
+or local). Without one, the activity is unknown whenever the heat source runs
+for heating, and the entity would only switch between unknown and idle at
+every burner start. A sensor already in the registry stays; the climate keeps
+its `hvac_action` rule (no `hvac_action` while it cannot be told).
+
+Signals do not arrive at the same moment. At the end of a hot water charge
+the valve can already be back on the heating side while the refrigerant
+circuit still reports hot water or has stopped; contradicting readings count
+as no heat for the circuit (`idle`), so the activity does not show `heating`
+for the minute in between.
+
 ## Defrosts
 
 Only a plant with evidence that it defrosts gets these entities: a heat pump
@@ -152,6 +165,10 @@ is saved and never falls after a restart. Disabled by default.
   for heating (not during hot water or a defrost); for a heating circuit
   with its own supply sensor, its supply temperature minus its supply
   setpoint signal while the circuit heats. In kelvin, diagnostic, enabled.
+  While the inputs are current but the heat source does not heat the circuit
+  (standstill, hot water, defrost) the value is unknown, like the COP and
+  the spread; it is unavailable only when the supply temperature or its
+  setpoint is missing.
   On a real installation with a heat pump at its minimum output, the supply
   was measured a few kelvin above the setpoint in normal operation; see
   [why the supply is above the setpoint](heating-controls.md#why-is-the-supply-temperature-above-the-setpoint).
@@ -226,6 +243,10 @@ pump's electricity is not part of it. Without the local access there is no
 heat output reading and therefore no current COP.
 
 ### Performance factors
+
+Each factor is unknown while the period holds less than 0.1 kWh of
+electricity, for instance for the first minutes after midnight. Its
+attribute `reason` then says `too_little_electricity`.
 
 A performance factor is the produced heat of a period divided by the
 electricity (compressor plus heater) of the same period, for heating, hot

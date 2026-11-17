@@ -71,6 +71,7 @@ from homeassistant.util.hass_dict import HassKey
 from ..const import DOMAIN
 from ..log_helpers import log_failure
 from ..rrc_energy_statistics import async_gateway_digest
+from .anchor import has_recording_anchor
 from .ledger import CLOUD, LOCAL, DailyValue, Ledger
 from .measures import (
     CALCULATED,
@@ -581,6 +582,12 @@ class RecordingsManager:
             return
         if not self.needed():
             self.waiting = "not_needed"
+            return
+        coordinator = self.coordinator()
+        if coordinator is not None and not has_recording_anchor(coordinator):
+            # A room controller with a bare heat source (no counters, no
+            # starts, no heat pump): nothing the recordings belong to.
+            self.waiting = "no_heat_source_anchor"
             return
         self.running = True
         now = self._now()

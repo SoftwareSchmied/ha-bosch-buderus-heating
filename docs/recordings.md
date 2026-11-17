@@ -68,6 +68,12 @@ ventilation systems.
    the period entities use the change of the integration's own counter
    entity over the period (from Home Assistant's long-term statistics).
 
+The recordings are read only for a plant that offers a reading they belong
+to: an energy counter collection, the starts or working time of the heat
+source, or the refrigerant circuit or compressor of a heat pump. A room
+controller that only shows a heat source's modulation gets no requests and no
+period entities (`waiting` is `no_heat_source_anchor` in the diagnostics).
+
 A recording that answers 404 is tried again once a day; one that answers 403
 is not tried again before the next start. A recording in an unknown unit is
 not used. A recording whose reads fail (another error, an answer that is no

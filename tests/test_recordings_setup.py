@@ -1,6 +1,7 @@
 """The plant's recordings through a real setup (cloud only).
 
-The cloud tree of the room controller tests (it has a heat source) and a
+The cloud tree of the room controller tests (it has a heat source, which
+gets an anchor for the recordings) and a
 fake ``get_recording``: entities with their unique IDs and default
 activation, the options step (import on and off, delete with confirmation)
 without a reload, and the diagnostics section.
@@ -27,6 +28,7 @@ from custom_components.bosch_buderus_heating.recordings.manager import (
     managers_of,
 )
 from tests.helpers.options_menu import menu_note, outcome
+from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from tests.helpers.rrc_cloud import RrcCloud, load_tree
 from tests.test_rrc_energy_statistics import (
     GW,
@@ -42,8 +44,31 @@ YESTERDAY_HEAT = f"{GW}:recordings:heatSources:emon:total:outputProduced:yesterd
 YESTERDAY_POWER = f"{GW}:recordings:heatSources:emon:total:electricity:yesterday"
 
 
-def cloud_tree() -> RrcCloud:
-    return RrcCloud(load_tree("rrc/ct200-shapes.json"))
+def cloud_tree(*, anchor: bool = True) -> RrcCloud:
+    """The room controller's tree; with ``anchor`` its heat source also counts
+    starts (a reading the recordings belong to)."""
+    tree = load_tree("rrc/ct200-shapes.json")
+    if anchor:
+        tree["/heatSources"] = parse_resource(
+            {
+                "id": "/heatSources",
+                "type": "refEnum",
+                "references": [
+                    {"id": "/heatSources/actualModulation"},
+                    {"id": "/heatSources/numberOfStarts"},
+                ],
+            }
+        )
+        tree["/heatSources/numberOfStarts"] = parse_resource(
+            {
+                "id": "/heatSources/numberOfStarts",
+                "type": "integerValue",
+                "writeable": 0,
+                "recordable": 0,
+                "value": 5,
+            }
+        )
+    return RrcCloud(tree)
 
 
 async def recording(gateway_id, path, interval):
@@ -161,3 +186,33 @@ async def test_entities_options_and_diagnostics(
     finally:
         await stop(hass, entry, stack)
     assert not managers_of(hass, entry.entry_id)
+
+
+async def test_a_room_controller_without_an_anchor_reads_no_recordings(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    """The bare heat source of a room controller (only its modulation) is no
+    reason to ask for recordings: no request, no period entities."""
+    await hass.config.async_update(time_zone="Europe/Berlin")
+    freezer.move_to(NOW)
+    calls = AsyncMock(side_effect=recording)
+    cloud = cloud_tree(anchor=False)
+    cloud.recording = calls
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, timedelta(seconds=START_DELAY + 5))
+        await hass.async_block_till_done(wait_background_tasks=True)
+        await advance(hass, freezer, timedelta(minutes=55))
+        await hass.async_block_till_done(wait_background_tasks=True)
+        assert calls.await_count == 0
+        registry = er.async_get(hass)
+        assert not [
+            item
+            for item in er.async_entries_for_config_entry(registry, entry.entry_id)
+            if ":recordings:" in item.unique_id
+        ]
+        assert [m.waiting for m in managers_of(hass, entry.entry_id)] == [
+            "no_heat_source_anchor"
+        ]
+    finally:
+        await stop(hass, entry, stack)

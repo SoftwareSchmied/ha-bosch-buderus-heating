@@ -66,6 +66,8 @@ PLANT = {
     "outdoor_temperature": 300.0,
 }
 FORBIDDEN = "/recordings/heatSources/emon/total/burner"
+# Units of series that are no energy (a test adds them to ``PLANT``).
+UNITS: dict[str, str] = {}
 
 
 class Clock:
@@ -114,7 +116,7 @@ class Driver:
             )
         elapsed = int((current - start).total_seconds() // 3600) + 1
         groups.append(hours(start, [(value, count)] * elapsed, end=current))
-        unit = "C" if series.mean else "kWh"
+        unit = UNITS.get(series.key, "C" if series.mean else "kWh")
         return ReadResult(
             request,
             ReadState.SUCCESS,
@@ -388,7 +390,8 @@ async def test_no_cloud_reads_while_the_cloud_is_unavailable_or_for_no_heat_sour
     rec._test_coordinator.resources = {"/system/info": object()}
     rec._detected = False
     await rec.async_run("start")
-    assert cloud.calls == [] and rec.runs[-1]["cloud"] == "no_heat_source"
+    # No heat source reading at all: no run (the anchor), so no cloud read.
+    assert cloud.calls == [] and rec.waiting == "no_heat_source_anchor"
 
 
 # ----------------------------------------------------------------- values

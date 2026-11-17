@@ -7554,26 +7554,6 @@
     {
      "capabilities": {
       "options": [
-       "heating",
-       "cooling",
-       "defrosting",
-       "idle",
-       "off"
-      ]
-     },
-     "device_class": "enum",
-     "disabled_by": null,
-     "domain": "sensor",
-     "entity_category": null,
-     "original_icon": null,
-     "original_name": "Heating circuit 1 \u2013 Activity (calculated)",
-     "translation_key": "calculated_activity",
-     "unique_id": "gateway-one:heatingCircuits:hc1:calculated_activity",
-     "unit": null
-    },
-    {
-     "capabilities": {
-      "options": [
        "room",
        "outdoor",
        "wdc",
