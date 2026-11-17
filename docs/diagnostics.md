@@ -21,6 +21,20 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   entries the integration had created disabled) and `cloud_entries_kept`
   (cloud entities in use left next to a registered local-only entity at the
   last start). See [entities](entities.md).
+- `bacon` (additional cloud devices; per connection under `connections[].bacon`),
+  new keys without identifiers or readings:
+  `renewal_grace` (`window_s` 90, `active`, `expired`: how often the grace window
+  of a planned token renewal ran out with a device still carried over),
+  `live_report` (`reports_sent`; `errors` by class `4xx`, `5xx`, `network`,
+  `paused`, `other`; `disabled_for_connection`, `disabled_total`;
+  `last_report_age`) for the active-client report, and `availability` per device
+  family (`midea_climate`, `dehumidifier_*`, `air_purifier_*`, `water_heater_*`,
+  `other`): the counts `devices`, `online_true`, `online_false`,
+  `online_unknown` and `available`, and per event (`last_sign_of_life`,
+  `last_information`, `last_sensor_message`, `last_state_read_answer`) the number
+  of devices per age class (`under_5_min`, `under_15_min`, `under_1_h`,
+  `under_6_h`, `6_h_or_more`, `never`). The schema number stays 48. See
+  [the connection foundation](bacon-connection.md).
 - `heat_source_type`, `heat_source_type_evidence` and `unnamed_modules` in
   `gateways[].heat_generator`: the heat source type (`air`, `brine` or
   `water`), the paths or signals it comes from (`reported_defrost` for a

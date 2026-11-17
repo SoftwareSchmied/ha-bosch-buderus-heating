@@ -56,9 +56,9 @@ every changed field. An omitted `ro` is read-only.
   claim about manufacturer limits or a list of all possible error sentinels.
 - Missing, null, malformed and incompatible fields stay unknown. Missing
   status flags are never treated as false.
-- Online status comes from the newest device-information message. It stays
-  usable while a non-retained device message on any channel arrived within
-  the last hour; an explicit offline message applies immediately. Reported
+- Online status comes from the newest device-information message (see
+  [the connection foundation](bacon-connection.md)); an explicit offline
+  message applies immediately. Reported
   state fields expire after 15 minutes, sensor fields independently after one
   hour. Sensor timestamps establish
   order only; their epoch unit is not assumed. Duplicate, older and retained

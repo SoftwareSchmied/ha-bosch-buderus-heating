@@ -270,12 +270,14 @@ def test_error_ordering_retained_data_and_reconnect_cannot_clear_live_error():
     emit(account, "topics/info", {**data["info"], "timestamp": 6, "error": None})
     assert error.is_on is False and unit.action == Action.DRYING
     unit.device.alive_at -= 3601
-    assert not error.available and not unit.available
+    assert error.available and unit.available
     account._disconnected()
     account.connected = True
     account.generation += 1
-    emit(account, "topics/info", {**data["info"], "timestamp": 7}, retained=True)
     assert not error.available
+    emit(account, "topics/info", {**data["info"], "timestamp": 7}, retained=True)
+    # The unit is available again; a retained message cannot tell about errors.
+    assert account.available("serial-A") and error.is_on is None
     emit(account, "topics/info", {**data["info"], "timestamp": 8})
     assert error.is_on is False and unit.action is None
 

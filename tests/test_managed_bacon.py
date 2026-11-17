@@ -73,6 +73,9 @@ class Broker(Backend):
         self.offered = [A, B]
         self.claim_status = 200
         self.claims = []
+        # Authorization headers of the active-client reports and their status.
+        self.lives = []
+        self.live_status = 204
         self.connections = []
         self.sockets = set()
         self.filters = []
@@ -94,6 +97,7 @@ class Broker(Backend):
         return [
             *super().routes,
             ("GET", "/devices", self.claim),
+            ("POST", "/live", self.live),
             ("GET", "/mqtt", self.broker),
         ]
 
@@ -106,6 +110,10 @@ class Broker(Backend):
         if status != 200:
             return web.Response(status=status, headers={"Retry-After": "180"})
         return web.json_response(offered)
+
+    async def live(self, request):
+        self.lives.append(request.headers["Authorization"])
+        return web.Response(status=self.live_status)
 
     async def descriptions(self, ws, serial):
         data = self.data[serial]
@@ -677,16 +685,24 @@ async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason):
         else:
             for socket in tuple(broker.sockets):
                 await socket.close()
-        await eventually(lambda: False in seen)
+        if reason == "disconnect":
+            await eventually(lambda: False in seen)
         assert source_for(owner, HEAT) is heating
         await eventually(
             lambda: ready(owner) and previous.generation > generation, timeout=15
         )
+        if reason == "token_rotation":
+            # The grace window of a planned renewal: nothing shown as lost.
+            assert seen and False not in seen
         assert view(owner) is previous and previous.account is account
         assert source_for(owner, HEAT) is heating
         assert len(broker.connections) == 2 and not broker.writes
+        # The active-client report follows each new connection at once.
+        await eventually(lambda: len(broker.lives) == 2)
+        assert broker.lives[0] != broker.lives[-1] or reason == "disconnect"
         if reason == "token_rotation":
             assert broker.connections[-1] == "Bearer " + renewed.access_token
+            assert broker.lives[-1] == broker.connections[-1]
             # C52: a planned renewal reconnects at once with the recent list.
             assert len(broker.claims) == 1
             assert (account.renewals, account.reconnects) == (1, 0)
@@ -748,7 +764,8 @@ async def test_reenabled_device_recovers_from_unchanged_retained_information(has
         broker.retained_info = True
         manager.set_binding_enabled(manager.edit(cloud), binding(owner, A), True)
         # The redelivered information keeps its timestamp; it restores the
-        # online state and the model, but is no sign of life of its own.
+        # online state and the model and is enough for availability, but it is
+        # no sign of life of the device.
         await eventually(
             lambda: (
                 view(owner, A) is not None
@@ -757,7 +774,7 @@ async def test_reenabled_device_recovers_from_unchanged_retained_information(has
             )
         )
         current = view(owner, A)
-        assert current.device.alive_at is None and not current.available(A)
+        assert current.device.alive_at is None and current.available(A)
         await new_sensor_sample(broker)
         await eventually(lambda: ready(owner, A))
 
@@ -778,7 +795,7 @@ async def _reconnect_with_only_retained_information(hass, broker):
         for socket in tuple(broker.sockets):
             await socket.close()
         await eventually(lambda: access.generation > generation, timeout=15)
-        # Our reconnect is no device silence: the last sign of life still counts.
+        # Our reconnect is no device silence: the stored information is enough.
         await eventually(lambda: ready(owner), timeout=15)
         assert access.device.alive_at == alive
         # The unchanged sensor sample is no new reading, yet the earlier one
@@ -786,6 +803,7 @@ async def _reconnect_with_only_retained_information(hass, broker):
         assert access.device.sensor_generation == access.generation
         assert access.device.sensor
         assert len(broker.connections) == 2
+        await eventually(lambda: len(broker.lives) == 2)
 
 
 async def test_owner_unload_closes_mqtt_and_retires_device_views(hass):

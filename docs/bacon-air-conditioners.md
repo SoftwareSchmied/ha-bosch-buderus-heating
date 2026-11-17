@@ -86,10 +86,13 @@ but simultaneous external writes to the same field cannot be attributed
 exclusively to this client.
 
 Availability and freshness follow the connection foundation: the newest
-information message sets online status, a non-retained device message on any
-channel within the last hour keeps it usable, reported state fields age after
-15 minutes and sensor fields after one hour. After a reconnect of the
-integration, earlier readings stay visible within those limits; after a
+information message sets online status, which is enough for availability, as
+in the HomeCom Easy app (see [the connection foundation](bacon-connection.md)).
+Reported state fields age after 15 minutes and sensor fields after one hour;
+the integration's own state read every five minutes keeps the state current.
+A unit that sends no measurement for more than an hour shows its room
+temperature as unknown but stays available while its state is current. After a
+reconnect of the integration, earlier readings stay visible within those limits; after a
 membership loss or a re-added device all needed streams must arrive again.
 Old, duplicate or retained sensor messages do not refresh readings. A changed
 model clears cached capabilities and values. The same HA entity identity is

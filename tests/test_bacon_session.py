@@ -24,6 +24,8 @@ def environment():
     client = BaconClient(None, provider())
     client.subject = "account-A"
     client.get_devices = AsyncMock(return_value=("serial-A", "serial-B"))
+    # The active-client report has its own tests; it must not use up tokens here.
+    client.report_live = AsyncMock()
     account = BaconAccount(client, ("serial-A", "serial-B"), command_timeout=0.025)
     account._set_membership(("serial-A", "serial-B"))
     account.connected = True
@@ -97,27 +99,30 @@ def test_information_contract(payload):
         emit(environment(), "topics/info", payload)
 
 
-def test_retained_information_does_not_prove_live_connection():
+def test_stored_information_on_the_new_connection_makes_the_device_available():
     account = environment()
-    # More than an hour of silence before our reconnect.
+    # More than an hour of silence before our reconnect (issue 136).
     account.devices["serial-A"].alive_at -= 3601
     account._disconnected()
     account.connected = True
     account.generation = 2
+    assert not account.available("serial-A")
+    before = account.devices["serial-A"].alive_at
     emit(account, "topics/info", {"online": True, "timestamp": 2}, retained=True)
+    # Stored state and rejections stay ignored; the stored information alone
+    # carries the online state, as in the app.
     emit(account, "shadows/state/get/accepted", state(10), retained=True)
     emit(account, "shadows/state/update/rejected", {}, retained=True)
-    assert not account.available("serial-A")
+    assert account.available("serial-A")
     assert account.devices["serial-A"].state is None
     assert not account._rejected
-    emit(account, "topics/info", {"online": True, "timestamp": 3})
-    assert account.available("serial-A")
-    account.devices["serial-A"].alive_at -= 3601
-    assert not account.available("serial-A")
+    assert account.devices["serial-A"].alive_at == before
+    with patch(MODULE + ".monotonic", return_value=before + 36000):
+        assert account.available("serial-A")
 
 
 @pytest.mark.parametrize("stamp", [1, 2], ids=["unchanged", "newer"])
-def test_reconnect_within_the_hour_keeps_the_device(stamp):
+def test_reconnect_keeps_the_device_at_any_age_of_the_last_sign_of_life(stamp):
     account = environment()
     device = account.devices["serial-A"]
     alive = device.alive_at
@@ -133,31 +138,32 @@ def test_reconnect_within_the_hour_keeps_the_device(stamp):
         )
         assert account.available("serial-A")
         assert device.alive_at == alive
-    with patch(MODULE + ".monotonic", return_value=alive + 3601):
-        assert not account.available("serial-A")
+    for offset in (3601, 36000):
+        with patch(MODULE + ".monotonic", return_value=alive + offset):
+            assert account.available("serial-A")
 
 
-def test_reconnect_after_an_hour_of_silence_stays_unavailable():
+def test_reconnect_after_hours_of_silence_is_available_from_stored_information():
     account = environment()
     alive = account.devices["serial-A"].alive_at
     account._disconnected()
     account.connected = True
     account.generation = 2
-    with patch(MODULE + ".monotonic", return_value=alive + 3601):
+    with patch(MODULE + ".monotonic", return_value=alive + 3 * 3600):
         emit(account, "topics/info", {"online": True, "timestamp": 1}, retained=True)
-        assert not account.available("serial-A")
-        emit(account, "topics/sensor", {"items": [{"timestamp": 5, "t": 1}]})
         assert account.available("serial-A")
+        assert account.devices["serial-A"].alive_at == alive
 
 
-def test_device_without_sign_of_life_is_unavailable_shortly_after_boot():
+def test_device_without_any_message_of_its_own_is_available_after_boot():
+    """Issue 136: the stored information is enough; no sign of life is needed."""
     account = environment()
     account.devices["serial-A"] = Device("serial-A")
     with patch(MODULE + ".monotonic", return_value=100.0):
         emit(account, "topics/info", {"online": True, "timestamp": 5}, retained=True)
         assert account.devices["serial-A"].online is True
         assert account.devices["serial-A"].alive_at is None
-        assert not account.available("serial-A")
+        assert account.available("serial-A")
 
 
 def test_regained_membership_takes_online_state_from_unchanged_information():
@@ -204,7 +210,7 @@ def reconnected():
     account.connected = True
     account.generation = 2
     emit(account, "topics/info", {"online": True, "timestamp": 2}, retained=True)
-    assert not account.available("serial-A")
+    assert account.available("serial-A")
     return account, account.devices["serial-A"]
 
 
@@ -216,21 +222,18 @@ def test_sensor_only_device_stays_available():
             emit(account, "topics/sensor", {"items": [{"timestamp": stamp, "t": 1}]})
             assert account.available("serial-A")
             assert device.online is True
-    # Just inside and just outside: the start time is an arbitrary float, so an
-    # exact boundary would depend on floating-point rounding.
-    with patch(MODULE + ".monotonic", return_value=start + 3 * 1200 + 3599.5):
-        assert account.available("serial-A")
+    # The last sign of life has no limit any more (issue 136).
     with patch(MODULE + ".monotonic", return_value=start + 3 * 1200 + 3601):
-        assert not account.available("serial-A")
+        assert account.available("serial-A")
 
 
-def test_information_only_on_change_stays_available_up_to_limit():
+def test_information_only_on_change_stays_available_without_a_limit():
     account = environment()
     device = account.devices["serial-A"]
     start = device.alive_at
-    for offset, expected in ((900, True), (901, True), (3599.5, True), (3601, False)):
+    for offset in (900, 901, 3599.5, 3601, 36000):
         with patch(MODULE + ".monotonic", return_value=start + offset):
-            assert account.available("serial-A") is expected
+            assert account.available("serial-A")
 
 
 def test_device_reported_state_update_is_sign_of_life():
@@ -259,7 +262,8 @@ def test_cloud_responses_are_not_signs_of_life(suffix, payload):
     with patch(MODULE + ".monotonic", return_value=before + 10):
         emit(account, suffix, payload)
         assert device.alive_at == before
-    assert not account.available("serial-A")
+    # Diagnostics only: the stored information keeps the device available.
+    assert account.available("serial-A")
 
 
 @pytest.mark.parametrize(
@@ -276,7 +280,7 @@ def test_retained_messages_never_count_as_sign_of_life(suffix, payload):
     with patch(MODULE + ".monotonic", return_value=before + 10):
         emit(account, suffix, payload, retained=True)
         assert device.alive_at == before
-    assert not account.available("serial-A")
+    assert account.available("serial-A")
 
 
 def test_replayed_sensor_sample_is_not_a_sign_of_life():
@@ -1039,9 +1043,9 @@ def test_offline_device_shows_disconnected_after_restart_and_hour():
     later = account.devices["serial-A"].alive_at + 3601
     with patch(MODULE + ".monotonic", return_value=later):
         assert entity.available and entity.is_on is False
-        # Online still needs a recent sign of life.
+        # Online needs no recent sign of life either (issue 136).
         emit(account, "topics/info", {"online": True, "timestamp": 9}, retained=True)
-        assert not entity.available
+        assert entity.available and entity.is_on is True
     # A new connection needs the information again.
     account._disconnected()
     account.connected, account.generation = True, 2
