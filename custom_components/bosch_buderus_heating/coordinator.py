@@ -85,6 +85,7 @@ from .icom_profile import (
 )
 from .legacy_holiday_writes import IcomHolidayWriteService
 from .legacy_holidays import SYSTEM_INFO_PATH, is_icom_slot
+from .live_target import with_live_target
 from .plant_model import PlantModel
 from .pointt import (
     AuthenticationError,
@@ -124,12 +125,11 @@ from .rrc import (
     PROGRAM_LIST,
     flag_state,
     in_device_scope,
-    is_control,
     profile_evidence,
     program_list_expected,
 )
 from .rrc_contract_zone import FOLLOW_UP_DELAY, follow_up_paths
-from .rrc_contracts import contract_for, owns
+from .rrc_contracts import contract_for
 from .rrc_dhw_program import RrcDhwProgramService, week_shows
 from .rrc_events import LIST_PATHS as EVENT_LIST_PATHS
 from .rrc_programs import (
@@ -1320,13 +1320,9 @@ class BoschBuderusDataUpdateCoordinator(
                 if item.path != path
                 and all(before.path != item.path for before in expected)
             )
-            if (
-                context.rrc_plant
-                and owns(policy)
-                and not is_control(path)
-                and all(before.path != path for before in reads)
-            ):
-                reads = (*reads, snapshot.resource)
+            # L16: the written setting is always read live in this request,
+            # so its flags, limits, options and value are the gateway's now.
+            reads = with_live_target(reads, snapshot.resource)
             live: dict[str, Resource] = {}
             if reads:
                 try:

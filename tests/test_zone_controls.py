@@ -473,9 +473,12 @@ async def test_queued_write_revalidates_permission_after_first_confirmation(
         await finish.wait()
 
     client.put_resource_value.side_effect = put
-    client.get_resource.return_value = replace(
+    read_only = replace(
         NUMBER, value=21, metadata=replace(NUMBER.metadata, writable=False)
     )
+    # L16: the first write reads the setting live (still writable), its
+    # read-back shows it read-only, and the queued write's live read too.
+    client.get_resource.side_effect = [NUMBER, read_only, read_only]
     policy = assess_control(NUMBER).policy
     first = asyncio.create_task(
         coordinator.async_write_control(NUMBER.path, 21, policy)

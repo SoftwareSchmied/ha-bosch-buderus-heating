@@ -78,7 +78,8 @@ async def test_fan_level_select_writes_and_confirms(hass, environment):  # noqa:
     # The documented order, independently of the advertised order.
     assert select.options == ["off", "nom", "max"]
     assert select.current_option == "off"
-    client.get_resource.return_value = replace(current, value="nom")
+    # L16: the live reading comes first, then the read-back.
+    client.get_resource.side_effect = [current, replace(current, value="nom")]
     await select.async_select_option("nom")
     client.put_resource_value.assert_awaited_once_with("synthetic-gateway", FAN, "nom")
     assert select.current_option == "nom"
@@ -149,7 +150,7 @@ async def test_pool_target_uses_live_limits_and_step(hass, environment):  # noqa
     assert number.native_step == 0.5
     assert number.native_unit_of_measurement == "°C"
     assert number.native_value == 26.0
-    client.get_resource.return_value = replace(current, value=27.5)
+    client.get_resource.side_effect = [current, replace(current, value=27.5)]
     await number.async_set_native_value(27.5)
     client.put_resource_value.assert_awaited_once_with("synthetic-gateway", POOL, 27.5)
     assert number.native_value == 27.5
@@ -184,7 +185,7 @@ async def test_pool_target_without_step_uses_whole_degrees(
     coordinator.data = snapshots(current)
     (number,) = await added_entities(hass, entry, setup_numbers)
     assert number.native_step == 1.0
-    client.get_resource.return_value = replace(current, value=27.5)
+    client.get_resource.side_effect = [current, replace(current, value=27.5)]
     # Without an advertised step only the limits apply.
     await number.async_set_native_value(27.5)
     client.put_resource_value.assert_awaited_once_with("synthetic-gateway", POOL, 27.5)
@@ -235,12 +236,13 @@ async def test_pool_switch_writes_and_confirms(hass, environment):  # noqa: F811
     assert switch.entity_description.write_policy is POOL_ENABLED_POLICY
     assert switch.translation_key == "pool_enabled"
     assert switch.is_on is False
-    client.get_resource.return_value = replace(current, value="on")
+    client.get_resource.side_effect = [current, replace(current, value="on")]
     await switch.async_turn_on()
     client.put_resource_value.assert_awaited_once_with(
         "synthetic-gateway", POOL_ON, "on"
     )
     assert switch.is_on is True
+    client.get_resource.side_effect = None
     client.get_resource.return_value = replace(current, value="on")
     with pytest.raises(HomeAssistantError):
         await switch.async_turn_off()
