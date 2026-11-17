@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Anlage auswählen",
-        "description": "Wähle die Anlage für den lokalen Zugang. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "description": "Wähle die Anlage, deren K40- oder K40RF-Gateway du lokal verbinden willst, meist die Wärmepumpe oder den Heizkessel. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
         "data": {
           "target": "Anlage / Gateway"
         }
@@ -184,7 +184,7 @@
       "local_unknown_firmware": "Die Firmwareversion konnte nicht geprüft werden.",
       "local_old_firmware": "Aktualisiere die Gateway-Firmware, bevor du den lokalen Zugang einrichtest.",
       "local_unsupported_brand": "Diese Gateway-Marke wird von der dokumentierten lokalen Schnittstelle nicht unterstützt.",
-      "local_incomplete_system": "Die Systeminformationen des Gateways sind noch unvollständig. Wiederhole den Lesetest später.",
+      "local_incomplete_system": "Das Gateway sammelt noch seine Systeminformationen. Das kann einige Minuten dauern. Warte etwa fünf Minuten und wiederhole dann den Lesetest.",
       "local_invalid_response": "Eine benötigte Gateway-Antwort konnte nicht geprüft werden.",
       "local_identity_unverified": "Für diese Anlage fehlt noch ein eindeutiger Abgleich. Die erste Einrichtung benötigt einen verfügbaren Cloud-Zugang sowie passende Gateway- und Modulkennungen aus beiden Schnittstellen. Bereits bestätigte Zuordnungen funktionieren danach auch ohne Cloud.",
       "local_identity_conflict": "Die Gateway-Kennung widerspricht der ausgewählten Anlage oder einer anderen Einrichtung.",
@@ -655,7 +655,7 @@
       },
       "local_target": {
         "title": "Anlage auswählen",
-        "description": "Wähle die Anlage für den lokalen Zugang. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "description": "Wähle die Anlage, deren K40- oder K40RF-Gateway du lokal verbinden willst, meist die Wärmepumpe oder den Heizkessel. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
         "data": {
           "target": "Anlage / Gateway"
         }
@@ -1075,7 +1075,7 @@
       "local_unknown_firmware": "Die Firmwareversion konnte nicht geprüft werden.",
       "local_old_firmware": "Aktualisiere die Gateway-Firmware, bevor du den lokalen Zugang einrichtest.",
       "local_unsupported_brand": "Diese Gateway-Marke wird von der dokumentierten lokalen Schnittstelle nicht unterstützt.",
-      "local_incomplete_system": "Die Systeminformationen des Gateways sind noch unvollständig. Wiederhole den Lesetest später.",
+      "local_incomplete_system": "Das Gateway sammelt noch seine Systeminformationen. Das kann einige Minuten dauern. Warte etwa fünf Minuten und wiederhole dann den Lesetest.",
       "local_invalid_response": "Eine benötigte Gateway-Antwort konnte nicht geprüft werden.",
       "local_identity_unverified": "Für diese Anlage fehlt noch ein eindeutiger Abgleich. Die erste Einrichtung benötigt einen verfügbaren Cloud-Zugang sowie passende Gateway- und Modulkennungen aus beiden Schnittstellen. Bereits bestätigte Zuordnungen funktionieren danach auch ohne Cloud.",
       "local_identity_conflict": "Die Gateway-Kennung widerspricht der ausgewählten Anlage oder einer anderen Einrichtung.",
@@ -1895,7 +1895,7 @@
     },
     "local_target": {
       "options": {
-        "new_plant": "Neue Anlage (nur lokal)"
+        "new_plant": "Neue Anlage (Gateway nicht im Konto)"
       }
     },
     "local_owner": {

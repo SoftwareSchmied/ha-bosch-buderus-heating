@@ -5,6 +5,26 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Changed
+
+- **Clearer choice of the installation in the local setup:** if only one
+  installation fits, **Choose the installation** preselects it. The step says
+  to pick the installation whose K40 or K40RF gateway is connected, and the
+  last choice is now called **New system (gateway not in your account)**, so
+  it is no longer mistaken for the way to local access. German and English
+  texts; the other languages keep their wording until it is translated
+  ([#137](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/137)).
+- **Read check while the gateway is still collecting:** the message says that
+  the gateway is still collecting its system information, that this can take
+  a few minutes, and to try again in about five minutes
+  ([#137](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/137)).
+
+### Documentation
+
+- **Set up the local access** describes the step **Choose the installation**
+  and what to do while the gateway is still collecting its system information
+  ([#137](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/137)).
+
 ## [0.9.2-beta.2] - 2026-11-15
 
 > [!IMPORTANT]
