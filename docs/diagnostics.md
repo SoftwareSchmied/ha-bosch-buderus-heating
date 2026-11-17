@@ -55,7 +55,15 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   zone has a heating circuit (`heating_circuit_assigned`), whether its
   calculated action is known (`hvac_action_known`) and a `rejection_reason`
   (`season_unknown`, `mode_invalid`, `mode_not_writable`,
-  `control_type_read_only` or `null`). See
+  `control_type_read_only` or `null`). Since 0.9.2-beta.3 each zone also has
+  `writes`: the counts of the changes made through its climate and clear
+  button (`writes_rejected`, `writes_sent`, `writes_confirmed`,
+  `writes_unconfirmed`, `writes_failed`), the `last_step` (`kind` mode,
+  target or clear, and its `result`) and `rejected_reasons` (fixed tokens
+  only); no value, name or path. A mode with a temperature counts as two
+  steps. `gateways[].zone_setpoint_recovery` (same condition) counts the
+  series that look for the setpoint of a zone's new mode
+  (`series_started`, `setpoints_found`, `series_refused_by_budget`). See
   [zone controls](zone-controls.md#zone-climate).
 - `extra_probe_limit`, `extra_probes_requested` and `resource_limit_scope`
   in `gateways[].discovery`: the allowance outside the 512 shared paths for
