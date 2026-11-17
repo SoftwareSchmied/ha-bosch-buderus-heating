@@ -76,8 +76,38 @@ diagnostic entities: **Battery low** (binary sensor, enabled; on for
 `BAT_LOW` and `BAT_TOO_LOW`, off for `BAT_NORMAL`; any other state such as
 `NO_BAT` or `BAT_FOTA_FORBIDDEN` stays unknown and is shown as
 `reported_state` when the device offers it) and **Radio signal** (sensor in dB, disabled by
-default). Room controllers keep their own device entities. Expected, not yet
-confirmed on a real installation.
+default). A third diagnostic entity, **RF connection lost since**, is a
+timestamp: the controller keeps the placeholder `2000-00-00T00:00` while the
+connection was never lost, which is no date, so the sensor shows unknown. A
+text with a time zone offset becomes the timestamp; a text without one stays
+unknown and is shown as the attribute `raw_value`, because the controller
+reports it without a time zone and I do not guess one. The sensor keeps the
+identity of the text sensor it replaces. Battery states without an alarm
+(`BAT_MEDIUM`, `BAT_FOTA_FORBIDDEN`) and for a device without a battery
+(`NO_BAT`, `NOT_BAT`) stay unknown with their `reported_state`.
+
+The radio devices of a ConnectKey controller have no name of their own, so
+their entities are named after the zone they belong to (the device's `zoneId`
+and the zone's name, or "Zone N" when it has none). A zone with several radio
+devices adds "Radio device 1", "Radio device 2" … in the order of the device
+numbers. A device without a valid zone keeps the name "Room device N".
+Identifiers and entity IDs do not change; a new name shows after a reload.
+Room controllers keep their own device entities. Expected, not yet confirmed
+on a real installation.
+
+### Setpoint after a mode change
+
+A zone offers only the setpoint of its current mode: `manualRoomSetpoint` in
+`manual`, `temporaryRoomSetpoint` in `auto`; the other one is answered with
+"not found". After the mode of a zone has changed (in the app or here) I read
+the setpoint of the new mode again, a short series of at most three reads, and
+poll it from then on. At most three series per setpoint and hour and twelve
+in all are started, at least ten minutes apart, and each counts against the
+discovery allowance. Nothing is written for this. In `off` there is no
+setpoint. The climate shows the program target of `auto` from
+`currentRoomSetpoint` while no temporary setpoint exists. A mode together with
+a temperature in one call is refused unsent when the target of the new mode is
+not known yet; set the mode first, then the temperature.
 
 ## Discovery on large zone controllers
 
@@ -169,7 +199,10 @@ known options, bounds, UI step and rejection reasons. Since 0.9.2 the
 temporary setpoints have a write contract of their own, used only by the
 zone climate and its clear button (before: `zone_override_lifecycle_unverified`).
 The section `zone_climates` shows per zone whether its climate is shown and
-can change the mode and the target, and why not. Diagnostics add no cloud
+can change the mode and the target, and why not, and under `writes` how many
+changes were refused, sent, confirmed by the read-back, unconfirmed or failed
+(counts and the last step, no values; the section `zone_setpoint_recovery`
+counts the series described above). Diagnostics add no cloud
 requests and expose no readings or unknown mode text.
 
 ## Boundaries and evidence
@@ -216,7 +249,22 @@ prüfe ich nach der bestätigten Betriebsart; nach einer neuen Betriebsart
 lese ich die Ziele einige Sekunden später erneut. Auswahl und Zahl der Zone
 folgen seit 0.9.2 denselben Schreibregeln. Die Aktion (heizen/kühlen/Leerlauf) ist berechnet: Heizkreis
 heizt und Raum unter dem aktiven Sollwert. Funk-Raumgeräte zeigen „Batterie
-schwach“ (aktiviert) und das Funksignal in dB (deaktiviert). Die Discovery
+schwach“ (aktiviert) und das Funksignal in dB (deaktiviert). Seit 0.9.2-beta.3
+heißen die Entitäten eines Funk-Raumgeräts nach seiner Zone (`zoneId` und
+Zonenname, sonst „Zone N“); hat eine Zone mehrere Funkgeräte, folgt
+„Funkgerät 1“, „Funkgerät 2“ … nach der Gerätenummer; ohne gültige Zone bleibt
+„Raumgerät N“. Kennungen und Entity-IDs bleiben, der neue Name zeigt sich nach
+dem Neuladen. „Funkverbindung unterbrochen seit“ ist ein Zeitstempel; der
+Platzhalter `2000-00-00T00:00` („nie unterbrochen“) ist kein Datum und zeigt
+unbekannt, ein Text ohne Zeitzone bleibt unbekannt und steht als Attribut
+`raw_value`. Der Sollwert einer Zone besteht nur in ihrer aktuellen
+Betriebsart (manuell: `manualRoomSetpoint`, Automatik:
+`temporaryRoomSetpoint`); nach einem Moduswechsel lese ich den Sollwert der
+neuen Betriebsart in einer kurzen, begrenzten Folge erneut (höchstens drei
+Lesungen je Folge, höchstens drei Folgen je Sollwert und Stunde, zwölf
+insgesamt, nichts wird geschrieben). Die Diagnose zählt je Zone die
+Änderungen (abgelehnt, gesendet, bestätigt, unbestätigt, fehlgeschlagen).
+Die Discovery
 liest die Betriebsarten und Sollwerte der Zonen jetzt direkt nach den
 Zonenverzeichnissen und fragt ein Blatt, das bei einem Funkgerät verweigert
 wurde, bei gleichartigen Geräten nicht erneut ab. Sind die 512 gemeinsamen

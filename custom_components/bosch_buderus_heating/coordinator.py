@@ -182,6 +182,13 @@ from .writes import (
     WriteService,
     confirms_value,
 )
+from .zone_setpoint_recovery import (
+    RecoveryBudget,
+    is_zone_target,
+    required_mode,
+    targets_for_mode,
+    zone_mode_path,
+)
 
 if TYPE_CHECKING:
     from .counter_selection import CounterGuard
@@ -482,7 +489,13 @@ def _slower_rate_applies(interval: timedelta) -> bool:
 
 
 def _manual_setpoint_mode_path(path: str) -> str | None:
-    """Match only direct leaves of an actual heating circuit, not cooling paths."""
+    """Match only direct leaves of an actual heating circuit, not cooling paths.
+
+    A zone side's mode and setpoints belong to it as well (see
+    ``zone_setpoint_recovery``).
+    """
+    if (zone := zone_mode_path(path)) is not None:
+        return zone
     parts = path.split("/")
     if (
         len(parts) == 4
@@ -509,12 +522,15 @@ def _mode_target_paths(path: str) -> tuple[str, ...]:
     return (f"{root}/manualRoomSetpoint", f"{root}/temporaryRoomSetpoint")
 
 
-def _manual_mode_active(mode_path: str, snapshots: dict[str, ResourceSnapshot]) -> bool:
+def _manual_mode_active(
+    mode_path: str,
+    snapshots: dict[str, ResourceSnapshot],
+    wanted: str = "manual",
+) -> bool:
+    """The mode is current and is the one whose setpoint is looked for."""
     mode = snapshots.get(mode_path)
     return (
-        mode is not None
-        and _snapshot_is_fresh(mode)
-        and mode.resource.value == "manual"
+        mode is not None and _snapshot_is_fresh(mode) and mode.resource.value == wanted
     )
 
 
@@ -653,6 +669,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._manual_setpoint_attempted: set[str] = set()
         self._manual_setpoint_candidates: dict[str, str] = {}
         self._manual_setpoint_recovery_closed = False
+        self.zone_recovery = RecoveryBudget()
         self._polls_total = 0
         self._poll_failures = 0
         self._last_poll_duration_ms: float | None = None
@@ -944,23 +961,44 @@ class BoschBuderusDataUpdateCoordinator(
             or _manual_setpoint_mode_path(mode_path) != mode_path
         ):
             return
-        setpoint_path = mode_path.removesuffix("/operationMode") + "/manualRoomSetpoint"
         mode = snapshots.get(mode_path)
+        zone = zone_mode_path(mode_path) is not None
+        wanted = "manual"
+        if zone:
+            # A zone offers the setpoint of its current mode only: the one of
+            # the other mode is not looked for, and a later change starts anew.
+            if mode is None or not _snapshot_is_fresh(mode):
+                return
+            setpoint_path, other = targets_for_mode(mode_path, mode.resource.value)
+            if setpoint_path is None or other is None:
+                return
+            self._reset_manual_setpoint_recovery(other)
+            wanted = required_mode(setpoint_path)
+        else:
+            setpoint_path = (
+                mode_path.removesuffix("/operationMode") + "/manualRoomSetpoint"
+            )
         target = snapshots.get(setpoint_path)
         if _snapshot_is_fresh(target) or (
             mode is not None
             and _snapshot_is_fresh(mode)
-            and mode.resource.value != "manual"
+            and mode.resource.value != wanted
         ):
             self._reset_manual_setpoint_recovery(setpoint_path)
             return
-        if not _manual_mode_active(mode_path, snapshots):
+        if not _manual_mode_active(mode_path, snapshots, wanted):
             return
+        if zone and setpoint_path not in self._manual_setpoint_attempted:
+            if not self.zone_recovery.allow(setpoint_path, monotonic()):
+                return
+            # A "not found" from the time of another mode no longer holds.
+            self._negative_until.pop(setpoint_path, None)
         if target is None:
             if not self.startup_data.reserve_discovery((setpoint_path,)):
                 return
-            # This exact path belongs to a reported, currently manual circuit.
-            # Keep it eligible for normal group reads after the short series.
+            # This exact path belongs to a reported circuit in its manual mode
+            # (or a zone in the mode of this setpoint). Keep it eligible for
+            # normal group reads after the short series.
             self._manual_setpoint_candidates[setpoint_path] = mode_path
         if setpoint_path in self._manual_setpoint_attempted:
             return
@@ -993,7 +1031,9 @@ class BoschBuderusDataUpdateCoordinator(
                     target = snapshots.get(setpoint_path)
                     if (
                         self._manual_setpoint_recovery_closed
-                        or not _manual_mode_active(mode_path, snapshots)
+                        or not _manual_mode_active(
+                            mode_path, snapshots, required_mode(setpoint_path)
+                        )
                         or _snapshot_is_fresh(target)
                     ):
                         return
@@ -1063,10 +1103,17 @@ class BoschBuderusDataUpdateCoordinator(
                             result.status not in (403, 404, 406) for result in results
                         )
                     ):
+                        if successes and is_zone_target(setpoint_path):
+                            self.zone_recovery.recovered += 1
                         return
         finally:
             if self._manual_setpoint_tasks.get(setpoint_path) is asyncio.current_task():
                 self._manual_setpoint_tasks.pop(setpoint_path, None)
+            if is_zone_target(setpoint_path) and setpoint_path not in self.resources:
+                # Not found in this series: a later poll may start another,
+                # within the budget; until then the setpoint is not polled.
+                self._manual_setpoint_attempted.discard(setpoint_path)
+                self._manual_setpoint_candidates.pop(setpoint_path, None)
 
     def cancel_manual_setpoint_recovery(self) -> None:
         """Cancel outstanding recovery tasks when the integration is unloaded."""
@@ -3026,6 +3073,7 @@ class BoschBuderusDataUpdateCoordinator(
             path
             for path, mode_path in self._manual_setpoint_candidates.items()
             if path not in self.resources
+            and not is_zone_target(path)  # a zone's series reads it itself
             and _manual_mode_active(mode_path, self.data or {})
         )
         paths_by_group[PollGroup.CONTROL] = (
@@ -4380,10 +4428,12 @@ class BoschBuderusDataUpdateCoordinator(
 
             result_category = _result_category(result.error, result.status)
             self._record_capability(result.path, result_category, source)
-            if (
-                result.status == 404
-                and result.path.startswith("/heatingCircuits/")
-                and result.path.endswith("/manualRoomSetpoint")
+            if result.status == 404 and (
+                is_zone_target(result.path)
+                or (
+                    result.path.startswith("/heatingCircuits/")
+                    and result.path.endswith("/manualRoomSetpoint")
+                )
             ):
                 missing_manual_setpoints.add(result.path)
             previous = snapshots.get(result.path)
@@ -4425,7 +4475,9 @@ class BoschBuderusDataUpdateCoordinator(
             self._queue_manual_setpoint_recovery(mode_path, snapshots)
         for setpoint_path in missing_manual_setpoints:
             mode_path = self._manual_setpoint_candidates.get(setpoint_path)
-            if mode_path is not None and _manual_mode_active(mode_path, snapshots):
+            if mode_path is not None and _manual_mode_active(
+                mode_path, snapshots, required_mode(setpoint_path)
+            ):
                 # Only an absent manual target on a confirmed manual circuit
                 # gets this exception. Forbidden-resource pauses remain intact.
                 self._negative_until.pop(setpoint_path, None)

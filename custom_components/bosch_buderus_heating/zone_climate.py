@@ -95,6 +95,7 @@ from .writes import (
     validate_control_value,
 )
 from .zone_controls import zone_control_issue
+from .zone_write_stats import counted_write, zone_write_stats
 
 HEAT_SIDE: Final = "heating"
 COOL_SIDE: Final = "cooling"
@@ -659,15 +660,16 @@ class ZoneClimate(
             ),
             None,
         )
-        if raw is None:
-            raise self._refusal()
-        await async_set_control(
-            self.coordinator,
-            command.mode.path,
-            raw,
-            ZONE_OPERATION_MODE_POLICY,
-            expected=(command.mode, *command.guards),
-        )
+        with counted_write(self.coordinator, self.root, "mode"):
+            if raw is None:
+                raise self._refusal()
+            await async_set_control(
+                self.coordinator,
+                command.mode.path,
+                raw,
+                ZONE_OPERATION_MODE_POLICY,
+                expected=(command.mode, *command.guards),
+            )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         if (down := cloud_down_error(self.coordinator)) is not None:
@@ -756,6 +758,12 @@ class ZoneClimate(
         return manual, raw, policy
 
     async def _async_write_target(self, command: _Command, value: float) -> None:
+        with counted_write(self.coordinator, self.root, "target"):
+            await self._async_write_target_counted(command, value)
+
+    async def _async_write_target_counted(
+        self, command: _Command, value: float
+    ) -> None:
         mode = str(command.mode.value)
         if mode not in ("manual", "auto"):
             raise self._refusal()
@@ -913,22 +921,23 @@ class ZoneTemporaryClearButton(
     async def async_press(self) -> None:
         if (down := cloud_down_error(self.coordinator)) is not None:
             raise down
-        state = self._state(strict=True)
-        if state is None:
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="write_validation_failed"
-                if self._state(strict=False) is not None
-                else "zone_temporary_setpoint_not_active",
+        with counted_write(self.coordinator, self.root, "clear"):
+            state = self._state(strict=True)
+            if state is None:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="write_validation_failed"
+                    if self._state(strict=False) is not None
+                    else "zone_temporary_setpoint_not_active",
+                )
+            resource, mode, guards = state
+            await async_set_control(
+                self.coordinator,
+                resource.path,
+                CLEAR_VALUE,
+                ZONE_TEMPORARY_SETPOINT_POLICY,
+                expected=(mode, resource, *guards),
             )
-        resource, mode, guards = state
-        await async_set_control(
-            self.coordinator,
-            resource.path,
-            CLEAR_VALUE,
-            ZONE_TEMPORARY_SETPOINT_POLICY,
-            expected=(mode, resource, *guards),
-        )
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -974,6 +983,8 @@ def zone_climate_diagnostics(
                 "heating_circuit_assigned": climate._circuit() is not None,
                 "hvac_action_known": climate._action()[0] is not None,
                 "rejection_reason": reason,
+                # Changes made here: counts and the last step, no values.
+                "writes": zone_write_stats(coordinator).snapshot(match.group(1)),
             }
         )
     return report

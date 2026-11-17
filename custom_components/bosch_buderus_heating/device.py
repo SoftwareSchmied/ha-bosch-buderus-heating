@@ -19,6 +19,7 @@ from .ha_compat import device_by_identifier, via_device
 from .i18n import localize
 from .pointt import Resource
 from .resource_catalog import configured_device_name, logical_device_for_path
+from .zone_radio_names import zone_assignment
 
 _UNKNOWN_HEAT_PUMP_TYPES = frozenset(
     {"", "none", "not_available", "undefined", "unknown"}
@@ -246,6 +247,10 @@ def grouped_entity_name(
         return f"{label}{_GROUP_SEPARATOR}{name}"
     logical = coordinator.plant_model.bind_resource(resource_path).group
     if logical is not None:
+        if logical.kind == "room_device" and (
+            zoned := _zone_of_room_device(coordinator, logical.logical_id, language)
+        ):
+            return f"{zoned}{_GROUP_SEPARATOR}{name}"
         group = _configured_logical_name(coordinator, resource_path, logical.logical_id)
         group = _localized_generic_name(group, logical.kind, language)
         if logical.kind == "heat_source" and _is_heat_pump(
@@ -275,6 +280,31 @@ def grouped_entity_name(
     else:
         group = localize(language, "Anlage", "System")
     return f"{group}{_GROUP_SEPARATOR}{name}"
+
+
+def _zone_of_room_device(
+    coordinator: BoschBuderusDataUpdateCoordinator, device: str, language: str
+) -> str | None:
+    """The name prefix of a radio room device: its zone, with its position
+    among the devices of that zone when there are several; ``None`` when the
+    device names no zone the plant reports (it keeps its generic name)."""
+    resources = dict(coordinator.resources)
+    resources.update(
+        {path: snapshot.resource for path, snapshot in (coordinator.data or {}).items()}
+    )
+    assignment = zone_assignment(resources, device)
+    if assignment is None:
+        return None
+    zone_id = f"zone{assignment.zone}"
+    name = _configured_logical_name(coordinator, f"/zones/{zone_id}", zone_id)
+    if name is None or name.casefold().strip() == "zone":
+        # No name, or the vendor's default "Zone": the number tells them apart.
+        name = _logical_name("room_zone", zone_id, language)
+    group = name
+    if assignment.members > 1:
+        label = localize(language, "Funkgerät", "Radio device")
+        group = f"{group}{_GROUP_SEPARATOR}{label} {assignment.position}"
+    return group
 
 
 def _manufacturer(coordinator: BoschBuderusDataUpdateCoordinator) -> str:

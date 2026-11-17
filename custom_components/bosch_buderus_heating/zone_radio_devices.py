@@ -1,4 +1,5 @@
-"""Battery and radio signal of the radio room devices of a zone controller.
+"""Battery, radio signal and connection loss of the radio room devices of a
+zone controller.
 
 A ConnectKey zone controller (for example an MX400) reports each radio room
 device below ``/devices/<id>`` with ``battery`` (a state such as
@@ -8,16 +9,21 @@ own entities.
 
 The battery is a diagnostic binary sensor, enabled by default as a warning:
 on for ``BAT_LOW`` and ``BAT_TOO_LOW``, off for ``BAT_NORMAL`` (``low`` and
-``ok`` as well; any case). Any other state (for example ``NO_BAT``,
-``BAT_MEDIUM`` or ``BAT_FOTA_FORBIDDEN``) stays unknown and is shown as
-``reported_state`` when the device offers it. The signal is a diagnostic
-sensor in dB, disabled by default. Expected, untested on a real device.
+``ok`` as well; any case). Any other state (for example ``NO_BAT`` and
+``NOT_BAT`` for a device without a battery, ``BAT_MEDIUM`` or
+``BAT_FOTA_FORBIDDEN``, which are no low-battery alarm, or ``BAT_UNKNOWN``)
+stays unknown and is shown as ``reported_state`` when the device offers it.
+The signal is a diagnostic sensor in dB, disabled by default. The time of
+the last connection loss is a diagnostic timestamp (unknown while the device
+reports the placeholder of "never lost"). Expected, untested on a real
+device.
 """
 
 from __future__ import annotations
 
 import math
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, ClassVar, Final
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -40,6 +46,7 @@ from .i18n import localize
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .writes import context_of
+from .zone_radio_time import PLACEHOLDER, connection_lost_time, printable_text
 
 if TYPE_CHECKING:
     from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
@@ -47,12 +54,20 @@ else:
     # As in binary_sensor.py: older releases define it in the platform module.
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-_DEVICE_LEAF: Final = re.compile(r"^/devices/(?!list$)([^/]+)/(battery|signal)$")
+_DEVICE_LEAF: Final = re.compile(
+    r"^/devices/(?!list$)([^/]+)/(battery|signal|rfTimeofConnectionLost)$"
+)
 # The states the devices report (their allowed values), casefolded.
 BATTERY_LOW: Final = frozenset({"bat_low", "bat_too_low", "low"})
 BATTERY_OK: Final = frozenset({"bat_normal", "ok"})
 # Plausible limits of a radio level in dB; anything else is no reading.
 _SIGNAL_RANGE: Final = (-200.0, 200.0)
+
+
+def is_zone_radio_connection_lost(path: str) -> bool:
+    """The path of a radio device's connection-loss time (own entity)."""
+    match = _DEVICE_LEAF.fullmatch(path)
+    return match is not None and match.group(2) == ZoneRadioConnectionLostSensor.leaf
 
 
 def battery_reading(resource: Resource | None) -> str | None:
@@ -175,6 +190,49 @@ class ZoneRadioSignalSensor(ZoneRadioEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return signal_reading(self._resource)
+
+
+class ZoneRadioConnectionLostSensor(ZoneRadioEntity, SensorEntity):
+    """When the device lost its radio connection; unknown if it never did.
+
+    The same entity (and unique id) that the generic text sensor of this
+    value had; its text is parsed strictly (``zone_radio_time``).
+    """
+
+    leaf = "rfTimeofConnectionLost"
+    names = ("Funkverbindung unterbrochen seit", "RF connection lost since")
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    @staticmethod
+    def wanted(resource: Resource) -> bool:
+        return _connection_lost_text(resource) is not None
+
+    @property
+    def available(self) -> bool:
+        return _connection_lost_text(self._resource) is not None
+
+    @property
+    def native_value(self) -> datetime | None:
+        text = _connection_lost_text(self._resource)
+        return connection_lost_time(text) if text is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        text = _connection_lost_text(self._resource)
+        # The placeholder says nothing; any other text is shown as reported.
+        if text is None or text == PLACEHOLDER:
+            return {}
+        return {"raw_value": text}
+
+
+def _connection_lost_text(resource: Resource | None) -> str | None:
+    if (
+        resource is None
+        or resource.metadata.resource_type != "stringValue"
+        or (text := printable_text(resource.value)) is None
+    ):
+        return None
+    return text
 
 
 def track_zone_radio_devices(

@@ -156,7 +156,12 @@ from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
 from .write_policies import context_of, rrc_kwargs
-from .zone_radio_devices import ZoneRadioSignalSensor, track_zone_radio_devices
+from .zone_radio_devices import (
+    ZoneRadioConnectionLostSensor,
+    ZoneRadioSignalSensor,
+    is_zone_radio_connection_lost,
+    track_zone_radio_devices,
+)
 
 type ValueKind = Literal[
     "value",
@@ -592,6 +597,9 @@ def _setup_entities(
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
         track_zone_radio_devices(
             entry, coordinator, async_add_entities, ZoneRadioSignalSensor
+        )
+        track_zone_radio_devices(
+            entry, coordinator, async_add_entities, ZoneRadioConnectionLostSensor
         )
         rrc_platforms.track(Platform.SENSOR, entry, coordinator, async_add_entities)
     async_add_entities(entities)
@@ -1145,6 +1153,8 @@ def build_sensor_descriptions(
             ) is not None and not _reserved_by_known(resource.path):
                 unknown_descriptions.append(_unknown_description(resource, unknown))
             continue
+        if not rrc_plant and is_zone_radio_connection_lost(resource.path):
+            continue  # its own entity (zone_radio_devices), same unique id
         if is_start_counter_path(resource.path):
             assessment = assess_start_counter(resource)
             descriptions.extend(

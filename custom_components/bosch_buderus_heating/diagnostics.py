@@ -758,7 +758,11 @@ def _gateway_diagnostics(
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
         # Only for a zone controller; other gateways keep their report.
         **(
-            {"zone_climates": zones}
+            {
+                "zone_climates": zones,
+                # Counts of the reads that look for the setpoint of a new mode.
+                "zone_setpoint_recovery": coordinator.zone_recovery.diagnostics(),
+            }
             if (zones := zone_climate_diagnostics(coordinator))
             else {}
         ),
