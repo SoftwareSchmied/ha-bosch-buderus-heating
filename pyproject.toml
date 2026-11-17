@@ -24,15 +24,16 @@ security = [
   "pip-audit==2.10.1",
 ]
 test = [
-  "homeassistant==2026.11.0",
-  "hypothesis==6.170.14",
+  "homeassistant==2026.11.1",
+  "hypothesis==6.170.15",
   "mypy==2.4.1",
   "pytest==9.0.3",
   "pytest-asyncio==1.4.0",
   "pytest-cov==7.1.0",
-  "pytest-homeassistant==2026.11.0",
+  "pytest-homeassistant==2026.11.1",
   "pytest-timeout==2.4.0",
-  "ruff==0.17.3",
+  "pytest-xdist==3.8.0",
+  "ruff==0.17.4",
 ]
 
 [tool.setuptools]
