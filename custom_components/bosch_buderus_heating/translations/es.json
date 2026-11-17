@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Iniciar refrigeración a temperatura exterior"
       },
+      "circuit_cooling_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "season_cooling_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "season_heating_threshold": {
+        "name": "Fin de la calefacción a la temperatura exterior"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Temperatura Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Duración del Boost"
+      },
       "away_temperature": {
         "name": "Temperatura de ausencia"
       },
@@ -2160,6 +2175,14 @@
           "off": "Apagada"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Refrigeración: modo de funcionamiento",
+        "state": {
+          "off": "Apagado",
+          "manual": "Manual",
+          "auto": "Automático"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manual",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Modo ausente"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detección de ventana abierta"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimización de la consigna"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Modo vacaciones"

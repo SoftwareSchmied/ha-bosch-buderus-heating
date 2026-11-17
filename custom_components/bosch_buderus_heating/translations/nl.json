@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Koelen starten bij buitentemperatuur"
       },
+      "circuit_cooling_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "season_cooling_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "season_heating_threshold": {
+        "name": "Verwarming stoppen bij buitentemperatuur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boosttemperatuur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boostduur"
+      },
       "away_temperature": {
         "name": "Afwezigheidstemperatuur"
       },
@@ -2160,6 +2175,14 @@
           "off": "Uit"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Koelen: bedrijfsmodus",
+        "state": {
+          "off": "Uit",
+          "manual": "Handmatig",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Handmatig",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Afwezigheidsmodus"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detectie open raam"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimalisatie van de instelwaarde"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Vakantiemodus"

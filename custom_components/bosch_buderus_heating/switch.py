@@ -31,6 +31,7 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .hc_controls_extra import switch_key
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -107,6 +108,13 @@ def build_switch_descriptions(
             descriptions.append(_contract_switch(resource, policy, *values))
             continue
         if (
+            policy is not None
+            and (key := switch_key(policy)) is not None
+            and assess_control(resource, context).supports_switch
+        ):
+            descriptions.append(_circuit_switch(resource, policy, key))
+            continue
+        if (
             policy not in STRING_SWITCH_POLICIES
             or not assess_control(resource, context).supports_switch
         ):
@@ -144,6 +152,26 @@ def build_switch_descriptions(
             )
         )
     return tuple(descriptions)
+
+
+def _circuit_switch(
+    resource: Resource, policy: EnumWritePolicy, key: str
+) -> BoschBuderusSwitchEntityDescription:
+    """A heating circuit switch of ``hc_controls_extra`` (boost, setpoint
+    optimization, open window detection): a configuration entity; the icon
+    comes from icons.json."""
+    on_value, off_value = policy.switch_values or ("on", "off")
+    return BoschBuderusSwitchEntityDescription(
+        key=_semantic_key(resource.path, None),
+        name=resource_name(resource.path),
+        resource_path=resource.path,
+        write_policy=policy,
+        on_value=on_value,
+        off_value=off_value,
+        translation_key=key,
+        entity_registry_enabled_default=policy.enabled_by_default,
+        entity_category=EntityCategory.CONFIG,
+    )
 
 
 def _contract_switch(

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from homeassistant.exceptions import ServiceValidationError
 
-from . import circuit_controls, variable_tariff
+from . import circuit_controls, hc_controls_extra, variable_tariff
 from .circuit_controls import (
     CONSTANT_CONTROL,
     CONSTANT_CONTROL_REFUSAL,
@@ -158,10 +158,13 @@ def circuit_control_diagnostics(
     coordinator: BoschBuderusDataUpdateCoordinator,
 ) -> dict[str, object]:
     """Counts and types only: how many temperature levels have a name that
-    is not operated, and whether the iCom tariff paths exist (no values)."""
+    is not operated, how many paths of the boost, cooling and further circuit
+    settings exist (``hc_controls_extra``), and whether the iCom tariff paths
+    exist (no values)."""
     resources = coordinator.resources
     return {
         "unknown_temperature_levels": circuit_controls.unknown_level_count(resources),
+        "extra_settings": hc_controls_extra.diagnostics(resources),
         "variable_tariff": variable_tariff.diagnostics(
             resources,
             variable_tariff.ICOM_TARIFF_PATHS

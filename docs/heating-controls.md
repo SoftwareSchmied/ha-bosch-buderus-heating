@@ -305,6 +305,57 @@ Reports are welcome.
   so a room controller recognised late never shows them, not even for a
   moment.
 
+### Boost, cooling mode and further circuit settings
+
+Since 0.9.2-beta.3 a heating circuit gets these further settings as switch,
+number and select entities (category configuration) and, for the circuit
+ones, as rows in the controls dialog. Every one of them is **disabled by
+default**, exists only when the gateway reports its path as writable (and
+with the data named below), and is **expected, untested on a real
+installation**; only simulated data in automated tests. Reports are welcome.
+A path the gateway does not report gives no entity. Each change reads the
+setting again on the appliance right before its one write, sends one request
+and is confirmed by reading it back; nothing is sent again.
+
+| Setting | Path | Entity | Condition |
+| --- | --- | --- | --- |
+| Boost | `boostMode` | switch | the advertised list is exactly `on` and `off` |
+| Boost duration | `boostDuration` | number | minimum and maximum, a duration unit |
+| Boost temperature | `boostTemperature` | number | minimum and maximum |
+| Cooling: operation mode | `cooling/operationMode` | select | the advertised modes `off`, `manual`, `auto` (at least two, the current one among them) |
+| Setpoint optimization | `setpointOptimization` | switch | the advertised list is exactly `on` and `off` |
+| Open window detection | `openWindowDetection/enabled` | switch | only when the path is found |
+| Stop heating at outdoor temperature (central) | `/system/seasonOptimizer/heatingThreshold` | number | minimum and maximum |
+| Start cooling at outdoor temperature (central) | `/system/seasonOptimizer/coolingThreshold` | number | only when the path is found, with limits |
+| Start cooling at outdoor temperature (circuit) | `suWiCoolingThreshold` | number | only when the path is found, with limits |
+
+- **Boost:** the switch starts and ends the circuit's boost; the duration and
+  temperature are separate numbers. The remaining time stays a reading.
+  A room controller (TC100.2, CT200) has its own boost (see
+  [room controllers](room-controllers.md)); there these paths stay readings
+  and none of these entities is created.
+- **Cooling operation mode:** the mode of the circuit's cooling, the same
+  kind of choice as the heating mode. Only the codes `off`, `manual` and
+  `auto` are offered; another advertised code is left out. As far as I know
+  only one plant with cooling has reported this path so far, so I could not
+  check the list on more than one gateway. The reading *Heating/cooling
+  mode* (`heatCoolMode`) stays a read-only sensor.
+- **Names:** the cooling paths of a circuit have their own names ("Cooling:
+  operation mode", "Cooling: control type", "Cooling: manual setpoint",
+  "Cooling: temporary room setpoint") in every language, so that they no
+  longer read like a second operating mode, control type or setpoint of the
+  same circuit. Entity IDs and unique IDs are unchanged. The control type of
+  the cooling (`cooling/controlType`) is a read-only, disabled sensor.
+- **Season thresholds:** the heating limit of the central season switching
+  is a number; the two cooling thresholds exist only on a gateway that
+  reports them (none of the diagnostics I know does), and are never guessed.
+- **Room controllers:** the circuits of a room controller keep their
+  contracts; the circuit settings of this table are not created for them.
+  Like the other generic circuit settings they wait for the room controller
+  check described above.
+- The diagnostics count, per function, the paths found, the writable ones and
+  those with a list or limits (see [diagnostics](diagnostics.md)).
+
 ### Variable electricity tariff (read only)
 
 Since 0.9.2 an iCom gateway is asked once during discovery whether its
@@ -791,6 +842,59 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
   (Zonenliste und Produkttyp). Bis dahin, etwa solange ein Serverfehler das
   offenlässt, warten sie; ein spät erkannter Raumregler zeigt sie so nie, auch
   nicht kurz.
+
+### Boost, Kühlbetriebsart und weitere Heizkreis-Einstellungen
+
+Seit 0.9.2-beta.3 erhält ein Heizkreis diese weiteren Einstellungen als
+Schalter-, Zahlen- und Auswahlentitäten (Kategorie Konfiguration) und, soweit
+sie einen Kreis betreffen, als Zeilen im Bedienungsdialog. Jede davon ist
+**standardmäßig deaktiviert**, entsteht nur, wenn das Gateway ihren Pfad als
+schreibbar meldet (und mit den unten genannten Angaben), und ist **erwartet,
+aber an einer echten Anlage ungetestet**; geprüft nur mit simulierten Daten
+in automatisierten Tests. Rückmeldungen sind willkommen. Meldet das Gateway
+einen Pfad nicht, gibt es keine Entität. Jede Änderung liest die Einstellung
+direkt vor ihrem einen Schreibvorgang am Gerät neu, sendet eine Anfrage und
+wird durch Zurücklesen bestätigt; nichts wird erneut gesendet.
+
+| Einstellung | Pfad | Entität | Bedingung |
+| --- | --- | --- | --- |
+| Boost | `boostMode` | Schalter | die gemeldete Liste ist genau `on` und `off` |
+| Boost-Dauer | `boostDuration` | Zahl | Minimum und Maximum, eine Zeiteinheit |
+| Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum |
+| Kühlen: Betriebsart | `cooling/operationMode` | Auswahl | die gemeldeten Betriebsarten `off`, `manual`, `auto` (mindestens zwei, die aktuelle darunter) |
+| Sollwertoptimierung | `setpointOptimization` | Schalter | die gemeldete Liste ist genau `on` und `off` |
+| Fenster-offen-Erkennung | `openWindowDetection/enabled` | Schalter | nur, wenn der Pfad gefunden wird |
+| Heizbetrieb bis Außentemperatur (zentral) | `/system/seasonOptimizer/heatingThreshold` | Zahl | Minimum und Maximum |
+| Kühlbetrieb ab Außentemperatur (zentral) | `/system/seasonOptimizer/coolingThreshold` | Zahl | nur, wenn der Pfad gefunden wird, mit Grenzen |
+| Kühlbetrieb ab Außentemperatur (Kreis) | `suWiCoolingThreshold` | Zahl | nur, wenn der Pfad gefunden wird, mit Grenzen |
+
+- **Boost:** Der Schalter startet und beendet den Boost des Kreises; Dauer
+  und Temperatur sind eigene Zahlen. Die Restzeit bleibt ein Messwert. Ein
+  Raumregler (TC100.2, CT200) hat einen eigenen Boost (siehe
+  [Raumregler](room-controllers.md)); dort bleiben diese Pfade Messwerte und
+  keine dieser Entitäten entsteht.
+- **Kühl-Betriebsart:** die Betriebsart der Kühlung des Kreises, dieselbe Art
+  Auswahl wie beim Heizbetrieb. Angeboten werden nur die Codes `off`,
+  `manual` und `auto`; ein anderer gemeldeter Code wird weggelassen. Soweit
+  ich weiß, hat bisher nur eine Anlage mit Kühlung diesen Pfad gemeldet; die
+  Liste konnte ich daher an nur einem Gateway prüfen. Der Messwert
+  *Heiz-/Kühlbetrieb* (`heatCoolMode`) bleibt ein reiner Sensor.
+- **Namen:** Die Kühlpfade eines Kreises haben eigene Namen („Kühlen:
+  Betriebsart“, „Kühlen: Regelungsart“, „Kühlen: Manueller Sollwert“,
+  „Kühlen: Vorübergehender Raum-Sollwert“) in allen Sprachen, damit sie nicht
+  mehr wie eine zweite Betriebsart, Regelungsart oder ein zweiter Sollwert
+  desselben Kreises aussehen. Entitäts- und eindeutige IDs bleiben
+  unverändert. Die Regelungsart der Kühlung (`cooling/controlType`) ist ein
+  reiner, deaktivierter Sensor.
+- **Saison-Schwellen:** Die Heizgrenze der zentralen Saisonumschaltung ist
+  eine Zahl; die beiden Kühlschwellen gibt es nur an einem Gateway, das sie
+  meldet (keine mir bekannte Diagnose tut das), und sie werden nie geraten.
+- **Raumregler:** Die Kreise eines Raumreglers behalten ihre Verträge; die
+  Kreis-Einstellungen dieser Tabelle entstehen für sie nicht. Wie die anderen
+  allgemeinen Kreis-Einstellungen warten sie auf die oben beschriebene
+  Raumregler-Prüfung.
+- Die Diagnose zählt je Funktion die gefundenen Pfade, die schreibbaren und
+  die mit Liste oder Grenzen (siehe [Diagnose](diagnostics.md)).
 
 ### Variabler Stromtarif (nur lesen)
 

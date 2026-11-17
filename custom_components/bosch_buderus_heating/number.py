@@ -42,6 +42,8 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .hc_controls_extra import BOOST_DURATION_POLICY, number_identity
+from .hc_controls_extra import icon as extra_icon
 from .number_temperature import TemperatureNumber, temperature_device_class
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
@@ -134,7 +136,9 @@ def build_number_descriptions(
                 resource.path
             )
         else:
-            key, name = _number_identity(resource.path)
+            key, name = number_identity(resource.path) or _number_identity(
+                resource.path
+            )
         assessment = assess_control(resource, context)
         unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
@@ -151,7 +155,7 @@ def build_number_descriptions(
                 mode=NumberMode.BOX,
                 # The heating circuit settings take theirs from icons.json.
                 icon=None
-                if circuit_controls.icon(resource.path)
+                if circuit_controls.icon(resource.path) or extra_icon(resource.path)
                 else control_icon(resource.path, numeric=True, contract=contract),
                 entity_category=control_category(
                     resource.path, numeric=True, contract=contract
@@ -171,6 +175,8 @@ def policy_device_class(
     All temperature settings of the write policies are absolute
     temperatures (setpoints, levels, limits, outdoor thresholds).
     """
+    if policy is BOOST_DURATION_POLICY:
+        return NumberDeviceClass.DURATION if unit in {"s", "min", "h"} else None
     return temperature_device_class(unit) if policy.unit == "C" else None
 
 

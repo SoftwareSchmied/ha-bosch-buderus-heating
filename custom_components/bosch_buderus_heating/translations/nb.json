@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Start kjøling ved utetemperatur"
       },
+      "circuit_cooling_threshold": {
+        "name": "Start kjøling ved utetemperatur"
+      },
+      "season_cooling_threshold": {
+        "name": "Start kjøling ved utetemperatur"
+      },
+      "season_heating_threshold": {
+        "name": "Stopp oppvarming ved utetemperatur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-temperatur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-varighet"
+      },
       "away_temperature": {
         "name": "Bortetemperatur"
       },
@@ -2160,6 +2175,14 @@
           "off": "Av"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Kjøling: driftsmodus",
+        "state": {
+          "off": "Av",
+          "manual": "Manuell",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuell",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Bortemodus"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Registrering av åpent vindu"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Settpunktoptimalisering"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Feriemodus"

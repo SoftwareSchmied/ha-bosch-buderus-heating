@@ -45,6 +45,7 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Final
 
+from . import hc_controls_extra
 from .pointt import Resource
 from .pointt.models import JsonScalar
 from .rrc import PRODUCT_TYPE_PATH, ZONE_LIST
@@ -252,12 +253,16 @@ NUMBER_POLICIES: Final = (
     AWAY_TEMPERATURE_POLICY,
     COOLING_LEVEL_POLICY,
 )
-# Not on a room controller (its contracts have their own rules).
-GENERIC_ONLY_POLICIES: Final = frozenset({*ENUM_POLICIES, *NUMBER_POLICIES})
+# Not on a room controller (its contracts have their own rules); with the
+# further circuit settings of ``hc_controls_extra``, which have no guards.
+GENERIC_ONLY_POLICIES: Final = frozenset(
+    {*ENUM_POLICIES, *NUMBER_POLICIES, *hc_controls_extra.GENERIC_ONLY_POLICIES}
+)
 # The policies whose writes read their guards again (``guard_paths``).
 GUARDED_POLICIES: Final = frozenset(
     {
-        *GENERIC_ONLY_POLICIES,
+        *ENUM_POLICIES,
+        *NUMBER_POLICIES,
         HEATING_LEVEL_POLICY,
         OPERATION_MODE_POLICY,
         MANUAL_SETPOINT_POLICY,

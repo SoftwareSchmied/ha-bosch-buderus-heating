@@ -99,7 +99,12 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   [zone controls](zone-controls.md#discovery-on-large-zone-controllers)).
 - `gateways[].circuit_controls`: `unknown_temperature_levels`, the number
   of heating circuit temperature levels with a name that is not operated
-  (no names), and `variable_tariff`, for the two tariff paths of an iCom
+  (no names), `extra_settings`, per function (boost mode, duration and
+  temperature, cooling operation mode, heating and cooling thresholds,
+  setpoint optimization, open window detection) four counts: `present`,
+  `writable`, `with_options` and `with_limits` (no paths, no values; see
+  [heating controls](heating-controls.md#boost-cooling-mode-and-further-circuit-settings)),
+  and `variable_tariff`, for the two tariff paths of an iCom
   gateway only their type, `missing` or `not_probed` (no values; see
   [heating controls](heating-controls.md#variable-electricity-tariff-read-only)).
 - In `gateways[].switch_program_writes`: per program also `kind`

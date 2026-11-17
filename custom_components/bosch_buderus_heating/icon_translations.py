@@ -12,6 +12,7 @@ from typing import Final
 TRANSLATED_SELECT_ICONS: Final = frozenset(
     {
         "auxiliary_heater_operation_mode",
+        "cooling_operation_mode",
         "heating_circuit_operation_mode",
         "hot_water_operation_mode",
         "season_switching",

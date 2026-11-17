@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Kühlbetrieb ab Außentemperatur"
       },
+      "circuit_cooling_threshold": {
+        "name": "Kühlbetrieb ab Außentemperatur"
+      },
+      "season_cooling_threshold": {
+        "name": "Kühlbetrieb ab Außentemperatur"
+      },
+      "season_heating_threshold": {
+        "name": "Heizbetrieb bis Außentemperatur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-Temperatur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-Dauer"
+      },
       "away_temperature": {
         "name": "Abwesenheitstemperatur"
       },
@@ -2160,6 +2175,14 @@
           "off": "Aus"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Kühlen: Betriebsart",
+        "state": {
+          "off": "Aus",
+          "manual": "Manuell",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuell",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Abwesenheitsmodus"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Fenster-offen-Erkennung"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Sollwertoptimierung"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Urlaubsmodus"

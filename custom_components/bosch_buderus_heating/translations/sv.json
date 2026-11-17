@@ -1988,6 +1988,21 @@
       "cooling_outdoor_threshold": {
         "name": "Starta kyla vid utomhustemperatur"
       },
+      "circuit_cooling_threshold": {
+        "name": "Starta kyla vid utomhustemperatur"
+      },
+      "season_cooling_threshold": {
+        "name": "Starta kyla vid utomhustemperatur"
+      },
+      "season_heating_threshold": {
+        "name": "Avbryt värme vid utomhustemperatur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-temperatur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-varaktighet"
+      },
       "away_temperature": {
         "name": "Bortatemperatur"
       },
@@ -2160,6 +2175,14 @@
           "off": "Av"
         }
       },
+      "cooling_operation_mode": {
+        "name": "Kyla: driftläge",
+        "state": {
+          "off": "Av",
+          "manual": "Manuell",
+          "auto": "Auto"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuell",
@@ -2272,6 +2295,15 @@
       },
       "away_mode": {
         "name": "Bortaläge"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detektering av öppet fönster"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Börvärdesoptimering"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Semesterläge"

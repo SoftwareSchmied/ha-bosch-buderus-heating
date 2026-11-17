@@ -134,7 +134,8 @@ async def test_generic_controls_follow_once_the_check_is_complete(hass):
     coordinator.room_controller_checked = True
     coordinator.async_update_listeners()
     assert _generic(added) == GENERIC_PATHS | {
-        "/heatingCircuits/hc1/cooling/outdoorThreshold"
+        "/heatingCircuits/hc1/cooling/outdoorThreshold",
+        "/heatingCircuits/hc1/cooling/operationMode",
     }
     assert set(controls(coordinator)) >= GENERIC_PATHS
     await select_entity(hass, coordinator, SWITCH_MODE).async_select_option("forced")
