@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -48,13 +49,16 @@ def test_every_browser_script_has_a_runner() -> None:
 def test_release_publishes_only_after_the_ci_checks() -> None:
     ci = _jobs("ci.yml")
     release = _jobs("release.yml")
-    assert release["release"]["needs"] == ["tag", "verify"]
-    assert set(release["verify"]["needs"]) == {
+    # The checks run in parallel; publishing waits for every one of them.
+    assert release["verify"]["needs"] == ["tag"]
+    assert set(release["release"]["needs"]) == {
+        "tag",
         "frontend",
         "compatibility",
         "minimum-version",
+        "verify",
     }
-    for name in release["verify"]["needs"]:
+    for name in ("frontend", "compatibility", "minimum-version"):
         # The same steps as in CI, so a tag alone cannot skip a CI check.
         assert release[name]["steps"] == ci[name]["steps"], name
         assert release[name]["permissions"] == {"contents": "read"}
@@ -111,3 +115,30 @@ def test_release_sets_draft_and_pre_release_explicitly() -> None:
     assert "--verify-tag" in run
     # The type comes only from the checked tag, not from a second rule.
     assert "*-*" not in run
+
+
+def test_full_suites_run_in_parallel_with_every_gate_kept() -> None:
+    ci = _jobs("ci.yml")
+    release = _jobs("release.yml")
+    suites = [
+        (ci["quality"], "pytest -n auto"),
+        (ci["compatibility"], "pytest -n auto"),
+        (ci["minimum-version"], "pytest -n auto"),
+        (release["verify"], "pytest -n auto"),
+    ]
+    for job, command in suites:
+        runs = "\n".join(step.get("run", "") for step in job["steps"])
+        assert command in runs.splitlines()
+    # Coverage stays a gate: pytest-xdist merges the worker results.
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert "--cov-fail-under=95" in config["tool"]["pytest"]["ini_options"]["addopts"]
+    assert "pytest-xdist==3.8.0" in config["project"]["optional-dependencies"]["test"]
+
+
+def test_python_jobs_cache_pip_downloads() -> None:
+    for name in ("ci.yml", "release.yml"):
+        for job_name, job in _jobs(name).items():
+            for step in job["steps"]:
+                with_ = step.get("with", {})
+                if with_.get("cache") == "pip":
+                    assert "pyproject.toml" in with_["cache-dependency-path"], job_name

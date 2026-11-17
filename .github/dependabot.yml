@@ -7,6 +7,13 @@ updates:
     groups:
       python-development:
         patterns: ["*"]
+    # pytest-homeassistant pins these three to exact versions, so they only
+    # move together with it; a separate bump makes the grouped update
+    # unresolvable.
+    ignore:
+      - dependency-name: pytest
+      - dependency-name: pytest-asyncio
+      - dependency-name: pytest-xdist
   - package-ecosystem: github-actions
     directory: /
     schedule:

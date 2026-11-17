@@ -73,6 +73,9 @@ jobs:
           # Recorder fixtures need unittest.mock's deferred-annotation fix.
           python-version: "3.14.7"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/*.yml
       - name: Install Home Assistant test dependencies
         run: |
           python -m pip install -e ".[test]"
@@ -117,13 +120,16 @@ jobs:
         with:
           python-version: "3.14.7"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/*.yml
       - name: Install Home Assistant 2026.9.2 test environment
         run: >-
           python -m pip install
           pytest-homeassistant-custom-component==0.13.365
-          hypothesis==6.170.14 aiomqtt==2.5.1
+          hypothesis==6.170.15 aiomqtt==2.5.1
       - name: Run the full suite on Home Assistant 2026.9.2
-        run: pytest
+        run: pytest -n auto
 
   minimum-version:
     needs: [tag]
@@ -141,17 +147,21 @@ jobs:
         with:
           python-version: "3.14.7"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/*.yml
       - name: Install Home Assistant 2026.5.4 test environment
         run: >-
           python -m pip install
           pytest-homeassistant-custom-component==0.13.333
-          hypothesis==6.170.14 aiomqtt==2.5.1
+          hypothesis==6.170.15 aiomqtt==2.5.1
       - name: Run the full suite on the minimum supported Home Assistant
-        run: pytest
+        run: pytest -n auto
 
   verify:
+    # Runs in parallel with the other checks; the release job waits for all.
     # Keep the pinned Python version on a supported runner image.
-    needs: [frontend, compatibility, minimum-version]
+    needs: [tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -166,6 +176,9 @@ jobs:
         with:
           python-version: "3.14.2"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/*.yml
       - name: Install verification dependencies
         run: python -m pip install -e ".[test]"
       - name: Verify source quality
@@ -173,7 +186,7 @@ jobs:
           ruff format --check .
           ruff check .
           mypy
-          pytest
+          pytest -n auto
       - name: Audit Python dependencies
         run: |
           python -m venv .audit-venv
@@ -188,8 +201,9 @@ jobs:
           category: integration
 
   release:
-    # Builds the archive again from the verified tag and publishes it.
-    needs: [tag, verify]
+    # Builds the archive again from the verified tag and publishes it, but
+    # only after every check job has passed.
+    needs: [tag, frontend, compatibility, minimum-version, verify]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
