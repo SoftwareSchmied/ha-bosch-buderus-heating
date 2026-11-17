@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "work/r93b3-*"]
   pull_request:
 
 permissions:
