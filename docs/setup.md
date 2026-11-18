@@ -522,6 +522,15 @@ before opening the app, select **Cancel**. Before the next attempt, press
 `com.bosch...://` or `com.buderus...://` address from the **Failed to
 launch** or **Connecting to** message as described above.
 
+### Signing in with a tablet or phone does not work
+
+Doing part of the sign-in on a tablet or phone and copying the address to a
+computer is error-prone: the address may be cut off, come from an older
+attempt or arrive after the attempt has expired. Do the whole sign-in on one
+computer in one browser instead: open Home Assistant and the **SingleKey ID**
+link from the dialog in the same browser, sign in, copy the `com.bosch...://`
+or `com.buderus...://` address from the console and paste it straight away.
+
 ### Home Assistant reports an invalid redirect address
 
 - Confirm that the complete address was pasted.

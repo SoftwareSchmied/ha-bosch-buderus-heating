@@ -66,8 +66,8 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 
 Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
 
-- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i and WLW186i and the brine-to-water heat pump Bosch Compress 7800i LW, confirmed.
-- **K30/K30RF:** split heat pump Logatherm WLW196i AR and gas boiler Logamax plus GBH192i.2, confirmed (readings, partly holidays read-only).
+- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i, WLW186i and Bosch Compress 5800i AW and the brine-to-water heat pump Bosch Compress 7800i LW, confirmed.
+- **K30/K30RF:** split heat pump Logatherm WLW196i AR, gas boiler Logamax plus GBH192i.2 and hybrid system Logamax plus GB172i.2, confirmed (readings, partly holidays read-only).
 - **iCom:** gas boiler Logamax plus GB172 with KM200, confirmed (readings only).
 - **RRC 2.0:** gas boiler Logano plus GB212 with TC100.2, confirmed; CT200 expected, untested.
 
@@ -79,7 +79,7 @@ Access and brands:
 - iCom gateways, room controllers and the other device families are cloud
   only. The other device families still need checks on real devices.
 - **Brands:** sign-in with the Bosch or Buderus app; the confirmed
-  installations are Buderus systems and one Bosch heat pump. IVT, Junkers, Nefit, Worcester and
+  installations are Buderus systems and two Bosch heat pumps. IVT, Junkers, Nefit, Worcester and
   Vulcano use the same cloud and are expected to work, not confirmed yet.
 - **Not covered:** Matter devices, arbitrary MQTT devices and gateway network
   administration.
