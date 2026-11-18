@@ -35,3 +35,10 @@ Last updated: 2026-11-18.
 | Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
 
 "–" means not stated in the report.
+
+## Additional devices
+
+| Manufacturer | Model | Type | Gateway / internet module | Confirmed features |
+|---|---|---|---|---|
+| Bosch | Dry 6000i | dehumidifier | cloud account | controls (reported as working, the tested functions were not listed) |
+| Buderus | Logawater Soft WE800i | water softener | WX100, firmware 01.00.00 | readings (salt level, available soft water, flow, regeneration state, time until the next regeneration, low salt with the default threshold), holiday mode state; controls not tested |
