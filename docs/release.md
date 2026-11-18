@@ -4,6 +4,39 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.2-beta.3 verification
+
+I am preparing **0.9.2-beta.3 as a pre-release** for testing; **0.9.1 stays
+Stable/Latest**. It adds a ventilation operating mode, hybrid system controls,
+more heating circuit, system and room controller settings, environmental
+energy, more recordings, and timers and energy sensors for air conditioners of
+the second cloud access. It fixes the sign-in on a slow answer, devices of the
+second cloud access dropping out, a local setup that stopped at a module
+without a serial number, and wrong states of calculated values. Storage
+format 4 and Home Assistant 2026.5.0 as the minimum stay; updating from 0.9.x
+needs no new setup. The diagnostics use schema 48.
+
+Automated checks on the release state (2026-11-18, run locally unless noted):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.1, local, four parallel workers | 14737 passed, 1 skipped (the box test of stable release notes); coverage 97.78 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 14735 passed, 3 skipped (version-dependent) |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 299 files; Ruff clean |
+| Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
+| Release tests | local | release, repository and write baseline tests run on a clean clone; the release notes come from this version's CHANGELOG section |
+| Release archive and SHA-256 | local build on a clean clone | built twice for version 0.9.2-beta.3 without tests or bytecode, with the same result; the checksum is published with the release |
+| GitHub checks | CI and release workflow | the compatibility, minimum version, frontend, hassfest and HACS jobs run on the release commit and again in the release workflow before publishing |
+
+The last commit before the version change only changed one test (it counted
+reconnect pauses that occur while the test closes the broker); the full
+suites ran on the commit before it.
+
+Not yet confirmed on real hardware: the ventilation select, the hybrid
+controls, the heating circuit, system and room controller settings, the
+timers and energy sensors of air conditioners, the wallbox history, the boiler
+recordings and the second cloud changes with a real device.
+
 ## 0.9.2-beta.2 verification
 
 I am preparing **0.9.2-beta.2 as a pre-release** for testing; **0.9.1 stays
