@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Fuinneamh luchtaithe tuairiscithe"
       },
+      "wallbox_energy_total": {
+        "name": "Fuinneamh luchtaithe iomlán"
+      },
       "wallbox_duration": {
         "name": "Am luchtaithe gníomhach"
       },

@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Reported charged energy"
       },
+      "wallbox_energy_total": {
+        "name": "Total charged energy"
+      },
       "wallbox_duration": {
         "name": "Active charging time"
       },

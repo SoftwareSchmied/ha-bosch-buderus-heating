@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Hlásená nabitá energia"
       },
+      "wallbox_energy_total": {
+        "name": "Celková nabitá energia"
+      },
       "wallbox_duration": {
         "name": "Doba aktívneho nabíjania"
       },

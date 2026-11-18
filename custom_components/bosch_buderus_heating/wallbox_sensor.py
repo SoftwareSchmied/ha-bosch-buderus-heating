@@ -55,6 +55,15 @@ DESCRIPTIONS = (
         # The meter's reset scope has not been established on hardware.
     ),
     WallboxSensorDescription(
+        key="energy_total",
+        translation_key="wallbox_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        # The wallbox's own lifetime counter (telemetry.energyTotal), for the
+        # Energy dashboard; it matches the total in the wallbox app.
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    WallboxSensorDescription(
         key="duration",
         translation_key="wallbox_duration",
         device_class=SensorDeviceClass.DURATION,

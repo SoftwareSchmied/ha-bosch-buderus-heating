@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Rapporterad laddad energi"
       },
+      "wallbox_energy_total": {
+        "name": "Total laddad energi"
+      },
       "wallbox_duration": {
         "name": "Aktiv laddningstid"
       },

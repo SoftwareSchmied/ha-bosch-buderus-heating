@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Rapporteret opladet energi"
       },
+      "wallbox_energy_total": {
+        "name": "Samlet opladet energi"
+      },
       "wallbox_duration": {
         "name": "Aktiv opladningstid"
       },
