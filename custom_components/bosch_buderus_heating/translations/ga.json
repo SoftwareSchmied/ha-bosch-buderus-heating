@@ -949,11 +949,13 @@
         "description": "Ní thosaíonn luchtaire balla a éilíonn fíordheimhniú ag luchtú go dtí go ndéanann an comhtháthú fíordheimhniú. Seoltar ordú breise amháin ansin roimh gach tosú.",
         "data": {
           "wallbox_authentication": "Ceadaigh fíordheimhniú roimh thosú",
-          "wallbox_authentication_name": "Ainm fíordheimhnithe (roghnach)"
+          "wallbox_authentication_name": "Ainm fíordheimhnithe (roghnach)",
+          "wallbox_history": "Léigh stair an luchtaithe"
         },
         "data_description": {
           "wallbox_authentication": "As de réir réamhshocraithe. Ó bhogearraí 5.1.0 ar aghaidh, fíordheimhníonn tosú ar dtús; le bogearraí níos sine seoltar an tosú leis féin, mar atá san aip ón monaróir.",
-          "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh."
+          "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh.",
+          "wallbox_history": "As de réir réamhshocraithe. Thart ar gach 30 nóiméad (gach 60 nóiméad sa phróifíl chairdiúil don scamall) léitear an luchtú deireanach (tús, deireadh, fad, fuinneamh) agus fuinneamh na míosa seo ón ngréasán agus ón ngrian. Ní léitear ainmneacha cártaí, úsáideoirí ná fíordheimhnithe choíche."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Teorainn srutha na crua-earraí"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Tús an luchtaithe deiridh"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Deireadh an luchtaithe dheiridh"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Fad an luchtaithe dheiridh"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Fuinneamh an luchtaithe dheiridh"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Luchtaithe ón ngréasán an mhí seo"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Luchtaithe le fuinneamh gréine an mhí seo"
       },
       "smart_grid_mode": {
         "name": "Mód an ghréasáin chliste",

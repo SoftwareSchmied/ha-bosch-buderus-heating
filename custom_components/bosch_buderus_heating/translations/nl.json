@@ -949,11 +949,13 @@
         "description": "Een laadpaal die authenticatie vereist, begint pas te laden na een authenticatie door de integratie. Vóór elke start wordt dan één extra opdracht verzonden.",
         "data": {
           "wallbox_authentication": "Authenticatie vóór een start toestaan",
-          "wallbox_authentication_name": "Authenticatienaam (optioneel)"
+          "wallbox_authentication_name": "Authenticatienaam (optioneel)",
+          "wallbox_history": "Laadgeschiedenis lezen"
         },
         "data_description": {
           "wallbox_authentication": "Standaard uit. Vanaf software 5.1.0 authenticeert een start eerst; bij oudere software wordt de start alleen verzonden, zoals in de app van de fabrikant.",
-          "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven."
+          "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven.",
+          "wallbox_history": "Standaard uit. Ongeveer elke 30 minuten (elke 60 minuten in het cloudvriendelijke profiel) worden de laatste lading (start, einde, laadtijd, energie) en de energie van deze maand van het net en van zonne-energie gelezen. Namen van kaarten, gebruikers of authenticatie worden nooit gelezen."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardwarematige stroomlimiet"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start van de laatste lading"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Einde van de laatste lading"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Laadtijd van de laatste lading"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energie van de laatste lading"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Deze maand van het net geladen"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Deze maand met zonne-energie geladen"
       },
       "smart_grid_mode": {
         "name": "Smart grid-modus",

@@ -463,4 +463,5 @@ control is expected but untested (see [wallboxes](pointt-wallboxes.md)).
 | `telemetry/extmeterState`, `telemetry/forceActive`, `telemetry/extInputState`, `info/extmeterCurrentMaximum`, `info/brand`, `conf/currency` | read only |
 | `conf/chargingStrategy`, `conf/locked`, `conf/label`, `conf/price`, `conf/feedinPrice`, `conf/solarSurplus/*`, `conf/strategy/powerOffset`, `conf/strategy/filterTime`, `conf/overloadProtection/*` | read; written with `{"value": ...}` only when reported writeable |
 | `cmd/start`, `cmd/pause`, `cmd/authenticate`, `cmd/limit`, `cmd/force/limit`, `cmd/force/limitReset` | commands; `authenticate` only when allowed in the options |
-| `conf/auth`, `conf/rfid`, `conf/rfid/secure`, `cmd/rfid/teachIn`, `chargelog`, `energyhistory` | never requested |
+| `chargelog`, `energyhistory` | read only with the wallbox option **Read charging history** (off by default), once each every 30 or 60 minutes; only an allowlist of the answer is kept (see [wallboxes](pointt-wallboxes.md)) |
+| `conf/auth`, `conf/rfid`, `conf/rfid/secure`, `cmd/rfid/teachIn` | never requested |

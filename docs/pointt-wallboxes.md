@@ -145,8 +145,9 @@ unknown.
   start (below 6 A the start is refused with a message), and a power limit
   below 5 000 W is not raised automatically.
 - Access control is never written: `conf/auth`, RFID cards and their
-  teach-in are not part of the integration, and the charge log and energy
-  history are not read (personal data).
+  teach-in are not part of the integration. The charge log and energy
+  history are read only if you switch on **Read charging history** (see
+  below); even then no card, user or authentication names are read.
 
 **Boost warning:** boost charges with the full hardware current limit (up
 to about 11 kW or more). Without overload protection, this may exceed the
@@ -173,7 +174,38 @@ entities that is only the external meter state.
 
 The diagnostics list the single values by path (known, writable, refused,
 polled), whether the firmware is known, and counters of the write
-outcomes, never their values, names, labels, brands or prices.
+outcomes, never their values, names, labels, brands or prices. They also
+list the names, never the values, of fields in the three objects that the
+integration does not read (`unknown_field_names` per object, plain tokens
+only, at most 64 each), so that an answer of a wallbox can be compared with
+what is read.
+
+### Charging history (opt-in, 0.9.2-beta.3)
+
+Under **Settings → Wallbox** there is the option **Read charging history**
+(off by default). Off, nothing is requested and no entity is created. On, the
+integration reads about every 30 minutes (60 minutes in the cloud-friendly
+profile) the charge log of the last 35 days and the energy history of the
+current month: two requests per wallbox and period, each sent once and not
+repeated. A 403, 404 or 406 answer is not asked again until the wallbox reports
+new software or the integration starts again (the energy history is expected
+from software 5.0.0). Six sensors appear once the first answer is in:
+
+| Sensor | Meaning |
+| --- | --- |
+| Last session start, Last session end | `begin` and `end` of the newest finished session of the charge log (with a UTC offset) |
+| Last session charging time | `chargingDuration` of that session, in seconds, displayed in minutes |
+| Last session energy | `energy` of that session in kWh |
+| Charged from grid this month, Charged from solar this month | sum of the samples of `gridEnergy` and `solarEnergy` from the first of the month until now, in kWh (a unit of Wh or kWh is accepted, anything else leaves the value unknown) |
+
+Only these fields are read from the answers. Authentication names, card and
+user data, meter serial numbers, session identifiers and costs are neither
+read nor stored, logged or put into the diagnostics, which show only whether
+each part is fresh, its error category and request counts. Switching the
+option off forgets the values at once; the sensors then stay as unavailable.
+The paths and the meaning of the fields come from the manufacturer's app;
+**expected, untested on a real wallbox**: the date format of the query, the
+aggregation of the energy samples and the units are not confirmed.
 
 ## Deutsch
 
@@ -311,8 +343,10 @@ Codes bleiben unbekannt.
   abgelehnt), und eine Leistungsgrenze unter 5 000 W wird nicht
   selbsttätig angehoben.
 - Zugangsschutz wird nie geschrieben: `conf/auth`, RFID-Karten und ihr
-  Einlernen gehören nicht zur Integration; Ladeprotokoll und
-  Energieverlauf werden nicht gelesen (personenbezogene Daten).
+  Einlernen gehören nicht zur Integration. Ladeprotokoll und
+  Energieverlauf werden nur gelesen, wenn **Ladeverlauf lesen** eingeschaltet
+  wird (siehe unten); auch dann werden keine Karten-, Nutzer- oder
+  Authentifizierungsnamen gelesen.
 
 **Warnhinweis Boost:** Boost lädt mit der vollen Hardware-Stromgrenze (bis
 etwa 11 kW oder mehr). Ohne Überlastschutz kann das die Reserve des
@@ -343,3 +377,37 @@ das nur der Zustand des externen Zählers.
 Die Diagnose nennt die Einzelwerte mit ihrem Pfad (bekannt, schreibbar,
 abgelehnt, abgefragt), ob die Firmware bekannt ist, und Zähler der
 Schreibergebnisse, nie Werte, Namen, Etiketten, Marken oder Preise.
+
+Außerdem nennt sie die Namen, nie die Werte, der Felder in den drei Objekten,
+die die Integration nicht liest (`unknown_field_names` je Objekt, nur einfache
+Tokens, höchstens 64 je Objekt), damit sich eine Antwort einer Wallbox mit dem
+Gelesenen vergleichen lässt.
+
+### Ladeverlauf (optional, 0.9.2-beta.3)
+
+Unter **Einstellungen → Wallbox** gibt es die Option **Ladeverlauf lesen**
+(standardmäßig aus). Aus: Es wird nichts angefragt und keine Entität angelegt.
+Ein: Die Integration liest etwa alle 30 Minuten (im Cloud-schonenden Profil alle
+60 Minuten) das Ladeprotokoll der letzten 35 Tage und den Energieverlauf des
+laufenden Monats: zwei Anfragen je Wallbox und Zeitraum, jede einmal gesendet
+und nicht wiederholt. Eine Antwort mit 403, 404 oder 406 wird erst wieder
+abgefragt, wenn die Wallbox neue Software meldet oder die Integration neu
+startet (der Energieverlauf wird ab Software 5.0.0 erwartet). Sechs Sensoren
+entstehen, sobald die erste Antwort vorliegt:
+
+| Sensor | Bedeutung |
+| --- | --- |
+| Beginn der letzten Ladung, Ende der letzten Ladung | `begin` und `end` der neuesten beendeten Ladung im Ladeprotokoll (mit UTC-Versatz) |
+| Ladezeit der letzten Ladung | `chargingDuration` dieser Ladung in Sekunden, angezeigt in Minuten |
+| Energie der letzten Ladung | `energy` dieser Ladung in kWh |
+| Diesen Monat aus dem Netz geladen, Diesen Monat mit Solarenergie geladen | Summe der Werte von `gridEnergy` und `solarEnergy` vom Monatsersten bis jetzt in kWh (Einheit Wh oder kWh wird angenommen, sonst bleibt der Wert unbekannt) |
+
+Aus den Antworten werden nur diese Felder gelesen. Authentifizierungsnamen,
+Karten- und Nutzerdaten, Zähler-Seriennummern, Ladekennungen und Kosten werden
+weder gelesen noch gespeichert, protokolliert oder in die Diagnose übernommen;
+die Diagnose zeigt nur, ob jeder Teil aktuell ist, seine Fehlerkategorie und
+Anfragezähler. Wird die Option ausgeschaltet, werden die Werte sofort
+vergessen; die Sensoren bleiben dann nicht verfügbar. Pfade und Bedeutung der
+Felder stammen aus der Hersteller-App; **erwartet, an einer echten Wallbox
+ungetestet**: Datumsformat der Abfrage, Aufsummierung der Energiewerte und
+Einheiten sind nicht bestätigt.

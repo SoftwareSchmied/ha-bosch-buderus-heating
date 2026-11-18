@@ -949,11 +949,13 @@
         "description": "Nabíjecí stanice, která vyžaduje ověření, začne nabíjet až po ověření integrací. Před každým spuštěním se pak odešle jeden příkaz navíc.",
         "data": {
           "wallbox_authentication": "Povolit ověření před spuštěním",
-          "wallbox_authentication_name": "Název pro ověření (volitelný)"
+          "wallbox_authentication_name": "Název pro ověření (volitelný)",
+          "wallbox_history": "Číst historii nabíjení"
         },
         "data_description": {
           "wallbox_authentication": "Ve výchozím stavu vypnuto. Od softwaru 5.1.0 se při startu nejprve provede ověření; u staršího softwaru se odešle jen start, stejně jako v aplikaci výrobce.",
-          "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný."
+          "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný.",
+          "wallbox_history": "Standardně vypnuto. Přibližně každých 30 minut (60 minut v profilu šetrném k cloudu) se čte poslední nabíjení (začátek, konec, doba, energie) a energie za tento měsíc ze sítě a ze solárních zdrojů. Jména karet, uživatelů ani ověření se nikdy nečtou."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardwarový proudový limit"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Začátek posledního nabíjení"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Konec posledního nabíjení"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Doba posledního nabíjení"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energie posledního nabíjení"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Nabito ze sítě tento měsíc"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Nabito ze solární energie tento měsíc"
       },
       "smart_grid_mode": {
         "name": "Režim Smart Grid",

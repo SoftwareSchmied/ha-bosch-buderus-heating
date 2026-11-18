@@ -949,11 +949,13 @@
         "description": "A wallbox that requires authentication starts charging only after the integration has authenticated. One additional command is then sent before every start.",
         "data": {
           "wallbox_authentication": "Allow authentication before a start",
-          "wallbox_authentication_name": "Authentication name (optional)"
+          "wallbox_authentication_name": "Authentication name (optional)",
+          "wallbox_history": "Read charging history"
         },
         "data_description": {
           "wallbox_authentication": "Off by default. From software 5.1.0 a start authenticates first; with older software the start is sent alone, as in the manufacturer's app.",
-          "wallbox_authentication_name": "The name the vendor app uses for authentication; may stay empty."
+          "wallbox_authentication_name": "The name the vendor app uses for authentication; may stay empty.",
+          "wallbox_history": "Off by default. About every 30 minutes (60 minutes in the cloud-friendly profile) this reads the last charging session (start, end, charging time, energy) and this month's grid and solar energy. Names of cards, users or authentication are never read."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardware current limit"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Last session start"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Last session end"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Last session charging time"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Last session energy"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Charged from grid this month"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Charged from solar this month"
       },
       "smart_grid_mode": {
         "name": "Smart grid mode",

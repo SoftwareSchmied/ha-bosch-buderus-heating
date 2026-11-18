@@ -949,11 +949,13 @@
         "description": "Stenska polnilnica, ki zahteva preverjanje pristnosti, začne polniti šele po preverjanju s strani integracije. Pred vsakim zagonom se takrat pošlje en dodaten ukaz.",
         "data": {
           "wallbox_authentication": "Dovoli preverjanje pristnosti pred zagonom",
-          "wallbox_authentication_name": "Ime za preverjanje pristnosti (neobvezno)"
+          "wallbox_authentication_name": "Ime za preverjanje pristnosti (neobvezno)",
+          "wallbox_history": "Beri zgodovino polnjenja"
         },
         "data_description": {
           "wallbox_authentication": "Privzeto izklopljeno. Od programske opreme 5.1.0 se zagon najprej overi; pri starejši programski opremi se zagon pošlje sam, kot v aplikaciji proizvajalca.",
-          "wallbox_authentication_name": "Ime, ki ga aplikacija proizvajalca uporablja za preverjanje pristnosti; lahko ostane prazno."
+          "wallbox_authentication_name": "Ime, ki ga aplikacija proizvajalca uporablja za preverjanje pristnosti; lahko ostane prazno.",
+          "wallbox_history": "Privzeto izklopljeno. Približno vsakih 30 minut (vsakih 60 minut v profilu, prijaznem do oblaka) se prebereta zadnje polnjenje (začetek, konec, čas, energija) ter energija tega meseca iz omrežja in iz sonca. Imena kartic, uporabnikov ali overitve se nikoli ne berejo."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Strojna omejitev toka"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Začetek zadnjega polnjenja"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Konec zadnjega polnjenja"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Čas zadnjega polnjenja"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energija zadnjega polnjenja"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ta mesec napolnjeno iz omrežja"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ta mesec napolnjeno s sončno energijo"
       },
       "smart_grid_mode": {
         "name": "Način pametnega omrežja",

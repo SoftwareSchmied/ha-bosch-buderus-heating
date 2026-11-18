@@ -949,11 +949,13 @@
         "description": "En laddbox som kräver autentisering börjar ladda först efter en autentisering från integrationen. Då skickas ett extra kommando före varje start.",
         "data": {
           "wallbox_authentication": "Tillåt autentisering före en start",
-          "wallbox_authentication_name": "Autentiseringsnamn (valfritt)"
+          "wallbox_authentication_name": "Autentiseringsnamn (valfritt)",
+          "wallbox_history": "Läs laddhistorik"
         },
         "data_description": {
           "wallbox_authentication": "Avstängt som standard. Från programvara 5.1.0 autentiserar en start först; med äldre programvara skickas starten ensam, som i tillverkarens app.",
-          "wallbox_authentication_name": "Namnet som tillverkarens app använder för autentisering; får vara tomt."
+          "wallbox_authentication_name": "Namnet som tillverkarens app använder för autentisering; får vara tomt.",
+          "wallbox_history": "Av som standard. Ungefär var 30:e minut (var 60:e minut i molnvänlig profil) läses den senaste laddningen (start, slut, laddtid, energi) samt denna månads energi från nätet och från solenergi. Namn på kort, användare eller autentisering läses aldrig."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hårdvarans strömgräns"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start för senaste laddning"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Slut för senaste laddning"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Laddtid för senaste laddning"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energi i senaste laddning"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Laddat från nätet denna månad"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Laddat med solenergi denna månad"
       },
       "smart_grid_mode": {
         "name": "Smart grid-läge",

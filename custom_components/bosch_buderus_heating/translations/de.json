@@ -949,11 +949,13 @@
         "description": "Eine Wallbox, die eine Authentifizierung verlangt, lädt erst nach einer Authentifizierung durch die Integration. Dafür wird vor jedem Start ein zusätzlicher Befehl gesendet.",
         "data": {
           "wallbox_authentication": "Authentifizierung vor einem Start erlauben",
-          "wallbox_authentication_name": "Authentifizierungsname (optional)"
+          "wallbox_authentication_name": "Authentifizierungsname (optional)",
+          "wallbox_history": "Ladeverlauf lesen"
         },
         "data_description": {
           "wallbox_authentication": "Standardmäßig aus. Ab Software 5.1.0 authentifiziert ein Start zuerst; bei älterer Software wird der Start allein gesendet, wie in der Hersteller-App.",
-          "wallbox_authentication_name": "Der Name, den die Hersteller-App zur Authentifizierung verwendet; darf leer bleiben."
+          "wallbox_authentication_name": "Der Name, den die Hersteller-App zur Authentifizierung verwendet; darf leer bleiben.",
+          "wallbox_history": "Standardmäßig aus. Etwa alle 30 Minuten (alle 60 Minuten im Cloud-schonenden Profil) wird die letzte Ladung (Beginn, Ende, Ladezeit, Energie) sowie die Energie dieses Monats aus dem Netz und aus Solarenergie gelesen. Namen von Karten, Nutzern oder Authentifizierung werden nie gelesen."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardware-Stromgrenze"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Beginn der letzten Ladung"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Ende der letzten Ladung"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Ladezeit der letzten Ladung"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energie der letzten Ladung"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Diesen Monat aus dem Netz geladen"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Diesen Monat mit Solarenergie geladen"
       },
       "smart_grid_mode": {
         "name": "Smart-Grid-Modus",

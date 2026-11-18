@@ -949,11 +949,13 @@
         "description": "Stacja ładowania wymagająca uwierzytelnienia zaczyna ładować dopiero po uwierzytelnieniu przez integrację. Przed każdym startem wysyłane jest wtedy jedno dodatkowe polecenie.",
         "data": {
           "wallbox_authentication": "Zezwól na uwierzytelnienie przed startem",
-          "wallbox_authentication_name": "Nazwa do uwierzytelnienia (opcjonalna)"
+          "wallbox_authentication_name": "Nazwa do uwierzytelnienia (opcjonalna)",
+          "wallbox_history": "Odczytuj historię ładowania"
         },
         "data_description": {
           "wallbox_authentication": "Domyślnie wyłączone. Od oprogramowania 5.1.0 start najpierw się uwierzytelnia; przy starszym oprogramowaniu start jest wysyłany sam, tak jak w aplikacji producenta.",
-          "wallbox_authentication_name": "Nazwa, której aplikacja producenta używa do uwierzytelnienia; może pozostać pusta."
+          "wallbox_authentication_name": "Nazwa, której aplikacja producenta używa do uwierzytelnienia; może pozostać pusta.",
+          "wallbox_history": "Domyślnie wyłączone. Co ok. 30 minut (co 60 minut w profilu oszczędnym dla chmury) odczytywane jest ostatnie ładowanie (początek, koniec, czas, energia) oraz energia z sieci i ze słońca z bieżącego miesiąca. Nazwy kart, użytkowników ani uwierzytelniania nie są nigdy odczytywane."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Sprzętowy limit prądu"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Początek ostatniego ładowania"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Koniec ostatniego ładowania"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Czas ostatniego ładowania"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energia ostatniego ładowania"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Naładowano z sieci w tym miesiącu"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Naładowano z energii słonecznej w tym miesiącu"
       },
       "smart_grid_mode": {
         "name": "Tryb Smart Grid",

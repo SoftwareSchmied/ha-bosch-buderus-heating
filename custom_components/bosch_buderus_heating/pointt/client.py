@@ -6,7 +6,7 @@ import asyncio
 import logging
 import re
 from collections.abc import Callable, Mapping, Sequence
-from datetime import date
+from datetime import date, datetime
 from typing import Literal, Protocol
 from urllib.parse import quote, urlencode
 
@@ -180,6 +180,34 @@ class PointTClient:
             "GET",
             f"gateways/{gateway}/resource{path}",
             retryable=True,
+            resource_path=path,
+        )
+
+    async def get_wallbox_history(
+        self,
+        gateway_id: str,
+        kind: Literal["chargelog", "energyhistory"],
+        start: datetime,
+        end: datetime,
+    ) -> JsonValue:
+        """Read the opt-in charge log or energy history of one period.
+
+        Called only while the wallbox history option is on. One request,
+        no automatic retry; the account pause applies as for every request.
+        """
+        if kind not in ("chargelog", "energyhistory"):
+            raise ValueError("Invalid wallbox history")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{kind}"
+        query = (
+            wallbox_paths.chargelog_query(start, end)
+            if kind == "chargelog"
+            else wallbox_paths.energyhistory_query(start, end)
+        )
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource{path}?{query}",
+            retryable=False,
             resource_path=path,
         )
 

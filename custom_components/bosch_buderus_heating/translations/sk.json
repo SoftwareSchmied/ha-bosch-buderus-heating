@@ -949,11 +949,13 @@
         "description": "Nabíjacia stanica, ktorá vyžaduje overenie, začne nabíjať až po overení integráciou. Pred každým spustením sa potom odošle jeden príkaz navyše.",
         "data": {
           "wallbox_authentication": "Povoliť overenie pred spustením",
-          "wallbox_authentication_name": "Názov na overenie (voliteľný)"
+          "wallbox_authentication_name": "Názov na overenie (voliteľný)",
+          "wallbox_history": "Čítať históriu nabíjania"
         },
         "data_description": {
           "wallbox_authentication": "Predvolene vypnuté. Od softvéru 5.1.0 sa pri štarte najprv vykoná overenie; pri staršom softvéri sa odošle len štart, rovnako ako v aplikácii výrobcu.",
-          "wallbox_authentication_name": "Názov, ktorý aplikácia výrobcu používa na overenie; môže zostať prázdny."
+          "wallbox_authentication_name": "Názov, ktorý aplikácia výrobcu používa na overenie; môže zostať prázdny.",
+          "wallbox_history": "Predvolene vypnuté. Približne každých 30 minút (60 minút v profile šetrnom k cloudu) sa číta posledné nabíjanie (začiatok, koniec, doba, energia) a energia za tento mesiac zo siete a zo solárnych zdrojov. Mená kariet, používateľov ani overenia sa nikdy nečítajú."
         }
       },
       "result_wallbox_saved": {
@@ -3053,6 +3055,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardvérový limit prúdu"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Začiatok posledného nabíjania"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Koniec posledného nabíjania"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Doba posledného nabíjania"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energia posledného nabíjania"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Nabité zo siete tento mesiac"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Nabité zo solárnej energie tento mesiac"
       },
       "smart_grid_mode": {
         "name": "Režim inteligentnej siete",
