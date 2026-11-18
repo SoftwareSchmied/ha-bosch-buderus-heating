@@ -131,3 +131,25 @@ async def test_no_request_without_an_anchor_and_reads_with_one(
     clock.now += timedelta(hours=1)
     await rec.async_run("hourly")
     assert driver.requests and rec.runs
+
+
+async def test_stored_answers_anchor_the_start_run_without_readings(
+    hass: HomeAssistant,
+) -> None:
+    """Right after a start the plant may show no resources yet (cloud not
+    reachable): a series that answered before anchors the run, so it does not
+    wait for the hourly run."""
+    clock = Clock(local(2026, 11, 14, 10) + timedelta(minutes=20))
+    driver = Driver(clock)
+    rec = await manager(hass, clock, [driver], base.Cloud())
+    coordinator = rec.coordinator()
+    assert coordinator is not None
+    coordinator.resources = {}
+    # A softener's answer is no heat source anchor.
+    rec.cloud_paths["/swCircuits/sw1/waterConsumption"] = ["ok", 1.0]
+    await rec.async_run("start")
+    assert rec.waiting == "no_heat_source_anchor" and not driver.requests
+    rec.local_paths["/heatSources/emon/totalConsumption"] = ["ok", 1.0]
+    await rec.async_run("start")
+    assert rec.waiting != "no_heat_source_anchor"
+    assert driver.requests and rec.runs
