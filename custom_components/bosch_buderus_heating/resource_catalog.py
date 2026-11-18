@@ -1532,12 +1532,11 @@ _SLOW_SETTLED_PATHS = frozenset(
     {
         "/system/sensors/temperatures/outdoorTemperatureSource",
         "/gateway/update/status",
-        # The automatic update and the gateway clock change rarely; the
-        # deviation of the clock uses the time of the reading.
+        # The automatic update changes rarely. The gateway clock stays in the
+        # regular cycle: the hot water program level needs a fresh reading.
         "/gateway/update/enabled",
         "/gateway/update/lastCheck",
         "/gateway/update/lastUpdate",
-        "/gateway/DateTime",
     }
 )
 _FAST_HEAT_SOURCE_PATTERN = re.compile(

@@ -629,9 +629,13 @@ def test_update_readings_only_as_text():
 
 
 def test_update_readings_do_not_use_the_fast_groups():
-    for path in (UPDATE_ENABLED, LAST_CHECK, LAST_UPDATE, CLOCK):
+    for path in (UPDATE_ENABLED, LAST_CHECK, LAST_UPDATE):
         resource = _plant(_text(path, "x", writeable=1))[path]
         assert poll_group(resource) is PollGroup.SLOW
+    # The gateway clock stays in the regular cycle: the hot water program
+    # level of the room controller needs a fresh reading.
+    clock = _plant(_text(CLOCK, "x", writeable=1))[CLOCK]
+    assert poll_group(clock) is not PollGroup.SLOW
 
 
 def test_the_led_switch_off_time_is_probed_and_read_only():
