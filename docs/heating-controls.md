@@ -321,7 +321,7 @@ and is confirmed by reading it back; nothing is sent again.
 | --- | --- | --- | --- |
 | Boost | `boostMode` | switch | the advertised list is exactly `on` and `off` |
 | Boost duration | `boostDuration` | number | minimum and maximum, a duration unit |
-| Boost temperature | `boostTemperature` | number | minimum and maximum |
+| Boost temperature | `boostTemperature` | number | minimum and maximum; not on a plant with a heat pump, as in the app |
 | Cooling: operation mode | `cooling/operationMode` | select | the advertised modes `off`, `manual`, `auto` (at least two, the current one among them) |
 | Setpoint optimization | `setpointOptimization` | switch | the advertised list is exactly `on` and `off` |
 | Open window detection | `openWindowDetection/enabled` | switch | only when the path is found |
@@ -366,12 +366,15 @@ the path nothing is created.
 
 - **Silent mode: power reduction** (`/system/silentMode/powerReduction`), a
   whole percentage within the limits the gateway reports (both between 0 and
-  100). The silent mode switch itself already existed.
+  100). Without a step reported by the gateway the value moves in steps of
+  10, as in the app. The silent mode switch itself already existed.
 - **Silent mode: start time** and **Silent mode: stop time**
   (`/system/silentMode/startTime` and `stopTime`), numbers in minutes with the
   limits the gateway reports (within one day). The integration does not
   assume from which moment these minutes count; the value is shown and
-  written as the gateway reports it. There is deliberately no time entity.
+  written as the gateway reports it. Without a step reported by the gateway
+  the times move in steps of 15 minutes, as in the app. There is deliberately
+  no time entity.
 - **Low-noise operation mode** (`/system/lowNoise/mode`), a select over the
   values the gateway lists (at least two, the current one among them), and
   **Low-noise operation: duration** (`/system/lowNoise/duration`), a number in
@@ -1000,7 +1003,7 @@ wird durch Zurücklesen bestätigt; nichts wird erneut gesendet.
 | --- | --- | --- | --- |
 | Boost | `boostMode` | Schalter | die gemeldete Liste ist genau `on` und `off` |
 | Boost-Dauer | `boostDuration` | Zahl | Minimum und Maximum, eine Zeiteinheit |
-| Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum |
+| Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum; nicht bei einer Anlage mit Wärmepumpe, wie in der App |
 | Kühlen: Betriebsart | `cooling/operationMode` | Auswahl | die gemeldeten Betriebsarten `off`, `manual`, `auto` (mindestens zwei, die aktuelle darunter) |
 | Sollwertoptimierung | `setpointOptimization` | Schalter | die gemeldete Liste ist genau `on` und `off` |
 | Fenster-offen-Erkennung | `openWindowDetection/enabled` | Schalter | nur, wenn der Pfad gefunden wird |
@@ -1046,14 +1049,16 @@ sie meldet; ohne den Pfad entsteht nichts.
 
 - **Flüstermodus: Leistungsreduzierung** (`/system/silentMode/powerReduction`),
   ein ganzzahliger Prozentwert innerhalb der Grenzen, die das Gateway meldet
-  (beide zwischen 0 und 100). Der Schalter für den Flüstermodus selbst gab es
-  schon.
+  (beide zwischen 0 und 100). Ohne eine vom Gateway gemeldete Schrittweite
+  geht der Wert in Schritten von 10, wie in der App. Der Schalter für den
+  Flüstermodus selbst gab es schon.
 - **Flüstermodus: Startzeit** und **Flüstermodus: Endzeit**
   (`/system/silentMode/startTime` und `stopTime`), Zahlen in Minuten mit den
   Grenzen, die das Gateway meldet (innerhalb eines Tages). Die Integration
   nimmt nicht an, ab wann diese Minuten zählen; der Wert wird so angezeigt
-  und geschrieben, wie das Gateway ihn meldet. Eine Zeit-Entität gibt es
-  bewusst nicht.
+  und geschrieben, wie das Gateway ihn meldet. Ohne eine vom Gateway
+  gemeldete Schrittweite gehen die Zeiten in Schritten von 15 Minuten, wie in
+  der App. Eine Zeit-Entität gibt es bewusst nicht.
 - **Leiser Betrieb: Betriebsart** (`/system/lowNoise/mode`), ein Auswahlfeld
   über die Werte, die das Gateway auflistet (mindestens zwei, der aktuelle
   darunter), und **Leiser Betrieb: Dauer** (`/system/lowNoise/duration`), eine

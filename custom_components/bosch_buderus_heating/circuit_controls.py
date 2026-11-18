@@ -254,7 +254,7 @@ NUMBER_POLICIES: Final = (
     COOLING_LEVEL_POLICY,
 )
 # Not on a room controller (its contracts have their own rules); with the
-# further circuit settings of ``hc_controls_extra``, which have no guards.
+# further circuit settings of ``hc_controls_extra``.
 GENERIC_ONLY_POLICIES: Final = frozenset(
     {*ENUM_POLICIES, *NUMBER_POLICIES, *hc_controls_extra.GENERIC_ONLY_POLICIES}
 )
@@ -266,6 +266,7 @@ GUARDED_POLICIES: Final = frozenset(
         HEATING_LEVEL_POLICY,
         OPERATION_MODE_POLICY,
         MANUAL_SETPOINT_POLICY,
+        *hc_controls_extra.CIRCUIT_GUARDED_POLICIES,
     }
 )
 _COUPLED_LEVELS: Final = ("comfort2", "eco")

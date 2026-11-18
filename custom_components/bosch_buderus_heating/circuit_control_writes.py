@@ -100,8 +100,15 @@ def offered_on(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> boo
         for item, snapshot in data.items()
         if hybrid_controls.is_price_path(item)
     }
-    return circuit_controls.offered(path, readings) and hybrid_controls.offered(
-        path, prices
+    heat_sources = {
+        item: snapshot.resource
+        for item, snapshot in data.items()
+        if item.startswith("/heatSources/")
+    }
+    return (
+        circuit_controls.offered(path, readings)
+        and hybrid_controls.offered(path, prices)
+        and hc_controls_extra.offered(path, heat_sources)
     )
 
 

@@ -36,6 +36,10 @@ _NUMBER_TYPES: Final = frozenset({"integerValue", "floatValue"})
 _STRING: Final = frozenset({"stringValue"})
 _MINUTES: Final = frozenset({"mins", "min", "minutes"})
 MINUTES_PER_DAY: Final = 1440.0
+# The steps the app takes when the gateway reports none: 15 minutes for the
+# times of the window, 10 for the power reduction.
+TIME_STEP_MINUTES: Final = 15.0
+POWER_REDUCTION_STEP: Final = 10.0
 
 POWER_REDUCTION_PATTERN: Final = r"^/system/silentMode/powerReduction$"
 START_TIME_PATTERN: Final = r"^/system/silentMode/startTime$"
@@ -49,7 +53,7 @@ POOL_MODE_PATTERN: Final = r"^/pool/additionalHeater/poolMode$"
 POWER_REDUCTION_POLICY: Final = NumberWritePolicy(
     POWER_REDUCTION_PATTERN,
     "%",
-    1.0,
+    POWER_REDUCTION_STEP,
     enabled_by_default=False,
     strict_grid=True,
     wire_integer=True,
@@ -64,7 +68,7 @@ def _time(pattern: str) -> NumberWritePolicy:
     return NumberWritePolicy(
         pattern,
         "mins",
-        1.0,
+        TIME_STEP_MINUTES,
         enabled_by_default=False,
         strict_grid=True,
         wire_integer=True,

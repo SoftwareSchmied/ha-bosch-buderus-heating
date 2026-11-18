@@ -806,3 +806,39 @@ async def test_the_clock_sensor_finds_the_path_in_either_spelling(hass):
     assert sensor.native_value == 10
     assert sensor.extra_state_attributes == {"derived_from": {lower: "cloud"}}
     assert len(_tracking(coordinator)) == 1
+
+
+# Fix round: the app's default steps ------------------------------------------
+
+
+def test_the_window_and_the_power_reduction_take_the_apps_steps():
+    """W-4: without a reported step the app uses 15 minutes and 10 percent."""
+    assert extra.START_TIME_POLICY.step == 15.0
+    assert extra.STOP_TIME_POLICY.step == 15.0
+    assert extra.POWER_REDUCTION_POLICY.step == 10.0
+    resources = _plant(_power(), _time(START), _time(STOP, 360))
+    assert assess_control(resources[POWER]).ui_step == 10.0
+    assert assess_control(resources[START]).ui_step == 15.0
+    assert assess_control(resources[STOP]).ui_step == 15.0
+
+
+async def test_an_off_step_value_is_refused_without_a_reported_step(hass):
+    coordinator = coordinator_for(hass, _plant(_power(30), _time(START, 1320)))
+    cloud = Cloud(coordinator)
+    power = number_entity(hass, coordinator, POWER)
+    start = number_entity(hass, coordinator, START)
+    with pytest.raises((ServiceValidationError, WriteValidationError)):
+        await power.async_set_native_value(35)
+    with pytest.raises((ServiceValidationError, WriteValidationError)):
+        await start.async_set_native_value(1321)
+    assert cloud.puts == []
+    await power.async_set_native_value(40)
+    await start.async_set_native_value(1335)
+    assert cloud.puts == [(POWER, 40), (START, 1335)]
+
+
+async def test_a_reported_step_still_wins(hass):
+    coordinator = coordinator_for(hass, _plant(_time(START, 1320, stepSize=5)))
+    cloud = Cloud(coordinator)
+    await number_entity(hass, coordinator, START).async_set_native_value(1325)
+    assert cloud.puts == [(START, 1325)]

@@ -591,10 +591,10 @@ def test_policies_are_registered_once():
         assert policy in writes._ENUM_POLICIES
     for number in extra.NUMBER_POLICIES:
         assert number in writes.NUMBER_WRITE_POLICIES
-    # The generic circuit settings wait for the check as the others do, but
-    # the new ones read no control type guard.
+    # The generic circuit settings wait for the check as the others do and
+    # read the control type again before a write.
     assert extra.GENERIC_ONLY_POLICIES <= GENERIC_ONLY_POLICIES
-    assert not extra.GENERIC_ONLY_POLICIES & GUARDED_POLICIES
+    assert extra.GENERIC_ONLY_POLICIES <= GUARDED_POLICIES
 
 
 async def test_dialog_lists_the_circuit_rows_only(hass):
@@ -671,3 +671,123 @@ async def test_diagnostics_count_paths_without_naming_them(hass):
     assert report["cooling_mode"]["writable"] == 0
     assert report["window_detection"]["present"] == 0
     assert "hc1" not in str(report)
+
+
+# Fix round: write order, control-type guard, boost temperature ---------------
+
+
+def test_the_boost_switch_is_written_after_its_temperature_and_duration():
+    """W-1: the dialog writes the boost settings first, then switches it on."""
+    from custom_components.bosch_buderus_heating.controls_flow import _write_order
+
+    resources = _plant(
+        _switch(BOOST_MODE),
+        BOOST_DURATION_ITEM,
+        _float(BOOST_TEMPERATURE, 20.0, stepSize=0.5),
+    )
+    draft = {BOOST_MODE: "on", BOOST_DURATION: 4.0, BOOST_TEMPERATURE: 25.0}
+    ordered = sorted(
+        draft, key=lambda path: _write_order(path, draft[path], resources[path])
+    )
+    assert ordered[-1] == BOOST_MODE
+    assert set(ordered[:2]) == {BOOST_DURATION, BOOST_TEMPERATURE}
+
+
+def _isrc_plant():
+    plant = _plant(
+        _switch(BOOST_MODE),
+        BOOST_DURATION_ITEM,
+        _float(BOOST_TEMPERATURE, 20.0, stepSize=0.5),
+        _string(COOLING_MODE, "off", ["off", "manual", "auto"]),
+        _switch(SETPOINT_OPTIMIZATION),
+        _switch(WINDOW),
+        _float(CIRCUIT_COOLING_THRESHOLD, 22.0, stepSize=1.0),
+    )
+    plant[CONTROL_TYPE] = parse_resource(
+        {
+            "id": CONTROL_TYPE,
+            "type": "stringValue",
+            "value": "ISRC",
+            "writeable": 1,
+            "allowedValues": ["outdoorTemperature", "ISRC"],
+        }
+    )
+    return plant
+
+
+def test_the_circuit_settings_are_guarded_like_the_other_circuit_settings():
+    """W-5: the new circuit settings read the control type again."""
+    for policy in extra.GENERIC_ONLY_POLICIES:
+        assert policy in GUARDED_POLICIES
+        assert policy.value_check is not None
+    plant = _isrc_plant()
+    for path in (
+        BOOST_MODE,
+        BOOST_DURATION,
+        BOOST_TEMPERATURE,
+        COOLING_MODE,
+        SETPOINT_OPTIMIZATION,
+        WINDOW,
+        CIRCUIT_COOLING_THRESHOLD,
+    ):
+        policy = assess_control(plant[path], GENERIC_CONTEXT).policy
+        assert policy is not None
+        assert policy.value_check(plant[path], "on", plant) == "circuit_room_controller"
+    # The season thresholds are not circuit paths: never refused.
+    assert extra.HEATING_THRESHOLD_POLICY.value_check is None
+
+
+async def test_a_boost_write_on_a_room_controller_circuit_sends_nothing(hass):
+    plant = _plant(
+        _float(BOOST_TEMPERATURE, 20.0, stepSize=0.5),
+    )
+    coordinator = coordinator_for(hass, plant)
+    cloud = Cloud(coordinator)
+    entity = number_entity(hass, coordinator, BOOST_TEMPERATURE)
+    cloud.change(
+        CONTROL_TYPE,
+        value="ISRC",
+    )
+    with pytest.raises((HomeAssistantError, ServiceValidationError)):
+        await entity.async_set_native_value(22.5)
+    assert cloud.puts == []
+
+
+def test_the_boost_temperature_is_not_offered_on_a_heat_pump():
+    """W-7: as the app, the boost temperature only without a heat pump."""
+    from custom_components.bosch_buderus_heating.pointt import Resource
+
+    def reading(path: str, value: str) -> dict[str, Resource]:
+        return {
+            path: parse_resource({"id": path, "type": "stringValue", "value": value})
+        }
+
+    assert extra.offered(BOOST_TEMPERATURE, {})
+    assert extra.offered(BOOST_TEMPERATURE, reading("/heatSources/hs1/type", "gas"))
+    assert not extra.offered(
+        BOOST_TEMPERATURE, reading("/heatSources/hs1/type", "heatPump")
+    )
+    assert not extra.offered(
+        BOOST_TEMPERATURE, reading("/heatSources/hs1/heatPumpType", "airToWater")
+    )
+    assert extra.offered(
+        BOOST_TEMPERATURE, reading("/heatSources/hs1/heatPumpType", "unknown")
+    )
+    # Other paths are not decided here.
+    assert extra.offered(BOOST_DURATION, reading("/heatSources/hs1/type", "heatPump"))
+
+
+async def test_the_boost_temperature_number_follows_the_heat_pump(hass):
+    from custom_components.bosch_buderus_heating.circuit_control_writes import (
+        offered_on,
+    )
+
+    plant = _plant(
+        _float(BOOST_TEMPERATURE, 20.0, stepSize=0.5),
+        _string("/heatSources/hs1/type", "heatPump", None, writeable=0),
+    )
+    coordinator = coordinator_for(hass, plant)
+    assert not offered_on(coordinator, BOOST_TEMPERATURE)
+    assert offered_on(coordinator, BOOST_DURATION)
+    coordinator = coordinator_for(hass, _plant(_float(BOOST_TEMPERATURE, 20.0)))
+    assert offered_on(coordinator, BOOST_TEMPERATURE)
