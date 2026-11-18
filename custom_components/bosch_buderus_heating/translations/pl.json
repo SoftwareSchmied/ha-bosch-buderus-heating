@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Ciepło netto (obliczone)"
       },
+      "calculated_last_regeneration": {
+        "name": "Ostatnia regeneracja (obliczona)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Średni czas pracy na start, ogrzewanie (obliczony)"
       },

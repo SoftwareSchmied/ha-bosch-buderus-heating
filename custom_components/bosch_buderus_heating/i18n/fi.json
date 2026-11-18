@@ -666,6 +666,10 @@
     "Cooling temperature": "Jäähdytyslämpötila",
     "Air quality demand": "Ilmanlaadun tarve",
     "Humidity demand": "Kosteuden tarve",
-    "Feed-in tariff": "Verkkoon syötön hinta"
+    "Feed-in tariff": "Verkkoon syötön hinta",
+    "Water consumption": "Veden kulutus",
+    "Boiler energy": "Kattilan energia",
+    "Energy consumed": "Kulutettu energia",
+    "Last regeneration (calculated)": "Viimeisin regenerointi (laskettu)"
   }
 }

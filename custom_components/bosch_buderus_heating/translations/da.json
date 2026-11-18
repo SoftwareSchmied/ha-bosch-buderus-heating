@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Nettovarme (beregnet)"
       },
+      "calculated_last_regeneration": {
+        "name": "Seneste regenerering (beregnet)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Gennemsnitlig driftstid pr. start, opvarmning (beregnet)"
       },

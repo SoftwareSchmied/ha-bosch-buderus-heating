@@ -15,7 +15,12 @@ from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.const import UnitOfEnergy, UnitOfTemperature, UnitOfTime
+from homeassistant.const import (
+    UnitOfEnergy,
+    UnitOfTemperature,
+    UnitOfTime,
+    UnitOfVolume,
+)
 from homeassistant.core import callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -32,6 +37,7 @@ _KINDS: dict[Quantity, tuple[SensorDeviceClass | None, str | None, int]] = {
     Quantity.ENERGY: (SensorDeviceClass.ENERGY, UnitOfEnergy.KILO_WATT_HOUR, 2),
     Quantity.DURATION: (SensorDeviceClass.DURATION, UnitOfTime.HOURS, 1),
     Quantity.TEMPERATURE: (SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS, 1),
+    Quantity.VOLUME: (SensorDeviceClass.WATER, UnitOfVolume.LITERS, 0),
     Quantity.COUNT: (None, None, 0),
 }
 

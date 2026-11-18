@@ -666,6 +666,10 @@
     "Cooling temperature": "Koeltemperatuur",
     "Air quality demand": "Vraag naar luchtkwaliteit",
     "Humidity demand": "Vraag naar luchtvochtigheid",
-    "Feed-in tariff": "Terugleververgoeding"
+    "Feed-in tariff": "Terugleververgoeding",
+    "Water consumption": "Waterverbruik",
+    "Boiler energy": "Ketelenergie",
+    "Energy consumed": "Verbruikte energie",
+    "Last regeneration (calculated)": "Laatste regeneratie (berekend)"
   }
 }

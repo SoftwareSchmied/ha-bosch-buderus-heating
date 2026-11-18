@@ -666,6 +666,10 @@
     "Cooling temperature": "Температура на охлаждане",
     "Air quality demand": "Потребност според качеството на въздуха",
     "Humidity demand": "Потребност според влажността",
-    "Feed-in tariff": "Изкупна цена"
+    "Feed-in tariff": "Изкупна цена",
+    "Water consumption": "Разход на вода",
+    "Boiler energy": "Енергия на котела",
+    "Energy consumed": "Консумирана енергия",
+    "Last regeneration (calculated)": "Последна регенерация (изчислена)"
   }
 }

@@ -666,6 +666,10 @@
     "Cooling temperature": "Temperatura hlajenja",
     "Air quality demand": "Zahteva po kakovosti zraka",
     "Humidity demand": "Zahteva po vlažnosti",
-    "Feed-in tariff": "Odkupna cena"
+    "Feed-in tariff": "Odkupna cena",
+    "Water consumption": "Poraba vode",
+    "Boiler energy": "Energija kotla",
+    "Energy consumed": "Porabljena energija",
+    "Last regeneration (calculated)": "Zadnja regeneracija (izračunana)"
   }
 }

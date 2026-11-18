@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Neto toplina (izračunato)"
       },
+      "calculated_last_regeneration": {
+        "name": "Zadnja regeneracija (izračunano)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Prosječno vrijeme rada po pokretanju, grijanje (izračunato)"
       },

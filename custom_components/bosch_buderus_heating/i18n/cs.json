@@ -666,6 +666,10 @@
     "Cooling temperature": "Teplota chlazení",
     "Air quality demand": "Požadavek podle kvality vzduchu",
     "Humidity demand": "Požadavek podle vlhkosti",
-    "Feed-in tariff": "Výkupní cena"
+    "Feed-in tariff": "Výkupní cena",
+    "Water consumption": "Spotřeba vody",
+    "Boiler energy": "Energie kotle",
+    "Energy consumed": "Spotřebovaná energie",
+    "Last regeneration (calculated)": "Poslední regenerace (vypočteno)"
   }
 }

@@ -37,6 +37,8 @@ HOUR: Final = 3600
 # 60 kW. The nominal output of a plant is not reliably known here.
 MAX_KWH_PER_HOUR: Final = 1.5 * 60.0
 MAX_STARTS_PER_HOUR: Final = 60.0
+# A softener's water per hour, litres (a household line, far above any use).
+MAX_LITRES_PER_HOUR: Final = 10000.0
 # Readings outside this range are no outdoor or supply temperature.
 TEMPERATURE_RANGE: Final = (-60.0, 110.0)
 # Nothing recorded before this day can be a real value (a wrong clock).
@@ -356,5 +358,6 @@ def rejection(
         Quantity.ENERGY: MAX_KWH_PER_HOUR,
         Quantity.COUNT: MAX_STARTS_PER_HOUR,
         Quantity.DURATION: 1.01,
+        Quantity.VOLUME: MAX_LITRES_PER_HOUR,
     }[series.quantity]
     return "implausible" if sample.y > limit * hours else None

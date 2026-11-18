@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Nettowarmte (berekend)"
       },
+      "calculated_last_regeneration": {
+        "name": "Laatste regeneratie (berekend)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Gemiddelde looptijd per start, verwarming (berekend)"
       },

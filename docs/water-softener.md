@@ -119,12 +119,27 @@ benötigt. Schreibtests sollen anschließend einzeln erfolgen, mit dokumentierte
 Einstellung, Ergebnis in MyBuderus und gegebenenfalls wiederhergestelltem
 Ausgangswert. Eine manuell gestartete Regeneration ist ein realer Geräteablauf.
 
-Der in Issue #60 gewünschte Weichwasserverbrauch ist damit noch nicht
-vollständig abgedeckt: Verbrauchswerte stammen aus `/recordings`.
-Ich berechne keinen vermeintlichen Gesamtverbrauch aus einzelnen
-Durchflussmessungen. Das gesonderte optionale Verbrauchspaket und historische
-Messreihen sind nicht Teil dieser Umsetzung. Issue #60 bleibt bis zur
-Rückmeldung und Klärung dieses Umfangs offen.
+### Verbrauch und letzte Regeneration
+
+Der Weichwasserverbrauch stammt aus der Aufzeichnung
+`/recordings/swCircuits/sw1/sensor/water` (nur Cloud). Ich lese sie nur bei
+einer Anlage mit Enthärterkreis und lege fünf Zeitraum-Entitäten an (gestern,
+aktueller und vorheriger Monat, aktuelles und vorheriges Jahr, Benennung
+*Wasserverbrauch … (Anlagenaufzeichnung)*). Sie sind standardmäßig
+deaktiviert und rein lesend. Antwortet der Pfad nicht oder in einer anderen
+Einheit als Liter oder Kubikmeter, entsteht keine Entität. Ich berechne
+keinen Gesamtverbrauch aus einzelnen Durchflussmessungen. Aufbau, Import in die
+Statistik und Grenzen: [Aufzeichnungen](recordings.md).
+
+Die Entität *Letzte Regeneration (berechnet)* (Zeitstempel, deaktiviert,
+rein lesend) merkt sich den Zeitpunkt, zu dem `regeneration/enabled` von „läuft“
+auf „läuft nicht“ wechselt, und behält ihn über Neustarts. Die Genauigkeit
+entspricht dem Abfrageintervall. Eine Regeneration, die während eines
+Home-Assistant-Stopps oder zwischen zwei Abfragen beginnt und endet, wird nicht
+bemerkt. Ein Regenerationsprotokoll des Enthärters lese ich nicht.
+
+Beides ist erwartet, aber an keinem echten Enthärter getestet. Issue #60 bleibt
+bis zur Rückmeldung offen.
 
 ## English
 
@@ -176,9 +191,28 @@ The current diagnostics schema 17 retains the profiles, local entity registratio
 and capability validation introduced in schema 16, without
 measurements, unknown texts, credentials or private dynamic IDs. It adds no
 cloud calls. Actual display comparison, interruption/recovery checks and
-individual write confirmation in MyBuderus remain outstanding. Consumption
-from `/recordings` remains a separate optional package; issue #60 is not
-considered closed by this initial implementation.
+individual write confirmation in MyBuderus remain outstanding.
+
+### Consumption and last regeneration
+
+Soft-water consumption comes from the recording
+`/recordings/swCircuits/sw1/sensor/water` (cloud only). I read it only on a
+plant with a softener circuit and create five period entities (yesterday,
+current and previous month, current and previous year, named *Water
+consumption … (system recording)*). They are read-only and disabled by
+default. If the path does not answer, or answers in a unit other than litres
+or cubic metres, no entity exists. I do not derive a total from single flow
+readings. Layout, import into the statistics and limits: see
+[plant recordings](recordings.md).
+
+The entity *Last regeneration (calculated)* (timestamp, disabled, read-only)
+notes the moment `regeneration/enabled` changes from running to not running
+and keeps it across restarts. Its accuracy is the polling interval; a
+regeneration that starts and ends while Home Assistant is stopped, or between
+two readings, is not noticed. I do not read a regeneration log of the softener.
+
+Both are expected, but untested on a real softener. Issue #60 stays open until
+there is feedback.
 
 ## Evidence references
 

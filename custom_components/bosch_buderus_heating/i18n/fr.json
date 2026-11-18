@@ -666,6 +666,10 @@
     "Cooling temperature": "Température de refroidissement",
     "Air quality demand": "Demande selon la qualité de l'air",
     "Humidity demand": "Demande selon l'humidité",
-    "Feed-in tariff": "Tarif d'injection"
+    "Feed-in tariff": "Tarif d'injection",
+    "Water consumption": "Consommation d'eau",
+    "Boiler energy": "Énergie de la chaudière",
+    "Energy consumed": "Énergie consommée",
+    "Last regeneration (calculated)": "Dernière régénération (calculée)"
   }
 }

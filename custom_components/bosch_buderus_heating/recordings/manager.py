@@ -72,6 +72,7 @@ from ..const import DOMAIN
 from ..log_helpers import log_failure
 from ..rrc_energy_statistics import async_gateway_digest
 from .anchor import has_recording_anchor
+from .gating import allowed_keys, softener_plant
 from .ledger import CLOUD, LOCAL, DailyValue, Ledger
 from .measures import (
     CALCULATED,
@@ -95,7 +96,7 @@ from .parse import (
     parse_local,
 )
 from .periods import Period, PeriodValue, bounds, combine, period_value
-from .series import BY_KEY, BY_PATH, SERIES, Quantity, Series
+from .series import ALL_SERIES, BY_KEY, BY_PATH, SERIES, Quantity, Series
 from .sources import Outcome, local_query, read_cloud, read_local
 
 if TYPE_CHECKING:
@@ -146,12 +147,14 @@ _UNIT_CLASS: Final = {
     Quantity.ENERGY: "energy",
     Quantity.DURATION: "duration",
     Quantity.TEMPERATURE: "temperature",
+    Quantity.VOLUME: "volume",
     Quantity.COUNT: None,
 }
 _UNITS: Final = {
     Quantity.ENERGY: {"energy": "kWh"},
     Quantity.DURATION: {"duration": "h"},
     Quantity.TEMPERATURE: {"temperature": "°C"},
+    Quantity.VOLUME: {"volume": "L"},
     Quantity.COUNT: None,
 }
 
@@ -554,7 +557,7 @@ class RecordingsManager:
     def available(self) -> tuple[str, ...]:
         """Series that answered, by key."""
         keys = []
-        for series in SERIES:
+        for series in ALL_SERIES:
             if series.key not in self.ledgers:
                 continue
             local = self.local_paths.get(series.path)
@@ -584,7 +587,8 @@ class RecordingsManager:
             self.waiting = "not_needed"
             return
         coordinator = self.coordinator()
-        if coordinator is not None and not has_recording_anchor(coordinator):
+        heat = coordinator is None or has_recording_anchor(coordinator)
+        if not heat and not softener_plant(coordinator):
             # A room controller with a bare heat source (no counters, no
             # starts, no heat pump): nothing the recordings belong to.
             self.waiting = "no_heat_source_anchor"
@@ -603,13 +607,19 @@ class RecordingsManager:
         try:
             self.waiting = None
             done = False
-            for driver in self._local_drivers():
+            # A plant with a softener circuit only (no heat source): only
+            # the series without a local path are read, from the cloud.
+            for driver in self._local_drivers() if heat else []:
                 done = await self._run_local(driver, now, zone, report)
                 if done:
                     report["source"] = LOCAL
                     break
-            if not done and await self._run_cloud(now, zone, report, reason):
-                report["source"] = CLOUD
+            if not done:
+                if await self._run_cloud(now, zone, report, reason, exclusive=not heat):
+                    report["source"] = CLOUD
+            elif self._cloud_candidates(now, exclusive=True):
+                # The local access has no path of these series.
+                await self._run_cloud(now, zone, report, reason, exclusive=True)
             for ledger in self.ledgers.values():
                 ledger.settle(now, zone)
                 ledger.prune(now)
@@ -840,18 +850,22 @@ class RecordingsManager:
                 keys.update(spec.measure.parts)
         return frozenset(keys)
 
-    def _cloud_candidates(self, now: datetime) -> list[Series]:
+    def _cloud_candidates(self, now: datetime, exclusive: bool = False) -> list[Series]:
+        """The series the cloud is asked for: the energy paths of a heat
+        pump (not when ``exclusive``) and the series without a local path
+        of a plant that shows what they belong to."""
+        allowed = allowed_keys(self.coordinator())
         return [
             series
-            for series in SERIES
-            if series.cloud
+            for series in ALL_SERIES
+            if ((series.cloud and not exclusive) or series.key in allowed)
             and (CLOUD, series.path) not in self._forbidden
             and (self.cloud_paths.get(series.path) or [None])[0] != "unit"
             and self._cloud_deferred.get(series.path, 0.0) <= now.timestamp()
         ]
 
     def _current_tasks(
-        self, today: date, now: datetime
+        self, today: date, now: datetime, exclusive: bool = False
     ) -> list[tuple[Series, str, Rate]]:
         """Yesterday for the series something needs (and once for a path
         that never answered, to find the series), today for the running
@@ -860,7 +874,7 @@ class RecordingsManager:
         running = self.running_series()
         yesterday = today - timedelta(days=1)
         tasks: list[tuple[Series, str, Rate]] = []
-        for series in self._cloud_candidates(now):
+        for series in self._cloud_candidates(now, exclusive):
             if series.key in running:
                 tasks.append((series, today.isoformat(), Rate.HOUR))
             if series.key in needed or series.path not in self.cloud_paths:
@@ -868,7 +882,7 @@ class RecordingsManager:
         return tasks
 
     def _later_tasks(
-        self, today: date, now: datetime
+        self, today: date, now: datetime, exclusive: bool = False
     ) -> list[tuple[Series, str, Rate]]:
         """The back-fill of the series something needs: months, years,
         older months by the day and, for the import, older days by the
@@ -877,7 +891,7 @@ class RecordingsManager:
         hours = import_enabled(self.entry)
         later: list[tuple[Series, str, Rate]] = []
         first = month_start(today)
-        for series in self._cloud_candidates(now):
+        for series in self._cloud_candidates(now, exclusive):
             if series.key not in needed:
                 continue
             for month in (first, add_months(first, -1)):
@@ -964,20 +978,25 @@ class RecordingsManager:
         zone: tzinfo,
         report: dict[str, Any],
         reason: str = "hourly",
+        exclusive: bool = False,
     ) -> bool:
         coordinator = self.coordinator()
         if coordinator is None or coordinator.cloud_unavailable():
             report["cloud"] = "unavailable"
             return False
-        if not any(path.startswith("/heatSources") for path in coordinator.resources):
+        if not exclusive and not any(
+            path.startswith("/heatSources") for path in coordinator.resources
+        ):
             # No heat source at all (a room controller, a water softener).
             report["cloud"] = "no_heat_source"
             return False
         client = coordinator.client
         today = now.astimezone(zone).date()
-        tasks = [(*task, False) for task in self._current_tasks(today, now)]
+        tasks = [(*task, False) for task in self._current_tasks(today, now, exclusive)]
         if self._backfill_allowed(reason, today):
-            tasks.extend((*task, True) for task in self._later_tasks(today, now))
+            tasks.extend(
+                (*task, True) for task in self._later_tasks(today, now, exclusive)
+            )
         budget = CLOUD_BUDGET
         backfill = CLOUD_BACKFILL
         succeeded = False
@@ -1210,7 +1229,7 @@ class RecordingsManager:
         if not self.digest:
             # Asked for before the start finished.
             self.digest = await async_gateway_digest(self.hass, self.gateway_id)
-        known = sorted(statistic_id(self.digest, series) for series in SERIES)
+        known = sorted(statistic_id(self.digest, series) for series in ALL_SERIES)
         listed = await async_list_statistic_ids(self.hass)
         found = {item.get("statistic_id") for item in listed} & set(known)
         for ledger in self.ledgers.values():
@@ -1409,7 +1428,7 @@ class RecordingsManager:
         today = now.astimezone(zone).date()
         last = self.runs[-1] if self.runs else None
         series: dict[str, object] = {}
-        for item in SERIES:
+        for item in ALL_SERIES:
             local = self.local_paths.get(item.path)
             cloud = self.cloud_paths.get(item.path)
             ledger = self.ledgers.get(item.key)
@@ -1570,7 +1589,7 @@ async def async_imported_statistics(hass: HomeAssistant, digest: str) -> list[st
         async_list_statistic_ids,
     )
 
-    known = {statistic_id(digest, series) for series in SERIES}
+    known = {statistic_id(digest, series) for series in ALL_SERIES}
     listed = await async_list_statistic_ids(hass)
     return sorted(
         str(item["statistic_id"])

@@ -133,6 +133,38 @@ where the entity uses them), a month with such a day uses the plant's month
 value, and a month without data adds nothing to its year. The plant's
 placeholder values for such slots are dropped.
 
+## Series without a local path: water softener and boilers
+
+A few recordings exist only in the cloud, under paths a heat pump does not
+have. They are read from the cloud only (never through the local data port,
+which has no such path) and only for a plant that shows what they belong to.
+Each becomes the same five period entities as any other recording, created
+disabled; a path that does not answer (404, 403) or answers in a unit other
+than the ones below gives no entity at all. Nothing is asked on any other
+plant: a heat pump, a room controller and every plant without the matching
+readings are not asked for these paths.
+
+| Recording | Asked on a plant with | Unit accepted | Name |
+|---|---|---|---|
+| `/recordings/swCircuits/sw1/sensor/water` | a softener circuit (`/swCircuits/sw1/...`) | L, m³ (shown in L) | *Water consumption* |
+| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh, Wh, MWh | *Heating – Boiler energy* |
+| `/recordings/heatSources/actualDHWPower` | as above | as above | *Hot water – Boiler energy* |
+| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above | as above | *Total – Energy consumed* |
+
+A plant with a softener circuit and no heat source reads only the water
+recording. On a plant with local access the water or boiler paths are asked
+in a short cloud run after the local run; they cost at most one read per
+path and day while they do not answer. The recordings take part in the
+import into the statistics like the others (water in litres, energy in kWh);
+no counter is calculated for them, so there is no *(calculated)* companion.
+
+Expected, untested on a real installation: no answer of a softener or a boiler
+has been seen yet. The paths and the meaning of the values (energy summed per
+hour, day and month, as for the heat pump) follow the recordings the
+manufacturer's app reads; if a plant answers in another form, the series is
+discarded (`unit` or a count mismatch in the diagnostics) rather than shown
+wrongly. Please report such a case on GitHub with the diagnostics.
+
 ## Import into the statistics
 
 **Settings → Devices & services → Bosch/Buderus Home Comfort → Configure →
@@ -213,4 +245,5 @@ recordings left out for a while after a failed read); a run reports
 - The days of the periods follow the plant. When the time zone of Home
   Assistant differs from the plant's, the attributes show the plant's days.
 - A plant with more than one heat source records per heat source in paths
-  the integration does not read yet.
+  the integration does not read yet. The same holds for a plant with more
+  than one softener circuit: only `sw1` is read.

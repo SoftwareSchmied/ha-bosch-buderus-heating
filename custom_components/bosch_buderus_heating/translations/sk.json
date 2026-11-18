@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Čisté teplo (vypočítané)"
       },
+      "calculated_last_regeneration": {
+        "name": "Posledná regenerácia (vypočítaná)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Priemerná doba chodu na štart, vykurovanie (vypočítaná)"
       },

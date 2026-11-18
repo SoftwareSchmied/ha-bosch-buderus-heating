@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Glanteas (ríofa)"
       },
+      "calculated_last_regeneration": {
+        "name": "An athghiniúint dheireanach (ríofa)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Meán-am rite in aghaidh an tosaithe, téamh (ríofa)"
       },
