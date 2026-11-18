@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Svjetlina ambijentalnog svjetla"
       },
+      "bacon_rac_timer_on": {
+        "name": "Timer uključivanja"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Timer isključivanja"
+      },
       "rrc_window_duration": {
         "name": "Trajanje otvorenog prozora"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Električna energija ukupno (grijanje)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Električna energija ukupno (hlađenje)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Električna energija ukupno (odvlaživanje)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Električna energija ukupno (samo ventilator)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Predana toplinska energija ukupno (grijanje)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Predana toplinska energija ukupno (hlađenje)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC vrijednost"

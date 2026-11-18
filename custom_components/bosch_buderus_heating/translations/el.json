@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Φωτεινότητα φωτισμού ατμόσφαιρας"
       },
+      "bacon_rac_timer_on": {
+        "name": "Χρονοδιακόπτης ενεργοποίησης"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Χρονοδιακόπτης απενεργοποίησης"
+      },
       "rrc_window_duration": {
         "name": "Διάρκεια ανοιχτού παραθύρου"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Ηλεκτρική ενέργεια συνολικά (θέρμανση)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Ηλεκτρική ενέργεια συνολικά (ψύξη)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Ηλεκτρική ενέργεια συνολικά (αφύγρανση)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Ηλεκτρική ενέργεια συνολικά (μόνο ανεμιστήρας)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Παρεχόμενη θερμική ενέργεια συνολικά (θέρμανση)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Παρεχόμενη θερμική ενέργεια συνολικά (ψύξη)"
       },
       "bacon_purifier_tvoc": {
         "name": "Τιμή TVOC"

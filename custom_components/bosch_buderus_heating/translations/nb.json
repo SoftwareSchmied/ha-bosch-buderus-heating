@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Lysstyrke for stemningslys"
       },
+      "bacon_rac_timer_on": {
+        "name": "På-timer"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Av-timer"
+      },
       "rrc_window_duration": {
         "name": "Varighet for åpent vindu"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrisk energi totalt (oppvarming)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrisk energi totalt (kjøling)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrisk energi totalt (avfukting)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrisk energi totalt (kun vifte)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Avgitt varmeenergi totalt (oppvarming)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Avgitt varmeenergi totalt (kjøling)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-verdi"

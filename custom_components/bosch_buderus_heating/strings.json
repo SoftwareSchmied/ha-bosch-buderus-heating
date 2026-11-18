@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
       },
+      "bacon_rac_timer_on": {
+        "name": "Switch-on timer"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Switch-off timer"
+      },
       "rrc_window_duration": {
         "name": "Open window duration"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Total electrical energy (heating)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Total electrical energy (cooling)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Total electrical energy (dehumidifying)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Total electrical energy (fan only)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Total thermal output (heating)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Total thermal output (cooling)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC value"

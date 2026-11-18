@@ -33,6 +33,7 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
+from .bacon.rac_entities import track_entities as track_rac_entities
 from .circuit_control_writes import async_set_guarded, offered_on
 from .circuit_controls import display_minimum, offered
 from .control import HeldCapabilities, track_control_entities
@@ -97,6 +98,7 @@ def _setup_entities(
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS
         )
+        track_rac_entities(entry, account, async_add_entities, "number")
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,

@@ -150,6 +150,12 @@
       "aircon_timer_off": {
         "default": "mdi:timer-stop-outline"
       },
+      "bacon_rac_timer_on": {
+        "default": "mdi:timer-play-outline"
+      },
+      "bacon_rac_timer_off": {
+        "default": "mdi:timer-stop-outline"
+      },
       "heating_circuit_boost_duration": {
         "default": "mdi:timer-outline"
       },

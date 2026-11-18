@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Gile an tsolais thimpeallaigh"
       },
+      "bacon_rac_timer_on": {
+        "name": "Lasc ama chun lasadh"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Lasc ama chun múchadh"
+      },
       "rrc_window_duration": {
         "name": "Fad na fuinneoige oscailte"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Fuinneamh leictreach iomlán (téamh)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Fuinneamh leictreach iomlán (fuaraithe)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Fuinneamh leictreach iomlán (dí-taise)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Fuinneamh leictreach iomlán (gaothrán amháin)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Aschur teasa iomlán (téamh)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Aschur teasa iomlán (fuaraithe)"
       },
       "bacon_purifier_tvoc": {
         "name": "Luach TVOC"

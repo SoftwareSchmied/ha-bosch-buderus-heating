@@ -2024,6 +2024,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Helderheid sfeerverlichting"
       },
+      "bacon_rac_timer_on": {
+        "name": "Inschakeltimer"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Uitschakeltimer"
+      },
       "rrc_window_duration": {
         "name": "Duur open raam"
       },
@@ -2950,6 +2956,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrische energie totaal (verwarmen)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrische energie totaal (koelen)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrische energie totaal (ontvochtigen)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrische energie totaal (alleen ventilator)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Afgegeven thermische energie totaal (verwarmen)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Afgegeven thermische energie totaal (koelen)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-waarde"
