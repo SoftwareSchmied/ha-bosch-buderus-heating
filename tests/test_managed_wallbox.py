@@ -141,10 +141,11 @@ async def test_actual_wallbox_http_and_native_sensors_share_heating_account(
                 is heating.client._transport._semaphore
             )
             entities = sensors(wallbox)
-            assert len(entities) == 8
+            assert len(entities) == 9
             assert entities["state"].native_value == "charging"
             assert entities["power"].native_value == 7.2
             assert entities["energy"].native_value == 1.25
+            assert entities["energy_total"].native_value == 4321.5
             assert entities["current_limit"].native_value == 16
             assert all(
                 item.unique_id == f"{WB}:wallbox:cp0:{key}"
