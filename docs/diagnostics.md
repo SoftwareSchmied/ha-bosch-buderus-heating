@@ -130,7 +130,15 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   version could be read; `write_counts` counts the outcomes of commands and
   settings (`start_confirmed`, `limit_unchanged`, `boost_not_confirmed`,
   `locked_refused`, …), never values, labels, names, brands or prices. See
-  [wallboxes](pointt-wallboxes.md).
+  [wallboxes](pointt-wallboxes.md). New, schema number unchanged:
+  `sections.<telemetry|conf|info>.unknown_field_names` lists the names (never
+  the values) of keys in the answer that no parser reads, as plain tokens
+  (letters, digits, underscore; at most 64 per section, sorted),
+  `unnamed_field_count` counts keys that were not listed (other characters or
+  beyond the limit); and `history` describes the opt-in history
+  (`enabled`, the number of `requests` since start, `interval_seconds`, and per
+  part `chargelog` and `energyhistory` whether it is `fresh`, its `error`
+  category and whether it `has_data`), without dates or values.
 - `pointt_air_conditioners`: one entry per air conditioner on a PointT
   gateway (device type `rac`) with the detected family, the detection
   state, freshness, readable, missing and writable paths, the offered

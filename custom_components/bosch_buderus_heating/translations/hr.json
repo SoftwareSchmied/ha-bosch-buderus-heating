@@ -949,11 +949,13 @@
         "description": "Zidni punjač koji zahtijeva autentifikaciju počinje puniti tek nakon autentifikacije integracije. Prije svakog pokretanja tada se šalje jedna dodatna naredba.",
         "data": {
           "wallbox_authentication": "Dopusti autentifikaciju prije pokretanja",
-          "wallbox_authentication_name": "Naziv za autentifikaciju (neobavezno)"
+          "wallbox_authentication_name": "Naziv za autentifikaciju (neobavezno)",
+          "wallbox_history": "Čitaj povijest punjenja"
         },
         "data_description": {
           "wallbox_authentication": "Zadano isključeno. Od softvera 5.1.0 pokretanje se najprije autentificira; sa starijim softverom pokretanje se šalje samo, kao u aplikaciji proizvođača.",
-          "wallbox_authentication_name": "Naziv koji aplikacija proizvođača koristi za autentifikaciju; može ostati prazan."
+          "wallbox_authentication_name": "Naziv koji aplikacija proizvođača koristi za autentifikaciju; može ostati prazan.",
+          "wallbox_history": "Prema zadanim postavkama isključeno. Otprilike svakih 30 minuta (svakih 60 minuta u profilu prilagođenom oblaku) čitaju se zadnje punjenje (početak, kraj, trajanje, energija) te energija ovog mjeseca iz mreže i iz sunca. Imena kartica, korisnika ili autentifikacije nikada se ne čitaju."
         }
       },
       "result_wallbox_saved": {
@@ -3029,6 +3031,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardversko ograničenje struje"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Početak zadnjeg punjenja"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Kraj zadnjeg punjenja"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Trajanje zadnjeg punjenja"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energija zadnjeg punjenja"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ovaj mjesec napunjeno iz mreže"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ovaj mjesec napunjeno solarnom energijom"
       },
       "smart_grid_mode": {
         "name": "Način rada pametne mreže",

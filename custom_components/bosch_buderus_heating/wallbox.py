@@ -15,17 +15,20 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from math import isfinite
+from re import compile as re_compile
 from time import monotonic
 from typing import TYPE_CHECKING, Final, Literal
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
 from .coordinator import POLL_DUE_TOLERANCE_SECONDS
 from .pointt import AuthenticationError, Gateway, PointTClient, PointTError
 from .pointt.exceptions import ProtocolError, RateLimited, ResourceError
+from .wallbox_history import WallboxHistory, history_enabled
 from .wallbox_leaves import (
     LEAVES,
     Firmware,
@@ -84,6 +87,36 @@ ENERGY_MANAGER_STATES: Final = {
 }
 # At most this many single values are read in one polling cycle.
 MAX_LEAF_READS: Final = 4
+# The fields the object parsers read; every other key of an answer is only
+# counted by name (diagnostics), never by value.
+KNOWN_FIELDS: Final[dict[str, frozenset[str]]] = {
+    "telemetry": frozenset(
+        {
+            "meter",
+            "wbState",
+            "activeChargingTime",
+            "limit",
+            "chargingStart",
+            "limiter",
+            "energymanager",
+            "emStatus",
+        }
+    ),
+    "conf": frozenset({"wallboxMode", "chargingStrategy", "locked", "auth", "label"}),
+    "info": frozenset(
+        {
+            "hwCurrentLimit",
+            "productName",
+            "softwareVersion",
+            "paragraph14aConfigured",
+            "paragraph14aActive",
+            "relaisAvailable",
+        }
+    ),
+}
+# A field name is kept for the diagnostics only as a short plain token.
+_SAFE_NAME: Final = re_compile(r"[A-Za-z][A-Za-z0-9_]{0,47}")
+MAX_UNKNOWN_NAMES: Final = 64
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -145,6 +178,29 @@ class SectionSnapshot:
     values: dict[str, Reading] = field(default_factory=dict)
     received: float = 0
     error: str | None = None
+    # Names (never values) of keys the parser does not read, and how many
+    # keys had no plain-token name or exceeded the limit.
+    unknown_names: tuple[str, ...] = ()
+    unnamed_count: int = 0
+
+
+def unknown_field_names(
+    section: Section, raw: dict[object, object]
+) -> tuple[tuple[str, ...], int]:
+    """The sorted safe names of keys no parser reads, and the rest's count."""
+    known = KNOWN_FIELDS[section]
+    names: set[str] = set()
+    unnamed = 0
+    for key in raw:
+        if isinstance(key, str) and key in known:
+            continue
+        if isinstance(key, str) and _SAFE_NAME.fullmatch(key):
+            names.add(key)
+        else:
+            unnamed += 1
+    ordered = sorted(names)
+    unnamed += max(0, len(ordered) - MAX_UNKNOWN_NAMES)
+    return tuple(ordered[:MAX_UNKNOWN_NAMES]), unnamed
 
 
 def parse_section(section: Section, payload: object) -> SectionSnapshot:
@@ -204,7 +260,10 @@ def parse_section(section: Section, payload: object) -> SectionSnapshot:
             "grid_friendly_active": _on_off(raw.get("paragraph14aActive")),
             "relays_available": _on_off(raw.get("relaisAvailable")),
         }
-    return SectionSnapshot(values, monotonic())
+    unknown, unnamed = unknown_field_names(section, raw)
+    return SectionSnapshot(
+        values, monotonic(), unknown_names=unknown, unnamed_count=unnamed
+    )
 
 
 class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
@@ -251,6 +310,8 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
         self._leaf_next: dict[str, float] = {}
         self._leaf_demand: dict[str, int] = {}
         self._firmware_text: str | None = None
+        # Opt-in history (the wallbox option); nothing is read while it is off.
+        self.history = WallboxHistory(interval=1800 if not friendly else 3600)
         # Writes: the last command (5-second spacing) and counters without
         # values for the diagnostics.
         self.last_command: float | None = None
@@ -315,7 +376,18 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
         if info is not None and info.error is None:
             self._note_firmware(info.values.get("software"))
         await self._read_due_leaves()
+        await self._read_history()
         return snapshots
+
+    async def _read_history(self) -> None:
+        entry = self.config_entry
+        await self.history.read_due(
+            self.client,
+            self.gateway.gateway_id,
+            enabled=history_enabled(entry.options if entry is not None else None),
+            local_now=dt_util.now(),
+            tolerance=POLL_DUE_TOLERANCE_SECONDS,
+        )
 
     # Single values ----------------------------------------------------------
 
@@ -333,6 +405,7 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
             if self._firmware_text is not None:
                 # New firmware may bring values an older one refused.
                 self.leaf_errors.clear()
+                self.history.new_software()
             self._firmware_text = text
 
     def leaf(self, path: str) -> Leaf | None:
@@ -461,6 +534,7 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
             },
             "firmware_known": self.firmware() is not None,
             "write_counts": dict(sorted(self.write_counts.items())),
+            "history": self.history.diagnostics(),
             "sections": {
                 section: {
                     "error": snapshot.error,
@@ -472,6 +546,9 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
                     ),
                     "fresh": self.section_fresh(section),
                     "interval_seconds": self.intervals[section],
+                    # Names only (no values) of keys no parser reads.
+                    "unknown_field_names": list(snapshot.unknown_names),
+                    "unnamed_field_count": snapshot.unnamed_count,
                 }
                 for section, snapshot in self.data.items()
             },

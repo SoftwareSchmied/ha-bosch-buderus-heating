@@ -5,6 +5,9 @@ A wallbox that requires authentication starts charging only after an
 allows it here (off by default), with the optional authentication name the
 vendor app keeps on the phone. The name is stored in the entry options and
 never shown in diagnostics or logs.
+
+The same step holds the opt-in history (off by default): the last charging
+session and the monthly energy, see ``wallbox_history``.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from .wallbox_control import (
     OPTION_AUTHENTICATION_NAME,
     label_valid,
 )
+from .wallbox_history import OPTION_WALLBOX_HISTORY
 
 
 def wallboxes_of(entry: ConfigEntry[Any]) -> tuple[WallboxCoordinator, ...]:
@@ -61,6 +65,8 @@ class WallboxOptionsFlow(NavigatingOptionsFlow):
                         **self._entry.options,
                         OPTION_AUTHENTICATE: allowed,
                         OPTION_AUTHENTICATION_NAME: name,
+                        OPTION_WALLBOX_HISTORY: user_input.get(OPTION_WALLBOX_HISTORY)
+                        is True,
                     },
                 )
                 return await self.async_return_to_menu("init", "wallbox_saved")
@@ -78,6 +84,10 @@ class WallboxOptionsFlow(NavigatingOptionsFlow):
                         OPTION_AUTHENTICATION_NAME,
                         default=stored_name if isinstance(stored_name, str) else "",
                     ): str,
+                    vol.Required(
+                        OPTION_WALLBOX_HISTORY,
+                        default=options.get(OPTION_WALLBOX_HISTORY) is True,
+                    ): bool,
                 }
             ),
             errors=errors,

@@ -1,13 +1,17 @@
 """The only cp0 paths of a wallbox the client reads, sets or commands.
 
 Every path is fixed here; nothing is put together from user input. Access
-control, RFID cards, the charge log and the energy history are not part of
-any list and can therefore never be requested.
+control and RFID cards are not part of any list and can therefore never be
+requested. The charge log and the energy history are not single values
+either: only the two dedicated queries below can reach them, and only the
+history option of the wallbox enables them.
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Final
+from urllib.parse import urlencode
 
 from .models import JsonValue
 
@@ -93,3 +97,34 @@ def setting_value_valid(leaf: str, value: JsonValue) -> bool:
             and all(type(item) is float for item in value)
         )
     return isinstance(value, str | int | float)
+
+
+# History (opt-in): the charge log and the energy history. Their queries are
+# built only from timestamps and the fixed values below.
+HISTORY_SIGNALS: Final = ("gridEnergy", "solarEnergy")
+HISTORY_SAMPLE_RATE: Final = "P31D"
+
+
+def _local_time(value: datetime) -> str:
+    """The app sends local date and time without an offset."""
+    return value.replace(microsecond=0, tzinfo=None).isoformat()
+
+
+def chargelog_query(after: datetime, before: datetime) -> str:
+    """The query string of a charge log request for one period."""
+    return urlencode(
+        {"filter_after": _local_time(after), "filter_before": _local_time(before)}
+    )
+
+
+def energyhistory_query(start: datetime, end: datetime) -> str:
+    """The query string of an energy history request (one sample for the
+    period, grid and solar energy only; never a cost signal)."""
+    return urlencode(
+        {
+            "filter_start": _local_time(start),
+            "filter_end": _local_time(end),
+            "sample_rate": HISTORY_SAMPLE_RATE,
+            "filter_signals": ",".join(HISTORY_SIGNALS),
+        }
+    )

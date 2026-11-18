@@ -949,11 +949,13 @@
         "description": "En ladeboks, der kræver godkendelse, begynder først at lade efter en godkendelse fra integrationen. Der sendes så én ekstra kommando før hver start.",
         "data": {
           "wallbox_authentication": "Tillad godkendelse før en start",
-          "wallbox_authentication_name": "Godkendelsesnavn (valgfrit)"
+          "wallbox_authentication_name": "Godkendelsesnavn (valgfrit)",
+          "wallbox_history": "Læs ladehistorik"
         },
         "data_description": {
           "wallbox_authentication": "Slået fra som standard. Fra software 5.1.0 godkender en start først; med ældre software sendes starten alene, som i producentens app.",
-          "wallbox_authentication_name": "Navnet, som producentens app bruger til godkendelse; må være tomt."
+          "wallbox_authentication_name": "Navnet, som producentens app bruger til godkendelse; må være tomt.",
+          "wallbox_history": "Fra som standard. Cirka hvert 30. minut (hvert 60. minut i den cloudvenlige profil) læses den seneste opladning (start, slut, ladetid, energi) samt denne måneds energi fra nettet og fra solenergi. Navne på kort, brugere eller godkendelse læses aldrig."
         }
       },
       "result_wallbox_saved": {
@@ -3029,6 +3031,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardwarens strømgrænse"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start på sidste opladning"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Slut på sidste opladning"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Ladetid for sidste opladning"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energi i sidste opladning"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Opladet fra nettet denne måned"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Opladet med solenergi denne måned"
       },
       "smart_grid_mode": {
         "name": "Smart grid-tilstand",

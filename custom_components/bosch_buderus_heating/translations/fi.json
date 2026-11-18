@@ -949,11 +949,13 @@
         "description": "Tunnistautumista vaativa latausasema aloittaa latauksen vasta integraation tunnistautumisen jälkeen. Silloin ennen jokaista käynnistystä lähetetään yksi lisäkomento.",
         "data": {
           "wallbox_authentication": "Salli tunnistautuminen ennen käynnistystä",
-          "wallbox_authentication_name": "Tunnistautumisnimi (valinnainen)"
+          "wallbox_authentication_name": "Tunnistautumisnimi (valinnainen)",
+          "wallbox_history": "Lue latushistoria"
         },
         "data_description": {
           "wallbox_authentication": "Oletuksena pois. Ohjelmistosta 5.1.0 alkaen käynnistys tunnistautuu ensin; vanhemmalla ohjelmistolla käynnistys lähetetään yksin, kuten valmistajan sovelluksessa.",
-          "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi."
+          "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi.",
+          "wallbox_history": "Oletuksena pois päältä. Noin 30 minuutin välein (60 minuutin välein pilviystävällisessä profiilissa) luetaan viimeinen lataus (alku, loppu, kesto, energia) sekä tämän kuun verkosta ja aurinkoenergialla ladattu energia. Korttien, käyttäjien tai tunnistautumisen nimiä ei lueta koskaan."
         }
       },
       "result_wallbox_saved": {
@@ -3029,6 +3031,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Laitteiston virtaraja"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Viimeisen latauksen alku"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Viimeisen latauksen loppu"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Viimeisen latauksen kesto"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Viimeisen latauksen energia"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ladattu verkosta tässä kuussa"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ladattu aurinkoenergialla tässä kuussa"
       },
       "smart_grid_mode": {
         "name": "Älyverkkotila",

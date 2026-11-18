@@ -949,11 +949,13 @@
         "description": "Una wallbox che richiede un'autenticazione inizia a ricaricare solo dopo un'autenticazione da parte dell'integrazione. Prima di ogni avvio viene quindi inviato un comando aggiuntivo.",
         "data": {
           "wallbox_authentication": "Consenti l'autenticazione prima di un avvio",
-          "wallbox_authentication_name": "Nome di autenticazione (facoltativo)"
+          "wallbox_authentication_name": "Nome di autenticazione (facoltativo)",
+          "wallbox_history": "Leggi la cronologia di ricarica"
         },
         "data_description": {
           "wallbox_authentication": "Disattivato per impostazione predefinita. Dal software 5.1.0 un avvio si autentica prima; con software meno recente l'avvio viene inviato da solo, come nell'app del produttore.",
-          "wallbox_authentication_name": "Il nome che l'app del produttore usa per l'autenticazione; può restare vuoto."
+          "wallbox_authentication_name": "Il nome che l'app del produttore usa per l'autenticazione; può restare vuoto.",
+          "wallbox_history": "Disattivato per impostazione predefinita. Circa ogni 30 minuti (ogni 60 minuti nel profilo leggero per il cloud) vengono letti l'ultima ricarica (inizio, fine, durata, energia) e l'energia di questo mese dalla rete e dal solare. Nomi di schede, utenti o autenticazione non vengono mai letti."
         }
       },
       "result_wallbox_saved": {
@@ -3029,6 +3031,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Limite di corrente hardware"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Inizio dell'ultima ricarica"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Fine dell'ultima ricarica"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Durata dell'ultima ricarica"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energia dell'ultima ricarica"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ricaricato dalla rete questo mese"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ricaricato con energia solare questo mese"
       },
       "smart_grid_mode": {
         "name": "Modalità smart grid",

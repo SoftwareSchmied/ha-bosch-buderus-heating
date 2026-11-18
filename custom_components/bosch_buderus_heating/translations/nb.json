@@ -949,11 +949,13 @@
         "description": "En ladeboks som krever autentisering, begynner først å lade etter en autentisering fra integrasjonen. Da sendes én ekstra kommando før hver start.",
         "data": {
           "wallbox_authentication": "Tillat autentisering før en start",
-          "wallbox_authentication_name": "Autentiseringsnavn (valgfritt)"
+          "wallbox_authentication_name": "Autentiseringsnavn (valgfritt)",
+          "wallbox_history": "Les ladehistorikk"
         },
         "data_description": {
           "wallbox_authentication": "Av som standard. Fra programvare 5.1.0 autentiserer en start først; med eldre programvare sendes starten alene, som i produsentens app.",
-          "wallbox_authentication_name": "Navnet produsentens app bruker til autentisering; kan stå tomt."
+          "wallbox_authentication_name": "Navnet produsentens app bruker til autentisering; kan stå tomt.",
+          "wallbox_history": "Av som standard. Omtrent hvert 30. minutt (hvert 60. minutt i den skyvennlige profilen) leses den siste ladingen (start, slutt, ladetid, energi) og denne månedens energi fra nettet og fra solenergi. Navn på kort, brukere eller autentisering leses aldri."
         }
       },
       "result_wallbox_saved": {
@@ -3029,6 +3031,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Maskinvarens strømgrense"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start på siste lading"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Slutt på siste lading"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Ladetid for siste lading"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energi i siste lading"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ladet fra nettet denne måneden"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ladet med solenergi denne måneden"
       },
       "smart_grid_mode": {
         "name": "Smart grid-modus",
