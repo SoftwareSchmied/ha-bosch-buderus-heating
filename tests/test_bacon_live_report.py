@@ -55,25 +55,7 @@ async def test_report_is_an_empty_post_with_bearer_and_user_agent():
     assert seen == [("POST", "Bearer " + token(), "DashApp/3.7.0 (iOS-Release)", b"")]
 
 
-async def test_a_401_renews_the_token_exactly_once_and_repeats():
-    calls = []
-    tokens = provider()
-    tokens.get_access_token.side_effect = [token(), token(signature="renewed")]
-
-    async def live(request):
-        calls.append(request.headers["Authorization"])
-        return web.Response(status=200 if len(calls) > 1 else 401)
-
-    async with (
-        serve([("POST", "/live", live)]) as url,
-        aiohttp.ClientSession() as http,
-    ):
-        await BaconClient(http, tokens, url=url + "/devices").report_live()
-    assert calls == ["Bearer " + token(), "Bearer " + token(signature="renewed")]
-    assert tokens.get_access_token.await_count == 2
-
-
-async def test_a_second_401_is_a_rejected_report_not_a_failed_sign_in():
+async def test_a_401_is_a_rejected_report_without_a_token_refresh():
     calls = []
     tokens = provider()
 
@@ -88,13 +70,18 @@ async def test_a_second_401_is_a_rejected_report_not_a_failed_sign_in():
         client = BaconClient(http, tokens, url=url + "/devices")
         with pytest.raises(BaconError, match=r"^live_rejected$"):
             await client.report_live()
-    # One request, one refresh, one repeated request, nothing more.
-    assert len(calls) == 2 and tokens.get_access_token.await_count == 2
+    # One request, no forced refresh: the optional report proves no access.
+    assert len(calls) == 1 and tokens.get_access_token.await_count == 1
+    assert all(
+        call.kwargs.get("force_refresh") is not True
+        for call in tokens.get_access_token.await_args_list
+    )
 
 
 @pytest.mark.parametrize(
     "status,category",
     [
+        (401, "live_rejected"),
         (403, "live_rejected"),
         (404, "live_unsupported"),
         (405, "live_unsupported"),
@@ -172,6 +159,10 @@ def test_age_classes_and_counters_hold_no_identifiers():
     assert report.disabled and report.disabled_total == 1
     report.new_connection()
     assert not report.disabled and report.disabled_total == 1
+    # A rejection is remembered across connections.
+    report.failed("live_rejected")
+    report.new_connection()
+    assert report.disabled and report.disabled_total == 2
 
 
 # -- session handling ---------------------------------------------------------
@@ -193,9 +184,7 @@ async def test_a_report_counts_and_needs_a_claimed_device():
 
 
 @pytest.mark.parametrize("category", ["live_unsupported", "live_rejected"])
-async def test_a_rejected_report_stops_for_this_connection_and_logs_once(
-    category, caplog
-):
+async def test_a_rejected_report_stops_and_logs_once(category, caplog):
     account = environment()
     report = logged(account)
     report.side_effect = BaconError(category)
@@ -205,10 +194,10 @@ async def test_a_rejected_report_stops_for_this_connection_and_logs_once(
     assert report.await_count == 1
     assert account._live.disabled and account._live.errors["4xx"] == 1
     assert sum("active-client report" in item.message for item in caplog.records) == 1
-    # A new connection tries again; the message is not repeated.
+    # Only "unsupported" is tried again on a new connection; a rejection is not.
     account._live.new_connection()
     await account._report_live()
-    assert report.await_count == 2
+    assert report.await_count == (2 if category == "live_unsupported" else 1)
     assert sum("active-client report" in item.message for item in caplog.records) == 1
 
 

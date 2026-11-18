@@ -432,7 +432,7 @@ class BaconAccount:
                     self._logged_failures.add(key)
                     _LOGGER.info(
                         "The cloud does not accept the active-client report (%s); "
-                        "it is not sent again on this connection",
+                        "it is not sent again",
                         err.category,
                     )
             _LOGGER.debug("Active-client report failed (%s)", err.category)

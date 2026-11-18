@@ -595,3 +595,46 @@ async def test_cloud_account_without_heat_pump_is_not_starting(
     runtime.coordinator = _managed(kind, ok=ok)
     assert expected in label(hass, entry_with(runtime), CLOUD, 1)
     assert "startet" not in label(hass, entry_with(runtime), CLOUD, 1)
+
+
+def _bacon_access(error=None):
+    from custom_components.bosch_buderus_heating.managed_bacon import (
+        BaconDeviceAccess,
+    )
+
+    access = BaconDeviceAccess.__new__(BaconDeviceAccess)
+    access.account = SimpleNamespace(error=error)
+    return access
+
+
+class WithSecondCloud(Runtime):
+    """One account with a heat pump (optional) and two second-cloud devices."""
+
+    def __init__(self, hass, *, heat_pump, error=None):
+        super().__init__(hass)
+        bindings = {
+            "b-bacon-1": SimpleNamespace(connection_id=CLOUD, target_id="t1"),
+            "b-bacon-2": SimpleNamespace(connection_id=CLOUD, target_id="t2"),
+        }
+        if heat_pump:
+            bindings["b-cloud"] = SimpleNamespace(connection_id=CLOUD, target_id="t")
+        self.snapshot.bindings = bindings
+        self.access = {"b-bacon-1": _bacon_access(error), "b-bacon-2": _bacon_access()}
+
+    def source_data(self, key):
+        return self.access.get(key, self.coordinator if key == "b-cloud" else None)
+
+
+@pytest.mark.parametrize("heat_pump", [False, True])
+async def test_second_cloud_devices_do_not_keep_the_account_starting(
+    hass: HomeAssistant, heat_pump
+) -> None:
+    entry = entry_with(WithSecondCloud(hass, heat_pump=heat_pump))
+    assert status.access_status(entry, CLOUD).state == "connected"
+
+
+async def test_a_failed_second_cloud_account_is_not_reachable(
+    hass: HomeAssistant,
+) -> None:
+    runtime = WithSecondCloud(hass, heat_pump=False, error="connection")
+    assert status.access_status(entry_with(runtime), CLOUD).state == "unreachable"

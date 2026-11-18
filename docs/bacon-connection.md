@@ -122,9 +122,10 @@ an active client with an empty `POST
 https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, right after
 subscribing and then every 300 seconds, as HomeCom Easy does while it is open.
 It uses the same token, the shared request slot and the shared cloud pause. A
-401 renews the token once; a 429 starts the shared pause without ending the
-connection; a 404, 405, 403 or a second 401 stops the report for the rest of
-that connection and is logged once; other failures never end the connection.
+429 starts the shared pause without ending the connection; a 404 or 405 stops
+the report for the rest of that connection, a 401 or 403 for the rest of the
+session (a 401 of the report does not renew the token); each is logged once;
+other failures never end the connection.
 This report is expected to make the devices send measurements more often. It is
 untested on a real unit; the effect has to be confirmed with a real device.
 

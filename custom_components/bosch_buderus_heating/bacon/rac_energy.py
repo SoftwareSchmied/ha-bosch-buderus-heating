@@ -13,12 +13,12 @@ import json
 import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
 from time import monotonic, time
-from typing import TYPE_CHECKING, Any, Final
-from weakref import WeakKeyDictionary
+from typing import TYPE_CHECKING, Any, Final, cast
+from weakref import WeakKeyDictionary, ref
 
 import aiohttp
+from homeassistant.util import dt as dt_util
 
 from .client import BaconClient
 from .models import CLAIM_URL, MAX_BYTES, USER_AGENT, BaconError, identifier
@@ -31,12 +31,15 @@ GRAPHQL_URL: Final = "https://history.euc1.bacon.bosch-tt-cw.com/graphql"
 INTERVAL: Final = 1800.0
 # Retry after a failed query, never faster than the pause the service named.
 RETRY_AFTER_FAILURE: Final = 300.0
+# Longest wait between two queries after repeated failures (one interval).
+MAX_RETRY: Final = INTERVAL
 # A total older than this is shown as unavailable.
 STALE_AFTER: Final = 4 * INTERVAL
 # Largest plausible total in kWh (rejects garbage, not a manufacturer limit).
 _MAX_KWH: Final = 1.0e9
 # The service rejects the request itself: stop for the rest of the session.
 STOPPING: Final = frozenset({"history_rejected", "history_unsupported"})
+_PAUSES: Final = frozenset({"paused", "rate_limited"})
 # Sign-in problems belong to the main connection; this feed only waits.
 _ENDED: Final = "source_stopped"
 
@@ -71,7 +74,8 @@ def graphql_url(client: BaconClient) -> str:
 
 
 def _offset_minutes() -> int:
-    offset = datetime.now().astimezone().utcoffset()
+    """Offset of the time zone set in Home Assistant, not of the process."""
+    offset = dt_util.now().utcoffset()
     return 0 if offset is None else int(offset.total_seconds() // 60)
 
 
@@ -183,18 +187,29 @@ async def _request(
 class RacEnergy:
     """The totals of one device, refreshed while an energy entity wants them."""
 
-    account: BaconAccess
+    # Held weakly: the feed is stored under its account and must not keep it alive.
+    _account: ref[Any]
     serial: str
     values: dict[str, float] = field(default_factory=dict)
     fetched_at: float | None = None
     stopped: str | None = None
     requests: int = 0
+    failures: int = 0
     _subscribers: int = 0
     _task: asyncio.Task[None] | None = None
     _listeners: set[Callable[[], None]] = field(default_factory=set)
     _logged: set[str] = field(default_factory=set)
 
+    @property
+    def account(self) -> BaconAccess:
+        account = self._account()
+        if account is None:
+            raise BaconError(_ENDED)
+        return cast("BaconAccess", account)
+
     def current(self, key: str) -> float | None:
+        if self._account() is None:
+            return None
         if (
             self.fetched_at is None
             or monotonic() - self.fetched_at > STALE_AFTER
@@ -228,6 +243,12 @@ class RacEnergy:
         for listener in tuple(self._listeners):
             listener()
 
+    def _backoff(self, retry_after: float) -> float:
+        """Wait 300 s, then twice as long per repeated failure, at most 1800 s."""
+        self.failures += 1
+        wait = float(min(MAX_RETRY, RETRY_AFTER_FAILURE * 2 ** (self.failures - 1)))
+        return max(wait, retry_after)
+
     async def _run(self, log: Callable[[str], None]) -> None:
         while True:
             delay = INTERVAL
@@ -241,6 +262,7 @@ class RacEnergy:
                     self.requests += 1
                     self.values = await fetch_totals(self.account.client, self.serial)
                     self.fetched_at = monotonic()
+                    self.failures = 0
                     self._notify()
                 else:
                     # Nothing is asked while the device is offline or unknown.
@@ -256,7 +278,15 @@ class RacEnergy:
                         log(err.category)
                     self._notify()
                     return
-                delay = max(RETRY_AFTER_FAILURE, float(err.retry_after))
+                if err.category in _PAUSES:
+                    # A pause the service named is no failure of the query.
+                    delay = max(RETRY_AFTER_FAILURE, float(err.retry_after))
+                else:
+                    delay = self._backoff(float(err.retry_after))
+            except Exception:
+                # An unexpected answer of the optional query never ends the
+                # task; it waits like after any other failure.
+                delay = self._backoff(0.0)
             await asyncio.sleep(delay)
 
 
@@ -267,5 +297,5 @@ def feed(account: BaconAccess, serial: str) -> RacEnergy:
     """The one shared feed of a device, so that it makes one query per interval."""
     feeds = _FEEDS.setdefault(account, {})
     if serial not in feeds:
-        feeds[serial] = RacEnergy(account, serial)
+        feeds[serial] = RacEnergy(ref(account), serial)
     return feeds[serial]

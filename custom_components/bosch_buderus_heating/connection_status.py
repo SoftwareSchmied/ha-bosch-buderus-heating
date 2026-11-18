@@ -156,6 +156,7 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
     from .coordinator import BoschBuderusDataUpdateCoordinator
     from .local_state import LocalCondition
     from .managed_aircon import ManagedAirconCoordinator
+    from .managed_bacon import BaconDeviceAccess
     from .managed_wallbox import ManagedWallboxCoordinator
 
     connections = _runtime(entry)
@@ -190,11 +191,13 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
                 data := connections.source_data(key),
                 BoschBuderusDataUpdateCoordinator
                 | ManagedWallboxCoordinator
-                | ManagedAirconCoordinator,
+                | ManagedAirconCoordinator
+                | BaconDeviceAccess,
             )
         ]
-        # Wallbox and air-conditioner coordinators count as managed sources
-        # too, so an account without a heat pump is not stuck in "starting".
+        # Wallbox, air-conditioner and second-cloud device accesses count as
+        # managed sources too, so an account without a heat pump or with
+        # second-cloud devices is not stuck in "starting".
         last = _latest(
             [
                 item.last_success
@@ -215,9 +218,16 @@ def access_status(entry: ConfigEntry[Any], connection_id: str) -> AccessStatus:
         if bindings and not active:
             return AccessStatus("unused", last_success=last)
         if ConnectionPhase.UNAVAILABLE in phases or any(
-            not data.last_update_success for data in coordinators
+            not data.last_update_success
+            for data in coordinators
+            if not isinstance(data, BaconDeviceAccess)
         ):
             # The access itself answers, but an appliance's requests fail.
+            return AccessStatus("unreachable", last_success=last)
+        if any(
+            isinstance(data, BaconDeviceAccess) and data.account.error is not None
+            for data in coordinators
+        ):
             return AccessStatus("unreachable", last_success=last)
         if ConnectionPhase.CONNECTING in phases or len(coordinators) < len(active):
             return AccessStatus("starting", last_success=last)

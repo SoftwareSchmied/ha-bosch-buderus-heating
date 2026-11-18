@@ -511,17 +511,28 @@ def request_category(path: str) -> str:
 
 
 _PATH_CATEGORY = re.compile(r"[A-Za-z][A-Za-z0-9]{0,31}")
+_API_VERSION = re.compile(r"v[0-9]{1,2}")
+_CHARGE_POINT = re.compile(r"cp[0-9]{1,2}")
 
 
 def resource_path_category(path: str | None) -> str | None:
-    """First segment of a resource path, e.g. ``heatingCircuits``.
+    """First segment of a resource path, e.g. ``heatingCircuits``
+    (``cp0`` for the wallbox tree below ``/rest/v1/``).
 
     It names the part of the resource tree without circuit numbers, schedule
     letters, or any identifier; anything else becomes ``other``.
     """
     if not path:
         return None
-    segment = path.split("?", 1)[0].strip("/").split("/", 1)[0]
+    parts = path.split("?", 1)[0].strip("/").split("/", 3)
+    if (
+        len(parts) >= 3
+        and parts[0] == "rest"
+        and _API_VERSION.fullmatch(parts[1])
+        and _CHARGE_POINT.fullmatch(parts[2])
+    ):
+        return parts[2]  # wallbox tree: /rest/v1/cp0/..., never an identifier
+    segment = parts[0]
     return segment if _PATH_CATEGORY.fullmatch(segment) else "other"
 
 

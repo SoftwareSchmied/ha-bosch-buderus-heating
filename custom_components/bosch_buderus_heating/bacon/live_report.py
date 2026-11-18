@@ -13,7 +13,7 @@ _CLASSES = {
     "connection": "network",
     "paused": "paused",
 }
-# The service rejects the report itself; stop for the rest of the connection.
+# The service rejects the report itself; stop (see LiveReport.new_connection).
 DISABLING = frozenset({"live_unsupported", "live_rejected"})
 
 
@@ -29,8 +29,10 @@ class LiveReport:
             "other": 0,
         }
     )
-    # Switched off for the current connection after a 404, 405, 403 or second 401.
+    # Switched off for the current connection after a 404 or 405, and for the
+    # whole session once the service rejected the report itself (401 or 403).
     disabled: bool = False
+    rejected: bool = False
     disabled_total: int = 0
     last_sent_at: float | None = None
 
@@ -39,9 +41,12 @@ class LiveReport:
         if category in DISABLING:
             self.disabled = True
             self.disabled_total += 1
+        if category == "live_rejected":
+            self.rejected = True
 
     def new_connection(self) -> None:
-        self.disabled = False
+        # A rejection is remembered: reconnecting must not retry it.
+        self.disabled = self.rejected
 
     def diagnostics(self, now: float) -> dict[str, object]:
         return {

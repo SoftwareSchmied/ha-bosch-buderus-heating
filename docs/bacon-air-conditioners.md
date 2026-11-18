@@ -86,7 +86,8 @@ of that unit is enabled and none while the unit is offline. The query uses
 the same sign-in token, request limit and shared pause after a rate limit
 (429) as every other request of the account. If the service answers 404, 405,
 403 or a second 401, I stop the query for the rest of the session and log it
-once; the sensors stay unavailable. Values older than two hours become
+once; the sensors stay unavailable. After other failures the query waits 5
+minutes, then longer each time, at most 30 minutes. Values older than two hours become
 unavailable. Warm-water heat pumps and air purifiers get no energy sensors.
 
 ## Units, validity and command confirmation
