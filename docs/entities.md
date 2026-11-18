@@ -1102,7 +1102,7 @@ signal name.
   disinfection hold timer*.
 - Heat pump: *Compressor start-up sequence* (on for about a minute right
   before the compressor starts after a standstill, as recorded on a real
-  installation), *Compressor start temperature*, *Air purge mode active*,
+  installation; not before every start), *Compressor start temperature*, *Air purge mode active*,
   *Heating cable*, *Electric auxiliary heater active (display)*, *Auxiliary
   heater alarm input*, *Minimum cooling supply setpoint*, the four stops
   *Heating/Cooling stopped: outdoor temperature too high/too low*.
@@ -1134,7 +1134,29 @@ next to `ch`, `dhw` and none. Since 0.9.2 it is shown as *Frost range*
 instead of *Frost protection*: on a real installation the heat pump reported
 `frost` during normal heating whenever the outdoor temperature was below
 about 6.5 °C and `ch` above it, at room and supply temperatures far from any
-frost protection. What the manufacturer means by it is not documented.
+frost protection. In a longer recording (outdoor temperatures from about
+0 °C to 13 °C) the switch followed the air intake temperature (TL2) of the
+heat pump more closely: `frost` below about 5.5 °C and `ch` from about 6 °C
+upwards while the refrigerant circuit was heating. During a defrost the value
+is `ch` for about a minute, then empty, then `ch` again. What the
+manufacturer means by it is not documented.
+
+Checked against the recorded history of one heat pump (11 days with 14
+defrosts, 5 hot water charges and one controller restart): the *Electric
+auxiliary heater active (display)* signal was on exactly once, for one minute
+at the end of a defrost, at the same time as *Electric heater stage 3* and
+followed within two minutes by the electric auxiliary heater energy counter
+rising from 0 to 0.07 kWh; that confirms its name. The *Hot water electric heater* signal
+stayed off during that minute and during every hot water charge. The
+*Compressor start temperature* followed the outdoor temperature closely
+(about 8 °C at 1 °C outdoors, 18 °C at 13 °C outdoors) and dropped to 0 °C
+during the controller restart; it is a value that depends on the air
+temperature, not a measured temperature. *Minimum cooling supply setpoint*
+changed from 18 °C to 0 °C at the same restart and stayed at 0 °C. The
+signal `SC.RTC.RelativeTimer` does not count: it stayed constant between
+two controller restarts and jumped by 11,400 minutes at the restart. The
+remaining named signals did not change their state in that period, so their
+names rest on the signal names, the manuals and the declared states.
 
 The outdoor unit's software version is the diagnostic sensor **Outdoor unit
 software version** since 0.9.2. It reads the module lists the integration
