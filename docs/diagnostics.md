@@ -107,6 +107,11 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   and `variable_tariff`, for the two tariff paths of an iCom
   gateway only their type, `missing` or `not_probed` (no values; see
   [heating controls](heating-controls.md#variable-electricity-tariff-read-only)).
+- `gateways[].system_controls`: per function (silent mode power reduction,
+  start time and stop time, low-noise mode and duration, pool target of the
+  heat source and pool mode) four counts: `present`, `writable`,
+  `with_options` and `with_limits` (no paths, no values; see
+  [heating controls](heating-controls.md#silent-mode-low-noise-operation-and-pool)).
 - In `gateways[].switch_program_writes`: per program also `kind`
   (`heating`, `dhw`, `cooling`, `zone`, `ventilation`, `wddw2`),
   `value_type` (`level`, `absolute` or `degrees`), `notes` (form tokens

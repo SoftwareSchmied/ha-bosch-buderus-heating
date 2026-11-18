@@ -670,6 +670,14 @@
     "Water consumption": "Vannforbruk",
     "Boiler energy": "Kjeleenergi",
     "Energy consumed": "Forbrukt energi",
-    "Last regeneration (calculated)": "Siste regenerering (beregnet)"
+    "Last regeneration (calculated)": "Siste regenerering (beregnet)",
+    "Silent mode: power reduction": "Stillemodus: effektreduksjon",
+    "Silent mode: start time": "Stillemodus: starttidspunkt",
+    "Silent mode: stop time": "Stillemodus: stopptidspunkt",
+    "Low-noise operation: duration": "Lavstøydrift: varighet",
+    "LED switch-off time": "LED-avslagstid",
+    "Automatic updates": "Automatiske oppdateringer",
+    "Last update check": "Siste oppdateringssjekk",
+    "Last update": "Siste oppdatering"
   }
 }

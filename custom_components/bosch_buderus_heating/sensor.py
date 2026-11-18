@@ -90,6 +90,7 @@ from .faults import (
     fault_summary,
     no_active_faults_label,
 )
+from .gateway_clock import track_clock_deviation_sensor
 from .heat_generator_sensor import track_heat_generator_sensor
 from .holidays import (
     HolidayPeriod,
@@ -602,6 +603,7 @@ def _setup_entities(
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_tariff_sensor(entry, coordinator, async_add_entities)
+        track_clock_deviation_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
         track_zone_radio_devices(
             entry, coordinator, async_add_entities, ZoneRadioSignalSensor

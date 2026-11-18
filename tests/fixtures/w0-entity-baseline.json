@@ -5001,6 +5001,7 @@
     "/gateway/dataProcessing/status",
     "/gateway/hmip",
     "/gateway/hmip/versionApplication",
+    "/gateway/leds/inactivityTimeout",
     "/gateway/productType",
     "/gateway/update",
     "/gateway/update/state",
@@ -6160,6 +6161,20 @@
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:off",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Gateway clock deviation (calculated)",
+     "translation_key": "gateway_clock_deviation",
+     "unique_id": "gateway-one:gateway:DateTime:clock_deviation",
+     "unit": "s"
     },
     {
      "capabilities": null,
@@ -8272,6 +8287,7 @@
     "/gateway/dataProcessing/status",
     "/gateway/dateTime",
     "/gateway/eth",
+    "/gateway/leds/inactivityTimeout",
     "/gateway/logging",
     "/gateway/query",
     "/gateway/serialId",

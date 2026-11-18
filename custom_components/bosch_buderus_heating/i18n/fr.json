@@ -670,6 +670,14 @@
     "Water consumption": "Consommation d'eau",
     "Boiler energy": "Énergie de la chaudière",
     "Energy consumed": "Énergie consommée",
-    "Last regeneration (calculated)": "Dernière régénération (calculée)"
+    "Last regeneration (calculated)": "Dernière régénération (calculée)",
+    "Silent mode: power reduction": "Mode silencieux : réduction de puissance",
+    "Silent mode: start time": "Mode silencieux : heure de début",
+    "Silent mode: stop time": "Mode silencieux : heure de fin",
+    "Low-noise operation: duration": "Mode silencieux : durée",
+    "LED switch-off time": "Temporisation d'extinction des LED",
+    "Automatic updates": "Mises à jour automatiques",
+    "Last update check": "Dernière vérification des mises à jour",
+    "Last update": "Dernière mise à jour"
   }
 }

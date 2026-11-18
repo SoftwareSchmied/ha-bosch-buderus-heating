@@ -176,6 +176,21 @@
       },
       "hybrid_feed_in_price": {
         "default": "mdi:transmission-tower-export"
+      },
+      "silent_mode_power_reduction": {
+        "default": "mdi:volume-low"
+      },
+      "silent_mode_start_time": {
+        "default": "mdi:clock-start"
+      },
+      "silent_mode_stop_time": {
+        "default": "mdi:clock-end"
+      },
+      "low_noise_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "pool_heat_source_setpoint": {
+        "default": "mdi:pool-thermometer"
       }
     },
     "select": {
@@ -275,6 +290,12 @@
           "boiler_only": "mdi:fire",
           "bivalent_alternative": "mdi:swap-horizontal"
         }
+      },
+      "low_noise_mode": {
+        "default": "mdi:volume-low"
+      },
+      "pool_additional_heater_mode": {
+        "default": "mdi:pool"
       }
     },
     "sensor": {
@@ -511,6 +532,9 @@
           "boiler_only": "mdi:fire",
           "bivalent_alternative": "mdi:swap-horizontal"
         }
+      },
+      "gateway_clock_deviation": {
+        "default": "mdi:clock-alert-outline"
       }
     },
     "switch": {

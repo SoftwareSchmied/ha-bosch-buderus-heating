@@ -6,7 +6,13 @@ import re
 
 from homeassistant.const import EntityCategory
 
-from . import circuit_controls, hc_controls_extra, hybrid_controls, rrc_contracts
+from . import (
+    circuit_controls,
+    hc_controls_extra,
+    hybrid_controls,
+    rrc_contracts,
+    system_controls_extra,
+)
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import grouped_entity_name
 from .i18n import localize
@@ -141,7 +147,11 @@ def control_category(
     if path in hybrid_controls.CONTROL_PATHS:
         return EntityCategory.CONFIG
     if not _heating_presentation(path):
-        return EntityCategory.CONFIG if numeric else None
+        return (
+            EntityCategory.CONFIG
+            if numeric or system_controls_extra.is_selection_path(path)
+            else None
+        )
     # Keep the original controls available for automations while combined
     # climate/water-heater entities provide everyday controls on the device page.
     if path.startswith("/heatingCircuits/") and path.endswith(

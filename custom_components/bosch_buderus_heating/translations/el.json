@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Τιμή έγχυσης στο δίκτυο"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Αθόρυβη λειτουργία: μείωση ισχύος"
+      },
+      "silent_mode_start_time": {
+        "name": "Αθόρυβη λειτουργία: ώρα έναρξης"
+      },
+      "silent_mode_stop_time": {
+        "name": "Αθόρυβη λειτουργία: ώρα λήξης"
+      },
+      "low_noise_duration": {
+        "name": "Αθόρυβη λειτουργία: διάρκεια"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Επιθυμητή θερμοκρασία πισίνας"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Μόνο λέβητας",
           "bivalent_alternative": "Εναλλακτική δισθενής λειτουργία"
         }
+      },
+      "low_noise_mode": {
+        "name": "Τρόπος αθόρυβης λειτουργίας"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Λειτουργία πισίνας"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Μόνο λέβητας",
           "bivalent_alternative": "Εναλλακτική δισθενής λειτουργία"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Απόκλιση ρολογιού πύλης (υπολογισμένη)"
       }
     },
     "binary_sensor": {

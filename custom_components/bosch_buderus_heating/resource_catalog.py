@@ -258,6 +258,10 @@ _UNDERSTOOD_PATHS = frozenset(
         "/gateway/tzInfo",
         "/gateway/tzInfo/timeZone",
         "/gateway/update",
+        # Readings of the automatic update (a text, shown as reported).
+        "/gateway/update/enabled",
+        "/gateway/update/lastCheck",
+        "/gateway/update/lastUpdate",
         "/gateway/update/status",
         "/gateway/uuid",
         "/gateway/versionFirmware",
@@ -437,9 +441,20 @@ _APP_RESOURCE_SCHEMA_RULES = (
     ),
     _EntitySchemaRule(
         re.compile(
-            r"^(?:/heatingCircuits/[^/]+/(?:actualHumidity|pumpModulation)|/dhwCircuits/[^/]+/(?:friwaPrimaryPumpModulation|sensor/fanSpeed)|/system/silentMode/powerReduction|/solarCircuits/[^/]+/pumpModulation|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/(?:actualHumidity|battery|signal))$"
+            r"^(?:/heatingCircuits/[^/]+/(?:actualHumidity|pumpModulation)|/dhwCircuits/[^/]+/(?:friwaPrimaryPumpModulation|sensor/fanSpeed)|/solarCircuits/[^/]+/pumpModulation|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/(?:actualHumidity|battery|signal))$"
         ),
         frozenset({"floatValue"}),
+        frozenset({"%"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/gateway/update/(?:enabled|lastCheck|lastUpdate)$"),
+        frozenset({"stringValue"}),
+    ),
+    # The power reduction of the silent mode is a whole percentage the
+    # gateway reports as an integer (``system_controls_extra``).
+    _EntitySchemaRule(
+        re.compile(r"^/system/silentMode/powerReduction$"),
+        frozenset({"floatValue", "integerValue"}),
         frozenset({"%"}),
     ),
     _EntitySchemaRule(
@@ -941,6 +956,29 @@ _APP_PATH_NAMES = {
     "/system/lowNoise/mode": (
         "Leiser Betrieb: Betriebsart",
         "Low-noise operation mode",
+    ),
+    "/system/lowNoise/duration": (
+        "Leiser Betrieb: Dauer",
+        "Low-noise operation: duration",
+    ),
+    "/system/silentMode/powerReduction": (
+        "Flüstermodus: Leistungsreduzierung",
+        "Silent mode: power reduction",
+    ),
+    "/system/silentMode/startTime": (
+        "Flüstermodus: Startzeit",
+        "Silent mode: start time",
+    ),
+    "/system/silentMode/stopTime": (
+        "Flüstermodus: Endzeit",
+        "Silent mode: stop time",
+    ),
+    "/gateway/update/enabled": ("Automatische Updates", "Automatic updates"),
+    "/gateway/update/lastCheck": ("Letzte Update-Prüfung", "Last update check"),
+    "/gateway/update/lastUpdate": ("Letztes Update", "Last update"),
+    "/gateway/leds/inactivityTimeout": (
+        "LED-Abschaltzeit",
+        "LED switch-off time",
     ),
     "/system/seasonOptimizer/coolingThreshold": (
         "Kühlbetrieb ab Außentemperatur",
@@ -1491,7 +1529,16 @@ _STATIC_SETTLED_PATHS = frozenset(
     }
 )
 _SLOW_SETTLED_PATHS = frozenset(
-    {"/system/sensors/temperatures/outdoorTemperatureSource", "/gateway/update/status"}
+    {
+        "/system/sensors/temperatures/outdoorTemperatureSource",
+        "/gateway/update/status",
+        # The automatic update and the gateway clock change rarely; the
+        # deviation of the clock uses the time of the reading.
+        "/gateway/update/enabled",
+        "/gateway/update/lastCheck",
+        "/gateway/update/lastUpdate",
+        "/gateway/DateTime",
+    }
 )
 _FAST_HEAT_SOURCE_PATTERN = re.compile(
     r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))"

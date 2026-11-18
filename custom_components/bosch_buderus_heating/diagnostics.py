@@ -23,6 +23,7 @@ from . import (
     rrc_contracts,
     rrc_devices,
     rrc_energy_statistics,
+    system_controls_extra,
 )
 from .aircon import AirconCoordinator
 from .auth_diagnostics import loaded_auth_history
@@ -804,6 +805,8 @@ def _gateway_diagnostics(
         "local_only_healed": local_only_heal_diagnostics(coordinator),
         # Heating circuit settings and the iCom tariff: counts and types only.
         "circuit_controls": circuit_control_diagnostics(coordinator),
+        # Silent mode window, low-noise operation, pool: counts only.
+        "system_controls": system_controls_extra.diagnostics(coordinator.resources),
         # The performance factors' history: counts and states, no values.
         "performance": performance_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),

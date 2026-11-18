@@ -51,6 +51,7 @@ from .sensor import _semantic_key
 from .switch_program_select import SwitchProgramSelect
 from .switch_program_select import descriptions as switch_program_descriptions
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
+from .system_controls_extra import selection_key as system_selection_key
 from .ventilation_controls import VENTILATION_OPERATION_MODES
 from .wallbox_entities import track_wallbox_entities
 from .writes import (
@@ -178,6 +179,8 @@ def build_select_descriptions(
             translation_key = "cooling_operation_mode"
         elif policy is hybrid_controls.STRATEGY_POLICY:
             translation_key = hybrid_controls.TRANSLATION_KEY
+        elif (system_key := system_selection_key(policy)) is not None:
+            translation_key = system_key
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key, policy, context))

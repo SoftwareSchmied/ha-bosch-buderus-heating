@@ -356,6 +356,54 @@ and is confirmed by reading it back; nothing is sent again.
 - The diagnostics count, per function, the paths found, the writable ones and
   those with a list or limits (see [diagnostics](diagnostics.md)).
 
+### Silent mode, low-noise operation and pool
+
+Where the gateway reports the paths below, as writable and with the data
+named, since 0.9.2-beta.3 the integration offers these further controls. All
+of them are **disabled by default**, appear under the configuration entities
+of the device, and are only created when the gateway reports them; without
+the path nothing is created.
+
+- **Silent mode: power reduction** (`/system/silentMode/powerReduction`), a
+  whole percentage within the limits the gateway reports (both between 0 and
+  100). The silent mode switch itself already existed.
+- **Silent mode: start time** and **Silent mode: stop time**
+  (`/system/silentMode/startTime` and `stopTime`), numbers in minutes with the
+  limits the gateway reports (within one day). The integration does not
+  assume from which moment these minutes count; the value is shown and
+  written as the gateway reports it. There is deliberately no time entity.
+- **Low-noise operation mode** (`/system/lowNoise/mode`), a select over the
+  values the gateway lists (at least two, the current one among them), and
+  **Low-noise operation: duration** (`/system/lowNoise/duration`), a number in
+  the unit the gateway reports (seconds, minutes or hours) with its limits.
+  The values of the mode are shown as the gateway names them.
+- **Pool target temperature** of the heat source
+  (`/heatSources/poolSetpointTemperature`), with the limits and step the
+  gateway reports, and **Pool mode** (`/pool/additionalHeater/poolMode`), a
+  select over the values the gateway lists (at least two, the current one
+  among them). The pool target and switch under `/pool` are unchanged.
+
+Every change reads the setting from the gateway first, sends exactly one
+request and reads it back; a change is not sent again. No installation we
+know of reports the low-noise and the pool paths, and the minutes of the
+silent mode window were seen on one installation only. All of this is
+expected, but untested on a real plant.
+
+### Gateway readings: update and clock
+
+For diagnosis, read only and disabled by default: **Automatic updates**
+(`/gateway/update/enabled`), **Last update check** (`lastCheck`) and **Last
+update** (`lastUpdate`) as texts, exactly as the gateway reports them, and
+**LED switch-off time** (`/gateway/leds/inactivityTimeout`, a number as the
+gateway reports it; the integration asks once for this path, a gateway
+without it answers that it does not exist). A further sensor, **Gateway clock
+deviation (calculated)**, shows in seconds how far the time of the gateway
+(`/gateway/DateTime`) is from the time of Home Assistant when the reading was
+received; positive means the gateway runs ahead. A reading without a time zone
+is taken as local time of the installation. If the gateway used another
+convention, the value would show a multiple of whole hours. None of these
+sends a write; the clock of the gateway is never set.
+
 ### Variable electricity tariff (read only)
 
 Since 0.9.2 an iCom gateway is asked once during discovery whether its
@@ -987,6 +1035,58 @@ wird durch Zurücklesen bestätigt; nichts wird erneut gesendet.
   Raumregler-Prüfung.
 - Die Diagnose zählt je Funktion die gefundenen Pfade, die schreibbaren und
   die mit Liste oder Grenzen (siehe [Diagnose](diagnostics.md)).
+
+### Flüstermodus, Leiser Betrieb und Pool
+
+Meldet das Gateway die folgenden Pfade als schreibbar und mit den genannten
+Angaben, bietet die Integration seit 0.9.2-beta.3 diese weiteren Steuerungen
+an. Alle sind **standardmäßig deaktiviert**, erscheinen bei den
+Konfigurationsentitäten des Geräts und werden nur angelegt, wenn das Gateway
+sie meldet; ohne den Pfad entsteht nichts.
+
+- **Flüstermodus: Leistungsreduzierung** (`/system/silentMode/powerReduction`),
+  ein ganzzahliger Prozentwert innerhalb der Grenzen, die das Gateway meldet
+  (beide zwischen 0 und 100). Der Schalter für den Flüstermodus selbst gab es
+  schon.
+- **Flüstermodus: Startzeit** und **Flüstermodus: Endzeit**
+  (`/system/silentMode/startTime` und `stopTime`), Zahlen in Minuten mit den
+  Grenzen, die das Gateway meldet (innerhalb eines Tages). Die Integration
+  nimmt nicht an, ab wann diese Minuten zählen; der Wert wird so angezeigt
+  und geschrieben, wie das Gateway ihn meldet. Eine Zeit-Entität gibt es
+  bewusst nicht.
+- **Leiser Betrieb: Betriebsart** (`/system/lowNoise/mode`), ein Auswahlfeld
+  über die Werte, die das Gateway auflistet (mindestens zwei, der aktuelle
+  darunter), und **Leiser Betrieb: Dauer** (`/system/lowNoise/duration`), eine
+  Zahl in der Einheit, die das Gateway meldet (Sekunden, Minuten oder
+  Stunden), mit ihren Grenzen. Die Werte der Betriebsart werden so gezeigt,
+  wie das Gateway sie benennt.
+- **Pool-Solltemperatur** der Wärmequelle
+  (`/heatSources/poolSetpointTemperature`) mit den Grenzen und der Schrittweite,
+  die das Gateway meldet, und **Pool-Betriebsart**
+  (`/pool/additionalHeater/poolMode`), ein Auswahlfeld über die Werte, die das
+  Gateway auflistet (mindestens zwei, der aktuelle darunter). Ziel und Schalter
+  unter `/pool` bleiben unverändert.
+
+Jede Änderung liest die Einstellung zuerst vom Gateway, sendet genau eine
+Anfrage und liest sie zurück; eine Änderung wird nicht erneut gesendet. Keine
+uns bekannte Anlage meldet die Pfade für Leisen Betrieb und Pool, und die
+Minuten des Flüstermodus-Zeitfensters wurden an nur einer Anlage gesehen. Das
+alles ist erwartet, an einer echten Anlage aber ungetestet.
+
+### Gateway-Werte: Update und Uhr
+
+Zur Diagnose, nur lesend und standardmäßig deaktiviert: **Automatische
+Updates** (`/gateway/update/enabled`), **Letzte Update-Prüfung** (`lastCheck`)
+und **Letztes Update** (`lastUpdate`) als Texte, genau wie das Gateway sie
+meldet, sowie **LED-Abschaltzeit** (`/gateway/leds/inactivityTimeout`, eine
+Zahl, wie das Gateway sie meldet; die Integration fragt diesen Pfad einmal
+ab, ein Gateway ohne ihn antwortet, dass er nicht existiert). Ein weiterer
+Sensor, **Uhrabweichung des Gateways (berechnet)**, zeigt in Sekunden, wie
+weit die Zeit des Gateways (`/gateway/DateTime`) beim Empfang des Wertes von
+der Zeit von Home Assistant abweicht; positiv heißt, das Gateway geht vor. Ein
+Wert ohne Zeitzone wird als Ortszeit der Anlage gelesen. Würde das Gateway
+eine andere Konvention verwenden, zeigte der Wert ein Vielfaches ganzer
+Stunden. Nichts davon schreibt; die Uhr des Gateways wird nie gestellt.
 
 ### Variabler Stromtarif (nur lesen)
 

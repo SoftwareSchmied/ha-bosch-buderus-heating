@@ -670,6 +670,14 @@
     "Water consumption": "Vattenförbrukning",
     "Boiler energy": "Pannenergi",
     "Energy consumed": "Förbrukad energi",
-    "Last regeneration (calculated)": "Senaste regenerering (beräknad)"
+    "Last regeneration (calculated)": "Senaste regenerering (beräknad)",
+    "Silent mode: power reduction": "Tyst läge: effektreducering",
+    "Silent mode: start time": "Tyst läge: starttid",
+    "Silent mode: stop time": "Tyst läge: stopptid",
+    "Low-noise operation: duration": "Tyst drift: varaktighet",
+    "LED switch-off time": "LED-avstängningstid",
+    "Automatic updates": "Automatiska uppdateringar",
+    "Last update check": "Senaste uppdateringskontroll",
+    "Last update": "Senaste uppdateringen"
   }
 }

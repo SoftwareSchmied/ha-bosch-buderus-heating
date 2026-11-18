@@ -670,6 +670,14 @@
     "Water consumption": "Úsáid uisce",
     "Boiler energy": "Fuinneamh coire",
     "Energy consumed": "Fuinneamh a ídíodh",
-    "Last regeneration (calculated)": "An athghiniúint dheireanach (ríofa)"
+    "Last regeneration (calculated)": "An athghiniúint dheireanach (ríofa)",
+    "Silent mode: power reduction": "Mód ciúin: laghdú cumhachta",
+    "Silent mode: start time": "Mód ciúin: am tosaithe",
+    "Silent mode: stop time": "Mód ciúin: am stoptha",
+    "Low-noise operation: duration": "Oibriú ísealtorainn: fad",
+    "LED switch-off time": "Am múchta LED",
+    "Automatic updates": "Nuashonruithe uathoibríocha",
+    "Last update check": "An seiceáil nuashonraithe is déanaí",
+    "Last update": "An nuashonrú is déanaí"
   }
 }

@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Изкупна цена"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Тих режим: намаляване на мощността"
+      },
+      "silent_mode_start_time": {
+        "name": "Тих режим: начален час"
+      },
+      "silent_mode_stop_time": {
+        "name": "Тих режим: краен час"
+      },
+      "low_noise_duration": {
+        "name": "Тиха работа: продължителност"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Желана температура на басейна"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Само котел",
           "bivalent_alternative": "Бивалентен алтернативен"
         }
+      },
+      "low_noise_mode": {
+        "name": "Режим на тиха работа"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Режим на басейна"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Само котел",
           "bivalent_alternative": "Бивалентен алтернативен"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Отклонение на часовника на шлюза (изчислено)"
       }
     },
     "binary_sensor": {

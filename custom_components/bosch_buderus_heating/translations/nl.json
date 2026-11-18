@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Terugleververgoeding"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Stille modus: vermogensreductie"
+      },
+      "silent_mode_start_time": {
+        "name": "Stille modus: starttijd"
+      },
+      "silent_mode_stop_time": {
+        "name": "Stille modus: stoptijd"
+      },
+      "low_noise_duration": {
+        "name": "Geluidsarme werking: duur"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Gewenste temperatuur zwembad"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Alleen ketel",
           "bivalent_alternative": "Bivalent alternatief"
         }
+      },
+      "low_noise_mode": {
+        "name": "Geluidsarme bedrijfsmodus"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Zwembadmodus"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Alleen ketel",
           "bivalent_alternative": "Bivalent alternatief"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Afwijking van de gatewayklok (berekend)"
       }
     },
     "binary_sensor": {

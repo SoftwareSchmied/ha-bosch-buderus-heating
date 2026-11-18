@@ -670,6 +670,14 @@
     "Water consumption": "Potrošnja vode",
     "Boiler energy": "Energija kotla",
     "Energy consumed": "Potrošena energija",
-    "Last regeneration (calculated)": "Zadnja regeneracija (izračunano)"
+    "Last regeneration (calculated)": "Zadnja regeneracija (izračunano)",
+    "Silent mode: power reduction": "Tihi način rada: smanjenje snage",
+    "Silent mode: start time": "Tihi način rada: vrijeme početka",
+    "Silent mode: stop time": "Tihi način rada: vrijeme završetka",
+    "Low-noise operation: duration": "Tihi rad: trajanje",
+    "LED switch-off time": "Vrijeme isključivanja LED-ova",
+    "Automatic updates": "Automatska ažuriranja",
+    "Last update check": "Zadnja provjera ažuriranja",
+    "Last update": "Zadnje ažuriranje"
   }
 }

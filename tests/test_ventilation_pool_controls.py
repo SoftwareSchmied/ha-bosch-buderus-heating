@@ -460,11 +460,10 @@ async def test_pool_switch_needs_exactly_on_and_off(
     assert await added_entities(hass, entry, setup_selects) == []
 
 
-def test_no_summer_bypass_or_pool_mode_control():
-    for path, options in (
-        ("/ventilation/zone1/summerBypass/enable", ("on", "off")),
-        ("/pool/additionalHeater/poolMode", ("on", "off")),
-    ):
+def test_no_summer_bypass_control():
+    # The pool mode of the auxiliary heater is a selection over the values the
+    # gateway advertises since 0.9.2 (``system_controls_extra``).
+    for path, options in (("/ventilation/zone1/summerBypass/enable", ("on", "off")),):
         assert assess_control(text(path, options, options[0])).policy is None
     # A ventilation mode list without any mode the app knows gives no control.
     assert not assess_control(

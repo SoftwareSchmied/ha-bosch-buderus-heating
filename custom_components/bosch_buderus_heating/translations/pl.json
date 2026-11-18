@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Taryfa za oddawanie energii"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Tryb cichy: redukcja mocy"
+      },
+      "silent_mode_start_time": {
+        "name": "Tryb cichy: czas rozpoczęcia"
+      },
+      "silent_mode_stop_time": {
+        "name": "Tryb cichy: czas zakończenia"
+      },
+      "low_noise_duration": {
+        "name": "Praca niskohałasowa: czas trwania"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Temperatura zadana basenu"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Tylko kocioł",
           "bivalent_alternative": "Bivalentny alternatywny"
         }
+      },
+      "low_noise_mode": {
+        "name": "Tryb pracy niskohałasowej"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Tryb basenu"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Tylko kocioł",
           "bivalent_alternative": "Bivalentny alternatywny"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Odchylenie zegara bramki (obliczone)"
       }
     },
     "binary_sensor": {

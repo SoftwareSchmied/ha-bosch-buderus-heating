@@ -670,6 +670,14 @@
     "Water consumption": "Waterverbruik",
     "Boiler energy": "Ketelenergie",
     "Energy consumed": "Verbruikte energie",
-    "Last regeneration (calculated)": "Laatste regeneratie (berekend)"
+    "Last regeneration (calculated)": "Laatste regeneratie (berekend)",
+    "Silent mode: power reduction": "Stille modus: vermogensreductie",
+    "Silent mode: start time": "Stille modus: starttijd",
+    "Silent mode: stop time": "Stille modus: stoptijd",
+    "Low-noise operation: duration": "Geluidsarme werking: duur",
+    "LED switch-off time": "LED-uitschakeltijd",
+    "Automatic updates": "Automatische updates",
+    "Last update check": "Laatste updatecontrole",
+    "Last update": "Laatste update"
   }
 }

@@ -50,6 +50,9 @@ from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
+from .system_controls_extra import DURATION_POLICIES as SYSTEM_DURATION_POLICIES
+from .system_controls_extra import icon as system_icon
+from .system_controls_extra import number_identity as system_number_identity
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .wallbox_entities import track_wallbox_entities
 from .writes import (
@@ -139,7 +142,11 @@ def build_number_descriptions(
                 resource.path
             )
         else:
-            key, name = number_identity(resource.path) or _identity(resource.path)
+            key, name = (
+                number_identity(resource.path)
+                or system_number_identity(resource.path)
+                or _identity(resource.path)
+            )
         assessment = assess_control(resource, context)
         unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
@@ -156,7 +163,9 @@ def build_number_descriptions(
                 mode=NumberMode.BOX,
                 # The heating circuit settings take theirs from icons.json.
                 icon=None
-                if circuit_controls.icon(resource.path) or extra_icon(resource.path)
+                if circuit_controls.icon(resource.path)
+                or extra_icon(resource.path)
+                or system_icon(resource.path)
                 else control_icon(resource.path, numeric=True, contract=contract),
                 entity_category=control_category(
                     resource.path, numeric=True, contract=contract
@@ -176,7 +185,7 @@ def policy_device_class(
     All temperature settings of the write policies are absolute
     temperatures (setpoints, levels, limits, outdoor thresholds).
     """
-    if policy is BOOST_DURATION_POLICY:
+    if policy is BOOST_DURATION_POLICY or policy in SYSTEM_DURATION_POLICIES:
         return NumberDeviceClass.DURATION if unit in {"s", "min", "h"} else None
     return temperature_device_class(unit) if policy.unit == "C" else None
 

@@ -16,6 +16,7 @@ from . import (
     rrc,
     rrc_contract_zone,
     rrc_contracts,
+    system_controls_extra,
 )
 from .aircon_policies import AIRCON_ENUM_POLICIES, AIRCON_NUMBER_POLICIES
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
@@ -332,6 +333,9 @@ NUMBER_WRITE_POLICIES = (
     *circuit_controls.NUMBER_POLICIES,
     # Boost, season thresholds and further circuit settings (0.9.2).
     *hc_controls_extra.NUMBER_POLICIES,
+    # Silent mode window and power, low-noise duration, pool target of the
+    # heat source (0.9.2).
+    *system_controls_extra.NUMBER_POLICIES,
     # Air conditioners on a PointT gateway (``/airConditioning``).
     *AIRCON_NUMBER_POLICIES,
 )
@@ -878,7 +882,7 @@ def _number_rejection_reason(
     metadata = resource.metadata
     if not metadata.writable:
         return "not_writable"
-    if metadata.resource_type != "floatValue":
+    if metadata.resource_type not in policy.resource_types:
         return "unsupported_resource_type"
     if policy.free_unit:
         pass
@@ -1203,6 +1207,8 @@ _ENUM_POLICIES = (
     *circuit_controls.ENUM_POLICIES,
     # Cooling mode, boost and further switches of a heating circuit (0.9.2).
     *hc_controls_extra.ENUM_POLICIES,
+    # Low-noise operation mode and the pool mode of the auxiliary heater.
+    *system_controls_extra.ENUM_POLICIES,
     # Air conditioners on a PointT gateway (``/airConditioning``).
     *AIRCON_ENUM_POLICIES,
 )

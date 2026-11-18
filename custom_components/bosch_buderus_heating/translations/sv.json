@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Ersättning för inmatad el"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Tyst läge: effektreducering"
+      },
+      "silent_mode_start_time": {
+        "name": "Tyst läge: starttid"
+      },
+      "silent_mode_stop_time": {
+        "name": "Tyst läge: stopptid"
+      },
+      "low_noise_duration": {
+        "name": "Tyst drift: varaktighet"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Önskad temperatur pool"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Endast panna",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "low_noise_mode": {
+        "name": "Tyst driftläge"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Poolläge"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Endast panna",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Avvikelse för gatewayens klocka (beräknad)"
       }
     },
     "binary_sensor": {

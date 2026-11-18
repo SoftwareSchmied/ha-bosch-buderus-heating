@@ -670,6 +670,14 @@
     "Water consumption": "Spotreba vody",
     "Boiler energy": "Energia kotla",
     "Energy consumed": "Spotrebovaná energia",
-    "Last regeneration (calculated)": "Posledná regenerácia (vypočítaná)"
+    "Last regeneration (calculated)": "Posledná regenerácia (vypočítaná)",
+    "Silent mode: power reduction": "Tichý režim: zníženie výkonu",
+    "Silent mode: start time": "Tichý režim: čas začiatku",
+    "Silent mode: stop time": "Tichý režim: čas konca",
+    "Low-noise operation: duration": "Tichá prevádzka: trvanie",
+    "LED switch-off time": "Čas vypnutia LED",
+    "Automatic updates": "Automatické aktualizácie",
+    "Last update check": "Posledná kontrola aktualizácií",
+    "Last update": "Posledná aktualizácia"
   }
 }

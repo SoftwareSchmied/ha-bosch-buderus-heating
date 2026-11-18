@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Feed-in tariff"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Silent mode: power reduction"
+      },
+      "silent_mode_start_time": {
+        "name": "Silent mode: start time"
+      },
+      "silent_mode_stop_time": {
+        "name": "Silent mode: stop time"
+      },
+      "low_noise_duration": {
+        "name": "Low-noise operation: duration"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Pool target temperature"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Boiler only",
           "bivalent_alternative": "Bivalent alternative"
         }
+      },
+      "low_noise_mode": {
+        "name": "Low-noise operation mode"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Pool mode"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Boiler only",
           "bivalent_alternative": "Bivalent alternative"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Gateway clock deviation (calculated)"
       }
     },
     "binary_sensor": {

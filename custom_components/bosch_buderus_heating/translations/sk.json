@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Výkupná cena"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Tichý režim: zníženie výkonu"
+      },
+      "silent_mode_start_time": {
+        "name": "Tichý režim: čas začiatku"
+      },
+      "silent_mode_stop_time": {
+        "name": "Tichý režim: čas konca"
+      },
+      "low_noise_duration": {
+        "name": "Tichá prevádzka: trvanie"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Požadovaná teplota bazéna"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Iba kotol",
           "bivalent_alternative": "Bivalentná alternatíva"
         }
+      },
+      "low_noise_mode": {
+        "name": "Režim tichej prevádzky"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Režim bazéna"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Iba kotol",
           "bivalent_alternative": "Bivalentná alternatíva"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Odchýlka hodín brány (vypočítaná)"
       }
     },
     "binary_sensor": {

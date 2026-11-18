@@ -670,6 +670,14 @@
     "Water consumption": "Zużycie wody",
     "Boiler energy": "Energia kotła",
     "Energy consumed": "Zużyta energia",
-    "Last regeneration (calculated)": "Ostatnia regeneracja (obliczona)"
+    "Last regeneration (calculated)": "Ostatnia regeneracja (obliczona)",
+    "Silent mode: power reduction": "Tryb cichy: redukcja mocy",
+    "Silent mode: start time": "Tryb cichy: czas rozpoczęcia",
+    "Silent mode: stop time": "Tryb cichy: czas zakończenia",
+    "Low-noise operation: duration": "Praca niskohałasowa: czas trwania",
+    "LED switch-off time": "Czas wyłączenia diod LED",
+    "Automatic updates": "Aktualizacje automatyczne",
+    "Last update check": "Ostatnie sprawdzenie aktualizacji",
+    "Last update": "Ostatnia aktualizacja"
   }
 }

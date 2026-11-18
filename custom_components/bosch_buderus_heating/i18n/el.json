@@ -670,6 +670,14 @@
     "Water consumption": "Κατανάλωση νερού",
     "Boiler energy": "Ενέργεια λέβητα",
     "Energy consumed": "Καταναλωθείσα ενέργεια",
-    "Last regeneration (calculated)": "Τελευταία αναγέννηση (υπολογισμένη)"
+    "Last regeneration (calculated)": "Τελευταία αναγέννηση (υπολογισμένη)",
+    "Silent mode: power reduction": "Αθόρυβη λειτουργία: μείωση ισχύος",
+    "Silent mode: start time": "Αθόρυβη λειτουργία: ώρα έναρξης",
+    "Silent mode: stop time": "Αθόρυβη λειτουργία: ώρα λήξης",
+    "Low-noise operation: duration": "Αθόρυβη λειτουργία: διάρκεια",
+    "LED switch-off time": "Χρόνος απενεργοποίησης LED",
+    "Automatic updates": "Αυτόματες ενημερώσεις",
+    "Last update check": "Τελευταίος έλεγχος ενημέρωσης",
+    "Last update": "Τελευταία ενημέρωση"
   }
 }

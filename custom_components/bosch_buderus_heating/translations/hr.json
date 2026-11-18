@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Otkupna cijena"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Tihi način rada: smanjenje snage"
+      },
+      "silent_mode_start_time": {
+        "name": "Tihi način rada: vrijeme početka"
+      },
+      "silent_mode_stop_time": {
+        "name": "Tihi način rada: vrijeme završetka"
+      },
+      "low_noise_duration": {
+        "name": "Tihi rad: trajanje"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Ciljna temperatura bazena"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Samo kotao",
           "bivalent_alternative": "Bivalentna alternativa"
         }
+      },
+      "low_noise_mode": {
+        "name": "Način tihog rada"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Način rada bazena"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Samo kotao",
           "bivalent_alternative": "Bivalentna alternativa"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Odstupanje sata pristupnika (izračunato)"
       }
     },
     "binary_sensor": {

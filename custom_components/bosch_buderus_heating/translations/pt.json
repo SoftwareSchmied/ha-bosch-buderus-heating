@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Tarifa de injeção"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Modo silencioso: redução de potência"
+      },
+      "silent_mode_start_time": {
+        "name": "Modo silencioso: hora de início"
+      },
+      "silent_mode_stop_time": {
+        "name": "Modo silencioso: hora de fim"
+      },
+      "low_noise_duration": {
+        "name": "Funcionamento silencioso: duração"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Temperatura pretendida da piscina"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Só caldeira",
           "bivalent_alternative": "Bivalente alternativo"
         }
+      },
+      "low_noise_mode": {
+        "name": "Modo de funcionamento silencioso"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Modo piscina"
       }
     },
     "switch": {
@@ -3483,6 +3504,9 @@
           "boiler_only": "Só caldeira",
           "bivalent_alternative": "Bivalente alternativo"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Desvio do relógio do gateway (calculado)"
       }
     },
     "binary_sensor": {
