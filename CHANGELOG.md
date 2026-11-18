@@ -211,6 +211,7 @@ Versioning after its first tagged preview.
   ([#139](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/139)).
 - **Cloud accounts with only a wallbox or an air conditioner** no longer
   stay on "starting"; an outage of these devices shows as "not reachable".
+  The same now holds for accounts with devices of the second cloud.
 - **Repair "fault source no longer exists"** belongs to its entry and
   disappears when the entry is removed (before: after a restart).
 - **Silent mode power reduction:** the whole-number value was rejected by the

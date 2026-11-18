@@ -176,9 +176,10 @@ class BaconClient:
     async def report_live(self) -> None:
         """Report this account as an active client (empty POST, no body kept).
 
-        Only the status code is used. A 401 renews the token once; 404 and 405
-        mean the service does not offer the report; a second 401 or a 403 is a
-        rejected report, never a failed sign-in of the integration.
+        Only the status code is used. A 401 or 403 is a rejected report (never a
+        failed sign-in of the integration, and no forced token refresh: the
+        optional report is no proof of access); 404 and 405 mean the service does
+        not offer the report.
         """
         self.check_request()
         try:
@@ -192,19 +193,14 @@ class BaconClient:
         if self.clock() < self.retry_at:
             raise BaconError("paused", self.retry_at - self.clock())
         token = await self.access_token()
-        for attempt in range(2):
-            async with self._semaphore:
-                self.check_request()
-                if self.clock() < self.retry_at:
-                    raise BaconError("paused", self.retry_at - self.clock())
-                done = await self._request_live(token, retry=attempt == 0)
-            if done:
-                return
-            token = await self.access_token(rejected=token)
-        raise BaconError("live_rejected")
+        async with self._semaphore:
+            self.check_request()
+            if self.clock() < self.retry_at:
+                raise BaconError("paused", self.retry_at - self.clock())
+            await self._request_live(token)
 
-    async def _request_live(self, token: str, *, retry: bool) -> bool:
-        """Perform one bounded POST; False requests one token refresh."""
+    async def _request_live(self, token: str) -> None:
+        """Perform one bounded POST."""
         try:
             async with self.session.post(
                 self.live_url,
@@ -217,8 +213,6 @@ class BaconClient:
             ) as response:
                 self._guard()
                 status = response.status
-                if status == 401 and retry:
-                    return False
                 if status in (401, 403):
                     raise BaconError("live_rejected")
                 if status == 429:
@@ -227,6 +221,6 @@ class BaconClient:
                     raise BaconError("live_unsupported")
                 if not 200 <= status < 300:
                     raise BaconError("service_unavailable")
-                return True
+                return
         except (TimeoutError, aiohttp.ClientError) as err:
             raise BaconError("connection") from err
