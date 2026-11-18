@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Afregningspris for overskudsstrøm"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Lydsvag drift: effektreduktion"
+      },
+      "silent_mode_start_time": {
+        "name": "Lydsvag drift: starttidspunkt"
+      },
+      "silent_mode_stop_time": {
+        "name": "Lydsvag drift: stoptidspunkt"
+      },
+      "low_noise_duration": {
+        "name": "Lydsvag drift: varighed"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Ønsket pooltemperatur"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Kun kedel",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "low_noise_mode": {
+        "name": "Lydsvag driftsform"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Poolfunktion"
       }
     },
     "switch": {
@@ -3480,6 +3501,9 @@
           "boiler_only": "Kun kedel",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Afvigelse på gatewayens ur (beregnet)"
       }
     },
     "binary_sensor": {

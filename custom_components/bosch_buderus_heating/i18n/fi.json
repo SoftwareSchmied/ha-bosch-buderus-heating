@@ -666,6 +666,14 @@
     "Cooling temperature": "Jäähdytyslämpötila",
     "Air quality demand": "Ilmanlaadun tarve",
     "Humidity demand": "Kosteuden tarve",
-    "Feed-in tariff": "Verkkoon syötön hinta"
+    "Feed-in tariff": "Verkkoon syötön hinta",
+    "Silent mode: power reduction": "Hiljainen tila: tehon alennus",
+    "Silent mode: start time": "Hiljainen tila: alkamisaika",
+    "Silent mode: stop time": "Hiljainen tila: päättymisaika",
+    "Low-noise operation: duration": "Hiljainen käyttö: kesto",
+    "LED switch-off time": "LEDien sammutusaika",
+    "Automatic updates": "Automaattiset päivitykset",
+    "Last update check": "Viimeisin päivitystarkistus",
+    "Last update": "Viimeisin päivitys"
   }
 }

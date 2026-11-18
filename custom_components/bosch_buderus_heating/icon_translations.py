@@ -16,6 +16,8 @@ TRANSLATED_SELECT_ICONS: Final = frozenset(
         "heating_circuit_operation_mode",
         "hot_water_operation_mode",
         "hybrid_control_strategy",
+        "low_noise_mode",
+        "pool_additional_heater_mode",
         "season_switching",
         "silent_mode",
         "summer_winter_switching",

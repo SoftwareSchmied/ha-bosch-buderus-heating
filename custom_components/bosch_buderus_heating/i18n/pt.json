@@ -666,6 +666,14 @@
     "Cooling temperature": "Temperatura de arrefecimento",
     "Air quality demand": "Procura por qualidade do ar",
     "Humidity demand": "Procura por humidade",
-    "Feed-in tariff": "Tarifa de injeção"
+    "Feed-in tariff": "Tarifa de injeção",
+    "Silent mode: power reduction": "Modo silencioso: redução de potência",
+    "Silent mode: start time": "Modo silencioso: hora de início",
+    "Silent mode: stop time": "Modo silencioso: hora de fim",
+    "Low-noise operation: duration": "Funcionamento silencioso: duração",
+    "LED switch-off time": "Tempo para desligar os LED",
+    "Automatic updates": "Atualizações automáticas",
+    "Last update check": "Última verificação de atualizações",
+    "Last update": "Última atualização"
   }
 }

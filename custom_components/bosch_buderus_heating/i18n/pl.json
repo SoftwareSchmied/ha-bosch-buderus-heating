@@ -666,6 +666,14 @@
     "Cooling temperature": "Temperatura chłodzenia",
     "Air quality demand": "Zapotrzebowanie wg jakości powietrza",
     "Humidity demand": "Zapotrzebowanie wg wilgotności",
-    "Feed-in tariff": "Taryfa za oddawanie energii"
+    "Feed-in tariff": "Taryfa za oddawanie energii",
+    "Silent mode: power reduction": "Tryb cichy: redukcja mocy",
+    "Silent mode: start time": "Tryb cichy: czas rozpoczęcia",
+    "Silent mode: stop time": "Tryb cichy: czas zakończenia",
+    "Low-noise operation: duration": "Praca niskohałasowa: czas trwania",
+    "LED switch-off time": "Czas wyłączenia diod LED",
+    "Automatic updates": "Aktualizacje automatyczne",
+    "Last update check": "Ostatnie sprawdzenie aktualizacji",
+    "Last update": "Ostatnia aktualizacja"
   }
 }

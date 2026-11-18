@@ -218,6 +218,9 @@ class NumberWritePolicy:
     sentinel_value: float | None = None
     # Readings that confirm a write besides the equal one.
     confirm_if: ConfirmCheck | None = None
+    # The resource types the control accepts. A whole number the gateway
+    # reports as ``integerValue`` needs it named (``system_controls_extra``).
+    resource_types: frozenset[str] = frozenset({"floatValue"})
 
 
 type WritePolicy = EnumWritePolicy | NumberWritePolicy

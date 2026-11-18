@@ -363,7 +363,8 @@ _NOT_READ_POLICIES = frozenset(
 # every listed path is a known public resource and remains optional when a
 # particular installation does not provide it.
 OPAQUE_CONTAINER_CHILDREN: dict[str, tuple[str, ...]] = {
-    "/gateway": ("/gateway/dataProcessing/status",),
+    # The LED switch-off time is read only (a reading of the gateway).
+    "/gateway": ("/gateway/dataProcessing/status", "/gateway/leds/inactivityTimeout"),
     "/system": (
         "/system/appliance/enabled",
         "/system/appliance/model",

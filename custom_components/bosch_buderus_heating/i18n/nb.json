@@ -666,6 +666,14 @@
     "Cooling temperature": "Kjøletemperatur",
     "Air quality demand": "Behov etter luftkvalitet",
     "Humidity demand": "Behov etter luftfuktighet",
-    "Feed-in tariff": "Pris for innmatet strøm"
+    "Feed-in tariff": "Pris for innmatet strøm",
+    "Silent mode: power reduction": "Stillemodus: effektreduksjon",
+    "Silent mode: start time": "Stillemodus: starttidspunkt",
+    "Silent mode: stop time": "Stillemodus: stopptidspunkt",
+    "Low-noise operation: duration": "Lavstøydrift: varighet",
+    "LED switch-off time": "LED-avslagstid",
+    "Automatic updates": "Automatiske oppdateringer",
+    "Last update check": "Siste oppdateringssjekk",
+    "Last update": "Siste oppdatering"
   }
 }

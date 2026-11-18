@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Einspeisevergütung"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Flüstermodus: Leistungsreduzierung"
+      },
+      "silent_mode_start_time": {
+        "name": "Flüstermodus: Startzeit"
+      },
+      "silent_mode_stop_time": {
+        "name": "Flüstermodus: Endzeit"
+      },
+      "low_noise_duration": {
+        "name": "Leiser Betrieb: Dauer"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Pool-Solltemperatur"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Nur Kessel",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "low_noise_mode": {
+        "name": "Leiser Betrieb: Betriebsart"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Pool-Betriebsart"
       }
     },
     "switch": {
@@ -3480,6 +3501,9 @@
           "boiler_only": "Nur Kessel",
           "bivalent_alternative": "Bivalent alternativ"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Uhrabweichung des Gateways (berechnet)"
       }
     },
     "binary_sensor": {

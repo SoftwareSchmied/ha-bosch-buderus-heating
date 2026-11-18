@@ -666,6 +666,14 @@
     "Cooling temperature": "Koeltemperatuur",
     "Air quality demand": "Vraag naar luchtkwaliteit",
     "Humidity demand": "Vraag naar luchtvochtigheid",
-    "Feed-in tariff": "Terugleververgoeding"
+    "Feed-in tariff": "Terugleververgoeding",
+    "Silent mode: power reduction": "Stille modus: vermogensreductie",
+    "Silent mode: start time": "Stille modus: starttijd",
+    "Silent mode: stop time": "Stille modus: stoptijd",
+    "Low-noise operation: duration": "Geluidsarme werking: duur",
+    "LED switch-off time": "LED-uitschakeltijd",
+    "Automatic updates": "Automatische updates",
+    "Last update check": "Laatste updatecontrole",
+    "Last update": "Laatste update"
   }
 }

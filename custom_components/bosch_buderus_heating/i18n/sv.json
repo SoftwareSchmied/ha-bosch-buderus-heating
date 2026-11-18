@@ -666,6 +666,14 @@
     "Cooling temperature": "Kyltemperatur",
     "Air quality demand": "Behov enligt luftkvalitet",
     "Humidity demand": "Behov enligt luftfuktighet",
-    "Feed-in tariff": "Ersättning för inmatad el"
+    "Feed-in tariff": "Ersättning för inmatad el",
+    "Silent mode: power reduction": "Tyst läge: effektreducering",
+    "Silent mode: start time": "Tyst läge: starttid",
+    "Silent mode: stop time": "Tyst läge: stopptid",
+    "Low-noise operation: duration": "Tyst drift: varaktighet",
+    "LED switch-off time": "LED-avstängningstid",
+    "Automatic updates": "Automatiska uppdateringar",
+    "Last update check": "Senaste uppdateringskontroll",
+    "Last update": "Senaste uppdateringen"
   }
 }

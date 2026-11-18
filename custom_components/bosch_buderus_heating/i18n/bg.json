@@ -666,6 +666,14 @@
     "Cooling temperature": "Температура на охлаждане",
     "Air quality demand": "Потребност според качеството на въздуха",
     "Humidity demand": "Потребност според влажността",
-    "Feed-in tariff": "Изкупна цена"
+    "Feed-in tariff": "Изкупна цена",
+    "Silent mode: power reduction": "Тих режим: намаляване на мощността",
+    "Silent mode: start time": "Тих режим: начален час",
+    "Silent mode: stop time": "Тих режим: краен час",
+    "Low-noise operation: duration": "Тиха работа: продължителност",
+    "LED switch-off time": "Време за изключване на LED",
+    "Automatic updates": "Автоматични актуализации",
+    "Last update check": "Последна проверка за актуализация",
+    "Last update": "Последна актуализация"
   }
 }

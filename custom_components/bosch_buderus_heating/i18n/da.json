@@ -666,6 +666,14 @@
     "Cooling temperature": "Køletemperatur",
     "Air quality demand": "Behov efter luftkvalitet",
     "Humidity demand": "Behov efter luftfugtighed",
-    "Feed-in tariff": "Afregningspris for overskudsstrøm"
+    "Feed-in tariff": "Afregningspris for overskudsstrøm",
+    "Silent mode: power reduction": "Lydsvag drift: effektreduktion",
+    "Silent mode: start time": "Lydsvag drift: starttidspunkt",
+    "Silent mode: stop time": "Lydsvag drift: stoptidspunkt",
+    "Low-noise operation: duration": "Lydsvag drift: varighed",
+    "LED switch-off time": "LED-slukketid",
+    "Automatic updates": "Automatiske opdateringer",
+    "Last update check": "Seneste opdateringstjek",
+    "Last update": "Seneste opdatering"
   }
 }

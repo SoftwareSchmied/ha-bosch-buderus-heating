@@ -2116,6 +2116,21 @@
       },
       "hybrid_feed_in_price": {
         "name": "Taraif bheathaithe isteach"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Mód ciúin: laghdú cumhachta"
+      },
+      "silent_mode_start_time": {
+        "name": "Mód ciúin: am tosaithe"
+      },
+      "silent_mode_stop_time": {
+        "name": "Mód ciúin: am stoptha"
+      },
+      "low_noise_duration": {
+        "name": "Oibriú ísealtorainn: fad"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Teocht sprice an linn snámha"
       }
     },
     "select": {
@@ -2316,6 +2331,12 @@
           "boiler_only": "Coire amháin",
           "bivalent_alternative": "Malartach débhalbhach"
         }
+      },
+      "low_noise_mode": {
+        "name": "Mód oibriúcháin ísealtorainn"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Mód linn snámha"
       }
     },
     "switch": {
@@ -3480,6 +3501,9 @@
           "boiler_only": "Coire amháin",
           "bivalent_alternative": "Malartach débhalbhach"
         }
+      },
+      "gateway_clock_deviation": {
+        "name": "Diall chlog na geata (ríofa)"
       }
     },
     "binary_sensor": {

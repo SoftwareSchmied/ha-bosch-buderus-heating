@@ -666,6 +666,14 @@
     "Cooling temperature": "Teplota chladenia",
     "Air quality demand": "Požiadavka podľa kvality vzduchu",
     "Humidity demand": "Požiadavka podľa vlhkosti",
-    "Feed-in tariff": "Výkupná cena"
+    "Feed-in tariff": "Výkupná cena",
+    "Silent mode: power reduction": "Tichý režim: zníženie výkonu",
+    "Silent mode: start time": "Tichý režim: čas začiatku",
+    "Silent mode: stop time": "Tichý režim: čas konca",
+    "Low-noise operation: duration": "Tichá prevádzka: trvanie",
+    "LED switch-off time": "Čas vypnutia LED",
+    "Automatic updates": "Automatické aktualizácie",
+    "Last update check": "Posledná kontrola aktualizácií",
+    "Last update": "Posledná aktualizácia"
   }
 }
