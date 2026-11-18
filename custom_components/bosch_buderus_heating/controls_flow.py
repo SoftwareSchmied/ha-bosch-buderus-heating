@@ -194,8 +194,8 @@ def _weather_control_off(
 
 
 # Settings precede activation: a mode, a charge, extra hot water (after its
-# duration).
-_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw")
+# duration), a boost (after its temperature and duration).
+_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw", "/boostMode")
 # A heating curve point or supply limit: lowered lower limits first, then
 # raised upper ones, lowered upper ones and raised lower ones, so that each
 # write keeps every lower limit at or below every upper one.

@@ -17,6 +17,8 @@ from .rac import reported, supported
 
 FIELDS: Final = {"on": "onTimestamp", "off": "offTimestamp"}
 STEP_SECONDS: Final = 60
+# The least time between the command and the timer time.
+MIN_LEAD_SECONDS: Final = 10
 # The app offers today and tomorrow; one day is the smallest span within that.
 MAX_MINUTES: Final = 24 * 60
 # A reported time further away than this cannot come from a timer we can show.
@@ -61,9 +63,14 @@ def remaining_minutes(
 
 
 def target_time(minutes: int, at: float | None = None) -> int:
-    """The minute-aligned absolute time that lies ``minutes`` ahead."""
+    """The minute-aligned absolute time that lies ``minutes`` ahead, at least
+    ``MIN_LEAD_SECONDS`` from now: the message needs time to reach the device,
+    so a time that would come sooner moves to the next minute."""
     current = now() if at is None else at
-    return (int(current) // STEP_SECONDS + minutes) * STEP_SECONDS
+    target = (int(current) // STEP_SECONDS + minutes) * STEP_SECONDS
+    if target - current < MIN_LEAD_SECONDS:
+        target += STEP_SECONDS
+    return target
 
 
 def other_field(field: str) -> str:

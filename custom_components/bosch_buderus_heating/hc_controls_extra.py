@@ -29,6 +29,7 @@ from collections.abc import Mapping
 from typing import Final
 
 from .pointt import Resource
+from .pointt.models import JsonScalar
 from .write_policies import EnumWritePolicy, NumberWritePolicy
 
 _STRING: Final = frozenset({"stringValue"})
@@ -49,7 +50,18 @@ CIRCUIT_COOLING_THRESHOLD_PATTERN: Final = _CIRCUIT + r"suWiCoolingThreshold$"
 COOLING_MODES: Final = ("off", "manual", "auto")
 
 
-def _switch(pattern: str) -> EnumWritePolicy:
+def _circuit_guard(
+    resource: Resource, value: JsonScalar, readings: Mapping[str, Resource]
+) -> str | None:
+    """No change while a room controller runs the circuit, as the other
+    circuit settings (``circuit_controls``, imported late: it imports this
+    module)."""
+    from .circuit_controls import _circuit_check
+
+    return _circuit_check(resource, value, readings)
+
+
+def _switch(pattern: str, *, guarded: bool = False) -> EnumWritePolicy:
     """A switch over exactly ``on`` and ``off``: the gateway has to advertise
     exactly these two values, else there is no control."""
     return EnumWritePolicy(
@@ -61,18 +73,28 @@ def _switch(pattern: str) -> EnumWritePolicy:
         on_value="on",
         off_value="off",
         enabled_by_default=False,
+        value_check=_circuit_guard if guarded else None,
     )
 
 
-def _temperature(pattern: str, step: float) -> NumberWritePolicy:
+def _temperature(
+    pattern: str, step: float, *, guarded: bool = False
+) -> NumberWritePolicy:
     return NumberWritePolicy(
-        pattern, "C", step, enabled_by_default=False, strict_grid=True
+        pattern,
+        "C",
+        step,
+        enabled_by_default=False,
+        strict_grid=True,
+        value_check=_circuit_guard if guarded else None,
     )
 
 
-BOOST_MODE_POLICY: Final = _switch(BOOST_MODE_PATTERN)
-SETPOINT_OPTIMIZATION_POLICY: Final = _switch(SETPOINT_OPTIMIZATION_PATTERN)
-WINDOW_DETECTION_POLICY: Final = _switch(WINDOW_DETECTION_PATTERN)
+BOOST_MODE_POLICY: Final = _switch(BOOST_MODE_PATTERN, guarded=True)
+SETPOINT_OPTIMIZATION_POLICY: Final = _switch(
+    SETPOINT_OPTIMIZATION_PATTERN, guarded=True
+)
+WINDOW_DETECTION_POLICY: Final = _switch(WINDOW_DETECTION_PATTERN, guarded=True)
 
 # The duration unit comes from the gateway (hours on the known ones); a
 # whole step counted from the minimum, as the advertised one else.
@@ -82,12 +104,15 @@ BOOST_DURATION_POLICY: Final = NumberWritePolicy(
     1.0,
     enabled_by_default=False,
     strict_grid=True,
+    value_check=_circuit_guard,
 )
-BOOST_TEMPERATURE_POLICY: Final = _temperature(BOOST_TEMPERATURE_PATTERN, 0.5)
+BOOST_TEMPERATURE_POLICY: Final = _temperature(
+    BOOST_TEMPERATURE_PATTERN, 0.5, guarded=True
+)
 HEATING_THRESHOLD_POLICY: Final = _temperature(HEATING_THRESHOLD_PATTERN, 1.0)
 COOLING_THRESHOLD_POLICY: Final = _temperature(COOLING_THRESHOLD_PATTERN, 1.0)
 CIRCUIT_COOLING_THRESHOLD_POLICY: Final = _temperature(
-    CIRCUIT_COOLING_THRESHOLD_PATTERN, 1.0
+    CIRCUIT_COOLING_THRESHOLD_PATTERN, 1.0, guarded=True
 )
 
 # Only the modes of the app's list; at least two of them, and the current one
@@ -100,6 +125,7 @@ COOLING_MODE_POLICY: Final = EnumWritePolicy(
     min_options=2,
     current_required=True,
     enabled_by_default=False,
+    value_check=_circuit_guard,
 )
 
 ENUM_POLICIES: Final = (
@@ -122,7 +148,8 @@ SWITCH_POLICIES: Final = (
     WINDOW_DETECTION_POLICY,
 )
 # The circuit settings of a plant without a room controller: its circuits
-# follow the contracts there (``circuit_controls.GENERIC_ONLY_POLICIES``).
+# follow the contracts there (``circuit_controls.GENERIC_ONLY_POLICIES``); the
+# they also refuse a circuit run by a room controller.
 GENERIC_ONLY_POLICIES: Final = frozenset(
     {
         BOOST_MODE_POLICY,
@@ -134,6 +161,40 @@ GENERIC_ONLY_POLICIES: Final = frozenset(
         CIRCUIT_COOLING_THRESHOLD_POLICY,
     }
 )
+# All of them check the circuit's control type (``_circuit_guard``).
+CIRCUIT_GUARDED_POLICIES: Final = GENERIC_ONLY_POLICIES
+
+_HEAT_SOURCE_KIND: Final = re.compile(r"^/heatSources/[^/]+/(?:heatPumpType|type)$")
+_NO_HEAT_PUMP_TYPES: Final = frozenset(
+    {"", "none", "not_available", "undefined", "unknown"}
+)
+
+
+def has_heat_pump(readings: Mapping[str, Resource]) -> bool:
+    """Whether a heat source reads as a heat pump (as ``device`` names it): a
+    known heat pump type, or the source type ``heatPump``."""
+    for path, reading in readings.items():
+        if _HEAT_SOURCE_KIND.fullmatch(path) is None or not isinstance(
+            reading.value, str
+        ):
+            continue
+        text = reading.value.strip().casefold()
+        if path.endswith("/heatPumpType"):
+            if text not in _NO_HEAT_PUMP_TYPES:
+                return True
+        elif re.sub(r"[^a-z]", "", text) in {"heatpump", "waermepumpe"}:
+            return True
+    return False
+
+
+def offered(path: str, heat_sources: Mapping[str, Resource]) -> bool:
+    """Whether a control of ``path`` is offered: the boost temperature only
+    on a plant without a heat pump, as the manufacturer's app shows it. A
+    plant that reads no heat source type keeps it."""
+    if re.fullmatch(BOOST_TEMPERATURE_PATTERN, path):
+        return not has_heat_pump(heat_sources)
+    return True
+
 
 # Switch policy -> translation key.
 _SWITCHES: Final = (

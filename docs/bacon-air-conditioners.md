@@ -69,6 +69,8 @@ only when the device declares the field writable (`ro=false`), reports a
 valid value and declares no step other than 60 seconds. Without that there is
 no entity. Like the app, the integration refuses a time in the past, more than
 one day ahead, and a switch-on and a switch-off time in the same minute. A
+time less than 10 seconds ahead moves to the next minute, so that it cannot
+be in the past when it reaches the unit. A
 timer can switch the unit on or off later without anyone present. Every write
 reads the state fresh, sends exactly one command, waits for the reported value
 and never repeats. Schedules (`racSchedule`) are not offered; Home Assistant
@@ -192,7 +194,9 @@ absolute Zeit. Ein Timer wird nur angeboten, wenn das Gerät das Feld als
 beschreibbar (`ro=false`) meldet, einen gültigen Wert liefert und keine andere
 Schrittweite als 60 Sekunden angibt; sonst entsteht keine Entität. Wie die App
 lehne ich eine Zeit in der Vergangenheit, mehr als einen Tag Vorlauf und gleiche
-Minute für Ein- und Ausschalten ab. Ein Timer kann das Gerät später ohne
+Minute für Ein- und Ausschalten ab. Eine Zeit mit weniger als 10 Sekunden
+Vorlauf rutscht auf die nächste Minute, damit sie beim Gerät nicht schon
+vergangen ist. Ein Timer kann das Gerät später ohne
 Anwesenheit ein- oder ausschalten. Jeder Schreibvorgang liest den Zustand
 frisch, sendet genau einen Befehl, wartet auf den gemeldeten Wert und
 wiederholt nie. Zeitpläne (`racSchedule`) biete ich nicht an; Automationen in

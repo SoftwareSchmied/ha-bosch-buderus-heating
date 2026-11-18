@@ -215,6 +215,14 @@ Versioning after its first tagged preview.
   disappears when the entry is removed (before: after a restart).
 - **Silent mode power reduction:** the whole-number value was rejected by the
   read filter and is now read.
+- **Controls:** the new circuit settings (boost, cooling mode, setpoint
+  optimization, open window detection) now also refuse a circuit run by a
+  room controller, like the other circuit settings. In the dialog, the boost
+  is switched on after its temperature and duration. The silent mode times
+  and power reduction use the app's steps (15 minutes, 10 %) when the
+  gateway reports none. The boost temperature is not offered on a plant with
+  a heat pump, as in the app. The air conditioner timers keep a lead of at
+  least 10 seconds. Tested with constructed data only.
 - **Batteries of wireless devices:** states without alarm (`BAT_MEDIUM`,
   `BAT_FOTA_FORBIDDEN`) and "no battery" stay unknown with their reported
   state; only `BAT_LOW` and `BAT_TOO_LOW` switch the warning on. This was the

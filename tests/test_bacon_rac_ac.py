@@ -851,3 +851,15 @@ async def test_enabled_entities_show_values_and_write_through_the_service(
         await hass.async_block_till_done()
         # Unloading ends the refresh task.
         assert rac_energy.feed(account, "serial-A")._task is None
+
+
+def test_a_timer_time_keeps_a_lead_for_the_device():
+    """W-6: a time less than 10 seconds ahead moves to the next minute."""
+    assert rac_timers.target_time(1, 61.0) == 120
+    assert rac_timers.target_time(1, 61.0) - 61.0 >= rac_timers.MIN_LEAD_SECONDS
+    assert rac_timers.target_time(1, 55.0) == 120
+    assert rac_timers.target_time(1, 50.0) == 60
+    assert rac_timers.target_time(1, 119.99) == 180
+    assert rac_timers.target_time(2, 61.0) == 180
+    for second in range(0, 120):
+        assert rac_timers.target_time(1, float(second)) - second >= 10
