@@ -81,7 +81,13 @@ def test_implausible_reported_values_are_no_timer(value):
 
 @pytest.mark.parametrize(
     "meta",
-    [{"ro": True}, {"ro": None}, {"step": 30}, {"step": 120}, {"step": True}],
+    [
+        {"ro": True},
+        {"ro": None},
+        {"ro": False, "step": 30},
+        {"ro": False, "step": 120},
+        {"ro": False, "step": True},
+    ],
 )
 def test_only_writable_timers_with_the_app_step_are_declared(meta):
     account, _, data = configured()
@@ -111,7 +117,8 @@ def test_command_validation_guards():
     assert valid({"onTimestamp": ahead})
     assert valid({"onTimestamp": 0})
     # Past, too far, off the minute grid, wrong type, extra field, other field.
-    assert not valid({"onTimestamp": int(NOW) - 60})
+    assert not valid({"onTimestamp": (int(NOW) // 60 - 5) * 60})
+    assert not valid({"onTimestamp": (int(NOW) // 60) * 60})
     assert not valid({"onTimestamp": ahead + 2 * 86400})
     assert not valid({"onTimestamp": ahead + 1})
     assert not valid({"onTimestamp": float(ahead)})
@@ -383,7 +390,8 @@ async def test_a_401_renews_the_token_once_and_a_second_one_is_rejected_quietly(
         # Not "authentication": that would end the whole account connection.
         with pytest.raises(BaconError, match=r"^history_rejected$"):
             await rac_energy.fetch_totals(client, "serial-A")
-    assert len(calls) == 2
+    # One request, one renewal, one repeat; no second renewal.
+    assert len(calls) == 2 and tokens.get_access_token.await_count == 2
 
 
 @pytest.mark.usefixtures("socket_enabled")
@@ -453,10 +461,35 @@ async def test_429_starts_the_shared_pause_for_every_cloud_request():
         calls.clear()
         other = RateLimitBackoff()
         other.activate(300)
-        blocked = BaconClient(http, provider(), url=url + "/devices", backoff=other)
+        idle = provider()
+        blocked = BaconClient(http, idle, url=url + "/devices", backoff=other)
         with pytest.raises(BaconError, match=r"^paused$"):
             await rac_energy.fetch_totals(blocked, "serial-A")
+        # Not even a token is requested while a pause holds.
+        idle.get_access_token.assert_not_awaited()
     assert calls == []
+
+
+@pytest.mark.usefixtures("socket_enabled")
+async def test_the_clients_own_pause_blocks_before_a_token_is_requested():
+    calls = []
+
+    async def graphql(request):
+        calls.append(1)
+        return web.Response(status=429, headers={"Retry-After": "120"})
+
+    tokens = provider()
+    async with (
+        serve([("POST", "/graphql", graphql)]) as url,
+        aiohttp.ClientSession() as http,
+    ):
+        client = BaconClient(http, tokens, url=url + "/devices", clock=lambda: 100)
+        with pytest.raises(BaconError, match=r"^rate_limited$"):
+            await rac_energy.fetch_totals(client, "serial-A")
+        assert tokens.get_access_token.await_count == 1
+        with pytest.raises(BaconError, match=r"^paused$"):
+            await rac_energy.fetch_totals(client, "serial-A")
+    assert len(calls) == 1 and tokens.get_access_token.await_count == 1
 
 
 async def test_a_serial_with_routing_characters_is_refused_before_any_request():
