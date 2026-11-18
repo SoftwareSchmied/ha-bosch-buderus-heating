@@ -2026,6 +2026,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Tunnelmavalon kirkkaus"
       },
+      "bacon_rac_timer_on": {
+        "name": "Päällekytkentäajastin"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Poiskytkentäajastin"
+      },
       "rrc_window_duration": {
         "name": "Avoimen ikkunan kesto"
       },
@@ -2976,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Sähköenergia yhteensä (lämmitys)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Sähköenergia yhteensä (jäähdytys)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Sähköenergia yhteensä (kuivaus)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Sähköenergia yhteensä (vain puhallin)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Tuotettu lämpöenergia yhteensä (lämmitys)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Tuotettu lämpöenergia yhteensä (jäähdytys)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-arvo"

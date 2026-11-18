@@ -59,6 +59,7 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
+from .bacon.rac_entities import track_entities as track_rac_entities
 from .control import HeldCapabilities, track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
 from .derived import (
@@ -553,6 +554,7 @@ def _setup_entities(
         enable_promoted_defaults(coordinator)
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "sensor")
+        track_rac_entities(entry, account, async_add_entities, "sensor")
         track_purifier_entities(
             entry,
             account,

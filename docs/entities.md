@@ -50,6 +50,9 @@ MyBuderus. Other modes, circuits and appliances are not confirmed by those tests
 The Beta.6 [Midea Climate Series package](bacon-air-conditioners.md) adds one
 native climate entity per identified device, with its offered mode, target,
 fan and swing controls. Physical-device confirmation is outstanding.
+Two timer numbers and six lifetime energy sensors per unit (all disabled by
+default) are added in 0.9.2-beta.3; they are expected to work but untested on a
+real unit.
 
 Air conditioners that are their own PointT gateway (device type `rac`)
 get one enabled climate entity named after the device and, disabled by

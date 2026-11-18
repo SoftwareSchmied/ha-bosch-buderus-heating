@@ -2026,6 +2026,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Brillo de la luz ambiental"
       },
+      "bacon_rac_timer_on": {
+        "name": "Temporizador de encendido"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Temporizador de apagado"
+      },
       "rrc_window_duration": {
         "name": "Duración de ventana abierta"
       },
@@ -2976,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Energía eléctrica total (calefacción)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Energía eléctrica total (refrigeración)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Energía eléctrica total (deshumidificación)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Energía eléctrica total (solo ventilador)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Energía térmica entregada total (calefacción)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Energía térmica entregada total (refrigeración)"
       },
       "bacon_purifier_tvoc": {
         "name": "Valor de TVOC"

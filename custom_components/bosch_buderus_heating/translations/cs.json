@@ -2026,6 +2026,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Jas okolního osvětlení"
       },
+      "bacon_rac_timer_on": {
+        "name": "Časovač zapnutí"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Časovač vypnutí"
+      },
       "rrc_window_duration": {
         "name": "Trvání otevřeného okna"
       },
@@ -2976,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrická energie celkem (vytápění)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrická energie celkem (chlazení)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrická energie celkem (odvlhčování)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrická energie celkem (pouze ventilátor)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Dodaná tepelná energie celkem (vytápění)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Dodaná tepelná energie celkem (chlazení)"
       },
       "bacon_purifier_tvoc": {
         "name": "Hodnota TVOC"

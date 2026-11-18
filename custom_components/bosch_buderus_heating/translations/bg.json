@@ -2026,6 +2026,12 @@
       "bacon_purifier_light_intensity": {
         "name": "Яркост на околното осветление"
       },
+      "bacon_rac_timer_on": {
+        "name": "Таймер за включване"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Таймер за изключване"
+      },
       "rrc_window_duration": {
         "name": "Продължителност на отворен прозорец"
       },
@@ -2976,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Електрическа енергия общо (отопление)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Електрическа енергия общо (охлаждане)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Електрическа енергия общо (обезвлажняване)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Електрическа енергия общо (само вентилатор)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Отдадена топлинна енергия общо (отопление)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Отдадена топлинна енергия общо (охлаждане)"
       },
       "bacon_purifier_tvoc": {
         "name": "Стойност на TVOC"
