@@ -279,18 +279,37 @@ def heat_side(
     return side
 
 
+def _delivers_to_circuit(key: str) -> bool:
+    return key not in _STOPPED_STATES and _STATE_SIDES.get(key, CIRCUIT) == CIRCUIT
+
+
 def _status_contradicts_circuit(
     coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace | None
 ) -> bool:
-    for path in (*known_paths(coordinator, REFRIGERANT_STATUS), COMPRESSOR_STATUS):
-        reading = read(coordinator, path)
-        key = state(reading)
-        if key is None:
+    """Whether the status readings say that nothing heats the circuit.
+
+    A burning boiler or any heat pump that delivers to the circuit is no
+    contradiction (a cascade's second pump stands in part load, a hybrid's
+    heat pump stands while its boiler heats). The local refrigerant circuits
+    count first; the cloud's compressor status is slower and only the
+    fallback when no refrigerant circuit has a value.
+    """
+    burner = first(coordinator, (HEAT_SOURCE_ACTIVE,), _running_of)
+    if burner is not None and burner[1]:
+        return False
+    for paths in (known_paths(coordinator, REFRIGERANT_STATUS), (COMPRESSOR_STATUS,)):
+        readings = [
+            (reading, key)
+            for reading in (read(coordinator, path) for path in paths)
+            if (key := state(reading)) is not None
+        ]
+        if not readings:
             continue
-        if key in _STOPPED_STATES or _STATE_SIDES.get(key, CIRCUIT) != CIRCUIT:
-            if trace is not None:
-                trace.note(reading)
-            return True
+        if any(_delivers_to_circuit(key) for _, key in readings):
+            return False
+        if trace is not None:
+            trace.note(readings[0][0])
+        return True
     return False
 
 

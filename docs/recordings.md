@@ -141,8 +141,12 @@ which has no such path) and only for a plant that shows what they belong to.
 Each becomes the same five period entities as any other recording, created
 disabled; a path that does not answer (404, 403) or answers in a unit other
 than the ones below gives no entity at all. Nothing is asked on any other
-plant: a heat pump, a room controller and every plant without the matching
-readings are not asked for these paths.
+plant: a heat pump with energy monitoring (`/heatSources/emon`), a room
+controller and every plant without the matching readings are not asked for
+these paths. A heat pump of an older firmware without `/heatSources/emon` that
+shows a heat pump reading counts as a boiler here: its three boiler paths are
+asked (a 404 is remembered, at most one read per path and day), and an entity
+exists only for a path that answers.
 
 | Recording | Asked on a plant with | Unit accepted | Name |
 |---|---|---|---|

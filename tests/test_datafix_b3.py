@@ -119,6 +119,45 @@ def test_a_start_status_does_not_contradict_the_valve(
     assert circuit_activity(plant.coordinator, ROOT).value == "heating"
 
 
+def test_a_cascade_in_part_load_heats_while_one_pump_stands(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    plant = air(hass, freezer)
+    plant.later(0.2).local("/heatSources/hs2/refrigerant/status", "off")
+    assert circuit_activity(plant.coordinator, ROOT).value == "heating"
+    # Every pump stopped or on the hot water side: nothing heats the circuit.
+    plant.later(0.2).local(REFRIGERANT, "dhw")
+    assert circuit_activity(plant.coordinator, ROOT).value == "idle"
+    plant.later(0.2).local("/heatSources/hs2/refrigerant/status", "heating")
+    assert circuit_activity(plant.coordinator, ROOT).value == "heating"
+
+
+def test_a_hybrid_boiler_heating_is_no_contradiction_to_the_valve(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    plant = air(hass, freezer)
+    plant.flag(COMPRESSOR_ACTIVE, False).local(REFRIGERANT, "off")
+    plant.cloud(COMPRESSOR, "off")
+    assert circuit_activity(plant.coordinator, ROOT).value == "idle"
+    plant.cloud("/heatSources/flameStatus", "on")
+    assert circuit_activity(plant.coordinator, ROOT).value == "heating"
+    plant.cloud("/heatSources/flameStatus", "off")
+    assert circuit_activity(plant.coordinator, ROOT).value == "idle"
+
+
+def test_the_cloud_compressor_status_is_only_the_fallback(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    plant = air(hass, freezer)
+    plant.later(0.2).local(REFRIGERANT, "off").cloud(COMPRESSOR, "heating")
+    assert circuit_activity(plant.coordinator, ROOT).value == "idle"
+    plant.forget(REFRIGERANT)
+    plant.cloud(COMPRESSOR, "off")
+    assert circuit_activity(plant.coordinator, ROOT).value == "idle"
+    plant.cloud(COMPRESSOR, "heating")
+    assert circuit_activity(plant.coordinator, ROOT).value == "heating"
+
+
 # ------------------------------------------------------------------ H3
 async def test_the_factor_of_today_says_why_it_is_unknown_after_midnight(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory

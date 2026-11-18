@@ -72,7 +72,7 @@ from ..const import DOMAIN
 from ..log_helpers import log_failure
 from ..rrc_energy_statistics import async_gateway_digest
 from .anchor import has_recording_anchor
-from .gating import allowed_keys, softener_plant
+from .gating import SOFTENER_CIRCUIT, allowed_keys, softener_plant
 from .ledger import CLOUD, LOCAL, DailyValue, Ledger
 from .measures import (
     CALCULATED,
@@ -554,6 +554,18 @@ class RecordingsManager:
             listener()
 
     # ---------------------------------------------------------------- series
+    def _heat_source_series_known(self) -> bool:
+        """Whether a series of the heat source has answered before.
+
+        The plant's readings may be missing right after a start (cloud not
+        reachable, no local reading yet); stored answers anchor the run then.
+        """
+        return any(
+            row and row[0] == "ok" and not path.startswith(SOFTENER_CIRCUIT)
+            for known in (self.local_paths, self.cloud_paths)
+            for path, row in known.items()
+        )
+
     def available(self) -> tuple[str, ...]:
         """Series that answered, by key."""
         keys = []
@@ -587,7 +599,11 @@ class RecordingsManager:
             self.waiting = "not_needed"
             return
         coordinator = self.coordinator()
-        heat = coordinator is None or has_recording_anchor(coordinator)
+        heat = (
+            coordinator is None
+            or has_recording_anchor(coordinator)
+            or self._heat_source_series_known()
+        )
         if not heat and not softener_plant(coordinator):
             # A room controller with a bare heat source (no counters, no
             # starts, no heat pump): nothing the recordings belong to.

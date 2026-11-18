@@ -356,6 +356,8 @@ class CounterGuard:
         """
         key = self._prefix + path
         last = self._store.get(key)
+        if last is not None and path in NO_ENVIRONMENTAL_ENERGY_PATHS:
+            last = self._without_environmental_energy(key, last)
         ordered = [
             (source, snapshot, counter_vector(snapshot.resource))
             for source, snapshot in candidates
@@ -446,6 +448,30 @@ class CounterGuard:
             return without_numbers
         self.shown[path] = "unavailable"
         return None
+
+    def _without_environmental_energy(
+        self, key: str, last: ShownCounter
+    ) -> ShownCounter:
+        """Forget the environmental energy an older version stored for cooling.
+
+        The cooling collection has no such value any more; the stored part
+        would otherwise bind a source change until it counted as stale.
+        """
+        part = "=environmental_energy"
+        if part not in last.values:
+            return last
+        values = {name: value for name, value in last.values.items() if name != part}
+        if not values:
+            return last
+        confirmed = None if last.confirmed is None else last.confirmed - {part}
+        row = ShownCounter(
+            last.source,
+            values,
+            confirmed,
+            last.since if confirmed is not None and confirmed < values.keys() else None,
+        )
+        self._store.set(key, row)
+        return row
 
     def _drop_stale(
         self,
