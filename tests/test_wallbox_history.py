@@ -3,7 +3,7 @@ names of unknown fields. Synthetic data only; no real wallbox was involved."""
 
 import copy
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -160,6 +160,83 @@ def test_unusable_sessions_are_skipped_not_zeroed():
     assert session is not None
     assert session.duration_seconds is None
     assert session.energy_kwh is None
+
+
+LOCAL = timezone(timedelta(hours=1))
+
+
+def test_a_time_without_an_offset_is_local_time_when_the_clock_is_known():
+    naive = {
+        "begin": "2026-11-10T08:00:00",
+        "end": "2026-11-10T09:30:00",
+        "energy": 5,
+    }
+    now = datetime(2026, 11, 18, 12, 0, tzinfo=LOCAL)
+    session = parse_chargelog({"values": [naive]}, now)
+    assert session is not None
+    assert session.start == datetime(2026, 11, 10, 8, 0, tzinfo=LOCAL)
+    assert session.end == datetime(2026, 11, 10, 9, 30, tzinfo=LOCAL)
+    # Without a clock a time without an offset stays unusable.
+    assert parse_chargelog({"values": [naive]}) is None
+
+
+def test_a_session_ending_in_the_future_never_wins():
+    now = datetime(2026, 11, 18, 12, 0, tzinfo=LOCAL)
+    future = {
+        "begin": "2099-01-01T08:00:00+01:00",
+        "end": "2099-01-01T09:00:00+01:00",
+        "energy": 99,
+    }
+    real = {
+        "begin": "2026-11-10T08:00:00+01:00",
+        "end": "2026-11-10T09:00:00+01:00",
+        "energy": 7,
+    }
+    session = parse_chargelog({"values": [real, future]}, now)
+    assert session is not None
+    assert session.energy_kwh == 7
+    assert parse_chargelog({"values": [future]}, now) is None
+    # A few minutes of clock difference are tolerated.
+    close = {
+        "begin": "2026-11-18T10:00:00+01:00",
+        "end": "2026-11-18T12:05:00+01:00",
+    }
+    assert parse_chargelog({"values": [close]}, now) is not None
+
+
+@pytest.mark.parametrize(
+    ("unit", "expected"),
+    [(None, 40.5), ("kWh", 40.5), ("Wh", 0.0405), ("MWh", None), (7, None)],
+)
+def test_the_unit_of_a_session_energy_is_checked_when_named(unit, expected):
+    item = {
+        "begin": "2026-11-10T08:00:00+01:00",
+        "end": "2026-11-10T09:00:00+01:00",
+        "energy": 40.5,
+    }
+    if unit is not None:
+        item["unitOfMeasure"] = unit
+    session = parse_chargelog({"values": [item]})
+    assert session is not None
+    if expected is None:
+        assert session.energy_kwh is None
+    else:
+        assert session.energy_kwh == pytest.approx(expected)
+
+
+async def test_a_cycle_reads_an_answer_without_offsets_and_drops_a_future_end():
+    log = {
+        "values": [
+            {"begin": "2026-11-10T08:00:00", "end": "2026-11-10T09:00:00"},
+            {"begin": "2099-01-01T08:00:00", "end": "2099-01-01T09:00:00"},
+        ]
+    }
+    client = SimpleNamespace(get_wallbox_history=AsyncMock(return_value=log))
+    history = wallbox_history.WallboxHistory(interval=1800)
+    now = datetime(2026, 11, 18, 12, 0, tzinfo=LOCAL)
+    await history.read_due(client, GW, enabled=True, local_now=now)
+    assert history.session is not None
+    assert history.session.end == datetime(2026, 11, 10, 9, 0, tzinfo=LOCAL)
 
 
 def test_energy_history_sums_grid_and_solar_and_converts_the_unit_once():
@@ -454,6 +531,24 @@ def test_only_plain_tokens_become_names_and_the_list_is_bounded():
     # 6 unnamed keys plus the 36 plain names beyond the limit.
     assert parsed.unnamed_count == 6 + 100 - MAX_UNKNOWN_NAMES
     assert "name=Max" not in repr(parsed.unknown_names)
+
+
+def test_identifier_like_keys_are_counted_not_named():
+    parsed = parse_section(
+        "telemetry",
+        {
+            "values": {
+                "AB12345678901": "x",
+                "ab1234567": "x",
+                "mac00112233": "x",
+                "limit2": "x",
+                "meter": "1;2",
+                "chargePermission": "x",
+            }
+        },
+    )
+    assert parsed.unknown_names == ("chargePermission", "limit2")
+    assert parsed.unnamed_count == 3
 
 
 def test_no_unknown_field_gives_an_empty_list():

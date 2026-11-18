@@ -14,6 +14,21 @@ Versioning after its first tagged preview.
 >   controller, the cooling paths of a heating circuit, the hybrid strategy
 >   and feed-in tariff sensors), and the old ventilation select **Exhaust fan
 >   level** is removed; see the entries below.
+> - **Hybrid systems:** the states of the sensor **Hybrid control strategy**
+>   change (for example `heatPumpOnly` becomes `heat_pump_preferred`,
+>   `maxRenewableShare` becomes `max_renewable_share`, `boilerOnly` becomes
+>   `boiler_only`, `bivalentAlternativeMode` becomes `bivalent_alternative`;
+>   `cost` and `environment` stay). Please check automations, templates and
+>   dashboards that compare the state.
+> - **Activity (calculated):** a heating circuit without a pump value no longer
+>   gets this sensor. An existing one stays as an unavailable entity; delete
+>   it in the entity settings.
+> - **Radio connection interrupted since** is now a timestamp sensor (same
+>   ID); its history before the update is text.
+> - **From 0.9.1:** many local signals now have names instead of *Signal …*,
+>   and entities with an icon per state no longer have the state attribute
+>   `icon`. **With °F:** automations and scripts that set temperature numbers
+>   now use °F values; please check them.
 > - **From 0.8.x:** make a full Home Assistant backup first. The first start
 >   moves the entry to storage format 4, which 0.8.x cannot load. Home
 >   Assistant 2026.5.0 or newer is required.
@@ -100,9 +115,11 @@ Versioning after its first tagged preview.
   per wallbox, giving six sensors. Names of cards and users, meter serial
   numbers, session identifiers and costs are never read or stored. The
   diagnostics list the names, never the values, of fields in the wallbox
-  answers that are not read yet. Tested with simulated answers only; the date
-  format of the request, the monthly sum and the units are expected, not
-  confirmed.
+  answers that are not read yet (names that look like identifiers are only
+  counted). A time without a time zone is taken as local time, and a session
+  ending in the future is ignored. Tested with simulated answers only; the
+  date format of the request, the monthly sum, the time zone and the units are
+  expected, not confirmed.
 - **Air conditioners of the second cloud access (Climate Series):** an on and
   an off timer as numbers in minutes (0 stops the timer; disabled, only when
   the device reports the timer as writable). Times in the past, more than one
@@ -168,9 +185,12 @@ Versioning after its first tagged preview.
   water or defrosts, like the COP and the spread. The performance factors say
   why they are unknown in the attribute `reason`. **Activity (calculated)** is
   only created for a heating circuit for which the plant reports a pump value;
-  existing sensors stay as they are. At the end of a hot water charge a
+  an existing sensor stays as an unavailable entity (delete it in the entity
+  settings). At the end of a hot water charge a
   heating circuit no longer shows `heating` for the minute in between. Checked
-  with simulated cycles, not yet watched on a plant.
+  with simulated cycles, not yet watched on a plant. Thank you to markus1783
+  for the report and diagnostics in
+  [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
 - **Radio connection:** **Radio connection interrupted since** is a timestamp
   sensor. The placeholder `2000-00-00T00:00` shows as unknown; a text without
   a time zone stays unknown and appears as the attribute `raw_value`. The
@@ -183,8 +203,8 @@ Versioning after its first tagged preview.
 - **Sign-in:** the integration waits up to 90 seconds for the SingleKey ID
   answer when it renews the token (connecting still takes 10 seconds). With a
   slow answer the sign-in was lost because the server had already used up the
-  token. Tested with an artificially slow token endpoint, not on a real
-  SingleKey server.
+  token. Tested in an automated test with a scaled-down slow token endpoint, not on
+  a real SingleKey server.
 - **Second cloud access:** air conditioners and other devices stay available
   when they send nothing for an hour (the online status of the last message
   counts, as in the HomeCom Easy app; how current a value is stays with the
@@ -195,7 +215,8 @@ Versioning after its first tagged preview.
   the app with an open app, which is meant to make the devices send readings
   more often: expected, untested on a real device, and switched off for the
   connection if the service refuses it. Tested with simulated data and a local
-  test broker over several hours and token renewals, not on a real device.
+  test broker over three simulated hours with token renewals, not on a real
+  device.
   Thank you to mehball for the detailed report with diagnostics in
   [#136](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/136).
 
@@ -206,9 +227,10 @@ Versioning after its first tagged preview.
   identifier or version), as a K40RF with firmware 15.00.01 reports for a
   burner module. The missing field stays missing; such a module is left out
   of the comparison with the cloud. `Tok`, `Id` and wrongly typed values are
-  still rejected. Tested with data in the shape of the report; not yet tested
-  on that installation
-  ([#139](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/139)).
+  still rejected. Thank you to disintegr8te for the report and diagnostics in
+  [#139](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/139).
+  Tested with data in the shape of the report; not yet tested on that
+  installation.
 - **Cloud accounts with only a wallbox or an air conditioner** no longer
   stay on "starting"; an outage of these devices shows as "not reachable".
 - **Repair "fault source no longer exists"** belongs to its entry and

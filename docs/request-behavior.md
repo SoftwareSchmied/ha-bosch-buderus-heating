@@ -225,6 +225,12 @@ one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation
 and read-back confirmation and are never blindly retried.
 
+Since 0.9.2-beta.3 every change of a setting, also of the older ones (hot
+water, pool, climate), first reads that setting live from the gateway and
+checks value, limits, options and the in use, available and writable flags
+against that reading. If the live reading fails or differs, nothing is sent.
+That is one additional read per write unless the write already reads fresh.
+
 A write waits at most 60 seconds for a running poll or another write of its
 gateway; after that it sends nothing and says so. Since 0.9.0-alpha.6 a write
 that has started also has an overall deadline of 60 seconds (180 seconds for a
@@ -443,6 +449,13 @@ und bleiben danach bei 30 Minuten. Ein Wert, der fünfmal als nicht vorhanden
 mehr gelesen. Cloud-Sperrzeiten und reguläre Anlagenabfragen
 haben Vorrang. Nicht unterstützte reine Zusatzpfade und Sicherheitsgrenzen sind
 ausdrücklich von dieser fortgesetzten Wiederholung ausgenommen.
+
+Seit 0.9.2-beta.3 liest jede Änderung einer Einstellung, auch der älteren
+(Warmwasser, Pool, Klima), die Einstellung zuerst live vom Gateway und prüft
+Wert, Grenzen, Optionen sowie die Kennzeichen „in Benutzung“, „verfügbar“ und
+„schreibbar“ gegen diese Lesung. Schlägt die Live-Lesung fehl oder weicht sie
+ab, wird nichts gesendet. Das ist eine zusätzliche Lesung je Schreibvorgang,
+sofern der Vorgang nicht ohnehin frisch liest.
 
 Ein Schreibvorgang wartet höchstens 60 Sekunden auf eine laufende Abfrage und
 sendet sonst nichts. Seit 0.9.0-alpha.6 hat ein begonnener Schreibvorgang
