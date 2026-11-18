@@ -666,6 +666,10 @@
     "Cooling temperature": "Køletemperatur",
     "Air quality demand": "Behov efter luftkvalitet",
     "Humidity demand": "Behov efter luftfugtighed",
-    "Feed-in tariff": "Afregningspris for overskudsstrøm"
+    "Feed-in tariff": "Afregningspris for overskudsstrøm",
+    "Water consumption": "Vandforbrug",
+    "Boiler energy": "Kedelenergi",
+    "Energy consumed": "Forbrugt energi",
+    "Last regeneration (calculated)": "Seneste regenerering (beregnet)"
   }
 }

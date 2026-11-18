@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Nettolämpö (laskettu)"
       },
+      "calculated_last_regeneration": {
+        "name": "Viimeisin regenerointi (laskettu)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Keskimääräinen käyntiaika käynnistystä kohden, lämmitys (laskettu)"
       },

@@ -666,6 +666,10 @@
     "Cooling temperature": "Θερμοκρασία ψύξης",
     "Air quality demand": "Ζήτηση βάσει ποιότητας αέρα",
     "Humidity demand": "Ζήτηση βάσει υγρασίας",
-    "Feed-in tariff": "Τιμή έγχυσης στο δίκτυο"
+    "Feed-in tariff": "Τιμή έγχυσης στο δίκτυο",
+    "Water consumption": "Κατανάλωση νερού",
+    "Boiler energy": "Ενέργεια λέβητα",
+    "Energy consumed": "Καταναλωθείσα ενέργεια",
+    "Last regeneration (calculated)": "Τελευταία αναγέννηση (υπολογισμένη)"
   }
 }

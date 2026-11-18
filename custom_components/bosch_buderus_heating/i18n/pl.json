@@ -666,6 +666,10 @@
     "Cooling temperature": "Temperatura chłodzenia",
     "Air quality demand": "Zapotrzebowanie wg jakości powietrza",
     "Humidity demand": "Zapotrzebowanie wg wilgotności",
-    "Feed-in tariff": "Taryfa za oddawanie energii"
+    "Feed-in tariff": "Taryfa za oddawanie energii",
+    "Water consumption": "Zużycie wody",
+    "Boiler energy": "Energia kotła",
+    "Energy consumed": "Zużyta energia",
+    "Last regeneration (calculated)": "Ostatnia regeneracja (obliczona)"
   }
 }

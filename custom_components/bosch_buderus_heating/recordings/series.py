@@ -29,6 +29,7 @@ class Quantity(StrEnum):
     COUNT = "count"
     DURATION = "duration"
     TEMPERATURE = "temperature"
+    VOLUME = "volume"
 
 
 # Each kind of value at the end of an energy path: its slug and quantity.
@@ -52,12 +53,14 @@ UNITS: Final[dict[Quantity, dict[str | None, float]]] = {
     Quantity.COUNT: {None: 1.0, "": 1.0, "count": 1.0},
     Quantity.DURATION: {"s": 1 / 3600, "min": 1 / 60, "mins": 1 / 60, "h": 1.0},
     Quantity.TEMPERATURE: {"C": 1.0, "°C": 1.0},
+    Quantity.VOLUME: {"l": 1.0, "L": 1.0, "m3": 1000.0, "m³": 1000.0},
 }
 UNIT_OF: Final[dict[Quantity, str | None]] = {
     Quantity.ENERGY: "kWh",
     Quantity.COUNT: None,
     Quantity.DURATION: "h",
     Quantity.TEMPERATURE: "°C",
+    Quantity.VOLUME: "L",
 }
 # The energy paths the cloud answers in its ``interval`` form, read hourly
 # only when there is no local access: heat, compressor and heater per total,
@@ -78,6 +81,10 @@ class Series:
     mode: str | None
     kind: str
     quantity: Quantity
+    # Read from the cloud only (no path of the local data port), and only
+    # for a plant that shows ``requires`` (see ``gating``).
+    cloud_only: bool = False
+    requires: str | None = None
 
     @property
     def mean(self) -> bool:
@@ -122,9 +129,56 @@ def _catalogue() -> tuple[Series, ...]:
 
 
 SERIES: Final = _catalogue()
-BY_PATH: Final = {item.path: item for item in SERIES}
-BY_KEY: Final = {item.key: item for item in SERIES}
 LOCAL_PATHS: Final = tuple(item.path for item in SERIES)
+
+# Series the local data port does not have. Each is read from the cloud
+# only when the plant shows what it belongs to (``gating``) and the path
+# answers there: the daily consumption of a water softener, and the energy
+# recordings of boilers and older firmware, which the app reads from other
+# paths than a heat pump's.
+REQUIRES_SOFTENER: Final = "softener"
+REQUIRES_BOILER: Final = "boiler"
+CLOUD_ONLY: Final = (
+    Series(
+        "water",
+        "/recordings/swCircuits/sw1/sensor/water",
+        None,
+        "water",
+        Quantity.VOLUME,
+        cloud_only=True,
+        requires=REQUIRES_SOFTENER,
+    ),
+    Series(
+        "ch_actual_power",
+        "/recordings/heatSources/actualCHPower",
+        "ch",
+        "actual_power",
+        Quantity.ENERGY,
+        cloud_only=True,
+        requires=REQUIRES_BOILER,
+    ),
+    Series(
+        "dhw_actual_power",
+        "/recordings/heatSources/actualDHWPower",
+        "dhw",
+        "actual_power",
+        Quantity.ENERGY,
+        cloud_only=True,
+        requires=REQUIRES_BOILER,
+    ),
+    Series(
+        "total_consumed",
+        "/recordings/heatSources/total/energyMonitoring/consumedEnergy",
+        "total",
+        "consumed",
+        Quantity.ENERGY,
+        cloud_only=True,
+        requires=REQUIRES_BOILER,
+    ),
+)
+ALL_SERIES: Final = (*SERIES, *CLOUD_ONLY)
+BY_PATH: Final = {item.path: item for item in ALL_SERIES}
+BY_KEY: Final = {item.key: item for item in ALL_SERIES}
 
 
 def electricity_parts(mode: str) -> tuple[str, str]:

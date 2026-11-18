@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Καθαρή θερμότητα (υπολογισμένο)"
       },
+      "calculated_last_regeneration": {
+        "name": "Τελευταία αναγέννηση (υπολογισμένη)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Μέσος χρόνος λειτουργίας ανά εκκίνηση, θέρμανση (υπολογισμένο)"
       },

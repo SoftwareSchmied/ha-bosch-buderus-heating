@@ -44,6 +44,8 @@ ANCHOR_OUTDOOR: Final = "/system/sensors/temperatures/outdoor_t1"
 ANCHOR_SUPPLY: Final = "/heatSources/actualSupplyTemperature"
 ANCHOR_STARTS: Final = "/heatSources/numberOfStarts"
 ANCHOR_WORKING: Final = "/heatSources/workingTime/totalSystem"
+# The first reading of a softener circuit: its device and name group.
+ANCHOR_SOFTENER: Final = "/swCircuits/sw1/sensor/saltLevel"
 
 
 class Statistic(StrEnum):
@@ -86,6 +88,11 @@ class Measure:
             return ANCHOR_STARTS
         if self.kind == "working_time":
             return ANCHOR_WORKING
+        if self.kind == "water":
+            return ANCHOR_SOFTENER
+        if self.kind in ("actual_power", "consumed"):
+            # Boilers and older firmware have no energy monitoring.
+            return ANCHOR_SUPPLY
         return ANCHOR_ENERGY
 
     def derived_from(self) -> list[str]:
@@ -251,6 +258,12 @@ def _kind_name(language: str, measure: Measure) -> str:
         return localize(language, "Energie Lüftung", "Ventilation energy")
     if kind == "heat_recovered":
         return localize(language, "Rückgewonnene Wärme", "Heat recovered")
+    if kind == "actual_power":
+        return localize(language, "Energie Kessel", "Boiler energy")
+    if kind == "consumed":
+        return localize(language, "Verbrauchte Energie", "Energy consumed")
+    if kind == "water":
+        return localize(language, "Wasserverbrauch", "Water consumption")
     if kind == "starts":
         return localize(language, "Starts", "Starts")
     if kind == "working_time":

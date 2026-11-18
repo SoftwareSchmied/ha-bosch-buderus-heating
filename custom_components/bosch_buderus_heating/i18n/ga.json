@@ -666,6 +666,10 @@
     "Cooling temperature": "Teocht fuaraithe",
     "Air quality demand": "Éileamh de réir cháilíocht an aeir",
     "Humidity demand": "Éileamh de réir taise",
-    "Feed-in tariff": "Taraif bheathaithe isteach"
+    "Feed-in tariff": "Taraif bheathaithe isteach",
+    "Water consumption": "Úsáid uisce",
+    "Boiler energy": "Fuinneamh coire",
+    "Energy consumed": "Fuinneamh a ídíodh",
+    "Last regeneration (calculated)": "An athghiniúint dheireanach (ríofa)"
   }
 }

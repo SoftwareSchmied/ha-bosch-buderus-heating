@@ -287,6 +287,9 @@
       "active_notifications": {
         "default": "mdi:alert-circle-outline"
       },
+      "calculated_last_regeneration": {
+        "default": "mdi:history"
+      },
       "calculated_activity": {
         "default": "mdi:heat-pump-outline",
         "state": {

@@ -161,6 +161,7 @@ from .wallbox_entities import track_wallbox_entities
 from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
+from .water_softener_history import track_softener_history_sensors
 from .write_policies import context_of, rrc_kwargs
 from .zone_radio_devices import (
     ZoneRadioConnectionLostSensor,
@@ -596,6 +597,7 @@ def _setup_entities(
         track_calculated_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
         track_recording_sensors(entry, coordinator, async_add_entities)
+        track_softener_history_sensors(entry, coordinator, async_add_entities)
         track_performance_sensors(entry, coordinator, async_add_entities)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)

@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Calor líquido (calculado)"
       },
+      "calculated_last_regeneration": {
+        "name": "Última regeneração (calculada)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Tempo médio de funcionamento por arranque, aquecimento (calculado)"
       },

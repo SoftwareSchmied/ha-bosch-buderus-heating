@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Netto-Wärme (berechnet)"
       },
+      "calculated_last_regeneration": {
+        "name": "Letzte Regeneration (berechnet)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Mittlere Laufzeit je Start Heizen (berechnet)"
       },

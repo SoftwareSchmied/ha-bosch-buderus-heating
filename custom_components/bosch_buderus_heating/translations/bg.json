@@ -2514,6 +2514,9 @@
       "calculated_net_heat": {
         "name": "Нетна топлина (изчислена)"
       },
+      "calculated_last_regeneration": {
+        "name": "Последна регенерация (изчислена)"
+      },
       "calculated_run_time_per_start_heating": {
         "name": "Средно време на работа на старт, отопление (изчислено)"
       },
