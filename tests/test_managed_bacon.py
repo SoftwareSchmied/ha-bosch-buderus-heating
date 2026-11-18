@@ -782,11 +782,10 @@ async def test_reenabled_device_recovers_from_unchanged_retained_information(has
 async def test_reconnect_with_only_retained_information_keeps_the_device(hass):
     broker = Broker()
     with instant_reconnect_pause() as pauses:
-        await _reconnect_with_only_retained_information(hass, broker)
-    assert pauses == [5.0]
+        await _reconnect_with_only_retained_information(hass, broker, pauses)
 
 
-async def _reconnect_with_only_retained_information(hass, broker):
+async def _reconnect_with_only_retained_information(hass, broker, pauses):
     async with connected(hass, broker) as (_, _, owner, _):
         await eventually(lambda: ready(owner))
         access = view(owner)
@@ -797,6 +796,9 @@ async def _reconnect_with_only_retained_information(hass, broker):
         await eventually(lambda: access.generation > generation, timeout=15)
         # Our reconnect is no device silence: the stored information is enough.
         await eventually(lambda: ready(owner), timeout=15)
+        # Only the pause of our own reconnect counts; closing the broker at
+        # the end of the test makes the session retry without waiting.
+        assert pauses == [5.0]
         assert access.device.alive_at == alive
         # The unchanged sensor sample is no new reading, yet the earlier one
         # stays visible across our reconnect.
