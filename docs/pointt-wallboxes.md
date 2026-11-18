@@ -193,9 +193,9 @@ from software 5.0.0). Six sensors appear once the first answer is in:
 
 | Sensor | Meaning |
 | --- | --- |
-| Last session start, Last session end | `begin` and `end` of the newest finished session of the charge log (with a UTC offset) |
+| Last session start, Last session end | `begin` and `end` of the newest finished session of the charge log; a time without an offset is taken as local time of Home Assistant, a session that ends in the future (wrong clock of the wallbox) is ignored |
 | Last session charging time | `chargingDuration` of that session, in seconds, displayed in minutes |
-| Last session energy | `energy` of that session in kWh |
+| Last session energy | `energy` of that session, expected in kWh (not confirmed); an entry that names its unit is converted from Wh or kWh, any other unit leaves the value unknown |
 | Charged from grid this month, Charged from solar this month | sum of the samples of `gridEnergy` and `solarEnergy` from the first of the month until now, in kWh (a unit of Wh or kWh is accepted, anything else leaves the value unknown) |
 
 Only these fields are read from the answers. Authentication names, card and
@@ -205,7 +205,7 @@ each part is fresh, its error category and request counts. Switching the
 option off forgets the values at once; the sensors then stay as unavailable.
 The paths and the meaning of the fields come from the manufacturer's app;
 **expected, untested on a real wallbox**: the date format of the query, the
-aggregation of the energy samples and the units are not confirmed.
+aggregation of the energy samples, the time zone of the times and the units are not confirmed. An answer larger than 2 MiB is refused and shows as an invalid answer in the diagnostics.
 
 ## Deutsch
 
@@ -397,9 +397,9 @@ entstehen, sobald die erste Antwort vorliegt:
 
 | Sensor | Bedeutung |
 | --- | --- |
-| Beginn der letzten Ladung, Ende der letzten Ladung | `begin` und `end` der neuesten beendeten Ladung im Ladeprotokoll (mit UTC-Versatz) |
+| Beginn der letzten Ladung, Ende der letzten Ladung | `begin` und `end` der neuesten beendeten Ladung im Ladeprotokoll; eine Zeit ohne Versatz gilt als Ortszeit von Home Assistant, eine Ladung mit Ende in der Zukunft (falsche Uhr der Wallbox) wird ignoriert |
 | Ladezeit der letzten Ladung | `chargingDuration` dieser Ladung in Sekunden, angezeigt in Minuten |
-| Energie der letzten Ladung | `energy` dieser Ladung in kWh |
+| Energie der letzten Ladung | `energy` dieser Ladung, erwartet in kWh (nicht bestätigt); nennt der Eintrag seine Einheit, wird sie von Wh oder kWh umgerechnet, jede andere Einheit lässt den Wert unbekannt |
 | Diesen Monat aus dem Netz geladen, Diesen Monat mit Solarenergie geladen | Summe der Werte von `gridEnergy` und `solarEnergy` vom Monatsersten bis jetzt in kWh (Einheit Wh oder kWh wird angenommen, sonst bleibt der Wert unbekannt) |
 
 Aus den Antworten werden nur diese Felder gelesen. Authentifizierungsnamen,
@@ -409,5 +409,6 @@ die Diagnose zeigt nur, ob jeder Teil aktuell ist, seine Fehlerkategorie und
 Anfragezähler. Wird die Option ausgeschaltet, werden die Werte sofort
 vergessen; die Sensoren bleiben dann nicht verfügbar. Pfade und Bedeutung der
 Felder stammen aus der Hersteller-App; **erwartet, an einer echten Wallbox
-ungetestet**: Datumsformat der Abfrage, Aufsummierung der Energiewerte und
-Einheiten sind nicht bestätigt.
+ungetestet**: Datumsformat der Abfrage, Aufsummierung der Energiewerte,
+Zeitzone der Zeiten und Einheiten sind nicht bestätigt. Eine Antwort über
+2 MiB wird abgewiesen und erscheint in der Diagnose als ungültige Antwort.

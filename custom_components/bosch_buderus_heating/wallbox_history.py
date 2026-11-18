@@ -15,7 +15,7 @@ put into the diagnostics.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 from math import isfinite
 from time import monotonic
 from typing import TYPE_CHECKING, Final, Literal
@@ -35,6 +35,8 @@ SESSION_WINDOW_DAYS: Final = 35
 MAX_SESSIONS: Final = 2000
 MAX_SAMPLES: Final = 2000
 _MAX_SECONDS: Final = 366 * 86400
+# A session may end this much after the local clock (clock differences).
+_FUTURE_TOLERANCE: Final = timedelta(minutes=10)
 _ENERGY_UNITS: Final = {"kwh": 1.0, "wh": 0.001}
 _SIGNALS: Final = {"gridEnergy": "grid_kwh", "solarEnergy": "solar_kwh"}
 
@@ -68,21 +70,45 @@ def _number(value: object) -> float | None:
     return number if isfinite(number) and number >= 0 else None
 
 
-def _timestamp(value: object) -> datetime | None:
+def _timestamp(value: object, local: tzinfo | None = None) -> datetime | None:
+    """A time with an offset as given; one without is local time of ``local``."""
     if not isinstance(value, str) or len(value) > 64:
         return None
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError:
         return None
-    return parsed if parsed.tzinfo is not None else None
+    if parsed.tzinfo is not None:
+        return parsed
+    return parsed.replace(tzinfo=local) if local is not None else None
 
 
-def parse_chargelog(payload: object) -> SessionSummary | None:
+def _session_energy(item: dict[object, object]) -> float | None:
+    """Energy of a session in kWh; kWh when the entry names no unit.
+
+    An entry that names a unit (``unitOfMeasure``) is converted from Wh or
+    kWh; any other unit leaves the value unknown.
+    """
+    number = _number(item.get("energy"))
+    unit = item.get("unitOfMeasure")
+    if number is None or unit is None:
+        return number
+    factor = (
+        _ENERGY_UNITS.get(unit.strip().casefold()) if isinstance(unit, str) else None
+    )
+    return number * factor if factor is not None else None
+
+
+def parse_chargelog(
+    payload: object, now: datetime | None = None
+) -> SessionSummary | None:
     """The newest finished session of a charge log answer.
 
     ``None``: the log holds no usable finished session (a valid answer).
     Anything but an object with a ``values`` list is a protocol error.
+    With ``now`` (local time of Home Assistant) a time without an offset is
+    taken as that local time, as the query is sent, and a session ending
+    after ``now`` (a wrong clock of the wallbox) is not a finished session.
     """
     if not isinstance(payload, dict) or not isinstance(payload.get("values"), list):
         raise ProtocolError("Invalid wallbox charge log")
@@ -90,9 +116,12 @@ def parse_chargelog(payload: object) -> SessionSummary | None:
     for item in payload["values"][:MAX_SESSIONS]:
         if not isinstance(item, dict):
             continue
-        start = _timestamp(item.get("begin"))
-        end = _timestamp(item.get("end"))
+        local = now.tzinfo if now is not None else None
+        start = _timestamp(item.get("begin"), local)
+        end = _timestamp(item.get("end"), local)
         if start is None or end is None or end < start:
+            continue
+        if now is not None and end > now + _FUTURE_TOLERANCE:
             continue
         if best is not None and end <= best.end:
             continue
@@ -102,7 +131,7 @@ def parse_chargelog(payload: object) -> SessionSummary | None:
             if type(duration) is int and 0 <= duration <= _MAX_SECONDS
             else None
         )
-        best = SessionSummary(start, end, seconds, _number(item.get("energy")))
+        best = SessionSummary(start, end, seconds, _session_energy(item))
     return best
 
 
@@ -234,7 +263,7 @@ class WallboxHistory:
                 local_now - timedelta(days=SESSION_WINDOW_DAYS),
                 local_now,
             )
-            self.session = parse_chargelog(payload)
+            self.session = parse_chargelog(payload, local_now)
         else:
             month = local_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             payload = await client.get_wallbox_history(

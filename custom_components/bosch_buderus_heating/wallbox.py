@@ -117,6 +117,8 @@ KNOWN_FIELDS: Final[dict[str, frozenset[str]]] = {
 # A field name is kept for the diagnostics only as a short plain token.
 _SAFE_NAME: Final = re_compile(r"[A-Za-z][A-Za-z0-9_]{0,47}")
 MAX_UNKNOWN_NAMES: Final = 64
+# A name with more digits than this looks like an identifier, not a field.
+_MAX_NAME_DIGITS: Final = 4
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -194,7 +196,11 @@ def unknown_field_names(
     for key in raw:
         if isinstance(key, str) and key in known:
             continue
-        if isinstance(key, str) and _SAFE_NAME.fullmatch(key):
+        if (
+            isinstance(key, str)
+            and _SAFE_NAME.fullmatch(key)
+            and sum(char.isdigit() for char in key) <= _MAX_NAME_DIGITS
+        ):
             names.add(key)
         else:
             unnamed += 1
