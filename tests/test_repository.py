@@ -104,7 +104,12 @@ def test_all_known_sensor_enum_options_have_translations() -> None:
     for filename in ("strings.json", "translations/en.json", "translations/de.json"):
         sensors = load_json(INTEGRATION / filename)["entity"]["sensor"]
         for translation_key, options in _ENUM_OPTIONS.items():
-            assert set(sensors[translation_key]["state"]) == set(options)
+            expected = set(options)
+            if translation_key == "on_off_state":
+                # The zone child lock reads active/inactive; those options come
+                # from the device's advertised values, not from the fixed list.
+                expected |= {"active", "inactive"}
+            assert set(sensors[translation_key]["state"]) == expected
 
 
 def test_heat_source_status_translations_are_consistent() -> None:
