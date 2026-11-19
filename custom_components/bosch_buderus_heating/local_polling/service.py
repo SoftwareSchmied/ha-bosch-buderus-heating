@@ -214,6 +214,8 @@ class LocalPollingService:
         self._shown_records: dict[str, ResourceRecord] | None = None
         self._shown_ready: bool | None = None
         self._shown_token: tuple[object, ...] | None = None
+        # X16: the inventory and its revision the published views come from.
+        self._shown_stamp: tuple[ResourceInventory, int] | None = None
         # When a published freshness changes next, and when the expiry timer
         # wakes up next (it is woken earlier only for an earlier change).
         self._next_change = math.inf
@@ -267,6 +269,20 @@ class LocalPollingService:
         token = self._period_token() if self._period_token is not None else None
         same_periods = token is not None and _same(self._shown_token, token)
         self._shown_token = token
+        stamp = self._shown_stamp
+        if (
+            stamp is not None
+            and stamp[0] is inventory
+            and stamp[1] == inventory.revision
+            and same_periods
+            and records is self._shown_records
+            and ready is self._shown_ready
+            and now < self._next_change
+            and len(self._shown) == len(records)
+        ):
+            # X16: no record changed and no freshness is due: every view
+            # stays as published; there is nothing to work out again.
+            return False
         everything = (
             records is not self._shown_records or ready is not self._shown_ready
         )
@@ -325,6 +341,7 @@ class LocalPollingService:
         if not changed and replaced and list(previous) != list(shown):
             changed = True
         self._shown, self._shown_records, self._shown_ready = shown, records, ready
+        self._shown_stamp = (inventory, inventory.revision)
         self._next_change = soonest
         return changed
 

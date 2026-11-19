@@ -648,6 +648,10 @@ class ManagedPointTCoordinator(
         self._hold_task: asyncio.Task[None] | None = None
         # True while entities refresh for new paired local readings.
         self.local_refreshing = False
+        # X16: during such a refresh the paths whose reading changed; None
+        # (every entity looks again) in every other update pass.
+        self.local_changed_paths: frozenset[str] | None = None
+        self._local_pass_context: tuple[bool, bool] | None = None
 
     def schedule_inventory_expiry(self, *, recheck: bool = False) -> None:
         """P49b (S1): when the stored inventory of this dormant view passes
@@ -703,11 +707,22 @@ class ManagedPointTCoordinator(
         else:
             self._local_fault_failure.succeeded()
         if selection.changed() or faults_changed:
+            # X16: only the entities of the changed paths look again, as long
+            # as nothing else that decides what they show changed.
+            context = (self.cloud_unavailable(), self.counter_cloud_unavailable())
+            narrowed = (
+                not faults_changed
+                and context == self._local_pass_context
+                and selection.changed_paths is not None
+            )
+            self._local_pass_context = context
+            self.local_changed_paths = selection.changed_paths if narrowed else None
             self.local_refreshing = True
             try:
                 self.async_update_listeners()
             finally:
                 self.local_refreshing = False
+                self.local_changed_paths = None
 
     def _local_faults_updated(self, selection: LocalSelection) -> bool:
         """P42: the local error list feeds the same fault tracker.

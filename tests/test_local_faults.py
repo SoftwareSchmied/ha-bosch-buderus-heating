@@ -257,8 +257,12 @@ def test_the_fault_hook_never_blocks_local_value_updates(caplog) -> None:
     fake = SimpleNamespace(
         source=SimpleNamespace(current=lambda: True),
         local_retained=False,
-        local_selection=SimpleNamespace(changed=lambda: True),
+        local_selection=SimpleNamespace(changed=lambda: True, changed_paths=None),
         _local_faults_updated=broken,
+        cloud_unavailable=lambda: False,
+        counter_cloud_unavailable=lambda: False,
+        _local_pass_context=None,
+        local_changed_paths=None,
         _local_fault_failure=RepeatedFailure(
             _LOGGER, "The local error list could not be applied"
         ),
@@ -530,8 +534,12 @@ def test_a_local_fault_event_refreshes_the_entities(monkeypatch) -> None:
     hook = SimpleNamespace(
         source=SimpleNamespace(current=lambda: True),
         local_retained=False,
-        local_selection=SimpleNamespace(changed=lambda: False),
+        local_selection=SimpleNamespace(changed=lambda: False, changed_paths=None),
         _local_faults_updated=lambda selection: True,
+        cloud_unavailable=lambda: False,
+        counter_cloud_unavailable=lambda: False,
+        _local_pass_context=None,
+        local_changed_paths=None,
         _local_fault_failure=MagicMock(),
         async_update_listeners=MagicMock(),
     )

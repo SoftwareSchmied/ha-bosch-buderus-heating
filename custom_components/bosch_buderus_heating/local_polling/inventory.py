@@ -135,6 +135,9 @@ class ResourceInventory:
         self.signal_problem: str | None = None
         self.retained_bytes = 0
         self.retained_nodes = 0
+        # X16: counts every change of a record or of the record set, so the
+        # published views are only worked out again after one.
+        self.revision = 0
 
     def add(self, request: ReadRequest, now: float) -> ResourceRecord:
         response_schema(request)
@@ -154,6 +157,7 @@ class ResourceInventory:
             raise ValueError("local_resource_limit")
         record = ResourceRecord(request, now, now)
         self.records[request.target] = record
+        self.revision += 1
         return record
 
     def period(self, request: ReadRequest) -> int | None:
@@ -205,6 +209,7 @@ class ResourceInventory:
         self.retained_nodes -= record.retained_nodes
         record.retained_bytes = record.retained_nodes = 0
         record.observation = None
+        self.revision += 1
 
     def accept(
         self, result: ReadResult, now: float, *, started: float | None = None
@@ -217,6 +222,7 @@ class ResourceInventory:
         so one read is never repeated at once.
         """
         record = self.records[result.request.target]
+        self.revision += 1
         interval = self.period(record.request)
         assert interval is not None
         if result.state is ReadState.DEFERRED:
@@ -333,6 +339,7 @@ class ResourceInventory:
             self.signal_problem = "invalid_local_signal_list"
             return False
         ids = data.signal_ids
+        self.revision += 1
         known = self.signal_ids or any(
             record.request.definition.template == "/signals/{signalId}"
             for record in self.records.values()
@@ -469,3 +476,4 @@ class ResourceInventory:
             ):
                 self._drop_observation(record)
                 del self.records[key]
+                self.revision += 1

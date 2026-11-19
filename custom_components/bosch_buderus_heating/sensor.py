@@ -158,6 +158,7 @@ from .switch_programs import (
     is_switch_program_path,
 )
 from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
+from .update_gate import untouched
 from .variable_tariff_entities import track_tariff_sensor
 from .wallbox_entities import track_wallbox_entities
 from .wallbox_history_sensor import track_wallbox_history_sensors
@@ -1542,6 +1543,8 @@ def _unknown_description(
 
 # Sensors that combine several readings keep following the last cloud cycle.
 _COMBINED_VALUE_KINDS = frozenset({"dew_point", "pressure_status"})
+# X16: kinds that show one resource alone (see ``_local_pass_untouched``).
+_LOCAL_GATED_KINDS = frozenset({"value", "nested", "enum_values", "values"})
 
 # Optional per-source entities (P18): only single, paired readings.
 SOURCES = ("local", "cloud")
@@ -2075,8 +2078,25 @@ class BoschBuderusSensor(
         guard.recorded(recorded, self.native_unit_of_measurement, self.device_class)
         self.async_write_ha_state()
 
+    def _local_pass_untouched(self) -> bool:
+        """X16: a pass of local readings changed nothing this sensor shows.
+
+        Only plain readings of one resource qualify: no calculation, no second
+        resource, no exchange guard, no timer.
+        """
+        description = self.entity_description
+        return (
+            description.value_kind in _LOCAL_GATED_KINDS
+            and description.secondary_resource_path is None
+            and description.resource_path != _SYSTEM_PRESSURE_PATH
+            and self._exchange_guard is None
+            and untouched(self.coordinator, (description.resource_path,))
+        )
+
     @callback
     def _handle_coordinator_update(self) -> None:
+        if self._local_pass_untouched():
+            return
         if self.entity_description.value_kind == "switch_program":
             self._update_switch_timer()
         super()._handle_coordinator_update()

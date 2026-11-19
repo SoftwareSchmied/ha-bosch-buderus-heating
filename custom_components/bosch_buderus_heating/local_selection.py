@@ -91,9 +91,14 @@ class LocalSelection:
                 dict[str, _Reading],
                 dict[str, _Reading | None],
                 tuple[object, ...],
+                bool,
             ]
             | None
         ) = None
+        # X16: the paths whose answer differed at the last ``changed()``; None
+        # when something else changed (option, local access, write state) or
+        # nothing is known, so every entity has to look again.
+        self.changed_paths: frozenset[str] | None = None
         # Circuit scope -> time of the latest confirmed cloud write.
         self._confirmed_writes: dict[str, datetime] = {}
         # Written catalog path -> (confirmed cloud snapshot, confirmation time).
@@ -634,8 +639,22 @@ class LocalSelection:
                             (binding_id, observation) if path in tracked else None
                         )
         writes = self._write_marker(readings)
+        access = self.has_local_access
         previous = self._last_marker
-        self._last_marker = (enabled, readings, local_only, writes)
+        self._last_marker = (enabled, readings, local_only, writes, access)
+        self.changed_paths = (
+            None
+            if previous is None
+            or previous[0] != enabled
+            or previous[3] != writes
+            or previous[4] != access
+            else frozenset(
+                (
+                    *_differing_paths(previous[1], readings),
+                    *_differing_paths(previous[2], local_only),
+                )
+            )
+        )
         return not (
             previous is not None
             and previous[0] == enabled
@@ -735,24 +754,35 @@ def _same_json(before: object, after: object) -> bool:
     return before == after
 
 
+def _same_reading(then: _Reading | None, now: _Reading | None) -> bool:
+    return then is now or (
+        then is not None
+        and now is not None
+        and then[0] == now[0]
+        and same_answer(then[1], now[1])
+    )
+
+
 def _same_readings(
     before: Mapping[str, _Reading | None], after: Mapping[str, _Reading | None]
 ) -> bool:
     """The same paths, each from the same access with the same answer."""
     if before.keys() != after.keys():
         return False
-    for path, now in after.items():
-        then = before[path]
-        if then is now:
-            continue
-        if (
-            then is None
-            or now is None
-            or then[0] != now[0]
-            or not same_answer(then[1], now[1])
-        ):
-            return False
-    return True
+    return all(_same_reading(before[path], now) for path, now in after.items())
+
+
+def _differing_paths(
+    before: Mapping[str, _Reading | None], after: Mapping[str, _Reading | None]
+) -> set[str]:
+    """X16: the paths that are new, gone or answer differently."""
+    changed = set(before.keys() ^ after.keys())
+    changed.update(
+        path
+        for path, now in after.items()
+        if path in before and not _same_reading(before[path], now)
+    )
+    return changed
 
 
 def eligible_path(path: str) -> bool:
