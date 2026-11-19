@@ -186,6 +186,9 @@ class Shown:
     value: float
     source: str
     resolution: str
+    # The first day of the counter's statistics when it lies after the start
+    # of the period (a value from the counters then covers less).
+    history_start: date | None = None
 
 
 def _source_text(sources: frozenset[str]) -> str:
@@ -243,6 +246,9 @@ class RecordingsManager:
         self._consumers = 0
         self._listeners: list[Callable[[], None]] = []
         self._counted: dict[tuple[str, Period], PeriodValue] = {}
+        # Where the counter statistics begin, per measure and period start
+        # (``None``: not later than the period start); found once.
+        self._counter_first: dict[tuple[str, date], date | None] = {}
         self.runs: deque[dict[str, Any]] = deque(maxlen=RUNS_KEPT)
         self.loaded = False
         self.running = False
@@ -405,7 +411,7 @@ class RecordingsManager:
         self.published = {
             key: value
             for key, value in (published.items() if isinstance(published, dict) else ())
-            if isinstance(key, str) and isinstance(value, list) and len(value) == 5
+            if isinstance(key, str) and isinstance(value, list) and len(value) in (5, 6)
         }
         done = data.get("cloud_done")
         self.cloud_done = (
@@ -1318,6 +1324,10 @@ class RecordingsManager:
             value = result.get(kind)
             if not isinstance(value, int | float):
                 continue
+            if kind == "change" and spec.period is not Period.YESTERDAY:
+                await self._async_counter_start(
+                    instance, entity_id, measure, first, after, zone, now
+                )
             self._counted[(measure.key, spec.period)] = PeriodValue(
                 first,
                 after,
@@ -1328,6 +1338,55 @@ class RecordingsManager:
                 "hourly",
                 frozenset({"counters"}),
             )
+
+    async def _async_counter_start(
+        self,
+        instance: Any,
+        entity_id: str,
+        measure: Measure,
+        first: date,
+        after: date,
+        zone: tzinfo,
+        now: datetime,
+    ) -> None:
+        """The first day of a counter's statistics within a period (read
+        once per period); only a later start than the period's is kept."""
+        if (measure.key, first) in self._counter_first:
+            return
+        from homeassistant.components.recorder.statistics import (
+            statistics_during_period,
+        )
+
+        try:
+            rows = await instance.async_add_executor_job(
+                statistics_during_period,
+                self.hass,
+                local_midnight(first, zone).astimezone(UTC),
+                min(local_midnight(after, zone).astimezone(UTC), now),
+                {entity_id},
+                "day",
+                _UNITS[measure.quantity],
+                {"change"},
+            )
+        except Exception as err:  # the attribute stays out
+            log_failure(
+                _LOGGER,
+                logging.DEBUG,
+                "A counter statistic could not be read",
+                error=err,
+            )
+            return
+        days = [
+            datetime.fromtimestamp(row["start"], zone).date()
+            for row in rows.get(entity_id, [])
+            if isinstance(row.get("start"), int | float)
+            and isinstance(row.get("change"), int | float)
+        ]
+        begin = min(days, default=None)
+        if begin is None:
+            # No row: nothing to say, and no answer kept either.
+            return
+        self._counter_first[(measure.key, first)] = begin if begin > first else None
 
     # --------------------------------------------------------------- values
     def recorded(
@@ -1378,13 +1437,21 @@ class RecordingsManager:
                 # A gap: no value rather than the last one or a zero.
                 self.published.pop(spec.key, None)
                 continue
-            self.published[spec.key] = [
+            item: list[Any] = [
                 candidate.start.isoformat(),
                 candidate.end.isoformat(),
                 round(value, 4),
                 _source_text(candidate.sources),
                 candidate.resolution,
             ]
+            history = (
+                self._counter_first.get((spec.measure.key, candidate.start))
+                if candidate.sources == {"counters"}
+                else None
+            )
+            if history is not None:
+                item.append(history.isoformat())
+            self.published[spec.key] = item
 
     def shown(self, spec: EntitySpec) -> Shown | None:
         item = self.published.get(spec.key)
@@ -1397,6 +1464,7 @@ class RecordingsManager:
                 float(item[2]),
                 str(item[3]),
                 str(item[4]),
+                date.fromisoformat(item[5]) if len(item) > 5 else None,
             )
         except TypeError, ValueError:
             return None

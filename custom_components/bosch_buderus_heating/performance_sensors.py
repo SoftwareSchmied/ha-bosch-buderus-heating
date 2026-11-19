@@ -28,6 +28,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .cop_start import StartPhase
 from .device import device_info_for_resource, grouped_entity_name
 from .i18n import localize
 from .performance import (
@@ -75,6 +76,7 @@ ENABLED_FACTORS: Final = frozenset(
         (Period.SINCE_COMMISSIONING, "total"),
     }
 )
+HISTORY_LOADING: Final = "history_loading"
 _RECORDING: Final = "/recordings/heatSources/emon/{mode}/{kind}"
 
 
@@ -149,6 +151,7 @@ class CurrentCopSensor(_LiveSensor):
     )
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        self._phase = StartPhase()
         super().__init__(
             coordinator,
             HEAT_SOURCES,
@@ -162,7 +165,7 @@ class CurrentCopSensor(_LiveSensor):
         )
 
     def _derive(self) -> LiveResult:
-        return live_cop(self.coordinator)
+        return live_cop(self.coordinator, self._phase)
 
 
 class PrimarySpreadSensor(_LiveSensor):
@@ -344,6 +347,10 @@ class PerformanceFactorSensor(
     def extra_state_attributes(self) -> dict[str, object] | None:
         result = self._result
         if result is None:
+            if self._period not in (Period.TODAY, Period.SINCE_COMMISSIONING) and (
+                not self._engine.history_read
+            ):
+                return {"reason": HISTORY_LOADING}
             return None
         attributes: dict[str, object] = {}
         if result.start is not None and result.end is not None:

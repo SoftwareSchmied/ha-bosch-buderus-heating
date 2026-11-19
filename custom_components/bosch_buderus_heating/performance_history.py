@@ -8,6 +8,9 @@ since commissioning; each for heating, hot water and in total.
 Where the values come from:
 
 * Since commissioning: the device's own counters, as they are now.
+* The other periods stay unknown after a start until the history (the
+  recordings and the counters' statistics) was read once, so a month or a
+  year never shows the value of today alone.
 * Today: the counters now minus the counters at midnight. The midnight
   reading is the last reading before midnight while Home Assistant runs;
   after a start during the day it is the counters' long-term statistic at
@@ -216,6 +219,9 @@ class PerformanceHistory:
         self._first: dict[str, date | None] = {}
         self.stopped = False
         self.loaded = False
+        # Whether the recordings and the counters' statistics were read once
+        # since the start; until then only today's counters are known.
+        self.history_read = False
         self.report: dict[str, Any] = {}
 
     @property
@@ -564,6 +570,7 @@ class PerformanceHistory:
         if self._baseline_day == today and self._baseline_method is None:
             await self._async_statistics_baseline(today)
         self.report = report
+        self.history_read = True
         self._first.clear()
         self._notify()
 
@@ -705,6 +712,10 @@ class PerformanceHistory:
                 0,
                 0,
             )
+        if period is not Period.TODAY and not self.history_read:
+            # Month and year hold only today's counters until the history is
+            # read: unknown rather than the value of today.
+            return None
         today = self.today(now)
         start, end = bounds(period, today)
         heat = power = 0.0
@@ -790,6 +801,7 @@ class PerformanceHistory:
             if self._baseline_day == self.today()
             else [],
             "today_start_lookup": self._lookup,
+            "history_read": self.history_read,
             "last_refresh": dict(self.report),
         }
 
