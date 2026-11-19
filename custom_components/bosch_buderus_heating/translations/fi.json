@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Ilmoitettu ladattu energia"
       },
+      "wallbox_energy_total": {
+        "name": "Ladattu energia yhteensä"
+      },
       "wallbox_duration": {
         "name": "Aktiivinen latausaika"
       },

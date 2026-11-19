@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Sporočena napolnjena energija"
       },
+      "wallbox_energy_total": {
+        "name": "Skupna napolnjena energija"
+      },
       "wallbox_duration": {
         "name": "Čas aktivnega polnjenja"
       },

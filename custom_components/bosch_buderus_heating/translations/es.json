@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Energía cargada informada"
       },
+      "wallbox_energy_total": {
+        "name": "Energía cargada total"
+      },
       "wallbox_duration": {
         "name": "Tiempo de carga activa"
       },

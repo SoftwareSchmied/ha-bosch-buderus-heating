@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Съобщена заредена енергия"
       },
+      "wallbox_energy_total": {
+        "name": "Общо заредена енергия"
+      },
       "wallbox_duration": {
         "name": "Активно време на зареждане"
       },

@@ -10,7 +10,7 @@ and selected in the integration. Retail names alone do not establish support.
 
 The implemented scope is charge point `cp0`. I have not established discovery
 of additional charge points or a complete list of compatible retail models.
-The selected gateway retains its device identifier; the eight new sensors use
+The selected gateway retains its device identifier; the nine new sensors use
 stable IDs. Existing heating entities and user settings are preserved.
 
 | Reading | Interpretation |
@@ -18,6 +18,7 @@ stable IDs. Existing heating entities and user settings are preserved.
 | Charging state | Eleven known reported states, kept distinct. A vehicle pause does not prove a full battery. Unknown codes stay unknown. |
 | Charging power | Last component of `telemetry.meter`, already in kW. |
 | Reported charged energy | First component of `telemetry.meter`, converted from Wh to kWh once. No accumulation or long-term statistics state class. |
+| Total charged energy | `telemetry.energyTotal`, the wallbox's own lifetime counter in kWh, with the state class *total increasing* for the Energy dashboard. On a Power Charge 7000i S (software 5.3.0) it matched the total in the wallbox app (4,601.98 kWh against 4,602 kWh) and rose for eleven weeks without a drop. |
 | Active charging time | Reported `activeChargingTime` in minutes, without local extrapolation. |
 | Reported current limit | `telemetry.limit` in A. This is a limit, not measured current; the separate control **Charging current limit** changes it. |
 | Charging start | Reported `chargingStart`, accepted only with an explicit UTC offset. |
@@ -27,7 +28,8 @@ stable IDs. Existing heating entities and user settings are preserved.
 Missing, malformed, negative and non-finite numbers do not become zero. The
 energy counter may drop between reports without being added to a synthetic
 total. Its exact session/reset scope still needs device confirmation, so it
-is not offered as a lifetime energy meter for the Energy dashboard.
+is not offered as a lifetime energy meter for the Energy dashboard; that is
+**Total charged energy**.
 
 I read three object endpoints under `rest/v1/cp0`: `telemetry`, `conf` and
 `info`. Telemetry follows the 60-second standard or 120-second cloud-friendly

@@ -166,6 +166,27 @@ def test_meter_wh_and_kw_are_independent(meter, energy, power):
     assert parsed.values["energy"] == energy and parsed.values["power"] == power
 
 
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (4586.197, 4586.197),
+        (0, 0),
+        ("4586.197", 4586.197),
+        (-1, None),
+        (float("nan"), None),
+        (float("inf"), None),
+        (True, None),
+        ("bad", None),
+        (None, None),
+        ([1], None),
+    ],
+)
+def test_energy_total_is_a_reported_lifetime_number(value, expected):
+    parsed = parse_section("telemetry", {"values": {"energyTotal": value}})
+    assert parsed.values["energy_total"] == expected
+    assert "energyTotal" not in parsed.unknown_names
+
+
 @pytest.mark.parametrize("value", [None, True, -1, 1.5, "35", 2**63])
 def test_duration_requires_reported_nonnegative_long_minutes(value):
     assert (
@@ -469,6 +490,10 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         assert hass.states.get(state_id).state == "charging"
         assert hass.states.get(entity_id("energy")).state == "1.25"
         assert "state_class" not in hass.states.get(entity_id("energy")).attributes
+        total = hass.states.get(entity_id("energy_total"))
+        assert total.state == "4321.5"
+        assert total.attributes["state_class"] == "total_increasing"
+        assert total.attributes["unit_of_measurement"] == "kWh"
         assert (
             hass.states.get(entity_id("power")).attributes["unit_of_measurement"]
             == "kW"
@@ -478,9 +503,9 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
             for e in registry.entities.values()
             if e.unique_id.startswith("wallbox-A:")
         ]
-        # The eight readings, plus start, pause and the charging current: the
+        # The nine readings, plus start, pause and the charging current: the
         # controls are disabled by default; no single value answered here.
-        assert len(wallbox_entries) == 11
+        assert len(wallbox_entries) == 12
         assert sorted(
             e.unique_id.rsplit(":", 1)[-1]
             for e in wallbox_entries

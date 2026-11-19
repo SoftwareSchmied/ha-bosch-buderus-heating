@@ -93,6 +93,7 @@ KNOWN_FIELDS: Final[dict[str, frozenset[str]]] = {
     "telemetry": frozenset(
         {
             "meter",
+            "energyTotal",
             "wbState",
             "activeChargingTime",
             "limit",
@@ -134,6 +135,16 @@ def _number(value: object) -> float | None:
         number = float(value)
     except ValueError:
         return None
+    return number if isfinite(number) and number >= 0 else None
+
+
+def _amount(value: object) -> float | None:
+    """A reported JSON number (or numeric text), finite and not negative."""
+    if isinstance(value, str):
+        return _number(value)
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    number = float(value)
     return number if isfinite(number) and number >= 0 else None
 
 
@@ -227,6 +238,9 @@ def parse_section(section: Section, payload: object) -> SectionSnapshot:
         values = {
             "state": STATES.get(state) if isinstance(state, str) else None,
             "energy": energy / 1000 if energy is not None else None,
+            # Lifetime counter in kWh: the wallbox app shows the same total
+            # (Power Charge 7000i S, software 5.3.0).
+            "energy_total": _amount(raw.get("energyTotal")),
             "power": power,
             "duration": duration
             if type(duration) is int and 0 <= duration <= 2**63 - 1

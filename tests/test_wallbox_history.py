@@ -502,9 +502,9 @@ async def test_a_garbled_answer_withdraws_the_old_values(hass):
 
 def test_unknown_field_names_are_listed_without_values():
     payload = json.loads(FIXTURE.read_text())["telemetry"]
-    payload["values"]["energyTotal"] = "123456;secret-value"
+    payload["values"]["powerLimit"] = "123456;secret-value"
     parsed = parse_section("telemetry", payload)
-    assert "energyTotal" in parsed.unknown_names
+    assert "powerLimit" in parsed.unknown_names
     assert "chargePermission" in parsed.unknown_names
     # Fields a parser reads are not unknown.
     assert not {"meter", "wbState", "limit", "emStatus"} & set(parsed.unknown_names)

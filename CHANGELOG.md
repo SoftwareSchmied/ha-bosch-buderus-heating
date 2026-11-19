@@ -5,6 +5,13 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Added
+
+- **Wallbox: Total charged energy.** A new sensor from the wallbox's own
+  lifetime counter (`telemetry.energyTotal`, kWh, *total increasing*), so the
+  wallbox can be added to the Energy dashboard. On a Power Charge 7000i S it
+  matched the total in the wallbox app.
+
 ## [0.9.2-beta.3] - 2026-11-18
 
 > [!IMPORTANT]

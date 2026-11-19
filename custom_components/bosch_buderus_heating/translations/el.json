@@ -3060,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Αναφερόμενη ενέργεια φόρτισης"
       },
+      "wallbox_energy_total": {
+        "name": "Συνολική ενέργεια φόρτισης"
+      },
       "wallbox_duration": {
         "name": "Χρόνος ενεργής φόρτισης"
       },
