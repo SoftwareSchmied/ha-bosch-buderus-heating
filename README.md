@@ -33,7 +33,7 @@ access; when it is back, the same entities carry on with their history.
 > Updating from 0.8.x? Make a full backup first, see [Updating](#updating).
 
 > [!NOTE]
-> **Coming next: local access for iCom gateways.** A coming beta will add a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, first for gateways that are also connected to the Bosch or Buderus app. If you have one and would like to help test it, please install the beta versions when it is out (HACS → "Show beta versions") and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
+> **Beta: local access for iCom gateways.** The beta adds a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, for gateways that are also connected to the Bosch or Buderus app. It is expected to work, but not yet tested on a real gateway: testers are wanted. If you have one and would like to help, please install the beta versions (HACS → "Show beta versions"), follow [the setup](docs/icom-local-access.md) and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 ## Features
 
@@ -63,7 +63,7 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 |---|:---:|:---:|
 | K40/K40RF gateways (MX400 internet module, K40 RF Connect-Key) on heat pumps and boilers | ✓ | ✓ readings, firmware 15.00.01 or newer; alone or together with the cloud |
 | K30/K30RF gateways (MX300 internet module, K30 RF Connect-Key) | ✓ | – |
-| iCom gateways (KM200, KM100, KM50, IP inside, MB LAN 2/LANi, IVT/Bosch IP module) | ✓ when connected to the Bosch or Buderus app | planned for a coming beta |
+| iCom gateways (KM200, KM100, KM50, IP inside, MB LAN 2/LANi, IVT/Bosch IP module) | ✓ when connected to the Bosch or Buderus app | beta, untested on a real gateway: readings ([iCom local access](docs/icom-local-access.md)) |
 | RRC 2.0 room controllers (TC100.2, CT200) | ✓ | – |
 | Wallboxes | ✓ | – |
 | Air conditioners, dehumidifiers, water heaters, air purifiers, WE800i water softener | ✓ (controls disabled by default, can be enabled) | – |
@@ -80,8 +80,10 @@ Access and brands:
 - **Local** needs K40/K40RF firmware 15.00.01 or newer and only reads; with
   **both**, the local access reads and the cloud handles every change. Local
   access is confirmed on heat pumps, expected on boilers.
-- iCom gateways, room controllers and the other device families are cloud
-  only. The other device families still need checks on real devices.
+- Room controllers and the other device families are cloud only; iCom
+  gateways read locally in a beta, not yet tested on a real gateway
+  ([iCom local access](docs/icom-local-access.md)). The other device families
+  still need checks on real devices.
 - **Brands:** sign-in with the Bosch or Buderus app; the confirmed
   installations are Buderus systems and two Bosch heat pumps. IVT, Junkers, Nefit, Worcester and
   Vulcano use the same cloud and are expected to work, not confirmed yet.
