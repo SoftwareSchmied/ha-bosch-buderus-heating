@@ -7,6 +7,12 @@
           "off": "mdi:remote-off"
         }
       },
+      "gateway_reachable": {
+        "default": "mdi:lan-connect",
+        "state": {
+          "off": "mdi:lan-disconnect"
+        }
+      },
       "holiday_active": {
         "default": "mdi:palm-tree"
       },

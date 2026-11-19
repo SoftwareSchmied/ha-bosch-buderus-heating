@@ -558,6 +558,59 @@ Assistant displays **Retry gateway discovery**, select **Submit** again; no new
 sign-in is required. The same applies when the step says that the cloud has
 requested a pause: wait, then select **Submit**.
 
+### The sign-in was lost or the log says the sign-in service did not answer
+
+Two different messages are easy to mix up.
+
+- **"the sign-in service did not answer"** (a warning, once per outage): the
+  sign-in service of SingleKey ID did not answer, for example because the
+  request timed out. It is no fault of the gateway and the integration does not
+  count it for the gateway protection pause. The renewal repeats by itself after
+  a short wait, and as long as the saved sign-in still works, nothing needs to be
+  done. Earlier versions logged such an outage as a failed gateway request
+  (`service_unavailable`).
+- **"SingleKey ID rejected the token refresh (HTTP 400, invalid_grant)"**: the
+  saved sign-in is no longer accepted. This cannot repair itself, and Home
+  Assistant asks for a new sign-in (a notification and the integration
+  card under **Settings → Devices & services**). If the warning adds that the token "had already been presented
+  before without a usable answer", the renewal had failed earlier (for example a
+  timeout) and was then rejected; the list in the message and the diagnostics
+  (`failed_before_rejection`) show how those attempts failed. A new sign-in is
+  the way out in every case; do the whole sign-in on one computer in one
+  browser, see [Signing in with a tablet or phone does not work](#signing-in-with-a-tablet-or-phone-does-not-work).
+  The existing devices and the gateway selection are kept.
+
+When you report a lost sign-in, attach the diagnostics file before signing in
+again: it contains no credentials and shows these attempts.
+
+#### Deutsch: Anmeldung verloren
+
+Zwei verschiedene Meldungen werden leicht verwechselt.
+
+- **„the sign-in service did not answer“** (Warnung, einmal je Ausfall): Der
+  Anmeldedienst von SingleKey ID hat nicht geantwortet, zum Beispiel wegen einer
+  Zeitüberschreitung. Das ist kein Fehler des Gateways und zählt nicht für die
+  Schutzpause des Gateways. Die Erneuerung wird nach kurzer Wartezeit von selbst
+  wiederholt; solange die gespeicherte Anmeldung noch gilt, ist nichts zu tun.
+  Frühere Versionen haben so einen Ausfall als fehlgeschlagene Gateway-Anfrage
+  (`service_unavailable`) protokolliert.
+- **„SingleKey ID rejected the token refresh (HTTP 400, invalid_grant)“**: Die
+  gespeicherte Anmeldung wird nicht mehr akzeptiert. Das repariert sich nicht
+  von selbst, Home Assistant fordert eine neue Anmeldung an (Benachrichtigung und
+  Integrationskarte unter **Einstellungen → Geräte & Dienste**). Steht in der Warnung zusätzlich,
+  dass das Token „bereits vorher ohne brauchbare Antwort vorgelegt“ wurde
+  („had already been presented before without a usable answer“), war die
+  Erneuerung vorher schon fehlgeschlagen (zum Beispiel durch eine
+  Zeitüberschreitung) und wurde dann abgelehnt; die Liste in der Meldung und die
+  Diagnose (`failed_before_rejection`) zeigen, wie diese Versuche ausgingen.
+  Eine neue Anmeldung ist in jedem Fall der Weg; führe die ganze Anmeldung an
+  einem Computer in einem Browser durch (siehe oben). Die vorhandenen Geräte und
+  die Auswahl der Gateways bleiben erhalten.
+
+Wenn du eine verlorene Anmeldung meldest, hänge bitte die Diagnosedatei an,
+bevor du dich neu anmeldest: Sie enthält keine Zugangsdaten und zeigt diese
+Versuche.
+
 ### No gateway is found
 
 - Open the official heating app and confirm that the system is online.

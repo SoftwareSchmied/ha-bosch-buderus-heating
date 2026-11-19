@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway tilgængelig",
+        "state_attributes": {
+          "cloud": {
+            "name": "Cloudadgang",
+            "state": {
+              "reachable": "Tilgængelig",
+              "not_answering": "Svarer ikke",
+              "sign_in_unavailable": "Loginservicen svarer ikke",
+              "sign_in_required": "Login påkrævet",
+              "paused": "På pause",
+              "not_in_use": "Ikke i brug"
+            }
+          },
+          "local": {
+            "name": "Lokal adgang",
+            "state": {
+              "ready": "Klar",
+              "not_ready": "Ikke klar",
+              "paused": "På pause",
+              "starting": "Starter",
+              "sign_in_required": "Login påkrævet",
+              "certificate_changed": "Certifikatet er ændret",
+              "not_in_use": "Ikke i brug"
+            }
+          },
+          "cloud_failure": {
+            "name": "Seneste cloudfejl",
+            "state": {
+              "timeout": "Timeout",
+              "service_unavailable": "Tjenesten er ikke tilgængelig",
+              "request_failed": "Anmodningen mislykkedes",
+              "sign_in_unavailable": "Loginservicen svarer ikke",
+              "unknown": "Ukendt"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Anlægsfejl"
       },

@@ -40,6 +40,7 @@ from .faults import (
     no_active_faults_label,
 )
 from .flow_range import track_flow_range_sensors
+from .gateway_reachable import GatewayReachableBinarySensor
 from .holidays import (
     HolidayState,
     is_holiday_resource_path,
@@ -112,6 +113,7 @@ def _setup_entities(
     for coordinator in entry.coordinators:
         entities.append(BoschBuderusSystemFaultBinarySensor(coordinator))
         entities.append(BoschBuderusCloudControlBinarySensor(coordinator))
+        entities.append(GatewayReachableBinarySensor(coordinator))
         track_entity_once(
             entry,
             coordinator,

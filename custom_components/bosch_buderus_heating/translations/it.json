@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway raggiungibile",
+        "state_attributes": {
+          "cloud": {
+            "name": "Accesso cloud",
+            "state": {
+              "reachable": "Raggiungibile",
+              "not_answering": "Non risponde",
+              "sign_in_unavailable": "Il servizio di accesso non risponde",
+              "sign_in_required": "Login richiesto",
+              "paused": "In pausa",
+              "not_in_use": "Non in uso"
+            }
+          },
+          "local": {
+            "name": "Accesso locale",
+            "state": {
+              "ready": "Pronto",
+              "not_ready": "Non pronto",
+              "paused": "In pausa",
+              "starting": "In avvio",
+              "sign_in_required": "Login richiesto",
+              "certificate_changed": "Certificato modificato",
+              "not_in_use": "Non in uso"
+            }
+          },
+          "cloud_failure": {
+            "name": "Ultimo errore del cloud",
+            "state": {
+              "timeout": "Timeout",
+              "service_unavailable": "Servizio non disponibile",
+              "request_failed": "Richiesta non riuscita",
+              "sign_in_unavailable": "Il servizio di accesso non risponde",
+              "unknown": "Sconosciuto"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Anomalia dell'impianto"
       },

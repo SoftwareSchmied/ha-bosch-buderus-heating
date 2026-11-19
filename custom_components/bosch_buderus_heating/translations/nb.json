@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway tilgjengelig",
+        "state_attributes": {
+          "cloud": {
+            "name": "Skytilgang",
+            "state": {
+              "reachable": "Tilgjengelig",
+              "not_answering": "Svarer ikke",
+              "sign_in_unavailable": "Påloggingstjenesten svarer ikke",
+              "sign_in_required": "Pålogging kreves",
+              "paused": "På pause",
+              "not_in_use": "Ikke i bruk"
+            }
+          },
+          "local": {
+            "name": "Lokal tilgang",
+            "state": {
+              "ready": "Klar",
+              "not_ready": "Ikke klar",
+              "paused": "På pause",
+              "starting": "Starter",
+              "sign_in_required": "Pålogging kreves",
+              "certificate_changed": "Sertifikatet er endret",
+              "not_in_use": "Ikke i bruk"
+            }
+          },
+          "cloud_failure": {
+            "name": "Siste skyfeil",
+            "state": {
+              "timeout": "Tidsavbrudd",
+              "service_unavailable": "Tjenesten er ikke tilgjengelig",
+              "request_failed": "Forespørselen mislyktes",
+              "sign_in_unavailable": "Påloggingstjenesten svarer ikke",
+              "unknown": "Ukjent"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Anleggsfeil"
       },

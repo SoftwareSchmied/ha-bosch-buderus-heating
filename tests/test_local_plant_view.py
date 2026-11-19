@@ -667,6 +667,7 @@ async def test_diagnostics_compare_the_local_entities_with_the_cloud(hass) -> No
     # Controls, cloud-only readings, faults and notifications need the cloud.
     assert report["needs_cloud"] == [
         "binary_sensor:cloud_control",
+        "binary_sensor:gateway_reachable",
         "binary_sensor:system_fault",
         "event:system_notifications",
         "number:heatingCircuits:hc2:manualRoomSetpoint:control",

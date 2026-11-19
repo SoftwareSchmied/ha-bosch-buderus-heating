@@ -202,8 +202,17 @@ async def test_entities_from_the_inventory_stay_unavailable_until_an_answer(hass
                 for item in er.async_entries_for_config_entry(
                     er.async_get(hass), entry.entry_id
                 )
-                if item.unique_id.startswith(GATEWAY + ":") and item.disabled_by is None
+                if item.unique_id.startswith(GATEWAY + ":")
+                and item.disabled_by is None
+                # A status sensor that reports "off" itself, never unavailable.
+                and not item.unique_id.endswith(":gateway_reachable")
             }
+
+        def reachable() -> str | None:
+            entity_id = er.async_get(hass).async_get_entity_id(
+                "binary_sensor", DOMAIN, f"{GATEWAY}:gateway_reachable"
+            )
+            return getattr(hass.states.get(entity_id or ""), "state", None)
 
         # Fault entities have no notifications in this backend; the number has a value.
         assert {"20.0", "7.5"} <= set(gateway_states().values())
@@ -215,12 +224,15 @@ async def test_entities_from_the_inventory_stay_unavailable_until_an_answer(hass
         await settle(hass)
         assert native(owner, "number", NUMBER).coordinator is fresh
         assert set(gateway_states().values()) <= {"unavailable", None}
+        # The gateway does not answer: off, not unavailable and no stored value.
+        assert reachable() == "off"
 
         # A first poll without any answer still shows nothing (P12).
         fresh._next_update = dict.fromkeys(fresh._poll_intervals, 0)
         await fresh.async_refresh()
         await settle(hass)
         assert set(gateway_states().values()) <= {"unavailable", None}
+        assert reachable() == "off"
 
         backend.status.clear()
         fresh._next_update = dict.fromkeys(fresh._poll_intervals, 0)
@@ -230,3 +242,4 @@ async def test_entities_from_the_inventory_stay_unavailable_until_an_answer(hass
         number = native(owner, "number", NUMBER)
         assert hass.states.get(number.entity_id).state == "20.0"
         assert {"20.0", "7.5"} <= set(gateway_states().values())
+        assert reachable() == "on"

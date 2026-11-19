@@ -44,6 +44,9 @@ _LOGGER = logging.getLogger(__name__)
 STORAGE_VERSION = 1
 MAX_EVENTS = 60
 MAX_ISSUED = 20
+# NX-05: failed attempts kept per refresh token, for the hint and the diagnostics
+# when the token is rejected after them.
+MAX_FAILED_ATTEMPTS = 5
 _KEY_PATTERN = re.compile(r"[0-9a-f]{64}")
 _SAFE_TOKEN = re.compile(r"[A-Za-z0-9_.:-]{1,64}")
 
@@ -248,11 +251,25 @@ class AuthDiagnostics:
                 reason = "no refresh token available"
             self._set_accepted(attempt.presented_refresh_token, False)
             self._count("refresh_rejected")
+            failed = self._failed_attempts(attempt.presented_refresh_token)
+            hint = ""
+            if failed:
+                # NX-05: the attempts that failed before, compact in the
+                # diagnostics, and a plain hint in the log.
+                event["failed_before_rejection"] = failed
+                event["failed_before_rejection_total"] = self._failed_total(
+                    attempt.presented_refresh_token
+                )
+                hint = (
+                    ". This token had already been presented before without a "
+                    f"usable answer ({_describe_failures(failed)}); signing in "
+                    "again is required"
+                )
             _LOGGER.warning(
                 "SingleKey ID rejected the token refresh (%s). Trigger: %s. "
                 "Presented refresh token: %s, first seen %s ago, used %s time(s) "
                 "before. Last successful refresh: %s ago. Credentials loaded "
-                "%s ago",
+                "%s ago%s",
                 reason,
                 attempt.trigger,
                 presented["state"],
@@ -260,6 +277,7 @@ class AuthDiagnostics:
                 presented.get("presented_before", 0),
                 _duration(previous_success),
                 _duration(self._last_event_age(now, "credentials_loaded")),
+                hint,
             )
         else:
             error = attempt.error
@@ -278,6 +296,7 @@ class AuthDiagnostics:
                     "retried later and no new sign-in is requested yet",
                     error.rejection.summary(),
                 )
+            self._note_failed_attempt(attempt.presented_refresh_token, event)
             self._count(f"refresh_{_safe(attempt.outcome)}")
         self._append(now, event)
 
@@ -388,6 +407,34 @@ class AuthDiagnostics:
             found[1]["presented"] += 1
             found[1]["last_presented_at"] = at
 
+    def _note_failed_attempt(self, token: str | None, event: dict[str, Any]) -> None:
+        """NX-05: keep type, status and duration of an attempt that failed."""
+        if (found := self._find(token)) is None:
+            return
+        item = found[1]
+        entry: dict[str, Any] = {
+            "outcome": event.get("outcome"),
+            "error_type": event.get("error_type"),
+            "http_status": event.get("http_status"),
+            "duration_ms": event.get("duration_ms"),
+        }
+        failed = _clean_failed(item.get("failed"))
+        failed.append({k: v for k, v in entry.items() if v is not None})
+        item["failed"] = failed[-MAX_FAILED_ATTEMPTS:]
+        total = item.get("failed_total")
+        item["failed_total"] = (
+            total if isinstance(total, int) and not isinstance(total, bool) else 0
+        ) + 1
+
+    def _failed_attempts(self, token: str | None) -> list[dict[str, Any]]:
+        found = self._find(token)
+        return _clean_failed(found[1].get("failed")) if found is not None else []
+
+    def _failed_total(self, token: str | None) -> int:
+        found = self._find(token)
+        total = found[1].get("failed_total") if found is not None else None
+        return total if isinstance(total, int) and not isinstance(total, bool) else 0
+
     def _set_accepted(self, token: str | None, accepted: bool) -> None:
         if (found := self._find(token)) is not None:
             found[1]["accepted"] = accepted
@@ -473,6 +520,39 @@ def _finite(value: object) -> bool:
         and not isinstance(value, bool)
         and math.isfinite(value)
     )
+
+
+def _clean_failed(value: object) -> list[dict[str, Any]]:
+    """The failed attempts of a stored token, only safe, bounded fields."""
+    if not isinstance(value, list):
+        return []
+    cleaned: list[dict[str, Any]] = []
+    for item in value[-MAX_FAILED_ATTEMPTS:]:
+        if not isinstance(item, Mapping):
+            continue
+        entry: dict[str, Any] = {}
+        for key in ("outcome", "error_type"):
+            if isinstance(item.get(key), str):
+                entry[key] = _safe(item[key])
+        for key in ("http_status", "duration_ms"):
+            number = item.get(key)
+            if isinstance(number, int) and not isinstance(number, bool):
+                entry[key] = number
+        if entry:
+            cleaned.append(entry)
+    return cleaned
+
+
+def _describe_failures(failed: list[dict[str, Any]]) -> str:
+    parts = []
+    for item in failed:
+        text = str(item.get("error_type") or item.get("outcome") or "failed")
+        if "http_status" in item:
+            text += f" HTTP {item['http_status']}"
+        if "duration_ms" in item:
+            text += f" after {item['duration_ms']} ms"
+        parts.append(text)
+    return ", ".join(parts)
 
 
 def _rejection_fields(rejection: TokenEndpointRejection) -> dict[str, Any]:

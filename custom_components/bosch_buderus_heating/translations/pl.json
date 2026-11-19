@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Bramka osiągalna",
+        "state_attributes": {
+          "cloud": {
+            "name": "Dostęp przez chmurę",
+            "state": {
+              "reachable": "Osiągalna",
+              "not_answering": "Nie odpowiada",
+              "sign_in_unavailable": "Usługa logowania nie odpowiada",
+              "sign_in_required": "Wymagane logowanie",
+              "paused": "Wstrzymano",
+              "not_in_use": "Nieużywany"
+            }
+          },
+          "local": {
+            "name": "Dostęp lokalny",
+            "state": {
+              "ready": "Gotowy",
+              "not_ready": "Niegotowy",
+              "paused": "Wstrzymano",
+              "starting": "Uruchamianie",
+              "sign_in_required": "Wymagane logowanie",
+              "certificate_changed": "Certyfikat został zmieniony",
+              "not_in_use": "Nieużywany"
+            }
+          },
+          "cloud_failure": {
+            "name": "Ostatni błąd chmury",
+            "state": {
+              "timeout": "Przekroczono limit czasu",
+              "service_unavailable": "Usługa niedostępna",
+              "request_failed": "Żądanie nie powiodło się",
+              "sign_in_unavailable": "Usługa logowania nie odpowiada",
+              "unknown": "Nieznane"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Usterka instalacji"
       },

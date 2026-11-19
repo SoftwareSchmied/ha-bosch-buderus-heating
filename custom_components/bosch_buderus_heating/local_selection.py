@@ -343,6 +343,12 @@ class LocalSelection:
             for binding_id in self._local_bindings()
         )
 
+    def subscribe_states(self, listener: Callable[[], None]) -> Callable[[], None]:
+        """Call ``listener`` when the state of a local access changes (a pause,
+        an outage, a recovery); not for new local readings alone. Returns the
+        function that ends the subscription."""
+        return self._runtime.subscribe(listener, local_values=False)
+
     def track_local_only(self, path: str) -> None:
         self._tracked_local_only[path] += 1
 

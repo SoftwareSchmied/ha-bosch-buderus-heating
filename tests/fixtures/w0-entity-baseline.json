@@ -449,6 +449,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "connectivity",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Gateway reachable",
+     "translation_key": "gateway_reachable",
+     "unique_id": "gateway-one:gateway_reachable",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "problem",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -5506,6 +5518,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "connectivity",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Gateway reachable",
+     "translation_key": "gateway_reachable",
+     "unique_id": "gateway-one:gateway_reachable",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "running",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -8557,6 +8581,18 @@
      "original_name": "Cloud control available",
      "translation_key": "cloud_control",
      "unique_id": "gateway-one:cloud_control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": "connectivity",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Gateway reachable",
+     "translation_key": "gateway_reachable",
+     "unique_id": "gateway-one:gateway_reachable",
      "unit": null
     },
     {

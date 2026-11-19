@@ -21,6 +21,9 @@ from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
     ResourceSnapshot,
 )
+from custom_components.bosch_buderus_heating.gateway_reachable import (
+    GatewayReachableBinarySensor,
+)
 from custom_components.bosch_buderus_heating.holidays import (
     HOLIDAY_ACTIVE_MODES_PATH,
     HOLIDAY_LIST_PATH,
@@ -143,11 +146,12 @@ async def test_platform_adds_safe_booleans_only(hass: HomeAssistant) -> None:
 
     await async_setup_entry(hass, entry, added.extend)
 
-    assert len(added) == 3
+    assert len(added) == 4
     assert isinstance(added[0], BoschBuderusSystemFaultBinarySensor)
     assert isinstance(added[1], BoschBuderusCloudControlBinarySensor)
-    assert isinstance(added[2], BoschBuderusBinarySensor)
-    assert added[2].entity_description.resource_path == safe.path
+    assert isinstance(added[2], GatewayReachableBinarySensor)
+    assert isinstance(added[3], BoschBuderusBinarySensor)
+    assert added[3].entity_description.resource_path == safe.path
     await sensor.coordinator.async_shutdown()
 
 

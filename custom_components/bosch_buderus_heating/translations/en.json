@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway reachable",
+        "state_attributes": {
+          "cloud": {
+            "name": "Cloud access",
+            "state": {
+              "reachable": "Reachable",
+              "not_answering": "Not answering",
+              "sign_in_unavailable": "Sign-in service not answering",
+              "sign_in_required": "Sign-in required",
+              "paused": "Paused",
+              "not_in_use": "Not in use"
+            }
+          },
+          "local": {
+            "name": "Local access",
+            "state": {
+              "ready": "Ready",
+              "not_ready": "Not ready",
+              "paused": "Paused",
+              "starting": "Starting",
+              "sign_in_required": "Sign-in required",
+              "certificate_changed": "Certificate changed",
+              "not_in_use": "Not in use"
+            }
+          },
+          "cloud_failure": {
+            "name": "Last cloud failure",
+            "state": {
+              "timeout": "Timeout",
+              "service_unavailable": "Service unavailable",
+              "request_failed": "Request failed",
+              "sign_in_unavailable": "Sign-in service not answering",
+              "unknown": "Unknown"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "System fault"
       },
