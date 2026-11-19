@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Set up local access",
+          "icom_setup": "Set up local access (iCom gateway)",
           "back": "← Back"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens on the gateway",
           "local_polling": "Local polling frequency and status",
           "local_values": "Use local values for existing entities",
+          "icom_setup": "Change iCom access data",
           "back": "← Back"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Fan speed",
           "delete": "Delete this switch point"
         }
+      },
+      "icom_setup": {
+        "title": "iCom gateway: choose the system",
+        "description": "Choose the system whose gateway you want to read locally.",
+        "data": {
+          "target": "System"
+        }
+      },
+      "icom_access": {
+        "title": "Local access to an iCom gateway",
+        "description": "Reads the values of an iCom gateway (for example KM200, IP inside, MB LAN 2 or an IP module) from your home network. Writing stays with the cloud. Enter the gateway's address, the gateway password from its sticker and the private password you set in the old device app. The passwords stay in this entry and are never sent anywhere. Expected to work, but not yet tested on a real gateway.",
+        "data": {
+          "host": "IP address or hostname",
+          "gateway_password": "Gateway password (device sticker)",
+          "private_password": "Private password (device app)"
+        },
+        "data_description": {
+          "gateway_password": "The password on the device sticker; dashes are ignored.",
+          "private_password": "The password you set in the old device app (for example MyDevice). It is not the account password of the new app."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Result",
+        "description": "The local access was saved. It reads at a gentle pace, about every two minutes. To show its values in your existing entities, switch on local values for this system under the connection. Expected to work, but not yet tested on a real gateway."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "The last switch point of a day cannot be deleted; what an empty day means for the controller is not known.",
       "rrc_point_duplicate": "This day already has a switch point at this time.",
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
-      "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds."
+      "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds.",
+      "icom_cannot_connect": "The gateway did not answer. Check the address and that the gateway can be reached on port 80.",
+      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords.",
+      "icom_busy": "The gateway is busy. Try again in a few minutes.",
+      "icom_no_identity": "The gateway does not report its ID, so it cannot be matched with the system.",
+      "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",
+      "icom_invalid_host": "Enter an IP address or hostname of your home network.",
+      "invalid_gateway_password": "Enter the gateway password from the device sticker.",
+      "invalid_private_password": "Enter the private password from the device app."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
       "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
-      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first."
+      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first.",
+      "icom_target_required": "No system with a cloud connection is available for a local iCom access.",
+      "local_already_connected": "This system already has a local access of another kind.",
+      "local_target_unavailable": "The selected system is no longer available.",
+      "local_identity_conflict": "The local gateway does not match the system.",
+      "identity_contract_scope_changed": "The system changed while this dialog was open. Close the dialog and try again."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."

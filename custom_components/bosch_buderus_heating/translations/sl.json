@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Nastavi lokalni dostop",
+          "icom_setup": "Nastavi lokalni dostop (prehod iCom)",
           "back": "← Nazaj"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Žetoni na prehodu",
           "local_polling": "Pogostost lokalnega poizvedovanja in stanje",
           "local_values": "Uporabi lokalne vrednosti za obstoječe entitete",
+          "icom_setup": "Spremeni podatke za dostop iCom",
           "back": "← Nazaj"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Hitrost ventilatorja",
           "delete": "Izbriši to preklopno točko"
         }
+      },
+      "icom_setup": {
+        "title": "Prehod iCom: izberi sistem",
+        "description": "Izberi sistem, čigar prehod naj se bere lokalno.",
+        "data": {
+          "target": "Sistem"
+        }
+      },
+      "icom_access": {
+        "title": "Lokalni dostop do prehoda iCom",
+        "description": "Bere vrednosti prehoda iCom (na primer KM200, IP inside, MB LAN 2 ali modul IP) iz domačega omrežja. Pisanje ostaja prek oblaka. Vnesi naslov prehoda, geslo prehoda z nalepke in zasebno geslo, ki si ga nastavil v stari aplikaciji naprave. Gesli ostaneta v tem vnosu in se nikamor ne pošiljata. Pričakuje se, da deluje, vendar še ni preizkušeno na pravem prehodu.",
+        "data": {
+          "host": "Naslov IP ali ime gostitelja",
+          "gateway_password": "Geslo prehoda (nalepka na napravi)",
+          "private_password": "Zasebno geslo (aplikacija naprave)"
+        },
+        "data_description": {
+          "gateway_password": "Geslo z nalepke na napravi; vezaji se prezrejo.",
+          "private_password": "Geslo, ki si ga nastavil v stari aplikaciji naprave (na primer MyDevice). To ni geslo računa nove aplikacije."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Rezultat",
+        "description": "Lokalni dostop je shranjen. Bere v mirnem tempu, približno vsaki dve minuti. Če želiš njegove vrednosti prikazati v obstoječih entitetah, vklopi lokalne vrednosti za ta sistem pri povezavi. Pričakuje se, da deluje, vendar še ni preizkušeno na pravem prehodu."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Zadnje preklopne točke dneva ni mogoče izbrisati; ni znano, kaj prazen dan pomeni za regulator.",
       "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času.",
       "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
-      "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja."
+      "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja.",
+      "icom_cannot_connect": "Prehod ni odgovoril. Preveri naslov in ali je prehod dosegljiv na vratih 80.",
+      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli.",
+      "icom_busy": "Prehod je zaseden. Poskusi znova čez nekaj minut.",
+      "icom_no_identity": "Prehod ne sporoča svojega ID, zato ga ni mogoče povezati s sistemom.",
+      "icom_other_gateway": "To ni prehod izbranega sistema. Preveri naslov.",
+      "icom_invalid_host": "Vnesi naslov IP ali ime gostitelja v svojem domačem omrežju.",
+      "invalid_gateway_password": "Vnesi geslo prehoda z nalepke na napravi.",
+      "invalid_private_password": "Vnesi zasebno geslo iz aplikacije naprave."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Zasebnega zapisa nastavitve ni bilo mogoče prebrati ali shraniti. Pred nadaljevanjem preverite shrambo Home Assistant.",
       "cloud_local_first_other_entry": "Ta sistem je že nastavljen prek lokalnega dostopa v drugem vnosu te integracije. Dostop prek oblaka dodajte v tistem vnosu.",
       "rescan_unavailable": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen.",
-      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop."
+      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop.",
+      "icom_target_required": "Za lokalni dostop iCom ni na voljo nobenega sistema s povezavo z oblakom.",
+      "local_already_connected": "Ta sistem že ima lokalni dostop druge vrste.",
+      "local_target_unavailable": "Izbrani sistem ni več na voljo.",
+      "local_identity_conflict": "Lokalni prehod ne ustreza sistemu.",
+      "identity_contract_scope_changed": "Sistem se je spremenil, medtem ko je bilo okno odprto. Zapri okno in poskusi znova."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."

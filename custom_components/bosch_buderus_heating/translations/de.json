@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Lokalen Zugang einrichten",
+          "icom_setup": "Lokalen Zugang einrichten (iCom-Gateway)",
           "back": "← Zurück"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens auf dem Gateway",
           "local_polling": "Lokale Abfragehäufigkeit und Status",
           "local_values": "Lokale Werte für vorhandene Entitäten",
+          "icom_setup": "iCom-Zugangsdaten ändern",
           "back": "← Zurück"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Lüfterstufe",
           "delete": "Diesen Schaltpunkt löschen"
         }
+      },
+      "icom_setup": {
+        "title": "iCom-Gateway: Anlage wählen",
+        "description": "Wähle die Anlage, deren Gateway lokal gelesen werden soll.",
+        "data": {
+          "target": "Anlage"
+        }
+      },
+      "icom_access": {
+        "title": "Lokaler Zugang zu einem iCom-Gateway",
+        "description": "Liest die Werte eines iCom-Gateways (zum Beispiel KM200, IP inside, MB LAN 2 oder IP-Modul) aus dem Heimnetz. Schreiben bleibt bei der Cloud. Gib die Adresse des Gateways, das Gateway-Passwort vom Aufkleber und das private Passwort aus der alten Geräte-App ein. Die Passwörter bleiben in diesem Eintrag und werden nirgendwohin gesendet. Soll funktionieren, ist aber noch nicht an einem echten Gateway getestet.",
+        "data": {
+          "host": "IP-Adresse oder Hostname",
+          "gateway_password": "Gateway-Passwort (Geräteaufkleber)",
+          "private_password": "Privates Passwort (Geräte-App)"
+        },
+        "data_description": {
+          "gateway_password": "Das Passwort auf dem Geräteaufkleber; Bindestriche werden ignoriert.",
+          "private_password": "Das Passwort, das du in der alten Geräte-App festgelegt hast (zum Beispiel MyDevice). Es ist nicht das Konto-Passwort der neuen App."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Ergebnis",
+        "description": "Der lokale Zugang wurde gespeichert. Er liest in ruhigem Takt, etwa alle zwei Minuten. Damit seine Werte in den vorhandenen Entitäten erscheinen, schalte unter der Verbindung die lokalen Werte für diese Anlage ein. Soll funktionieren, ist aber noch nicht an einem echten Gateway getestet."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Der letzte Schaltpunkt eines Tages kann nicht gelöscht werden; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
       "rrc_point_duplicate": "Dieser Tag hat bereits einen Schaltpunkt zu dieser Uhrzeit.",
       "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
-      "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen."
+      "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen.",
+      "icom_cannot_connect": "Das Gateway hat nicht geantwortet. Prüfe die Adresse und ob das Gateway über Port 80 erreichbar ist.",
+      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter.",
+      "icom_busy": "Das Gateway ist ausgelastet. Versuche es in ein paar Minuten erneut.",
+      "icom_no_identity": "Das Gateway meldet seine Kennung nicht, daher lässt es sich nicht der Anlage zuordnen.",
+      "icom_other_gateway": "Das ist nicht das Gateway der gewählten Anlage. Prüfe die Adresse.",
+      "icom_invalid_host": "Gib eine IP-Adresse oder einen Hostnamen deines Heimnetzes ein.",
+      "invalid_gateway_password": "Gib das Gateway-Passwort vom Geräteaufkleber ein.",
+      "invalid_private_password": "Gib das private Passwort aus der Geräte-App ein."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
       "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu.",
       "rescan_unavailable": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit.",
-      "local_tokens_unavailable": "Dieser Zugang hat keinen nutzbaren gespeicherten Token für die Token-Liste. Richte den lokalen Zugang zuerst neu ein."
+      "local_tokens_unavailable": "Dieser Zugang hat keinen nutzbaren gespeicherten Token für die Token-Liste. Richte den lokalen Zugang zuerst neu ein.",
+      "icom_target_required": "Für einen lokalen iCom-Zugang ist keine Anlage mit Cloud-Verbindung vorhanden.",
+      "local_already_connected": "Diese Anlage hat bereits einen lokalen Zugang anderer Art.",
+      "local_target_unavailable": "Die gewählte Anlage ist nicht mehr verfügbar.",
+      "local_identity_conflict": "Das lokale Gateway passt nicht zur Anlage.",
+      "identity_contract_scope_changed": "Die Anlage hat sich geändert, während dieser Dialog offen war. Schließe den Dialog und versuche es erneut."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."

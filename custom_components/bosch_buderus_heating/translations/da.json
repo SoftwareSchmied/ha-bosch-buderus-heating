@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Opsæt lokal adgang",
+          "icom_setup": "Opret lokal adgang (iCom-gateway)",
           "back": "← Tilbage"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens på gatewayen",
           "local_polling": "Lokal forespørgselsfrekvens og status",
           "local_values": "Brug lokale værdier til eksisterende entiteter",
+          "icom_setup": "Skift iCom-adgangsdata",
           "back": "← Tilbage"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Blæserhastighed",
           "delete": "Slet dette koblingspunkt"
         }
+      },
+      "icom_setup": {
+        "title": "iCom-gateway: vælg anlæg",
+        "description": "Vælg det anlæg, hvis gateway skal læses lokalt.",
+        "data": {
+          "target": "Anlæg"
+        }
+      },
+      "icom_access": {
+        "title": "Lokal adgang til en iCom-gateway",
+        "description": "Læser værdierne fra en iCom-gateway (for eksempel KM200, IP inside, MB LAN 2 eller et IP-modul) i hjemmenetværket. Skrivning sker fortsat via skyen. Angiv gatewayens adresse, gatewayens adgangskode fra mærkatet og den private adgangskode, du valgte i den gamle enheds-app. Adgangskoderne bliver i denne post og sendes aldrig nogen steder hen. Forventes at fungere, men er endnu ikke testet på en rigtig gateway.",
+        "data": {
+          "host": "IP-adresse eller værtsnavn",
+          "gateway_password": "Gateway-adgangskode (mærkat på enheden)",
+          "private_password": "Privat adgangskode (enheds-app)"
+        },
+        "data_description": {
+          "gateway_password": "Adgangskoden på enhedens mærkat; bindestreger ignoreres.",
+          "private_password": "Adgangskoden, du valgte i den gamle enheds-app (for eksempel MyDevice). Det er ikke kontoadgangskoden i den nye app."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Resultat",
+        "description": "Den lokale adgang er gemt. Den læser i roligt tempo, cirka hvert andet minut. Vil du vise værdierne i dine eksisterende entiteter, skal du slå lokale værdier til for anlægget under forbindelsen. Forventes at fungere, men er endnu ikke testet på en rigtig gateway."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Dagens sidste koblingspunkt kan ikke slettes; hvad en tom dag betyder for regulatoren, er ikke kendt.",
       "rrc_point_duplicate": "Denne dag har allerede et koblingspunkt på dette tidspunkt.",
       "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives.",
-      "switch_program_aircon_setting": "Vælg en tilstand, som klimaanlægget tilbyder, og dertil en temperatur inden for dets område og trin samt en af dets blæserhastigheder."
+      "switch_program_aircon_setting": "Vælg en tilstand, som klimaanlægget tilbyder, og dertil en temperatur inden for dets område og trin samt en af dets blæserhastigheder.",
+      "icom_cannot_connect": "Gatewayen svarede ikke. Kontrollér adressen, og at gatewayen kan nås på port 80.",
+      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder.",
+      "icom_busy": "Gatewayen er optaget. Prøv igen om nogle minutter.",
+      "icom_no_identity": "Gatewayen rapporterer ikke noget ID, så den kan ikke knyttes til anlægget.",
+      "icom_other_gateway": "Det er ikke gatewayen til det valgte anlæg. Kontrollér adressen.",
+      "icom_invalid_host": "Angiv en IP-adresse eller et værtsnavn i dit hjemmenetværk.",
+      "invalid_gateway_password": "Angiv gateway-adgangskoden fra enhedens mærkat.",
+      "invalid_private_password": "Angiv den private adgangskode fra enheds-appen."
     },
     "abort": {
       "no_notification_gateways": "Der er ikke konfigureret noget varmeanlæg.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Den private opsætningspost kunne ikke læses eller gemmes. Kontrollér Home Assistants lagring, før du fortsætter.",
       "cloud_local_first_other_entry": "Dette anlæg er allerede sat op via sin lokale adgang i en anden post i denne integration. Tilføj cloudadgangen i den post i stedet.",
       "rescan_unavailable": "Søgningen blev ikke startet: ingen adgang til anlægget er klar lige nu.",
-      "local_tokens_unavailable": "Denne adgang har intet brugbart gemt token til tokenlisten. Sæt først den lokale adgang op igen."
+      "local_tokens_unavailable": "Denne adgang har intet brugbart gemt token til tokenlisten. Sæt først den lokale adgang op igen.",
+      "icom_target_required": "Der er intet anlæg med skyforbindelse til en lokal iCom-adgang.",
+      "local_already_connected": "Dette anlæg har allerede en lokal adgang af en anden art.",
+      "local_target_unavailable": "Det valgte anlæg er ikke længere tilgængeligt.",
+      "local_identity_conflict": "Den lokale gateway passer ikke til anlægget.",
+      "identity_contract_scope_changed": "Anlægget blev ændret, mens dialogen var åben. Luk dialogen, og prøv igen."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale forbindelse. Vent venligst."

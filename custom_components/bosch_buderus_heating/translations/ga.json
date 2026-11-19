@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Socraigh rochtain áitiúil",
+          "icom_setup": "Socraigh rochtain áitiúil (geata iCom)",
           "back": "← Siar"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Comharthaí ar an ngeata",
           "local_polling": "Minicíocht fiosraithe áitiúil agus stádas",
           "local_values": "Úsáid luachanna áitiúla d'aonáin atá ann cheana",
+          "icom_setup": "Athraigh sonraí rochtana iCom",
           "back": "← Siar"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Luas an lucht aeraithe",
           "delete": "Scrios an pointe lasctha seo"
         }
+      },
+      "icom_setup": {
+        "title": "Geata iCom: roghnaigh an córas",
+        "description": "Roghnaigh an córas a bhfuil a gheata le léamh go háitiúil.",
+        "data": {
+          "target": "Córas"
+        }
+      },
+      "icom_access": {
+        "title": "Rochtain áitiúil ar gheata iCom",
+        "description": "Léann sé luachanna geata iCom (mar shampla KM200, IP inside, MB LAN 2 nó modúl IP) ó do líonra baile. Fanann scríobh tríd an scamall. Cuir isteach seoladh an gheata, pasfhocal an gheata ón lipéad agus an pasfhocal príobháideach a shocraigh tú sa sean-aip ghléis. Fanann na pasfhocail san iontráil seo agus ní sheoltar chuig áit ar bith iad. Tá súil leis go n-oibreoidh sé, ach níor tástáladh go fóill é ar gheata fíor.",
+        "data": {
+          "host": "Seoladh IP nó óstainm",
+          "gateway_password": "Pasfhocal an gheata (lipéad an ghléis)",
+          "private_password": "Pasfhocal príobháideach (aip an ghléis)"
+        },
+        "data_description": {
+          "gateway_password": "An pasfhocal ar lipéad an ghléis; déantar neamhaird de dhashanna.",
+          "private_password": "An pasfhocal a shocraigh tú sa sean-aip ghléis (mar shampla MyDevice). Ní hé pasfhocal cuntais na haipe nua é."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Toradh",
+        "description": "Sábháladh an rochtain áitiúil. Léann sí go réidh, thart ar gach dhá nóiméad. Chun a luachanna a thaispeáint sna heintitis atá ann cheana, cuir luachanna áitiúla an chórais seo ar siúl faoin nasc. Tá súil leis go n-oibreoidh sé, ach níor tástáladh go fóill é ar gheata fíor."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Ní féidir an pointe lasctha deireanach de lá a scriosadh; ní fios cad is brí le lá folamh don rialaitheoir.",
       "rrc_point_duplicate": "Tá pointe lasctha ag an lá seo cheana ag an am seo.",
       "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
-      "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe."
+      "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe.",
+      "icom_cannot_connect": "Níor fhreagair an geata. Seiceáil an seoladh agus an féidir teacht ar an ngeata ar chalafort 80.",
+      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal.",
+      "icom_busy": "Tá an geata gnóthach. Bain triail eile as i gceann cúpla nóiméad.",
+      "icom_no_identity": "Ní thuairiscíonn an geata a aitheantas, mar sin ní féidir é a mheaitseáil leis an gcóras.",
+      "icom_other_gateway": "Ní hé seo geata an chórais roghnaithe. Seiceáil an seoladh.",
+      "icom_invalid_host": "Cuir isteach seoladh IP nó óstainm de do líonra baile.",
+      "invalid_gateway_password": "Cuir isteach pasfhocal an gheata ó lipéad an ghléis.",
+      "invalid_private_password": "Cuir isteach an pasfhocal príobháideach ó aip an ghléis."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
       "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair.",
-      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús."
+      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús.",
+      "icom_target_required": "Níl aon chóras le nasc scamall ar fáil le haghaidh rochtain áitiúil iCom.",
+      "local_already_connected": "Tá rochtain áitiúil de chineál eile ag an gcóras seo cheana.",
+      "local_target_unavailable": "Níl an córas roghnaithe ar fáil a thuilleadh.",
+      "local_identity_conflict": "Ní mheaitseálann an geata áitiúil leis an gcóras.",
+      "identity_contract_scope_changed": "Athraíodh an córas cé go raibh an dialóg seo oscailte. Dún an dialóg agus déan iarracht arís."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."

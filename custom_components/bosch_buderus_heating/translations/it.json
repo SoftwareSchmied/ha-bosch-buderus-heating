@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Configura l'accesso locale",
+          "icom_setup": "Configura l'accesso locale (gateway iCom)",
           "back": "← Indietro"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Token sul gateway",
           "local_polling": "Frequenza di interrogazione locale e stato",
           "local_values": "Usa i valori locali per le entità esistenti",
+          "icom_setup": "Modifica i dati di accesso iCom",
           "back": "← Indietro"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Velocità della ventola",
           "delete": "Elimina questo punto di commutazione"
         }
+      },
+      "icom_setup": {
+        "title": "Gateway iCom: scegli l'impianto",
+        "description": "Scegli l'impianto il cui gateway deve essere letto localmente.",
+        "data": {
+          "target": "Impianto"
+        }
+      },
+      "icom_access": {
+        "title": "Accesso locale a un gateway iCom",
+        "description": "Legge i valori di un gateway iCom (ad esempio KM200, IP inside, MB LAN 2 o un modulo IP) dalla rete domestica. La scrittura resta affidata al cloud. Inserisci l'indirizzo del gateway, la password del gateway riportata sull'etichetta e la password privata impostata nella vecchia app del dispositivo. Le password restano in questa voce e non vengono inviate da nessuna parte. Dovrebbe funzionare, ma non è ancora stato provato con un gateway reale.",
+        "data": {
+          "host": "Indirizzo IP o nome host",
+          "gateway_password": "Password del gateway (etichetta del dispositivo)",
+          "private_password": "Password privata (app del dispositivo)"
+        },
+        "data_description": {
+          "gateway_password": "La password sull'etichetta del dispositivo; i trattini vengono ignorati.",
+          "private_password": "La password impostata nella vecchia app del dispositivo (ad esempio MyDevice). Non è la password dell'account della nuova app."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Risultato",
+        "description": "L'accesso locale è stato salvato. Legge con calma, circa ogni due minuti. Per mostrare i suoi valori nelle entità esistenti, attiva i valori locali di questo impianto nella connessione. Dovrebbe funzionare, ma non è ancora stato provato con un gateway reale."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "L'ultimo punto di commutazione di un giorno non può essere eliminato; non è noto cosa significhi un giorno vuoto per il regolatore.",
       "rrc_point_duplicate": "Questo giorno ha già un punto di commutazione a quest'ora.",
       "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili.",
-      "switch_program_aircon_setting": "Scegli una modalità offerta dal climatizzatore e, per essa, una temperatura entro il suo intervallo e i suoi passi e una delle sue velocità della ventola."
+      "switch_program_aircon_setting": "Scegli una modalità offerta dal climatizzatore e, per essa, una temperatura entro il suo intervallo e i suoi passi e una delle sue velocità della ventola.",
+      "icom_cannot_connect": "Il gateway non ha risposto. Controlla l'indirizzo e che il gateway sia raggiungibile sulla porta 80.",
+      "icom_invalid_auth": "Non è stato possibile decifrare la risposta del gateway. Controlla entrambe le password.",
+      "icom_busy": "Il gateway è occupato. Riprova tra qualche minuto.",
+      "icom_no_identity": "Il gateway non comunica il proprio ID, quindi non può essere associato all'impianto.",
+      "icom_other_gateway": "Questo non è il gateway dell'impianto selezionato. Controlla l'indirizzo.",
+      "icom_invalid_host": "Inserisci un indirizzo IP o un nome host della tua rete domestica.",
+      "invalid_gateway_password": "Inserisci la password del gateway riportata sull'etichetta del dispositivo.",
+      "invalid_private_password": "Inserisci la password privata dell'app del dispositivo."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Non è stato possibile leggere o salvare il record privato della configurazione. Controlla l'archiviazione di Home Assistant prima di continuare.",
       "cloud_local_first_other_entry": "Questo impianto è già configurato tramite il suo accesso locale in un'altra voce di questa integrazione. Aggiungi l'accesso cloud in quella voce.",
       "rescan_unavailable": "La ricerca non è stata avviata: al momento nessun accesso all'impianto è pronto.",
-      "local_tokens_unavailable": "Questo accesso non ha un token salvato utilizzabile per l'elenco dei token. Configura prima di nuovo l'accesso locale."
+      "local_tokens_unavailable": "Questo accesso non ha un token salvato utilizzabile per l'elenco dei token. Configura prima di nuovo l'accesso locale.",
+      "icom_target_required": "Nessun impianto con connessione al cloud è disponibile per un accesso locale iCom.",
+      "local_already_connected": "Questo impianto ha già un accesso locale di altro tipo.",
+      "local_target_unavailable": "L'impianto selezionato non è più disponibile.",
+      "local_identity_conflict": "Il gateway locale non corrisponde all'impianto.",
+      "identity_contract_scope_changed": "L'impianto è cambiato mentre la finestra di dialogo era aperta. Chiudila e riprova."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."

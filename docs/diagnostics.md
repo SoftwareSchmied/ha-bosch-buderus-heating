@@ -1365,6 +1365,32 @@ The entity reports `unknown` instead of passing an invalid state to Home
 Assistant. The actual manufacturer value is deliberately excluded from logs
 and diagnostics.
 
+## iCom local access (beta)
+
+An iCom gateway's local access (see [iCom local access](icom-local-access.md))
+reports under `connections[].local[]` like the other local accesses, with the
+schema unchanged. Counts, ages and fixed codes only:
+
+- `protocol` `icom`, `condition`, `identity_confirmed`, `problem` (a fixed code such as
+  `auth_required` or `local_identity_conflict`) and `condition_changes` (the last 20
+  changes with time and reason);
+- `request_metrics`: `requests`, `answered` and `last_duration_ms`; `failures_by_class`:
+  failed requests by `request_timeout`, `connection_failed`, `undecryptable`,
+  `invalid_response`, `not_found`, `forbidden`, `service_unavailable` and
+  `http_error`;
+- `pauses`: `in_a_row` (the current series), `total`, `remaining_seconds` and
+  the `reason` (`connection`, `rate_limited`, `identity_unavailable` or
+  `undecryptable`);
+- `circuits`: how many heating circuits (`hc`), hot water circuits (`dhw`) and
+  heat sources (`hs`) the gateway lists, `discovery_complete` and
+  `identity_check_age_seconds`;
+- `resources`: per read path its template, `freshness`, `available`,
+  `age_seconds`, `target_interval_seconds`, `problem` and `absent` (the gateway
+  does not offer it).
+
+Never part of it: a password or key, the address, the gateway ID, any value
+read.
+
 ## Excluded information
 
 - access or refresh tokens, OAuth codes, and redirect addresses;

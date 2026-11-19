@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Skonfiguruj dostęp lokalny",
+          "icom_setup": "Skonfiguruj dostęp lokalny (brama iCom)",
           "back": "← Wstecz"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokeny na bramce",
           "local_polling": "Częstotliwość odpytywania lokalnego i stan",
           "local_values": "Używaj wartości lokalnych dla istniejących encji",
+          "icom_setup": "Zmień dane dostępu iCom",
           "back": "← Wstecz"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Prędkość wentylatora",
           "delete": "Usuń ten punkt przełączenia"
         }
+      },
+      "icom_setup": {
+        "title": "Brama iCom: wybierz instalację",
+        "description": "Wybierz instalację, której brama ma być odczytywana lokalnie.",
+        "data": {
+          "target": "Instalacja"
+        }
+      },
+      "icom_access": {
+        "title": "Dostęp lokalny do bramy iCom",
+        "description": "Odczytuje wartości z bramy iCom (na przykład KM200, IP inside, MB LAN 2 lub modułu IP) w sieci domowej. Zapis nadal odbywa się przez chmurę. Podaj adres bramy, hasło bramy z naklejki oraz hasło prywatne ustawione w starej aplikacji urządzenia. Hasła pozostają w tym wpisie i nigdzie nie są wysyłane. Oczekuje się, że działa, ale nie zostało jeszcze sprawdzone na prawdziwej bramie.",
+        "data": {
+          "host": "Adres IP lub nazwa hosta",
+          "gateway_password": "Hasło bramy (naklejka na urządzeniu)",
+          "private_password": "Hasło prywatne (aplikacja urządzenia)"
+        },
+        "data_description": {
+          "gateway_password": "Hasło z naklejki na urządzeniu; myślniki są pomijane.",
+          "private_password": "Hasło ustawione w starej aplikacji urządzenia (na przykład MyDevice). To nie jest hasło konta nowej aplikacji."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Wynik",
+        "description": "Dostęp lokalny został zapisany. Odczytuje w spokojnym tempie, mniej więcej co dwie minuty. Aby pokazać jego wartości w istniejących encjach, włącz wartości lokalne tej instalacji w ustawieniach połączenia. Oczekuje się, że działa, ale nie zostało jeszcze sprawdzone na prawdziwej bramie."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Ostatniego punktu przełączenia dnia nie można usunąć; nie wiadomo, co pusty dzień oznacza dla regulatora.",
       "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie.",
       "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
-      "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora."
+      "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora.",
+      "icom_cannot_connect": "Brama nie odpowiedziała. Sprawdź adres i czy brama jest osiągalna na porcie 80.",
+      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła.",
+      "icom_busy": "Brama jest zajęta. Spróbuj ponownie za kilka minut.",
+      "icom_no_identity": "Brama nie podaje swojego identyfikatora, więc nie można jej przypisać do instalacji.",
+      "icom_other_gateway": "To nie jest brama wybranej instalacji. Sprawdź adres.",
+      "icom_invalid_host": "Podaj adres IP lub nazwę hosta w swojej sieci domowej.",
+      "invalid_gateway_password": "Podaj hasło bramy z naklejki na urządzeniu.",
+      "invalid_private_password": "Podaj hasło prywatne z aplikacji urządzenia."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
       "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie.",
       "rescan_unavailable": "Wyszukiwanie nie zostało uruchomione: żaden dostęp do instalacji nie jest teraz gotowy.",
-      "local_tokens_unavailable": "Ten dostęp nie ma zapisanego tokenu, którego można użyć do listy tokenów. Najpierw ponownie skonfiguruj dostęp lokalny."
+      "local_tokens_unavailable": "Ten dostęp nie ma zapisanego tokenu, którego można użyć do listy tokenów. Najpierw ponownie skonfiguruj dostęp lokalny.",
+      "icom_target_required": "Brak instalacji z połączeniem z chmurą dla lokalnego dostępu iCom.",
+      "local_already_connected": "Ta instalacja ma już dostęp lokalny innego rodzaju.",
+      "local_target_unavailable": "Wybrana instalacja nie jest już dostępna.",
+      "local_identity_conflict": "Lokalna brama nie pasuje do instalacji.",
+      "identity_contract_scope_changed": "Instalacja zmieniła się, gdy okno było otwarte. Zamknij okno i spróbuj ponownie."
     },
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."

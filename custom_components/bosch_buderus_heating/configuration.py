@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import cast
 
+from .icom_access import ICOM_ACCESS_KEY, load_icom_access
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION, load_local_access
 
 type JsonValue = str | int | float | bool | list[JsonValue] | JsonObject | None
@@ -236,6 +237,14 @@ def _connection(raw: JsonObject, minor_version: int) -> StoredConnection:
         validate_cloud_credentials(_object(raw.get("credentials")))
         if raw.get("account_evidence") is not None:
             _object(raw["account_evidence"])
+    elif kind == LOCAL_KIND and ICOM_ACCESS_KEY in raw:
+        # An iCom gateway's access (encrypted local HTTP); same storage level.
+        if minor_version < LOCAL_STORAGE_MINOR_VERSION:
+            raise ConfigurationError("unsupported_local_storage_version")
+        try:
+            load_icom_access(raw)
+        except ValueError as error:
+            raise ConfigurationError(str(error)) from None
     elif kind == LOCAL_KIND and "local_access" in raw:
         if minor_version < LOCAL_STORAGE_MINOR_VERSION:
             raise ConfigurationError("unsupported_local_storage_version")
@@ -331,6 +340,12 @@ def _binding(
         adapter == "k40_local"
         and "local_access" in connection_data
         and load_local_access(connection_data).gateway_id != locator[2]
+    ):
+        raise ConfigurationError("local_identity_conflict")
+    if (
+        adapter == "k40_local"
+        and ICOM_ACCESS_KEY in connection_data
+        and load_icom_access(connection_data).gateway_id != locator[2]
     ):
         raise ConfigurationError("local_identity_conflict")
     if (

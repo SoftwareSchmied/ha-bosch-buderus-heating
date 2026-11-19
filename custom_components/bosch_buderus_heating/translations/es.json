@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Configurar el acceso local",
+          "icom_setup": "Configurar el acceso local (pasarela iCom)",
           "back": "← Atrás"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens en la pasarela",
           "local_polling": "Frecuencia de consulta local y estado",
           "local_values": "Usar valores locales para las entidades existentes",
+          "icom_setup": "Cambiar los datos de acceso iCom",
           "back": "← Atrás"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Velocidad del ventilador",
           "delete": "Eliminar este punto de conmutación"
         }
+      },
+      "icom_setup": {
+        "title": "Pasarela iCom: elegir la instalación",
+        "description": "Elija la instalación cuya pasarela se leerá localmente.",
+        "data": {
+          "target": "Instalación"
+        }
+      },
+      "icom_access": {
+        "title": "Acceso local a una pasarela iCom",
+        "description": "Lee los valores de una pasarela iCom (por ejemplo KM200, IP inside, MB LAN 2 o un módulo IP) desde su red doméstica. La escritura sigue pasando por la nube. Introduzca la dirección de la pasarela, su contraseña de la etiqueta y la contraseña privada que definió en la antigua aplicación del aparato. Las contraseñas se quedan en esta entrada y no se envían a ningún sitio. Se espera que funcione, pero aún no se ha probado con una pasarela real.",
+        "data": {
+          "host": "Dirección IP o nombre de host",
+          "gateway_password": "Contraseña de la pasarela (etiqueta del aparato)",
+          "private_password": "Contraseña privada (aplicación del aparato)"
+        },
+        "data_description": {
+          "gateway_password": "La contraseña de la etiqueta del aparato; se ignoran los guiones.",
+          "private_password": "La contraseña que definió en la antigua aplicación del aparato (por ejemplo MyDevice). No es la contraseña de la cuenta de la nueva aplicación."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Resultado",
+        "description": "Se guardó el acceso local. Lee a un ritmo prudente, aproximadamente cada dos minutos. Para mostrar sus valores en las entidades existentes, active los valores locales de esta instalación en la conexión. Se espera que funcione, pero aún no se ha probado con una pasarela real."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "El último punto de conmutación de un día no se puede eliminar; no se sabe qué significa un día vacío para el regulador.",
       "rrc_point_duplicate": "Este día ya tiene un punto de conmutación a esta hora.",
       "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
-      "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador."
+      "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador.",
+      "icom_cannot_connect": "La pasarela no respondió. Compruebe la dirección y que se pueda acceder a la pasarela por el puerto 80.",
+      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas.",
+      "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
+      "icom_no_identity": "La pasarela no informa de su identificador, por lo que no se puede asignar a la instalación.",
+      "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",
+      "icom_invalid_host": "Introduzca una dirección IP o un nombre de host de su red doméstica.",
+      "invalid_gateway_password": "Introduzca la contraseña de la pasarela de la etiqueta del aparato.",
+      "invalid_private_password": "Introduzca la contraseña privada de la aplicación del aparato."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
       "rescan_unavailable": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento.",
-      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local."
+      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local.",
+      "icom_target_required": "No hay ninguna instalación con conexión a la nube disponible para un acceso local iCom.",
+      "local_already_connected": "Esta instalación ya tiene un acceso local de otro tipo.",
+      "local_target_unavailable": "La instalación seleccionada ya no está disponible.",
+      "local_identity_conflict": "La pasarela local no coincide con la instalación.",
+      "identity_contract_scope_changed": "La instalación cambió mientras el cuadro de diálogo estaba abierto. Ciérrelo e inténtelo de nuevo."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."

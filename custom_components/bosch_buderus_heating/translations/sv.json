@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Konfigurera lokal åtkomst",
+          "icom_setup": "Ställ in lokal åtkomst (iCom-gateway)",
           "back": "← Tillbaka"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens på gatewayen",
           "local_polling": "Lokal förfrågningsfrekvens och status",
           "local_values": "Använd lokala värden för befintliga entiteter",
+          "icom_setup": "Ändra iCom-åtkomstuppgifter",
           "back": "← Tillbaka"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Fläkthastighet",
           "delete": "Ta bort den här växlingspunkten"
         }
+      },
+      "icom_setup": {
+        "title": "iCom-gateway: välj anläggning",
+        "description": "Välj den anläggning vars gateway ska läsas lokalt.",
+        "data": {
+          "target": "Anläggning"
+        }
+      },
+      "icom_access": {
+        "title": "Lokal åtkomst till en iCom-gateway",
+        "description": "Läser värdena från en iCom-gateway (till exempel KM200, IP inside, MB LAN 2 eller en IP-modul) i hemnätverket. Skrivning sker fortfarande via molnet. Ange gatewayens adress, gatewaylösenordet från etiketten och det privata lösenordet som du angav i den gamla enhetsappen. Lösenorden stannar i den här posten och skickas aldrig någon annanstans. Förväntas fungera, men har ännu inte testats på en riktig gateway.",
+        "data": {
+          "host": "IP-adress eller värdnamn",
+          "gateway_password": "Gatewaylösenord (etikett på enheten)",
+          "private_password": "Privat lösenord (enhetsappen)"
+        },
+        "data_description": {
+          "gateway_password": "Lösenordet på enhetens etikett; bindestreck ignoreras.",
+          "private_password": "Lösenordet du angav i den gamla enhetsappen (till exempel MyDevice). Det är inte kontolösenordet i den nya appen."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Resultat",
+        "description": "Den lokala åtkomsten sparades. Den läser i lugn takt, ungefär var andra minut. Om du vill visa dess värden i dina befintliga entiteter slår du på lokala värden för anläggningen under anslutningen. Förväntas fungera, men har ännu inte testats på en riktig gateway."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Dagens sista växlingspunkt kan inte tas bort; vad en tom dag betyder för regulatorn är inte känt.",
       "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden.",
       "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken.",
-      "switch_program_aircon_setting": "Välj ett läge som luftkonditioneringen erbjuder och för det en temperatur inom dess intervall och steg samt en av dess fläkthastigheter."
+      "switch_program_aircon_setting": "Välj ett läge som luftkonditioneringen erbjuder och för det en temperatur inom dess intervall och steg samt en av dess fläkthastigheter.",
+      "icom_cannot_connect": "Gatewayen svarade inte. Kontrollera adressen och att gatewayen går att nå på port 80.",
+      "icom_invalid_auth": "Gatewayens svar gick inte att dekryptera. Kontrollera båda lösenorden.",
+      "icom_busy": "Gatewayen är upptagen. Försök igen om några minuter.",
+      "icom_no_identity": "Gatewayen rapporterar inget ID, så den kan inte kopplas till anläggningen.",
+      "icom_other_gateway": "Det här är inte gatewayen för den valda anläggningen. Kontrollera adressen.",
+      "icom_invalid_host": "Ange en IP-adress eller ett värdnamn i ditt hemnätverk.",
+      "invalid_gateway_password": "Ange gatewaylösenordet från enhetens etikett.",
+      "invalid_private_password": "Ange det privata lösenordet från enhetsappen."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Den privata konfigurationsposten kunde inte läsas eller sparas. Kontrollera Home Assistants lagring innan du fortsätter.",
       "cloud_local_first_other_entry": "Den här anläggningen är redan konfigurerad via sin lokala åtkomst i en annan post för den här integrationen. Lägg till molnåtkomsten i den posten i stället.",
       "rescan_unavailable": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu.",
-      "local_tokens_unavailable": "Den här åtkomsten har ingen användbar sparad token för tokenlistan. Konfigurera den lokala åtkomsten igen först."
+      "local_tokens_unavailable": "Den här åtkomsten har ingen användbar sparad token för tokenlistan. Konfigurera den lokala åtkomsten igen först.",
+      "icom_target_required": "Ingen anläggning med molnanslutning finns för lokal iCom-åtkomst.",
+      "local_already_connected": "Den här anläggningen har redan en lokal åtkomst av annat slag.",
+      "local_target_unavailable": "Den valda anläggningen är inte längre tillgänglig.",
+      "local_identity_conflict": "Den lokala gatewayen motsvarar inte anläggningen.",
+      "identity_contract_scope_changed": "Anläggningen ändrades medan dialogrutan var öppen. Stäng dialogrutan och försök igen."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."

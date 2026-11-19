@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Lokale toegang instellen",
+          "icom_setup": "Lokale toegang instellen (iCom-gateway)",
           "back": "← Terug"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens op de gateway",
           "local_polling": "Lokale opvraagfrequentie en status",
           "local_values": "Lokale waarden gebruiken voor bestaande entiteiten",
+          "icom_setup": "iCom-toegangsgegevens wijzigen",
           "back": "← Terug"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Ventilatorsnelheid",
           "delete": "Dit schakelpunt verwijderen"
         }
+      },
+      "icom_setup": {
+        "title": "iCom-gateway: installatie kiezen",
+        "description": "Kies de installatie waarvan de gateway lokaal moet worden uitgelezen.",
+        "data": {
+          "target": "Installatie"
+        }
+      },
+      "icom_access": {
+        "title": "Lokale toegang tot een iCom-gateway",
+        "description": "Leest de waarden van een iCom-gateway (bijvoorbeeld KM200, IP inside, MB LAN 2 of een IP-module) uit je thuisnetwerk. Schrijven blijft via de cloud lopen. Voer het adres van de gateway in, het gatewaywachtwoord van het etiket en het privéwachtwoord dat je in de oude apparaat-app hebt ingesteld. De wachtwoorden blijven in dit item en worden nergens naartoe verstuurd. Naar verwachting werkt dit, maar het is nog niet getest met een echte gateway.",
+        "data": {
+          "host": "IP-adres of hostnaam",
+          "gateway_password": "Gatewaywachtwoord (etiket op het apparaat)",
+          "private_password": "Privéwachtwoord (apparaat-app)"
+        },
+        "data_description": {
+          "gateway_password": "Het wachtwoord op het etiket van het apparaat; streepjes worden genegeerd.",
+          "private_password": "Het wachtwoord dat je in de oude apparaat-app hebt ingesteld (bijvoorbeeld MyDevice). Het is niet het accountwachtwoord van de nieuwe app."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Resultaat",
+        "description": "De lokale toegang is opgeslagen. Hij leest rustig, ongeveer elke twee minuten. Schakel onder de verbinding de lokale waarden voor deze installatie in om de waarden in je bestaande entiteiten te tonen. Naar verwachting werkt dit, maar het is nog niet getest met een echte gateway."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
       "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip.",
       "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
-      "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden."
+      "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden.",
+      "icom_cannot_connect": "De gateway antwoordde niet. Controleer het adres en of de gateway bereikbaar is op poort 80.",
+      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden.",
+      "icom_busy": "De gateway is bezet. Probeer het over enkele minuten opnieuw.",
+      "icom_no_identity": "De gateway meldt zijn ID niet, dus hij kan niet aan de installatie worden gekoppeld.",
+      "icom_other_gateway": "Dit is niet de gateway van de gekozen installatie. Controleer het adres.",
+      "icom_invalid_host": "Voer een IP-adres of hostnaam van je thuisnetwerk in.",
+      "invalid_gateway_password": "Voer het gatewaywachtwoord van het etiket op het apparaat in.",
+      "invalid_private_password": "Voer het privéwachtwoord van de apparaat-app in."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
       "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed.",
-      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in."
+      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in.",
+      "icom_target_required": "Er is geen installatie met cloudverbinding beschikbaar voor lokale iCom-toegang.",
+      "local_already_connected": "Deze installatie heeft al een lokale toegang van een andere soort.",
+      "local_target_unavailable": "De gekozen installatie is niet meer beschikbaar.",
+      "local_identity_conflict": "De lokale gateway komt niet overeen met de installatie.",
+      "identity_contract_scope_changed": "De installatie is gewijzigd terwijl dit dialoogvenster openstond. Sluit het venster en probeer het opnieuw."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."
