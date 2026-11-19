@@ -589,6 +589,10 @@ def test_new_local_readings_refresh_entities_once_and_only_for_current_sources()
         local_retained=False,
         _local_faults_updated=lambda selection: None,
         _local_fault_failure=MagicMock(),
+        cloud_unavailable=lambda: False,
+        counter_cloud_unavailable=lambda: False,
+        _local_pass_context=None,
+        local_changed_paths=None,
     )
     refresh = ManagedPointTCoordinator._local_updated
     refresh(fake)

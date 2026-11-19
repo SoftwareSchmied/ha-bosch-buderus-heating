@@ -135,6 +135,17 @@ class ResourceInventory:
         self.signal_problem: str | None = None
         self.retained_bytes = 0
         self.retained_nodes = 0
+        # X16: every change of a record (or of the record set) is counted and
+        # the changed targets are noted, so the published views are only
+        # worked out again for them. ``touched_all``: too many to name.
+        self.revision = 0
+        self.touched: set[str] = set()
+        self.touched_all = False
+
+    def touch(self, record: ResourceRecord) -> None:
+        """X16: the record changes now (call before the change)."""
+        self.revision += 1
+        self.touched.add(record.request.target)
 
     def add(self, request: ReadRequest, now: float) -> ResourceRecord:
         response_schema(request)
@@ -154,6 +165,7 @@ class ResourceInventory:
             raise ValueError("local_resource_limit")
         record = ResourceRecord(request, now, now)
         self.records[request.target] = record
+        self.touch(record)
         return record
 
     def period(self, request: ReadRequest) -> int | None:
@@ -205,6 +217,7 @@ class ResourceInventory:
         self.retained_nodes -= record.retained_nodes
         record.retained_bytes = record.retained_nodes = 0
         record.observation = None
+        self.touch(record)
 
     def accept(
         self, result: ReadResult, now: float, *, started: float | None = None
@@ -217,6 +230,7 @@ class ResourceInventory:
         so one read is never repeated at once.
         """
         record = self.records[result.request.target]
+        self.touch(record)
         interval = self.period(record.request)
         assert interval is not None
         if result.state is ReadState.DEFERRED:
@@ -333,6 +347,7 @@ class ResourceInventory:
             self.signal_problem = "invalid_local_signal_list"
             return False
         ids = data.signal_ids
+        self.touched_all = True  # the records of the listed signals change
         known = self.signal_ids or any(
             record.request.definition.template == "/signals/{signalId}"
             for record in self.records.values()
@@ -468,4 +483,4 @@ class ResourceInventory:
                 )
             ):
                 self._drop_observation(record)
-                del self.records[key]
+                del self.records[key]  # its observation was dropped: touched

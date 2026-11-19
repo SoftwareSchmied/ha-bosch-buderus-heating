@@ -53,6 +53,7 @@ from .local_only import (
 )
 from .local_only_pair import fixed_definition, paired_reading, reviewed_definition
 from .observations import ValueStatus
+from .update_gate import untouched
 
 if TYPE_CHECKING:
     from homeassistant.helpers.device_registry import DeviceInfo
@@ -318,6 +319,10 @@ class BoschBuderusLocalOnlySensor(
 
     @callback
     def _handle_coordinator_update(self) -> None:
+        if _plant_view(self.coordinator) is None and untouched(
+            self.coordinator, (self._path,)
+        ):
+            return  # X16: a pass of local readings that left this one as is
         super()._handle_coordinator_update()
         self._remember_unit()
 

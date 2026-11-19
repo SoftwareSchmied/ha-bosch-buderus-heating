@@ -214,6 +214,8 @@ class LocalPollingService:
         self._shown_records: dict[str, ResourceRecord] | None = None
         self._shown_ready: bool | None = None
         self._shown_token: tuple[object, ...] | None = None
+        # X16: the inventory and its revision the published views come from.
+        self._shown_stamp: tuple[ResourceInventory, int] | None = None
         # When a published freshness changes next, and when the expiry timer
         # wakes up next (it is woken earlier only for an earlier change).
         self._next_change = math.inf
@@ -267,6 +269,23 @@ class LocalPollingService:
         token = self._period_token() if self._period_token is not None else None
         same_periods = token is not None and _same(self._shown_token, token)
         self._shown_token = token
+        stamp = self._shown_stamp
+        if (
+            stamp is not None
+            and stamp[0] is inventory
+            and same_periods
+            and records is self._shown_records
+            and ready is self._shown_ready
+            and now < self._next_change
+            and len(self._shown) == len(records)
+            and not inventory.touched_all
+        ):
+            # X16: no freshness is due. Without a changed record every view
+            # stays as published; with a few, only theirs are worked out.
+            if stamp[1] == inventory.revision:
+                return False
+            if (changed := self._carry_touched(now, ready)) is not None:
+                return changed
         everything = (
             records is not self._shown_records or ready is not self._shown_ready
         )
@@ -325,7 +344,65 @@ class LocalPollingService:
         if not changed and replaced and list(previous) != list(shown):
             changed = True
         self._shown, self._shown_records, self._shown_ready = shown, records, ready
+        self._shown_stamp = (inventory, inventory.revision)
+        inventory.touched.clear()
+        inventory.touched_all = False
         self._next_change = soonest
+        return changed
+
+    def _carry_touched(self, now: float, ready: bool) -> bool | None:
+        """X16: work out again only the views of the changed records.
+
+        Same result as ``_carry_forward`` for the case it is called in (same
+        records, readiness and periods, no freshness due). None when a changed
+        record is not one of the published views: then all are checked.
+        """
+        inventory = self.inventory
+        records, previous = inventory.records, self._shown
+        targets = []
+        for target in inventory.touched:
+            record, item = records.get(target), previous.get(target)
+            if record is None or item is None or item.record is not record:
+                return None
+            targets.append((target, record, item))
+        shown = dict(previous)
+        changed = False
+        soonest = self._next_change
+        for target, record, item in targets:
+            interval = (
+                item.interval
+                if item.scheduled == record.scheduled_period
+                else inventory.freshness_period(record)
+            )
+            view, renew = inventory.timed_view(
+                record, now, source_ready=ready, interval=interval
+            )
+            part = (
+                target,
+                view.freshness,
+                view.available,
+                view.problem,
+                view.observation,
+            )
+            if item.part != part:
+                changed = True
+            soonest = min(soonest, renew)
+            shown[target] = _Shown(
+                record,
+                record.observation,
+                record.invalid,
+                record.active,
+                record.problem,
+                record.actual_interval,
+                record.scheduled_period,
+                interval,
+                renew,
+                view,
+                part,
+            )
+        self._shown, self._next_change = shown, soonest
+        self._shown_stamp = (inventory, inventory.revision)
+        inventory.touched.clear()
         return changed
 
     def _publish(self) -> None:
