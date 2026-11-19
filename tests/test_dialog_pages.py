@@ -50,7 +50,7 @@ def test_every_outcome_has_a_page_in_every_language(path: Path) -> None:
     for number in range(1, connection_flow.MAX_LISTED + 1):
         key = f"connection_open_{number}"
         assert menu[key] == "{" + key + "}"
-    assert list(menu)[-2:] == ["local_setup", "back"]
+    assert list(menu)[-3:] == ["local_setup", "icom_setup", "back"]
 
 
 def test_every_reported_outcome_is_known() -> None:
@@ -134,9 +134,10 @@ async def test_a_local_access_is_added_from_the_connections_menu(
     result = await _connections(hass, entry)
     assert result["step_id"] == "connections"
     options = result["menu_options"]
-    assert isinstance(options, list) and options[-2:] == ["local_setup", "back"]
+    assert isinstance(options, list)
+    assert options[-3:] == ["local_setup", "icom_setup", "back"]
     # Each access has its label as the placeholder of its translated entry.
-    for step in options[:-2]:
+    for step in options[:-3]:
         assert step.startswith("connection_open_")
         assert result["description_placeholders"][step]
     manager = hass.config_entries.options

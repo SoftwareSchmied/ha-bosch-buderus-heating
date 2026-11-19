@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Configurar o acesso local",
+          "icom_setup": "Configurar o acesso local (gateway iCom)",
           "back": "← Voltar"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokens no gateway",
           "local_polling": "Frequência de consulta local e estado",
           "local_values": "Utilizar valores locais para entidades existentes",
+          "icom_setup": "Alterar os dados de acesso iCom",
           "back": "← Voltar"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Velocidade do ventilador",
           "delete": "Eliminar este ponto de comutação"
         }
+      },
+      "icom_setup": {
+        "title": "Gateway iCom: escolher a instalação",
+        "description": "Escolha a instalação cujo gateway será lido localmente.",
+        "data": {
+          "target": "Instalação"
+        }
+      },
+      "icom_access": {
+        "title": "Acesso local a um gateway iCom",
+        "description": "Lê os valores de um gateway iCom (por exemplo KM200, IP inside, MB LAN 2 ou um módulo IP) a partir da rede doméstica. A escrita continua a ser feita pela nuvem. Introduza o endereço do gateway, a palavra-passe do gateway da etiqueta e a palavra-passe privada que definiu na antiga aplicação do aparelho. As palavras-passe ficam nesta entrada e nunca são enviadas para lado nenhum. Espera-se que funcione, mas ainda não foi testado com um gateway real.",
+        "data": {
+          "host": "Endereço IP ou nome de anfitrião",
+          "gateway_password": "Palavra-passe do gateway (etiqueta do aparelho)",
+          "private_password": "Palavra-passe privada (aplicação do aparelho)"
+        },
+        "data_description": {
+          "gateway_password": "A palavra-passe da etiqueta do aparelho; os hífenes são ignorados.",
+          "private_password": "A palavra-passe que definiu na antiga aplicação do aparelho (por exemplo MyDevice). Não é a palavra-passe da conta da nova aplicação."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Resultado",
+        "description": "O acesso local foi guardado. Lê a um ritmo cuidadoso, cerca de dois em dois minutos. Para mostrar os seus valores nas entidades existentes, ative os valores locais desta instalação na ligação. Espera-se que funcione, mas ainda não foi testado com um gateway real."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "O último ponto de comutação de um dia não pode ser eliminado; não se sabe o que um dia vazio significa para o regulador.",
       "rrc_point_duplicate": "Este dia já tem um ponto de comutação a esta hora.",
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
-      "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador."
+      "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador.",
+      "icom_cannot_connect": "O gateway não respondeu. Verifique o endereço e se o gateway está acessível na porta 80.",
+      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe.",
+      "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
+      "icom_no_identity": "O gateway não indica o seu ID, pelo que não pode ser associado à instalação.",
+      "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",
+      "icom_invalid_host": "Introduza um endereço IP ou nome de anfitrião da sua rede doméstica.",
+      "invalid_gateway_password": "Introduza a palavra-passe do gateway da etiqueta do aparelho.",
+      "invalid_private_password": "Introduza a palavra-passe privada da aplicação do aparelho."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Não foi possível ler ou guardar o registo privado da configuração. Verifique o armazenamento do Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalação já está configurada através do respetivo acesso local noutra entrada desta integração. Adicione o acesso à cloud nessa entrada.",
       "rescan_unavailable": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação.",
-      "local_tokens_unavailable": "Este acesso não tem um token guardado utilizável para a lista de tokens. Configure primeiro de novo o acesso local."
+      "local_tokens_unavailable": "Este acesso não tem um token guardado utilizável para a lista de tokens. Configure primeiro de novo o acesso local.",
+      "icom_target_required": "Não existe nenhuma instalação com ligação à nuvem disponível para um acesso local iCom.",
+      "local_already_connected": "Esta instalação já tem um acesso local de outro tipo.",
+      "local_target_unavailable": "A instalação selecionada já não está disponível.",
+      "local_identity_conflict": "O gateway local não corresponde à instalação.",
+      "identity_contract_scope_changed": "A instalação mudou enquanto a caixa de diálogo estava aberta. Feche-a e tente novamente."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."

@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Nastaviť lokálny prístup",
+          "icom_setup": "Nastaviť miestny prístup (brána iCom)",
           "back": "← Späť"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokeny na bráne",
           "local_polling": "Frekvencia dopytovania a stav lokálneho prístupu",
           "local_values": "Použiť lokálne hodnoty pre existujúce entity",
+          "icom_setup": "Zmeniť prístupové údaje iCom",
           "back": "← Späť"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Rýchlosť ventilátora",
           "delete": "Vymazať tento spínací bod"
         }
+      },
+      "icom_setup": {
+        "title": "Brána iCom: vyberte sústavu",
+        "description": "Vyberte sústavu, ktorej brána sa má čítať lokálne.",
+        "data": {
+          "target": "Sústava"
+        }
+      },
+      "icom_access": {
+        "title": "Miestny prístup k bráne iCom",
+        "description": "Číta hodnoty brány iCom (napríklad KM200, IP inside, MB LAN 2 alebo IP modul) z domácej siete. Zápis zostáva cez cloud. Zadajte adresu brány, heslo brány zo štítka a súkromné heslo, ktoré ste nastavili v starej aplikácii zariadenia. Heslá zostávajú v tomto zázname a nikam sa neposielajú. Očakáva sa, že funguje, ale zatiaľ nebolo vyskúšané na skutočnej bráne.",
+        "data": {
+          "host": "IP adresa alebo názov hostiteľa",
+          "gateway_password": "Heslo brány (štítok na zariadení)",
+          "private_password": "Súkromné heslo (aplikácia zariadenia)"
+        },
+        "data_description": {
+          "gateway_password": "Heslo na štítku zariadenia; spojovníky sa ignorujú.",
+          "private_password": "Heslo, ktoré ste nastavili v starej aplikácii zariadenia (napríklad MyDevice). Nie je to heslo k účtu novej aplikácie."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Výsledok",
+        "description": "Miestny prístup bol uložený. Číta pokojným tempom, približne každé dve minúty. Ak chcete jeho hodnoty zobraziť v existujúcich entitách, zapnite pri pripojení miestne hodnoty pre túto sústavu. Očakáva sa, že funguje, ale zatiaľ nebolo vyskúšané na skutočnej bráne."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Posledný spínací bod dňa nemožno vymazať; čo znamená prázdny deň pre regulátor, nie je známe.",
       "rrc_point_duplicate": "Tento deň už má spínací bod v tomto čase.",
       "wallbox_name_invalid": "Názov môže obsahovať najviac 64 tlačiteľných znakov.",
-      "switch_program_aircon_setting": "Vyberte režim, ktorý klimatizácia ponúka, a k nemu teplotu v jej rozsahu a krokoch a jednu z jej rýchlostí ventilátora."
+      "switch_program_aircon_setting": "Vyberte režim, ktorý klimatizácia ponúka, a k nemu teplotu v jej rozsahu a krokoch a jednu z jej rýchlostí ventilátora.",
+      "icom_cannot_connect": "Brána neodpovedala. Skontrolujte adresu a či je brána dostupná na porte 80.",
+      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá.",
+      "icom_busy": "Brána je zaneprázdnená. Skúste to znova o niekoľko minút.",
+      "icom_no_identity": "Brána nehlási svoje ID, preto ju nemožno priradiť k sústave.",
+      "icom_other_gateway": "Toto nie je brána vybranej sústavy. Skontrolujte adresu.",
+      "icom_invalid_host": "Zadajte IP adresu alebo názov hostiteľa vo svojej domácej sieti.",
+      "invalid_gateway_password": "Zadajte heslo brány zo štítka na zariadení.",
+      "invalid_private_password": "Zadajte súkromné heslo z aplikácie zariadenia."
     },
     "abort": {
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Súkromný záznam nastavenia sa nepodarilo prečítať ani uložiť. Pred pokračovaním skontrolujte úložisko Home Assistant.",
       "cloud_local_first_other_entry": "Tento systém je už nastavený cez svoj lokálny prístup v inom zázname tejto integrácie. Cloudový prístup pridajte radšej v tomto zázname.",
       "rescan_unavailable": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému.",
-      "local_tokens_unavailable": "Tento prístup nemá použiteľný uložený token pre zoznam tokenov. Najprv znova nastavte lokálny prístup."
+      "local_tokens_unavailable": "Tento prístup nemá použiteľný uložený token pre zoznam tokenov. Najprv znova nastavte lokálny prístup.",
+      "icom_target_required": "Pre miestny prístup iCom nie je k dispozícii žiadna sústava s pripojením ku cloudu.",
+      "local_already_connected": "Táto sústava už má miestny prístup iného druhu.",
+      "local_target_unavailable": "Vybraná sústava už nie je k dispozícii.",
+      "local_identity_conflict": "Miestna brána nezodpovedá sústave.",
+      "identity_contract_scope_changed": "Sústava sa zmenila, keď bolo okno otvorené. Zatvorte okno a skúste to znova."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."

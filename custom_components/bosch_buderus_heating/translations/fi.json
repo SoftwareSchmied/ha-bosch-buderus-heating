@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Määritä paikallinen yhteys",
+          "icom_setup": "Määritä paikallinen käyttö (iCom-yhdyskäytävä)",
           "back": "← Takaisin"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Yhdyskäytävän tunnukset",
           "local_polling": "Paikallinen kyselytiheys ja tila",
           "local_values": "Käytä paikallisia arvoja olemassa oleville entiteeteille",
+          "icom_setup": "Muuta iCom-käyttötietoja",
           "back": "← Takaisin"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Puhaltimen nopeus",
           "delete": "Poista tämä kytkentäpiste"
         }
+      },
+      "icom_setup": {
+        "title": "iCom-yhdyskäytävä: valitse järjestelmä",
+        "description": "Valitse järjestelmä, jonka yhdyskäytävä luetaan paikallisesti.",
+        "data": {
+          "target": "Järjestelmä"
+        }
+      },
+      "icom_access": {
+        "title": "Paikallinen käyttö iCom-yhdyskäytävään",
+        "description": "Lukee iCom-yhdyskäytävän (esimerkiksi KM200, IP inside, MB LAN 2 tai IP-moduuli) arvot kotiverkosta. Kirjoittaminen tapahtuu edelleen pilven kautta. Anna yhdyskäytävän osoite, tarrassa oleva yhdyskäytävän salasana ja yksityinen salasana, jonka asetit vanhassa laitesovelluksessa. Salasanat pysyvät tässä merkinnässä, eikä niitä lähetetä minnekään. Odotetaan toimivan, mutta sitä ei ole vielä testattu oikealla yhdyskäytävällä.",
+        "data": {
+          "host": "IP-osoite tai isäntänimi",
+          "gateway_password": "Yhdyskäytävän salasana (laitteen tarra)",
+          "private_password": "Yksityinen salasana (laitesovellus)"
+        },
+        "data_description": {
+          "gateway_password": "Laitteen tarrassa oleva salasana; väliviivat ohitetaan.",
+          "private_password": "Salasana, jonka asetit vanhassa laitesovelluksessa (esimerkiksi MyDevice). Se ei ole uuden sovelluksen tilin salasana."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Tulos",
+        "description": "Paikallinen käyttö tallennettiin. Se lukee rauhallisesti, noin kahden minuutin välein. Jos haluat näyttää sen arvot nykyisissä entiteeteissä, ota yhteyden alta käyttöön paikalliset arvot tälle järjestelmälle. Odotetaan toimivan, mutta sitä ei ole vielä testattu oikealla yhdyskäytävällä."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
       "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
-      "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista."
+      "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista.",
+      "icom_cannot_connect": "Yhdyskäytävä ei vastannut. Tarkista osoite ja että yhdyskäytävä on tavoitettavissa portissa 80.",
+      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat.",
+      "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
+      "icom_no_identity": "Yhdyskäytävä ei ilmoita tunnustaan, joten sitä ei voi yhdistää järjestelmään.",
+      "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",
+      "icom_invalid_host": "Anna kotiverkkosi IP-osoite tai isäntänimi.",
+      "invalid_gateway_password": "Anna laitteen tarrassa oleva yhdyskäytävän salasana.",
+      "invalid_private_password": "Anna laitesovelluksen yksityinen salasana."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
       "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis.",
-      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen."
+      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen.",
+      "icom_target_required": "Paikalliselle iCom-käytölle ei ole saatavilla pilveen yhdistettyä järjestelmää.",
+      "local_already_connected": "Tällä järjestelmällä on jo toisenlainen paikallinen käyttö.",
+      "local_target_unavailable": "Valittu järjestelmä ei ole enää saatavilla.",
+      "local_identity_conflict": "Paikallinen yhdyskäytävä ei vastaa järjestelmää.",
+      "identity_contract_scope_changed": "Järjestelmä muuttui, kun valintaikkuna oli auki. Sulje ikkuna ja yritä uudelleen."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."

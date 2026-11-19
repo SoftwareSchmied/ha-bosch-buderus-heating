@@ -25,6 +25,8 @@ from .configuration import (
 from .connection_runtime import ConnectionRuntime, SourceContext
 from .entity_use import EntityUse, entity_use
 from .gateway_identity import GatewayNamespace
+from .icom_access import is_icom_connection
+from .icom_source import IcomConnection
 from .local_api.catalog import ReadRequest, request_for_path
 from .local_api.errors import LocalResourceError
 from .local_api.models import SystemInfo
@@ -122,7 +124,12 @@ class LocalDriverFactory:
     ) -> None:
         self.hass, self.entry, self.runtime = hass, entry, runtime
 
-    def __call__(self, identifier: str, record: StoredConnection) -> LocalConnection:
+    def __call__(
+        self, identifier: str, record: StoredConnection
+    ) -> LocalConnection | IcomConnection:
+        # An iCom gateway's access reads over its own encrypted transport.
+        if is_icom_connection(record.to_data()):
+            return IcomConnection(self, identifier, record)
         return LocalConnection(self, identifier, record)
 
 

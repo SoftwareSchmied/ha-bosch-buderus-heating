@@ -491,6 +491,7 @@
           "connection_open_11": "{connection_open_11}",
           "connection_open_12": "{connection_open_12}",
           "local_setup": "Postavljanje lokalnog pristupa",
+          "icom_setup": "Postavi lokalni pristup (iCom pristupnik)",
           "back": "← Natrag"
         }
       },
@@ -562,6 +563,7 @@
           "local_tokens": "Tokeni na pristupniku",
           "local_polling": "Učestalost lokalnog dohvaćanja i stanje",
           "local_values": "Koristi lokalne vrijednosti za postojeće entitete",
+          "icom_setup": "Promijeni podatke za pristup iCom",
           "back": "← Natrag"
         }
       },
@@ -990,6 +992,30 @@
           "fan": "Brzina ventilatora",
           "delete": "Izbriši ovu točku uklapanja"
         }
+      },
+      "icom_setup": {
+        "title": "iCom pristupnik: odaberi sustav",
+        "description": "Odaberi sustav čiji se pristupnik čita lokalno.",
+        "data": {
+          "target": "Sustav"
+        }
+      },
+      "icom_access": {
+        "title": "Lokalni pristup iCom pristupniku",
+        "description": "Čita vrijednosti iCom pristupnika (na primjer KM200, IP inside, MB LAN 2 ili IP modula) iz kućne mreže. Pisanje i dalje ide putem oblaka. Unesi adresu pristupnika, lozinku pristupnika s naljepnice i privatnu lozinku koju si postavio u staroj aplikaciji uređaja. Lozinke ostaju u ovom unosu i nikamo se ne šalju. Očekuje se da radi, ali još nije isprobano na pravom pristupniku.",
+        "data": {
+          "host": "IP adresa ili naziv hosta",
+          "gateway_password": "Lozinka pristupnika (naljepnica na uređaju)",
+          "private_password": "Privatna lozinka (aplikacija uređaja)"
+        },
+        "data_description": {
+          "gateway_password": "Lozinka s naljepnice na uređaju; crtice se zanemaruju.",
+          "private_password": "Lozinka koju si postavio u staroj aplikaciji uređaja (na primjer MyDevice). To nije lozinka računa nove aplikacije."
+        }
+      },
+      "result_icom_connected": {
+        "title": "Rezultat",
+        "description": "Lokalni pristup je spremljen. Čita mirnim tempom, otprilike svake dvije minute. Za prikaz njegovih vrijednosti u postojećim entitetima uključi lokalne vrijednosti za ovaj sustav u postavkama veze. Očekuje se da radi, ali još nije isprobano na pravom pristupniku."
       }
     },
     "error": {
@@ -1115,7 +1141,15 @@
       "rrc_point_last": "Posljednja točka uklapanja u danu ne može se izbrisati; nije poznato što prazan dan znači za regulator.",
       "rrc_point_duplicate": "Ovaj dan već ima točku uklapanja u to vrijeme.",
       "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka.",
-      "switch_program_aircon_setting": "Odaberite način rada koji nudi klimatizacijski uređaj i za njega temperaturu unutar njegova raspona i koraka te jednu od njegovih brzina ventilatora."
+      "switch_program_aircon_setting": "Odaberite način rada koji nudi klimatizacijski uređaj i za njega temperaturu unutar njegova raspona i koraka te jednu od njegovih brzina ventilatora.",
+      "icom_cannot_connect": "Pristupnik nije odgovorio. Provjeri adresu i je li pristupnik dostupan na portu 80.",
+      "icom_invalid_auth": "Odgovor pristupnika nije se mogao dešifrirati. Provjeri obje lozinke.",
+      "icom_busy": "Pristupnik je zauzet. Pokušaj ponovno za nekoliko minuta.",
+      "icom_no_identity": "Pristupnik ne javlja svoj ID pa se ne može povezati sa sustavom.",
+      "icom_other_gateway": "Ovo nije pristupnik odabranog sustava. Provjeri adresu.",
+      "icom_invalid_host": "Unesi IP adresu ili naziv hosta u svojoj kućnoj mreži.",
+      "invalid_gateway_password": "Unesi lozinku pristupnika s naljepnice na uređaju.",
+      "invalid_private_password": "Unesi privatnu lozinku iz aplikacije uređaja."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -1161,7 +1195,12 @@
       "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
       "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
       "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu.",
-      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup."
+      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup.",
+      "icom_target_required": "Nema sustava s vezom s oblakom za lokalni iCom pristup.",
+      "local_already_connected": "Ovaj sustav već ima lokalni pristup druge vrste.",
+      "local_target_unavailable": "Odabrani sustav više nije dostupan.",
+      "local_identity_conflict": "Lokalni pristupnik ne odgovara sustavu.",
+      "identity_contract_scope_changed": "Sustav se promijenio dok je dijalog bio otvoren. Zatvori dijalog i pokušaj ponovno."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."

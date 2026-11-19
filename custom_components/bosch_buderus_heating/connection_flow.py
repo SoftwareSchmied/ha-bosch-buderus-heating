@@ -18,6 +18,7 @@ from .configuration import CLOUD_KIND, LOCAL_KIND, ConfigurationError
 from .configuration_management import ConfigurationManagement, ConnectionEdit, section
 from .const import PollingProfile
 from .ha_schema import validation as vol
+from .icom_access import is_icom_connection
 from .local_auth import token_management_available
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .local_support import setup_support
@@ -78,7 +79,11 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         self._back_target = "init"
         # Another local access is added here as well (to a plant without one or
         # as a new plant without the cloud).
-        extra = ["local_setup"] if setup_support(self.hass) is not None else []
+        extra = (
+            ["local_setup", "icom_setup"]
+            if setup_support(self.hass) is not None
+            else []
+        )
         if len(labels) <= MAX_LISTED:
             return self.async_show_menu(
                 step_id="connections",
@@ -164,6 +169,14 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
                 *(
                     ["local_setup"]
                     if connection.kind == LOCAL_KIND
+                    and not is_icom_connection(connection.to_data())
+                    and setup_support(self.hass) is not None
+                    else []
+                ),
+                *(
+                    ["icom_setup"]
+                    if connection.kind == LOCAL_KIND
+                    and is_icom_connection(connection.to_data())
                     and setup_support(self.hass) is not None
                     else []
                 ),

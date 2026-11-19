@@ -246,6 +246,7 @@ def _access_authentication(
 
 def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[str, Any]:
     """Use export-local numbers for relationships; never serialize configuration."""
+    from .icom_source import IcomConnection
     from .managed_cloud import CloudConnection
     from .managed_local import LocalConnection
 
@@ -285,7 +286,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
             report["bacon"] = (
                 account.diagnostics() if account is not None else {"configured": False}
             )
-        elif isinstance(driver, LocalConnection):
+        elif isinstance(driver, LocalConnection | IcomConnection):
             report["local"] = [
                 source.diagnostics() for source in driver.sources.values()
             ]

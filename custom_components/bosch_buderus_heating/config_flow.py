@@ -106,6 +106,7 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .i18n import localize
+from .icom_flow import IcomSetupFlow
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_flow import LocalSetupFlow
@@ -1009,6 +1010,7 @@ class _HolidayChoice:
 
 class BoschBuderusOptionsFlow(
     LocalTokenFlow,
+    IcomSetupFlow,
     LocalSetupFlow,
     ControlsOptionsFlow,
     RrcScheduleOptionsFlow,

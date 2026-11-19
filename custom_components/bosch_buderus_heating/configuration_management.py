@@ -32,6 +32,7 @@ from .configuration import (
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
 from .data import tokens_to_data
+from .icom_access import is_icom_connection
 from .icom_profile import ICOM_PROFILE_KEY, ICOM_PROFILE_REVISION
 from .pointt import AuthTokens, PointTClient
 from .repair_scope import repair_data, repair_id
@@ -634,7 +635,12 @@ class ConfigurationManagement:
             if binding.adapter == "pointt":
                 target = section(options, "targets")[binding.target_id]
                 if binding_options[key]["enabled"] and any(
-                    other.target_id == binding.target_id and other.adapter == LOCAL_KIND
+                    other.target_id == binding.target_id
+                    and other.adapter == LOCAL_KIND
+                    # An iCom access supplies single readings, never a plant.
+                    and not is_icom_connection(
+                        before.connections[other.connection_id].to_data()
+                    )
                     for other in before.bindings.values()
                 ):
                     # R1 (P49b): the system keeps showing its local readings.
