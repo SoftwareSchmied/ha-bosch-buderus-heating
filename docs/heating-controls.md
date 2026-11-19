@@ -438,7 +438,10 @@ Where the gateway reports a ventilation unit (`/ventilation/{zone}`), since
   which stays a read-only sensor. **This select is enabled by default**, unlike
   other new controls. Please note that `off` stops the ventilation of the
   whole unit and `fireplace` changes the air supply for the fireplace function;
-  choose them deliberately.
+  choose them deliberately. On a Vent 5000 C the select appeared (enabled)
+  and showed the same mode as the ventilation sensor (confirmed by a user on
+  0.9.2-beta.3 in discussion #111); switching the mode has not been reported
+  yet.
 - A number **Maximum filter run time** on `/ventilation/{zone}/filter/maxRunTime`
   (in months), disabled by default and only with the limits the unit reports.
   The integration does not reset the filter: the app does that with a separate
@@ -1125,7 +1128,11 @@ Integration seit 0.9.2-beta.3 an:
   `exhaustFanLevel`, das ein reiner Sensor bleibt. **Dieses Auswahlfeld ist
   standardmäßig aktiviert**, anders als andere neue Steuerungen. Bitte
   beachten: `off` schaltet die Lüftung der ganzen Einheit aus, `fireplace`
-  ändert die Luftführung für die Kaminfunktion; wählen Sie sie bewusst.
+  ändert die Luftführung für die Kaminfunktion; wählen Sie sie bewusst. Bei
+  einer Vent 5000 C erschien das Auswahlfeld (aktiviert) und zeigte dieselbe
+  Betriebsart wie der Lüftungssensor (von einem Nutzer mit 0.9.2-beta.3 in
+  Diskussion #111 bestätigt); das Umschalten der Betriebsart wurde noch nicht
+  gemeldet.
 - Eine Zahl **Maximale Filterlaufzeit** auf `/ventilation/{zone}/filter/maxRunTime`
   (in Monaten), standardmäßig deaktiviert und nur mit den Grenzen, die die
   Einheit meldet. Der Filter wird von der Integration nicht zurückgesetzt:
