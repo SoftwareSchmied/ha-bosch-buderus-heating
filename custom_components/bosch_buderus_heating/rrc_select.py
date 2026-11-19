@@ -14,9 +14,10 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import rrc
 from .const import DOMAIN
+from .control import refuse_in_hold
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
-from .held_readings import cloud_usable, held_snapshot, refuse_in_hold
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
 from .pointt import (
     AuthenticationError,

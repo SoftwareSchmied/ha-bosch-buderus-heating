@@ -8,12 +8,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .cloud_hold import GRACE_CYCLES
-from .const import DOMAIN
-from .control import cloud_down_error
 from .coordinator import Freshness, ResourceSnapshot
 
 if TYPE_CHECKING:
@@ -31,21 +28,6 @@ def cloud_usable(coordinator: DataUpdateCoordinator[Any]) -> bool:
         return True
     holding = getattr(coordinator, "cloud_holding", None)
     return bool(holding()) if callable(holding) else False
-
-
-def refuse_in_hold(coordinator: DataUpdateCoordinator[Any]) -> None:
-    """A change during the hold is refused with the usual "cloud not reachable".
-
-    The entities of a held cloud blip are shown as available, so Home
-    Assistant passes their service calls on; nothing is sent for them. Writes
-    that go through ``control.async_set_control`` or the climate entities are
-    refused there already; the structured writes of room controllers call this.
-    """
-    holding = getattr(coordinator, "cloud_holding", None)
-    if callable(holding) and holding():
-        raise cloud_down_error(coordinator) or HomeAssistantError(
-            translation_domain=DOMAIN, translation_key="write_failed"
-        )
 
 
 def held_snapshot(

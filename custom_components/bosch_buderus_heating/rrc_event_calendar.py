@@ -44,9 +44,10 @@ from homeassistant.util import dt as dt_util
 
 from . import rrc_events
 from .const import DOMAIN
+from .control import refuse_in_hold
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
-from .held_readings import cloud_usable, refuse_in_hold
+from .held_readings import cloud_usable
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holidays import HOLIDAY_TIMEZONE_PATH
 from .i18n import localize

@@ -19,7 +19,7 @@ from __future__ import annotations
 import asyncio
 from collections import Counter
 from collections.abc import Awaitable, Callable
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -89,6 +89,8 @@ from tests.test_wallbox_controls import _spec, settle, wallbox
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 
 BLIP = ServiceUnavailable(503)
+# The usual message of a change while the cloud cannot be used.
+UNREACHABLE = "command_cloud_unreachable"
 
 
 # -------------------------------------------------- the room controllers
@@ -163,8 +165,9 @@ async def _hold_window(
         lost = sorted(before - _available(hass))
         assert not lost, (failed, [kinds[item] for item in lost])
         if refused is not None and failed == 2:
-            with pytest.raises(HomeAssistantError):
+            with pytest.raises(HomeAssistantError) as caught:
                 await refused()
+            assert caught.value.translation_key == UNREACHABLE
             assert len(cloud.written()) == written
     await _cycle(hass, coordinator, clock)
     assert not coordinator.cloud_holding()
@@ -451,8 +454,9 @@ async def test_air_conditioner_sends_no_change_during_the_window(
     await coordinator.async_refresh()
     assert switch.available
     calls = (len(unit.bulk_calls), len(unit.gets), len(unit.puts))
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as caught:
         await switch.async_turn_on()
+    assert caught.value.translation_key == UNREACHABLE
     # Not even a reading went out; the change reads again when the cloud is back.
     assert (len(unit.bulk_calls), len(unit.gets), len(unit.puts)) == calls
     assert unit.puts == []
@@ -496,19 +500,24 @@ async def test_air_conditioner_refusals_and_errors_are_never_held(
     unit.resources.update(FakeUnit().resources)
     await coordinator.async_refresh()
     assert climate.available
-    # A rejected sign-in.
+    # A rejected sign-in ends a hold that a blip had begun.
+    unit.bulk_error = BLIP
+    await coordinator.async_refresh()
+    assert coordinator.cloud_holding() and climate.available
     unit.bulk_error = AuthenticationError("rejected")
     with patch.object(coordinator.config_entry, "async_start_reauth"):
         await coordinator.async_refresh()
     assert not coordinator.cloud_holding() and not climate.available
-    # An unexpected error.
+    # An unexpected error does the same.
     unit.bulk_error = None
     await coordinator.async_refresh()
     assert climate.available
+    unit.bulk_error = BLIP
+    await coordinator.async_refresh()
+    assert coordinator.cloud_holding() and climate.available
     unit.bulk_error = RuntimeError("unexpected")
     await coordinator.async_refresh()
     assert not coordinator.cloud_holding() and not climate.available
-    assert coordinator.cloud_hold.started == 0 or coordinator.cloud_hold.failures == 0
 
 
 async def test_air_conditioner_of_a_stopped_source_is_not_held(
@@ -581,8 +590,9 @@ async def test_wallbox_sends_no_change_during_the_window(hass: HomeAssistant) ->
     await _failing(coordinator, fake)
     assert switch.available
     fake.calls.clear()
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as caught:
         await switch.async_turn_on()
+    assert caught.value.translation_key == UNREACHABLE
     assert fake.writes() == [] and fake.calls == []
     fake.errors.clear()
     coordinator._next.clear()
@@ -647,7 +657,9 @@ async def test_wallbox_refusals_and_errors_are_never_held(
     coordinator._next.clear()
     await coordinator.async_refresh()
     assert switch.available
-    # A rejected sign-in.
+    # A rejected sign-in ends a hold that a blip had begun.
+    await _failing(coordinator, fake)
+    assert coordinator.cloud_holding() and sensor.available
     with patch.object(coordinator.config_entry, "async_start_reauth"):
         await _failing(coordinator, fake, AuthenticationError("rejected"))
     assert not coordinator.cloud_holding() and not sensor.available
@@ -655,7 +667,9 @@ async def test_wallbox_refusals_and_errors_are_never_held(
     coordinator._next.clear()
     await coordinator.async_refresh()
     assert sensor.available
-    # An unexpected error.
+    # An unexpected error does the same.
+    await _failing(coordinator, fake)
+    assert coordinator.cloud_holding() and sensor.available
     await _failing(coordinator, fake, RuntimeError("unexpected"))
     assert not coordinator.cloud_holding() and not sensor.available
 
@@ -775,6 +789,16 @@ async def test_an_unexpected_error_is_no_blip() -> None:
     assert seen == [False]
 
 
+async def test_a_failing_error_handler_is_no_blip() -> None:
+    """An unexpected failure while the connection error is handled ends the
+    hold that the connection loss had just begun."""
+    account = bacon_environment()
+    account.on_error = Mock(side_effect=RuntimeError("handler"))
+    seen = await _connections(account, [BaconError("connection")] * 2, stop_after=1)
+    assert seen == [False]
+    assert account.cloud_hold.failures == 0
+
+
 async def test_a_message_of_the_new_connection_ends_the_outage() -> None:
     account = bacon_environment()
     account._disconnected(failure="connection")
@@ -800,6 +824,19 @@ async def test_a_message_of_the_new_connection_ends_the_outage() -> None:
     account._disconnected(failure="connection")
     assert account.diagnostics()["cloud_hold"]["holds_started"] == 2
     assert account.diagnostics()["cloud_hold"]["failed_cycles_in_a_row"] == 1
+    account._end_grace()
+
+
+async def test_the_time_limit_ends_the_hold_between_two_attempts() -> None:
+    account = bacon_environment()
+    clock = Time()
+    with patch(BACON_SESSION + ".monotonic", clock):
+        account._disconnected(failure="connection")
+        assert account.available("serial-A")
+        clock.now += GRACE_MAX_SECONDS - 1
+        assert account.available("serial-A")
+        clock.now += 2
+        assert not account.available("serial-A")
     account._end_grace()
 
 

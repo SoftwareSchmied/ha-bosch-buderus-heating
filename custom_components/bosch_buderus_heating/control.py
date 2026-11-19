@@ -273,6 +273,23 @@ def cloud_down_error(coordinator: object) -> HomeAssistantError | None:
     )
 
 
+def refuse_in_hold(coordinator: object) -> None:
+    """A change during the hold over a short cloud blip is refused with the
+    usual "cloud not reachable" (``cloud_hold``).
+
+    The entities of a held blip are shown as available, so Home Assistant passes
+    their service calls on; nothing may be sent for them. The change would read
+    the setting again first, but a cloud that answers that read is no reason to
+    write after a failed refresh. The structured writes of the room controllers
+    and every control written through ``async_set_control`` call this.
+    """
+    holding = getattr(coordinator, "cloud_holding", None)
+    if callable(holding) and holding():
+        raise cloud_down_error(coordinator) or HomeAssistantError(
+            translation_domain=DOMAIN, translation_key="write_failed"
+        )
+
+
 async def async_set_control(
     coordinator: BoschBuderusDataUpdateCoordinator,
     path: str,
@@ -286,6 +303,7 @@ async def async_set_control(
 
     ``expected`` and ``fresh``: see ``async_write_control``.
     """
+    refuse_in_hold(coordinator)
     try:
         if fresh:
             await coordinator.async_write_control(
