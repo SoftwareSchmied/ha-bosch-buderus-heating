@@ -682,15 +682,15 @@ async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason, pauses
         else:
             for socket in tuple(broker.sockets):
                 await socket.close()
-        if reason == "disconnect":
-            await eventually(lambda: False in seen)
         assert source_for(owner, HEAT) is heating
         await eventually(
             lambda: ready(owner) and previous.generation > generation, timeout=15
         )
+        # The hold of a planned renewal and of a lost connection (cloud_hold):
+        # nothing is shown as lost over the short blip.
+        assert False not in seen
         if reason == "token_rotation":
-            # The grace window of a planned renewal: nothing shown as lost.
-            assert seen and False not in seen
+            assert seen
         assert view(owner) is previous and previous.account is account
         assert source_for(owner, HEAT) is heating
         assert len(broker.connections) == 2 and not broker.writes

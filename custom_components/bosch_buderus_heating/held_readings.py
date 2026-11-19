@@ -6,7 +6,9 @@ reads the setting again from the gateway and refuses without a current reading.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .cloud_hold import GRACE_CYCLES
 from .coordinator import Freshness, ResourceSnapshot
@@ -15,12 +17,12 @@ if TYPE_CHECKING:
     from .coordinator import BoschBuderusDataUpdateCoordinator
 
 
-def cloud_usable(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+def cloud_usable(coordinator: DataUpdateCoordinator[Any]) -> bool:
     """The last refresh succeeded, or its failure is still held.
 
     The replacement of ``CoordinatorEntity.available`` for entities that need a
-    current cloud cycle. Without the hold (another kind of coordinator) it is
-    exactly that.
+    current cloud cycle, for every family (heating, air conditioner, wallbox).
+    Without the hold (another kind of coordinator) it is exactly that.
     """
     if coordinator.last_update_success:
         return True

@@ -26,7 +26,7 @@ from time import monotonic
 from typing import TYPE_CHECKING, Final, Literal
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
 
 from .aircon_policies import (
@@ -41,8 +41,10 @@ from .aircon_policies import (
     STANDARD_FUNCTIONS,
     WRITE_GUARDS,
 )
+from .cloud_hold import GRACE_MAX_SECONDS
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
+from .family_hold import CloudHoldCoordinator, explicit_refusal
 from .pointt import (
     AuthenticationError,
     Gateway,
@@ -189,8 +191,12 @@ class AirconSnapshot:
     received: float = 0.0
 
 
-class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
-    """Poll one air conditioner and write its controls."""
+class AirconCoordinator(CloudHoldCoordinator[AirconSnapshot]):
+    """Poll one air conditioner and write its controls.
+
+    Over a short cloud blip the entities show their last readings (see
+    ``family_hold``); ``current()`` stays strict for every write.
+    """
 
     def __init__(
         self,
@@ -240,9 +246,27 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             and monotonic() - self.data.received <= 2 * self.interval
         )
 
+    def shown(self) -> bool:
+        """The display: the readings are current, or the last cycle failed
+        within the hold (short cloud blip) and they were current before."""
+        if self.current():
+            return True
+        return bool(
+            self.cloud_holding()
+            and self.system is not None
+            and self.data.received
+            and monotonic() - self.data.received
+            <= 2 * self.interval + GRACE_MAX_SECONDS
+        )
+
+    def _hold_blocked(self) -> bool:
+        return self._source_stopped()
+
     def resource(self, path: str) -> Resource | None:
-        """The current reading of ``path``; None when missing or outdated."""
-        return self.data.resources.get(path) if self.current() else None
+        """The reading of ``path`` as displayed (current, or held over a short
+        cloud blip); None when missing or outdated. A write checks
+        ``current()`` itself."""
+        return self.data.resources.get(path) if self.shown() else None
 
     def value(self, path: str) -> object:
         resource = self.resource(path)
@@ -278,7 +302,10 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
 
     async def _async_update_data(self) -> AirconSnapshot:
         async with self._lock:
-            return await self._read()
+            try:
+                return await self.hold_cycle(self._read)
+            finally:
+                self.settle_hold()
 
     async def _read(self) -> AirconSnapshot:
         try:
@@ -300,6 +327,8 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             self.error = (
                 "rate_limited" if isinstance(err, RateLimited) else ("request_failed")
             )
+            if explicit_refusal(getattr(err, "status", None)):
+                self.hold_refuses()
             raise UpdateFailed("Air conditioner request failed") from err
         resources: dict[str, Resource] = {}
         missing: dict[str, str] = {}
@@ -314,9 +343,12 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
                     f"http_{item.status}" if item.status else "invalid_payload"
                 )
         if not resources:
-            # Offline or unreachable: every entity becomes unavailable and the
-            # unit is not detected again (as the app).
+            # Offline or unreachable: every entity becomes unavailable (after
+            # the hold over a short blip) and the unit is not detected again
+            # (as the app). An explicit refusal is never held.
             self.error = "no_reading"
+            if any(explicit_refusal(item.status) for item in results):
+                self.hold_refuses()
             raise UpdateFailed("The air conditioner answered no path")
         self.error = None
         return AirconSnapshot(resources, missing, monotonic())
@@ -345,7 +377,7 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
 
     def program_readings(self) -> dict[str, Resource]:
         """The current readings, for the program rules."""
-        return dict(self.data.resources) if self.current() else {}
+        return dict(self.data.resources) if self.shown() else {}
 
     def program_active(self, path: str) -> bool | None:
         """Whether ``path`` is the active program; ``None`` when unknown."""
@@ -626,6 +658,7 @@ class AirconCoordinator(DataUpdateCoordinator[AirconSnapshot]):
             "detection": self.detection,
             "error": self.error,
             "fresh": self.current(),
+            "cloud_hold": self.hold_diagnostics(),
             "interval_seconds": self.interval,
             "readable_path_count": len(resources),
             "missing_paths": {

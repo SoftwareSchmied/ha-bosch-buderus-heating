@@ -26,8 +26,8 @@ New devices require Reconfigure and explicit selection.
 Each selected device receives **Device connection**. An offline status
 received on the current connection shows disconnected, also when it is the
 retained status redelivered after a restart, and it does not expire. Missing
-current observations, removed membership or a connection loss make this entity
-unavailable.
+current observations or removed membership make this entity unavailable, and
+so does a connection loss once the short hold has ended (see below).
 
 ## Transport contract
 
@@ -102,20 +102,27 @@ timestamps, metadata, desired-only acknowledgements and the responses to the
 integration's own state reads never count as a sign of life. Before this
 change a sign of life at most one hour old was required; real units that send
 nothing on their own for hours then turned unavailable although the cloud
-reported them online. A membership loss, a connection loss that is not a
-planned token renewal, or an offline message still makes the device
-unavailable. A membership loss or a re-added device starts without earlier
+reported them online. A membership loss or an offline message still makes the device
+unavailable; a lost connection only after the short hold described below. A membership loss or a re-added device starts without earlier
 readings. A re-added device, or one that returns to the account, takes its
 online status from the redelivered information even if its timestamp is
 unchanged.
 
-The hourly token renewal reconnects at once. For a grace window of 90 seconds
-the devices stay available and entities write no unavailable state, with the
-readings of the previous connection; the information redelivered on the new
-connection ends the window earlier. Writing is blocked during the window. If
-the reconnect fails, the devices become unavailable at once; if no information
-arrives within the window, when it ends. Any other connection loss makes the
-devices unavailable immediately.
+The hourly token renewal reconnects at once. The devices stay available and
+entities write no unavailable state, with the readings of the previous
+connection, under the same rules as every other cloud family (see
+[a short cloud blip](reading-validity.md#a-short-cloud-blip)): the renewal begins
+the outage without counting a failure, and every failed connection after it counts
+one. The devices stay shown while at most three connections in a row failed and
+the outage began less than five minutes ago; the information redelivered on the
+new connection ends the outage earlier. A lost connection or a server error,
+request limit or pause is counted the same way. Writing is blocked while a device
+is only carried over. A fourth failed connection, the five minutes, or no
+information from the new connection by then makes the devices unavailable. A
+rejected sign-in, a changed account, a stopped source, a rejected subscription,
+a membership loss, an offline message or an unexpected error makes them
+unavailable at once. Expected, not yet observed on a real installation beyond
+the planned renewal.
 
 While the connection stands and a device is selected, I report the account as
 an active client with an empty `POST
@@ -170,7 +177,8 @@ Assistant write service is exposed.
 ## Diagnostics and validation
 
 Schema 21 adds aggregate connection, availability, received-state and metadata
-counts (0.9.2 adds `renewal_grace`, `live_report` and `availability`, see
+counts (0.9.2 adds `live_report` and `availability` and the 90-second `renewal_grace`,
+which is the `cloud_hold` of every cloud family since the next release, see
 [diagnostics](diagnostics.md)), error categories and unconfirmed-command counts. Planned token renewals
 are counted as `renewals`, apart from `reconnects`. It exports no token,
 subject, identifier, model, sensor contents, network information or device name.
@@ -270,20 +278,29 @@ speichere ich weiter als letztes Lebenszeichen, aber nur für die Diagnose. Antw
 auf meine eigenen Zustandsabfragen, gespeicherte Meldungen und Metadaten zählen
 dabei nicht. Früher verlangte ich ein höchstens eine Stunde altes Lebenszeichen;
 reale Geräte, die stundenlang nichts von selbst senden, wurden dadurch nicht
-verfügbar, obwohl die Cloud sie als online führte. Geräteentfernung, ein
-Verbindungsverlust (außer der geplanten Token-Erneuerung) oder eine
-Offline-Meldung machen das Gerät weiterhin nicht verfügbar. Nach einer
+verfügbar, obwohl die Cloud sie als online führte. Geräteentfernung oder eine
+Offline-Meldung machen das Gerät weiterhin nicht verfügbar, ein
+Verbindungsverlust erst nach der unten beschriebenen kurzen Haltezeit. Nach einer
 Geräteentfernung oder einem erneut hinzugefügten Gerät beginnt die Anzeige ohne
 frühere Werte. Die Einheit des Informationszeitstempels ist noch nicht belegt;
 ich verwende ihn nur für die Reihenfolge.
 
-Die stündliche Token-Erneuerung verbindet sofort neu. Für ein Kulanzfenster von
-90 Sekunden bleiben die Geräte mit den Werten der vorherigen Verbindung verfügbar
-und die Entitäten schreiben keinen Zustand „nicht verfügbar“; die erneut
-zugestellte Informationsmeldung beendet das Fenster früher. Schreiben ist in
-dieser Zeit gesperrt. Scheitert das Wiederverbinden, werden die Geräte sofort
-nicht verfügbar, kommt keine Information, mit Ablauf des Fensters. Jeder andere
-Verbindungsverlust macht sie sofort nicht verfügbar.
+Die stündliche Token-Erneuerung verbindet sofort neu. Die Geräte bleiben mit den
+Werten der vorherigen Verbindung verfügbar und die Entitäten schreiben keinen
+Zustand „nicht verfügbar“, nach denselben Regeln wie jede andere Cloud-Familie
+(siehe [kurze Cloud-Störung](reading-validity.md#a-short-cloud-blip)): Die
+Erneuerung beginnt den Ausfall, ohne einen Fehlschlag zu zählen, jede danach
+fehlgeschlagene Verbindung zählt einen. Die Geräte bleiben angezeigt, solange
+höchstens drei Verbindungen in Folge scheiterten und der Ausfall weniger als
+fünf Minuten zurückliegt; die erneut zugestellte Informationsmeldung beendet den
+Ausfall früher. Ein Verbindungsverlust oder ein Serverfehler, Anfragelimit oder
+eine Pause zählt genauso. Schreiben ist gesperrt, solange ein Gerät nur
+übernommen ist. Eine vierte fehlgeschlagene Verbindung, die fünf Minuten oder
+fehlende Information der neuen Verbindung bis dahin machen die Geräte nicht
+verfügbar. Abgelehnte Anmeldung, geändertes Konto, gestoppte Quelle, abgelehntes
+Abonnement, Geräteentfernung, Offline-Meldung oder ein unerwarteter Fehler machen
+sie sofort nicht verfügbar. Erwartet, an einer echten Anlage außer der geplanten
+Erneuerung noch nicht beobachtet.
 
 Solange die Verbindung steht und ein Gerät ausgewählt ist, melde ich das Konto
 als aktiven Client mit einem leeren `POST` an

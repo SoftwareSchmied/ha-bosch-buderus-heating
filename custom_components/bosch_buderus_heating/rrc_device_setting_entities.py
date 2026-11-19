@@ -37,6 +37,7 @@ from .control import async_set_control, track_rrc_entities
 from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .held_readings import cloud_usable, held_snapshot
 from .number import BoschBuderusNumber, BoschBuderusNumberEntityDescription
 from .number_temperature import temperature_device_class
 from .platform_scope import DiscoveryLifecycle
@@ -88,8 +89,9 @@ def _displayed_list(coordinator: BoschBuderusDataUpdateCoordinator) -> Resource 
 def _fresh(
     coordinator: BoschBuderusDataUpdateCoordinator, path: str
 ) -> Resource | None:
-    """The current reading of a setting, as for every control."""
-    snapshot = (coordinator.data or {}).get(path)
+    """The current reading of a setting, as for every control; over a short
+    cloud blip the last good one (cloud_hold)."""
+    snapshot = held_snapshot(coordinator, path)
     if (
         snapshot is None
         or not snapshot.available
@@ -244,7 +246,11 @@ class WindowSensitivitySelect(
     @property
     def available(self) -> bool:
         resource = self._resource
-        if not super().available or resource is None or not offered(resource):
+        if (
+            not cloud_usable(self.coordinator)
+            or resource is None
+            or not offered(resource)
+        ):
             return False
         assessment = assess_control(resource, context_of(self.coordinator))
         return (
@@ -379,7 +385,7 @@ class ValveProblemBinarySensor(
     def available(self) -> bool:
         resource = self._resource
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and resource is not None
             and offered(resource)
             and _listed(_displayed_list(self.coordinator), self.resource_path)

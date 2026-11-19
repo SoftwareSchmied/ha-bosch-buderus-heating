@@ -266,6 +266,14 @@ async def test_wallbox_service_failure_is_local_and_recovers(hass, when):
             wallbox._next["telemetry"] = 0
             await wallbox.async_refresh()
         assert not wallbox.last_update_success
+        if when == "polling":
+            # A short blip of the cloud keeps the last values shown for three
+            # failed cycles (cloud_hold); the fourth ends it.
+            assert all(item.available for item in entities.values())
+            for _ in range(2):
+                await wallbox.async_refresh()
+                assert all(item.available for item in entities.values())
+            await wallbox.async_refresh()
         assert all(not item.available for item in entities.values())
         assert source_for(owner, HEAT).last_update_success
         assert owner.connections.source_data("local")

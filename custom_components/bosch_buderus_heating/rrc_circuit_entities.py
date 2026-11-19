@@ -37,6 +37,7 @@ from .control_presentation import control_category, control_icon
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
 from .number import (
     BoschBuderusNumber,
@@ -214,11 +215,11 @@ class RrcOperatingSeasonSensor(
 
     @property
     def available(self) -> bool:
-        snapshot = (self.coordinator.data or {}).get(
-            self.entity_description.resource_path
+        snapshot = held_snapshot(
+            self.coordinator, self.entity_description.resource_path
         )
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -227,7 +228,7 @@ class RrcOperatingSeasonSensor(
     @property
     def native_value(self) -> str | None:
         resource = fresh_resource(
-            self.coordinator, self.entity_description.resource_path
+            self.coordinator, self.entity_description.resource_path, held=True
         )
         value = resource.value if resource is not None else None
         return value if isinstance(value, str) and value in OPERATING_SEASONS else None

@@ -214,23 +214,24 @@ async def test_renewal_window_ends_with_a_notification_when_nothing_arrives():
     account, entity = renewing_account()
     seen = []
     account.add_listener(lambda: seen.append(entity.available))
-    with patch(MODULE + ".RENEWAL_GRACE", 0.05):
+    with patch(MODULE + ".GRACE_MAX_SECONDS", 0.05):
         account._disconnected(renewal=True)
         assert account.available("serial-A")
         await asyncio.sleep(0.15)
     assert not account.available("serial-A") and seen[-1] is False
     assert account.grace_expired == 1 and account._grace_timer is None
-    assert not account.diagnostics()["renewal_grace"]["active"]
+    assert not account.diagnostics()["cloud_hold"]["holding"]
+    assert account.diagnostics()["cloud_hold"]["holds_expired"] == 1
 
 
-async def test_any_other_disconnect_is_immediate_and_ends_the_window():
+async def test_a_disconnect_without_a_blip_is_immediate_and_ends_the_hold():
     account, entity = renewing_account()
     seen = []
     account._disconnected(renewal=True)
     account.add_listener(lambda: seen.append(entity.available))
     account._disconnected()
     assert seen == [False] and not account.available("serial-A")
-    assert account._grace_timer is None and account._grace_until is None
+    assert account._grace_timer is None and account._grace_generation == 0
 
 
 async def test_information_on_the_new_connection_ends_the_carry_over():
@@ -304,7 +305,15 @@ def test_diagnostics_hold_age_classes_per_family_and_no_identifiers():
     # The second device has no message and no model yet.
     other = report["availability"]["other"]
     assert (other["devices"], other["online_unknown"], other["available"]) == (1, 1, 0)
-    assert report["renewal_grace"] == {"window_s": 90.0, "active": False, "expired": 0}
+    assert report["cloud_hold"] == {
+        "grace_cycles": 3,
+        "grace_max_seconds": 300.0,
+        "holding": False,
+        "failed_cycles_in_a_row": 0,
+        "holds_started": 0,
+        "holds_expired": 0,
+        "carried_over_expired": 0,
+    }
     live = report["live_report"]
     assert live["reports_sent"] == 0 and live["last_report_age"] == "never"
     clock = Clock()
@@ -431,7 +440,9 @@ async def test_silent_climates_stay_available_for_three_hours_with_three_renewal
             )
             # The last answer may still be on its way back to the client.
             await eventually(lambda: account._live.sent == 37)
-            assert diagnostics["renewal_grace"]["expired"] == 0
+            assert diagnostics["cloud_hold"]["holds_expired"] == 0
+            assert diagnostics["cloud_hold"]["carried_over_expired"] == 0
+            assert not diagnostics["cloud_hold"]["holding"]
             assert diagnostics["availability"]["midea_climate"]["available"] == 2
             assert not broker.writes
     finally:
@@ -452,7 +463,7 @@ async def test_a_failed_reconnect_after_the_renewal_ends_the_window_at_once(hass
         with rotate(access, "failing"):
             await access.client.tokens.get_access_token(force_refresh=True)
         account.selection_changed.set()
-        # Far inside the 90 seconds of the window.
+        # A rejected subscription is no blip: nothing is held for it.
         await eventually(lambda: history and history[-1] is False, timeout=10)
         assert not account.available(A) and account.error == "subscription_rejected"
         assert account.grace_expired == 0 and account._grace_timer is None
@@ -460,7 +471,7 @@ async def test_a_failed_reconnect_after_the_renewal_ends_the_window_at_once(hass
 
 async def test_without_information_the_window_ends_by_itself_and_blocks_writes(hass):
     broker = SilentBroker()
-    with patch(ROOT + ".bacon.session.RENEWAL_GRACE", 1.5):
+    with patch(ROOT + ".bacon.session.GRACE_MAX_SECONDS", 1.5):
         async with connected(hass, broker) as (_, _, owner, _):
             await eventually(lambda: ready(owner, A))
             access = view(owner, A)

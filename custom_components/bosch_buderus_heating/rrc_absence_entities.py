@@ -44,6 +44,7 @@ from .control import track_rrc_entities
 from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
 from .number_temperature import TemperatureNumber
 from .platform_scope import DiscoveryLifecycle
@@ -181,8 +182,15 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
         )
         self._attr_name = control_name(coordinator, BOOST_PATH, name)
 
-    def _fresh(self, path: str) -> Resource | None:
-        snapshot = (self.coordinator.data or {}).get(path)
+    def _fresh(self, path: str, *, held: bool = False) -> Resource | None:
+        # ``held`` for the display: over a short cloud blip the last reading
+        # stays shown (cloud_hold). A change checks the current readings and
+        # reads the boost again on the gateway.
+        snapshot = (
+            held_snapshot(self.coordinator, path)
+            if held
+            else (self.coordinator.data or {}).get(path)
+        )
         if (
             snapshot is None
             or not snapshot.available
@@ -193,13 +201,13 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
 
     @property
     def _boost(self) -> Boost | None:
-        return rrc_boost.parse(self._fresh(BOOST_PATH))
+        return rrc_boost.parse(self._fresh(BOOST_PATH, held=True))
 
     @property
     def available(self) -> bool:
-        resource = self._fresh(BOOST_PATH)
+        resource = self._fresh(BOOST_PATH, held=True)
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and resource is not None
             and resource.metadata.writable
             and rrc_boost.parse(resource) is not None
@@ -209,8 +217,10 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
     def device_info(self) -> DeviceInfo:
         return device_info_for_resource(self.coordinator, BOOST_PATH)
 
-    def _limits_of(self, setting: Setting) -> rrc_boost.Limits | None:
-        return rrc_boost.limits(self._fresh(_LIMIT_PATHS[setting]), setting)
+    def _limits_of(
+        self, setting: Setting, *, held: bool = False
+    ) -> rrc_boost.Limits | None:
+        return rrc_boost.limits(self._fresh(_LIMIT_PATHS[setting], held=held), setting)
 
 
 class RrcBoostSwitch(_BoostEntity, SwitchEntity):
@@ -295,7 +305,7 @@ class RrcBoostSwitch(_BoostEntity, SwitchEntity):
         """
         coordinator = self.coordinator
         gateway_id = coordinator.gateway.gateway_id
-        shown = self._boost
+        shown = rrc_boost.parse(self._fresh(BOOST_PATH))
         targets: list[Boost] = []
 
         async def operation() -> tuple[Resource, ...]:
@@ -380,7 +390,7 @@ class RrcBoostNumber(_BoostEntity, RestoreEntity, TemperatureNumber):
 
     @property
     def _limits(self) -> rrc_boost.Limits | None:
-        return self._limits_of(self.entity_description.setting)
+        return self._limits_of(self.entity_description.setting, held=True)
 
     @property
     def available(self) -> bool:
@@ -420,7 +430,7 @@ class RrcBoostNumber(_BoostEntity, RestoreEntity, TemperatureNumber):
     async def async_set_native_value(self, value: float) -> None:
         """Keep the value for the next start; nothing is sent (AWAY-06)."""
         setting = self.entity_description.setting
-        limits = self._limits
+        limits = self._limits_of(setting)
         resource = self._fresh(BOOST_PATH)
         boost = rrc_boost.parse(resource)
         try:

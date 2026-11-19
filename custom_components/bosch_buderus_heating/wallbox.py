@@ -20,12 +20,14 @@ from time import monotonic
 from typing import TYPE_CHECKING, Final, Literal
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .cloud_hold import GRACE_MAX_SECONDS
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
 from .coordinator import POLL_DUE_TOLERANCE_SECONDS
+from .family_hold import CloudHoldCoordinator, explicit_refusal
 from .pointt import AuthenticationError, Gateway, PointTClient, PointTError
 from .pointt.exceptions import ProtocolError, RateLimited, ResourceError
 from .wallbox_history import WallboxHistory, history_enabled
@@ -300,8 +302,12 @@ def parse_section(section: Section, payload: object) -> SectionSnapshot:
     )
 
 
-class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
-    """Poll a selected wallbox without running generic heating discovery."""
+class WallboxCoordinator(CloudHoldCoordinator[dict[Section, SectionSnapshot]]):
+    """Poll a selected wallbox without running generic heating discovery.
+
+    Over a short cloud blip the entities show the last objects and single
+    values (see ``family_hold``); a write reads them again and stays strict.
+    """
 
     def __init__(
         self,
@@ -333,6 +339,8 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
         self.client = client
         self.gateway = gateway
         self.data = {}
+        # The objects of the last good cycle while a failed one is held.
+        self._held_data: dict[Section, SectionSnapshot] = {}
         self._next: dict[Section, float] = {}
         self._poll_lock = asyncio.Lock()
         # Single values: read once the control platforms ask (``want_leaves``).
@@ -353,22 +361,37 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
 
     def reading(self, section: Section, key: str) -> Reading:
         """Expire values even while a later request is still pending."""
-        return (
-            self.data[section].values.get(key) if self.section_fresh(section) else None
-        )
+        snapshot = self.shown_section(section) if self.section_fresh(section) else None
+        return snapshot.values.get(key) if snapshot is not None else None
+
+    def shown_section(self, section: Section) -> SectionSnapshot | None:
+        """The object as displayed: current, or the last good one over a short
+        cloud blip; None when missing, outdated or answered with an error."""
+        window: float = 2 * self.intervals[section]
+        if self.last_update_success:
+            snapshot = self.data.get(section)
+        elif self.cloud_holding():
+            snapshot = self._held_data.get(section)
+            window += GRACE_MAX_SECONDS
+        else:
+            return None
+        if (
+            snapshot is None
+            or snapshot.error is not None
+            or monotonic() - snapshot.received > window
+        ):
+            return None
+        return snapshot
 
     def section_fresh(self, section: Section) -> bool:
-        snapshot = self.data.get(section)
-        return bool(
-            self.last_update_success
-            and snapshot is not None
-            and snapshot.error is None
-            and monotonic() - snapshot.received <= 2 * self.intervals[section]
-        )
+        return self.shown_section(section) is not None
 
     async def _async_update_data(self) -> dict[Section, SectionSnapshot]:
         async with self._poll_lock:
-            return await self._read_due_sections()
+            try:
+                return await self.hold_cycle(self._read_due_sections)
+            finally:
+                self.settle_hold()
 
     async def _read_due_sections(self) -> dict[Section, SectionSnapshot]:
         snapshots = dict(self.data)
@@ -398,8 +421,15 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
                 )
                 if isinstance(err, RateLimited):
                     category = "rate_limited"
+                # The objects read until now stay shown over a short blip.
+                good = {
+                    part: item for part, item in snapshots.items() if item.error is None
+                }
+                self._held_data = {**self._held_data, **good}
                 self.data = {part: SectionSnapshot(error=category) for part in SECTIONS}
                 self._next.clear()
+                if explicit_refusal(getattr(err, "status", None)):
+                    self.hold_refuses()
                 if isinstance(err, AuthenticationError):
                     raise ConfigEntryAuthFailed(
                         "Wallbox authentication failed"
@@ -411,6 +441,7 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
             self._note_firmware(info.values.get("software"))
         await self._read_due_leaves()
         await self._read_history()
+        self._held_data = {}
         return snapshots
 
     async def _read_history(self) -> None:
@@ -448,11 +479,17 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
 
     def leaf_fresh(self, path: str) -> bool:
         leaf = self.leaves.get(path)
-        return bool(
-            self.last_update_success
-            and leaf is not None
+        window: float = 2 * self.intervals["conf"]
+        if self.last_update_success:
+            pass
+        elif self.cloud_holding():
+            window += GRACE_MAX_SECONDS
+        else:
+            return False
+        return (
+            leaf is not None
             and path not in self.leaf_errors
-            and monotonic() - leaf.received <= 2 * self.intervals["conf"]
+            and monotonic() - leaf.received <= window
         )
 
     def leaf_value(self, path: str) -> object:
@@ -566,6 +603,7 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
                 "refused": dict(sorted(self.leaf_errors.items())),
                 "polled": sorted(self._leaf_demand),
             },
+            "cloud_hold": self.hold_diagnostics(),
             "firmware_known": self.firmware() is not None,
             "write_counts": dict(sorted(self.write_counts.items())),
             "history": self.history.diagnostics(),

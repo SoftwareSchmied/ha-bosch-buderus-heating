@@ -91,7 +91,8 @@ class AirconEntity(CoordinatorEntity[AirconCoordinator]):
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.current()
+        # The last readings stay shown over a short cloud blip (cloud_hold).
+        return self.coordinator.shown()
 
     async def _write(
         self,

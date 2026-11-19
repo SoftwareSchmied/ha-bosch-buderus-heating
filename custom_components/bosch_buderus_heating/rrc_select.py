@@ -14,8 +14,10 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import rrc
 from .const import DOMAIN
+from .control import refuse_in_hold
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
 from .pointt import (
     AuthenticationError,
@@ -78,9 +80,8 @@ class RrcProgramSelect(
 
     @property
     def options(self) -> list[str]:
-        snapshots = self.coordinator.data or {}
-        current = snapshots.get(self.entity_description.resource_path)
-        programs = snapshots.get(rrc.PROGRAM_LIST)
+        current = held_snapshot(self.coordinator, self.entity_description.resource_path)
+        programs = held_snapshot(self.coordinator, rrc.PROGRAM_LIST)
         if any(
             item is None or not item.available or item.freshness is not Freshness.FRESH
             for item in (current, programs)
@@ -94,12 +95,12 @@ class RrcProgramSelect(
 
     @property
     def available(self) -> bool:
-        return super().available and bool(self.options)
+        return cloud_usable(self.coordinator) and bool(self.options)
 
     @property
     def current_option(self) -> str | None:
-        snapshot = (self.coordinator.data or {}).get(
-            self.entity_description.resource_path
+        snapshot = held_snapshot(
+            self.coordinator, self.entity_description.resource_path
         )
         value = rrc.scalar_value(snapshot.resource) if snapshot else None
         option = str(value)
@@ -116,7 +117,7 @@ class RrcProgramSelect(
         """
         options = self.options
         snapshots = self.coordinator.data or {}
-        programs = snapshots.get(rrc.PROGRAM_LIST)
+        programs = held_snapshot(self.coordinator, rrc.PROGRAM_LIST)
         names: dict[int, Resource | None] = {}
         for path, snapshot in snapshots.items():
             match = _PROGRAM_NAME.fullmatch(path)
@@ -141,6 +142,7 @@ class RrcProgramSelect(
         }
 
     async def async_select_option(self, option: str) -> None:
+        refuse_in_hold(self.coordinator)
         if option not in self.options:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="write_validation_failed"

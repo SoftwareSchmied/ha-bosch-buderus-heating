@@ -550,6 +550,24 @@ batches that are sent anyway: it adds about 11 path reads per hour but no
 request. See [request behavior](request-behavior.md) for the general
 rules.
 
+## A short cloud blip
+
+A refresh that fails without an answer (no connection, timeout, server error,
+request limit) no longer turns the room controller entities `unavailable` for a
+minute. The boost switch and its numbers, the operating season, the hot-water
+sensors and the disinfection time, the window sensitivity and valve problems of
+the radio devices, the heating program selection and the event calendar keep
+their last values while at most three refreshes in a row failed and the outage
+began less than five minutes ago, like the generic controls and every other
+cloud family. The zones, the radio device values, the system entities and the
+climate entities already stayed shown within the validity of their readings
+and keep doing so. During that time a change is refused with the message that the
+cloud is not reachable, and nothing is sent; a change always reads the setting
+again first. A rejected sign-in, a stopped source, an unexpected error and an
+explicit answer such as 403 or 404 are never held. See
+[a short cloud blip](reading-validity.md#a-short-cloud-blip). Expected, not yet
+observed on a real controller.
+
 ## Sign-in, local access and older firmware
 
 Sign in with the SingleKey ID of the app in which the controller is set up,
@@ -708,6 +726,23 @@ genutzte, aber nicht verfügbare bleibt sichtbar und gesperrt. Ausnahmen sind
 der Saisonbetrieb und die Sollwertoptimierung: Sie folgen den beiden Regeln
 davor. Messwerte
 betrifft das nicht. Auch das ist erwartet, ungetestet.
+
+Scheitert ein Abruf ohne Antwort (keine Verbindung, Zeitüberschreitung,
+Serverfehler, Anfragelimit), werden die Entitäten des Raumreglers nicht mehr
+eine Minute lang nicht verfügbar: Boost-Schalter und -Zahlen, Saisonbetrieb,
+Warmwasser-Sensoren und Desinfektionszeit, Empfindlichkeit der Fenster-Erkennung
+und Ventilprobleme der Funkgeräte, die Programmauswahl und der
+Ereigniskalender behalten ihre letzten Werte, solange höchstens drei Abrufe in
+Folge scheiterten und der Ausfall weniger als fünf Minuten zurückliegt, wie die
+allgemeinen Steuerungen und jede andere Cloud-Familie. Zonen, Funkgeräte-Werte,
+System- und Climate-Entitäten blieben schon bisher innerhalb der Gültigkeit
+ihrer Lesungen angezeigt. Eine Änderung wird in dieser Zeit mit der Meldung,
+dass die Cloud nicht erreichbar ist, abgelehnt und nichts gesendet; jede
+Änderung liest die Einstellung vorher frisch. Abgelehnte Anmeldung, gestoppte
+Quelle, unerwarteter Fehler und eine ausdrückliche Antwort wie 403 oder 404
+werden nie gehalten, siehe
+[kurze Cloud-Störung](reading-validity.md#a-short-cloud-blip). Erwartet, an einem
+echten Regler noch nicht beobachtet.
 
 Die Discovery liest höchstens 512 Pfade, die Einstellungen der Funkgeräte
 haben einen eigenen Deckel von 192 Pfaden. Eine HTTP-500-Antwort auf eine
