@@ -230,6 +230,14 @@ the activity above). It is unknown, with the attribute `reason`:
 
 - `defrosting` while the heat pump defrosts;
 - `compressor_off` while the compressor stands;
+- `starting` in the first five minutes after the compressor started. The
+  heat output rises more slowly than the electrical power then, so a COP
+  would swing far too high (up to 13.8 was seen) or read zero; it would
+  also distort the long-term statistics. A compressor that is already
+  running when Home Assistant starts counts as running: its start is
+  unknown, so its COP is shown at once;
+- `no_heat_output` while the compressor draws power but no heat flows (the
+  end of a run): there is never a COP of 0;
 - `inputs_missing` without a current heat output, compressor or heater
   reading (a plant without any heater reading adds nothing for the
   heater), or below 0.1 kW electrical power (start and stop);
@@ -247,6 +255,12 @@ heat output reading and therefore no current COP.
 Each factor is unknown while the period holds less than 0.1 kWh of
 electricity, for instance for the first minutes after midnight. Its
 attribute `reason` then says `too_little_electricity`.
+
+After a start of Home Assistant, the factors of yesterday, of the months
+and of the years stay unknown (`reason: history_loading`) until the plant
+recordings and the counters' statistics were read once, about two minutes
+after the start. Before, such a period would hold only today and show the
+value of today. Today and since commissioning do not wait for it.
 
 A performance factor is the produced heat of a period divided by the
 electricity (compressor plus heater) of the same period, for heating, hot

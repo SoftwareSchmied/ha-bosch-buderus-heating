@@ -4,8 +4,9 @@
   compressor and the electric heater. The heater turns its electricity into
   heat one to one, so its power is added to the heat output as well (the
   heat output reading covers the refrigerant circuit). Only while the
-  compressor runs; unknown while the heat pump defrosts, below
-  ``MIN_POWER_KW`` and above ``MAX_RATIO``.
+  compressor runs; unknown while the heat pump defrosts, in the start-up
+  phase of the compressor (``cop_start``), without a heat output (never a
+  zero), below ``MIN_POWER_KW`` and above ``MAX_RATIO``.
 * Primary circuit spread: supply (TC1) minus return (TC0) of the heat pump,
   only while the primary pump runs. TC0 is the return of the heating
   circuit only while the circuit pump moves at least as much water as the
@@ -25,6 +26,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Final
 
+from .cop_start import STARTING, StartPhase
 from .derived import power_kilowatts
 from .derived_activity import (
     compressor_running,
@@ -105,6 +107,7 @@ BRINE_PUMP: Final = "/brineCircuit/pumpSpeed"
 COMPRESSOR_OFF: Final = "compressor_off"
 DEFROSTING: Final = "defrosting"
 INPUTS_MISSING: Final = "inputs_missing"
+NO_HEAT_OUTPUT: Final = "no_heat_output"
 IMPLAUSIBLE: Final = "implausible"
 PUMP_OFF: Final = "pump_off"
 TOO_LITTLE_ELECTRICITY: Final = "too_little_electricity"
@@ -167,8 +170,12 @@ def _heater_kw(
     return _known(coordinator, HEATER_POWER), None
 
 
-def live_cop(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
-    """The current COP of the heat pump."""
+def live_cop(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    phase: StartPhase | None = None,
+) -> LiveResult:
+    """The current COP of the heat pump; ``phase`` holds it back while the
+    compressor starts."""
     trace = Trace()
     output = _kilowatts(trace.note(read(coordinator, HEAT_OUTPUT)))
     compressor = first(coordinator, COMPRESSOR_POWER, _kilowatts, trace)
@@ -190,6 +197,7 @@ def live_cop(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
     if defrost is not None and defrost.active:
         return unknown(DEFROSTING)
     running = compressor_running(coordinator, trace)
+    starting = phase.observe(running) if phase is not None else False
     if running is False:
         return unknown(COMPRESSOR_OFF)
     if (
@@ -205,8 +213,14 @@ def live_cop(coordinator: BoschBuderusDataUpdateCoordinator) -> LiveResult:
     side = heat_side(coordinator, trace)
     if side is not None:
         attributes["side"] = side
+    if starting:
+        return unknown(STARTING)
     if electrical < MIN_POWER_KW:
         return unknown(INPUTS_MISSING)
+    if output + heater_kw <= 0:
+        # The compressor still draws power but no heat flows (the end of a
+        # run): no COP of zero.
+        return unknown(NO_HEAT_OUTPUT)
     cop = (output + heater_kw) / electrical
     if cop > MAX_RATIO:
         return unknown(IMPLAUSIBLE)

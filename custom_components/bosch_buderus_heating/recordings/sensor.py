@@ -79,7 +79,15 @@ class RecordingPeriodSensor(SensorEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
     _unrecorded_attributes = frozenset(
-        {"period_start", "period_end", "source", "resolution", "derived_from", "method"}
+        {
+            "period_start",
+            "period_end",
+            "source",
+            "resolution",
+            "derived_from",
+            "method",
+            "counter_history_start",
+        }
     )
 
     def __init__(
@@ -151,4 +159,7 @@ class RecordingPeriodSensor(SensorEntity):
                 "derived_from": derived,
             }
         )
+        if shown.history_start is not None:
+            # A value from the counters covers the period only from here on.
+            attributes["counter_history_start"] = shown.history_start.isoformat()
         return attributes

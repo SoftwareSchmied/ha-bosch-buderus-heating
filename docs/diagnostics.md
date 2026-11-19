@@ -52,8 +52,9 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   from the recordings (`days_recorded`, `months_recorded`) and from the
   counters' statistics (`days_counted`), how today's start was found
   (`today_start`: `midnight`, `statistics` or `null`; `today_modes`;
-  `today_start_lookup` for the last search in the statistics) and the last
-  refresh (`last_refresh`). `{"waiting": "not_started"}` before the first
+  `today_start_lookup` for the last search in the statistics), whether the
+  history was read since the start (`history_read`) and the last refresh
+  (`last_refresh`). `{"waiting": "not_started"}` before the first
   start.
 - The discovery counters of containers read directly
   (`direct_probe_containers`, `direct_probe_paths`,

@@ -117,6 +117,17 @@ Attributes:
 | `resolution` | `daily` or `monthly` (from which values the period was summed), `hourly` for counters |
 | `derived_from` | The recordings, or the counter entity, the value comes from |
 | `method` | `recording` or `calculated`, as in the name |
+| `counter_history_start` | Only on a *(calculated)* value of a month or year that starts before the counter's statistics in Home Assistant: the first day of those statistics |
+
+A *(calculated)* energy of a month or year sums what the counter entity's
+statistics in Home Assistant hold, so it covers the period only from
+`counter_history_start` on. The *(system recording)* entity reads the plant's
+own history, which can begin earlier, so the two can differ by the energy
+before that day (on a real installation 91 kWh of 1,960 kWh this year, with
+the counters' history beginning in July). Home Assistant does not mix the
+two sources silently: the attribute names the start, and the recording entity
+is the one that covers the whole period. The performance factors take such
+periods from the recordings where the plant offers them.
 
 A past period (yesterday, previous month, previous year) changes only once
 the new period is confirmed by a read after its end. Just after midnight or
