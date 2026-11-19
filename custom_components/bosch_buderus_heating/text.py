@@ -26,6 +26,7 @@ from .control import HeldCapabilities, cloud_down_error, track_control_entities
 from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
+from .held_readings import cloud_usable, held_snapshot
 from .icom_profile import is_icom_gateway
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import (
@@ -130,8 +131,9 @@ class ProgramNameText(
         )
 
     def _reading(self) -> Resource | None:
-        snapshot = (self.coordinator.data or {}).get(
-            self.entity_description.resource_path
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        snapshot = held_snapshot(
+            self.coordinator, self.entity_description.resource_path
         )
         if (
             snapshot is None
@@ -145,7 +147,7 @@ class ProgramNameText(
     def available(self) -> bool:
         resource = self._reading()
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and resource is not None
             and resource.metadata.writable
             and config_issue(resource) is None

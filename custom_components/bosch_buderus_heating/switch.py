@@ -32,6 +32,7 @@ from .coordinator import (
 )
 from .device import device_info_for_resource
 from .hc_controls_extra import switch_key
+from .held_readings import cloud_usable, held_snapshot
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -229,7 +230,7 @@ class BoschBuderusSwitch(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -282,4 +283,5 @@ class BoschBuderusSwitch(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)

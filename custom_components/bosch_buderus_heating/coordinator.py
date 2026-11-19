@@ -38,6 +38,7 @@ from .circuit_controls import (
     evidence_answers,
     room_controller_check_complete,
 )
+from .cloud_hold import CloudHold, LastFailedRefresh
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
@@ -664,6 +665,10 @@ class BoschBuderusDataUpdateCoordinator(
         self._fault_reread_due = False
         # #60: failed refreshes are an error only once the outage lasts.
         self._refresh_outage = RefreshOutageLog(_LOGGER, self.name)
+        # H-B3-2: the last values stay shown over a short cloud blip.
+        self.cloud_hold = CloudHold()
+        # F: which readings failed in the last refresh with failures.
+        self.last_failed_refresh = LastFailedRefresh()
         self._update_lock = asyncio.Lock()
         self._manual_setpoint_tasks: dict[str, asyncio.Task[None]] = {}
         self._manual_setpoint_attempted: set[str] = set()
@@ -2250,6 +2255,7 @@ class BoschBuderusDataUpdateCoordinator(
         started = monotonic()
         self._cycles_running.append(started)
         self._polls_total += 1
+        was_holding = self.cloud_holding()
         try:
             async with self._update_lock:
                 self._main_cycle_failed = False
@@ -2302,6 +2308,7 @@ class BoschBuderusDataUpdateCoordinator(
                     # #60: only an answered request ends an outage; a cycle
                     # with nothing due (O41/O45 leave more of them) does not.
                     self._refresh_outage.recovered()
+                    self.cloud_hold.recovered()
                 if self._discovery_cycle_failed:
                     # A discovery that failed or met the brake returned the
                     # previous values: nothing is confirmed, searched or read
@@ -2336,12 +2343,25 @@ class BoschBuderusDataUpdateCoordinator(
             self._fault_reread_due = True
             if isinstance(err, UpdateFailed):
                 self._refresh_outage.failed(err)
+                self.cloud_hold.failed(monotonic())
                 # #60: Home Assistant logs a failed refresh as an error only
                 # while the coordinator still counts as successful; marked
                 # here, the outage log decides when the error is due.
                 self.last_update_success = False
+            else:
+                # An unexpected error is no blip of the cloud: no hold.
+                self.cloud_hold.cancel()
             raise
         finally:
+            if (
+                was_holding
+                and self.cloud_hold.failures > 0
+                and not self.cloud_holding()
+            ):
+                # The outage outlasted the hold. Home Assistant skips the
+                # listeners after consecutive failures: the entities learn
+                # here that their last values are no longer shown.
+                self.async_update_listeners()
             duration = (monotonic() - started) * 1000
             self._cycles_running.remove(started)
             self._note_cycle_duration(duration)
@@ -2548,6 +2568,20 @@ class BoschBuderusDataUpdateCoordinator(
         self._update_success = value
 
     _unreachable_since: float | None = None
+
+    def cloud_holding(self) -> bool:
+        """Whether entities show their last values over a failed refresh.
+
+        Only for the display and only for a short blip (``cloud_hold``). Never
+        with a sign-in to repeat or a stopped source, and never for a write:
+        ``control_status`` and the write transaction stay strict.
+        """
+        return (
+            not self.last_update_success
+            and self.cloud_hold.holding(monotonic())
+            and not self._cloud_auth_required()
+            and not self._cloud_source_stopped()
+        )
 
     def _cloud_down(self) -> tuple[str | None, datetime | None]:
         """The reason the cloud cannot be used now, without checking values."""
@@ -2918,6 +2952,8 @@ class BoschBuderusDataUpdateCoordinator(
         )
         return {
             "last_update_success": self.last_update_success,
+            "cloud_hold": self.cloud_hold.diagnostics(monotonic()),
+            "last_failed_refresh": self.last_failed_refresh.diagnostics(),
             "polls_total": self._polls_total,
             "poll_failures": self._poll_failures,
             "average_poll_duration_ms": _rounded_duration(average_duration),
@@ -3412,10 +3448,29 @@ class BoschBuderusDataUpdateCoordinator(
             },
         )
 
+        cycle_failed = successful == 0 and bool(failed_chunks)
+        # F: kept for the diagnostics, so a short outage can be traced.
+        self.last_failed_refresh.observe(
+            (
+                (
+                    result.path,
+                    result.status,
+                    _result_category(result.error, result.status),
+                )
+                for result in cycle_results
+                if not result.ok and result.status not in (403, 404, 406)
+            ),
+            cycle_failed=cycle_failed,
+            category=(
+                (failure_category or _cycle_failure_category(cycle_results))
+                if cycle_failed
+                else None
+            ),
+        )
         # COORD-3: a cycle in which nothing answered fails, also one that read
         # only the batch that failed beside answered ones before; while those
         # wait for their interval, a reading of them is read with it.
-        if successful == 0 and failed_chunks:
+        if cycle_failed:
             # The failing batch stays apart: after the outage, its failure
             # alone again fails no other reading (COORD-3).
             # Retain failures without declaring the coordinator healthy. A later

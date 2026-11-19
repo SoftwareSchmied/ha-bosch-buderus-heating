@@ -46,6 +46,7 @@ from .coordinator import (
 from .device import device_info_for_resource
 from .hc_controls_extra import BOOST_DURATION_POLICY, number_identity
 from .hc_controls_extra import icon as extra_icon
+from .held_readings import cloud_usable, held_snapshot
 from .number_temperature import TemperatureNumber, temperature_device_class
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
@@ -256,7 +257,7 @@ class BoschBuderusNumber(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -340,7 +341,8 @@ class BoschBuderusNumber(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)
 
 
 def _number_identity(path: str) -> tuple[str, str]:

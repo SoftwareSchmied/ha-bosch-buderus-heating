@@ -98,14 +98,53 @@ A gateway timeout (504) pauses them for 15 minutes only when other readings of
 the same cycle answered: then they are slow themselves. While nothing answers,
 nothing is requested for them in addition.
 
+## A short cloud blip
+
+A single failed refresh (a slow or unavailable sign-in service, a gateway
+timeout, a server error) no longer turns the following entities `unavailable`
+for a minute: the generic controls (numbers, selects, switches, program names),
+the hot-water entity, the current COP, the primary-circuit spread and the
+calculated performance factors. They keep showing their last values while
+at most **three refreshes in a row failed** (about three minutes with the
+one-minute refresh) and the outage began less than **five minutes** ago.
+A fourth failed refresh, or the five minutes, ends this; the entities are then
+`unavailable` as before and return with the first refresh that answers. A reading
+that failed alone while the refresh as a whole worked is shown with its last
+good value as long as it failed at most three times in a row and is within its
+validity limit above.
+
+This only concerns what is shown. A change is never sent from a held value: it
+needs a successful current cloud cycle and a current reading, and the setting is
+read from the gateway again right before the write. While values are held, a
+change is refused with the usual message that the cloud is not reachable, and
+nothing is sent. Nothing is held after a rejected sign-in, a sign-in that has to
+be repeated, a stopped cloud connection or an unexpected error, and an
+explicit answer for a reading (for example 403 or 404) is never held.
+
+The access token is renewed ten minutes before it ends (it was two). A request
+that finds the renewal due goes on with the current token, and the renewal runs
+in the background; if it fails or is slow, the next attempts follow after 30
+seconds, doubling, and at the latest halfway to the end of the current token. The
+refresh token is still presented only once per attempt, the token request
+still has its 90 seconds, and a token the cloud refused is never reused.
+Only the last 30 seconds of the token wait for the renewal as before.
+
+Diagnostics show `cloud_hold` (limits, whether values are held now, failed
+refreshes in a row, holds started and expired) and `last_failed_refresh` (time,
+category, and per failed reading the path template, HTTP status, category and
+count; at most ten entries, no identifiers) in each gateway `runtime`.
+
 ## What keeps the strict rule
 
 The climate entity of a heating circuit shows its mode, target and room
 temperature like the sensors, as long as each reading is within its validity
 limit, so a failed or older cloud cycle alone does not make it unavailable.
-Changing it still requires current readings of a ready cloud. Controls,
-hot-water entities and every write require a successful current cloud cycle;
-this includes the away mode switch. The dew point and the low-salt warning
+Changing it still requires current readings of a ready cloud. Every write
+requires a successful current cloud cycle; this includes the away mode switch.
+Controls and hot-water entities of the generic kind follow the blip rule
+above for their display. Other control families (room controller entities,
+zone and air-conditioner controls, wallbox controls) are not held and follow
+the last cloud cycle as before. The dew point and the low-salt warning
 keep following the last cloud cycle and their stored readings as before,
 without local values. Nothing is restored as a current reading after a
 restart.
