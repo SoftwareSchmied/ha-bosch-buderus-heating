@@ -515,6 +515,10 @@
         "title": "Test pripojenia",
         "description": "Vyžaduje sa prihlásenie: nastavte lokálny prístup znova cez „Zmeniť lokálny prístup“."
       },
+      "connection_test_auth_icom": {
+        "title": "Test pripojenia",
+        "description": "Prihlásenie zlyhalo: heslá k bráne nesedia. Skontrolujte ich cez „Zmeniť prístupové údaje iCom“. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne; je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia."
+      },
       "connection_test_certificate_changed": {
         "title": "Test pripojenia",
         "description": "Certifikát zariadenia sa zmenil: nastavte lokálny prístup znova cez „Zmeniť lokálny prístup“."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Test pripojenia",
         "description": "Na tejto adrese odpovedá iná brána. Nastavte lokálny prístup znova."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Test pripojenia",
+        "description": "Na tejto adrese odpovedá iná brána. Skontrolujte adresu cez „Zmeniť prístupové údaje iCom“."
       },
       "connection_test_error": {
         "title": "Test pripojenia",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Názov môže obsahovať najviac 64 tlačiteľných znakov.",
       "switch_program_aircon_setting": "Vyberte režim, ktorý klimatizácia ponúka, a k nemu teplotu v jej rozsahu a krokoch a jednu z jej rýchlostí ventilátora.",
       "icom_cannot_connect": "Brána neodpovedala. Skontrolujte adresu a či je brána dostupná na porte 80.",
-      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá.",
+      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne. Je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia.",
       "icom_busy": "Brána je zaneprázdnená. Skúste to znova o niekoľko minút.",
-      "icom_no_identity": "Brána nehlási svoje ID, preto ju nemožno priradiť k sústave.",
+      "icom_no_identity": "Bránu nemožno priradiť k sústave: nehlási použiteľné ID a jej hodnoty sa dostatočne presne nezhodujú s hodnotami z cloudu. Skúste to znova o pár minút.",
       "icom_other_gateway": "Toto nie je brána vybranej sústavy. Skontrolujte adresu.",
       "icom_invalid_host": "Zadajte IP adresu alebo názov hostiteľa vo svojej domácej sieti.",
       "invalid_gateway_password": "Zadajte heslo brány zo štítka na zariadení.",

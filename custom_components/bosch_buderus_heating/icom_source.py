@@ -50,12 +50,11 @@ from .gateway_identity import GatewayNamespace
 from .icom_access import (
     IcomAccess,
     IcomAccessError,
-    gateway_ids_match,
     is_icom_connection,
     load_icom_access,
 )
 from .icom_client import PATH_PROBLEMS, IcomClient, IcomError, IcomProblem
-from .icom_plan import DIRECTORIES, UUID_PATH, circuit_ids, readings
+from .icom_plan import DIRECTORIES, circuit_ids, readings
 from .local_api.catalog import ReadRequest
 from .local_api.decoder import decode_resource
 from .local_api.errors import LocalResourceError
@@ -282,7 +281,7 @@ class IcomSource:
             return "not_running", 0
         started = monotonic()
         try:
-            reply = await client.get(UUID_PATH)
+            reply = await client.get(access.identity_path)
         except IcomError as error:
             millis = round((monotonic() - started) * 1000)
             return _TEST_RESULTS.get(error.problem, "unreachable"), millis
@@ -292,7 +291,7 @@ class IcomSource:
                 raise
             return "not_running", 0
         millis = round((monotonic() - started) * 1000)
-        if not gateway_ids_match(reply.document.get("value"), access.local_id):
+        if not access.confirms(reply.document.get("value")):
             return "other_gateway", millis
         return "ok", millis
 
@@ -305,6 +304,9 @@ class IcomSource:
             "protocol": "icom",
             "condition": self._condition.value if self._condition else "unavailable",
             "identity_confirmed": self._confirmed,
+            "identity_method": self._access.identity_method
+            if self._access is not None
+            else None,
             "problem": self._problem,
             "request_metrics": {
                 "requests": metrics.requests if metrics else 0,
@@ -586,7 +588,7 @@ class IcomSource:
         self._undecryptable = 0
 
     async def _check_identity(self) -> _Verdict:
-        """The gateway ID read locally must be the cloud's one."""
+        """The gateway must still be the one that was recognised at setup."""
         client, access = self.client, self._access
         assert client is not None and access is not None
         if (
@@ -595,12 +597,12 @@ class IcomSource:
         ):
             return _OK
         try:
-            reply = await client.get(UUID_PATH)
+            reply = await client.get(access.identity_path)
         except IcomError as error:
             return self._after_identity_failure(error)
         if not self.current():
             return _STOP
-        if not gateway_ids_match(reply.document.get("value"), access.local_id):
+        if not access.confirms(reply.document.get("value")):
             self._confirmed = False
             self._publish(LocalCondition.UNAVAILABLE, "local_identity_conflict")
             return _STOP

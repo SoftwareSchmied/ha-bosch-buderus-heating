@@ -18,6 +18,7 @@ from homeassistant.util import dt as dt_util
 
 from .configuration import CLOUD_KIND, LOCAL_KIND
 from .i18n import localize_all
+from .icom_access import is_icom_connection
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -439,8 +440,11 @@ async def test_connection(
             return "unreachable", {"ms": elapsed()}
         return "ok_cloud", {"ms": elapsed(), "count": str(len(gateways))}
     # LAN: the published state already names these causes.
+    # An iCom access has its own pages: their menu name is the one of its dialog.
+    icom = is_icom_connection(connection.to_data())
+    auth_page = "auth_icom" if icom else "auth_local"
     if status.state == "auth_required":
-        return "auth_local", {}
+        return auth_page, {}
     if status.state == "certificate_changed":
         return "certificate_changed", {}
     if status.state == "paused":
@@ -456,7 +460,7 @@ async def test_connection(
         if result == "ok":
             return "ok", {"ms": str(millis)}
         if result == "auth_required":
-            return "auth_local", {}
+            return auth_page, {}
         if result == "paused":
             return _paused(access_status(entry, key).until)
         if result == "not_running" and status.state == "unreachable":
@@ -464,6 +468,8 @@ async def test_connection(
         if result == "unreachable":
             # With the tip on a fixed address.
             return "unreachable_local", {"ms": str(millis)}
+        if result == "other_gateway" and icom:
+            return "other_gateway_icom", {"ms": str(millis)}
         if result in TEST_CODES:
             return result, {"ms": str(millis)}
         return "error", {"kind": safe_kind(result)}
@@ -474,6 +480,7 @@ async def test_connection(
 TEST_CODES = frozenset(
     {
         "auth_cloud",
+        "auth_icom",
         "auth_local",
         "busy",
         "certificate_changed",
@@ -482,6 +489,7 @@ TEST_CODES = frozenset(
         "ok",
         "ok_cloud",
         "other_gateway",
+        "other_gateway_icom",
         "paused",
         "paused_open",
         "unreachable",

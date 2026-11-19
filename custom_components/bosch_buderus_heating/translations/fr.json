@@ -515,6 +515,10 @@
         "title": "Test de connexion",
         "description": "Connexion au compte requise : veuillez reconfigurer l'accès local via « Modifier l'accès local »."
       },
+      "connection_test_auth_icom": {
+        "title": "Test de connexion",
+        "description": "Échec de la connexion : les mots de passe ne correspondent pas à la passerelle. Vérifiez-les via « Modifier les données d'accès iCom ». Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle ; il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil."
+      },
       "connection_test_certificate_changed": {
         "title": "Test de connexion",
         "description": "Le certificat de l'appareil a changé : veuillez reconfigurer l'accès local via « Modifier l'accès local »."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Test de connexion",
         "description": "Une autre passerelle répond à cette adresse. Configurez à nouveau l'accès local."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Test de connexion",
+        "description": "Une autre passerelle répond à cette adresse. Vérifiez l'adresse via « Modifier les données d'accès iCom »."
       },
       "connection_test_error": {
         "title": "Test de connexion",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Le nom peut contenir jusqu'à 64 caractères imprimables.",
       "switch_program_aircon_setting": "Choisissez un mode proposé par le climatiseur et, pour ce mode, une température dans sa plage et ses pas ainsi qu'une de ses vitesses de ventilateur.",
       "icom_cannot_connect": "La passerelle n'a pas répondu. Vérifiez l'adresse et que la passerelle est joignable sur le port 80.",
-      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe.",
+      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe. Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle. Il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil.",
       "icom_busy": "La passerelle est occupée. Réessayez dans quelques minutes.",
-      "icom_no_identity": "La passerelle ne communique pas son identifiant ; elle ne peut donc pas être associée à l'installation.",
+      "icom_no_identity": "La passerelle n'a pas pu être associée à l'installation : elle ne communique pas d'identifiant utilisable, et ses valeurs ne concordent pas assez avec celles du cloud. Réessayez dans quelques minutes.",
       "icom_other_gateway": "Ce n'est pas la passerelle de l'installation sélectionnée. Vérifiez l'adresse.",
       "icom_invalid_host": "Saisissez une adresse IP ou un nom d'hôte de votre réseau domestique.",
       "invalid_gateway_password": "Saisissez le mot de passe de la passerelle figurant sur l'étiquette.",

@@ -175,3 +175,51 @@ def test_without_circuits_the_placeholder_paths_are_left_out():
     assert not any(path.startswith("/heatingCircuits/") for path in paths)
     assert "/heatSources/actualModulation" in paths
     assert len(PAIR_CATALOG) > len(paths)
+
+
+def test_the_identity_defaults_to_the_own_id_and_can_be_a_fingerprint():
+    access = load_icom_access(stored())
+    assert access.identity_method == "uuid" and access.identity_path == UUID_PATH
+    assert access.confirms("00-01-23") and not access.confirms("999")
+    data = icom_connection_data(
+        host="192.168.1.20",
+        gateway_password="abcd-efgh-ijkl-mnop",
+        private_password="private",
+        gateway_id="000123",
+        verified_at=5.5,
+        fingerprint=("/gateway/versionHardware", "hw 1"),
+    )
+    access = load_icom_access(data)
+    assert access.identity_method == "values"
+    assert access.identity_path == "/gateway/versionHardware"
+    assert access.confirms(" HW  1") and not access.confirms("hw 2")
+    assert not access.confirms(None) and not access.confirms(1)
+    # The fingerprint stays out of the representation.
+    assert "hw 1" not in repr(access)
+
+
+@pytest.mark.parametrize(
+    "record",
+    [
+        {"identity": "other"},
+        {"identity": "values"},
+        {"identity": "values", "fingerprint": {"path": "/x", "value": "hw"}},
+        {
+            "identity": "values",
+            "fingerprint": {"path": "/gateway/versionHardware", "value": ""},
+        },
+        {
+            "identity": "values",
+            "fingerprint": {"path": "/gateway/versionHardware", "value": "HW"},
+        },
+        {
+            "identity": "values",
+            "fingerprint": {"path": "/gateway/versionHardware", "value": 5},
+        },
+    ],
+)
+def test_a_stored_identity_method_is_checked(record):
+    data = stored()
+    data["icom_access"].update(record)
+    with pytest.raises(IcomAccessError, match="invalid_icom_identity"):
+        load_icom_access(data)

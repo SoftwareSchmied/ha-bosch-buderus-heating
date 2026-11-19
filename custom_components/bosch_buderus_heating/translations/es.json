@@ -515,6 +515,10 @@
         "title": "Prueba de conexión",
         "description": "Inicio de sesión necesario: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
       },
+      "connection_test_auth_icom": {
+        "title": "Prueba de conexión",
+        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada nunca se guardó en la pasarela; solo está allí si se definió una vez en la antigua aplicación del aparato."
+      },
       "connection_test_certificate_changed": {
         "title": "Prueba de conexión",
         "description": "El certificado del dispositivo ha cambiado: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Prueba de conexión",
         "description": "Otra pasarela responde en esta dirección. Vuelve a configurar el acceso local."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Prueba de conexión",
+        "description": "Otra pasarela responde en esta dirección. Compruebe la dirección mediante «Cambiar los datos de acceso iCom»."
       },
       "connection_test_error": {
         "title": "Prueba de conexión",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
       "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador.",
       "icom_cannot_connect": "La pasarela no respondió. Compruebe la dirección y que se pueda acceder a la pasarela por el puerto 80.",
-      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas.",
+      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada nunca se guardó en la pasarela. Solo está allí si se definió una vez en la antigua aplicación del aparato.",
       "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
-      "icom_no_identity": "La pasarela no informa de su identificador, por lo que no se puede asignar a la instalación.",
+      "icom_no_identity": "No se pudo asignar la pasarela a la instalación: no informa de un ID utilizable y sus valores no coinciden lo bastante con los de la nube. Inténtelo de nuevo en unos minutos.",
       "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",
       "icom_invalid_host": "Introduzca una dirección IP o un nombre de host de su red doméstica.",
       "invalid_gateway_password": "Introduzca la contraseña de la pasarela de la etiqueta del aparato.",

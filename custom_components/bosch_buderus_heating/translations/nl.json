@@ -515,6 +515,10 @@
         "title": "Verbindingstest",
         "description": "Aanmelding vereist: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
       },
+      "connection_test_auth_icom": {
+        "title": "Verbindingstest",
+        "description": "Aanmelden mislukt: de wachtwoorden passen niet bij de gateway. Controleer ze via “iCom-toegangsgegevens wijzigen”. Meest voorkomende oorzaak: het privéwachtwoord is nooit op de gateway opgeslagen; het staat er alleen als het ooit in de oude apparaat-app is ingesteld."
+      },
       "connection_test_certificate_changed": {
         "title": "Verbindingstest",
         "description": "Het certificaat van het apparaat is gewijzigd: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Verbindingstest",
         "description": "Op dit adres antwoordt een andere gateway. Stel de lokale toegang opnieuw in."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Verbindingstest",
+        "description": "Op dit adres antwoordt een andere gateway. Controleer het adres via “iCom-toegangsgegevens wijzigen”."
       },
       "connection_test_error": {
         "title": "Verbindingstest",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
       "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden.",
       "icom_cannot_connect": "De gateway antwoordde niet. Controleer het adres en of de gateway bereikbaar is op poort 80.",
-      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden.",
+      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden. Meest voorkomende oorzaak: het privéwachtwoord is nooit op de gateway opgeslagen. Het staat er alleen als het ooit in de oude apparaat-app is ingesteld.",
       "icom_busy": "De gateway is bezet. Probeer het over enkele minuten opnieuw.",
-      "icom_no_identity": "De gateway meldt zijn ID niet, dus hij kan niet aan de installatie worden gekoppeld.",
+      "icom_no_identity": "De gateway kon niet aan de installatie worden gekoppeld: hij meldt geen bruikbaar ID en zijn waarden komen niet nauwkeurig genoeg overeen met de cloudwaarden. Probeer het over een paar minuten opnieuw.",
       "icom_other_gateway": "Dit is niet de gateway van de gekozen installatie. Controleer het adres.",
       "icom_invalid_host": "Voer een IP-adres of hostnaam van je thuisnetwerk in.",
       "invalid_gateway_password": "Voer het gatewaywachtwoord van het etiket op het apparaat in.",

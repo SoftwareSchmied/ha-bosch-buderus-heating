@@ -204,3 +204,36 @@ def test_errors_carry_only_a_fixed_category():
     assert (
         str(error) == "request_timeout" and repr(error.args) == "('request_timeout',)"
     )
+
+
+def test_the_request_timeout_is_ten_seconds():
+    assert icom_client.REQUEST_TIMEOUT == 10.0
+
+
+async def test_no_compression_is_asked_for(gateway, session):
+    await client_for(gateway, session).get("/gateway/uuid")
+    assert "Accept-Encoding" not in gateway.headers_seen[0]
+
+
+async def test_a_control_character_in_a_text_is_no_wrong_password(gateway, session):
+    gateway.plain = b'{"id":"/x","type":"stringValue","value":"a\tb\x01c"}\x00\x00'
+    reply = await client_for(gateway, session).get("/x")
+    assert reply.document["value"] == "a\tb\x01c"
+
+
+async def test_a_byte_of_another_encoding_is_no_wrong_password(gateway, session):
+    gateway.plain = b'{"id":"/x","type":"stringValue","value":"K\xfchl"}'
+    reply = await client_for(gateway, session).get("/x")
+    assert reply.document["value"].startswith("K") and reply.document["value"].endswith(
+        "hl"
+    )
+
+
+@pytest.mark.parametrize("plain", [b"not json at all.....", b"[1, 2]", b'{"a": '])
+async def test_text_that_is_no_json_object_is_still_a_wrong_password(
+    gateway, session, plain
+):
+    gateway.plain = plain
+    with pytest.raises(IcomError) as raised:
+        await client_for(gateway, session).get("/x")
+    assert raised.value.problem is IcomProblem.UNDECRYPTABLE

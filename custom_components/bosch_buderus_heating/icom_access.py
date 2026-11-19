@@ -21,6 +21,7 @@ from .icom_crypto import (
     normalize_gateway_password,
     validate_private_password,
 )
+from .icom_identity import FINGERPRINT_PATHS, text_of
 
 ICOM_ACCESS_KEY: Final = "icom_access"
 ICOM_ACCESS_VERSION: Final = 1
@@ -30,6 +31,11 @@ ICOM_DEFAULT_PORT: Final = 80
 # local ID read from the gateway equals the cloud gateway ID.
 ICOM_CONTRACT: Final = "icom-gateway-id-v1"
 MAX_ID_LENGTH: Final = 1024
+# How the gateway is recognised: by its own ID, or by values it shares with the
+# cloud (when it reports no usable ID).
+IDENTITY_UUID: Final = "uuid"
+IDENTITY_VALUES: Final = "values"
+IDENTITY_UUID_PATH: Final = "/gateway/uuid"
 
 
 class IcomAccessError(ValueError):
@@ -73,10 +79,28 @@ class IcomAccess:
     # The ID the gateway itself reports (the cloud's own ID unless the setup
     # matched the cloud's reading of the same path).
     local_id: str = field(repr=False, default="")
+    # How the gateway is recognised later, and (for values) the reading that
+    # must stay the same.
+    identity_method: str = IDENTITY_UUID
+    fingerprint_path: str = field(repr=False, default="")
+    fingerprint: str = field(repr=False, default="")
 
     @property
     def key(self) -> bytes:
         return derive_key(self.gateway_password, self.private_password)
+
+    @property
+    def identity_path(self) -> str:
+        """The resource read to recognise the gateway again."""
+        if self.identity_method == IDENTITY_VALUES:
+            return self.fingerprint_path
+        return IDENTITY_UUID_PATH
+
+    def confirms(self, reported: object) -> bool:
+        """Whether a reading of the identity resource is still this gateway."""
+        if self.identity_method == IDENTITY_VALUES:
+            return text_of(reported) == self.fingerprint
+        return gateway_ids_match(reported, self.local_id)
 
 
 def icom_connection_data(
@@ -88,20 +112,25 @@ def icom_connection_data(
     verified_at: float,
     port: int = ICOM_DEFAULT_PORT,
     local_id: str | None = None,
+    fingerprint: tuple[str, str] | None = None,
 ) -> dict[str, Any]:
     """The stored fields of an iCom connection, without the common counters."""
+    record: dict[str, Any] = {
+        "version": ICOM_ACCESS_VERSION,
+        "gateway_id": gateway_id,
+        "local_id": local_id or gateway_id,
+        "verified_at": verified_at,
+    }
+    if fingerprint is not None:
+        record["identity"] = IDENTITY_VALUES
+        record["fingerprint"] = {"path": fingerprint[0], "value": fingerprint[1]}
     return {
         "endpoint": {"host": host, "port": port, "transport": ICOM_TRANSPORT},
         "credentials": {
             "gateway_password": normalize_gateway_password(gateway_password),
             "private_password": validate_private_password(private_password),
         },
-        ICOM_ACCESS_KEY: {
-            "version": ICOM_ACCESS_VERSION,
-            "gateway_id": gateway_id,
-            "local_id": local_id or gateway_id,
-            "verified_at": verified_at,
-        },
+        ICOM_ACCESS_KEY: record,
     }
 
 
@@ -157,6 +186,22 @@ def load_icom_access(connection: Mapping[str, object]) -> IcomAccess:
     verified = record.get("verified_at")
     if type(verified) not in (int, float) or not math.isfinite(cast(float, verified)):
         raise IcomAccessError("invalid_icom_verification_time")
+    method = record.get("identity", IDENTITY_UUID)
+    if method not in (IDENTITY_UUID, IDENTITY_VALUES):
+        raise IcomAccessError("invalid_icom_identity")
+    path = text = ""
+    if method == IDENTITY_VALUES:
+        stored = record.get("fingerprint")
+        if not isinstance(stored, Mapping):
+            raise IcomAccessError("invalid_icom_identity")
+        raw_path, raw_text = stored.get("path"), stored.get("value")
+        if (
+            raw_path not in FINGERPRINT_PATHS
+            or not isinstance(raw_text, str)
+            or text_of(raw_text) != raw_text
+        ):
+            raise IcomAccessError("invalid_icom_identity")
+        path, text = raw_path, raw_text
     return IcomAccess(
         host,
         port,
@@ -165,4 +210,7 @@ def load_icom_access(connection: Mapping[str, object]) -> IcomAccess:
         gateway_id,
         float(cast(float, verified)),
         local_id,
+        method,
+        path,
+        text,
     )

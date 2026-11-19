@@ -2,14 +2,17 @@
 
 The gateway must already be known by the cloud (a plant of this entry): the
 local access is proved to be the same gateway by its own ID, which must equal
-the cloud's gateway ID. Without a match nothing is saved. The check reads one
-resource and sends the passwords nowhere else.
+the cloud's gateway ID. A gateway that reports no usable ID is recognised by
+values it shares with the cloud instead (icom_identity). A different usable ID
+or a clear contradiction, or too little agreement, saves nothing. The check
+reads a few resources and sends the passwords nowhere else.
 """
 
 from __future__ import annotations
 
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from time import time
 from typing import cast
 from uuid import uuid4
@@ -28,12 +31,20 @@ from .gateway_identity import GatewayNamespace
 from .icom_access import (
     ICOM_CONTRACT,
     ICOM_DEFAULT_PORT,
+    comparable_id,
     gateway_ids_match,
     icom_connection_data,
     is_icom_connection,
 )
-from .icom_client import IcomClient, IcomError, IcomProblem
+from .icom_client import PATH_PROBLEMS, IcomClient, IcomError, IcomProblem
 from .icom_crypto import IcomCryptoError, derive_key
+from .icom_identity import (
+    FALLBACK_PATHS,
+    CloudReading,
+    Verdict,
+    compare,
+    fingerprint,
+)
 from .icom_plan import UUID_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_probe import LocalProbeError, normalize_local_address
@@ -83,6 +94,16 @@ class IcomVerification:
     gateway_password: str = field(repr=False)
     private_password: str = field(repr=False)
     verified_at: float = field(repr=False)
+    # Set when the gateway was recognised by values: (path, text) to check later.
+    fingerprint: tuple[str, str] | None = field(repr=False, default=None)
+
+    @property
+    def method(self) -> str:
+        return "uuid" if self.fingerprint is None else "values"
+
+
+def _code(error: IcomError) -> str:
+    return _PROBLEM_CODES.get(error.problem, CANNOT_CONNECT)
 
 
 async def verify_icom_access(
@@ -94,13 +115,15 @@ async def verify_icom_access(
     gateway_password: str,
     private_password: str,
     also_accepted: Collection[str] = (),
+    cloud_readings: Mapping[str, CloudReading] | None = None,
     port: int = ICOM_DEFAULT_PORT,
 ) -> IcomVerification:
-    """Read the gateway's own ID and require it to be the cloud's gateway.
+    """Recognise the gateway as the cloud's: by its own ID, else by values.
 
     The IDs in also_accepted are further IDs the cloud itself reports for the same
     gateway (its reading of the same resource); the first one that matches
-    is kept as the ID to check later.
+    is kept as the ID to check later. cloud_readings are the cloud's last
+    readings, used only when the gateway reports no usable ID of its own.
     """
     try:
         key = derive_key(gateway_password, private_password)
@@ -108,13 +131,26 @@ async def verify_icom_access(
         raise IcomSetupError(str(error)) from None
     address = normalize_icom_host(host)
     client = IcomClient(session, address, key, port=port)
+    reported: object = None
     try:
         reply = await client.get(UUID_PATH)
     except IcomError as error:
-        raise IcomSetupError(
-            _PROBLEM_CODES.get(error.problem, CANNOT_CONNECT)
-        ) from None
-    reported = reply.document.get("value")
+        if error.problem not in PATH_PROBLEMS:
+            raise IcomSetupError(_code(error)) from None
+    else:
+        reported = reply.document.get("value")
+    if comparable_id(reported) is None:
+        # No ID, or an unusable one (empty, a number, "-1"): compare values.
+        return await _verify_by_values(
+            client,
+            cloud_readings or {},
+            target_id,
+            gateway_id,
+            address,
+            port,
+            gateway_password,
+            private_password,
+        )
     if not isinstance(reported, str) or not any(
         gateway_ids_match(reported, expected)
         for expected in (gateway_id, *also_accepted)
@@ -129,6 +165,48 @@ async def verify_icom_access(
         gateway_password,
         private_password,
         time(),
+    )
+
+
+async def _verify_by_values(
+    client: IcomClient,
+    cloud: Mapping[str, CloudReading],
+    target_id: str,
+    gateway_id: str,
+    address: str,
+    port: int,
+    gateway_password: str,
+    private_password: str,
+) -> IcomVerification:
+    """Compare what the gateway answers with the cloud's last readings."""
+    local: dict[str, object] = {}
+    # Only paths the cloud has a reading of are worth a request.
+    for path in FALLBACK_PATHS:
+        if path not in cloud:
+            continue
+        try:
+            reply = await client.get(path)
+        except IcomError as error:
+            if error.problem in PATH_PROBLEMS:
+                continue
+            raise IcomSetupError(_code(error)) from None
+        local[path] = reply.document.get("value")
+    outcome = compare(local, cloud)
+    if outcome.verdict is Verdict.CONTRADICTION:
+        raise IcomSetupError(OTHER_GATEWAY)
+    remembered = fingerprint(local)
+    if outcome.verdict is not Verdict.CONFIRMED or remembered is None:
+        raise IcomSetupError(NO_IDENTITY)
+    return IcomVerification(
+        target_id,
+        gateway_id,
+        gateway_id,
+        address,
+        port,
+        gateway_password,
+        private_password,
+        time(),
+        remembered,
     )
 
 
@@ -196,6 +274,7 @@ def prepare_icom_configuration(
                 gateway_id=verification.gateway_id,
                 local_id=verification.local_id,
                 verified_at=verification.verified_at,
+                fingerprint=verification.fingerprint,
             ),
         ),
     }
@@ -283,3 +362,47 @@ def cloud_gateway_ids(
         if isinstance(value, str) and value not in found:
             found.append(value)
     return tuple(found)
+
+
+def cloud_readings(
+    owner: object,
+    snapshot: ConfigurationSnapshot,
+    target_id: str,
+    paths: Collection[str] = FALLBACK_PATHS,
+    *,
+    now: datetime | None = None,
+) -> dict[str, CloudReading]:
+    """The cloud's last readings of some paths, with their age in seconds.
+
+    Only what the cloud already read, never a new request. Empty when the
+    cloud source does not run.
+    """
+    from .managed_entry import ManagedEntry
+
+    if not isinstance(owner, ManagedEntry):
+        return {}
+    moment = now or datetime.now(UTC)
+    found: dict[str, CloudReading] = {}
+    for key, binding in snapshot.bindings.items():
+        if binding.target_id != target_id or binding.adapter != "pointt":
+            continue
+        data = getattr(owner.connections.source_data(key), "data", None)
+        if not isinstance(data, dict):
+            continue
+        for path in paths:
+            item = data.get(path)
+            when = getattr(item, "last_success", None)
+            if (
+                item is None
+                or not getattr(item, "available", False)
+                or not isinstance(when, datetime)
+                or not hasattr(getattr(item, "resource", None), "value")
+            ):
+                continue
+            if when.tzinfo is None:
+                when = when.replace(tzinfo=UTC)
+            found.setdefault(
+                path,
+                CloudReading(item.resource.value, (moment - when).total_seconds()),
+            )
+    return found

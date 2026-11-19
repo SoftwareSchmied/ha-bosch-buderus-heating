@@ -515,6 +515,10 @@
         "title": "Preizkus povezave",
         "description": "Zahtevana prijava: znova nastavite lokalni dostop prek »Spremeni lokalni dostop«."
       },
+      "connection_test_auth_icom": {
+        "title": "Preizkus povezave",
+        "description": "Prijava ni uspela: gesli ne ustrezata prehodu. Preveri ju prek »Spremeni podatke za dostop iCom«. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu; tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave."
+      },
       "connection_test_certificate_changed": {
         "title": "Preizkus povezave",
         "description": "Certifikat naprave se je spremenil: znova nastavite lokalni dostop prek »Spremeni lokalni dostop«."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Preizkus povezave",
         "description": "Na tem naslovu odgovarja drug prehod. Znova nastavite lokalni dostop."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Preizkus povezave",
+        "description": "Na tem naslovu odgovarja drug prehod. Preveri naslov prek »Spremeni podatke za dostop iCom«."
       },
       "connection_test_error": {
         "title": "Preizkus povezave",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
       "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja.",
       "icom_cannot_connect": "Prehod ni odgovoril. Preveri naslov in ali je prehod dosegljiv na vratih 80.",
-      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli.",
+      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu. Tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave.",
       "icom_busy": "Prehod je zaseden. Poskusi znova čez nekaj minut.",
-      "icom_no_identity": "Prehod ne sporoča svojega ID, zato ga ni mogoče povezati s sistemom.",
+      "icom_no_identity": "Prehoda ni mogoče povezati s sistemom: ne sporoča uporabnega ID, njegove vrednosti pa se ne ujemajo dovolj natančno z vrednostmi iz oblaka. Poskusi znova čez nekaj minut.",
       "icom_other_gateway": "To ni prehod izbranega sistema. Preveri naslov.",
       "icom_invalid_host": "Vnesi naslov IP ali ime gostitelja v svojem domačem omrežju.",
       "invalid_gateway_password": "Vnesi geslo prehoda z nalepke na napravi.",

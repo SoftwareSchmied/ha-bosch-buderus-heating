@@ -25,7 +25,7 @@ from .icom_crypto import IcomCryptoError, decrypt
 ICOM_PORT: Final = 80
 # The client name some firmware versions expect.
 USER_AGENT: Final = "TeleHeater/2.2.3"
-REQUEST_TIMEOUT: Final = 15.0
+REQUEST_TIMEOUT: Final = 10.0
 CONNECT_TIMEOUT: Final = 5.0
 # The gap after every request, answered or not.
 REQUEST_GAP: Final = 1.0
@@ -163,6 +163,8 @@ class IcomClient:
                 url,
                 headers={"Accept": "application/json", "User-Agent": USER_AGENT},
                 allow_redirects=False,
+                # The gateway's small web server is not asked for compression.
+                skip_auto_headers=("Accept-Encoding",),
                 timeout=aiohttp.ClientTimeout(
                     total=self._timeout, sock_connect=CONNECT_TIMEOUT
                 ),
@@ -191,7 +193,9 @@ class IcomClient:
         except IcomCryptoError:
             raise IcomError(IcomProblem.INVALID_RESPONSE, 200) from None
         try:
-            document = json.loads(text.decode("utf-8"))
+            # A control character or a byte of another encoding inside a text
+            # is the gateway's own content, not a sign of a wrong key.
+            document = json.loads(text.decode("utf-8", errors="replace"), strict=False)
         except ValueError, RecursionError:
             # A whole number of blocks that is no JSON: the key is wrong.
             raise IcomError(IcomProblem.UNDECRYPTABLE, 200) from None
