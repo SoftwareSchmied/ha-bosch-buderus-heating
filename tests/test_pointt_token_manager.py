@@ -816,3 +816,46 @@ async def test_a_failed_early_renewal_leaves_the_refresh_token_for_the_next_try(
     await _settle(manager)
     assert presented == ["refresh", "refresh"]
     assert manager.tokens.refresh_token == "rotated-2"
+
+
+async def _settle_any(manager: TokenManager) -> None:
+    with contextlib.suppress(Exception):
+        await manager.async_wait_for_refresh()
+
+
+async def test_an_unexpected_error_of_the_early_renewal_waits_before_the_next_try(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A failure that is no PointT error used to leave no wait behind: each of
+    the next requests started another token request."""
+    clock = [1000.0]
+    client = _TimedClient(clock, error=RuntimeError("secret-detail"))
+    manager = _timed_manager(client, clock, remaining=590.0)
+    for _ in range(20):
+        assert await manager.get_access_token() == "old"
+        await _settle_any(manager)
+        await asyncio.sleep(0)
+    assert client.requests == [1000.0]
+    # Logged once, with the kind of error only.
+    warnings = [r for r in caplog.records if "early renewal" in r.getMessage()]
+    assert len(warnings) == 1
+    assert "RuntimeError" in warnings[0].getMessage()
+    assert "secret-detail" not in warnings[0].getMessage()
+    # After the wait the next attempt runs, as for every other failure.
+    clock[0] = 1030.0
+    assert await manager.get_access_token() == "old"
+    await _settle_any(manager)
+    assert client.requests == [1000.0, 1030.0]
+
+
+async def test_an_unexpected_error_of_a_waited_renewal_still_reaches_the_caller() -> (
+    None
+):
+    """#49: a renewal somebody waits for fails as before and sets no wait."""
+    clock = [1000.0]
+    client = _TimedClient(clock, error=RuntimeError("secret-detail"))
+    manager = _timed_manager(client, clock, remaining=-10.0)
+    for _ in range(2):
+        with pytest.raises(RuntimeError):
+            await manager.get_access_token()
+    assert client.requests == [1000.0, 1000.0]

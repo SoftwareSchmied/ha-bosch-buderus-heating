@@ -350,8 +350,19 @@ class TokenManager:
                 # Not an answer of the PointT service: no gateway or reading
                 # failed, and an unreadable token answer is no invalid value.
                 raise self._temporary_failure(err) from err
+            if self._refresh_early:
+                # Nobody awaits an early renewal, so nobody sees this error
+                # and the next request would start another renewal at once:
+                # the usual retry wait applies, and the cause is logged once
+                # (the wait keeps it from repeating).
+                self._temporary_failure(err)
+                _LOGGER.warning(
+                    "The early renewal of the access token failed unexpectedly "
+                    "(%s); the next try waits",
+                    type(err).__name__,
+                )
             # A programming error is no failure of the sign-in service: it
-            # propagates unchanged and pauses no later sign-in.
+            # propagates unchanged to a caller that waits for it.
             raise
 
     def _report(

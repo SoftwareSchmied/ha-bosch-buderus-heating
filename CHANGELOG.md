@@ -5,6 +5,50 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+> [!IMPORTANT]
+> **Before you update**
+>
+> - **From 0.9.x:** entity IDs, unique IDs and the settings of existing
+>   entities stay. A few names change (the wireless room devices of a zone
+>   controller, the cooling paths of a heating circuit, the hybrid strategy
+>   and feed-in tariff sensors), and the old ventilation select **Exhaust fan
+>   level** is removed; see the entries below.
+> - **Hybrid systems:** the states of the sensor **Hybrid control strategy**
+>   change (for example `heatPumpOnly` becomes `heat_pump_preferred`,
+>   `maxRenewableShare` becomes `max_renewable_share`, `boilerOnly` becomes
+>   `boiler_only`, `bivalentAlternativeMode` becomes `bivalent_alternative`;
+>   `cost` and `environment` stay). Please check automations, templates and
+>   dashboards that compare the state.
+> - **Air conditioners on a PointT gateway** set up with 0.9.1 lose the fault
+>   and notification entities that were created for them before.
+> - **Changes are checked first:** every change reads the setting again and
+>   is refused with an error if it differs, and a heating circuit with the
+>   control type `constants` is not changed. Please check automations that
+>   set values. **With °F:** temperature numbers now use °F values.
+> - **Calculated values:** the current COP is unknown for the first five
+>   minutes after the compressor starts, the performance factors for month and
+>   year for about two minutes after a start of Home Assistant, and a wallbox
+>   total of exactly 0 is unknown. Calculated environmental energy is never
+>   negative (a negative difference is unknown).
+> - **Short cloud outages:** controls and the hot water entity keep their
+>   last values for up to three minutes (changes are refused meanwhile)
+>   instead of turning `unavailable` at once.
+> - **Activity (calculated)** is no longer created for a heating circuit
+>   without a pump value; an existing one stays as an unavailable entity,
+>   delete it in the entity settings. **Radio connection interrupted since**
+>   is now a timestamp sensor (same ID; its history before the update is
+>   text). Many local signals now have names instead of *Signal …*, and
+>   entities with an icon per state no longer have the state attribute
+>   `icon`.
+> - **From 0.8.x:** make a full Home Assistant backup first. The first start
+>   moves the entry to storage format 4, which 0.8.x cannot load. Home
+>   Assistant 2026.5.0 or newer is required.
+> - New controls are created disabled and are expected to work but untested
+>   on a real installation. The one exception is the new ventilation
+>   select **Ventilation operating mode**, which is enabled.
+> - Please attach a fresh diagnostics file (schema 48) to reports about this
+>   version.
+
 ### Added
 
 - **Wallbox: Total charged energy.** A new sensor from the wallbox's own

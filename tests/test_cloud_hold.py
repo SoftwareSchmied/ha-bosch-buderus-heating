@@ -299,6 +299,102 @@ async def test_the_listeners_hear_when_an_idle_cycle_ends_the_hold(
         await coordinator.async_shutdown()
 
 
+async def test_idle_cycles_tell_the_entities_when_the_limit_passes_between_cycles(
+    hass: HomeAssistant,
+) -> None:
+    """The limit runs out between two cycles (nothing due, so nothing is
+    counted): the next cycle still tells the entities, once."""
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        entities = Entities(hass, coordinator, cloud)
+        await _cycle(coordinator, clock)
+        _fail(cloud)
+        await _cycle(coordinator, clock)
+        assert coordinator.cloud_holding()
+        notified: list[tuple[float, bool]] = []
+        coordinator.async_add_listener(
+            lambda: notified.append((clock.now, entities.all_available()))
+        )
+        start = clock.now
+        for _ in range(8):
+            clock.now += INTERVAL
+            for group in coordinator._poll_intervals:
+                coordinator._next_update[group] = clock.now + 3600
+            await _refresh(coordinator)
+        assert not coordinator.cloud_holding()
+        assert coordinator.cloud_hold.failures == 1
+        after_limit = [
+            seen for seen in notified if seen[0] - start >= GRACE_MAX_SECONDS - INTERVAL
+        ]
+        assert [available for _at, available in after_limit] == [False]
+        assert entities.none_available()
+        await coordinator.async_shutdown()
+
+
+async def test_slow_failing_cycles_tell_the_entities_when_the_limit_has_passed(
+    hass: HomeAssistant,
+) -> None:
+    """Failing cycles two minutes apart (slow ones): the fourth starts after
+    the limit of five minutes, counted from the first failure, and the
+    entities learn it with that cycle, not only with the end of the
+    protective pause."""
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        entities = Entities(hass, coordinator, cloud)
+        await _cycle(coordinator, clock)
+        _fail(cloud)
+        start = clock.now
+        states: list[tuple[float, bool]] = []
+        coordinator.async_add_listener(
+            lambda: states.append((clock.now - start, entities.all_available()))
+        )
+        for step in (INTERVAL, 130, 130):
+            clock.now += step
+            _all_due(coordinator, clock)
+            await _refresh(coordinator)
+            assert coordinator.cloud_holding() and entities.all_available()
+        # t+450: past t+360, and past the third failure.
+        clock.now += 130
+        _all_due(coordinator, clock)
+        await _refresh(coordinator)
+        assert not coordinator.cloud_holding()
+        assert entities.none_available()
+        assert states[-1][1] is False
+        assert states[-1][0] > GRACE_MAX_SECONDS
+        # The held values were shown until then.
+        assert all(a for at, a in states if at <= GRACE_MAX_SECONDS), states
+        await coordinator.async_shutdown()
+
+
+async def test_the_entities_are_told_once_per_hold_and_not_without_one(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        entities = Entities(hass, coordinator, cloud)
+        await _cycle(coordinator, clock)
+        notified: list[bool] = []
+        coordinator.async_add_listener(
+            lambda: notified.append(entities.all_available())
+        )
+        # Healthy cycles tell nothing extra and show no hold.
+        for _ in range(3):
+            await _cycle(coordinator, clock)
+        assert coordinator._hold_displayed is False
+        before = len(notified)
+        _fail(cloud)
+        await _cycle(coordinator, clock)
+        assert coordinator._hold_displayed is True
+        for _ in range(8):
+            clock.now += INTERVAL
+            for group in coordinator._poll_intervals:
+                coordinator._next_update[group] = clock.now + 3600
+            await _refresh(coordinator)
+        assert coordinator._hold_displayed is False
+        assert notified[before:].count(False) == 1
+        await coordinator.async_shutdown()
+
+
 # ------------------------------------------ what is never held or never allowed
 
 

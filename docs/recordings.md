@@ -32,8 +32,9 @@ ventilation systems.
    enabled period entities and, for the performance factors, the nine energy
    recordings; with the import switched on every recording. With the default
    entities that is about nine reads per hour on a typical heat pump (about
-   20 with the import on, about 21 with all recording entities enabled). A recording that was not read for more than a day
-   and a half is read with its whole history once it is needed again.
+   20 with the import on, about 21 with all recording entities enabled). A
+   recording that was not read for more than a day and a half is read with
+   its whole history once it is needed again.
    About five minutes after the start, the needed recordings are read once
    more (unless the hourly run comes sooner): a past hour only counts after
    two reads with the same value, so yesterday is shown then instead of

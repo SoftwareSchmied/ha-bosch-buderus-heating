@@ -667,6 +667,8 @@ class BoschBuderusDataUpdateCoordinator(
         self._refresh_outage = RefreshOutageLog(_LOGGER, self.name)
         # H-B3-2: the last values stay shown over a short cloud blip.
         self.cloud_hold = CloudHold()
+        # True once the entities were told a value is shown over a failure.
+        self._hold_displayed = False
         # F: which readings failed in the last refresh with failures.
         self.last_failed_refresh = LastFailedRefresh()
         self._update_lock = asyncio.Lock()
@@ -2255,7 +2257,6 @@ class BoschBuderusDataUpdateCoordinator(
         started = monotonic()
         self._cycles_running.append(started)
         self._polls_total += 1
-        was_holding = self.cloud_holding()
         try:
             async with self._update_lock:
                 self._main_cycle_failed = False
@@ -2353,15 +2354,17 @@ class BoschBuderusDataUpdateCoordinator(
                 self.cloud_hold.cancel()
             raise
         finally:
-            if (
-                was_holding
-                and self.cloud_hold.failures > 0
-                and not self.cloud_holding()
-            ):
-                # The outage outlasted the hold. Home Assistant skips the
-                # listeners after consecutive failures: the entities learn
-                # here that their last values are no longer shown.
-                self.async_update_listeners()
+            if self.cloud_holding():
+                self._hold_displayed = True
+            elif self._hold_displayed:
+                # The outage outlasted the hold, whether the limit passed
+                # during this cycle or between two cycles (idle or slow
+                # ones). Home Assistant skips the listeners after consecutive
+                # failures: the entities learn here that their last values
+                # are no longer shown.
+                self._hold_displayed = False
+                if self.cloud_hold.failures > 0:
+                    self.async_update_listeners()
             duration = (monotonic() - started) * 1000
             self._cycles_running.remove(started)
             self._note_cycle_duration(duration)
