@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Blokada rodzicielska"
+      },
       "softener_holiday_mode": {
         "name": "Tryb urlopowy"
       },
@@ -2721,7 +2724,9 @@
           "off": "Wyłączony",
           "on": "Włączony",
           "stop": "Wyłączony",
-          "start": "Włączony"
+          "start": "Włączony",
+          "active": "Aktywny",
+          "inactive": "Nieaktywny"
         }
       },
       "four_way_valve_position": {

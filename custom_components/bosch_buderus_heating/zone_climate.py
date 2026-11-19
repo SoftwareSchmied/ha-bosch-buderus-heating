@@ -81,6 +81,7 @@ from .heating_climate import (
     temporary_setpoint,
     valid_resource,
 )
+from .humidity_reading import plausible_humidity
 from .i18n import localize
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource, WriteValidationError
@@ -422,10 +423,7 @@ class ZoneClimate(
         if (
             resource is None
             or resource.metadata.unit != "%"
-            or isinstance(resource.value, bool)
-            or not isinstance(resource.value, int | float)
-            or not math.isfinite(resource.value)
-            or not 0 <= resource.value <= 100
+            or not plausible_humidity(resource.value)
         ):
             return None
         return float(resource.value)

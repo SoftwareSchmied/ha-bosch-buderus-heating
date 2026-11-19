@@ -17,6 +17,7 @@ from . import (
     rrc_contract_zone,
     rrc_contracts,
     system_controls_extra,
+    zone_child_lock,
 )
 from .aircon_policies import AIRCON_ENUM_POLICIES, AIRCON_NUMBER_POLICIES
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
@@ -1207,6 +1208,8 @@ _ENUM_POLICIES = (
     *circuit_controls.ENUM_POLICIES,
     # Cooling mode, boost and further switches of a heating circuit (0.9.2).
     *hc_controls_extra.ENUM_POLICIES,
+    # The child lock of a zone (0.9.3).
+    *zone_child_lock.ENUM_POLICIES,
     # Low-noise operation mode and the pool mode of the auxiliary heater.
     *system_controls_extra.ENUM_POLICIES,
     # Air conditioners on a PointT gateway (``/airConditioning``).

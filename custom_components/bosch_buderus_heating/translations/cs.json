@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Dětský zámek"
+      },
       "softener_holiday_mode": {
         "name": "Režim dovolené"
       },
@@ -2721,7 +2724,9 @@
           "off": "Vypnuto",
           "on": "Zapnuto",
           "stop": "Vypnuto",
-          "start": "Zapnuto"
+          "start": "Zapnuto",
+          "active": "Aktivní",
+          "inactive": "Neaktivní"
         }
       },
       "four_way_valve_position": {

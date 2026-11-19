@@ -109,6 +109,29 @@ setpoint. The climate shows the program target of `auto` from
 a temperature in one call is refused unsent when the target of the new mode is
 not known yet; set the mode first, then the temperature.
 
+## Child lock and humidity
+
+The child lock of a zone, `/zones/zone<N>/childLock`, is a text with the two
+values `active` and `inactive`. Its reading shows these as **Active** and
+**Inactive** in every shipped language (it showed the raw text before). The
+manufacturer's app offers the lock as a switch, so I added one: **Child
+lock**, a configuration entity that is created **disabled**. It exists only
+when the controller reports the path as writable, advertises exactly the
+two values `active` and `inactive` and reads one of them; without that path
+nothing is created. Turning it on or off follows the write contract of the
+other controls: a fresh read, exactly one PUT, a read-back, no retry. This is
+a new write function, expected, not yet confirmed on a real installation.
+
+A zone, a radio device or a heating circuit without a humidity sensor can
+still report the humidity path, with a value that is no humidity: the error
+marker the controller declares for the resource, or a number of zero or
+less or above 100 (for example `0`, `-1` or `255`). These values show as unknown, in the
+humidity sensors and in the zone climate. A humidity sensor that is first
+created while its resource reports such a value is created **disabled**;
+sensors that exist already keep their name, entity ID and state of
+activation. The diagnostics give the kind of the current reading
+(`humidity_reading`), never the value.
+
 ## Discovery on large zone controllers
 
 A zone controller with many zones and radio devices used up the discovery
@@ -274,6 +297,27 @@ verweigerten Verzeichnissen mit einem eigenen Kontingent von höchstens 400
 Pfaden weiter; die Suche nach fehlenden Teilen hat dieselbe Grenze. Eine noch
 größere Anlage endet mit `resource_limit` (Diagnose `resource_limit_scope`).
 Alles ist mit automatisierten Tests geprüft, am Gerät noch nicht bestätigt.
+
+Die Kindersicherung einer Zone (`/zones/zone<N>/childLock`) hat die beiden
+Werte `active` und `inactive`; die Lesung zeigt sie in allen
+ausgelieferten Sprachen als „Aktiv“ und „Inaktiv“ (vorher stand der Rohtext
+da). Die Hersteller-App bietet die Sperre als Schalter an, deshalb gibt es
+seit 0.9.3 den Schalter „Kindersicherung“ (Konfiguration, **standardmäßig
+deaktiviert**). Er entsteht nur, wenn der Regler den Pfad schreibbar meldet,
+genau die beiden Werte `active` und `inactive` anbietet und einen davon liest;
+ohne diesen Pfad entsteht nichts. Das Schalten folgt dem Schreibvertrag der
+anderen Bedienelemente (frisch lesen, genau ein PUT, Rücklesen, keine
+Wiederholung). Neue Schreibfunktion, erwartet, am Gerät noch nicht bestätigt.
+
+Eine Zone, ein Funkgerät oder ein Heizkreis ohne Feuchtefühler kann den
+Feuchtepfad trotzdem melden, mit einem Wert, der keine Feuchte ist: der
+Fehlerwert, den der Regler für die Ressource angibt, oder eine Zahl null oder
+kleiner oder über 100 (zum Beispiel `0`, `-1` oder `255`). Solche Werte zeigen
+„unbekannt“, in den Feuchtesensoren und im Zonen-Klima. Ein Feuchtesensor, der
+erstmals mit einem solchen Wert angelegt wird, ist **standardmäßig
+deaktiviert**; vorhandene Sensoren behalten Namen, Entity-ID und
+Aktivierungszustand. Die Diagnose nennt die Art der aktuellen Lesung
+(`humidity_reading`), nie den Wert.
 
 Die Auswahl enthält nur die von dieser Ressource angebotenen bekannten
 Optionen `off`, `manual` und `auto`. Teilmengen sind möglich. Unbekannte

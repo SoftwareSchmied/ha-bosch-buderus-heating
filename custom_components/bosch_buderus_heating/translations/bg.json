@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Детска ключалка"
+      },
       "softener_holiday_mode": {
         "name": "Ваканционен режим"
       },
@@ -2721,7 +2724,9 @@
           "off": "Изключено",
           "on": "Включено",
           "stop": "Изключено",
-          "start": "Включено"
+          "start": "Включено",
+          "active": "Активен",
+          "inactive": "Неактивен"
         }
       },
       "four_way_valve_position": {

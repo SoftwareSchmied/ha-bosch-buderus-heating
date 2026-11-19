@@ -51,6 +51,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .humidity_reading import humidity_state
 from .icom_diagnostics import icom_diagnostics
 from .icom_profile import is_icom_gateway
 from .local_only import hybrid_evidence, volume_flow_path
@@ -1210,6 +1211,11 @@ def _capability_diagnostics(
         "has_value": resource.has_value,
         "supported_without_value": _supported_without_value(resource, snapshot),
         "value_shape": _value_shape(resource),
+        **(
+            {"humidity_reading": state}
+            if (state := humidity_state(resource)) is not None
+            else {}
+        ),
         "values_count": len(resource.values),
         "references_count": len(resource.references),
         "allowed_values_count": len(resource.metadata.allowed_values),

@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Lapsilukko"
+      },
       "softener_holiday_mode": {
         "name": "Lomatila"
       },
@@ -2721,7 +2724,9 @@
           "off": "Pois",
           "on": "Päällä",
           "stop": "Pois",
-          "start": "Päällä"
+          "start": "Päällä",
+          "active": "Aktiivinen",
+          "inactive": "Ei aktiivinen"
         }
       },
       "four_way_valve_position": {

@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Børnesikring"
+      },
       "softener_holiday_mode": {
         "name": "Ferietilstand"
       },
@@ -2721,7 +2724,9 @@
           "off": "Fra",
           "on": "Til",
           "stop": "Fra",
-          "start": "Til"
+          "start": "Til",
+          "active": "Aktiv",
+          "inactive": "Inaktiv"
         }
       },
       "four_way_valve_position": {

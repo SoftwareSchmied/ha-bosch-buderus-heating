@@ -1341,6 +1341,13 @@ heat (`outputProduced`) is a net total that falls while the heat pump
 defrosts; its decreases are counted apart in
 `produced_heat_decreases_detected`.
 
+`humidity_reading` (since 0.9.3) appears only in the capability entries of the
+measured humidity paths of zones, radio devices and heating circuits: `valid`,
+`error_marker` (the value is a declared error marker), `implausible` (zero or less,
+or above 100), `not_numeric` or `missing`. It names the kind of the
+current reading and never contains the value. A humidity sensor first created
+with `error_marker` or `implausible` is created disabled.
+
 `rate_limit_events` counts the rate limits the cloud reported to this gateway
 since the start, `rate_limit_events_last_24h` those within the last 24 hours,
 which decide the repair. A request that the running pause of the cloud access
