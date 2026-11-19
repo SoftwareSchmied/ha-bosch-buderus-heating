@@ -1300,7 +1300,10 @@ values are present and valid, for the total, heating, hot water and pool (the
 same formula in each area, as in the manufacturer's app). The entities of
 heating, hot water and pool are disabled by default; cooling has no
 environmental energy. A negative or incomplete result is not exposed as a
-measurement and does not start a new meter cycle.
+measurement and does not start a new meter cycle. A user with a heating and
+cooling heat pump confirmed on 0.9.2-beta.3 (discussion #111) that the heating
+and hot water values equal his own calculation to the last digit and that the
+total equals both plus the cooling energy.
 
 The total-electricity entity reports `value_source: direct` when PointT
 provides `electricity`. When it falls back to the complete sum of `compressor`

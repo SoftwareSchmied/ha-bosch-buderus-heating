@@ -206,7 +206,7 @@ from software 5.0.0). Six sensors appear once the first answer is in:
 | --- | --- |
 | Last session start, Last session end | `begin` and `end` of the newest finished session of the charge log; a time without an offset is taken as local time of Home Assistant, a session that ends in the future (wrong clock of the wallbox) is ignored |
 | Last session charging time | `chargingDuration` of that session, in seconds, displayed in minutes |
-| Last session energy | `energy` of that session, expected in kWh (not confirmed); an entry that names its unit is converted from Wh or kWh, any other unit leaves the value unknown |
+| Last session energy | `energy` of that session in kWh (confirmed on a Power Charge 7000i S); an entry that names its unit is converted from Wh or kWh, any other unit leaves the value unknown |
 | Charged from grid this month, Charged from solar this month | sum of the samples of `gridEnergy` and `solarEnergy` from the first of the month until now, in kWh (a unit of Wh or kWh is accepted, anything else leaves the value unknown) |
 
 Only these fields are read from the answers. Authentication names, card and
@@ -215,8 +215,7 @@ read nor stored, logged or put into the diagnostics, which show only whether
 each part is fresh, its error category and request counts. Switching the
 option off forgets the values at once; the sensors then stay as unavailable.
 The paths and the meaning of the fields come from the manufacturer's app;
-**expected, untested on a real wallbox**: the date format of the query, the
-aggregation of the energy samples, the time zone of the times and the units are not confirmed. An answer larger than 2 MiB is refused and shows as an invalid answer in the diagnostics.
+Confirmed by a user on a Power Charge 7000i S with 0.9.2-beta.3 (discussion #111): both parts were fresh without errors; the energy of the last session (15.78 kWh) equals the rise of the wallbox's lifetime counter in that session, and its end matches start plus charging time, so the unit (kWh) and the time zone of the times are right; the monthly sum from the grid (221.69 kWh) equals the rise of the lifetime counter since the first of the month. The monthly solar sum showed 0.0, plausible without an external meter and not further verified. **Expected, not yet confirmed**: the date format of the query on other software versions and the aggregation of the solar samples. An answer larger than 2 MiB is refused and shows as an invalid answer in the diagnostics.
 
 ## Deutsch
 
@@ -421,7 +420,7 @@ entstehen, sobald die erste Antwort vorliegt:
 | --- | --- |
 | Beginn der letzten Ladung, Ende der letzten Ladung | `begin` und `end` der neuesten beendeten Ladung im Ladeprotokoll; eine Zeit ohne Versatz gilt als Ortszeit von Home Assistant, eine Ladung mit Ende in der Zukunft (falsche Uhr der Wallbox) wird ignoriert |
 | Ladezeit der letzten Ladung | `chargingDuration` dieser Ladung in Sekunden, angezeigt in Minuten |
-| Energie der letzten Ladung | `energy` dieser Ladung, erwartet in kWh (nicht bestätigt); nennt der Eintrag seine Einheit, wird sie von Wh oder kWh umgerechnet, jede andere Einheit lässt den Wert unbekannt |
+| Energie der letzten Ladung | `energy` dieser Ladung in kWh (an einer Power Charge 7000i S bestätigt); nennt der Eintrag seine Einheit, wird sie von Wh oder kWh umgerechnet, jede andere Einheit lässt den Wert unbekannt |
 | Diesen Monat aus dem Netz geladen, Diesen Monat mit Solarenergie geladen | Summe der Werte von `gridEnergy` und `solarEnergy` vom Monatsersten bis jetzt in kWh (Einheit Wh oder kWh wird angenommen, sonst bleibt der Wert unbekannt) |
 
 Aus den Antworten werden nur diese Felder gelesen. Authentifizierungsnamen,
@@ -430,7 +429,5 @@ weder gelesen noch gespeichert, protokolliert oder in die Diagnose übernommen;
 die Diagnose zeigt nur, ob jeder Teil aktuell ist, seine Fehlerkategorie und
 Anfragezähler. Wird die Option ausgeschaltet, werden die Werte sofort
 vergessen; die Sensoren bleiben dann nicht verfügbar. Pfade und Bedeutung der
-Felder stammen aus der Hersteller-App; **erwartet, an einer echten Wallbox
-ungetestet**: Datumsformat der Abfrage, Aufsummierung der Energiewerte,
-Zeitzone der Zeiten und Einheiten sind nicht bestätigt. Eine Antwort über
+Felder stammen aus der Hersteller-App; Ein Nutzer hat es an einer Power Charge 7000i S mit 0.9.2-beta.3 bestätigt (Diskussion #111): Beide Teile waren aktuell und ohne Fehler; die Energie der letzten Ladung (15,78 kWh) entspricht dem Anstieg des Gesamtzählers der Wallbox in dieser Ladung, ihr Ende passt zu Beginn plus Ladezeit, also stimmen Einheit (kWh) und Zeitzone der Zeiten; die Monatssumme aus dem Netz (221,69 kWh) entspricht dem Anstieg des Gesamtzählers seit dem Monatsersten. Die Solar-Monatssumme zeigte 0,0, plausibel ohne externen Zähler und nicht weiter geprüft. **Erwartet, noch nicht bestätigt**: Datumsformat der Abfrage bei anderen Softwareständen und Aufsummierung der Solarwerte. Eine Antwort über
 2 MiB wird abgewiesen und erscheint in der Diagnose als ungültige Antwort.
