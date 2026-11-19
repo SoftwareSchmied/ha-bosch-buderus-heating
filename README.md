@@ -32,6 +32,9 @@ access; when it is back, the same entities carry on with their history.
 > **0.9.1 is the current version** and needs Home Assistant 2026.5.0 or newer.
 > Updating from 0.8.x? Make a full backup first, see [Updating](#updating).
 
+> [!NOTE]
+> **Coming next: local access for iCom gateways.** A coming beta will add a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, first for gateways that are also connected to the Bosch or Buderus app. If you have one and would like to help test it, please install the beta versions when it is out (HACS → "Show beta versions") and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
+
 ## Features
 
 - Readings of heating circuits, hot water, heat sources, system pressure, starts and operating hours

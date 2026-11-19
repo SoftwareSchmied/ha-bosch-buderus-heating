@@ -202,7 +202,8 @@ Versioning after its first tagged preview.
   [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
 - **Radio connection:** **Radio connection interrupted since** is a timestamp
   sensor. The placeholder `2000-00-00T00:00` shows as unknown; a text without
-  a time zone stays unknown and appears as the attribute `raw_value`. The
+  a time zone is read as Home Assistant local time, an invalid text stays
+  unknown, and the reported text appears as the attribute `raw_value`. The
   sensor keeps its ID.
 - **Zone setpoints:** a zone's setpoint exists only in its current mode.
   After a change of mode, also in the app, the setpoint of the new mode is read

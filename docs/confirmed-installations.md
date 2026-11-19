@@ -17,7 +17,7 @@ and keep serial numbers, gateway IDs and account details out of your post.
 
 Thank you to everyone who has shared their system and test results.
 
-Last updated: 2026-11-18.
+Last updated: 2026-11-19.
 
 ## Tested heaters
 
@@ -42,3 +42,4 @@ Last updated: 2026-11-18.
 |---|---|---|---|---|
 | Bosch | Dry 6000i | dehumidifier | cloud account | controls (reported as working, the tested functions were not listed) |
 | Buderus | Logawater Soft WE800i | water softener | WX100, firmware 01.00.00 | readings (salt level, available soft water, flow, regeneration state, time until the next regeneration, low salt with the default threshold), holiday mode state; controls not tested |
+| Buderus | Wireless room zones RT10RF/RC10RF (eight zones) | room thermostat zones of a heating system, heat generator not stated | MX400, K40, firmware 15.00.01 | readings, climate entities of both heating circuits (setpoint and mode of the underfloor circuit), zone climate entities (with 0.9.2-beta.2, reported to seem to work well) |
