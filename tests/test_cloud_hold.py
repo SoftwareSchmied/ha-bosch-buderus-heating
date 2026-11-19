@@ -13,7 +13,7 @@ import json
 from contextlib import suppress
 from dataclasses import replace
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -397,7 +397,9 @@ async def test_a_rejected_sign_in_is_not_held(hass: HomeAssistant) -> None:
         entities = Entities(hass, coordinator, cloud)
         await _cycle(coordinator, clock)
         coordinator.client.get_resources_bulk.side_effect = AuthenticationError()
-        await _cycle(coordinator, clock)
+        with patch.object(coordinator._config_entry, "async_start_reauth") as reauth:
+            await _cycle(coordinator, clock)
+        reauth.assert_called_once()
         assert not coordinator.last_update_success
         assert not coordinator.cloud_holding()
         assert entities.none_available()
