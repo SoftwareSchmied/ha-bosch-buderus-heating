@@ -515,6 +515,10 @@
         "title": "Test veze",
         "description": "Potrebna prijava: ponovno postavite lokalni pristup putem „Promjena lokalnog pristupa”."
       },
+      "connection_test_auth_icom": {
+        "title": "Test veze",
+        "description": "Prijava nije uspjela: lozinke ne odgovaraju pristupniku. Provjeri ih putem „Promijeni podatke za pristup iCom”. Najčešći uzrok: privatna lozinka nikada nije spremljena na pristupniku; tamo je samo ako je jednom postavljena u staroj aplikaciji uređaja."
+      },
       "connection_test_certificate_changed": {
         "title": "Test veze",
         "description": "Certifikat uređaja se promijenio: ponovno postavite lokalni pristup putem „Promjena lokalnog pristupa”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Test veze",
         "description": "Na ovoj adresi odgovara drugi pristupnik. Ponovno postavite lokalni pristup."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Test veze",
+        "description": "Na ovoj adresi odgovara drugi pristupnik. Provjeri adresu putem „Promijeni podatke za pristup iCom”."
       },
       "connection_test_error": {
         "title": "Test veze",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka.",
       "switch_program_aircon_setting": "Odaberite način rada koji nudi klimatizacijski uređaj i za njega temperaturu unutar njegova raspona i koraka te jednu od njegovih brzina ventilatora.",
       "icom_cannot_connect": "Pristupnik nije odgovorio. Provjeri adresu i je li pristupnik dostupan na portu 80.",
-      "icom_invalid_auth": "Odgovor pristupnika nije se mogao dešifrirati. Provjeri obje lozinke.",
+      "icom_invalid_auth": "Odgovor pristupnika nije se mogao dešifrirati. Provjeri obje lozinke. Najčešći uzrok: privatna lozinka nikada nije spremljena na pristupniku. Tamo je samo ako je jednom postavljena u staroj aplikaciji uređaja.",
       "icom_busy": "Pristupnik je zauzet. Pokušaj ponovno za nekoliko minuta.",
-      "icom_no_identity": "Pristupnik ne javlja svoj ID pa se ne može povezati sa sustavom.",
+      "icom_no_identity": "Pristupnik se ne može povezati sa sustavom: ne javlja upotrebljiv ID, a njegove se vrijednosti ne podudaraju dovoljno točno s vrijednostima iz clouda. Pokušaj ponovno za nekoliko minuta.",
       "icom_other_gateway": "Ovo nije pristupnik odabranog sustava. Provjeri adresu.",
       "icom_invalid_host": "Unesi IP adresu ili naziv hosta u svojoj kućnoj mreži.",
       "invalid_gateway_password": "Unesi lozinku pristupnika s naljepnice na uređaju.",

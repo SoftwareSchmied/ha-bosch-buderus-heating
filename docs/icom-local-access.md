@@ -19,7 +19,9 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
 - The **gateway password** from the sticker on the device (the dashes are
   ignored) and the **private password** you set in the old device app of the
   gateway (for example MyDevice). The app of the cloud does not store it. If you
-  never set one, the local access cannot be set up.
+  never set one, the local access cannot be set up. The most common cause of
+  "could not be decrypted" is a private password that was never saved on the
+  gateway: it is only there if it was set once in the old device app.
 - The address of the gateway in your home network (an IP address or host
   name). A fixed address (a reservation in the router) saves you from setting
   it up again.
@@ -34,7 +36,21 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
 The setup reads the gateway's own ID once. It must be the gateway ID the cloud
 knows for that system; otherwise nothing is saved and the dialog says so
 (another gateway at that address, or a wrong address). A wrong password is
-named separately. To change the address or a password later, open the access
+named separately.
+
+If the gateway reports no usable ID (none at all, empty or a placeholder such
+as -1), the setup compares what the gateway answers with what the cloud has
+just read for the same paths: firmware and hardware version, type, brand,
+outdoor temperature (within 2 K, cloud reading at most 15 minutes old), system
+pressure and the number of starts. At least two readings must agree, at least
+one of them a live value (temperature, pressure or starts), and none may
+clearly contradict. This needs a running cloud connection with current values;
+if it is not there yet, wait a few minutes and try again. A gateway that does
+report a usable but different ID is never accepted this way. The way used is
+shown in the diagnostics (`identity_method`); later checks then read one stored
+version value instead of the ID. If that value changes later (a replaced gateway, or a firmware
+update when the gateway reports no hardware version), the access stops as for a
+different gateway; run **Change iCom access data** once more. To change the address or a password later, open the access
 under **Connections** and choose **Change iCom access data**.
 
 Local values stay **off** after the setup. The access reads and checks the
@@ -68,7 +84,7 @@ therefore:
   make this slower; values below two minutes count as two minutes);
 - stops asking a path that answered 404 or 403 for a week;
 - pauses all reading after two failed requests in a row (no answer within
-  15 seconds, no connection, a server error): first for a minute, then two,
+  10 seconds, no connection, a server error): first for a minute, then two,
   five, ten, twenty and finally thirty minutes for as long as the failures
   continue. An overload answer (429, 503) pauses for at least its Retry-After
   time. A reading that works again ends the series;
@@ -103,9 +119,9 @@ access on again.
 | Text | Meaning |
 |---|---|
 | The gateway did not answer | No connection within the time limit; check the address and port 80. |
-| The answer could not be decrypted | One of the two passwords is wrong, or one was changed in the device app. |
+| The answer could not be decrypted | One of the two passwords is wrong, or one was changed in the device app. Most often the private password was never saved on the gateway. |
 | The gateway is busy | It answered with an overload message; try again later. |
-| It does not report its ID | The gateway does not offer the read the check needs. |
+| It could not be matched with the system | The gateway reports no usable ID, and its values do not agree closely enough with the cloud values (or the cloud has no current values yet). Try again in a few minutes. |
 | Not the gateway of the selected system | The ID read locally is not the cloud's gateway ID. |
 
 ## Reporting
@@ -116,7 +132,8 @@ tell me in an
 [issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues)
 or in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81)
 what happened, with the diagnostics of the integration attached. Of particular
-interest: whether the setup's ID check passes, which values are shown, and how
+interest: whether the setup's ID check passes (and by which way, see
+`identity_method` in the diagnostics), which values are shown, and how
 long the gateway runs without a hang.
 
 ## Not included

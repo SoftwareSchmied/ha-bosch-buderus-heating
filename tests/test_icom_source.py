@@ -51,7 +51,9 @@ def fast(monkeypatch):
     monkeypatch.setattr(icom_source.IcomSource, "period", lambda self, request: PERIOD)
 
 
-def build(hass, gateway, *, password=PRIVATE_PASSWORD, local_id="000123"):
+def build(
+    hass, gateway, *, password=PRIVATE_PASSWORD, local_id="000123", fingerprint=None
+):
     entry, cloud, target = entry_for(hass)
     data = dict(entry.data)
     data["connections"] = dict(data["connections"])
@@ -67,6 +69,7 @@ def build(hass, gateway, *, password=PRIVATE_PASSWORD, local_id="000123"):
             gateway_id="000123",
             local_id=local_id,
             verified_at=1.0,
+            fingerprint=fingerprint,
         ),
     }
     hass.config_entries.async_update_entry(entry, data=data, minor_version=2)
@@ -265,6 +268,54 @@ async def test_a_gateway_exchanged_later_is_noticed_after_a_pause(
     requests = len(gateway.requests)
     await asyncio.sleep(1.0)
     assert len(gateway.requests) == requests  # stopped for good
+
+
+# ------------------------------------------------ identity by a fingerprint
+
+HARDWARE = "/gateway/versionHardware"
+
+
+async def test_a_gateway_without_a_usable_id_is_recognised_by_its_fingerprint(
+    hass, gateway, fast
+):
+    gateway.value(UUID_PATH, "-1")
+    p = build(hass, gateway, fingerprint=(HARDWARE, "fixture-hw"))
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        assert state(p).identity_confirmed
+        assert gateway.requests[0] == HARDWARE and UUID_PATH not in gateway.requests
+        assert source(p).diagnostics()["identity_method"] == "values"
+        assert (await source(p).test_connection())[0] == "ok"
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_changed_fingerprint_stops_the_access_before_any_value(
+    hass, gateway, fast
+):
+    gateway.value(HARDWARE, "another-model")
+    p = build(hass, gateway, fingerprint=(HARDWARE, "fixture-hw"))
+    p.runtime.start()
+    try:
+        await until(
+            hass,
+            lambda: state(p) and state(p).condition is LocalCondition.UNAVAILABLE,
+        )
+        assert state(p).problem == "local_identity_conflict"
+        assert not state(p).identity_confirmed and not state(p).current_observations
+        await asyncio.sleep(1.0)
+        assert gateway.requests == [HARDWARE]
+        assert (await source(p).test_connection())[0] == "other_gateway"
+    finally:
+        await p.runtime.close()
+
+
+async def test_the_own_id_is_the_method_unless_a_fingerprint_was_stored(
+    hass, gateway, running
+):
+    assert source(running).diagnostics()["identity_method"] == "uuid"
 
 
 # --------------------------------------------------------------- password

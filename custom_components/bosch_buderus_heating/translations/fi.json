@@ -515,6 +515,10 @@
         "title": "Yhteystesti",
         "description": "Kirjautuminen vaaditaan: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
       },
+      "connection_test_auth_icom": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään; se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa."
+      },
       "connection_test_certificate_changed": {
         "title": "Yhteystesti",
         "description": "Laitteen varmenne on muuttunut: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Yhteystesti",
         "description": "Tässä osoitteessa vastaa eri yhdyskäytävä. Määritä paikallinen yhteys uudelleen."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Yhteystesti",
+        "description": "Tässä osoitteessa vastaa eri yhdyskäytävä. Tarkista osoite valinnalla “Muuta iCom-käyttötietoja”."
       },
       "connection_test_error": {
         "title": "Yhteystesti",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
       "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista.",
       "icom_cannot_connect": "Yhdyskäytävä ei vastannut. Tarkista osoite ja että yhdyskäytävä on tavoitettavissa portissa 80.",
-      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat.",
+      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään. Se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa.",
       "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
-      "icom_no_identity": "Yhdyskäytävä ei ilmoita tunnustaan, joten sitä ei voi yhdistää järjestelmään.",
+      "icom_no_identity": "Yhdyskäytävää ei voitu yhdistää järjestelmään: se ei ilmoita käyttökelpoista tunnusta, eivätkä sen arvot täsmää riittävän tarkasti pilven arvoihin. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",
       "icom_invalid_host": "Anna kotiverkkosi IP-osoite tai isäntänimi.",
       "invalid_gateway_password": "Anna laitteen tarrassa oleva yhdyskäytävän salasana.",

@@ -1,6 +1,8 @@
 """Setting up the local access of an iCom gateway: check, configuration, dialog."""
 
 import json
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import aiohttp
 import pytest
@@ -15,9 +17,11 @@ from custom_components.bosch_buderus_heating.icom_access import (
     ICOM_CONTRACT,
     load_icom_access,
 )
+from custom_components.bosch_buderus_heating.icom_identity import CloudReading
 from custom_components.bosch_buderus_heating.icom_setup import (
     IcomSetupError,
     IcomVerification,
+    cloud_readings,
     commit_icom_setup,
     normalize_icom_host,
     prepare_icom_configuration,
@@ -94,7 +98,7 @@ async def test_the_cloud_s_own_reading_of_the_id_may_be_the_proof(gateway, sessi
         ("hang", "icom_cannot_connect"),
         ("error", "icom_cannot_connect"),
         ("html", "icom_cannot_connect"),
-        ("number", "icom_other_gateway"),
+        ("number", "icom_no_identity"),
     ],
 )
 async def test_a_failed_check_names_one_fixed_cause_and_saves_nothing(
@@ -431,3 +435,152 @@ async def test_an_existing_icom_access_has_its_own_menu_entry(hass, supported):
     assert marker.default() == "192.168.1.20"
     # The passwords are never offered again.
     assert "abcdefghijklmnop" not in str(result["data_schema"].schema)
+
+
+# ------------------------------------------------- identity by values (fallback)
+
+FIRMWARE, HARDWARE = "/gateway/versionFirmware", "/gateway/versionHardware"
+OUTDOOR = "/system/sensors/temperatures/outdoor_t1"
+STARTS = "/heatSources/numberOfStarts"
+CLOUD = {
+    FIRMWARE: CloudReading("01.02.03", 30.0),
+    HARDWARE: CloudReading("fixture-hw", 30.0),
+    OUTDOOR: CloudReading(5.0, 30.0),
+}
+
+
+@pytest.mark.parametrize("unusable", ["-1", "", "  ", -1, None, "x", ["a"]])
+async def test_an_unusable_own_id_falls_back_to_the_values_both_sides_report(
+    gateway, session, unusable
+):
+    gateway.value("/gateway/uuid", unusable)
+    proof = await verify(session, gateway, cloud_readings=CLOUD)
+    assert proof.method == "values" and proof.gateway_id == "000123"
+    # The hardware text stays through firmware updates, so it is the one kept.
+    assert proof.fingerprint == (HARDWARE, "fixture-hw")
+    assert "fixture-hw" not in repr(proof)
+
+
+@pytest.mark.parametrize("status", [404, 403])
+async def test_a_missing_own_id_falls_back_too(gateway, session, status):
+    gateway.path_status["/gateway/uuid"] = status
+    proof = await verify(session, gateway, cloud_readings=CLOUD)
+    assert proof.method == "values"
+
+
+async def test_a_usable_own_id_is_all_that_counts(gateway, session):
+    proof = await verify(session, gateway, cloud_readings=CLOUD)
+    assert proof.method == "uuid" and proof.fingerprint is None
+    assert gateway.requests == ["/gateway/uuid"]
+    # A different usable ID is never rescued by matching values.
+    gateway.value("/gateway/uuid", "999999")
+    with pytest.raises(IcomSetupError, match="icom_other_gateway"):
+        await verify(session, gateway, cloud_readings=CLOUD)
+
+
+async def test_the_fallback_asks_only_for_paths_the_cloud_has_read(gateway, session):
+    gateway.value("/gateway/uuid", "-1")
+    await verify(session, gateway, cloud_readings=CLOUD)
+    assert sorted(gateway.requests) == sorted(["/gateway/uuid", *CLOUD])
+    assert len(gateway.requests) <= 25
+
+
+@pytest.mark.parametrize(
+    "cloud",
+    [
+        {},  # no cloud reading at all
+        {
+            FIRMWARE: CloudReading("01.02.03", 30.0),
+            HARDWARE: CloudReading("fixture-hw", 30.0),
+        },
+        {OUTDOOR: CloudReading(5.0, 30.0)},
+        {FIRMWARE: CloudReading("01.02.03", 30.0), OUTDOOR: CloudReading(5.0, 4000.0)},
+        {FIRMWARE: CloudReading("01.02.03", 30.0), OUTDOOR: CloudReading(7.9, 30.0)},
+    ],
+)
+async def test_too_little_agreement_names_the_missing_proof_and_saves_nothing(
+    gateway, session, cloud
+):
+    gateway.value("/gateway/uuid", "-1")
+    with pytest.raises(IcomSetupError) as raised:
+        await verify(session, gateway, cloud_readings=cloud)
+    assert str(raised.value) == "icom_no_identity"
+
+
+@pytest.mark.parametrize(
+    "cloud",
+    [
+        {**CLOUD, FIRMWARE: CloudReading("09.09.09", 30.0)},
+        {**CLOUD, OUTDOOR: CloudReading(-8.0, 30.0)},
+        {**CLOUD, STARTS: CloudReading(99999, 30.0)},
+    ],
+)
+async def test_a_clear_contradiction_is_another_gateway(gateway, session, cloud):
+    gateway.value("/gateway/uuid", "-1")
+    with pytest.raises(IcomSetupError, match="icom_other_gateway"):
+        await verify(session, gateway, cloud_readings=cloud)
+
+
+async def test_a_failing_read_of_the_fallback_is_a_cause_of_its_own(gateway, session):
+    gateway.value("/gateway/uuid", "-1")
+    gateway.path_status[OUTDOOR] = 500
+    with pytest.raises(IcomSetupError, match="icom_cannot_connect"):
+        await verify(session, gateway, cloud_readings=CLOUD)
+    # A path the gateway does not offer is only left out.
+    gateway.path_status[OUTDOOR] = 404
+    with pytest.raises(IcomSetupError, match="icom_no_identity"):
+        await verify(session, gateway, cloud_readings=CLOUD)
+
+
+def test_the_fallback_is_stored_with_its_fingerprint_and_read_back():
+    before, _, target = starting()
+    after = prepare_icom_configuration(
+        before, proof(target, fingerprint=(HARDWARE, "fixture-hw"))
+    )
+    key = next(key for key in after.connections if key not in before.connections)
+    access = load_icom_access(after.connections[key].to_data())
+    assert access.identity_method == "values" and access.identity_path == HARDWARE
+    assert access.confirms("Fixture-HW") and not access.confirms("other")
+    plain = prepare_icom_configuration(before, proof(target))
+    key = next(key for key in plain.connections if key not in before.connections)
+    assert load_icom_access(plain.connections[key].to_data()).identity_method == "uuid"
+
+
+def _manager_with_cloud(monkeypatch, data):
+    from custom_components.bosch_buderus_heating import managed_entry
+
+    class Owner:
+        connections = SimpleNamespace(
+            source_data=lambda key: SimpleNamespace(data=data)
+        )
+
+    monkeypatch.setattr(managed_entry, "ManagedEntry", Owner)
+    return Owner()
+
+
+def test_the_cloud_readings_are_taken_from_the_running_cloud_source(monkeypatch):
+    before, _, target = starting()
+    now = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
+
+    def snapshot(value, minutes, available=True):
+        return SimpleNamespace(
+            resource=SimpleNamespace(value=value),
+            available=available,
+            last_success=now - timedelta(minutes=minutes),
+        )
+
+    owner = _manager_with_cloud(
+        monkeypatch,
+        {
+            FIRMWARE: snapshot("01.02.03", 2),
+            OUTDOOR: snapshot(5.0, 20),
+            HARDWARE: snapshot("hw", 1, available=False),
+            "/not/asked": snapshot(1, 1),
+        },
+    )
+    found = cloud_readings(owner, before, target, now=now)
+    assert found == {
+        FIRMWARE: CloudReading("01.02.03", 120.0),
+        OUTDOOR: CloudReading(5.0, 1200.0),
+    }
+    assert cloud_readings(object(), before, target, now=now) == {}

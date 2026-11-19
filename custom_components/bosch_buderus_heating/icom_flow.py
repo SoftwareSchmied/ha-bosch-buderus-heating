@@ -28,6 +28,7 @@ from .ha_schema import validation as vol
 from .icom_access import IcomAccessError, is_icom_connection, load_icom_access
 from .icom_setup import (
     cloud_gateway_ids,
+    cloud_readings,
     commit_icom_setup,
     verify_icom_access,
 )
@@ -197,6 +198,7 @@ class IcomSetupFlow(NavigatingOptionsFlow):
             gateway_password=str(user_input.get("gateway_password", "")),
             private_password=str(user_input.get("private_password", "")),
             also_accepted=cloud_gateway_ids(owner, snapshot, target_id),
+            cloud_readings=cloud_readings(owner, snapshot, target_id),
         )
         commit_icom_setup(ConfigurationManagement(self.hass, self._entry), verification)
         self._icom_target = None

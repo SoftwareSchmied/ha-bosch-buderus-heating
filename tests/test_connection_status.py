@@ -638,3 +638,38 @@ async def test_a_failed_second_cloud_account_is_not_reachable(
 ) -> None:
     runtime = WithSecondCloud(hass, heat_pump=False, error="connection")
     assert status.access_status(entry_with(runtime), CLOUD).state == "unreachable"
+
+
+def icom_runtime(hass, local=None):
+    runtime = Runtime(hass, local=local)
+    runtime.snapshot.connections[LAN].to_data = lambda: {
+        "endpoint": {"host": "192.0.2.10"},
+        "icom_access": {"version": 1},
+    }
+    return runtime
+
+
+@pytest.mark.parametrize(
+    ("result", "code", "words"),
+    [
+        ("auth_required", "auth_icom", "Change iCom access data"),
+        ("other_gateway", "other_gateway_icom", "Change iCom access data"),
+    ],
+)
+async def test_an_icom_access_names_its_own_dialog_entry(
+    hass: HomeAssistant, result, code, words
+) -> None:
+    hass.config.language = "en"
+    runtime = icom_runtime(hass, ready_local())
+    runtime.local_driver.test_connection.return_value = (result, 30)
+    entry = entry_with(runtime)
+    assert (await status.test_connection(hass, entry, LAN))[0] == code
+    assert words in await outcome_text(hass, entry, LAN)
+    assert "Change local access" not in await outcome_text(hass, entry, LAN)
+    # Another local access keeps its pages.
+    other = Runtime(hass, local=ready_local())
+    other.local_driver.test_connection.return_value = (result, 30)
+    assert (await status.test_connection(hass, entry_with(other), LAN))[0] in (
+        "auth_local",
+        "other_gateway",
+    )

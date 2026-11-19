@@ -515,6 +515,10 @@
         "title": "Tástáil naisc",
         "description": "Síniú isteach ag teastáil: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
       },
+      "connection_test_auth_icom": {
+        "title": "Tástáil naisc",
+        "description": "Theip ar an síniú isteach: ní oireann na pasfhocail don gheata. Seiceáil iad trí “Athraigh sonraí rochtana iCom”. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh; ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis."
+      },
       "connection_test_certificate_changed": {
         "title": "Tástáil naisc",
         "description": "Tá deimhniú an ghléis athraithe: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Tástáil naisc",
         "description": "Freagraíonn geata eile ag an seoladh seo. Socraigh an rochtain áitiúil arís."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Tástáil naisc",
+        "description": "Freagraíonn geata eile ag an seoladh seo. Seiceáil an seoladh trí “Athraigh sonraí rochtana iCom”."
       },
       "connection_test_error": {
         "title": "Tástáil naisc",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
       "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe.",
       "icom_cannot_connect": "Níor fhreagair an geata. Seiceáil an seoladh agus an féidir teacht ar an ngeata ar chalafort 80.",
-      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal.",
+      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh. Ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis.",
       "icom_busy": "Tá an geata gnóthach. Bain triail eile as i gceann cúpla nóiméad.",
-      "icom_no_identity": "Ní thuairiscíonn an geata a aitheantas, mar sin ní féidir é a mheaitseáil leis an gcóras.",
+      "icom_no_identity": "Níorbh fhéidir an geata a mheaitseáil leis an gcóras: ní thuairiscíonn sé aitheantas úsáidte, agus ní réitíonn a luachanna go leor le luachanna na scamall. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_other_gateway": "Ní hé seo geata an chórais roghnaithe. Seiceáil an seoladh.",
       "icom_invalid_host": "Cuir isteach seoladh IP nó óstainm de do líonra baile.",
       "invalid_gateway_password": "Cuir isteach pasfhocal an gheata ó lipéad an ghléis.",

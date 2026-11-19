@@ -515,6 +515,10 @@
         "title": "Teste de ligação",
         "description": "Início de sessão necessário: configure novamente o acesso local através de “Alterar acesso local”."
       },
+      "connection_test_auth_icom": {
+        "title": "Teste de ligação",
+        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway; só lá está se tiver sido definida uma vez na antiga aplicação do aparelho."
+      },
       "connection_test_certificate_changed": {
         "title": "Teste de ligação",
         "description": "O certificado do dispositivo foi alterado: configure novamente o acesso local através de “Alterar acesso local”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Teste de ligação",
         "description": "Outro gateway responde neste endereço. Configure novamente o acesso local."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Teste de ligação",
+        "description": "Outro gateway responde neste endereço. Verifique o endereço através de “Alterar os dados de acesso iCom”."
       },
       "connection_test_error": {
         "title": "Teste de ligação",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
       "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador.",
       "icom_cannot_connect": "O gateway não respondeu. Verifique o endereço e se o gateway está acessível na porta 80.",
-      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe.",
+      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway. Só lá está se tiver sido definida uma vez na antiga aplicação do aparelho.",
       "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
-      "icom_no_identity": "O gateway não indica o seu ID, pelo que não pode ser associado à instalação.",
+      "icom_no_identity": "Não foi possível associar o gateway à instalação: não indica um ID utilizável e os seus valores não coincidem o suficiente com os da cloud. Tente novamente dentro de alguns minutos.",
       "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",
       "icom_invalid_host": "Introduza um endereço IP ou nome de anfitrião da sua rede doméstica.",
       "invalid_gateway_password": "Introduza a palavra-passe do gateway da etiqueta do aparelho.",

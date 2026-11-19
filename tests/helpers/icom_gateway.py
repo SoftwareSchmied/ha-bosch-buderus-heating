@@ -56,6 +56,8 @@ class SimulatedIcomGateway:
         self.noise = False
         self.noise_next = 0
         self.raw: bytes | None = None
+        # A plain text that is encrypted as it is (not a document of the tree).
+        self.plain: bytes | None = None
         self.stream: int = 0
         self.path_status: dict[str, int] = {}
         self.fail_after: int | None = None
@@ -105,6 +107,8 @@ class SimulatedIcomGateway:
                 return response
             if self.raw is not None:
                 return web.Response(body=self.raw)
+            if self.plain is not None:
+                return web.Response(body=encrypt(self.key, self.plain))
             if self.noise or self.noise_next > 0:
                 self.noise_next = max(0, self.noise_next - 1)
                 return web.Response(body=encrypt(os.urandom(32), b"x" * 32))

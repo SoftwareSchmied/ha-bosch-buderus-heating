@@ -515,6 +515,10 @@
         "title": "Forbindelsestest",
         "description": "Login påkrævet: sæt den lokale adgang op igen via “Skift lokal adgang”."
       },
+      "connection_test_auth_icom": {
+        "title": "Forbindelsestest",
+        "description": "Login mislykkedes: adgangskoderne passer ikke til gatewayen. Kontrollér dem via “Skift iCom-adgangsdata”. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen; den ligger kun der, hvis den én gang er sat i den gamle enheds-app."
+      },
       "connection_test_certificate_changed": {
         "title": "Forbindelsestest",
         "description": "Enhedens certifikat er ændret: sæt den lokale adgang op igen via “Skift lokal adgang”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Forbindelsestest",
         "description": "En anden gateway svarer på denne adresse. Sæt den lokale adgang op igen."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Forbindelsestest",
+        "description": "En anden gateway svarer på denne adresse. Kontrollér adressen via “Skift iCom-adgangsdata”."
       },
       "connection_test_error": {
         "title": "Forbindelsestest",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives.",
       "switch_program_aircon_setting": "Vælg en tilstand, som klimaanlægget tilbyder, og dertil en temperatur inden for dets område og trin samt en af dets blæserhastigheder.",
       "icom_cannot_connect": "Gatewayen svarede ikke. Kontrollér adressen, og at gatewayen kan nås på port 80.",
-      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder.",
+      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen. Den ligger kun der, hvis den én gang er sat i den gamle enheds-app.",
       "icom_busy": "Gatewayen er optaget. Prøv igen om nogle minutter.",
-      "icom_no_identity": "Gatewayen rapporterer ikke noget ID, så den kan ikke knyttes til anlægget.",
+      "icom_no_identity": "Gatewayen kunne ikke knyttes til anlægget: den rapporterer intet brugbart ID, og dens værdier stemmer ikke tilstrækkeligt præcist med skyens værdier. Prøv igen om nogle minutter.",
       "icom_other_gateway": "Det er ikke gatewayen til det valgte anlæg. Kontrollér adressen.",
       "icom_invalid_host": "Angiv en IP-adresse eller et værtsnavn i dit hjemmenetværk.",
       "invalid_gateway_password": "Angiv gateway-adgangskoden fra enhedens mærkat.",

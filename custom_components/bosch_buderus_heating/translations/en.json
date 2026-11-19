@@ -515,6 +515,10 @@
         "title": "Connection test",
         "description": "Sign-in required: please set up the local access again via “Change local access”."
       },
+      "connection_test_auth_icom": {
+        "title": "Connection test",
+        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password was never saved on the gateway; it is only stored there if it was set once in the old device app."
+      },
       "connection_test_certificate_changed": {
         "title": "Connection test",
         "description": "The device certificate has changed: please set up the local access again via “Change local access”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Connection test",
         "description": "A different gateway answers at this address. Set up the local access again."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Connection test",
+        "description": "A different gateway answers at this address. Check the address via “Change iCom access data”."
       },
       "connection_test_error": {
         "title": "Connection test",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
       "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds.",
       "icom_cannot_connect": "The gateway did not answer. Check the address and that the gateway can be reached on port 80.",
-      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords.",
+      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password was never saved on the gateway. It is only stored there if it was set once in the old device app.",
       "icom_busy": "The gateway is busy. Try again in a few minutes.",
-      "icom_no_identity": "The gateway does not report its ID, so it cannot be matched with the system.",
+      "icom_no_identity": "The gateway could not be matched with the system: it reports no usable ID, and its values do not agree closely enough with the cloud values. Try again in a few minutes.",
       "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",
       "icom_invalid_host": "Enter an IP address or hostname of your home network.",
       "invalid_gateway_password": "Enter the gateway password from the device sticker.",

@@ -515,6 +515,10 @@
         "title": "Anslutningstest",
         "description": "Inloggning krävs: konfigurera den lokala åtkomsten igen via “Ändra lokal åtkomst”."
       },
+      "connection_test_auth_icom": {
+        "title": "Anslutningstest",
+        "description": "Inloggningen misslyckades: lösenorden passar inte till gatewayen. Kontrollera dem via “Ändra iCom-åtkomstuppgifter”. Vanligaste orsaken: det privata lösenordet har aldrig sparats på gatewayen; det finns där bara om det någon gång angetts i den gamla enhetsappen."
+      },
       "connection_test_certificate_changed": {
         "title": "Anslutningstest",
         "description": "Enhetens certifikat har ändrats: konfigurera den lokala åtkomsten igen via “Ändra lokal åtkomst”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Anslutningstest",
         "description": "En annan gateway svarar på den här adressen. Konfigurera den lokala åtkomsten igen."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Anslutningstest",
+        "description": "En annan gateway svarar på den här adressen. Kontrollera adressen via “Ändra iCom-åtkomstuppgifter”."
       },
       "connection_test_error": {
         "title": "Anslutningstest",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken.",
       "switch_program_aircon_setting": "Välj ett läge som luftkonditioneringen erbjuder och för det en temperatur inom dess intervall och steg samt en av dess fläkthastigheter.",
       "icom_cannot_connect": "Gatewayen svarade inte. Kontrollera adressen och att gatewayen går att nå på port 80.",
-      "icom_invalid_auth": "Gatewayens svar gick inte att dekryptera. Kontrollera båda lösenorden.",
+      "icom_invalid_auth": "Gatewayens svar gick inte att dekryptera. Kontrollera båda lösenorden. Vanligaste orsaken: det privata lösenordet har aldrig sparats på gatewayen. Det finns där bara om det någon gång angetts i den gamla enhetsappen.",
       "icom_busy": "Gatewayen är upptagen. Försök igen om några minuter.",
-      "icom_no_identity": "Gatewayen rapporterar inget ID, så den kan inte kopplas till anläggningen.",
+      "icom_no_identity": "Gatewayen kunde inte kopplas till anläggningen: den rapporterar inget användbart ID och dess värden stämmer inte tillräckligt väl med molnets värden. Försök igen om några minuter.",
       "icom_other_gateway": "Det här är inte gatewayen för den valda anläggningen. Kontrollera adressen.",
       "icom_invalid_host": "Ange en IP-adress eller ett värdnamn i ditt hemnätverk.",
       "invalid_gateway_password": "Ange gatewaylösenordet från enhetens etikett.",

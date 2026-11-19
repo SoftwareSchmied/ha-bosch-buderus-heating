@@ -515,6 +515,10 @@
         "title": "Verbindungstest",
         "description": "Anmeldung nötig: Bitte den lokalen Zugang über „Lokalen Zugang ändern“ neu einrichten."
       },
+      "connection_test_auth_icom": {
+        "title": "Verbindungstest",
+        "description": "Anmeldung fehlgeschlagen: Die Passwörter passen nicht zum Gateway. Prüfe sie über „iCom-Zugangsdaten ändern“. Häufigste Ursache: Das private Passwort wurde nie auf dem Gateway gespeichert; es liegt nur dort, wenn es einmal in der alten Geräte-App festgelegt wurde."
+      },
       "connection_test_certificate_changed": {
         "title": "Verbindungstest",
         "description": "Das Zertifikat des Geräts hat sich geändert: Bitte den lokalen Zugang über „Lokalen Zugang ändern“ neu einrichten."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Verbindungstest",
         "description": "Unter dieser Adresse antwortet ein anderes Gateway. Lokalen Zugang neu einrichten."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Verbindungstest",
+        "description": "Unter dieser Adresse antwortet ein anderes Gateway. Prüfe die Adresse über „iCom-Zugangsdaten ändern“."
       },
       "connection_test_error": {
         "title": "Verbindungstest",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
       "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen.",
       "icom_cannot_connect": "Das Gateway hat nicht geantwortet. Prüfe die Adresse und ob das Gateway über Port 80 erreichbar ist.",
-      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter.",
+      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter. Häufigste Ursache: Das private Passwort wurde nie auf dem Gateway gespeichert. Es liegt nur dort, wenn es einmal in der alten Geräte-App festgelegt wurde.",
       "icom_busy": "Das Gateway ist ausgelastet. Versuche es in ein paar Minuten erneut.",
-      "icom_no_identity": "Das Gateway meldet seine Kennung nicht, daher lässt es sich nicht der Anlage zuordnen.",
+      "icom_no_identity": "Das Gateway lässt sich der Anlage nicht zuordnen: Es meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein. Versuche es in ein paar Minuten erneut.",
       "icom_other_gateway": "Das ist nicht das Gateway der gewählten Anlage. Prüfe die Adresse.",
       "icom_invalid_host": "Gib eine IP-Adresse oder einen Hostnamen deines Heimnetzes ein.",
       "invalid_gateway_password": "Gib das Gateway-Passwort vom Geräteaufkleber ein.",

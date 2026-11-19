@@ -515,6 +515,10 @@
         "title": "Test połączenia",
         "description": "Wymagane logowanie: skonfiguruj dostęp lokalny ponownie przez „Zmień dostęp lokalny”."
       },
+      "connection_test_auth_icom": {
+        "title": "Test połączenia",
+        "description": "Logowanie nie powiodło się: hasła nie pasują do bramy. Sprawdź je przez „Zmień dane dostępu iCom”. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie; jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia."
+      },
       "connection_test_certificate_changed": {
         "title": "Test połączenia",
         "description": "Certyfikat urządzenia uległ zmianie: skonfiguruj dostęp lokalny ponownie przez „Zmień dostęp lokalny”."
@@ -542,6 +546,10 @@
       "connection_test_other_gateway": {
         "title": "Test połączenia",
         "description": "Pod tym adresem odpowiada inna bramka. Skonfiguruj dostęp lokalny ponownie."
+      },
+      "connection_test_other_gateway_icom": {
+        "title": "Test połączenia",
+        "description": "Pod tym adresem odpowiada inna brama. Sprawdź adres przez „Zmień dane dostępu iCom”."
       },
       "connection_test_error": {
         "title": "Test połączenia",
@@ -1143,9 +1151,9 @@
       "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
       "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora.",
       "icom_cannot_connect": "Brama nie odpowiedziała. Sprawdź adres i czy brama jest osiągalna na porcie 80.",
-      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła.",
+      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie. Jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia.",
       "icom_busy": "Brama jest zajęta. Spróbuj ponownie za kilka minut.",
-      "icom_no_identity": "Brama nie podaje swojego identyfikatora, więc nie można jej przypisać do instalacji.",
+      "icom_no_identity": "Nie można przypisać bramy do instalacji: nie podaje użytecznego identyfikatora, a jej wartości nie zgadzają się dostatecznie dokładnie z wartościami z chmury. Spróbuj ponownie za kilka minut.",
       "icom_other_gateway": "To nie jest brama wybranej instalacji. Sprawdź adres.",
       "icom_invalid_host": "Podaj adres IP lub nazwę hosta w swojej sieci domowej.",
       "invalid_gateway_password": "Podaj hasło bramy z naklejki na urządzeniu.",

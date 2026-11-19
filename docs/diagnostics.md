@@ -1371,6 +1371,9 @@ An iCom gateway's local access (see [iCom local access](icom-local-access.md))
 reports under `connections[].local[]` like the other local accesses, with the
 schema unchanged. Counts, ages and fixed codes only:
 
+- `identity_method`: how the gateway is recognised, `uuid` (its own ID equals the
+  cloud's gateway ID) or `values` (it reports no usable ID, so values it shares
+  with the cloud were compared at setup and one stored reading is checked again);
 - `protocol` `icom`, `condition`, `identity_confirmed`, `problem` (a fixed code such as
   `auth_required` or `local_identity_conflict`) and `condition_changes` (the last 20
   changes with time and reason);
