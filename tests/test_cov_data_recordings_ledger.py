@@ -324,10 +324,18 @@ async def test_the_entity_shows_its_value_with_the_counter_it_came_from(
     del rec.counter_entities["ch_heat"]
     assert entity.extra_state_attributes["derived_from"] == []
 
-    # Nothing shown: unavailable, only the method is named.
+    # H-B3-7: no value yet while the source is attached: unknown, not
+    # unavailable; only the method is named.
     del rec.published[name]
-    assert not entity.available and entity.native_value is None
+    assert entity.available and entity.native_value is None
     assert entity.extra_state_attributes == {"method": "recording"}
+    # Unavailable only when the source cannot be reached (nothing attached).
+    rec.detach(rec._test_coordinator)
+    assert rec.coordinator() is None
+    assert not entity.available and entity.native_value is None
+    # A value that is still shown stays available without a source attempt.
+    rec.published[name] = ["2026-11-01", "2026-12-01", 5.0, "counters", "hourly"]
+    assert entity.available and entity.native_value == 5.0
     await entity.async_will_remove_from_hass()  # no release: nothing to undo
 
 

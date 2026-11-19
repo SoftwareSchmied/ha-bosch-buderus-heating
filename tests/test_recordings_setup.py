@@ -121,8 +121,9 @@ async def test_entities_options_and_diagnostics(
         state = hass.states.get(heat)
         assert state is not None
         assert "system recording" in state.attributes["friendly_name"]
-        # Yesterday was read once: shown only once a second read confirms it.
-        assert state.state == "unavailable"
+        # Yesterday was read once: shown only once a second read confirms it
+        # (until then the value is unknown, the source is reachable).
+        assert state.state == "unknown"
         await advance(hass, freezer, timedelta(minutes=55))
         await hass.async_block_till_done(wait_background_tasks=True)
         state = hass.states.get(heat)

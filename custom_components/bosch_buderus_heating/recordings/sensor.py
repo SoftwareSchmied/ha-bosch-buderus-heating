@@ -128,7 +128,13 @@ class RecordingPeriodSensor(SensorEntity):
 
     @property
     def available(self) -> bool:
-        return self._manager.shown(self._spec) is not None
+        # H-B3-7: a value that does not exist (yet) is "unknown"; "unavailable"
+        # only when the source cannot be reached: no value shown and no source
+        # attempt attached to the recordings.
+        return (
+            self._manager.shown(self._spec) is not None
+            or self._manager.coordinator() is not None
+        )
 
     @property
     def native_value(self) -> float | None:

@@ -145,6 +145,11 @@ where the entity uses them), a month with such a day uses the plant's month
 value, and a month without data adds nothing to its year. The plant's
 placeholder values for such slots are dropped.
 
+A period entity without a value (a previous year the plant has no data for yet,
+cooling without cooling operation, a day not confirmed by a second read) shows
+the state `unknown`. It shows `unavailable` only when it has no value and no
+source of the recordings is attached, that is, the source cannot be reached.
+
 ## Series without a local path: water softener and boilers
 
 A few recordings exist only in the cloud, under paths a heat pump does not
