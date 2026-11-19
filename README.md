@@ -29,7 +29,7 @@ cloud is unavailable, readings and current faults continue from the local
 access; when it is back, the same entities carry on with their history.
 
 > [!IMPORTANT]
-> **0.9.1 is the current version** and needs Home Assistant 2026.5.0 or newer.
+> **0.9.2 is the current version** and needs Home Assistant 2026.5.0 or newer.
 > Updating from 0.8.x? Make a full backup first, see [Updating](#updating).
 
 > [!NOTE]

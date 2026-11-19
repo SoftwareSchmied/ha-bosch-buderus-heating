@@ -4,6 +4,45 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.2 verification
+
+I am preparing **0.9.2 as the stable release**; it becomes Stable/Latest
+instead of 0.9.1. It collects everything of 0.9.2-beta.1 to beta.3 and adds
+a repair of the cloud hold (the entities learn when the hold ends between
+two update cycles) and of the token renewal (an unexpected early failure
+pauses the renewal instead of retrying at once). The notes open with a
+"Before you update" box for 0.9.1 and 0.8.x users. Storage format 4 and Home
+Assistant 2026.5.0 as the minimum stay; updating from 0.9.x needs no new
+setup. The diagnostics use schema 48.
+
+Automated checks on the release state (2026-11-19, run locally unless noted):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.1, local, four parallel workers | 14798 passed, 1 skipped (the box test of stable release notes, before the version change); coverage 97.70 % |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 302 files; Ruff clean |
+| Release tests | local | release, repository and write baseline tests run on a clean clone; the box test of stable release notes runs now; the release notes come from this version's CHANGELOG section |
+| Release archive and SHA-256 | local build on a clean clone | built twice for version 0.9.2 without tests or bytecode, with the same result; the checksum is published with the release |
+| GitHub checks | CI and release workflow | the compatibility, minimum version, frontend, hassfest and HACS jobs run on the release commit and again in the release workflow before publishing; a stable tag must point to a commit on `main` |
+
+Checks on a real installation with the candidate before the version change
+(Home Assistant 2026.11, installed after a full Home Assistant backup, reading
+only, without changes to the heating system and with the statistics import
+off):
+
+- The entity registry stayed unchanged (577 entities before and after), and
+  no entity changed to unavailable during the observation.
+- The background token renewal at about ten minutes before the end ran into
+  a timeout once and succeeded 54 seconds later; no pause of the cloud and
+  no flicker of states followed.
+- The log had no warnings or errors of the integration, and every cloud
+  request succeeded.
+
+Not yet confirmed on real hardware: the new controls of the betas (ventilation
+select, hybrid controls, heating circuit, system and room controller
+settings, timers and energy sensors of air conditioners, the wallbox history,
+the boiler recordings and the second cloud changes with a real device).
+
 ## 0.9.2-beta.3 verification
 
 I am preparing **0.9.2-beta.3 as a pre-release** for testing; **0.9.1 stays

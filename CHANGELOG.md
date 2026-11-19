@@ -5,6 +5,8 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-11-19
+
 > [!IMPORTANT]
 > **Before you update**
 >
