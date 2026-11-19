@@ -131,6 +131,14 @@ def _gateway_entities(hass: HomeAssistant, entry) -> dict[str, er.RegistryEntry]
     }
 
 
+def _reachable_id(entities: dict[str, er.RegistryEntry]) -> str:
+    return next(
+        item.entity_id
+        for item in entities.values()
+        if item.unique_id.endswith(":gateway_reachable")
+    )
+
+
 async def _normal_start(hass: HomeAssistant, setup: Setup, entry) -> set[str]:
     """A previous start with a working cloud saves the inventory."""
     assert await hass.config_entries.async_setup(entry.entry_id)
@@ -182,6 +190,12 @@ async def test_cloud_outage_at_start_uses_the_saved_inventory(
         }
         assert {item.split(".")[0] for item in states} >= {"select", "climate"}
         assert all(state is not None for state in states.values())
+        # The gateway-reachable sensor always has a state: off when the cloud
+        # did not answer, unknown while a rate limit pauses it.
+        reachable = states.pop(_reachable_id(stored))
+        assert reachable.state == (
+            "unknown" if reason == "gateway_list_rate_limited" else "off"
+        )
         assert {state.state for state in states.values()} == {"unavailable"}
         assert not any(state.attributes.get("restored") for state in states.values())
 
@@ -475,6 +489,11 @@ async def test_rejected_sign_in_during_the_deferred_discovery_asks_for_sign_in(
         # reading is valid, unknown without the heat source's readings.
         activities = {uid for uid in states if uid.endswith(":calculated_activity")}
         assert {states[uid].state for uid in activities} <= {"unknown"}
+        # A rejected sign-in says nothing about the gateway: unknown, not off.
+        reachable_uid = f"{GATEWAY.gateway_id}:gateway_reachable"
+        reachable = states.pop(reachable_uid)
+        assert reachable.state == "unknown"
+        assert reachable.attributes["cloud"] == "sign_in_required"
         assert {
             state.state
             for uid, state in states.items()

@@ -201,8 +201,12 @@ class GatewayReachableBinarySensor(
             if isinstance(report, Mapping) and report.get("cycle_failed")
             else None
         )
+        reason = coordinator.cloud_down_reason()
+        if reason is not None and coordinator.sign_in_rejected:
+            # A rejected sign-in says nothing about the gateway.
+            reason = "auth_required"
         cloud, cloud_code = cloud_access(
-            coordinator.cloud_down_reason(),
+            reason,
             failure if isinstance(failure, str) else None,
         )
         selection = coordinator.local_selection

@@ -2315,6 +2315,7 @@ class BoschBuderusDataUpdateCoordinator(
                     # with nothing due (O41/O45 leave more of them) does not.
                     self._refresh_outage.recovered()
                     self.cloud_hold.recovered()
+                    self.sign_in_rejected = False
                 if self._discovery_cycle_failed:
                     # A discovery that failed or met the brake returned the
                     # previous values: nothing is confirmed, searched or read
@@ -2337,6 +2338,8 @@ class BoschBuderusDataUpdateCoordinator(
                 return snapshots
         except Exception as err:
             self.startup_data.record_main_cycle(successful=False)
+            if isinstance(err, ConfigEntryAuthFailed):
+                self.sign_in_rejected = True
             if isinstance(err, IdleAfterFailure):
                 # B03: the earlier failure goes on; this cycle sent nothing,
                 # so it is no further failure and no answer either.
@@ -2583,6 +2586,10 @@ class BoschBuderusDataUpdateCoordinator(
         self._update_success = value
 
     _unreachable_since: float | None = None
+
+    # The last cycle ended with a rejected sign-in (cleared by an answered one);
+    # for the "gateway reachable" sensor, which then says unknown, not off.
+    sign_in_rejected: bool = False
 
     def cloud_holding(self) -> bool:
         """Whether entities show their last values over a failed refresh.
