@@ -115,7 +115,7 @@ The child lock of a zone, `/zones/zone<N>/childLock`, is a text with the two
 values `active` and `inactive`. Its reading shows these as **Active** and
 **Inactive** in every shipped language (it showed the raw text before). The
 manufacturer's app offers the lock as a switch, so I added one: **Child
-lock**, a configuration entity that is created **disabled**. It exists only
+lock**, a configuration entity that is created **enabled**. It exists only
 when the controller reports the path as writable, advertises exactly the
 two values `active` and `inactive` and reads one of them; without that path
 nothing is created. Turning it on or off follows the write contract of the
@@ -303,7 +303,7 @@ Werte `active` und `inactive`; die Lesung zeigt sie in allen
 ausgelieferten Sprachen als „Aktiv“ und „Inaktiv“ (vorher stand der Rohtext
 da). Die Hersteller-App bietet die Sperre als Schalter an, deshalb gibt es
 seit 0.9.3 den Schalter „Kindersicherung“ (Konfiguration, **standardmäßig
-deaktiviert**). Er entsteht nur, wenn der Regler den Pfad schreibbar meldet,
+aktiviert**). Er entsteht nur, wenn der Regler den Pfad schreibbar meldet,
 genau die beiden Werte `active` und `inactive` anbietet und einen davon liest;
 ohne diesen Pfad entsteht nichts. Das Schalten folgt dem Schreibvertrag der
 anderen Bedienelemente (frisch lesen, genau ein PUT, Rücklesen, keine

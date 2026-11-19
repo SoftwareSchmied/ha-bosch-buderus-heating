@@ -56,14 +56,14 @@ def _entity(hass, coordinator, path=LOCK) -> BoschBuderusSwitch:
     return entity
 
 
-def test_the_switch_exists_for_a_writable_two_value_path_and_starts_disabled():
+def test_the_switch_exists_for_a_writable_two_value_path_and_starts_enabled():
     description = _switches(_resources(_lock(), _lock(OTHER, "active")))[LOCK]
     assert description.write_policy is zone_child_lock.CHILD_LOCK_POLICY
     assert (description.on_value, description.off_value) == ("active", "inactive")
     assert description.translation_key == "zone_child_lock"
     assert description.entity_category is EntityCategory.CONFIG
-    # A new write control stays disabled until the user enables it.
-    assert description.entity_registry_enabled_default is False
+    # The child lock is an everyday control, so it is enabled from the start.
+    assert description.entity_registry_enabled_default is True
 
 
 def test_without_the_path_nothing_is_created():

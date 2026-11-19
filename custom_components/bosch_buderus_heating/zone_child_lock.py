@@ -28,7 +28,7 @@ CHILD_LOCK_POLICY: Final = EnumWritePolicy(
     current_required=True,
     on_value=ACTIVE,
     off_value=INACTIVE,
-    enabled_by_default=False,
+    enabled_by_default=True,
 )
 
 ENUM_POLICIES: Final = (CHILD_LOCK_POLICY,)
