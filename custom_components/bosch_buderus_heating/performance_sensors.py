@@ -30,6 +30,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .cop_start import StartPhase
 from .device import device_info_for_resource, grouped_entity_name
+from .held_readings import cloud_usable
 from .i18n import localize
 from .performance import (
     COLLECTIONS,
@@ -105,6 +106,11 @@ class _LiveSensor(CoordinatorEntity["BoschBuderusDataUpdateCoordinator"], Sensor
         self._attr_unique_id = f"{coordinator.gateway.gateway_id}:{_key(path)}:{key}"
         self._attr_name = grouped_entity_name(coordinator, path, name)
         self._result = LiveResult(None)
+
+    @property
+    def available(self) -> bool:
+        # H-B3-2: over a short cloud blip the value stays shown.
+        return cloud_usable(self.coordinator)
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -334,6 +340,11 @@ class PerformanceFactorSensor(
         )
         self._attr_entity_registry_enabled_default = (period, mode) in ENABLED_FACTORS
         self._result: PeriodResult | None = None
+
+    @property
+    def available(self) -> bool:
+        # H-B3-2: over a short cloud blip the value stays shown.
+        return cloud_usable(self.coordinator)
 
     @property
     def device_info(self) -> DeviceInfo:

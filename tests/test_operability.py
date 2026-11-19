@@ -96,7 +96,14 @@ async def test_cloud_outage_disables_controls_and_says_why(hass: HomeAssistant) 
     assert coordinator.control_status() == ("cloud_unreachable", None)
     assert entity.available and not entity.is_on
     assert entity.extra_state_attributes["reason"] == "cloud_unreachable"
-    # 2A: the water heater is not shown as operable, the reading stays on sensors.
+    # H-B3-2: a short blip keeps the water heater shown (no change is possible:
+    # the control above names the reason); the reading stays on sensors.
+    assert heater.available
+    assert coordinator.display_snapshot(ACTUAL).resource.value == 49.5
+    # 2A: after the grace (three failed refreshes) the water heater is not
+    # shown as operable.
+    for _ in range(3):
+        await cycle(coordinator)
     assert not heater.available
     assert coordinator.display_snapshot(ACTUAL).resource.value == 49.5
 

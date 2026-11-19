@@ -40,6 +40,7 @@ from .coordinator import (
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
 from .hc_controls_extra import COOLING_MODE_POLICY, COOLING_MODES
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
 from .icon_translations import TRANSLATED_SELECT_ICONS
 from .platform_scope import PlatformScope, setup_platform
@@ -304,7 +305,7 @@ class BoschBuderusSelect(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -377,7 +378,8 @@ class BoschBuderusSelect(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)
 
 
 BoschBuderusOperationModeSelect = BoschBuderusSelect

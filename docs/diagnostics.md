@@ -626,6 +626,15 @@ starting requests after 50 seconds); `request_metrics.slot_wait` reports how lon
 requests waited for one of the three shared request slots. See
 [capacity with several systems](request-behavior.md#capacity-with-several-systems).
 
+Without a new schema number, each gateway `runtime` adds `cloud_hold` (the
+limits of the display hold over a short cloud blip, whether values are held now,
+the failed refreshes in a row, and how many holds started and expired) and
+`last_failed_refresh` (when the last refresh with failures ran, whether the
+whole refresh failed and its category, and for each failed reading, at most ten,
+the path template, HTTP status, category and count; no identifiers, no
+values). The report stays until a later refresh fails again. See
+[a short cloud blip](reading-validity.md#a-short-cloud-blip).
+
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or
 identifiers are included. See [air conditioners](bacon-air-conditioners.md).
