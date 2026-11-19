@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Yhdyskäytävä tavoitettavissa",
+        "state_attributes": {
+          "cloud": {
+            "name": "Pilviyhteys",
+            "state": {
+              "reachable": "Tavoitettavissa",
+              "not_answering": "Ei vastaa",
+              "sign_in_unavailable": "Kirjautumispalvelu ei vastaa",
+              "sign_in_required": "Kirjautuminen vaaditaan",
+              "paused": "Tauolla",
+              "not_in_use": "Ei käytössä"
+            }
+          },
+          "local": {
+            "name": "Paikallinen yhteys",
+            "state": {
+              "ready": "Valmis",
+              "not_ready": "Ei valmis",
+              "paused": "Tauolla",
+              "starting": "Käynnistyy",
+              "sign_in_required": "Kirjautuminen vaaditaan",
+              "certificate_changed": "Varmenne on muuttunut",
+              "not_in_use": "Ei käytössä"
+            }
+          },
+          "cloud_failure": {
+            "name": "Viimeisin pilvivirhe",
+            "state": {
+              "timeout": "Aikakatkaisu",
+              "service_unavailable": "Palvelu ei ole käytettävissä",
+              "request_failed": "Pyyntö epäonnistui",
+              "sign_in_unavailable": "Kirjautumispalvelu ei vastaa",
+              "unknown": "Tuntematon"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Järjestelmävika"
       },

@@ -34,6 +34,7 @@ from .local_credentials import (
     StoredLocalAccess,
     load_local_access,
 )
+from .local_pause_stats import PauseCounter
 from .local_polling.inventory import Freshness
 from .local_polling.policy import PollClass, category, validate_interval
 from .local_polling.service import LocalPollingService, PollSnapshot
@@ -196,6 +197,8 @@ class LocalSource:
         # O93: the most recent condition changes, with time and fixed reason.
         self._changes: deque[dict[str, object]] = deque(maxlen=CONDITION_CHANGES)
         self._condition: LocalCondition | None = None
+        # NX-03: every pause that began, beside the short list above.
+        self._pauses = PauseCounter()
         # Since when the access is paused or unavailable (monotonic seconds).
         self._down_since: float | None = None
         # G3: stops the running service hearing of enabled or disabled entities.
@@ -423,6 +426,7 @@ class LocalSource:
             else {},
             # O93: bounded history and counts, fixed codes only.
             "condition_changes": list(self._changes),
+            **self._pauses.diagnostics(),
             **health,
             # G4/O56: kept connections, handshakes, fallback and overlap.
             "connection_reuse": reuse() if callable(reuse) else None,
@@ -467,13 +471,16 @@ class LocalSource:
         if condition is self._condition:
             return
         self._condition = condition
+        changed_at = dt_util.utcnow()
         self._changes.append(
             {
-                "at": dt_util.utcnow().isoformat(timespec="seconds"),
+                "at": changed_at.isoformat(timespec="seconds"),
                 "condition": condition.value,
                 "reason": reason,
             }
         )
+        if condition is LocalCondition.PAUSED:
+            self._pauses.record(changed_at, reason)
         now = monotonic()
         if condition in _DOWN:
             if self._down_since is None:

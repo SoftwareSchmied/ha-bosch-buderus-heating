@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Η πύλη είναι προσβάσιμη",
+        "state_attributes": {
+          "cloud": {
+            "name": "Πρόσβαση cloud",
+            "state": {
+              "reachable": "Προσβάσιμο",
+              "not_answering": "Δεν ανταποκρίνεται",
+              "sign_in_unavailable": "Η υπηρεσία εισόδου δεν ανταποκρίνεται",
+              "sign_in_required": "Απαιτείται είσοδος",
+              "paused": "Σε παύση",
+              "not_in_use": "Δεν χρησιμοποιείται"
+            }
+          },
+          "local": {
+            "name": "Τοπική πρόσβαση",
+            "state": {
+              "ready": "Έτοιμο",
+              "not_ready": "Δεν είναι έτοιμο",
+              "paused": "Σε παύση",
+              "starting": "Εκκίνηση",
+              "sign_in_required": "Απαιτείται είσοδος",
+              "certificate_changed": "Το πιστοποιητικό άλλαξε",
+              "not_in_use": "Δεν χρησιμοποιείται"
+            }
+          },
+          "cloud_failure": {
+            "name": "Τελευταίο σφάλμα cloud",
+            "state": {
+              "timeout": "Λήξη χρονικού ορίου",
+              "service_unavailable": "Η υπηρεσία δεν είναι διαθέσιμη",
+              "request_failed": "Το αίτημα απέτυχε",
+              "sign_in_unavailable": "Η υπηρεσία εισόδου δεν ανταποκρίνεται",
+              "unknown": "Άγνωστο"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Βλάβη συστήματος"
       },

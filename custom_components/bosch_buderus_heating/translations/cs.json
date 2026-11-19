@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Brána dosažitelná",
+        "state_attributes": {
+          "cloud": {
+            "name": "Cloudový přístup",
+            "state": {
+              "reachable": "Dosažitelný",
+              "not_answering": "Neodpovídá",
+              "sign_in_unavailable": "Přihlašovací služba neodpovídá",
+              "sign_in_required": "Vyžadováno přihlášení",
+              "paused": "Pozastaveno",
+              "not_in_use": "Nepoužívá se"
+            }
+          },
+          "local": {
+            "name": "Místní přístup",
+            "state": {
+              "ready": "Připraven",
+              "not_ready": "Není připraven",
+              "paused": "Pozastaveno",
+              "starting": "Spouští se",
+              "sign_in_required": "Vyžadováno přihlášení",
+              "certificate_changed": "Certifikát se změnil",
+              "not_in_use": "Nepoužívá se"
+            }
+          },
+          "cloud_failure": {
+            "name": "Poslední chyba cloudu",
+            "state": {
+              "timeout": "Vypršel časový limit",
+              "service_unavailable": "Služba není dostupná",
+              "request_failed": "Požadavek selhal",
+              "sign_in_unavailable": "Přihlašovací služba neodpovídá",
+              "unknown": "Neznámé"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Porucha soustavy"
       },

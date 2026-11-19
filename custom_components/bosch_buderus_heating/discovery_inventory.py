@@ -649,6 +649,7 @@ _TRANSIENT = frozenset(
     {
         "timeout",
         "service_unavailable",
+        "sign_in_unavailable",
         "transport_error",
         "malformed",
         "unavailable",

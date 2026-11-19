@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Prehod dosegljiv",
+        "state_attributes": {
+          "cloud": {
+            "name": "Dostop prek oblaka",
+            "state": {
+              "reachable": "Dosegljiv",
+              "not_answering": "Ne odgovarja",
+              "sign_in_unavailable": "Storitev za prijavo ne odgovarja",
+              "sign_in_required": "Zahtevana prijava",
+              "paused": "V premoru",
+              "not_in_use": "Ni v uporabi"
+            }
+          },
+          "local": {
+            "name": "Lokalni dostop",
+            "state": {
+              "ready": "Pripravljen",
+              "not_ready": "Ni pripravljen",
+              "paused": "V premoru",
+              "starting": "Zaganja se",
+              "sign_in_required": "Zahtevana prijava",
+              "certificate_changed": "Certifikat je spremenjen",
+              "not_in_use": "Ni v uporabi"
+            }
+          },
+          "cloud_failure": {
+            "name": "Zadnja napaka oblaka",
+            "state": {
+              "timeout": "Časovna omejitev je potekla",
+              "service_unavailable": "Storitev ni na voljo",
+              "request_failed": "Zahteva ni uspela",
+              "sign_in_unavailable": "Storitev za prijavo ne odgovarja",
+              "unknown": "Neznano"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Napaka sistema"
       },

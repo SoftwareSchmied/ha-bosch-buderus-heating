@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway bereikbaar",
+        "state_attributes": {
+          "cloud": {
+            "name": "Cloudtoegang",
+            "state": {
+              "reachable": "Bereikbaar",
+              "not_answering": "Reageert niet",
+              "sign_in_unavailable": "De aanmeldservice reageert niet",
+              "sign_in_required": "Aanmelding vereist",
+              "paused": "Gepauzeerd",
+              "not_in_use": "Niet in gebruik"
+            }
+          },
+          "local": {
+            "name": "Lokale toegang",
+            "state": {
+              "ready": "Gereed",
+              "not_ready": "Niet gereed",
+              "paused": "Gepauzeerd",
+              "starting": "Wordt gestart",
+              "sign_in_required": "Aanmelding vereist",
+              "certificate_changed": "Certificaat gewijzigd",
+              "not_in_use": "Niet in gebruik"
+            }
+          },
+          "cloud_failure": {
+            "name": "Laatste cloudfout",
+            "state": {
+              "timeout": "Time-out",
+              "service_unavailable": "Service niet beschikbaar",
+              "request_failed": "Verzoek mislukt",
+              "sign_in_unavailable": "De aanmeldservice reageert niet",
+              "unknown": "Onbekend"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Installatiestoring"
       },

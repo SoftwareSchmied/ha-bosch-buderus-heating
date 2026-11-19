@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Pristupnik dostupan",
+        "state_attributes": {
+          "cloud": {
+            "name": "Pristup putem oblaka",
+            "state": {
+              "reachable": "Dostupan",
+              "not_answering": "Ne odgovara",
+              "sign_in_unavailable": "Usluga prijave ne odgovara",
+              "sign_in_required": "Potrebna prijava",
+              "paused": "Pauzirano",
+              "not_in_use": "Ne koristi se"
+            }
+          },
+          "local": {
+            "name": "Lokalni pristup",
+            "state": {
+              "ready": "Spreman",
+              "not_ready": "Nije spreman",
+              "paused": "Pauzirano",
+              "starting": "Pokreće se",
+              "sign_in_required": "Potrebna prijava",
+              "certificate_changed": "Certifikat je promijenjen",
+              "not_in_use": "Ne koristi se"
+            }
+          },
+          "cloud_failure": {
+            "name": "Posljednja pogreška oblaka",
+            "state": {
+              "timeout": "Isteklo vrijeme čekanja",
+              "service_unavailable": "Usluga nije dostupna",
+              "request_failed": "Zahtjev nije uspio",
+              "sign_in_unavailable": "Usluga prijave ne odgovara",
+              "unknown": "Nepoznato"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Smetnja sustava"
       },

@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Шлюзът е достъпен",
+        "state_attributes": {
+          "cloud": {
+            "name": "Облачен достъп",
+            "state": {
+              "reachable": "Достъпен",
+              "not_answering": "Не отговаря",
+              "sign_in_unavailable": "Услугата за вход не отговаря",
+              "sign_in_required": "Необходим е вход",
+              "paused": "На пауза",
+              "not_in_use": "Не се използва"
+            }
+          },
+          "local": {
+            "name": "Локален достъп",
+            "state": {
+              "ready": "Готов",
+              "not_ready": "Не е готов",
+              "paused": "На пауза",
+              "starting": "Стартира",
+              "sign_in_required": "Необходим е вход",
+              "certificate_changed": "Сертификатът е променен",
+              "not_in_use": "Не се използва"
+            }
+          },
+          "cloud_failure": {
+            "name": "Последна грешка в облака",
+            "state": {
+              "timeout": "Изтекло време",
+              "service_unavailable": "Услугата не е налична",
+              "request_failed": "Заявката е неуспешна",
+              "sign_in_unavailable": "Услугата за вход не отговаря",
+              "unknown": "Неизвестно"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Повреда на системата"
       },

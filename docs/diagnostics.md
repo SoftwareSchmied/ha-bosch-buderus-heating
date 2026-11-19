@@ -633,7 +633,27 @@ the failed refreshes in a row, and how many holds started and expired) and
 whole refresh failed and its category, and for each failed reading, at most ten,
 the path template, HTTP status, category and count; no identifiers, no
 values). The report stays until a later refresh fails again. See
-[a short cloud blip](reading-validity.md#a-short-cloud-blip).
+[a short cloud blip](reading-validity.md#a-short-cloud-blip). A refresh that
+failed because the sign-in service did not answer has the category
+`sign_in_unavailable` (and the same category for each reading); it is no gateway
+failure, so it neither counts for the gateway protection pause nor starts the
+fallback request.
+
+Also without a new schema number (0.9.3):
+
+- each local access under `connections[].local[]` adds `pauses_total`,
+  `pauses_by_reason` (fixed reason codes, at most 12, the rest as `other`) and
+  `last_pause` (UTC time and reason). They count every pause that began since
+  the access started, beside the last 20 changes in `condition_changes`, so a
+  series of short pauses over hours stays visible. A change of the reason during
+  one pause is not counted again;
+- for a sign-in whose renewal was rejected after earlier failed attempts with
+  the same refresh token, the rejection event adds `failed_before_rejection`
+  (at most the last 5 attempts: `outcome`, `error_type`, `http_status` when
+  there was one and `duration_ms`) and `failed_before_rejection_total` (how many
+  failed attempts that token had in all). It shows at once whether the earlier
+  attempts timed out or got a server error. Only fixed codes and numbers are
+  kept, no token and no text of the service.
 
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or

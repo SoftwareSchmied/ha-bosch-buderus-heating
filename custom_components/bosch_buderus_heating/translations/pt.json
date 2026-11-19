@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway acessível",
+        "state_attributes": {
+          "cloud": {
+            "name": "Acesso à cloud",
+            "state": {
+              "reachable": "Acessível",
+              "not_answering": "Não responde",
+              "sign_in_unavailable": "O serviço de início de sessão não responde",
+              "sign_in_required": "Início de sessão necessário",
+              "paused": "Em pausa",
+              "not_in_use": "Não utilizado"
+            }
+          },
+          "local": {
+            "name": "Acesso local",
+            "state": {
+              "ready": "Pronto",
+              "not_ready": "Não está pronto",
+              "paused": "Em pausa",
+              "starting": "A iniciar",
+              "sign_in_required": "Início de sessão necessário",
+              "certificate_changed": "Certificado alterado",
+              "not_in_use": "Não utilizado"
+            }
+          },
+          "cloud_failure": {
+            "name": "Último erro da cloud",
+            "state": {
+              "timeout": "Tempo limite excedido",
+              "service_unavailable": "Serviço indisponível",
+              "request_failed": "Pedido falhado",
+              "sign_in_unavailable": "O serviço de início de sessão não responde",
+              "unknown": "Desconhecido"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Avaria da instalação"
       },

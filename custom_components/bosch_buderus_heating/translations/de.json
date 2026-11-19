@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway erreichbar",
+        "state_attributes": {
+          "cloud": {
+            "name": "Cloud-Zugang",
+            "state": {
+              "reachable": "Erreichbar",
+              "not_answering": "Antwortet nicht",
+              "sign_in_unavailable": "Anmeldedienst antwortet nicht",
+              "sign_in_required": "Anmeldung erforderlich",
+              "paused": "Pausiert",
+              "not_in_use": "Nicht in Benutzung"
+            }
+          },
+          "local": {
+            "name": "Lokaler Zugang",
+            "state": {
+              "ready": "Bereit",
+              "not_ready": "Nicht bereit",
+              "paused": "Pausiert",
+              "starting": "Startet",
+              "sign_in_required": "Anmeldung erforderlich",
+              "certificate_changed": "Zertifikat geändert",
+              "not_in_use": "Nicht in Benutzung"
+            }
+          },
+          "cloud_failure": {
+            "name": "Letzter Cloud-Fehler",
+            "state": {
+              "timeout": "Zeitüberschreitung",
+              "service_unavailable": "Dienst nicht verfügbar",
+              "request_failed": "Anfrage fehlgeschlagen",
+              "sign_in_unavailable": "Anmeldedienst antwortet nicht",
+              "unknown": "Unbekannt"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Anlagenstörung"
       },

@@ -264,6 +264,42 @@ much smaller. The total request sensor starts again at zero with each start
 of the integration; its `last_reset` is that start, so its statistics do not
 treat the new start as a drop.
 
+## Gateway reachable
+
+Each gateway has a diagnostic binary sensor **Gateway reachable** (device class
+connectivity, unique ID `<gateway>:gateway_reachable`), added in 0.9.3. It is
+enabled by default: it only shows a state, sends no request of its own and
+writes nothing, like the other status sensors that are enabled by default. Its
+purpose is an alert when a gateway hangs, without relying on other entities
+turning `unavailable`.
+
+| Access | On | Off | Unknown |
+|---|---|---|---|
+| Cloud | the last refresh got readings of the gateway | the cloud did not answer usably: a gateway or PointT error, a timeout, no answer, or the protection pause after repeated errors | the sign-in service did not answer, a new sign-in is required, a rate-limit pause, or the cloud access is stopped or not in use |
+| Local | the local access is ready | it is paused or unavailable | it is starting, needs a new token or must confirm a changed certificate, or there is no local access |
+
+With both accesses the sensor is on when either one answers, otherwise off when
+either one does not answer, otherwise unknown. The attributes `cloud` and
+`local` show the state of each access (`reachable`, `not_answering`,
+`sign_in_unavailable`, `sign_in_required`, `paused`, `not_in_use`; `ready`,
+`not_ready`, `starting`, `certificate_changed`), and `cloud_failure` the category of
+the last failed cloud refresh while the cloud does not answer. The sensor never
+turns `unavailable` itself.
+
+It shows the strict state of the last cycle. Other entities keep their last
+values over a failed refresh for a few minutes (see
+[a short cloud blip](reading-validity.md#a-short-cloud-blip)); this sensor turns
+off at once, so an automation should wait, for example with `for: "00:10:00"`.
+A sign-in service that does not answer leaves it on unknown, not off, because it
+says nothing about the gateway.
+
+What the cloud reports for a gateway that does not answer: the readings of the
+gateway come back as server errors (for example HTTP 504 for each reading of a
+request) or the request times out; the sensor goes off from these. There is no evidence so far
+that the cloud keeps answering with old values for a gateway that hangs, so this
+case is not detected; if it happens, send the diagnostics file before restarting
+the gateway.
+
 ## Faults and notifications
 
 Fault entities are created once per gateway and become available when at least

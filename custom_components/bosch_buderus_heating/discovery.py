@@ -41,6 +41,7 @@ from .pointt import (
     Resource,
     ResourceError,
     ServiceUnavailable,
+    SignInUnavailable,
     TransportError,
     UnexpectedHttpStatus,
 )
@@ -1416,6 +1417,8 @@ def _error_category(error: PointTError) -> str:
         return "rate_limited"
     if isinstance(error, RequestTimeout):
         return "timeout"
+    if isinstance(error, SignInUnavailable):
+        return "sign_in_unavailable"
     if isinstance(error, ServiceUnavailable):
         return "service_unavailable"
     if isinstance(error, TransportError):

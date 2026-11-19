@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Gateway nåbar",
+        "state_attributes": {
+          "cloud": {
+            "name": "Molnåtkomst",
+            "state": {
+              "reachable": "Nåbar",
+              "not_answering": "Svarar inte",
+              "sign_in_unavailable": "Inloggningstjänsten svarar inte",
+              "sign_in_required": "Inloggning krävs",
+              "paused": "Pausad",
+              "not_in_use": "Används inte"
+            }
+          },
+          "local": {
+            "name": "Lokal åtkomst",
+            "state": {
+              "ready": "Redo",
+              "not_ready": "Inte redo",
+              "paused": "Pausad",
+              "starting": "Startar",
+              "sign_in_required": "Inloggning krävs",
+              "certificate_changed": "Certifikatet har ändrats",
+              "not_in_use": "Används inte"
+            }
+          },
+          "cloud_failure": {
+            "name": "Senaste molnfel",
+            "state": {
+              "timeout": "Tidsgräns överskriden",
+              "service_unavailable": "Tjänsten är inte tillgänglig",
+              "request_failed": "Begäran misslyckades",
+              "sign_in_unavailable": "Inloggningstjänsten svarar inte",
+              "unknown": "Okänd"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Systemfel"
       },

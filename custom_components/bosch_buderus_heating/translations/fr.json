@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Passerelle accessible",
+        "state_attributes": {
+          "cloud": {
+            "name": "Accès cloud",
+            "state": {
+              "reachable": "Accessible",
+              "not_answering": "Ne répond pas",
+              "sign_in_unavailable": "Le service de connexion ne répond pas",
+              "sign_in_required": "Connexion au compte requise",
+              "paused": "En pause",
+              "not_in_use": "Non utilisé"
+            }
+          },
+          "local": {
+            "name": "Accès local",
+            "state": {
+              "ready": "Prêt",
+              "not_ready": "Pas prêt",
+              "paused": "En pause",
+              "starting": "Démarrage",
+              "sign_in_required": "Connexion au compte requise",
+              "certificate_changed": "Certificat modifié",
+              "not_in_use": "Non utilisé"
+            }
+          },
+          "cloud_failure": {
+            "name": "Dernière erreur du cloud",
+            "state": {
+              "timeout": "Délai dépassé",
+              "service_unavailable": "Service indisponible",
+              "request_failed": "Requête échouée",
+              "sign_in_unavailable": "Le service de connexion ne répond pas",
+              "unknown": "Inconnu"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Défaut de l'installation"
       },

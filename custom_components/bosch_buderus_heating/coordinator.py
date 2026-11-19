@@ -97,6 +97,7 @@ from .pointt import (
     Resource,
     ResourceError,
     ResourceOmitted,
+    SignInUnavailable,
     WriteNotConfirmed,
     WriteRejected,
     WriteValidationError,
@@ -227,6 +228,8 @@ CYCLE_HISTORY_ENTRIES = 256
 CLOCK_SKEW_TOLERANCE = timedelta(seconds=60)
 VALIDITY_TIMER_MARGIN = timedelta(seconds=1)
 EXPIRED_CATEGORY = "expired"
+# NX-04: the sign-in service did not answer; neither a gateway nor a PointT fault.
+SIGN_IN_UNAVAILABLE = "sign_in_unavailable"
 SOURCE_STOPPED_CATEGORY = "source_stopped"
 # A counter whose only valid source would count backwards is not shown.
 COUNTER_HELD_CATEGORY = "counter_held"
@@ -657,6 +660,8 @@ class BoschBuderusDataUpdateCoordinator(
         self._circuit_outage_since: float | None = None
         # O81: the failed batch request was reported once in this outage.
         self._batch_failure_logged = False
+        # NX-04: the same for a sign-in service that did not answer.
+        self._sign_in_failure_logged = False
         # Readings that came back with server errors in an answered batch
         # request; reported once, the outage ends when they answered again.
         self._bulk_server_error_paths: set[str] = set()
@@ -2530,6 +2535,13 @@ class BoschBuderusDataUpdateCoordinator(
             return "not_current", None
         return None, None
 
+    def cloud_down_reason(self) -> str | None:
+        """Why the cloud cannot be used now (a fixed code), None when it can.
+
+        The strict state of the last cycle, without the display hold.
+        """
+        return self._cloud_down()[0]
+
     def cloud_unavailable(self) -> bool:
         """Without a cloud now: sign-in required, switched off or stopped,
         paused, limited or unreachable.
@@ -3312,8 +3324,15 @@ class BoschBuderusDataUpdateCoordinator(
                     whole_request=not isinstance(err, SourceStopped),
                 )
                 failed_chunks += 1
-                gateway_failure = True
                 failure_category = _pointt_result(err)
+                if isinstance(err, SignInUnavailable):
+                    # NX-04: the sign-in service did not answer, not the
+                    # gateway. No fallback (it needs the same sign-in) and no
+                    # count for the gateway breaker; the token manager keeps
+                    # the wait before the next sign-in attempt.
+                    self._log_sign_in_failure(err)
+                    break
+                gateway_failure = True
                 results = await self._async_core_fallback(chunk)
                 self._log_batch_failure(
                     failure_category,
@@ -3427,6 +3446,7 @@ class BoschBuderusDataUpdateCoordinator(
             # the outage; a later failure then warns again. A batch that keeps
             # failing beside working ones stays one outage.
             self._batch_failure_logged = False
+            self._sign_in_failure_logged = False
         for path in () if over_budget else self._deferred_poll_paths:
             # Readings skipped only for the cycle budget keep their values.
             if (previous := snapshots.get(path)) is not None:
@@ -4806,6 +4826,22 @@ class BoschBuderusDataUpdateCoordinator(
                     pause,
                 )
 
+    def _log_sign_in_failure(self, err: SignInUnavailable) -> None:
+        """NX-04: warn once per outage that the sign-in service did not answer."""
+        if self._sign_in_failure_logged:
+            _LOGGER.debug(
+                "PointT refresh failed again: the sign-in service did not answer"
+            )
+            return
+        self._sign_in_failure_logged = True
+        wait = err.retry_after
+        _LOGGER.warning(
+            "PointT refresh failed: the sign-in service did not answer%s. The "
+            "gateway is not affected by this; the next sign-in attempt follows "
+            "by itself. Further failures of this outage are logged at debug level",
+            f" (next attempt in about {wait:.0f} seconds)" if wait else "",
+        )
+
     def _log_batch_failure(self, category: str, *, fallback_usable: bool) -> None:
         """O81: warn once per outage; a working fallback is only a debug note."""
         if fallback_usable:
@@ -5001,6 +5037,8 @@ def _pointt_result(error: PointTError | None) -> str:
     if error is None:
         return "unknown"
     name = error.__class__.__name__.lower()
+    if isinstance(error, SignInUnavailable):
+        return SIGN_IN_UNAVAILABLE
     if "timeout" in name:
         return "timeout"
     if "authentication" in name or "token" in name:

@@ -3579,6 +3579,44 @@
           }
         }
       },
+      "gateway_reachable": {
+        "name": "Geata inrochtana",
+        "state_attributes": {
+          "cloud": {
+            "name": "Rochtain néil",
+            "state": {
+              "reachable": "Inrochtana",
+              "not_answering": "Gan freagra",
+              "sign_in_unavailable": "Níl an tseirbhís síniú isteach ag freagairt",
+              "sign_in_required": "Síniú isteach ag teastáil",
+              "paused": "Ar sos",
+              "not_in_use": "Gan úsáid"
+            }
+          },
+          "local": {
+            "name": "Rochtain áitiúil",
+            "state": {
+              "ready": "Réidh",
+              "not_ready": "Níl sé réidh",
+              "paused": "Ar sos",
+              "starting": "Ag tosú",
+              "sign_in_required": "Síniú isteach ag teastáil",
+              "certificate_changed": "Athraíodh an teastas",
+              "not_in_use": "Gan úsáid"
+            }
+          },
+          "cloud_failure": {
+            "name": "Earráid dheireanach an néil",
+            "state": {
+              "timeout": "Teorainn ama sáraithe",
+              "service_unavailable": "Níl an tseirbhís ar fáil",
+              "request_failed": "Theip ar an iarratas",
+              "sign_in_unavailable": "Níl an tseirbhís síniú isteach ag freagairt",
+              "unknown": "Anaithnid"
+            }
+          }
+        }
+      },
       "system_fault": {
         "name": "Locht an chórais"
       },
