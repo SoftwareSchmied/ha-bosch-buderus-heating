@@ -59,13 +59,14 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 
 ## Supported systems
 
-| System | Cloud | Local | Both |
-|---|:---:|:---:|:---:|
-| K40/K40RF gateways (for example MX400 internet module, K40 RF Connect-Key) on heat pumps and boilers | ✓ | read only | ✓ |
-| K30/K30RF gateways (for example MX300 internet module, K30 RF Connect-Key) | ✓ | – | – |
-| iCom gateways (for example KM200, KM100, KM50, MB LAN 2) | ✓ | – | – |
-| RRC 2.0 room controllers (TC100.2; CT200 expected) | ✓ | – | – |
-| Other device families: water heaters, air conditioners, air purifiers, dehumidifiers, WE800i water softener, wallboxes (readings; controls disabled by default) | expected | – | – |
+| System | Cloud | Local (home network) |
+|---|:---:|:---:|
+| K40/K40RF gateways (MX400 internet module, K40 RF Connect-Key) on heat pumps and boilers | ✓ | ✓ readings, firmware 15.00.01 or newer; alone or together with the cloud |
+| K30/K30RF gateways (MX300 internet module, K30 RF Connect-Key) | ✓ | – |
+| iCom gateways (KM200, KM100, KM50, IP inside, MB LAN 2/LANi, IVT/Bosch IP module) | ✓ when connected to the Bosch or Buderus app | planned for a coming beta |
+| RRC 2.0 room controllers (TC100.2, CT200) | ✓ | – |
+| Wallboxes | ✓ | – |
+| Air conditioners, dehumidifiers, water heaters, air purifiers, WE800i water softener | ✓ (controls disabled by default, can be enabled) | – |
 
 Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
 

@@ -10,7 +10,72 @@ Versioning after its first tagged preview.
 - **Wallbox: Total charged energy.** A new sensor from the wallbox's own
   lifetime counter (`telemetry.energyTotal`, kWh, *total increasing*), so the
   wallbox can be added to the Energy dashboard. On a Power Charge 7000i S it
-  matched the total in the wallbox app.
+  matched the total in the wallbox app. After reviewing the contribution of
+  n42net in [#141](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/pull/141)
+  I tightened the counter: a value of exactly 0 shows as unknown, because Home
+  Assistant would add a counter that falls to 0 and comes back as a jump of
+  its whole value, and a value above one billion kWh or too large to convert
+  also shows as unknown instead of disturbing the other wallbox readings. Only
+  **Total charged energy** is meant for the Energy dashboard; this is stated
+  in the documentation (English and German). Checked with automated tests
+  only; the counter is confirmed on one wallbox model, and how it behaves
+  after a software update or device replacement is not known. Thank you to
+  n42net for the pull request and for the measurements showing that the
+  counter matches the wallbox app.
+- **Diagnostics:** `cloud_hold` and `last_failed_refresh` show when the last
+  refresh with errors ran, its category and, per failed value, the path
+  template, HTTP status and count (at most ten entries, no identifiers or
+  values). This helps to trace a short, otherwise unexplained outage.
+
+### Changed
+
+- **Short cloud blips:** a brief cloud error (slow or unreachable sign-in,
+  gateway timeout, server error) no longer sets the control entities
+  (numbers, selects, switches, program names), the water heater entity, the
+  current COP, the primary circuit spread and the calculated COP values to
+  `unavailable` for about a minute. They keep their last values while at most
+  three refreshes in a row failed and the outage lasts less than five
+  minutes; after that they are `unavailable` as before. Changes are never
+  sent from held values: a change still needs a successful, current cloud
+  read and reads the setting from the gateway again right before writing.
+  Tested with simulated time and replayed outages, not yet observed on a real
+  plant over a longer period. Controls of the room controller, zones, air
+  conditioners and the wallbox are unchanged.
+- **Token renewal:** the access token is renewed ten minutes before it ends
+  (before: two minutes). If the renewal times out or is slow, requests
+  continue with the still valid token and the next attempt follows after the
+  usual wait. The 90 second limit of the token request, the rotation of the
+  refresh token and the rule that a token is presented only once per attempt
+  are unchanged. Tested with an artificially slow and failing sign-in service,
+  not against a real SingleKey server.
+- **Current COP (calculated):** it stays unknown for the first five minutes
+  after the compressor starts (`reason: starting`). During start-up the heat
+  output rises more slowly than the electrical power, which gave peaks up to
+  13.8 and occasionally a 0 that distort the long-term statistics. At the end
+  of a run, when the compressor still draws power but no heat flows, it no
+  longer shows 0 (`reason: no_heat_output`). If the compressor is already
+  running when Home Assistant starts, the value appears immediately. Tested
+  with test data; the five minutes are based on observations on one real
+  plant, other plants may start up differently.
+- **Period performance factors:** the calculated factors for month, year,
+  yesterday and so on are unknown after a Home Assistant restart
+  (`reason: history_loading`) until the system recording and the counter
+  statistics have been read once (about two minutes). Before, month and year
+  briefly showed the day value. "Today" and "since commissioning" do not wait.
+- **Calculated energies for month and year** name the first day of the
+  counter statistics in Home Assistant in the attribute `counter_history_start`
+  when it lies after the start of the period. Values marked "(system
+  recording)" can start earlier and therefore be higher; the documentation
+  explains the difference. The two sources are not mixed silently. Tested
+  with test data.
+
+### Documentation
+
+- The recordings page names the number of local reads per hour with all
+  recording entities enabled (about 21), and the page of confirmed
+  installations lists an MX400 system with eight wireless room zones.
+- The README table of supported systems now separates cloud and local access
+  and lists wallboxes and the other device families.
 
 ## [0.9.2-beta.3] - 2026-11-18
 
