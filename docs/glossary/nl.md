@@ -1,6 +1,6 @@
 # Glossary: Dutch (nl)
 
-Draft, awaiting review by a native speaker. The Dutch texts in
+Corrections are welcome. The Dutch texts in
 `translations/nl.json` and `i18n/nl.json` use these terms consistently.
 
 Style: sentence case; the user is addressed with "je/jouw", as Home Assistant

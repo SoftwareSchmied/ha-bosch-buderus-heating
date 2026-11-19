@@ -15,6 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import EntityPlatform
 
+from .aircon import AirconCoordinator
 from .bacon.models import device_key
 from .configuration import ConfigurationError
 from .configuration_migration import legacy_cloud_connection_id
@@ -202,6 +203,9 @@ class _Platform:
                     )
             elif isinstance(value, WallboxCoordinator):
                 scope.wallboxes = (value,)
+                prefix = value.gateway.gateway_id + ":"
+            elif isinstance(value, AirconCoordinator):
+                scope.aircons = (value,)
                 prefix = value.gateway.gateway_id + ":"
             elif isinstance(value, BaconDeviceAccess):
                 if value.client.subject is None:

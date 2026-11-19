@@ -28,26 +28,22 @@ from .control import HeldCapabilities
 from .device import device_info_for_resource, grouped_entity_name
 from .i18n import localize
 from .local_only import (
-    BELOW_MEASURING_RANGE,
     CONCENTRATION,
-    ENERGY_MANAGER_STATUS_PATH,
     ENUM_KINDS,
     FLAG,
     FLOW,
     GENERIC,
     HUMIDITY,
     MAX_STATES,
-    MEASURING_RANGE,
     PERCENT,
     POWER,
     ROTATION,
     TEMPERATURE,
     LocalOnlyDefinition,
     below_measuring_range,
+    below_range_attributes,
     definition_for,
     diagnostic,
-    energy_manager_not_connected,
-    energy_manager_setpoint,
     entity_name,
     native_value,
     state_class,
@@ -55,6 +51,7 @@ from .local_only import (
     static_unit,
     unit_and_class,
 )
+from .local_only_pair import fixed_definition, paired_reading, reviewed_definition
 from .observations import ValueStatus
 
 if TYPE_CHECKING:
@@ -164,12 +161,23 @@ class BoschBuderusLocalOnlySensor(
         return self._path
 
     def _reading(self) -> Observation | None:
+        return self._sourced_reading()[0]
+
+    def _sourced_reading(self) -> tuple[Observation | None, str | None]:
+        """The shown reading and where it came from (``local``/``cloud``)."""
         if (plant := _plant_view(self.coordinator)) is not None:
             # P49b: the local plant view also offers documented readings
             # without a reviewed entry.
-            return plant.local_only_reading(self._path)
+            reading = plant.local_only_reading(self._path)
+            return reading, "local" if reading is not None else None
         selection = self.coordinator.local_selection
-        return selection.local_only_reading(self._path) if selection else None
+        local = selection.local_only_reading(self._path) if selection else None
+        if self._path in self.coordinator.resources:
+            # The cloud offers this reading as well: its second source; the
+            # entity stays (only reviewed readings get here, see
+            # ``keeps_local_entity``).
+            return paired_reading(self.coordinator, self._path, local)
+        return local, "local" if local is not None else None
 
     @property
     def options(self) -> list[str] | None:
@@ -190,17 +198,15 @@ class BoschBuderusLocalOnlySensor(
         self,
     ) -> tuple[int | float | str | None, str | None, SensorDeviceClass | None] | None:
         """Value, unit and device class of the current reading; None without one."""
-        if self._path in self.coordinator.resources:
-            return None  # the cloud now offers it: that entity takes over
         reading = self._reading()
         if reading is None:
             return None
         definition = self._definition
         if definition.kind in ENUM_KINDS:
             return native_value(definition, reading), None, SensorDeviceClass.ENUM
+        # The value as reported, 0 included: the used setpoints of an energy
+        # manager also show 0 while none is connected (0.9.2).
         value = native_value(definition, reading)
-        if value is not None and self._energy_manager_placeholder():
-            value = None  # #76: no energy manager, so no setpoint of it
         if reading.status is ValueStatus.UNKNOWN_UNIT:
             return value, None, None  # C7: the number, without an unknown unit
         mapped = unit_and_class(definition, reading.unit)
@@ -208,24 +214,6 @@ class BoschBuderusLocalOnlySensor(
             return None, None, None  # another quantity: never shown
         unit, device_class = mapped
         return value, unit, device_class
-
-    def _energy_manager_placeholder(self) -> bool:
-        """#76: a setpoint of an energy manager the system reports as not
-        connected; its 0 °C is a placeholder, not a setpoint.
-
-        The status as its own entity shows it: the local reading first, else
-        the cloud reading within its validity limit. The stored cloud copy
-        alone would lag: it is read only every 15 minutes while the local
-        reading is shown (O45).
-        """
-        if not energy_manager_setpoint(self._path):
-            return False
-        status = self.coordinator.display_snapshot(ENERGY_MANAGER_STATUS_PATH)
-        return (
-            status is not None
-            and status.available
-            and energy_manager_not_connected(status.resource.value)
-        )
 
     @property
     def available(self) -> bool:
@@ -235,13 +223,24 @@ class BoschBuderusLocalOnlySensor(
     @property
     def extra_state_attributes(self) -> dict[str, str] | None:
         """#73: a flow below the sensor's measuring range is unknown; the
-        attribute tells it apart from a missing reading."""
-        if self._definition.kind in ENUM_KINDS or self._shape() is None:
+        attributes tell it apart from a missing reading and name the state
+        the device reported (``reported_state: low_flow``).
+
+        A reading the cloud offers as well names the source it is shown
+        from (``source``), like every paired entity."""
+        if self._shape() is None:
             return None
-        reading = self._reading()
-        if reading is not None and below_measuring_range(reading):
-            return {MEASURING_RANGE: BELOW_MEASURING_RANGE}
-        return None
+        reading, source = self._sourced_reading()
+        attributes: dict[str, str] = {}
+        if (
+            self._definition.kind not in ENUM_KINDS
+            and reading is not None
+            and below_measuring_range(reading)
+        ):
+            attributes.update(below_range_attributes())
+        if source is not None and self._path in self.coordinator.resources:
+            attributes["source"] = source
+        return attributes or None
 
     @property
     def native_value(self) -> int | float | str | None:
@@ -497,10 +496,24 @@ def track_local_only_sensors(
             return
         with selection.update_pass():
             additions: list[SensorEntity] = []
-            for path in sorted(selection.local_only_observations()):
-                if path in seen or path in coordinator.resources:
+            observations = selection.local_only_observations()
+            for path in sorted(set(observations) | _kept_cloud_paths(coordinator)):
+                if path in seen:
+                    continue
+                if path in coordinator.resources and not keeps_local_entity(
+                    coordinator, path
+                ):
                     continue  # a cloud resource keeps its own entity
-                observation = selection.local_only_observations()[path]
+                observation = observations.get(path)
+                if observation is None:
+                    # A kept entity whose reading the cloud offers: added
+                    # before its first local reading when its form is fixed.
+                    if (definition := fixed_definition(path)) is not None:
+                        seen.add(path)
+                        additions.append(
+                            BoschBuderusLocalOnlySensor(coordinator, path, definition)
+                        )
+                    continue
                 from .local_plant_view import local_sensor
 
                 # C7: the same rules as the local plant view; C10-b: the
@@ -525,6 +538,7 @@ def track_local_only_sensors(
         # A path the cloud offers later (for example after a new discovery):
         # its cloud entity takes over; the entry is handed over when that is
         # unambiguous (8C-c), otherwise removed as before.
+        # A reviewed one stays (``hand_over_while_running`` skips it).
         if taken := (seen & set(coordinator.resources)) - superseded:
             superseded.update(taken)
             hand_over_while_running(coordinator, taken)
@@ -553,9 +567,52 @@ def clean_registered_local_only(
         return
     selection = coordinator.local_selection
     if selection is not None:
+        from .local_only_heal import heal_registered
+
+        # Entries an earlier version removed or handed over come back first.
+        heal_registered(coordinator)
         _remove_registered(
             coordinator, everything=not selection.has_configured_local_access
         )
+
+
+@callback
+def keeps_local_entity(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> bool:
+    """A local-only entity with a reviewed definition stays the entity of its
+    reading when the cloud offers the path as well (see ``local_only_pair``).
+
+    True while its entry is registered or its entity is being added, and
+    when the local access takes the reading although its entry is not
+    registered (``local_only_heal.local_claims``); the cloud then adds no
+    sensor of its own for the path and nothing is handed over or removed.
+    Never for the read-only local plant view.
+    """
+    if _plant_view(coordinator) is not None or reviewed_definition(path) is None:
+        return False
+    if getattr(coordinator, "config_entry", None) is None:
+        return False
+    if hand_over_open(coordinator, path):
+        return True
+    from .local_only_heal import local_claims
+
+    return local_claims(coordinator, path)
+
+
+@callback
+def _kept_cloud_paths(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> frozenset[str]:
+    """Cloud paths whose reviewed local-only entity stays or comes back."""
+    if coordinator.config_entry is None:
+        return frozenset()
+    return frozenset(
+        path
+        for path in coordinator.resources
+        if reviewed_definition(path) is not None
+        and keeps_local_entity(coordinator, path)
+    )
 
 
 def _track_plant_sensors(
@@ -658,6 +715,8 @@ def _remove_registered(
     of the cloud's sensor when that is unambiguous, so its entity ID, name,
     area and recorded history continue. Otherwise it is removed as before.
     While running, ``hand_over_while_running`` applies the same rules.
+    An entry with a reviewed local definition is neither handed over nor
+    removed: it stays the entity of its reading (``local_only_pair``).
     """
     entry = coordinator.config_entry
     if entry is None:
@@ -685,6 +744,10 @@ def _remove_registered(
         ):
             continue
         path = cloud.get(entity.unique_id)
+        if path is not None and not everything and reviewed_definition(path):
+            # The reviewed local-only entity stays; the cloud reading becomes
+            # its second source (``local_only_pair``).
+            continue
         if path is not None:
             if successors is None:
                 successors = _cloud_sensors(coordinator)
@@ -721,6 +784,8 @@ def hand_over_while_running(
     running = hass.data.setdefault(_HAND_OVERS, {}).setdefault(
         (entry.entry_id, gateway_id), {}
     )
+    # A reviewed local-only entity stays the entity of its reading.
+    paths = [path for path in paths if not keeps_local_entity(coordinator, path)]
     waiting = {path: running[path] for path in paths if path in running}
     # A local-only entity still being added counts as present: its cloud
     # sensor waits for a later update instead of taking another entity ID.

@@ -221,13 +221,15 @@ PointT codes and app display names for operation mode:
 | PointT path | User-facing name | Access | HA mapping / note |
 |---|---|---:|---|
 | `/heatSources` | Available heat sources | R | Internal: dynamic discovery |
-| `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water, and/or frost protection |
+| `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water and/or frost range (`frost`, meaning not documented) |
 | `/heatSources/actualModulation` | Current modulation | R | Measurement in % |
 | `/heatSources/actualSupplyTemperature` | System supply temperature | R | Temperature sensor; the supply of the heating system (behind a buffer cylinder the heating side's flow), not necessarily the heat pump's own flow (TC1) |
 | `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |
 | `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
 | `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |
 | `/heatSources/additionalHeater/operationMode` | Auxiliary-heater operation mode | R/W | Select: Off, On, Auto; only for the exact live capability |
+| `/heatSources/hybrid/controlStrategy` | Hybrid control strategy | R/W | Select over the reported values the integration knows (at least two); created disabled, expected but untested on a real installation |
+| `/system/energyTariff/electricity`, `gas`, `oil`, `pv` | Electricity, gas, oil price and feed-in tariff | R/W | Numbers within the reported limits and step, in the reported unit; the oil price only without a gas price; created disabled, expected but untested on a real installation |
 | `/heatSources/additionalHeater/primary/status` | Primary auxiliary-heater status | R | Optional operating state |
 | `/heatSources/additionalHeater/primary/type` | Primary auxiliary-heater type | R | Static diagnostic, disabled by default |
 | `/heatSources/currentEmergencyMode` | Emergency mode | R | Optional operating state |
@@ -307,14 +309,17 @@ Derived total values:
 
 - **Total electricity consumption:** direct `electricity`, or
   `compressor + eheater` only when both components are complete.
-- **Total environmental energy:**
+- **Environmental energy:**
   `outputProduced - compressor - eheater`, only for complete, finite,
-  non-negative inputs and a non-negative result. The entity is named
-  **Total – Environmental energy (calculated)** so it cannot be confused with
-  a value supplied directly by PointT.
-- Do not calculate environmental energy separately for heating, hot water, or
-  cooling. PointT's allocation of standby consumption can create misleading
-  negative results for those areas.
+  non-negative inputs and a non-negative result, for the total, heating, hot
+  water and pool collections alike (the same calculation the manufacturer's
+  app uses). The entities are named, for example, **Total – Environmental
+  energy (calculated)** so they cannot be confused with a value supplied
+  directly by PointT. A negative result (the parts are read at different
+  times, and standby consumption is allocated per area) is not shown and never
+  starts a new meter cycle. The entities of heating, hot water and pool are
+  created disabled; cooling has none, as its collection has no auxiliary
+  heater and the app shows no environmental energy for it.
 - A cooling response with HTTP 200 and only zero-valued counters does not prove
   that cooling equipment exists.
 
@@ -357,7 +362,7 @@ containers; they are never generated as an assumed numeric sequence.
 | System | appliance state/model/firmware, health, iSRC installation state, power guard/limitation, low-noise and silent mode, season optimizer thresholds/mode, additional system temperatures, units, energy tariff, and variable-tariff state |
 | Solar | collector and tank temperatures, maximum temperature, limit state, pump modulation, and yield |
 | Pool | current and target temperature, enabled state, and auxiliary-heater mode |
-| Ventilation | manual fan target and per-zone fan level, filter lifetime, air-quality/humidity limits, mode, supply temperature, and ventilation level |
+| Ventilation | manual fan target and per-zone fan level, filter lifetime, air-quality/humidity limits, mode, supply temperature, and ventilation level; disabled diagnostic readings of the demand, exhaust, extract and outdoor air temperature, indoor air quality and humidity; writable: mode and filter run time |
 | Zones and room devices | current and target climate values, child lock, heating/cooling modes, battery, signal, connection state, errors, assignment, and static product information |
 | Photovoltaics | enabled and surplus-available states |
 

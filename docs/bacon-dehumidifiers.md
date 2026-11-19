@@ -81,8 +81,8 @@ Missing, malformed or retained error information remains unknown.
 
 The existing information, metadata, sensor and shadow streams are reused.
 No additional cloud queries or polling intervals are introduced. Online
-status comes from the newest information message and stays usable while a
-non-retained device message on any channel arrived within the last hour.
+status comes from the newest information message (see
+[the connection foundation](bacon-connection.md)).
 State and sensor freshness are required independently; reported state fields
 expire after 15 minutes and sensor fields after one hour. Old, duplicate and
 retained sensor

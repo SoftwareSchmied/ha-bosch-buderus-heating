@@ -125,7 +125,13 @@ def test_transport_family_is_exact(kind, expected):
 def test_all_documented_wire_states_stay_distinct(raw, expected):
     parsed = parse_section("telemetry", {"values": {"wbState": raw}})
     assert parsed.values["state"] == expected
-    assert all(value is None for key, value in parsed.values.items() if key != "state")
+    # The raw token stays beside the state for the command rules.
+    assert parsed.values["wb_state"] == raw
+    assert all(
+        value is None
+        for key, value in parsed.values.items()
+        if key not in ("state", "wb_state")
+    )
 
 
 @pytest.mark.parametrize(
@@ -158,6 +164,43 @@ def test_unknown_states_are_not_online_or_finished(value):
 def test_meter_wh_and_kw_are_independent(meter, energy, power):
     parsed = parse_section("telemetry", {"values": {"meter": meter}})
     assert parsed.values["energy"] == energy and parsed.values["power"] == power
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (4586.197, 4586.197),
+        (0, None),
+        (0.0, None),
+        ("0", None),
+        ("4586.197", 4586.197),
+        (1e9, 1e9),
+        (1e9 + 1, None),
+        (10**400, None),
+        (-(10**400), None),
+        (1e308, None),
+        ("1e308", None),
+        (-1, None),
+        (float("nan"), None),
+        (float("inf"), None),
+        (True, None),
+        ("bad", None),
+        (None, None),
+        ([1], None),
+    ],
+)
+def test_energy_total_is_a_reported_lifetime_number(value, expected):
+    parsed = parse_section("telemetry", {"values": {"energyTotal": value}})
+    assert parsed.values["energy_total"] == expected
+    assert "energyTotal" not in parsed.unknown_names
+
+
+def test_a_huge_energy_total_does_not_cost_the_other_telemetry_values():
+    parsed = parse_section(
+        "telemetry", {"values": {"energyTotal": 10**400, "wbState": next(iter(STATES))}}
+    )
+    assert parsed.values["energy_total"] is None
+    assert parsed.values["state"] == next(iter(STATES.values()))
 
 
 @pytest.mark.parametrize("value", [None, True, -1, 1.5, "35", 2**63])
@@ -429,6 +472,10 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         patch(ROOT + ".PointTClient.get_gateways", AsyncMock(return_value=gateways)),
         patch(ROOT + ".PointTClient.get_wallbox_section", side_effect=read),
         patch(
+            ROOT + ".PointTClient.get_wallbox_leaf",
+            side_effect=ResourceNotFound("private", 404),
+        ),
+        patch(
             ROOT + ".coordinator.async_discover_resources", side_effect=discover
         ) as discovery,
         patch(ROOT + ".coordinator.fault_resource_candidates", return_value=()),
@@ -459,24 +506,32 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         assert hass.states.get(state_id).state == "charging"
         assert hass.states.get(entity_id("energy")).state == "1.25"
         assert "state_class" not in hass.states.get(entity_id("energy")).attributes
+        total = hass.states.get(entity_id("energy_total"))
+        assert total.state == "4321.5"
+        assert total.attributes["state_class"] == "total_increasing"
+        assert total.attributes["device_class"] == "energy"
+        assert total.attributes["unit_of_measurement"] == "kWh"
         assert (
             hass.states.get(entity_id("power")).attributes["unit_of_measurement"]
             == "kW"
         )
-        assert (
-            len(
-                [
-                    e
-                    for e in registry.entities.values()
-                    if e.unique_id.startswith("wallbox-A:")
-                ]
-            )
-            == 8
-        )
-        assert all(
-            e.domain == "sensor"
+        wallbox_entries = [
+            e
             for e in registry.entities.values()
             if e.unique_id.startswith("wallbox-A:")
+        ]
+        # The nine readings, plus start, pause and the charging current: the
+        # controls are disabled by default; no single value answered here.
+        assert len(wallbox_entries) == 12
+        assert sorted(
+            e.unique_id.rsplit(":", 1)[-1]
+            for e in wallbox_entries
+            if e.domain != "sensor"
+        ) == ["charging_current_limit", "pause_charging", "start_charging"]
+        assert all(
+            e.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+            for e in wallbox_entries
+            if e.domain != "sensor"
         )
         texts = await async_get_translations(hass, language, "entity", {DOMAIN})
         prefix = "component." + DOMAIN + ".entity.sensor.wallbox_"
@@ -488,7 +543,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         )
         diagnostics = await async_get_config_entry_diagnostics(hass, config)
         assert (
-            diagnostics["diagnostics_schema"] == 47
+            diagnostics["diagnostics_schema"] == 48
             and len(diagnostics["wallboxes"]) == 1
         )
         serialized = json.dumps(diagnostics)

@@ -1,0 +1,301 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed gateway with two radio room zones and their heating and cooling programs (absolute temperatures as text)",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-10: zone programs hold absolute temperatures as text within switchPointMin/Max/Resolution and are written as a raw array, heating and cooling separately.",
+    "source": "behaviour of the manufacturer's app: zone programs per heating/cooling mode with free temperatures within switchPointMin/Max/Resolution"
+  },
+  "resources": [
+    {
+      "id": "/zones/zone1/switchPrograms/heating",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1020,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 540,
+          "setpoint": "17.5"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1020,
+          "setpoint": "20.5"
+        }
+      ],
+      "switchPointMin": 5.0,
+      "switchPointMax": 30.0,
+      "switchPointResolution": 0.5
+    },
+    {
+      "id": "/zones/zone1/switchPrograms/cooling",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1200,
+          "setpoint": "27.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 600,
+          "setpoint": "25.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1200,
+          "setpoint": "27.0"
+        }
+      ],
+      "switchPointMin": 5.0,
+      "switchPointMax": 30.0,
+      "switchPointResolution": 0.5
+    },
+    {
+      "id": "/zones/zone2/switchPrograms/heating",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "16.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 420,
+          "setpoint": "20.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "16.0"
+        }
+      ],
+      "switchPointMin": 5.0,
+      "switchPointMax": 30.0
+    }
+  ]
+}

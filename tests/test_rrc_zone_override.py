@@ -462,10 +462,15 @@ async def test_the_setpoint_is_read_fresh_before_the_put(hass: HomeAssistant) ->
     target = path(3, OVERRIDE)
     try:
         cloud.tree[target] = replace(cloud.tree[target], value=22.0)
-        reads = cloud.calls["GET", target]
+
+        def reads() -> int:
+            # L16: the reading comes with the bulk request of the guards.
+            return cloud.calls["GET", target] + cloud.calls["BULK", target]
+
+        before = reads()
         await set_temperature(hass, climate(hass, 3), temperature=22.0)
         assert not cloud.writes
-        assert cloud.calls["GET", target] > reads
+        assert reads() > before
         await set_temperature(hass, climate(hass, 3), temperature=21.0)
         assert cloud.written("PUT") == [("PUT", target, 21.0)]
     finally:

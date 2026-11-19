@@ -127,6 +127,9 @@ class LocalOnlyDefinition:
     # Declared states of an on/off signal that mean "on" (besides the
     # usual true/on/1), for example the hot water heat-up phases.
     on_states: frozenset[str] = frozenset()
+    # A generic signal that is an on/off state whatever form its answer
+    # takes: never a number, a unit or a temperature.
+    flag_only: bool = False
 
 
 def _define(
@@ -139,6 +142,7 @@ def _define(
     translation_key: str | None = None,
     options: tuple[str, ...] = (),
     counter: bool = False,
+    flag_only: bool = False,
 ) -> LocalOnlyDefinition:
     return LocalOnlyDefinition(
         re.compile(pattern),
@@ -149,6 +153,7 @@ def _define(
         translation_key,
         options,
         counter=counter,
+        flag_only=flag_only,
     )
 
 
@@ -234,6 +239,7 @@ def _signal(
     default_unit: str | None = None,
     counter: bool = False,
     on_states: frozenset[str] = frozenset(),
+    flag_only: bool = False,
 ) -> LocalOnlyDefinition:
     """C7: one controller signal with a reviewed meaning."""
     if kind == FLAG:
@@ -252,6 +258,7 @@ def _signal(
         default_unit=default_unit,
         counter=counter,
         on_states=on_states,
+        flag_only=flag_only,
     )
 
 
@@ -578,8 +585,8 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
     # Controller signals whose meaning follows from their path and the
     # recorded values (0.9.1): named instead of showing the signal path.
     # They stay generic, disabled diagnostic entities like every other signal;
-    # only their names change. Signals whose meaning is open (for example the
-    # four "permitted temperature" flags) keep the path as their name.
+    # only their names change. Signals whose meaning is open keep the path as
+    # their name.
     *(
         _signal(signal, key, GENERIC, names)
         for signal, key, names in (
@@ -688,6 +695,283 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
                 ("Kompressorstarts Kühlen", "Compressor starts cooling"),
             ),
         )
+    ),
+    # 0.9.2: signals whose meaning follows from the manufacturer's manuals,
+    # the gateway's own state names or the recorded values of a real
+    # installation. Like the ones above, only their names change: they stay
+    # generic, disabled diagnostic entities, and their form (on/off state,
+    # state, number) still comes from the answer.
+    *(
+        _signal(signal, key, GENERIC, names)
+        for signal, key, names in (
+            (
+                "SC.DHW1.HolidayModeNew",
+                "dhw_holiday_mode_signal",
+                ("Warmwasser \N{EN DASH} Urlaubsmodus", "Hot water holiday mode"),
+            ),
+            (
+                "SRC.AirPurgeModeActive",
+                "air_purge_active_signal",
+                ("Entlüftungsprogramm aktiv", "Air purge mode active"),
+            ),
+            (
+                _HP1 + "HeatUpSequence",
+                "compressor_start_up_sequence_signal",
+                (
+                    "Kompressor \N{EN DASH} Anlaufsequenz",
+                    "Compressor start-up sequence",
+                ),
+            ),
+            *(
+                (
+                    f"SRC.CUHP.PC{pump}ConnectedToLIN",
+                    f"pump_pc{pump}_lin_signal",
+                    (
+                        f"Pumpe PC{pump} am LIN-Bus angeschlossen",
+                        f"Pump PC{pump} connected to LIN bus",
+                    ),
+                )
+                for pump in (0, 1, 2)
+            ),
+            (
+                "SRC.CUHP.StartUpCheck",
+                "startup_check_signal",
+                ("Regler \N{EN DASH} Start-up-Prüfung", "Controller start-up check"),
+            ),
+            (
+                "SRC.HC1.FlowCtrl.PumpRequest",
+                "circuit_1_pump_request_signal",
+                (
+                    "Heizkreis 1 \N{EN DASH} Pumpenanforderung (PC1)",
+                    "Heating circuit 1 pump request (PC1)",
+                ),
+            ),
+            (
+                "SRC.RelativeTime",
+                "relative_time_signal",
+                (
+                    "Reglerzeit relativ (Minutenzähler)",
+                    "Controller relative time (minute counter)",
+                ),
+            ),
+            (
+                "SC.DHW1.SD.ExtraActive",
+                "dhw_extra_setpoint_logic_signal",
+                (
+                    "Warmwasser \N{EN DASH} Extra aktiv (Sollwertbildung)",
+                    "Hot water extra active (setpoint logic)",
+                ),
+            ),
+            (
+                "SRC.CUHP.EM.UsedLowerFlowTempSetp",
+                "energy_manager_lower_supply_signal",
+                (
+                    "Energiemanagement \N{EN DASH} unterer Vorlaufsollwert",
+                    "Energy management lower supply setpoint",
+                ),
+            ),
+            (
+                "SRC.CUHP.EM.UsedUpperFlowTempSetp",
+                "energy_manager_upper_supply_signal",
+                (
+                    "Energiemanagement \N{EN DASH} oberer Vorlaufsollwert",
+                    "Energy management upper supply setpoint",
+                ),
+            ),
+            (
+                "SRC.CUHP.HMI.AddElectricActive",
+                "auxiliary_heater_display_signal",
+                (
+                    "Elektrischer Zuheizer aktiv (Anzeige)",
+                    "Electric auxiliary heater active (display)",
+                ),
+            ),
+            (
+                _HP1 + "Additional.AlarmInput",
+                "auxiliary_heater_alarm_signal",
+                ("Zuheizer \N{EN DASH} Alarmeingang", "Auxiliary heater alarm input"),
+            ),
+            (
+                _HP1 + "CompressorStartTemp",
+                "compressor_start_temperature_signal",
+                (
+                    "Kompressor \N{EN DASH} Starttemperatur",
+                    "Compressor start temperature",
+                ),
+            ),
+            (
+                _HP1 + "DHWHeater",
+                "dhw_electric_heater_signal",
+                ("Warmwasser \N{EN DASH} Elektroheizstab", "Hot water electric heater"),
+            ),
+            (
+                _HP1 + "HeatingCable",
+                "heating_cable_signal",
+                ("Heizband", "Heating cable"),
+            ),
+            (
+                _HP1 + "HighOutdoorTempStopCooling",
+                "cooling_stop_high_outdoor_signal",
+                (
+                    "Kühlen gestoppt: Außentemperatur zu hoch",
+                    "Cooling stopped: outdoor temperature too high",
+                ),
+            ),
+            (
+                _HP1 + "HighOutdoorTempStopHeating",
+                "heating_stop_high_outdoor_signal",
+                (
+                    "Heizen gestoppt: Außentemperatur zu hoch",
+                    "Heating stopped: outdoor temperature too high",
+                ),
+            ),
+            (
+                _HP1 + "LowOutdoorTempStopCooling",
+                "cooling_stop_low_outdoor_signal",
+                (
+                    "Kühlen gestoppt: Außentemperatur zu niedrig",
+                    "Cooling stopped: outdoor temperature too low",
+                ),
+            ),
+            (
+                _HP1 + "LowOutdoorTempStopHeating",
+                "heating_stop_low_outdoor_signal",
+                (
+                    "Heizen gestoppt: Außentemperatur zu niedrig",
+                    "Heating stopped: outdoor temperature too low",
+                ),
+            ),
+            (
+                _HP1 + "MinCoolingTempSetpoint",
+                "minimum_cooling_supply_signal",
+                (
+                    "Kühlen \N{EN DASH} Mindest-Vorlaufsollwert",
+                    "Minimum cooling supply setpoint",
+                ),
+            ),
+            (
+                _HP1 + "Timer.TDWarmKeeping",
+                "disinfection_hold_timer_signal",
+                (
+                    "Thermische Desinfektion \N{EN DASH} Haltezeit-Timer",
+                    "Thermal disinfection hold timer",
+                ),
+            ),
+            (
+                "SRC.IntDHW.CircPumpStatus",
+                "dhw_circulation_pump_signal",
+                (
+                    "Warmwasser \N{EN DASH} Zirkulationspumpe",
+                    "Hot water circulation pump",
+                ),
+            ),
+            (
+                "SRC.IntDHW.ExtraActive",
+                "dhw_extra_generator_signal",
+                (
+                    "Warmwasser \N{EN DASH} Extra aktiv (Wärmeerzeuger)",
+                    "Hot water extra active (generator)",
+                ),
+            ),
+            # Signals of a brine-to-water heat pump: named after the signal
+            # and the readings of the same controller named above. The
+            # digital inputs are named as inputs: the same controller serves
+            # several kinds of heat pump, so an input says nothing about the
+            # kind of the plant.
+            (
+                _HP1 + "HighPressureSwitch",
+                "high_pressure_switch_signal",
+                ("Hochdruckschalter", "High-pressure switch"),
+            ),
+            (
+                "SRC.CUHP.SummaryAlarm",
+                "summary_alarm_signal",
+                ("Sammelalarm", "Summary alarm"),
+            ),
+            (
+                "SRC.CUHP.HMI.EVUActive",
+                "utility_block_display_signal",
+                (
+                    "EVU-Sperre aktiv (Anzeige)",
+                    "Utility power block active (display)",
+                ),
+            ),
+            (
+                "SRC.DigInput.ExtCutOff",
+                "digital_input_external_cut_off_signal",
+                (
+                    "Digitaler Eingang: externe Abschaltung",
+                    "Digital input: external cut-off",
+                ),
+            ),
+            (
+                "SRC.DigInput.AirPressureSwitch",
+                "digital_input_air_pressure_switch_signal",
+                (
+                    "Digitaler Eingang: Luftdruckschalter",
+                    "Digital input: air pressure switch",
+                ),
+            ),
+            (
+                "SRC.DigInput.OilTemperatureHigh",
+                "digital_input_oil_temperature_signal",
+                (
+                    "Digitaler Eingang: Öltemperatur hoch",
+                    "Digital input: oil temperature high",
+                ),
+            ),
+            (
+                _HP1 + "CompressorSetpoint",
+                "compressor_setpoint_signal",
+                ("Kompressor-Sollwert", "Compressor setpoint"),
+            ),
+            (
+                "SRC.CUHP.CH.HC1PumpSpeed",
+                "circuit_1_pump_speed_signal",
+                (
+                    "Drehzahl Heizkreispumpe HK1 (PC1)",
+                    "Heating circuit pump speed HC1 (PC1)",
+                ),
+            ),
+            (
+                "SRC.CUHP.CH.HeatingSystemVolumetricFlow",
+                "heating_system_flow_signal",
+                ("Volumenstrom Heizungsanlage", "Heating system flow rate"),
+            ),
+        )
+    ),
+    # The "permitted" signals of the heat pump: the gateway declares them as
+    # true/false text, so they are on/off states, never a temperature, even
+    # though their names end in "Temp". The two outdoor air ones fit the
+    # permitted outdoor air range of the heat pump; the meaning of the other
+    # two is open, so they keep the signal path as their name.
+    *(
+        _signal(_HP1 + signal, key, GENERIC, names, flag_only=True)
+        for signal, key, names in (
+            (
+                "HighestPermittedAirTemp",
+                "outdoor_above_permitted_range_signal",
+                (
+                    "Außentemperatur über zulässigem Bereich (Wärmepumpe)",
+                    "Outdoor temperature above permitted range (heat pump)",
+                ),
+            ),
+            (
+                "LowestPermittedAirTemp",
+                "outdoor_below_permitted_range_signal",
+                (
+                    "Außentemperatur unter zulässigem Bereich (Wärmepumpe)",
+                    "Outdoor temperature below permitted range (heat pump)",
+                ),
+            ),
+        )
+    ),
+    _define(
+        r"/signals/(SRC\.CUHP\.HP1\.(?:HighestPermittedTemp|LowestPermittedFlowTemp))",
+        "permitted_limit_signal",
+        GENERIC,
+        ("Signal {}", "Signal {}"),
+        flag_only=True,
     ),
     _define(
         r"/signals/SC\.HolidayNew\.(\d+)\.State",
@@ -1096,6 +1380,15 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         ("Drehzahl primäre Heizungspumpe (PC0)", "Primary heating pump speed (PC0)"),
         enabled=True,
     ),
+    # 0.9.2: the brine pump of a brine-to-water heat pump. Its unit is not
+    # documented, so it stays generic (the reading's own unit, no
+    # statistics), disabled and diagnostic as before; only the name is new.
+    _define(
+        HS + "/brineCircuit/pumpSpeed",
+        "brine_pump_speed",
+        GENERIC,
+        ("Drehzahl Solepumpe", "Brine pump speed"),
+    ),
     _define(
         REFRIGERANT + "/compressorActualSpeed",
         "compressor_speed",
@@ -1304,6 +1597,8 @@ _PATH_TRANSLATIONS = {
     "/signals/GWEEBUS.Status": "signal_eebus_status",
     "/signals/GWEEBUS.CommissioningStatus": "signal_eebus_commissioning",
     "/signals/SRC.CUHP.StartUpCheck": "signal_startup_check",
+    # 0.9.2: the hot water holiday mode; its texts follow the state names.
+    "/signals/SC.DHW1.HolidayModeNew": "signal_dhw_holiday_mode",
 }
 _TRUE_FALSE = frozenset({"true", "false"})
 _MARKER_STATE = re.compile(
@@ -1350,6 +1645,16 @@ def is_marker_state(name: object) -> bool:
 # #73: the attribute of a flow reading below its sensor's measuring range.
 MEASURING_RANGE = "measuring_range"
 BELOW_MEASURING_RANGE = "below"
+# 0.9.2: the state the device reported instead of a value, next to it.
+REPORTED_STATE = "reported_state"
+LOW_FLOW = "low_flow"
+
+
+def below_range_attributes() -> dict[str, str]:
+    """The attributes of a flow reading below its sensor's measuring range."""
+    return {MEASURING_RANGE: BELOW_MEASURING_RANGE, REPORTED_STATE: LOW_FLOW}
+
+
 _LOW_FLOW_STATE = re.compile(r"(?:^|_)low_?flow(?:_|$)")
 
 
@@ -1405,22 +1710,6 @@ def volume_flow_path(path: str) -> bool:
     return path.rsplit("/", 1)[-1].casefold().endswith("volumeflow")
 
 
-# #76: a setpoint an energy manager uses. While none is connected, the
-# controller reports a placeholder (0 °C) instead of a setpoint.
-ENERGY_MANAGER_STATUS_PATH = "/heatSources/emStatus"
-_ENERGY_MANAGER_SETPOINT = re.compile(r"/signals/(?:[^/.]+\.)*EM\.[^/]*Setp")
-
-
-def energy_manager_setpoint(path: str) -> bool:
-    """#76: a controller signal with a setpoint of the energy manager."""
-    return _ENERGY_MANAGER_SETPOINT.fullmatch(path) is not None
-
-
-def energy_manager_not_connected(status: object) -> bool:
-    """#76: the energy management status reports no connected manager."""
-    return (state_key(status) or "").replace("_", "") == "notconnected"
-
-
 def _state_translation(path: object, keys: tuple[str, ...]) -> str | None:
     """The state texts of a generic state: by its path, else by its states."""
     if isinstance(path, str) and (key := _PATH_TRANSLATIONS.get(path)) is not None:
@@ -1439,6 +1728,15 @@ def generic_form(
     of real names and no unit is a state; with a unit it stays a number,
     whose marker states (for example NA_OPEN) show no value.
     """
+    if definition.flag_only:
+        # An on/off state in every form: a value other than true/false,
+        # on/off or 1/0 shows unknown, never a number or a temperature.
+        return replace(
+            definition,
+            kind=FLAG,
+            options=_FLAG_OPTIONS,
+            translation_key=definition.translation_key or "on_off_state",
+        )
     data = getattr(observation, "data", None)
     path = getattr(getattr(observation, "request", None), "path", None)
     if getattr(observation, "type", None) == "stringValue":

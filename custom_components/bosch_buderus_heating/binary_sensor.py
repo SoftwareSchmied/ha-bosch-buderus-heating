@@ -21,20 +21,25 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry, rrc_platforms
+from .aircon_entities import track_aircon_binary_sensors
 from .bacon.access import BaconAccess
 from .bacon.dhw_status import track_status
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.entity import BaconConnectivity
 from .control import track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
+from .derived_defrost import binary_sensors as defrost_binary_sensors
+from .derived_defrost import track_defrost_entities
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .faults import (
     MAX_FAULT_ATTRIBUTES,
+    fault_code_search_url,
     fault_severity_label,
     fault_summary,
     no_active_faults_label,
 )
+from .flow_range import track_flow_range_sensors
 from .holidays import (
     HolidayState,
     is_holiday_resource_path,
@@ -60,8 +65,14 @@ from .sensor import (
     _values_scalar_keys,
 )
 from .start_counters import is_start_counter_path
+from .variable_tariff_entities import track_tariff_binary_sensor
+from .wallbox_entities import track_wallbox_entities
 from .water_softener import low_salt, softener_capability, softener_value
 from .write_policies import context_of, rrc_kwargs
+from .zone_radio_devices import (
+    ZoneRadioBatteryBinarySensor,
+    track_zone_radio_devices,
+)
 
 if TYPE_CHECKING:
     from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
@@ -92,6 +103,8 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create entities from every safe boolean found during discovery."""
+    track_wallbox_entities(Platform.BINARY_SENSOR, entry, async_add_entities)
+    track_aircon_binary_sensors(entry, async_add_entities)
     entities: list[BinarySensorEntity] = []
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "binary_sensor")
@@ -111,8 +124,16 @@ def _setup_entities(
         track_status(entry, account, async_add_entities)
     for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
+        track_flow_range_sensors(entry, coordinator, async_add_entities)
+        track_tariff_binary_sensor(entry, coordinator, async_add_entities)
+        track_defrost_entities(
+            entry, coordinator, async_add_entities, defrost_binary_sensors
+        )
         track_radio_devices(
             entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
+        )
+        track_zone_radio_devices(
+            entry, coordinator, async_add_entities, ZoneRadioBatteryBinarySensor
         )
         rrc_platforms.track(
             Platform.BINARY_SENSOR, entry, coordinator, async_add_entities
@@ -196,7 +217,6 @@ class BoschBuderusHolidayActiveBinarySensor(
 
     _attr_has_entity_name = True
     _attr_translation_key = "holiday_active"
-    _attr_icon = "mdi:palm-tree"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -254,7 +274,6 @@ class BoschBuderusCloudControlBinarySensor(
     _attr_translation_key = "cloud_control"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_entity_registry_enabled_default = False
-    _attr_icon = "mdi:remote"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -338,7 +357,6 @@ class BoschBuderusSystemFaultBinarySensor(
     _attr_has_entity_name = True
     _attr_translation_key = "system_fault"
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
-    _attr_icon = "mdi:alert-circle"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -381,6 +399,10 @@ class BoschBuderusSystemFaultBinarySensor(
                 tracker.active_faults[0].severity,
                 self.coordinator.hass.config.language,
             )
+            for item in tracker.active_faults:
+                if (url := fault_code_search_url(item)) is not None:
+                    attributes["code_search_url"] = url
+                    break
         else:
             attributes["summary"] = no_active_faults_label(
                 self.coordinator.hass.config.language

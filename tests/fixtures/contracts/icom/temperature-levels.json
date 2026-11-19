@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "family": "icom",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "The heating and setback levels follow the shapes of gateway-shapes.json and the coupled limits of the K40 capture (heating minimum = setback value + 0.5, setback maximum = heating value - 0.5). The away and cooling levels follow the behaviour of the manufacturer's app. Every value and limit is constructed. No identifier.",
+    "physical_device_verified": false
+  },
+  "contract": "Temperature levels of one heating circuit. Each variant replaces (set) or removes (remove) resources of the base.",
+  "base": [
+    {"id": "/heatingCircuits/hc1/controlType", "type": "stringValue", "value": "outdoorTemperature", "writeable": 1, "allowedValues": ["outdoorTemperature", "roomTemperature", "outdoorRoomTemperature", "constants", "ISRC"]},
+    {"id": "/heatingCircuits/hc1/temperatureLevels", "type": "refEnum", "references": [{"id": "/heatingCircuits/hc1/temperatureLevels/comfort2"}, {"id": "/heatingCircuits/hc1/temperatureLevels/eco"}]},
+    {"id": "/heatingCircuits/hc1/temperatureLevels/comfort2", "type": "floatValue", "value": 21, "writeable": 1, "unitOfMeasure": "C", "minValue": 19.5, "maxValue": 30, "stepSize": 0.5},
+    {"id": "/heatingCircuits/hc1/temperatureLevels/eco", "type": "floatValue", "value": 19, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 20.5, "stepSize": 0.5}
+  ],
+  "variants": {
+    "V1": {"note": "Heating and setback level with coupled limits.", "set": [], "remove": []},
+    "V2": {
+      "note": "With the away temperature as a circuit setting (K30/K40 path).",
+      "set": [
+        {"id": "/heatingCircuits/hc1/awayTemperature", "type": "floatValue", "value": 15, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    },
+    "V2b": {
+      "note": "With the away temperature as a level (generic iCom level path).",
+      "set": [
+        {"id": "/heatingCircuits/hc1/temperatureLevels", "type": "refEnum", "references": [{"id": "/heatingCircuits/hc1/temperatureLevels/comfort2"}, {"id": "/heatingCircuits/hc1/temperatureLevels/eco"}, {"id": "/heatingCircuits/hc1/temperatureLevels/awayTemperature"}]},
+        {"id": "/heatingCircuits/hc1/temperatureLevels/awayTemperature", "type": "floatValue", "value": 15, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    },
+    "V3": {
+      "note": "With the cooling level.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/cooling/temperatureLevels/on", "type": "floatValue", "value": 24, "writeable": 1, "unitOfMeasure": "C", "minValue": 18, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    },
+    "V4": {
+      "note": "An unknown level name.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/temperatureLevels", "type": "refEnum", "references": [{"id": "/heatingCircuits/hc1/temperatureLevels/comfort2"}, {"id": "/heatingCircuits/hc1/temperatureLevels/eco"}, {"id": "/heatingCircuits/hc1/temperatureLevels/party"}]},
+        {"id": "/heatingCircuits/hc1/temperatureLevels/party", "type": "floatValue", "value": 23, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    },
+    "V5": {
+      "note": "The list names a level that answers 404.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/temperatureLevels", "type": "refEnum", "references": [{"id": "/heatingCircuits/hc1/temperatureLevels/comfort2"}, {"id": "/heatingCircuits/hc1/temperatureLevels/eco"}, {"id": "/heatingCircuits/hc1/temperatureLevels/awayTemperature"}]}
+      ],
+      "remove": [],
+      "unavailable": {"404": ["/heatingCircuits/hc1/temperatureLevels/awayTemperature"]}
+    },
+    "V6": {
+      "note": "Without stepSize.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/awayTemperature", "type": "floatValue", "value": 15, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30}
+      ],
+      "remove": []
+    },
+    "V7": {
+      "note": "Run by a room controller.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/controlType", "type": "stringValue", "value": "ISRC", "writeable": 1, "allowedValues": ["outdoorTemperature", "roomTemperature", "outdoorRoomTemperature", "constants", "ISRC"]},
+        {"id": "/heatingCircuits/hc1/awayTemperature", "type": "floatValue", "value": 15, "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    },
+    "V8": {
+      "note": "A level without a value.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/awayTemperature", "type": "floatValue", "writeable": 1, "unitOfMeasure": "C", "minValue": 5, "maxValue": 30, "stepSize": 0.5}
+      ],
+      "remove": []
+    }
+  }
+}

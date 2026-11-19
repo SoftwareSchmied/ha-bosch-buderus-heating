@@ -51,6 +51,7 @@ class ProbeProblem(StrEnum):
     INVALID_JSON = "invalid_json"
     BODY_TOO_LARGE = "response_too_large"
     WRONG_RESOURCE = "wrong_resource"
+    # No longer raised: an unknown brand counts as not reported.
     UNKNOWN_BRAND = "unsupported_brand"
     UNKNOWN_FIRMWARE = "firmware_unverified"
     OLD_FIRMWARE = "firmware_update_required"
@@ -317,6 +318,19 @@ class GatewayBrand(StrEnum):
     WORCESTER = "worcester"
 
 
+def reported_brand(value: str) -> GatewayBrand | None:
+    """The brand a gateway reports, or None when it reports none it knows.
+
+    Some gateways answer ``unknown`` or an empty text. The brand only names
+    the manufacturer, so it never stops a setup; the reported text itself is
+    not kept.
+    """
+    try:
+        return GatewayBrand(value.strip().lower())
+    except ValueError:
+        return None
+
+
 @dataclass(frozen=True, order=True, slots=True)
 class FirmwareVersion:
     major: int
@@ -462,11 +476,7 @@ def assess_local_probe(
             _check_status(response)
             payload = _payload(response)
             if path == ProbePath.BRAND:
-                value = _string_value(payload)
-                try:
-                    brand = GatewayBrand(value.lower())
-                except ValueError:
-                    raise LocalProbeError(ProbeProblem.UNKNOWN_BRAND) from None
+                brand = reported_brand(_string_value(payload))
             elif path == ProbePath.FIRMWARE:
                 firmware = parse_firmware_version(_string_value(payload))
                 if firmware < MINIMUM_FIRMWARE:

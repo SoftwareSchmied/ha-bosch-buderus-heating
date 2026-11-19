@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "family": "pointt_air_conditioner",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "physical_device_verified": false,
+    "redaction": "Fully constructed from the vendor app's value models (stringValue/floatValue leaves, refEnum function lists) and its fixed read list of the air-conditioner page; no device capture, no identifiers."
+  },
+  "detection": {
+    "midea": {
+      "/system/bus": "Midea",
+      "/system/appliance/model": "rac-midea-default"
+    },
+    "midea_empty_model": {
+      "/system/bus": "Midea",
+      "/system/appliance/model": ""
+    },
+    "midea_gateway_connector": {
+      "/system/bus": "Midea",
+      "/system/appliance/model": "rac-midea-gatewayconnector"
+    },
+    "sharp": {
+      "/system/bus": "Echonet",
+      "/system/appliance/model": "rac-sharp"
+    },
+    "no_bus": {
+      "/system/bus": "No_Bus",
+      "/system/appliance/model": ""
+    }
+  },
+  "resources": {
+    "/airConditioning/acControl": {
+      "id": "/airConditioning/acControl",
+      "type": "stringValue",
+      "value": "on",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/operationMode": {
+      "id": "/airConditioning/operationMode",
+      "type": "stringValue",
+      "value": "cool",
+      "allowedValues": [
+        "auto",
+        "cool",
+        "heat",
+        "dry",
+        "fanOnly",
+        "internalCleaning"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/temperatureSetpoint": {
+      "id": "/airConditioning/temperatureSetpoint",
+      "type": "floatValue",
+      "value": 22.0,
+      "minValue": 16.0,
+      "maxValue": 30.0,
+      "unitOfMeasure": "C",
+      "writeable": 1
+    },
+    "/airConditioning/roomTemperature": {
+      "id": "/airConditioning/roomTemperature",
+      "type": "floatValue",
+      "value": 21.5,
+      "minValue": -20.0,
+      "maxValue": 50.0,
+      "unitOfMeasure": "C",
+      "writeable": 0
+    },
+    "/airConditioning/fanSpeed": {
+      "id": "/airConditioning/fanSpeed",
+      "type": "stringValue",
+      "value": "auto",
+      "allowedValues": [
+        "auto",
+        "quiet",
+        "low",
+        "mid",
+        "high",
+        "turbo"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/airFlowVertical": {
+      "id": "/airConditioning/airFlowVertical",
+      "type": "stringValue",
+      "value": "auto",
+      "allowedValues": [
+        "auto",
+        "swing",
+        "angle1",
+        "angle2",
+        "angle3",
+        "angle4",
+        "angle5"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/airFlowHorizontal": {
+      "id": "/airConditioning/airFlowHorizontal",
+      "type": "stringValue",
+      "value": "center",
+      "allowedValues": [
+        "auto",
+        "swing",
+        "left",
+        "center",
+        "right",
+        "wide",
+        "ultraWide",
+        "fixed"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/quickAirFlows": {
+      "id": "/airConditioning/quickAirFlows",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "off",
+        "topLeft",
+        "topCenter",
+        "topRight",
+        "bottomCenter"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/ecoMode": {
+      "id": "/airConditioning/ecoMode",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/fullPowerMode": {
+      "id": "/airConditioning/fullPowerMode",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/sleepMode": {
+      "id": "/airConditioning/sleepMode",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/setbackMode": {
+      "id": "/airConditioning/setbackMode",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/airPurificationMode": {
+      "id": "/airConditioning/airPurificationMode",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/timers/on": {
+      "id": "/airConditioning/timers/on",
+      "type": "floatValue",
+      "value": 0.0,
+      "minValue": 30.0,
+      "maxValue": 1440.0,
+      "unitOfMeasure": "min",
+      "writeable": 1
+    },
+    "/airConditioning/timers/off": {
+      "id": "/airConditioning/timers/off",
+      "type": "floatValue",
+      "value": 0.0,
+      "minValue": 30.0,
+      "maxValue": 1440.0,
+      "unitOfMeasure": "min",
+      "writeable": 1
+    },
+    "/airConditioning/switchPrograms/enabled": {
+      "id": "/airConditioning/switchPrograms/enabled",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/switchPrograms/activeProgram": {
+      "id": "/airConditioning/switchPrograms/activeProgram",
+      "type": "stringValue",
+      "value": "program1",
+      "allowedValues": [
+        "program1",
+        "program2"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/switchPrograms/temporarySetting/enabled": {
+      "id": "/airConditioning/switchPrograms/temporarySetting/enabled",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 1
+    },
+    "/airConditioning/standardFunctions": {
+      "id": "/airConditioning/standardFunctions",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/airConditioning/acControl"
+        },
+        {
+          "id": "/airConditioning/operationMode"
+        },
+        {
+          "id": "/airConditioning/temperatureSetpoint"
+        },
+        {
+          "id": "/airConditioning/fanSpeed"
+        },
+        {
+          "id": "/airConditioning/airFlowVertical"
+        },
+        {
+          "id": "/airConditioning/airFlowHorizontal"
+        },
+        {
+          "id": "/airConditioning/quickAirFlows"
+        },
+        {
+          "id": "/airConditioning/roomTemperature"
+        },
+        {
+          "id": "/airConditioning/timers/on"
+        },
+        {
+          "id": "/airConditioning/timers/off"
+        }
+      ]
+    },
+    "/airConditioning/advancedFunctions": {
+      "id": "/airConditioning/advancedFunctions",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/airConditioning/ecoMode"
+        },
+        {
+          "id": "/airConditioning/fullPowerMode"
+        },
+        {
+          "id": "/airConditioning/sleepMode"
+        },
+        {
+          "id": "/airConditioning/setbackMode"
+        },
+        {
+          "id": "/airConditioning/airPurificationMode"
+        }
+      ]
+    },
+    "/pv/enable": {
+      "id": "/pv/enable",
+      "type": "stringValue",
+      "value": "off",
+      "allowedValues": [
+        "on",
+        "off"
+      ],
+      "writeable": 0
+    },
+    "/airConditioning/switchPrograms/program1": {
+      "id": "/airConditioning/switchPrograms/program1",
+      "type": "switchProgram",
+      "writeable": 1,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 420,
+          "parameters": {
+            "operationMode": "cool",
+            "temperatureSetpoint": 24.0,
+            "fanSpeed": "auto"
+          }
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "parameters": {
+            "operationMode": "fanOnly",
+            "fanSpeed": "low"
+          }
+        }
+      ]
+    }
+  }
+}

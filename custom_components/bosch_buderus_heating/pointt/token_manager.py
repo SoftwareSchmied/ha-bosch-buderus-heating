@@ -23,9 +23,16 @@ from .transport import RateLimitBackoff
 
 _LOGGER = logging.getLogger(__name__)
 
-# Refresh while at least this much lifetime remains. Requests only check the
-# token when they run, so a smaller margin was often met with 30-40 s left.
-REFRESH_MARGIN_SECONDS = 120.0
+# Renew while at least this much lifetime remains. Requests only check the
+# token when they run, so a small margin was often met with 30-40 s left. With
+# this ample margin a renewal that fails or answers slowly (the sign-in service
+# needed up to 29 s, and one request timed out) happens while the current
+# access token still works: the request that finds the renewal due goes on
+# with it and the renewal runs in the background (H-B3-1).
+REFRESH_MARGIN_SECONDS = 600.0
+# Below this lifetime the access token is no longer served while a renewal is
+# pending: a request waits for the renewal (or fails with its error) as before.
+USABLE_MARGIN_SECONDS = 30.0
 # After a temporary refresh failure, wait this long before the next attempt;
 # the wait doubles with every further failure up to the maximum. Requests in
 # between fail at once instead of each starting another token request.
@@ -86,6 +93,9 @@ class TokenManager:
         self._clock = clock
         self._refresh_margin = refresh_margin
         self._refresh_task: asyncio.Task[str] | None = None
+        # Whether the running renewal started early, while the access token
+        # still worked: then requests do not wait for it.
+        self._refresh_early = False
         self._refresh_rejected = False
         self._rejection: TokenEndpointRejection | None = None
         self._backoff = backoff if backoff is not None else RateLimitBackoff()
@@ -123,6 +133,15 @@ class TokenManager:
         self, *, force_refresh: bool = False, rejected_token: str | None = None
     ) -> str:
         """Share one refresh, even if a caller stops waiting for its result."""
+        in_flight = self._refresh_task is not None and not self._refresh_task.done()
+        if (
+            in_flight
+            and self._refresh_early
+            and self._current_token_usable(force_refresh)
+        ):
+            # An early renewal is running: the current access token still
+            # works, so this request does not wait for the slow answer.
+            return self._tokens.access_token
         if self._refresh_task is not None and not self._refresh_task.done():
             return await self._wait_for_refresh(self._refresh_task)
         if self._refresh_rejected:
@@ -134,16 +153,41 @@ class TokenManager:
             now=self._clock(), margin=self._margin()
         ):
             return self._tokens.access_token
-        self._backoff.raise_if_active()
-        self._raise_if_retry_pending()
+        early = self._current_token_usable(force_refresh)
+        try:
+            self._backoff.raise_if_active()
+            self._raise_if_retry_pending()
+        except RateLimited, SignInUnavailable:
+            if early:
+                # The pause holds the renewal back; the current access token
+                # is served until the renewal may start again.
+                return self._tokens.access_token
+            raise
         # Keep a strong reference and retrieve errors even when all original
         # callers are cancelled. A rotating credential must still be saved.
         trigger = "access_token_rejected" if force_refresh else "expiry"
+        self._refresh_early = early
         self._refresh_task = asyncio.create_task(
             self._refresh(trigger), name="pointt_refresh"
         )
         self._refresh_task.add_done_callback(self._refresh_finished)
+        if early:
+            # Not awaited: a failure is kept for the retry wait and the
+            # diagnostics (``_refresh_once``), a rejection stops the next call.
+            return self._tokens.access_token
         return await self._wait_for_refresh(self._refresh_task)
+
+    def _current_token_usable(self, force_refresh: bool) -> bool:
+        """Whether the access token can be used while a renewal is pending.
+
+        Never after the API refused it (``force_refresh``), and not in the last
+        seconds of its lifetime.
+        """
+        if force_refresh:
+            return False
+        return not self._tokens.is_expired(
+            now=self._clock(), margin=min(USABLE_MARGIN_SECONDS, self._margin())
+        )
 
     def _margin(self) -> float:
         """The refresh margin, at most half of a known token lifetime (D15).
@@ -175,6 +219,13 @@ class TokenManager:
             REFRESH_RETRY_MAXIMUM_SECONDS,
             REFRESH_RETRY_INITIAL_SECONDS * 2 ** min(self._failures - 1, 16),
         )
+        # While the access token still works, the next attempts come before it
+        # ends, however often the renewal failed (H-B3-1): at most after half
+        # of the time it can still be used. Never shorter than the first wait,
+        # so the sign-in service is not asked in a tight loop.
+        usable_for = self._tokens.expires_at - self._clock() - USABLE_MARGIN_SECONDS
+        if usable_for > 0:
+            delay = min(delay, max(REFRESH_RETRY_INITIAL_SECONDS, usable_for / 2))
         self._retry_not_before = self._retry_clock() + delay
         failure = SignInUnavailable(
             _failure_reason(err),
@@ -299,8 +350,19 @@ class TokenManager:
                 # Not an answer of the PointT service: no gateway or reading
                 # failed, and an unreadable token answer is no invalid value.
                 raise self._temporary_failure(err) from err
+            if self._refresh_early:
+                # Nobody awaits an early renewal, so nobody sees this error
+                # and the next request would start another renewal at once:
+                # the usual retry wait applies, and the cause is logged once
+                # (the wait keeps it from repeating).
+                self._temporary_failure(err)
+                _LOGGER.warning(
+                    "The early renewal of the access token failed unexpectedly "
+                    "(%s); the next try waits",
+                    type(err).__name__,
+                )
             # A programming error is no failure of the sign-in service: it
-            # propagates unchanged and pauses no later sign-in.
+            # propagates unchanged to a caller that waits for it.
             raise
 
     def _report(

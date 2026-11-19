@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "A K40 variant of the variable tariff: supportStatus as arrayData with the allowed values of the K40 capture, here vta_gateway; the children with the types and value sets of the official local interface description (the basis of this mapping). priceInfo is not described there and has a constructed text shape. Every value is constructed; no prices, no tariff name.",
+    "physical_device_verified": false
+  },
+  "contract": "Every child of /system/variableTariff gives the expected entity kind, disabled by default; nothing is writable through the integration.",
+  "base": [
+    {"id": "/system/variableTariff", "type": "refEnum", "references": [
+      {"id": "/system/variableTariff/supportStatus"}, {"id": "/system/variableTariff/tariffId"},
+      {"id": "/system/variableTariff/ch/currentSetpoint"}, {"id": "/system/variableTariff/ch/highPriceDelta"},
+      {"id": "/system/variableTariff/ch/lowPriceDelta"}, {"id": "/system/variableTariff/ch/midPriceSetpoint"},
+      {"id": "/system/variableTariff/ch/optimization"}, {"id": "/system/variableTariff/ch/status"},
+      {"id": "/system/variableTariff/currentPriceCatagorization"}, {"id": "/system/variableTariff/dhw/currentOpmode"},
+      {"id": "/system/variableTariff/dhw/highPriceEnable"}, {"id": "/system/variableTariff/dhw/lowPriceEnable"},
+      {"id": "/system/variableTariff/dhw/optimization"}, {"id": "/system/variableTariff/dhw/status"},
+      {"id": "/system/variableTariff/priceInfo"}
+    ]},
+    {"id": "/system/variableTariff/supportStatus", "type": "arrayData", "values": ["vta_gateway"], "writeable": 0, "allowedValues": ["not_supported", "vta_gateway", "in_evaluation", "blocked"]},
+    {"id": "/system/variableTariff/tariffId", "type": "stringValue", "value": "tariff-a", "writeable": 1},
+    {"id": "/system/variableTariff/ch/currentSetpoint", "type": "floatValue", "value": 21.5, "writeable": 0, "unitOfMeasure": "C"},
+    {"id": "/system/variableTariff/ch/highPriceDelta", "type": "floatValue", "value": -1.0, "writeable": 1, "unitOfMeasure": "C"},
+    {"id": "/system/variableTariff/ch/lowPriceDelta", "type": "floatValue", "value": 1.0, "writeable": 1, "unitOfMeasure": "C"},
+    {"id": "/system/variableTariff/ch/midPriceSetpoint", "type": "floatValue", "value": 21.0, "writeable": 1, "unitOfMeasure": "C"},
+    {"id": "/system/variableTariff/ch/optimization", "type": "stringValue", "value": "on", "writeable": 1, "allowedValues": ["off", "on"]},
+    {"id": "/system/variableTariff/ch/status", "type": "stringValue", "value": "normal", "writeable": 0},
+    {"id": "/system/variableTariff/currentPriceCatagorization", "type": "floatValue", "value": 2.0, "writeable": 0},
+    {"id": "/system/variableTariff/dhw/currentOpmode", "type": "stringValue", "value": "eco", "writeable": 0, "allowedValues": ["low", "high", "eco"]},
+    {"id": "/system/variableTariff/dhw/highPriceEnable", "type": "stringValue", "value": "no", "writeable": 1, "allowedValues": ["yes", "no"]},
+    {"id": "/system/variableTariff/dhw/lowPriceEnable", "type": "stringValue", "value": "yes", "writeable": 1, "allowedValues": ["yes", "no"]},
+    {"id": "/system/variableTariff/dhw/optimization", "type": "stringValue", "value": "off", "writeable": 1, "allowedValues": ["off", "on"]},
+    {"id": "/system/variableTariff/dhw/status", "type": "stringValue", "value": "normal", "writeable": 0},
+    {"id": "/system/variableTariff/priceInfo", "type": "stringValue", "value": "constructed", "writeable": 0}
+  ],
+  "variants": {}
+}

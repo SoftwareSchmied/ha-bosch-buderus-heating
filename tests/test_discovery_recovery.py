@@ -561,6 +561,34 @@ async def test_full_resource_budget_ends_the_search_at_once(
     assert "/system" not in inventory.resources(GATEWAY)
 
 
+@pytest.mark.parametrize("shape", ["extra_requested", "over_the_budget"])
+async def test_a_start_with_its_extra_allowance_still_searches(
+    hass: HomeAssistant, clock: Clock, shape
+) -> None:
+    """A large zone controller reads beyond the shared budget at the start
+    (its allowance); the search for a missing part gets the same bound
+    instead of giving up at once."""
+    inventory = _inventory(hass)
+    await _known_before(hass, inventory)
+    cloud = Cloud(tree())
+    cloud.down["/system"] = 404
+    coordinator = _coordinator(hass, cloud, inventory)
+    await coordinator.async_refresh()
+    clock.now += RECOVERY_SCHEDULE[0]
+    sent = cloud.requested("/system")
+    known = len(coordinator.resources)
+    if shape == "extra_requested":
+        coordinator.discovery_diagnostics.extra_probes_requested = 3
+        limit = known
+    else:
+        limit = known - 1  # more resources than the shared budget
+    with patch(f"{COORDINATOR}.MAX_DISCOVERY_RESOURCES", limit):
+        await coordinator.async_refresh()
+    recovery = coordinator.discovery_recovery
+    assert recovery.last_result != "resource_limit"
+    assert cloud.requested("/system") > sent
+
+
 async def test_failing_search_is_counted_and_never_blocks_the_poll(
     hass: HomeAssistant, clock: Clock
 ) -> None:

@@ -82,6 +82,13 @@ async def async_setup_controls_ui(hass: HomeAssistant) -> None:
     )
 
 
+async def async_setup_schedule_ui(hass: HomeAssistant) -> None:
+    """TP-07: load the read-only weekly view through the same hook."""
+    await _async_register_module(
+        hass, "bosch_buderus_heating.schedule_ui", "schedule-week"
+    )
+
+
 async def _async_register_module(hass: HomeAssistant, key: str, name: str) -> None:
     if key in hass.data or "frontend" not in hass.config.components:
         return

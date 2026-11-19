@@ -39,8 +39,8 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
-from .i18n import localize
 from .log_helpers import log_failure
+from .name_translations import name_part
 from .pointt import ResourceError, UnexpectedHttpStatus
 from .rrc_energy import (
     ENTRIES_PATH,
@@ -50,6 +50,7 @@ from .rrc_energy import (
     HISTORY_PATH,
     KEY_BY_SLUG,
     KEYS,
+    EnergyKey,
     HistoryRefused,
     HistoryState,
     Rows,
@@ -73,6 +74,11 @@ STORE_VERSION: Final = 1
 _HISTORIES: WeakKeyDictionary[BoschBuderusDataUpdateCoordinator, EnergyHistory] = (
     WeakKeyDictionary()
 )
+
+
+def statistic_name(key: EnergyKey, language: str) -> str:
+    """The name of one statistic in the Home Assistant system language."""
+    return name_part(language, key.name_key)
 
 
 def gateway_digest(key: str, gateway_id: str) -> str:
@@ -419,7 +425,7 @@ class EnergyHistory:
                     else StatisticMeanType.NONE
                 ),
                 has_sum=not temperature,
-                name=localize(language, *key.names),
+                name=statistic_name(key, language),
                 source=DOMAIN,
                 statistic_id=statistic_id(self._digest, slug),
                 unit_class="temperature" if temperature else "energy",

@@ -8,8 +8,12 @@ local access) and never sends a request. Every platform follows the same
 rule, iCom gateways included: only modules with a product name count, and
 without any (an empty list, older firmware, a start from the stored
 inventory) no entity is created, while an existing one keeps its last
-state. A room controller reports no heat generator of its own and never
-gets the entity. The state is written only when what it shows changes.
+state. The attribute ``heat_source_type`` (air, brine or water) comes from
+evidence readings (``heat_source_kind``), not from the module list; with such
+evidence but no named module the entity is created as well, with
+``known: false`` and no state. A room controller reports no heat generator
+of its own and never gets the entity. The state is written only when what
+it shows changes.
 """
 
 from __future__ import annotations
@@ -39,7 +43,10 @@ from .heat_generator import (
     interpret,
     rows_from_cloud,
     rows_from_local,
+    unnamed_hardware_cloud,
+    unnamed_hardware_local,
 )
+from .heat_source_kind import KINDS, SourceKind, classify
 from .local_api.models import SystemInfo
 
 if TYPE_CHECKING:
@@ -52,6 +59,7 @@ if TYPE_CHECKING:
 CLOUD_PATH = "/system/info"
 LOCAL_PATH = "/system/basicInfo"
 _STORED_KEY = "heat_generators"
+_KIND_KEY = "heat_source_type"
 # What the sensor of a gateway shows, so the diagnostics name the same answer.
 _SHOWN: WeakKeyDictionary[object, HeatGenerators] = WeakKeyDictionary()
 
@@ -89,7 +97,18 @@ class HeatGeneratorInputs:
         self._cloud = (snapshot, result)
         return result
 
-    def local(self) -> HeatGenerators | None:
+    def unnamed(self) -> dict[str, dict[str, int]]:
+        """Module rows without a product name, by hardware type."""
+        result: dict[str, dict[str, int]] = {}
+        snapshot = (self._coordinator.data or {}).get(CLOUD_PATH)
+        if snapshot is not None and snapshot.available:
+            result["cloud"] = unnamed_hardware_cloud(snapshot.resource.values)
+        newest = self._newest_local()
+        if newest is not None:
+            result["local"] = unnamed_hardware_local(newest.data.modules)
+        return result
+
+    def _newest_local(self) -> Any:
         selection = getattr(self._coordinator, "local_selection", None)
         if selection is None:
             return None
@@ -103,6 +122,10 @@ class HeatGeneratorInputs:
                     and (newest is None or observation.observed_at > newest.observed_at)
                 ):
                     newest = observation
+        return newest
+
+    def local(self) -> HeatGenerators | None:
+        newest = self._newest_local()
         if newest is None:
             return None
         if self._local is not None and self._local[0] is newest:
@@ -131,7 +154,12 @@ def heat_generator_diagnostics(
         if not supported(coordinator):
             return None
         inputs = HeatGeneratorInputs(coordinator)
-        return diagnostics(inputs.cloud(), inputs.local(), shown_by(coordinator))
+        report = diagnostics(inputs.cloud(), inputs.local(), shown_by(coordinator))
+        kind = classify(coordinator)
+        report["heat_source_type"] = kind.kind
+        report["heat_source_type_evidence"] = list(kind.evidence)
+        report["unnamed_modules"] = inputs.unnamed()
+        return report
     except Exception:  # the report must stay available
         return {"error": "unavailable"}
 
@@ -146,17 +174,23 @@ def shown_by(coordinator: object) -> HeatGenerators | None:
 
 @dataclass(frozen=True, slots=True)
 class _Stored(ExtraStoredData):
-    """The read fields of the shown modules; never a serial number."""
+    """The read fields of the shown modules; never a serial number. The heat
+    source kind is kept as well, so it shows from the start on."""
 
     data: dict[str, object] | None
+    kind: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {_STORED_KEY: self.data}
+        return {_STORED_KEY: self.data, _KIND_KEY: self.kind}
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> Self:
         data = value.get(_STORED_KEY)
-        return cls(data if isinstance(data, dict) else None)
+        kind = value.get(_KIND_KEY)
+        return cls(
+            data if isinstance(data, dict) else None,
+            kind if kind in KINDS else None,
+        )
 
 
 class BoschBuderusHeatGeneratorSensor(
@@ -169,13 +203,14 @@ class BoschBuderusHeatGeneratorSensor(
     _attr_has_entity_name = True
     _attr_translation_key = "heat_generator"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:heat-pump-outline"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
         self._attr_unique_id = heat_generator_unique_id(coordinator.gateway.gateway_id)
         self._inputs = HeatGeneratorInputs(coordinator)
         self._shown: HeatGenerators | None = None
+        # The heat source kind from evidence readings, kept while none.
+        self._kind = SourceKind(None, ())
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -192,27 +227,42 @@ class BoschBuderusHeatGeneratorSensor(
 
     @property
     def extra_state_attributes(self) -> dict[str, object] | None:
-        return self._shown.attributes() if self._shown is not None else None
+        kind = self._kind.kind
+        if self._shown is None:
+            # No module with a product name, but evidence of the kind.
+            return {"heat_source_type": kind, "known": False} if kind else None
+        return {**self._shown.attributes(), "heat_source_type": kind}
 
     @property
     def extra_restore_state_data(self) -> _Stored:
-        return _Stored(self._shown.to_data() if self._shown is not None else None)
+        return _Stored(
+            self._shown.to_data() if self._shown is not None else None,
+            self._kind.kind,
+        )
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (stored := await self.async_get_last_extra_data()) is not None:
+            restored = _Stored.from_dict(stored.as_dict())
             # Worked out again with the table of this version.
-            self._shown = from_data(_Stored.from_dict(stored.as_dict()).data)
+            self._shown = from_data(restored.data)
             self._remember()
+            if restored.kind is not None:
+                # Shown until the evidence is read again (no evidence paths).
+                self._kind = SourceKind(restored.kind, ())
         self._refresh()
 
     def _refresh(self) -> bool:
         """Take the current answer; True when what is shown changed."""
+        kind = classify(self.coordinator)
+        kind_changed = kind.kind is not None and kind.kind != self._kind.kind
+        if kind.kind is not None:
+            self._kind = kind
         chosen, _conflict = choose(
             self._inputs.cloud(), self._inputs.local(), self._shown
         )
         if chosen is None or chosen == self._shown:
-            return False
+            return kind_changed
         self._shown = chosen
         self._remember()
         return True
@@ -261,7 +311,9 @@ def track_heat_generator_sensor(
             )
             is not None
         )
-        return registered or inputs.any()
+        # A heat pump without a named module, but with evidence of its
+        # heat source kind, gets the entity as well (``known: false``).
+        return registered or inputs.any() or classify(coordinator).kind is not None
 
     track_entity_once(
         entry,

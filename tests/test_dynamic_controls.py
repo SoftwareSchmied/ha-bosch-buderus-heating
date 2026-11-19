@@ -117,7 +117,8 @@ async def test_each_enum_family_accepts_and_writes_a_new_offered_code(
     await setup_selects(hass, entry, added.extend)
     entity = added[0]
     assert entity.options == ["OnlyOld", "NewVendorCode"]
-    client.get_resource.return_value = replace(current, value="NewVendorCode")
+    # L16: every control is read live before its write, then read back.
+    client.get_resource.side_effect = [current, replace(current, value="NewVendorCode")]
     await entity.async_select_option("NewVendorCode")
     client.put_resource_value.assert_awaited_once_with(
         "synthetic-gateway", path, "NewVendorCode"
@@ -268,7 +269,10 @@ async def test_aliases_remain_reversible_across_metadata_changes(hass, environme
         ("off", "Off"),
         ("pointt:pointt:off", "pointt:off"),
     ]:
-        client.get_resource.return_value = replace(current, value=raw)
+        client.get_resource.side_effect = [
+            coordinator.data[path].resource,
+            replace(current, value=raw),
+        ]
         await entity.async_select_option(key)
         assert coordinator.data[path].resource.value == raw
     assert [call.args[2] for call in client.put_resource_value.await_args_list] == [

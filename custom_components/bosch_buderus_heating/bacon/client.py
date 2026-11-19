@@ -19,6 +19,7 @@ from ..pointt.retry_after import (
 from ..pointt.transport import RateLimitBackoff
 from .models import (
     CLAIM_URL,
+    LIVE_URL,
     MAX_BYTES,
     USER_AGENT,
     BaconError,
@@ -46,8 +47,16 @@ class BaconClient:
         backoff: RateLimitBackoff | None = None,
         request_semaphore: asyncio.Semaphore | None = None,
         expected_account: str | None = None,
+        live_url: str | None = None,
     ) -> None:
         self.session, self.tokens, self.url, self.clock = session, tokens, url, clock
+        if live_url is None:
+            live_url = (
+                url.removesuffix("devices") + "live"
+                if url.endswith("/devices")
+                else LIVE_URL
+            )
+        self.live_url = live_url
         self.retry_at = 0.0
         self.subject: str | None = None
         self._guard = request_guard
@@ -138,20 +147,7 @@ class BaconClient:
                 if response.status in (401, 403):
                     raise BaconError("authentication")
                 if response.status == 429:
-                    requested = parse_retry_after(
-                        response.headers.get("Retry-After"), now=time()
-                    )
-                    delay = min(
-                        MAX_CLOUD_PAUSE_SECONDS,
-                        max(
-                            MIN_CLOUD_PAUSE_SECONDS,
-                            60 if requested is None else requested,
-                        ),
-                    )
-                    self.retry_at = self.clock() + delay
-                    if self.backoff is not None:
-                        self.backoff.activate(delay)
-                    raise BaconError("rate_limited", delay)
+                    raise self._rate_limited(response)
                 if response.status != 200:
                     raise BaconError("service_unavailable")
                 body = bytearray()
@@ -164,3 +160,67 @@ class BaconClient:
             raise BaconError("connection") from err
         except (ValueError, UnicodeError) as err:
             raise BaconError("invalid_device_list") from err
+
+    def _rate_limited(self, response: aiohttp.ClientResponse) -> BaconError:
+        """Start the shared pause for a 429 answer and return its error."""
+        requested = parse_retry_after(response.headers.get("Retry-After"), now=time())
+        delay = min(
+            MAX_CLOUD_PAUSE_SECONDS,
+            max(MIN_CLOUD_PAUSE_SECONDS, 60 if requested is None else requested),
+        )
+        self.retry_at = self.clock() + delay
+        if self.backoff is not None:
+            self.backoff.activate(delay)
+        return BaconError("rate_limited", delay)
+
+    async def report_live(self) -> None:
+        """Report this account as an active client (empty POST, no body kept).
+
+        Only the status code is used. A 401 or 403 is a rejected report (never a
+        failed sign-in of the integration, and no forced token refresh: the
+        optional report is no proof of access); 404 and 405 mean the service does
+        not offer the report.
+        """
+        self.check_request()
+        try:
+            await self._report_live()
+        except Exception:
+            self._guard()
+            raise
+        self._guard()
+
+    async def _report_live(self) -> None:
+        if self.clock() < self.retry_at:
+            raise BaconError("paused", self.retry_at - self.clock())
+        token = await self.access_token()
+        async with self._semaphore:
+            self.check_request()
+            if self.clock() < self.retry_at:
+                raise BaconError("paused", self.retry_at - self.clock())
+            await self._request_live(token)
+
+    async def _request_live(self, token: str) -> None:
+        """Perform one bounded POST."""
+        try:
+            async with self.session.post(
+                self.live_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "User-Agent": USER_AGENT,
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+                allow_redirects=False,
+            ) as response:
+                self._guard()
+                status = response.status
+                if status in (401, 403):
+                    raise BaconError("live_rejected")
+                if status == 429:
+                    raise self._rate_limited(response)
+                if status in (404, 405):
+                    raise BaconError("live_unsupported")
+                if not 200 <= status < 300:
+                    raise BaconError("service_unavailable")
+                return
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise BaconError("connection") from err

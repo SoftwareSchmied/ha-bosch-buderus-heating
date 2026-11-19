@@ -170,6 +170,49 @@ def rows_from_local(modules: Iterable[object]) -> tuple[ModuleRow, ...]:
     return tuple(rows)
 
 
+def unnamed_hardware_cloud(values: Iterable[object]) -> dict[str, int]:
+    """Rows of a cloud answer without a product name, counted by hardware
+    type (``unknown`` without one); never a serial number."""
+    counts: dict[str, int] = {}
+    for number, item in enumerate(values):
+        if number >= MAX_ROWS:
+            break
+        if not isinstance(item, Mapping):
+            continue
+        identifiers = _identifiers(item.get(key) for key in _SERIAL_FIELDS)
+        if _shown(item.get("ProductName"), MAX_NAME_LENGTH, identifiers) is not None:
+            continue
+        hardware = _shown(
+            item.get("ModuleHwIdentStr"), MAX_HARDWARE_LENGTH, identifiers
+        )
+        key = hardware or "unknown"
+        counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def unnamed_hardware_local(modules: Iterable[object]) -> dict[str, int]:
+    """The same for a decoded local answer."""
+    counts: dict[str, int] = {}
+    for number, module in enumerate(modules):
+        if number >= MAX_ROWS:
+            break
+        identifiers = _identifiers(
+            (
+                getattr(module, "serial_number", None),
+                getattr(module, "product_serial", None),
+            )
+        )
+        name = getattr(module, "product_name", None)
+        if _shown(name, MAX_NAME_LENGTH, identifiers) is not None:
+            continue
+        hardware = _shown(
+            getattr(module, "hardware", None), MAX_HARDWARE_LENGTH, identifiers
+        )
+        key = hardware or "unknown"
+        counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
 # --------------------------------------------------------------- data table
 
 

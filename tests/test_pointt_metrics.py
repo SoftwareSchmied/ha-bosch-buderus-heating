@@ -7,6 +7,7 @@ from custom_components.bosch_buderus_heating.pointt.metrics import (
     RequestMetrics,
     bulk_resource_count,
     request_category,
+    resource_path_category,
 )
 
 
@@ -57,6 +58,8 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "requests_by_category": {"bulk": 2, "other": 1},
         "requests_by_type": {"bulk": 2, "fallback": 1},
         "requests_by_method": {"GET": 1, "POST": 2},
+        "writes_by_path_category": {},
+        "resource_errors_by_path_category": {},
         "responses_by_status_class": {"2xx": 1, "4xx": 1, "other": 1},
         "outcomes": {
             "rate_limited": 1,
@@ -326,3 +329,60 @@ def test_p95_still_uses_the_bucket_bound_below_the_maximum() -> None:
     p95, maximum = _rolling_p95([80.0] * 19 + [900.0, 4000.0])
     assert maximum == 4000.0
     assert p95 == 1000.0
+
+
+def test_write_and_failed_single_reads_name_their_path_category() -> None:
+    metrics = RequestMetrics()
+    metrics.record_request(
+        category="resource",
+        method="PUT",
+        status=204,
+        outcome="success",
+        duration_ms=5,
+        resource_path="/heatingCircuits/hc2/temperatureLevels/day",
+    )
+    metrics.record_request(
+        category="resource",
+        method="GET",
+        status=404,
+        outcome="resource_error",
+        duration_ms=5,
+        resource_path="/dhwCircuits/dhw1/foo",
+    )
+    metrics.record_request(
+        category="resource",
+        method="GET",
+        status=200,
+        outcome="success",
+        duration_ms=5,
+        resource_path="/system/info",
+    )
+    metrics.record_request(
+        category="bulk",
+        method="POST",
+        status=200,
+        outcome="success",
+        duration_ms=5,
+        bulk_size=2,
+        resource_path="/heatingCircuits/hc1",
+    )
+    snapshot = metrics.snapshot()
+    assert snapshot["writes_by_path_category"] == {"heatingCircuits": 1}
+    assert snapshot["resource_errors_by_path_category"] == {"dhwCircuits": 1}
+    recent = snapshot["recent_requests"]
+    assert [event.get("path_category") for event in recent] == [
+        "heatingCircuits",
+        "dhwCircuits",
+        "system",
+        None,
+    ]
+    assert "hc2" not in repr(snapshot)
+
+
+def test_path_category_never_carries_identifiers() -> None:
+    assert resource_path_category(None) is None
+    assert resource_path_category("") is None
+    assert resource_path_category("/heatingCircuits/hc1/x") == "heatingCircuits"
+    assert resource_path_category("holidayMode/3?x=1") == "holidayMode"
+    assert resource_path_category("/ab-cd/1") == "other"
+    assert resource_path_category("/" + "a" * 40) == "other"

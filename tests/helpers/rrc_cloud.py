@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from contextlib import ExitStack
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -46,6 +46,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     RequestTimeout,
     Resource,
     ResourceError,
+    ResourceNotFound,
     ServiceUnavailable,
 )
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
@@ -140,6 +141,11 @@ class RrcCloud:
         self.rate_limit_writes: dict[str, float | None] = {}
         # Query reads: (path, sorted query items as text) -> resource.
         self.queries: dict[tuple[str, tuple[tuple[str, str], ...]], Resource] = {}
+        # Recording reads (path, interval), kept apart from ``calls``. A
+        # room controller's tree has no recordings and answers 404, unless
+        # a test answers them: ``recording(gateway_id, path, interval)``.
+        self.recordings: list[tuple[str, str]] = []
+        self.recording: Callable[[str, str, str], Awaitable[Any]] | None = None
         # POST and DELETE behaviour per path; by default a POST is recorded
         # and a DELETE removes the path.
         self.post_handlers: dict[str, Callable[[Any], None]] = {}
@@ -256,6 +262,12 @@ class RrcCloud:
             raise ResourceError(path, 404)
         return self.queries[key]
 
+    async def get_recording(self, gateway_id, path, interval, **_kwargs):
+        self.recordings.append((path, interval))
+        if self.recording is not None:
+            return await self.recording(gateway_id, path, interval)
+        raise ResourceNotFound(path, 404)
+
     # -------------------------------------------------------------- writes
     def _write(self, method: str, path: str, value: Any) -> None:
         self.calls[method, path] += 1
@@ -361,6 +373,14 @@ def cloud_patches(
             PointTClient,
             "get_resource_query",
             AsyncMock(side_effect=cloud.get_resource_query),
+            create=True,
+        ),
+        # The plant's recordings (read by every set-up entry with a heat
+        # source); never through the real client and its sign-in.
+        patch.object(
+            PointTClient,
+            "get_recording",
+            AsyncMock(side_effect=cloud.get_recording),
             create=True,
         ),
         # F1: the firmware update list names no gateway unless a test says so.

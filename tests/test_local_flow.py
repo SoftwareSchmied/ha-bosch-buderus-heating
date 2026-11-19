@@ -7,6 +7,7 @@ from dataclasses import replace
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
@@ -88,6 +89,9 @@ async def settle(hass, manager, result):
 
 
 async def submit(hass, manager, result, data):
+    if result.get("step_id") == "local_result" and data == {"confirm": True}:
+        # Since 0.9.2 the page has no box: OK alone saves.
+        data = {}
     return await settle(
         hass, manager, await manager.async_configure(result["flow_id"], data)
     )
@@ -96,6 +100,8 @@ async def submit(hass, manager, result, data):
 async def start(hass, entry, target):
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    # The local setup is offered in the connections menu.
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_target"
     return await submit(hass, manager, result, {"target": target})
@@ -143,7 +149,7 @@ async def test_options_import_to_completion_preserves_owner_and_reads_twice(
     before = management.current()
     manager = hass.config_entries.options
     result = await imported(hass, entry, target)
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert result["type"] == FlowResultType.FORM
     assert supported[0] == [PortRole.RESOURCES] and not supported[1]
     assert result["data_schema"]({})["confirm"] is False
@@ -217,7 +223,7 @@ async def test_a_kept_token_is_sent_only_after_the_new_certificate_is_confirmed(
     assert selector.config["options"] == ["label", "keep", "token"]
     assert result["data_schema"]({})["method"] == "label"
     result = await submit(hass, manager, result, {"method": "keep"})
-    assert result["step_id"] == "local_certificate", result.get("errors")
+    assert result["step_id"] == "local_certificate_data", result.get("errors")
     assert len(reads) == sent  # nothing sent with the token yet
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result"
@@ -304,43 +310,50 @@ async def test_native_discovery_selects_existing_owner_without_secret_access(
 
 async def test_an_ignored_discovery_stays_ignored(hass, supported, journal):
     entry, _, _, _ = registered(hass)
-    manager = hass.config_entries.flow
-    result = await manager.async_init(
-        DOMAIN, context={"source": "zeroconf"}, data=info()
-    )
-    assert result["step_id"] == "local_owner"
-    unique_id = manager.async_get(result["flow_id"])["context"]["unique_id"]
-    assert unique_id == flow.discovery_unique_id(info())
-    # Stable and opaque: no announced name, host or address in it.
-    assert unique_id.startswith("local_discovery_")
-    assert not any(part in unique_id for part in ("192.0.2", "gateway", "arbitrary"))
-    assert flow.discovery_unique_id(info(host="192.0.2.9")) == unique_id
-    assert flow.discovery_unique_id(info(name="other")) != unique_id
-    ignored = await manager.async_init(
-        DOMAIN,
-        context={"source": "ignore"},
-        data={"unique_id": unique_id, "title": "Local gateway"},
-    )
-    assert ignored["type"] is FlowResultType.CREATE_ENTRY
-    assert not manager.async_progress_by_handler(DOMAIN)
-    # Also after a restart: the hints in memory are gone, the entry stays.
-    hass.data.pop(discovery._HINTS, None)
-    hass.data.pop(discovery._FLOWS, None)
-    again = await manager.async_init(
-        DOMAIN, context={"source": "zeroconf"}, data=info(host="192.0.2.9")
-    )
-    assert again["type"] is FlowResultType.ABORT
-    assert again["reason"] == "already_configured"
-    # Another gateway is still offered, and never with the ignored entry.
-    other = await manager.async_init(
-        DOMAIN,
-        context={"source": "zeroconf"},
-        data=info(name="other", host="192.0.2.7"),
-    )
-    assert other["step_id"] == "local_owner"
-    owners = next(iter(other["data_schema"].schema.values())).config["options"]
-    assert [item["value"] for item in owners] == [entry.entry_id]
-    assert entry.unique_id == entry.entry_id  # existing entries keep theirs
+    # The flows load the integration, which would set up the registered
+    # entry and sign in to the real cloud; only the flows matter here.
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        manager = hass.config_entries.flow
+        result = await manager.async_init(
+            DOMAIN, context={"source": "zeroconf"}, data=info()
+        )
+        assert result["step_id"] == "local_owner"
+        unique_id = manager.async_get(result["flow_id"])["context"]["unique_id"]
+        assert unique_id == flow.discovery_unique_id(info())
+        # Stable and opaque: no announced name, host or address in it.
+        assert unique_id.startswith("local_discovery_")
+        hidden = ("192.0.2", "gateway", "arbitrary")
+        assert not any(part in unique_id for part in hidden)
+        assert flow.discovery_unique_id(info(host="192.0.2.9")) == unique_id
+        assert flow.discovery_unique_id(info(name="other")) != unique_id
+        ignored = await manager.async_init(
+            DOMAIN,
+            context={"source": "ignore"},
+            data={"unique_id": unique_id, "title": "Local gateway"},
+        )
+        assert ignored["type"] is FlowResultType.CREATE_ENTRY
+        assert not manager.async_progress_by_handler(DOMAIN)
+        # Also after a restart: the hints in memory are gone, the entry stays.
+        hass.data.pop(discovery._HINTS, None)
+        hass.data.pop(discovery._FLOWS, None)
+        again = await manager.async_init(
+            DOMAIN, context={"source": "zeroconf"}, data=info(host="192.0.2.9")
+        )
+        assert again["type"] is FlowResultType.ABORT
+        assert again["reason"] == "already_configured"
+        # Another gateway is still offered, and never with the ignored entry.
+        other = await manager.async_init(
+            DOMAIN,
+            context={"source": "zeroconf"},
+            data=info(name="other", host="192.0.2.7"),
+        )
+        assert other["step_id"] == "local_owner"
+        owners = next(iter(other["data_schema"].schema.values())).config["options"]
+        assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
+        assert entry.unique_id == entry.entry_id  # existing entries keep theirs
 
 
 async def test_discovery_without_any_entry_offers_a_local_only_setup(hass):
@@ -412,6 +425,51 @@ async def test_a_discovered_gateway_without_entry_is_set_up_locally(
     assert later["reason"] == "already_configured"
 
 
+@pytest.mark.parametrize("continued", [False, True])
+async def test_a_new_local_entry_next_to_others_preselects_the_found_gateway(
+    hass, supported, journal, continued
+):
+    """With entries already set up, two gateways are announced (the
+    configured one as well) and the hint may have expired: the gateway the
+    notice was for is still preselected in the new entry's address step."""
+    registered(hass)
+    discovery.remember_discovery(hass, info(name="other", host="192.0.2.7"))
+    manager = hass.config_entries.flow
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        result = await manager.async_init(
+            DOMAIN,
+            context={"source": "zeroconf"},
+            data=info(name="found", host="192.0.2.5"),
+        )
+        assert result["step_id"] == "local_owner"
+        hass.data.pop(discovery._HINTS, None)
+        result = await manager.async_configure(
+            result["flow_id"], {"owner": "new_entry"}
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    entry = result["result"]
+    # The other gateway keeps announcing itself: no single hint to go by.
+    discovery.remember_discovery(hass, info(name="other", host="192.0.2.7"))
+    options = hass.config_entries.options
+    if continued:
+        # The prepared options flow, continued as named in ``next_flow``.
+        step = await options.async_configure(result["next_flow"][1])
+    else:
+        # As the frontend does: a new options flow takes over.
+        step = await options.async_init(entry.entry_id)
+    assert step["step_id"] == "local_address"
+    key = next(iter(step["data_schema"].schema))
+    assert key.default() == "192.0.2.5"
+    hosts = [
+        item["value"]
+        for item in next(iter(step["data_schema"].schema.values())).config["options"]
+    ]
+    assert "192.0.2.5" in hosts
+
+
 async def test_an_untouched_notice_ends_once_its_gateway_is_configured(
     hass, monkeypatch
 ):
@@ -440,7 +498,7 @@ async def test_an_entry_added_meanwhile_turns_the_notice_into_an_owner_choice(
     result = await manager.async_configure(result["flow_id"], {})
     assert result["step_id"] == "local_owner"
     owners = next(iter(result["data_schema"].schema.values())).config["options"]
-    assert [item["value"] for item in owners] == [entry.entry_id]
+    assert [item["value"] for item in owners] == [entry.entry_id, "new_entry"]
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
@@ -469,7 +527,7 @@ async def test_close_after_token_import_resumes_without_auth_post(
     result = await start(hass, entry, target)
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert (await journal.records())[0].credentials == record.credentials
     assert supported[0] == [PortRole.RESOURCES, PortRole.RESOURCES]
 
@@ -651,7 +709,7 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
         and LABEL.password not in journal._path.read_text()
     )
     if status == 200:
-        assert result["step_id"] == "local_certificate"
+        assert result["step_id"] == "local_certificate_data"
         assert inspections == [PortRole.AUTHENTICATION, PortRole.RESOURCES]
         result = await submit(hass, manager, result, {"confirm": True})
         assert result["step_id"] == "local_result"
@@ -719,7 +777,7 @@ async def test_rejected_label_sign_in_retries_without_new_confirmations(
     assert result["errors"] == {"base": "local_invalid_credentials"}
     result = await submit(hass, manager, result, values)
     assert len(calls) == 2 and not statuses
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     assert inspections == [PortRole.AUTHENTICATION, PortRole.RESOURCES]
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result"
@@ -753,13 +811,13 @@ async def test_continue_after_a_temporary_error_keeps_the_confirmed_certificate(
     monkeypatch.setattr(setup, "read_local_probe", flaky)
     manager = hass.config_entries.options
     result = await imported(hass, entry, target)
-    assert result["step_id"] == "local_certificate"
+    assert result["step_id"] == "local_certificate_data"
     result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
     assert inspections == [PortRole.RESOURCES, PortRole.RESOURCES]
     assert result["step_id"] == (
-        "local_result" if certificate == "same" else "local_certificate"
+        "local_result" if certificate == "same" else "local_certificate_data"
     )
     assert management.current().minor_version == 1
 
@@ -847,7 +905,7 @@ async def test_saved_certificate_is_reused_only_when_exactly_equal(
     monkeypatch.setattr(flow, "inspect_local_certificate", inspect)
     result = await imported(hass, entry, target)
     assert result["step_id"] == (
-        "local_certificate" if change == "different" else "local_result"
+        "local_certificate_data" if change == "different" else "local_result"
     )
     if change == "different":
         assert result["description_placeholders"]["previous"] == (b"a" * 32).hex()
@@ -867,3 +925,52 @@ async def test_owner_removed_while_token_form_is_open_never_saves(
     result = await submit(hass, manager, result, {"token": TOKEN})
     assert result["errors"]["base"] == "local_configuration_changed"
     assert not journal._path.exists()
+
+
+async def test_the_only_installation_is_preselected(hass, supported, journal):
+    """#137: with one installation that fits, it is preselected and a new
+    system stays a choice of its own."""
+    entry, _, _, target = registered(hass)
+    manager = hass.config_entries.options
+    result = await manager.async_init(entry.entry_id)
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
+    result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
+    assert result["step_id"] == "local_target"
+    assert result["data_schema"]({})["target"] == target
+    selector = next(iter(result["data_schema"].schema.values()))
+    assert [option["value"] for option in selector.config["options"]] == [
+        target,
+        flow.NEW_PLANT,
+    ]
+    result = await submit(hass, manager, result, {"target": target})
+    assert result["step_id"] == "local_address"
+
+
+async def test_two_installations_are_listed_and_none_is_preselected(
+    hass, supported, journal
+):
+    """#137: with two installations (for example a heat pump and a wallbox)
+    nothing is preselected, so the choice stays with the user."""
+    entry, management, _, target = registered(hass)
+    current = management.current()
+    other = "second-installation"
+    both = replace(
+        current, targets={**current.targets, other: replace(current.targets[target])}
+    )
+    manager = hass.config_entries.options
+    with patch(
+        "custom_components.bosch_buderus_heating.configuration_management"
+        ".ConfigurationManagement.current",
+        return_value=both,
+    ):
+        result = await manager.async_init(entry.entry_id)
+        result = await submit(hass, manager, result, {"next_step_id": "connections"})
+        result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
+    assert result["step_id"] == "local_target"
+    ((field, selector),) = result["data_schema"].schema.items()
+    assert field.default is vol.UNDEFINED
+    assert [option["value"] for option in selector.config["options"]] == [
+        target,
+        other,
+        flow.NEW_PLANT,
+    ]

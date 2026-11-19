@@ -3,9 +3,11 @@
 A target set in the mode auto goes to ``temporaryRoomSetpoint``: one PUT
 after a fresh read of the mode, the temporary setpoint and the heating
 context, confirmed by a read-back. A clear button writes -1 when the
-advertised limits include it. The shapes follow an iCom gateway (value -1,
-limits 5 to 30) and variants with -1 in the limits; every value is
-constructed. Nothing here confirms behaviour on a real device.
+advertised limits include it, and also when they leave it out (then the
+button is created disabled; see ``test_write_hardening``). The shapes follow
+an iCom gateway (value -1, limits 5 to 30) and variants with -1 in the
+limits; every value is constructed. Nothing here confirms behaviour on a
+real device.
 """
 
 from __future__ import annotations
@@ -128,14 +130,29 @@ async def test_manual_mode_still_writes_the_manual_setpoint(hass):
     assert entity.extra_state_attributes == {"temporary_override": False}
 
 
-async def test_temporary_changed_on_the_gateway_refuses_the_write(hass):
+@pytest.mark.parametrize("on_gateway", [23.0, -1.0])
+async def test_temporary_changed_on_the_gateway_takes_the_new_target(hass, on_gateway):
+    """The gateway changed or ended the temporary setpoint (at a switch
+    point) since the last poll: the new target is written all the same,
+    against the current reading, in one request."""
+    coordinator, entity, cloud = _circuit(hass)
+    cloud.state[TEMPORARY] = replace(cloud.state[TEMPORARY], value=on_gateway)
+    await entity.async_set_temperature(temperature=22)
+    assert cloud.puts == [(TEMPORARY, 22.0)]
+    assert coordinator.data[TEMPORARY].resource.value == 22.0
+
+
+async def test_temporary_target_is_checked_on_its_current_flags(hass):
+    """Read again with the write: a setting the gateway no longer uses is
+    not written."""
     _, entity, cloud = _circuit(hass)
-    cloud.state[TEMPORARY] = replace(cloud.state[TEMPORARY], value=23.0)
+    cloud.state[TEMPORARY] = replace(
+        cloud.state[TEMPORARY],
+        metadata=replace(cloud.state[TEMPORARY].metadata, used=False),
+    )
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
     assert cloud.puts == []
-    # The fresh reading is shown at once.
-    assert entity.native_target_temperature == 23
 
 
 async def test_unconfirmed_write_is_sent_once_and_reported(hass):
@@ -259,10 +276,14 @@ def test_off_and_clear_readings_show_the_program_target(hass, value, active):
 # The clear button -----------------------------------------------------------
 
 
-def test_clear_button_only_where_the_limits_take_minus_one(hass):
+def test_clear_button_only_where_minus_one_can_be_written(hass):
     coordinator, _, _ = _circuit(hass)
     resources = {path: item.resource for path, item in coordinator.data.items()}
-    assert clear_button_descriptions(resources, GENERIC_CONTEXT) == ()
+    # Outside the limits (5 to 30): written as the app does, disabled.
+    assert [
+        item.entity_registry_enabled_default
+        for item in clear_button_descriptions(resources, GENERIC_CONTEXT)
+    ] == [False]
     resources[TEMPORARY] = _temporary(minimum=-1.0)
     assert [
         item.key for item in clear_button_descriptions(resources, GENERIC_CONTEXT)
@@ -276,12 +297,14 @@ def test_clear_button_only_where_the_limits_take_minus_one(hass):
     assert clear_button_descriptions(resources, GENERIC_CONTEXT) == ()
 
 
-@pytest.mark.parametrize(("minimum", "count"), [(-1.0, 1), (5.0, 0)])
+@pytest.mark.parametrize(("minimum", "count"), [(-1.0, 1), (5.0, 1)])
 async def test_button_platform_adds_the_clear_button_once(hass, minimum, count):
     coordinator, _, _ = _circuit(hass, temporary=_temporary(22.0, minimum=minimum))
     lifecycle = _Lifecycle()
     scope = SimpleNamespace(
         coordinators=(coordinator,),
+        wallboxes=(),
+        aircons=(),
         bacon=None,
         async_on_unload=lifecycle.async_on_unload,
     )
@@ -342,8 +365,10 @@ async def test_clear_button_without_a_current_reading_does_not_deny_the_setpoint
     assert cloud.puts == []
 
 
-async def test_clear_button_refuses_without_minus_one_in_the_limits(hass):
-    coordinator, _, cloud = _circuit(hass, temporary=_temporary(22.0))
+async def test_clear_button_refuses_minus_one_off_the_grid(hass):
+    coordinator, _, cloud = _circuit(
+        hass, temporary=_temporary(22.0, minimum=-1.5, step_size=1.0)
+    )
     button = _button(hass, coordinator)
     assert not button.available
     with pytest.raises(ServiceValidationError):

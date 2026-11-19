@@ -224,7 +224,10 @@ def test_operating_state_uses_reports_not_humidity_comparison(
         ({}, None),
         ({"error": None}, False),
         ({"error": {}}, True),
-        ({"error": {"causeCode": "private unknown", "errorClass": "99999"}}, True),
+        (
+            {"error": {"causeCode": "private unknown", "errorClass": "private-class"}},
+            True,
+        ),
         ({"error": []}, None),
         ({"error": False}, None),
         ({"error": "unknown"}, None),
@@ -245,7 +248,7 @@ def test_error_info_presence_is_not_a_guessed_error_class(info, expected):
     sensor = BaconDryStatus(account, "serial-A", "device_error")
     assert sensor.is_on is expected and sensor.available == (expected is not None)
     assert unit.device.error_present is expected
-    for value in ("private unknown", "99999", "causeCode", "errorClass"):
+    for value in ("private unknown", "private-class", "causeCode", "errorClass"):
         assert value not in repr(unit.device) and value not in json.dumps(
             account.diagnostics()
         )
@@ -270,12 +273,14 @@ def test_error_ordering_retained_data_and_reconnect_cannot_clear_live_error():
     emit(account, "topics/info", {**data["info"], "timestamp": 6, "error": None})
     assert error.is_on is False and unit.action == Action.DRYING
     unit.device.alive_at -= 3601
-    assert not error.available and not unit.available
+    assert error.available and unit.available
     account._disconnected()
     account.connected = True
     account.generation += 1
-    emit(account, "topics/info", {**data["info"], "timestamp": 7}, retained=True)
     assert not error.available
+    emit(account, "topics/info", {**data["info"], "timestamp": 7}, retained=True)
+    # The unit is available again; a retained message cannot tell about errors.
+    assert account.available("serial-A") and error.is_on is None
     emit(account, "topics/info", {**data["info"], "timestamp": 8})
     assert error.is_on is False and unit.action is None
 

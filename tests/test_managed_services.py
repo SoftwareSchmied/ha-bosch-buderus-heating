@@ -117,7 +117,7 @@ async def test_diagnostics_keep_scoped_relationships_without_requests_or_ids(
         calls = list(backend.calls)
         result = await async_get_config_entry_diagnostics(hass, entry)
         assert backend.calls == calls
-        assert result["diagnostics_schema"] == 47
+        assert result["diagnostics_schema"] == 48
         assert result["setup"]["runtime_available"]
         assert len(result["connections"]) == (2 if state == "removed" else 3)
         assert len(result["targets"]) == len(manager.current().targets)
@@ -223,8 +223,8 @@ async def test_offline_notification_option_remains_available_after_last_connecti
         form = await flow.async_step_notifications()
         assert form["type"] is FlowResultType.FORM
         result = await flow.async_step_notifications({CONF_FAULT_NOTIFICATIONS: []})
-        # Saved to the entry at once; the dialog returns to its menu.
-        assert result["step_id"] == "init"
+        # Saved to the entry at once; the outcome page leads to its menu.
+        assert result["step_id"] == "result_notifications_saved"
         assert "targets" in entry.options
         assert not entry.options[CONF_FAULT_NOTIFICATIONS][
             gateway_notification_key(HEAT)
@@ -544,7 +544,7 @@ async def test_notification_preferences_can_hide_and_reshow_retained_offline_fau
                     else [],
                 }
             )
-            assert result["step_id"] == "init"
+            assert result["step_id"] == "result_notifications_saved"
             await hass.async_block_till_done()
             assert (key in notices) == enabled
         assert "not yet been confirmed" in notices[key]["message"]

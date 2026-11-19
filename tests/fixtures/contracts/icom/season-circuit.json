@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "family": "icom",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "The base follows the shapes of suWiSwitchMode, suWiThreshold and controlType in gateway-shapes.json (an iCom gateway with a boiler controller). The heat pump and cooling variants follow the behaviour of the manufacturer's app (summer/winter codes automatic, forced, cooling, off; cooling threshold and cooling setpoint as floatValue). Every value and limit is constructed. No identifier.",
+    "physical_device_verified": false
+  },
+  "contract": "Summer/winter switching and heating limit of one heating circuit, the cooling threshold and the cooling setpoint. Each variant replaces (set) or removes (remove) resources of the base.",
+  "base": [
+    {"id": "/heatingCircuits/hc1/controlType", "type": "stringValue", "value": "outdoorTemperature", "writeable": 1, "allowedValues": ["outdoorTemperature", "roomTemperature", "outdoorRoomTemperature", "constants", "ISRC"]},
+    {"id": "/heatingCircuits/hc1/currentSuWiMode", "type": "stringValue", "value": "forced", "writeable": 0, "allowedValues": ["off", "forced", "cooling"]},
+    {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "off"]},
+    {"id": "/heatingCircuits/hc1/suWiThreshold", "type": "floatValue", "value": 17, "writeable": 1, "unitOfMeasure": "C", "minValue": 10, "maxValue": 30}
+  ],
+  "variants": {
+    "V1": {"note": "As the iCom shape: automatic, forced, off; heating limit 10 to 30 without stepSize.", "set": [], "remove": []},
+    "V2": {
+      "note": "Heat pump with cooling: all four codes, cooling threshold 15 to 35 in steps of 0.5, cooling setpoint 18 to 30.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "cooling", "off"]},
+        {"id": "/heatingCircuits/hc1/cooling/outdoorThreshold", "type": "floatValue", "value": 24, "writeable": 1, "unitOfMeasure": "C", "minValue": 15, "maxValue": 35, "stepSize": 0.5},
+        {"id": "/heatingCircuits/hc1/cooling/roomTempSetpoint", "type": "floatValue", "value": 25, "writeable": 1, "unitOfMeasure": "C", "minValue": 18, "maxValue": 30, "stepSize": 0.5},
+        {"id": "/heatingCircuits/hc1/cooling/operationMode", "type": "stringValue", "value": "auto", "writeable": 1, "allowedValues": ["auto", "manual", "off"]}
+      ],
+      "remove": []
+    },
+    "V3": {
+      "note": "Cooling only: automatic, cooling, off.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "cooling", "off"]}
+      ],
+      "remove": []
+    },
+    "V4": {
+      "note": "An unknown additional code.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "off", "holiday"]}
+      ],
+      "remove": []
+    },
+    "V5": {
+      "note": "No allowedValues.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1}
+      ],
+      "remove": []
+    },
+    "V6": {
+      "note": "Run by a room controller.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/controlType", "type": "stringValue", "value": "ISRC", "writeable": 1, "allowedValues": ["outdoorTemperature", "roomTemperature", "outdoorRoomTemperature", "constants", "ISRC"]}
+      ],
+      "remove": []
+    },
+    "V7": {
+      "note": "Offered, not used now (string flags).",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "off"], "used": "false", "available": "true"},
+        {"id": "/heatingCircuits/hc1/suWiThreshold", "type": "floatValue", "value": 17, "writeable": 1, "unitOfMeasure": "C", "minValue": 10, "maxValue": 30, "used": "false", "available": "true"}
+      ],
+      "remove": []
+    },
+    "V8": {
+      "note": "Not available (string flags).",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "off"], "used": "true", "available": "false"},
+        {"id": "/heatingCircuits/hc1/suWiThreshold", "type": "floatValue", "value": 17, "writeable": 1, "unitOfMeasure": "C", "minValue": 10, "maxValue": 30, "used": "true", "available": "false"}
+      ],
+      "remove": []
+    },
+    "V9": {
+      "note": "K40 shape: no suWi paths; the season switching is central.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/heatCoolMode", "type": "stringValue", "value": "heat", "writeable": 0, "allowedValues": ["heat", "cool"]},
+        {"id": "/system/seasonOptimizer/mode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["off", "automatic", "forcedHeat"]}
+      ],
+      "remove": ["/heatingCircuits/hc1/suWiSwitchMode", "/heatingCircuits/hc1/suWiThreshold"]
+    },
+    "V10": {
+      "note": "Cooling setpoint from 0 (0 switches the cooling off in the app).",
+      "set": [
+        {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "cooling", "off"]},
+        {"id": "/heatingCircuits/hc1/cooling/roomTempSetpoint", "type": "floatValue", "value": 25, "writeable": 1, "unitOfMeasure": "C", "minValue": 0, "maxValue": 30, "stepSize": 0.5, "state": [{"off": 0}]}
+      ],
+      "remove": []
+    },
+    "V11": {
+      "note": "Cooling setpoint without limits.",
+      "set": [
+        {"id": "/heatingCircuits/hc1/cooling/roomTempSetpoint", "type": "floatValue", "value": 25, "writeable": 1, "unitOfMeasure": "C"}
+      ],
+      "remove": []
+    },
+    "V12": {
+      "note": "Boiler: the cooling directory answers 403, the setpoint 404 (gateway-shapes.json); nothing below cooling is read.",
+      "set": [],
+      "remove": [],
+      "unavailable": {"403": ["/heatingCircuits/hc1/cooling"], "404": ["/heatingCircuits/hc1/cooling/roomTempSetpoint"]}
+    }
+  }
+}

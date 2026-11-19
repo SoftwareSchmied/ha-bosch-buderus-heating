@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Logg på med SingleKey ID",
-        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
+        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`. Hvis SingleKey ID viser en side som varsler en videresending og ingenting skjer, velger du lenken eller knappen på siden.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
         "data": {
           "redirect_url": "Hele omdirigeringsadressen"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Konfigurer på nytt og søk på nytt",
-        "description": "Velg appens merke, gatewayer og forespørselsprofil. Lagring laster integrasjonen på nytt og utfører et fullstendig ressurssøk. Bruk dette etter en fastvareoppdatering eller når varmekretser, varmtvannsanlegg, varmekilder eller gatewayer har endret seg. **Standard** leser gjeldende driftsverdier hvert minutt. **Skyvennlig** reduserer skytrafikken ved å lese dem hvert andre minutt og alle andre skiftende verdier sjeldnere. Hvis du bytter appens merke, må du logge på med SingleKey ID på nytt.",
+        "description": "Velg appmerke, gatewayer og spørringsprofil. Når du lagrer, lastes integrasjonen inn på nytt og søker etter alle ressurser igjen, for eksempel etter en fastvareoppdatering eller et endret anlegg. Bytte av appmerke krever en ny SingleKey ID-pålogging.",
         "data": {
           "brand": "Appens merke",
           "gateway_ids": "Gatewayer",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Velg det eksisterende oppsettet",
-        "description": "Velg oppsettet denne lokale gatewayen hører til. Dette oppretter ikke et nytt anlegg.",
+        "description": "Velg oppsettet denne lokale gatewayen hører til, eller sett den opp som et nytt oppsett med bare lokal tilgang.",
         "data": {
-          "owner": "Eksisterende oppsett"
+          "owner": "Oppsett"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Velg anlegget",
-        "description": "Velg anlegget som skal kobles til lokalt. Gateway-identiteten kontrolleres før lagring.",
+        "description": "Velg varmesystemet du vil koble til lokalt: varmepumpen eller kjelen, ikke en ladeboks eller et klimaanlegg. Gateway-identiteten kontrolleres før lagring.",
         "data": {
           "target": "Anlegg / gateway"
         }
@@ -109,6 +109,13 @@
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
+      "local_certificate_data": {
+        "title": "Bekreft sertifikatet til dataporten",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
         "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Bekreft den lokale tilkoblingen",
-        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet.",
-        "data": {
-          "confirm": "Lagre denne lokale tilkoblingen"
-        }
+        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet. Lukk i stedet dialogen for ikke å lagre noe."
       },
       "local_retry": {
         "title": "Den lokale sjekken ble ikke fullført",
@@ -151,6 +155,7 @@
       "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
+      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Hvis siden sier at du blir videresendt og ingenting skjer, velger du lenken eller knappen på siden. Kopier deretter `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
       "gateway_changed": "Gatewaylisten endret seg mens denne dialogen var åpen. Lukk dialogen og åpne Konfigurer på nytt.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
       "unknown": "Det oppstod en uventet feil i skytilgangen. Vent litt og prøv igjen.",
@@ -172,13 +177,14 @@
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
       "local_certificate_changed": "Sertifikatet kunne ikke bekreftes eller har endret seg. Kontroller gateway-sertifikatet på nytt før du fortsetter.",
+      "local_certificate_unconfirmed": "Kryss av for å bekrefte sertifikatet. Hvis det ikke hører til gatewayen din, lukker du dialogen; ingenting sendes.",
       "local_token_rejected": "Gatewayen avviste denne tokenen. Sjekk den, eller forkast dette forsøket bevisst for å bruke en annen.",
       "local_resource_forbidden": "Gatewayen nektet tilgang til en nødvendig ressurs. En token alene beviser ikke lesetilgang.",
       "local_missing_resource": "Gatewayen tilbyr ikke en nødvendig oppsettsressurs.",
       "local_unknown_firmware": "Fastvareversjonen kunne ikke verifiseres.",
       "local_old_firmware": "Oppdater gatewayens fastvare før du setter opp den lokale tilkoblingen.",
       "local_unsupported_brand": "Dette gateway-merket støttes ikke av det dokumenterte lokale grensesnittet.",
-      "local_incomplete_system": "Gatewayens anleggsinformasjon er ikke fullstendig ennå. Prøv lesesjekken igjen senere.",
+      "local_incomplete_system": "Gatewayen samler fortsatt anleggsinformasjonen sin. Det kan ta noen minutter. Vent noen minutter, og prøv så lesesjekken igjen.",
       "local_invalid_response": "Et nødvendig svar fra gatewayen kunne ikke verifiseres.",
       "local_identity_unverified": "Dette anlegget er ikke entydig sammenlignet ennå. Det første oppsettet krever en tilgjengelig skytilgang og samsvarende gateway- og modulidentifikatorer fra begge grensesnittene. Verifiserte koblinger kan deretter brukes uten skyen.",
       "local_identity_conflict": "Gateway-identiteten er i konflikt med det valgte anlegget eller et annet oppsett.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "already_in_progress": "Oppsettet for denne lokale gatewayen pågår allerede.",
-      "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet."
+      "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet.",
+      "local_entry_not_updated": "En eksisterende oppføring for denne integrasjonen kunne ikke oppdateres til gjeldende versjon. Reparer eller fjern den oppføringen først; deretter kan denne gatewayen legges til."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Innstillinger",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Varsler",
           "holidays": "Administrer ferieperioder",
@@ -248,7 +254,9 @@
           "connections": "Tilkoblinger",
           "connection_add_cloud": "Koble til skytilgang",
           "local_setup": "Sett opp lokal tilgang",
-          "rescan": "Søk i anlegget på nytt"
+          "rescan": "Søk i anlegget på nytt",
+          "recordings": "Anleggets registrering",
+          "wallbox": "Ladeboks"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Vis tidsprogram for oppvarming",
         "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nVelg en ukedag. Tidspunktene gjentas ukentlig i varmeanleggets lokale tid. ∅ betyr at det ikke er lagret noe koblingspunkt for den dagen. Endringer gjelder alle soner som bruker dette tidsprogrammet.",
         "data": {
-          "day": "Ukedag"
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
         }
       },
       "rrc_readonly": {
         "title": "Vis tidsprogram for oppvarming",
-        "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nDette tidsprogrammet kan bare vises her. Det har ingen redigerbare koblingspunkter eller inneholder innstillinger som ikke støttes. ∅ betyr at det ikke er lagret noe koblingspunkt. Du kan gjøre endringer i produsentens app."
+        "description": "**{program}**\n\n**Mandag:** {mo}\n\n**Tirsdag:** {tu}\n\n**Onsdag:** {we}\n\n**Torsdag:** {th}\n\n**Fredag:** {fr}\n\n**Lørdag:** {sa}\n\n**Søndag:** {su}\n\nDette tidsprogrammet kan bare vises her. Det har ingen redigerbare koblingspunkter eller inneholder innstillinger som ikke støttes. ∅ betyr at det ikke er lagret noe koblingspunkt. Du kan gjøre endringer i produsentens app.",
+        "data": {
+          "week_view": "Ukevisning"
+        }
       },
       "rrc_point": {
         "title": "Rediger koblingspunkt",
         "description": "**{program}**\n\nVelg et tidspunkt i femminutters trinn og en temperatur fra 5 til 30 °C i trinn på 0,5 °C. Tidspunktet gjentas ukentlig i varmeanleggets lokale tid. Endringer gjelder alle tilordnede soner.",
         "data": {
           "time": "Tidspunkt",
-          "temperature": "Temperatur"
+          "temperature": "Temperatur",
+          "delete": "Slett dette koblingspunktet"
         }
+      },
+      "rrc_confirm": {
+        "title": "Lagre koblingspunkt",
+        "description": "**{program}**\n\n**Før:** {before}\n\n**Etter:** {after}\n\nEndringen sendes én gang og leses deretter tilbake. Den gjelder for alle tilordnede soner."
       },
       "rrc_day": {
         "title": "Velg koblingspunkt",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nVelg et koblingspunkt for å endre eller slette det, eller legg til et. En dag har høyst {per_day} koblingspunkter (grensen i produsentens app, ikke oppgitt av regulatoren); dagens siste koblingspunkt blir stående.",
         "data": {
           "point": "Koblingspunkt"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste; tidspunktene gjentas ukentlig i varmeanleggets lokale tid. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.",
         "data": {
           "action": "Neste trinn",
-          "day": "Ukedag"
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste; tidspunktene gjentas ukentlig i varmeanleggets lokale tid. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.\n\nDette programmet er ikke det aktive programmet for varmekretsen. Endringer får virkning når det velges.",
         "data": {
           "action": "Neste trinn",
-          "day": "Ukedag"
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste; tidspunktene gjentas ukentlig i varmeanleggets lokale tid. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.\n\nVarmtvannsprogrammet gjelder bare så lenge driftsmodusen for varmtvann står på Auto.",
         "data": {
           "action": "Neste trinn",
-          "day": "Ukedag"
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Tilkoblinger",
-        "description": "{result}Velg tilgangen du vil administrere.",
+        "description": "Velg tilgangen du vil administrere.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Sett opp lokal tilgang",
           "back": "← Tilbake"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Tilkoblingstest",
-        "description": "{result}"
+        "description": "OK, svar etter {ms} ms. Innstillingene forblir uendret."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Tilkoblingstest",
+        "description": "OK, svar etter {ms} ms; {count} gateway(er) i kontoen. Innstillingene forblir uendret."
+      },
+      "connection_test_not_running": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: tilgangen kjører ikke akkurat nå (deaktivert, starter eller stoppet)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Tilkoblingstest",
+        "description": "Pålogging kreves: logg på igjen via «Logg på igjen»."
+      },
+      "connection_test_auth_local": {
+        "title": "Tilkoblingstest",
+        "description": "Pålogging kreves: sett opp den lokale tilgangen på nytt via «Endre lokal tilgang»."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Tilkoblingstest",
+        "description": "Enhetens sertifikat har endret seg: sett opp den lokale tilgangen på nytt via «Endre lokal tilgang»."
+      },
+      "connection_test_paused": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: forespørsler er satt på pause til {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: forespørsler er satt på pause akkurat nå."
+      },
+      "connection_test_busy": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke testet: tilgangen er opptatt akkurat nå. Prøv igjen om litt."
+      },
+      "connection_test_unreachable": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke tilgjengelig: ingen svar ({ms} ms). Sjekk nettverket og enheten."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Tilkoblingstest",
+        "description": "Ikke tilgjengelig: ingen svar ({ms} ms). Sjekk nettverket og enheten. Tips: hvis gatewayens adresse endrer seg, for eksempel etter en omstart av ruteren, hjelper en fast adresse: reserver IP-adressen i ruteren (DHCP-reservasjon) eller angi gatewayens vertsnavn. Hvis gatewayen melder seg på en ny adresse, tilbyr en reparasjonsmelding å bruke den."
+      },
+      "connection_test_other_gateway": {
+        "title": "Tilkoblingstest",
+        "description": "En annen gateway svarer på denne adressen. Sett opp den lokale tilgangen på nytt."
+      },
+      "connection_test_error": {
+        "title": "Tilkoblingstest",
+        "description": "Testen mislyktes: {kind}."
       },
       "connection": {
         "title": "Administrer tilkobling",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Test tilkoblingen nå",
           "connection_enabled": "Slå tilgang på eller av",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Forespørselsfrekvens",
-        "description": "Standard leser gjeldende driftsverdier for oppvarming hvert minutt, innstillinger og energiverdier hvert 5. minutt og tregere informasjon hvert 15. minutt. Skyvennlig dobler disse intervallene. Aktive feil sjekkes hvert minutt i begge profilene. Profilen gjelder forespørsler for oppvarming og ladeboks for den valgte skytilkoblingen; flere skyenheter melder endringer som meldinger. Pålogging, enhetssjekker og bekreftelsen etter en endring kan gi ekstra forespørsler utenfor denne tidsplanen. Hvis en forespørselssyklus tar lengre tid enn intervallet, starter den neste senere.",
+        "description": "**Standard** leser gjeldende driftsverdier hvert minutt og innstillinger og energiverdier hvert 5. minutt. **Skyvennlig** dobler disse intervallene. Aktive feil kontrolleres hvert minutt i begge profilene.",
         "data": {
           "polling_profile": "Forespørselsprofil"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Logg på med SingleKey ID",
-        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
+        "description": "SingleKey ID er den samme påloggingen som Bosch- eller Buderus-appen din bruker. Bruk samme e-postadresse eller mobilnummer og passord. Du trenger ingen ny konto, og du skriver **ikke** inn passordet ditt i Home Assistant.\n\n1. La denne dialogen stå åpen og åpne [SingleKey ID]({authorization_url}) i en ny Chrome-fane. Bruk alltid denne nylig genererte lenken.\n2. Trykk `F12` der og åpne **Console** i utviklerverktøyene.\n3. Logg på med SingleKey ID-opplysningene som varmeappen din bruker.\n4. Det kan vises en melding om nettverksproblemer etter pålogging. I så fall betyr det vanligvis bare at Chrome ikke kunne åpne appadressen `{redirect_scheme}://`. Hvis SingleKey ID viser en side som varsler en videresending og ingenting skjer, velger du lenken eller knappen på siden.\n5. Finn den røde meldingen **Failed to launch** eller **Connecting to** i konsollen. Høyreklikk den blå adressen `{redirect_scheme}://` i meldingen og velg **Copy link address**.\n6. Gå tilbake til denne dialogen, lim inn hele adressen nedenfor og velg **OK**. Feltet kan vise prikker av sikkerhetshensyn.\n\nBruk adressen fra dette nøyaktige påloggingsforsøket, og ikke kopier bare parameteren `code`. Hele adressen inneholder en kortlivet engangskode. Del den aldri i en sak, chat, skjermbilde eller logg.",
         "data": {
           "redirect_url": "Hele omdirigeringsadressen"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Velg det eksisterende oppsettet",
-        "description": "Velg oppsettet denne lokale gatewayen hører til. Dette oppretter ikke et nytt anlegg.",
+        "description": "Velg oppsettet denne lokale gatewayen hører til, eller sett den opp som et nytt oppsett med bare lokal tilgang.",
         "data": {
-          "owner": "Eksisterende oppsett"
+          "owner": "Oppsett"
         }
       },
       "local_target": {
         "title": "Velg anlegget",
-        "description": "Velg anlegget som skal kobles til lokalt. Gateway-identiteten kontrolleres før lagring.",
+        "description": "Velg varmesystemet du vil koble til lokalt: varmepumpen eller kjelen, ikke en ladeboks eller et klimaanlegg. Gateway-identiteten kontrolleres før lagring.",
         "data": {
           "target": "Anlegg / gateway"
         }
@@ -607,6 +688,13 @@
           "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
         }
       },
+      "local_certificate_data": {
+        "title": "Bekreft sertifikatet til dataporten",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekreft at dette er gatewayen din før påloggingsopplysninger sendes. Et fingeravtrykk alene er ikke bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nForrige fingeravtrykk: `{previous}`. Et spørsmålstegn betyr at det ikke finnes noe lagret sertifikat for denne adressen og porten.\n\nGatewayen har et eget sertifikat for hver port. Port 9442 er påloggingsporten og kontrolleres før påloggingen; port 9443 er dataporten og kontrolleres etter. Derfor kan denne siden vises to ganger.\n\nHvis sertifikatet ikke tilhører gatewayen din, lukker du dialogen; ingenting sendes.",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
       "local_auth": {
         "title": "Logg på med enhetsetiketten",
         "description": "Skriv inn Login og Pass fra gateway-etiketten. For å frigi lokal pålogging trykker du på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slipper dem samtidig. Bekreft det korte blå signalet og fortsett innen fem minutter. Hvis det tar mer enn fem minutter å rette en skrivefeil, trykker du på knappene igjen. Tilgangen forblir på den valgte LAN-adressen. Svaret fra gatewayen avgjør om påloggingen ble frigitt. Login og Pass lagres ikke.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "Bekreft den lokale tilkoblingen",
-        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet.",
-        "data": {
-          "confirm": "Lagre denne lokale tilkoblingen"
-        }
+        "description": "Lesesjekken for **{host}** lyktes, og gatewayen **{gateway}** samsvarer med det valgte anlegget. Lagring kontrollerer gjeldende data på nytt og legger til eller oppdaterer denne tilgangen i det eksisterende oppsettet. Lukk i stedet dialogen for ikke å lagre noe."
       },
       "local_retry": {
         "title": "Den lokale sjekken ble ikke fullført",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Lokale forespørsler",
-        "description": "Bekreftede ressurser: {known}. Tilgjengelige nå: {available}. Disse tallene viser tilstanden da denne dialogen ble åpnet. Intervallet er målet for sanntidsverdier. Innstillinger, energiverdier og diagnostikk leses hvert 5. minutt og tellere hvert 15. minutt, eller med dette intervallet hvis det er lengre; statiske detaljer leses daglig. En verdi blir utilgjengelig etter tre mistede intervaller. Store ressurssett kan ta lengre tid. Skyforespørslene forblir uavhengige. Måleverdier som skyen også leverer, leses lokalt minst like ofte som i skyen.",
+        "description": "Bekreftede ressurser: {known}, tilgjengelige nå: {available}. Intervallet er målet for liveverdier; tregere verdier leses sjeldnere. Dokumentasjonen beskriver de nøyaktige intervallene.",
         "data": {
           "interval": "Målintervall for sanntidsverdier"
         }
       },
       "local_values": {
         "title": "Lokale verdier for eksisterende entiteter",
-        "description": "Mens skyen kjører, avgjør dette valget om eksisterende sensorer bruker den lokale verdien av en måleverdi som begge tilgangene leverer under samme dokumenterte ressurs. Uten skyen (slått av, pålogging kreves, satt på pause, begrenset eller utilgjengelig) brukes alltid lokale verdier. Valget er slått på som standard for nye oppsett med sky- og lokal tilgang.\n\nNår det er aktivert, brukes den lokale verdien så lenge den er oppdatert. Hvis den lokale verdien er utdatert eller mangler, brukes den gjeldende skyverdien; hvis begge er utdatert, blir sensoren utilgjengelig. Tellere for energi, starter og driftstid bruker også den lokale verdien, men bytter bare kilde når hver viste telling er minst like høy som siste viste telling, slik at et kildebytte aldri får dem til å telle bakover. Justerbare innstillinger bruker fortsatt skyen. Entitets-ID-er, navn og historikk forblir uendret. Styring og endringer sendes fortsatt via skyen.",
+        "description": "Så lenge skyen kjører, avgjør dette valget om eksisterende sensorer bruker den lokale verdien av en måling som begge tilgangene leverer. Uten skyen brukes alltid de lokale verdiene; innstillinger og betjening går fortsatt via skyen. Entitets-ID-er, navn og historikk forblir uendret.",
         "data": {
           "enabled": "Bruk lokale verdier"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "Søk i anlegget på nytt",
         "description": "Søker i anlegget en gang til etter deler og måleverdier, via skytilgangen og den lokale tilgangen. Bruk det etter at du har lagt til eller endret komponenter. Søket kjøres ved neste vanlige oppdatering og innenfor de vanlige grensene for forespørsler; det fjerner aldri en entitet, og måleverdier som ikke finnes igjen, blir som de er."
+      },
+      "recordings": {
+        "title": "Anleggets registrering",
+        "description": "Varmepumpen registrerer energi, starter og driftstid per time. Integrasjonen viser dem som entiteter og kan overføre timeverdiene til langtidsstatistikken (energidashbord, statistikkort). Serier funnet: {series}, overført: {imported}.",
+        "data": {
+          "recordings_import": "Overfør timeverdiene til langtidsstatistikken",
+          "delete_statistics": "Slett den overførte statistikken"
+        },
+        "data_description": {
+          "recordings_import": "Bruk enten denne statistikken eller telleentitetene i energidashbordet, ikke begge. Når den slås av, beholdes det som er overført.",
+          "delete_statistics": "Neste side ber om en bekreftelse."
+        }
+      },
+      "recordings_delete": {
+        "title": "Slett den overførte statistikken",
+        "description": "Sletter all statistikk som er overført fra anleggets registrering for denne oppføringen, og slår av overføringen. Entitetene og anleggets egen registrering beholdes. Dette kan ikke angres.",
+        "data": {
+          "confirm": "Ja, slett den overførte statistikken"
+        }
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Tilbakekall denne tokenen på gatewayen",
           "confirm_end": "En lokal tilgang som bruker denne tokenen, avsluttes"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Resultat",
+        "description": "Tilgangen ble fjernet."
+      },
+      "result_connection_saved": {
+        "title": "Resultat",
+        "description": "Endringen ble lagret."
+      },
+      "result_holiday_created": {
+        "title": "Resultat",
+        "description": "Ferien ble opprettet og bekreftet ved å lese den tilbake."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultat",
+        "description": "Ferien ble slettet, og fjerningen ble bekreftet av varmeanlegget."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultat",
+        "description": "Ingenting ble endret, så ingenting ble sendt til varmeanlegget."
+      },
+      "result_holiday_updated": {
+        "title": "Resultat",
+        "description": "Ferieinnstillingene ble lagret og bekreftet av varmeanlegget."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultat",
+        "description": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultat",
+        "description": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultat",
+        "description": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultat",
+        "description": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultat",
+        "description": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultat",
+        "description": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultat",
+        "description": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultat",
+        "description": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultat",
+        "description": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt."
+      },
+      "result_notifications_saved": {
+        "title": "Resultat",
+        "description": "Varslingsinnstillingene ble lagret."
+      },
+      "result_rescan_partial": {
+        "title": "Resultat",
+        "description": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem."
+      },
+      "result_rescan_paused": {
+        "title": "Resultat",
+        "description": "Søket ble ikke startet: forespørsler er satt på pause akkurat nå (for eksempel etter at skyen ba om en pause). Prøv igjen senere."
+      },
+      "result_rescan_planned": {
+        "title": "Resultat",
+        "description": "Søket er planlagt og kjøres ved neste vanlige oppdatering; nye deler vises så snart de er funnet."
+      },
+      "result_rescan_running": {
+        "title": "Resultat",
+        "description": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultat",
+        "description": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultat",
+        "description": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultat",
+        "description": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultat",
+        "description": "Påloggingen ble fornyet."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultat",
+        "description": "Påloggingen ble fornyet. {count} påslåtte anlegg eller enheter ble ikke funnet i kontoen; de forblir konfigurert. En reparasjonsmelding nevner dem og forklarer hvordan du glemmer dem."
+      },
+      "result_recordings_import_on": {
+        "title": "Resultat",
+        "description": "Overføringen av anleggets registrering er slått på; de første verdiene kommer i løpet av noen minutter."
+      },
+      "result_recordings_import_off": {
+        "title": "Resultat",
+        "description": "Overføringen av anleggets registrering er slått av; overførte verdier beholdes."
+      },
+      "result_recordings_deleted": {
+        "title": "Resultat",
+        "description": "Slettede overførte statistikker: {count}. Overføringen er slått av."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Resultat",
+        "description": "Ingenting ble slettet."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Endre tidsprogram for varmtvann",
+        "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste; tidspunktene gjentas ukentlig i varmeanleggets lokale tid. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.\n\nNivåene er de fra romregulatorens program. Programmet gjelder mens varmtvannet følger sitt eget program. Høyst seks koblingspunkter per dag er grensen i produsentens app, ikke en grense regulatoren oppgir.",
+        "data": {
+          "action": "Neste trinn",
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Rediger koblingspunkt",
+        "description": "**{program}** – **{day}**\n\nVelg et tidspunkt i trinn på {raster} minutter og en temperatur fra {minimum} til {maximum} °C i trinn på {step} °C. Det gjelder fra dette tidspunktet til neste koblingspunkt.",
+        "data": {
+          "time": "Tidspunkt",
+          "value": "Temperatur",
+          "off": "Av i stedet for en temperatur",
+          "delete": "Slett dette koblingspunktet"
+        }
+      },
+      "rrc_add": {
+        "title": "Legg til koblingspunkt",
+        "description": "**{program}**\n\n{points}\n\nVelg et tidspunkt i femminutters trinn og en temperatur fra 5 til 30 °C i trinn på 0,5 °C. Tidspunktet gjentas ukentlig i varmeanleggets lokale tid. Endringer gjelder alle tilordnede soner.",
+        "data": {
+          "time": "Tidspunkt",
+          "temperature": "Temperatur"
+        }
+      },
+      "wallbox": {
+        "title": "Ladeboks",
+        "description": "En ladeboks som krever autentisering, begynner først å lade etter en autentisering fra integrasjonen. Da sendes én ekstra kommando før hver start.",
+        "data": {
+          "wallbox_authentication": "Tillat autentisering før en start",
+          "wallbox_authentication_name": "Autentiseringsnavn (valgfritt)",
+          "wallbox_history": "Les ladehistorikk"
+        },
+        "data_description": {
+          "wallbox_authentication": "Av som standard. Fra programvare 5.1.0 autentiserer en start først; med eldre programvare sendes starten alene, som i produsentens app.",
+          "wallbox_authentication_name": "Navnet produsentens app bruker til autentisering; kan stå tomt.",
+          "wallbox_history": "Av som standard. Omtrent hvert 30. minutt (hvert 60. minutt i den skyvennlige profilen) leses den siste ladingen (start, slutt, ladetid, energi) og denne månedens energi fra nettet og fra solenergi. Navn på kort, brukere eller autentisering leses aldri."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultat",
+        "description": "Innstillingene for ladeboksen er lagret."
+      },
+      "switch_program_week_aircon": {
+        "title": "Endre tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste samme dag; før dagens første koblingspunkt er klimaanlegget av. Tidspunktene gjentas ukentlig etter klimaanleggets klokke. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.",
+        "data": {
+          "action": "Neste trinn",
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Endre tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøyst {per_day} koblingspunkter per dag og {total} per uke, tidspunkter i trinn på {raster} minutter. Hvert koblingspunkt gjelder til det neste samme dag; før dagens første koblingspunkt er klimaanlegget av. Tidspunktene gjentas ukentlig etter klimaanleggets klokke. Dager merket med * har endringer som ikke er lagret ennå. Ingenting sendes før siste trinn.\n\nDette programmet er ikke det aktive programmet for klimaanlegget. Endringer får virkning når det velges.",
+        "data": {
+          "action": "Neste trinn",
+          "day": "Ukedag",
+          "week_view": "Ukevisning"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Rediger koblingspunkt",
+        "description": "**{program}** – **{day}**\n\nVelg et tidspunkt i trinn på {raster} minutter og innstillingen fra dette tidspunktet. Klimaanlegget tilbyr:\n\n{settings}\n\nTemperaturen og viftehastigheten gjelder bare for en driftsmodus som har dem. Av slår klimaanlegget av til neste koblingspunkt.",
+        "data": {
+          "time": "Tidspunkt",
+          "mode": "Driftsmodus",
+          "value": "Temperatur",
+          "fan": "Viftehastighet",
+          "delete": "Slett dette koblingspunktet"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Aktiver denne skytilkoblingen før du søker etter enheter.",
       "cloud_rate_limited": "Skyen har bedt om en pause. Vent før du prøver igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
+      "reauth_targets_missing": "Denne påloggingen fant ingen av de påslåtte anleggene og enhetene. De tidligere påloggingsopplysningene beholdes. Sjekk at du logget på med samme konto som før. Hvis anleggene er fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen: slå på et anlegg som fortsatt finnes i kontoen under **Bruk for anlegg og enheter**, eller slå av de fjernede og fjern dem med **Glem fravalgte anlegg**. Hvis ingen er igjen, fjerner du skytilgangen og kobler den til på nytt.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
+      "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Hvis siden sier at du blir videresendt og ingenting skjer, velger du lenken eller knappen på siden. Kopier deretter `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
       "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
       "no_gateways": "Ingen enheter ble funnet. Sjekk at det valgte merket og SingleKey ID-kontoen samsvarer med appen din. En romregulator med eldre fastvare vises først når fastvaren er oppdatert og den er satt opp i den nåværende appen med din SingleKey ID.",
@@ -774,13 +1070,14 @@
       "local_timeout": "Den lokale gatewayen svarte ikke i tide. Sjekk tilkoblingen og prøv igjen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gatewayen. Sjekk adressen og nettverkstilkoblingen.",
       "local_certificate_changed": "Sertifikatet kunne ikke bekreftes eller har endret seg. Kontroller gateway-sertifikatet på nytt før du fortsetter.",
+      "local_certificate_unconfirmed": "Kryss av for å bekrefte sertifikatet. Hvis det ikke hører til gatewayen din, lukker du dialogen; ingenting sendes.",
       "local_token_rejected": "Gatewayen avviste denne tokenen. Sjekk den, eller forkast dette forsøket bevisst for å bruke en annen.",
       "local_resource_forbidden": "Gatewayen nektet tilgang til en nødvendig ressurs. En token alene beviser ikke lesetilgang.",
       "local_missing_resource": "Gatewayen tilbyr ikke en nødvendig oppsettsressurs.",
       "local_unknown_firmware": "Fastvareversjonen kunne ikke verifiseres.",
       "local_old_firmware": "Oppdater gatewayens fastvare før du setter opp den lokale tilkoblingen.",
       "local_unsupported_brand": "Dette gateway-merket støttes ikke av det dokumenterte lokale grensesnittet.",
-      "local_incomplete_system": "Gatewayens anleggsinformasjon er ikke fullstendig ennå. Prøv lesesjekken igjen senere.",
+      "local_incomplete_system": "Gatewayen samler fortsatt anleggsinformasjonen sin. Det kan ta noen minutter. Vent noen minutter, og prøv så lesesjekken igjen.",
       "local_invalid_response": "Et nødvendig svar fra gatewayen kunne ikke verifiseres.",
       "local_identity_unverified": "Dette anlegget er ikke entydig sammenlignet ennå. Det første oppsettet krever en tilgjengelig skytilgang og samsvarende gateway- og modulidentifikatorer fra begge grensesnittene. Verifiserte koblinger kan deretter brukes uten skyen.",
       "local_identity_conflict": "Gateway-identiteten er i konflikt med det valgte anlegget eller et annet oppsett.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Denne gatewayen tilbyr ingen tokenliste. Ingenting ble endret.",
       "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret.",
       "local_token_end_unconfirmed": "Å tilbakekalle denne tokenen kan avslutte en lokal tilgang. Merk også den andre boksen, eller la den første stå tom for å gå tilbake. Ingenting ble sendt.",
-      "connection_remove_unconfirmed": "Merk også «Fjern denne tilgangen»: en token tilbakekalles bare sammen med at tilgangen fjernes. Ingenting ble sendt eller fjernet."
+      "connection_remove_unconfirmed": "Merk også «Fjern denne tilgangen»: en token tilbakekalles bare sammen med at tilgangen fjernes. Ingenting ble sendt eller fjernet.",
+      "switch_program_value": "Skriv inn en temperatur fra {minimum} til {maximum} °C i trinn på {step} °C.",
+      "switch_program_day_emptied": "En dag som har koblingspunkter beholder minst ett; hva en tom dag betyr for regulatoren, er ikke kjent.",
+      "rrc_point_limit": "Denne dagen har allerede det høyeste antallet koblingspunkter appen tillater ({per_day}).",
+      "rrc_point_last": "Dagens siste koblingspunkt kan ikke slettes; hva en tom dag betyr for regulatoren, er ikke kjent.",
+      "rrc_point_duplicate": "Denne dagen har allerede et koblingspunkt på dette tidspunktet.",
+      "wallbox_name_invalid": "Navnet kan inneholde opptil 64 utskrivbare tegn.",
+      "switch_program_aircon_setting": "Velg en driftsmodus som klimaanlegget tilbyr, og for den en temperatur innenfor dets område og trinn og en av dets viftehastigheter."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
       "notification_gateways_changed": "Anleggsvalget endret seg. Åpne innstillingene på nytt.",
       "holiday_changed": "Den valgte ferien har endret seg eller kan ikke lenger redigeres. Åpne ferien på nytt for å se de gjeldende detaljene.",
-      "holiday_updated": "Ferieinnstillingene ble lagret og bekreftet av varmeanlegget.",
-      "holiday_unchanged": "Ingenting ble endret, så ingenting ble sendt til varmeanlegget.",
       "no_writable_holidays": "Feriehåndtering er ikke tilgjengelig akkurat nå. Vent til anlegget har levert ferieinnstillingene sine.",
-      "holiday_deleted": "Ferien ble slettet, og fjerningen ble bekreftet av varmeanlegget.",
       "not_loaded": "Bosch/Buderus Home Comfort må være lastet før en ferie kan konfigureres.",
-      "holiday_created": "Ferien ble opprettet og bekreftet ved å lese den tilbake.",
       "holiday_previous_request_found": "Den tidligere uavklarte forespørselen er nå bekreftet. De nye opplysningene dine ble ikke sendt. Sjekk den eksisterende ferien under Administrer ferieperioder først.",
       "holiday_already_exists": "Det finnes allerede en ferie med denne starten og dette kretsvalget. Ingen ekstra ferie ble opprettet. Åpne Administrer ferieperioder og rediger den eksisterende oppføringen.",
       "holiday_create_unconfirmed": "Opprettingsforespørselen kunne ikke bekreftes. Ferien kan allerede finnes. Sjekk Administrer ferieperioder eller produsentens app. De neste 10 minuttene sjekker et nytt forsøk resultatet av denne forespørselen uten å opprette en ny ferie.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "Det finnes ikke noe gjeldende, støttet ukeprogram for en romregulator.",
       "no_switch_programs": "Det finnes ikke noe gjeldende tidsprogram for en varmekrets eller for varmtvannet som kan endres her.",
       "switch_program_changed": "Tidsprogrammet er endret i mellomtiden eller kan ikke lenger endres. Åpne det på nytt for å se de gjeldende koblingspunktene.",
-      "switch_program_saved": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}",
       "controls_not_loaded": "Styring er bare tilgjengelig via skytilgangen; den lokale tilgangen kan bare lese. Koble til en skytilgang eller vent til den er lastet.",
       "controls_auth_required": "Styring er ikke tilgjengelig: skytilgangen trenger en ny pålogging. Måleverdiene forblir synlige.",
       "controls_cloud_stopped": "Styring er ikke tilgjengelig: skytilgangen er stoppet eller startes på nytt. Måleverdiene forblir synlige.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Styring er ikke tilgjengelig ennå: skyen har ikke levert gjeldende verdier. Prøv igjen om et øyeblikk.",
       "controls_none": "Dette apparatet melder for øyeblikket ingen innstillinger som kan endres her.",
       "configuration_changed": "Tilkoblingsinnstillingene endret seg mens denne dialogen var åpen. Lukk den og prøv igjen.",
+      "reauth_wrong_account": "Den valgte kontoen samsvarer ikke med de konfigurerte enhetene. Logg på med den opprinnelige kontoen.",
+      "reauth_no_targets": "Denne skytilgangen har ingen anlegg eller enheter igjen, og kontoen den hører til kan ikke bekreftes. De tidligere påloggingsopplysningene beholdes. For å bruke en skykonto igjen fjerner du skytilgangen under Konfigurer → Tilkoblinger og kobler den til på nytt.",
       "no_connections": "Ingen tilgang er konfigurert. Eksisterende anlegg og entiteter beholdes.",
-      "connection_reauth_started": "Den nye påloggingen er klargjort. Lukk denne dialogen og velg **Konfigurer på nytt** for denne integrasjonen under Innstillinger → Enheter og tjenester, i delen **Krever oppmerksomhet**.",
       "cloud_already_connected": "Det er allerede konfigurert en skytilkobling. Bruk tilkoblingsinnstillingene til å velge flere enheter eller logge på igjen. En andre parallell skypålogging støttes ikke ennå.",
       "cloud_setup_in_progress": "Et annet skyoppsett er allerede åpent. Fullfør eller lukk den dialogen først.",
       "cloud_setup_taken_over": "En nyere skyoppsettsdialog har erstattet denne. Lukk denne dialogen og fortsett i den nyere.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "Det ventende forsøket beholdes. Du kan gjenoppta det fra lokalt oppsett.",
       "local_storage_failed": "Den private oppsettsposten kunne ikke leses eller lagres. Sjekk lagringen i Home Assistant før du fortsetter.",
       "cloud_local_first_other_entry": "Dette anlegget er allerede satt opp via lokal tilgang i en annen oppføring av denne integrasjonen. Legg til skytilgangen i den oppføringen i stedet.",
-      "rescan_planned": "Søket er planlagt og kjøres ved neste vanlige oppdatering; nye deler vises så snart de er funnet.",
-      "rescan_paused": "Søket ble ikke startet: forespørsler er satt på pause akkurat nå (for eksempel etter at skyen ba om en pause). Prøv igjen senere.",
-      "rescan_running": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig.",
-      "rescan_partial": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem.",
       "rescan_unavailable": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå.",
-      "connection_saved": "Endringen ble lagret.",
-      "connection_removed": "Tilgangen ble fjernet.",
-      "notifications_saved": "Varslingsinnstillingene ble lagret.",
-      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing.",
-      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først.",
-      "local_tokens_changed": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt.",
-      "local_token_revoked": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger.",
-      "local_token_access_ended": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den.",
-      "local_token_revoke_rejected": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen.",
-      "local_token_revoke_unclear": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere.",
-      "local_token_revoked_removed": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet.",
-      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt.",
-      "local_token_old_revoked_removed": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen.",
-      "local_token_access_end_failed": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
+      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Overført registrering blir værende i statistikken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Slett den overførte statistikken",
+            "description": "Den fjernede oppføringen har overført {count} statistikker fra anleggets registrering; Home Assistant beholder dem. Velg **Send** for å slette dem; det kan ikke angres. Velg **Ignorer** for å beholde dem. Denne meldingen forsvinner etter neste omstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Den overførte statistikken finnes ikke lenger. Ingenting ble slettet."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anlegg ble ikke funnet i skykontoen",
       "description": "Den siste påloggingen for skytilgangen i «{title}» fant ikke {count} påslåtte anlegg eller enheter (som slutter på {systems}). De forblir konfigurert og utilgjengelige til de dukker opp i kontoen igjen; da forsvinner denne meldingen.\n\nHvis de ble fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen, slår dem av under **Bruk for anlegg og enheter** og fjerner dem med **Glem fravalgte anlegg**. Enhetene og entitetene deres blir værende i Home Assistant til du sletter dem. Hvis en gateway ble byttet ut, la den være slått på: en egen reparasjonsmelding tilbyr å fortsette anlegget med historikken."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Oppsettet er ikke fullført",
       "description": "Oppføringen «{title}» har ingen tilgang ennå. Velg **Konfigurer** på den og deretter «Sett opp lokal tilgang» (eller koble til en skytilgang)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteter leser nå via den lokale tilgangen",
+      "description": "{count} entiteter i bruk viser nå verdien sin via den lokale tilgangen, med skyverdien som andre kilde: {entities}. Entitets-ID-ene, innstillingene og historikken deres beholdes, så automatiseringer, skript og dashbord fortsetter å virke. Navn, kategorier og tilstander følger nå den lokale verdien. Du kan ignorere denne meldingen; den forsvinner etter neste omstart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteter leveres ikke lenger",
+      "description": "{count} skyentiteter leveres ikke lenger fordi en annen entitet i denne integrasjonen viser samme verdi via den lokale tilgangen (gammel → ny): {entities}. Automatiseringer, skript og dashbord som bruker den gamle entiteten, bør bruke den nye. Fjern den gamle entiteten når du ikke lenger trenger den; historikken beholdes til da. Du kan ignorere denne meldingen; den vises igjen ved neste omstart så lenge den gamle entiteten finnes."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Denne varmekretsen har for øyeblikket ikke noe midlertidig settpunkt som kan oppheves."
     },
+    "zone_climate_command": {
+      "message": "Denne kommandoen for sonen er ikke tilgjengelig akkurat nå. Temperaturer kan bare endres i manuell modus, eller i automatisk modus når sonen tilbyr et midlertidig settpunkt. Velg modusen separat og kontroller at sonen leverer gjeldende verdier."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Denne sonen har ikke noe midlertidig settpunkt å oppheve akkurat nå."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Apparatet bestemmer det gjeldende settpunktet for varmtvann. Du kan justere de separate starttemperaturene for modusene under Betjen apparatet."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "Radioenheten bruker ikke denne innstillingen for øyeblikket, så den ble ikke endret."
+    },
+    "control_unused": {
+      "message": "Apparatet bruker ikke denne innstillingen for øyeblikket. Denne endringen ble ikke sendt."
+    },
+    "circuit_room_controller": {
+      "message": "Denne varmekretsen styres av en romregulator. Innstillingen kan bare endres der. Denne endringen ble ikke sendt."
+    },
+    "circuit_constant_control": {
+      "message": "Denne varmekretsen går med konstante verdier. Innstillingene kan ikke endres for øyeblikket. Denne endringen ble ikke sendt."
+    },
+    "cooling_not_offered": {
+      "message": "Denne varmekretsen tilbyr ikke kjøling for øyeblikket. Denne endringen ble ikke sendt."
     },
     "rrc_setting_unused": {
       "message": "Romregulatoren bruker ikke denne innstillingen for øyeblikket, så den ble ikke endret."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "Det valgte tidsprogrammet kan ikke leses akkurat nå. Ingenting ble sendt."
+    },
+    "switch_points_no_target": {
+      "message": "Ingen aktivert tidsprogramsensor fra denne integrasjonen er valgt. Aktiver tidsprogramsensoren og velg den som mål."
+    },
+    "not_a_program_entity": {
+      "message": "Bare denne integrasjonens tidsprogramsensorer kan velges."
+    },
+    "switch_points_empty_week": {
+      "message": "Uken må ha minst ett koblingspunkt."
+    },
+    "switch_points_invalid_time": {
+      "message": "Hvert tidspunkt må ligge i trinn på {raster} minutter, uten sekunder."
+    },
+    "switch_points_duplicate_time": {
+      "message": "En dag har to koblingspunkter på samme tidspunkt."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "En dag har flere koblingspunkter enn varmeanlegget tillater ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Uken har flere koblingspunkter enn varmeanlegget tillater ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Bare disse nivåene kan brukes: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Bare temperaturer fra {minimum} til {maximum} i trinn på {step} kan brukes."
+    },
+    "switch_points_not_writable": {
+      "message": "Varmeanlegget oppgir ikke at dette tidsprogrammet kan endres."
+    },
+    "switch_points_unused": {
+      "message": "Varmeanlegget bruker ikke dette tidsprogrammet for øyeblikket. Ingenting ble sendt."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typen til dette tidsprogrammet kunne ikke leses eller passer ikke til koblingspunktene. Ingenting ble sendt."
+    },
+    "switch_points_not_editable": {
+      "message": "Dette tidsprogrammet kan bare vises, ikke endres: Varmeanlegget oppgir ikke alle grensene som trengs for en endring."
+    },
+    "switch_points_program_changed": {
+      "message": "Tidsprogrammet er endret i mellomtiden eller passer ikke lenger til de forventede koblingspunktene. Ingenting ble sendt."
+    },
+    "switch_points_paused": {
+      "message": "Skriving til varmeanlegget er satt på pause i noen minutter etter gjentatte mislykkede avlesninger. Ingenting ble sendt."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Tidsprogrammet ble sendt, men kunne ikke bekreftes ved å lese det tilbake. Det kan likevel være tatt i bruk; det sendes ikke på nytt."
+    },
+    "switch_points_rejected": {
+      "message": "Varmeanlegget avviste tidsprogrammet (HTTP {status}). Ingenting ble endret."
+    },
+    "switch_points_invalid": {
+      "message": "Koblingspunktene passer ikke til grensene for tidsprogrammet."
+    },
+    "program_name_empty": {
+      "message": "Skriv inn et navn; et tomt navn sendes ikke."
+    },
+    "program_name_too_long": {
+      "message": "Navnet kan ha høyst {max} tegn."
+    },
+    "program_name_charset": {
+      "message": "Navnet inneholder tegn som varmeanlegget ikke kan lagre ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Varmeanlegget oppgir ikke at dette navnet kan endres."
+    },
+    "program_name_changed": {
+      "message": "Navnet er endret i mellomtiden. Ingenting ble sendt."
+    },
+    "program_name_not_confirmed": {
+      "message": "Navnet ble sendt, men kunne ikke bekreftes ved å lese det tilbake. Det kan likevel være tatt i bruk; det sendes ikke på nytt."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Ladeboksen er ikke i en tilstand som tillater denne handlingen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Ladestrømmen er under 6 A. Still først inn ladestrømmen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_authentication_required": {
+      "message": "Ladeboksen krever autentisering før lading. Tillat det i integrasjonens alternativer (Wallbox). Denne endringen ble ikke sendt."
+    },
+    "wallbox_group_controlled": {
+      "message": "Denne ladeboksen hører til en laststyringsgruppe som styrer denne funksjonen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_energy_manager": {
+      "message": "En energistyring styrer denne ladeboksen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_not_manual": {
+      "message": "Ladestrømmen kan bare stilles inn i normal lademodus. Denne endringen ble ikke sendt."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost er aktiv. Avslutt Boost først. Denne endringen ble ikke sendt."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Ladeboksen har ikke levert en aktuell verdi for denne funksjonen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_not_writeable": {
+      "message": "Ladeboksen melder ikke denne innstillingen som endringsbar. Denne endringen ble ikke sendt."
+    },
+    "wallbox_firmware": {
+      "message": "Programvaren i ladeboksen tilbyr ikke denne funksjonen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_meter_missing": {
+      "message": "Denne funksjonen trenger en tilkoblet ekstern måler. Denne endringen ble ikke sendt."
+    },
+    "wallbox_not_offered": {
+      "message": "Denne funksjonen tilbys ikke for denne ladeboksen. Denne endringen ble ikke sendt."
+    },
+    "wallbox_not_solar": {
+      "message": "Denne innstillingen gjelder bare sollading. Bytt først lademodus til sol. Denne endringen ble ikke sendt."
+    },
+    "aircon_switched_off": {
+      "message": "Klimaanlegget er slått av. Slå det på først, og bytt deretter modus. Ingenting ble sendt."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimaanlegget går i soldrift, så modusene auto og varme er ikke tilgjengelige. Ingenting ble sendt."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Denne verdien er ikke tillatt for klimaanlegget. Ingenting ble sendt."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Endringen ble sendt, men klimaanlegget har ikke bekreftet den ennå. Den kan fortsatt tre i kraft. Jeg har ikke sendt den på nytt; verdien oppdateres ved neste avlesning."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Bare disse innstillingene kan brukes: {settings}. En innstilling skrives som driftsmodus, temperatur og viftehastighet, for eksempel «cool 24.0 auto», eller «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Varmtvannsberederen tar bare imot endringer i dette tidsprogrammet når den er slått på, går i tidsprogramdrift og har en tidssone, som i produsentens app. Ingenting ble sendt."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Tilbake",
         "create": "Ny ferie"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Forkast ventende forsøk",
         "later": "Fortsett senere"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nytt anlegg (gatewayen finnes ikke i kontoen din)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nytt oppsett (bare lokal tilgang)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Tilbake"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Erstatt hele uken",
+        "replace_days": "Erstatt bare de oppgitte dagene"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dag"
+        },
+        "time": {
+          "name": "Tidspunkt"
+        },
+        "level": {
+          "name": "Nivå eller temperatur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Av",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Høy",
+        "off": "Av",
+        "low": "Lav",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Legg til koblingspunkt"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Ønsket bassengtemperatur"
+      },
+      "filter_maximum_run_time": {
+        "name": "Maksimal filterlevetid"
       },
       "heating_temperature": {
         "name": "Oppvarmingstemperatur"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Maksimal turtemperatur"
       },
+      "summer_winter_threshold": {
+        "name": "Stopp oppvarming ved utetemperatur"
+      },
+      "cooling_room_setpoint": {
+        "name": "Kjøling: romsettpunkt"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Start kjøling ved utetemperatur"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Start kjøling ved utetemperatur"
+      },
+      "season_cooling_threshold": {
+        "name": "Start kjøling ved utetemperatur"
+      },
+      "season_heating_threshold": {
+        "name": "Stopp oppvarming ved utetemperatur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-temperatur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-varighet"
+      },
+      "away_temperature": {
+        "name": "Bortetemperatur"
+      },
+      "cooling_temperature": {
+        "name": "Kjøletemperatur"
+      },
       "softener_salt_threshold": {
         "name": "Terskel for saltvarsel"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Lysstyrke for stemningslys"
+      },
+      "bacon_rac_timer_on": {
+        "name": "På-timer"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Av-timer"
       },
       "rrc_window_duration": {
         "name": "Varighet for åpent vindu"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Bortetemperatur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Grense for ladestrøm"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maksimalt tilskudd fra nettet"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minste soloverskudd"
+      },
+      "wallbox_filter_time": {
+        "name": "Filtertid for sollading"
+      },
+      "wallbox_power_limit": {
+        "name": "Effektgrense"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Strømgrense fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Strømgrense fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Strømgrense fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Strømpris"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Pris for innmatet strøm"
+      },
+      "aircon_timer_on": {
+        "name": "På-timer"
+      },
+      "aircon_timer_off": {
+        "name": "Av-timer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Strømpris"
+      },
+      "hybrid_gas_price": {
+        "name": "Gasspris"
+      },
+      "hybrid_oil_price": {
+        "name": "Oljepris"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Pris for innmatet strøm"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Stillemodus: effektreduksjon"
+      },
+      "silent_mode_start_time": {
+        "name": "Stillemodus: starttidspunkt"
+      },
+      "silent_mode_stop_time": {
+        "name": "Stillemodus: stopptidspunkt"
+      },
+      "low_noise_duration": {
+        "name": "Lavstøydrift: varighet"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Ønsket bassengtemperatur"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Avtrekksviftetrinn",
+      "ventilation_operation_mode": {
+        "name": "Ventilasjonens driftsmodus",
         "state": {
+          "time": "Tidsprogram",
           "off": "Av",
           "min": "Viftetrinn 1",
           "red": "Viftetrinn 2",
           "nom": "Viftetrinn 3",
           "max": "Viftetrinn 4",
-          "dem": "Behovsstyrt"
+          "dem": "Behovsstyrt",
+          "party": "Fest",
+          "power_vent": "Intensivventilasjon",
+          "fireplace": "Peis",
+          "fall_asleep": "Innsovning",
+          "freefct": "Fri funksjon"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Sommer-/vinterbytte",
+        "state": {
+          "automatic": "Automatisk",
+          "forced": "Bare oppvarming",
+          "cooling": "Bare kjøling",
+          "off": "Av"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Kjøling: driftsmodus",
+        "state": {
+          "off": "Av",
+          "manual": "Manuell",
+          "auto": "Auto"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Lademodus",
+        "state": {
+          "manual": "Normal",
+          "solar": "Sol"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Punktrettet luftstrøm",
+        "state": {
+          "off": "Av",
+          "on": "På",
+          "top_left": "Øverst til venstre",
+          "top_center": "Øverst i midten",
+          "top_right": "Øverst til høyre",
+          "bottom_left": "Nederst til venstre",
+          "bottom_center": "Nederst i midten",
+          "bottom_right": "Nederst til høyre"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid reguleringsstrategi",
+        "state": {
+          "cost": "Kostnadsoptimalisert",
+          "max_renewable_share": "Varmepumpeoptimalisert",
+          "heat_pump_preferred": "Varmepumpe foretrukket",
+          "environment": "Mest klimavennlig",
+          "boiler_only": "Kun kjele",
+          "bivalent_alternative": "Bivalent alternativ"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Lavstøy-driftsmodus"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Bassengmodus"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Bortemodus"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Registrering av åpent vindu"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Settpunktoptimalisering"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Feriemodus"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Barnesikring"
       },
+      "rrc_auto_away": {
+        "name": "Automatisk fravær"
+      },
+      "rrc_notification_light": {
+        "name": "Varsellys"
+      },
       "rrc_extra_dhw": {
         "name": "Ekstra varmtvann"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Peisfunksjon"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Tilskudd fra nettet ved sollading"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Prioriter husbatteri"
+      },
+      "wallbox_current_limiter": {
+        "name": "Strømbegrenser"
+      },
+      "wallbox_power_limiter": {
+        "name": "Effektbegrenser"
+      },
+      "wallbox_locked": {
+        "name": "Ladeboks låst"
+      },
+      "aircon_full_power": {
+        "name": "Full effekt"
+      },
+      "aircon_sleep": {
+        "name": "Sovemodus"
+      },
+      "aircon_setback_8": {
+        "name": "Frostsikringsvarme (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Frostsikringsvarme (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luftrensing"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tidsprogram aktivt"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Energi (estimert ut fra gjeldende effekt)"
+      },
+      "calculated_activity": {
+        "name": "Aktivitet (beregnet)",
+        "state": {
+          "heating": "Oppvarming",
+          "cooling": "Kjøling",
+          "defrosting": "Avriming",
+          "idle": "Inaktiv",
+          "off": "Av"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Siste avriming (beregnet)"
+      },
+      "calculated_defrost_count": {
+        "name": "Antall avriminger (beregnet)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Total avrimingstid (beregnet)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Varme hentet ved avriming (beregnet)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Strøm under avriming (beregnet)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettovarme (beregnet)"
+      },
+      "calculated_last_regeneration": {
+        "name": "Siste regenerering (beregnet)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Gjennomsnittlig driftstid per start, oppvarming (beregnet)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Turtemperatur over settpunkt (beregnet)"
+      },
+      "calculated_cop": {
+        "name": "Aktuell COP (beregnet)"
+      },
+      "calculated_performance_factor": {
+        "name": "Effektfaktor (beregnet)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperaturdifferanse primærkrets (beregnet)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperaturdifferanse kollektorvæske (beregnet)"
       },
       "heating_switch_program": {
         "name": "Tidsprogram for oppvarming",
@@ -1962,11 +2744,11 @@
           "none": "Ingen",
           "ch": "Oppvarming",
           "dhw": "Varmtvann",
-          "frost": "Frostsikring",
+          "frost": "Frostområde",
           "ch_dhw": "Oppvarming og varmtvann",
-          "ch_frost": "Oppvarming og frostsikring",
-          "dhw_frost": "Varmtvann og frostsikring",
-          "ch_dhw_frost": "Oppvarming, varmtvann og frostsikring"
+          "ch_frost": "Oppvarming og frostområde",
+          "dhw_frost": "Varmtvann og frostområde",
+          "ch_dhw_frost": "Oppvarming, varmtvann og frostområde"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Varmekilde"
       },
+      "outdoor_unit_software_version": {
+        "name": "Programvareversjon utedel"
+      },
       "pointt_api_requests_total": {
         "name": "Forespørsler til skyen totalt"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrisk energi totalt (oppvarming)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrisk energi totalt (kjøling)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrisk energi totalt (avfukting)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrisk energi totalt (kun vifte)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Avgitt varmeenergi totalt (oppvarming)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Avgitt varmeenergi totalt (kjøling)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-verdi"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Meldt ladet energi"
       },
+      "wallbox_energy_total": {
+        "name": "Totalt ladet energi"
+      },
       "wallbox_duration": {
         "name": "Aktiv ladetid"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Maskinvarens strømgrense"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start på siste lading"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Slutt på siste lading"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Ladetid for siste lading"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energi i siste lading"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ladet fra nettet denne måneden"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ladet med solenergi denne måneden"
       },
       "smart_grid_mode": {
         "name": "Smart grid-modus",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "Pågår"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Feriemodus varmtvann",
+        "state": {
+          "none": "Ingen",
+          "auto_sat": "Automatisk (AUTO_SAT)",
+          "off": "Av",
+          "on_eco": "På – eco",
+          "on_low": "På – lav",
+          "on_high": "På – høy"
+        }
+      },
       "signal_true_false": {
         "name": "Tilstand",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Måleområde",
             "state": {
               "below": "Under måleområdet"
+            }
+          },
+          "reported_state": {
+            "name": "Rapportert tilstand",
+            "state": {
+              "low_flow": "Strømningen for lav til å måles"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Stille ventildrift"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Prognose for hjemkomst"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Innstilling for tilstedeværelsessensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Samlet soloutbytte"
+      },
+      "rrc_hot_water_system": {
+        "name": "Varmtvannssystem"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Resultat av termisk desinfeksjon"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Status for fastvareoppdatering"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Romtemperatur"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivt settpunkt for oppvarming"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Manuelt settpunkt for oppvarming"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Midlertidig settpunkt for oppvarming"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Driftsmodus for oppvarming"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Valgt tidsprogram for oppvarming"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Angi romtemperatur"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Angi aktivt settpunkt for oppvarming"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Angi manuelt settpunkt for oppvarming"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Angi midlertidig settpunkt for oppvarming"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Angi driftsmodus for oppvarming"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Angi valgt tidsprogram for oppvarming"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Varmepumpe: strøm til oppvarming (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Varmepumpe: strøm til varmtvann (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Varmepumpe: strøm til kjøling (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Kjele: strøm til oppvarming (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Kjele: strøm til varmtvann (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elektrisk varmeelement: strøm til oppvarming (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elektrisk varmeelement: strøm til varmtvann (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Produsert solstrøm (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Varmepumpe: varme til oppvarming (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Varmepumpe: varme til varmtvann (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Varmepumpe: kjøleenergi (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Kjele: varme til oppvarming (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Kjele: varme til varmtvann (kWh, ikke bekreftet)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gass: til oppvarming (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gass: til varmtvann (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Utetemperatur, døgnmiddel (ikke bekreftet)"
+      },
+      "name_part_low_salt": {
+        "name": "Lite salt"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Type varmtvannsenhet"
+      },
+      "name_part_mode_heating": {
+        "name": "Oppvarming"
+      },
+      "name_part_mode_cooling": {
+        "name": "Kjøling"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Midlertidig settpunkt"
+      },
+      "name_part_heating_temperature": {
+        "name": "Oppvarmingstemperatur"
+      },
+      "name_part_setback_temperature": {
+        "name": "Senkingstemperatur"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Startterskel Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Startterskel Komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Startterskel Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Settpunkt for nivå Av"
+      },
+      "name_part_schedule_name": {
+        "name": "Navn på tidsprogram {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Programvareoppdatering"
+      },
+      "name_part_heat_source_type": {
+        "name": "Varmekildetype"
+      },
+      "name_part_consumption_total": {
+        "name": "Totalt"
+      },
+      "name_part_consumption_heating": {
+        "name": "Oppvarming"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Varmtvann"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Kjøling"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Produsert kjøleenergi"
+      },
+      "tariff_id": {
+        "name": "Tariff-ID"
+      },
+      "cooling_switch_program": {
+        "name": "Tidsprogram for kjøling",
+        "state": {
+          "on": "Kjøling",
+          "off": "Av"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Tidsprogram for ventilasjon",
+        "state": {
+          "min": "Minimum",
+          "red": "Redusert",
+          "nom": "Nominell",
+          "max": "Maksimum",
+          "dem": "Behovsstyrt",
+          "off": "Av"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Tidsprogram (temperaturer)"
+      },
+      "wddw2_switch_program": {
+        "name": "Tidsprogram for varmtvann (temperaturer)"
+      },
+      "name_part_program_cooling": {
+        "name": "Tidsprogram for kjøling"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Tidsprogram for oppvarming"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Tidsprogram for kjøling"
+      },
+      "name_part_program_ventilation": {
+        "name": "Tidsprogram for ventilasjon"
+      },
+      "name_part_program_hot_water": {
+        "name": "Tidsprogram for varmtvann"
+      },
+      "wallbox_external_meter": {
+        "name": "Ekstern måler",
+        "state": {
+          "disconnected": "Ikke tilkoblet",
+          "connected": "Tilkoblet",
+          "error": "Feil"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maksimal strøm for ekstern måler"
+      },
+      "wallbox_currency": {
+        "name": "Valutasymbol"
+      },
+      "wallbox_limiter": {
+        "name": "Begrenset av",
+        "state": {
+          "none": "Ingenting",
+          "no_car": "Ingen bil",
+          "derating": "Effektreduksjon",
+          "key": "Nøkkelbryter",
+          "paragraph_14a": "Styring fra nettselskap (§14a)",
+          "app": "App",
+          "web": "Nettgrensesnitt",
+          "energy_manager": "Energistyring",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Lastbalansering",
+          "watchdog": "Watchdog",
+          "solar": "Soloverskudd",
+          "dynamic_load_management": "Dynamisk laststyring",
+          "static_load_management": "Statisk laststyring",
+          "meter_fail_safe": "Sikring ved målerfeil",
+          "external_limit": "Ekstern begrensning"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energistyring",
+        "state": {
+          "inactive": "Inaktiv",
+          "active_heating": "Aktiv (oppvarming)",
+          "active_hot_water": "Aktiv (varmtvann)",
+          "active_energy_manager": "Styrer ladeboksen"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Tidsprogram {number}",
+        "state": {
+          "off": "Av",
+          "auto": "Auto",
+          "cool": "Kjøling",
+          "heat": "Varme",
+          "dry": "Tørr",
+          "fan_only": "Kun vifte"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Tidsprogram {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybrid reguleringsstrategi",
+        "state": {
+          "cost": "Kostnadsoptimalisert",
+          "max_renewable_share": "Varmepumpeoptimalisert",
+          "heat_pump_preferred": "Varmepumpe foretrukket",
+          "environment": "Mest klimavennlig",
+          "boiler_only": "Kun kjele",
+          "bivalent_alternative": "Bivalent alternativ"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Avvik på gatewayens klokke (beregnet)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Anleggsfeil"
+      },
+      "calculated_defrost_active": {
+        "name": "Avriming aktiv (beregnet)"
       },
       "bacon_connectivity": {
         "name": "Enhetstilkobling"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Ventilproblem"
       },
+      "rrc_coming_home": {
+        "name": "Hjemkomst forventet"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulisk innregulering"
+      },
       "rrc_locking_error": {
         "name": "Feil som krever tilbakestilling"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Etterfylling nødvendig"
+      },
+      "primary_flow_below_range": {
+        "name": "Primærstrømning under måleområdet"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Strømning varmekrets 1 under måleområdet (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Variabel tariff aktiv"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktiv"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Nettstyrt inngang aktiv"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Nettstyrt lading konfigurert"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Nettstyrt lading aktiv"
+      },
+      "wallbox_relays_available": {
+        "name": "Releer tilgjengelige"
+      },
+      "wallbox_authentication_required": {
+        "name": "Autentisering kreves"
+      },
+      "aircon_solar_operation": {
+        "name": "Soldrift"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Avriming (beregnet)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Avriming fullført"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Fremskynd neste koblingspunkt"
+      },
+      "wallbox_start_charging": {
+        "name": "Start lading"
+      },
+      "wallbox_pause_charging": {
+        "name": "Sett lading på pause"
+      },
+      "aircon_end_temporary": {
+        "name": "Avslutt midlertidig endring"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimaanlegg",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Stille",
+              "low": "Lav",
+              "medium": "Middels",
+              "high": "Høy",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Sving",
+              "angle1": "Posisjon 1",
+              "angle2": "Posisjon 2",
+              "angle3": "Posisjon 3",
+              "angle4": "Posisjon 4",
+              "angle5": "Posisjon 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Av",
+              "on": "På",
+              "auto": "Auto",
+              "swing": "Sving",
+              "left": "Venstre",
+              "center": "Midten",
+              "right": "Høyre",
+              "wide": "Bred",
+              "ultra_wide": "Ekstra bred",
+              "fixed": "Fast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ingen",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Ukjent"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Navn på tidsprogrammet"
+      },
+      "wallbox_label": {
+        "name": "Visningsnavn"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Sett koblingspunktene i et tidsprogram",
+      "description": "Setter koblingspunktene i ett eller flere ukentlige tidsprogrammer i varmeanlegget, lest på nytt og kontrollert mot grensene anlegget oppgir. Hvert program sendes én gang og leses tilbake; ingenting gjentas automatisk.",
+      "fields": {
+        "mode": {
+          "name": "Framgangsmåte",
+          "description": "Erstatt hele uken, eller bare dagene som forekommer i koblingspunktene (de andre dagene blir som lest)."
+        },
+        "switch_points": {
+          "name": "Koblingspunkter",
+          "description": "Dag (mo til su), tidspunkt (HH:MM, etter varmeanleggets klokke) og nivå for hvert koblingspunkt. For et program med temperaturer er nivået et tall som 21.5. For et klimaanlegg er nivået dets innstilling: driftsmodus, temperatur og viftehastighet, for eksempel cool 24.0 auto, eller off."
+        },
+        "expected": {
+          "name": "Forventede koblingspunkter",
+          "description": "Valgfritt: koblingspunktene programmet må ha akkurat nå. Har det andre (for eksempel endret i appen), sendes ingenting."
+        },
+        "validate_only": {
+          "name": "Bare kontrollere",
+          "description": "Kontrollerer koblingspunktene og svarer uten å sende."
         }
       }
     }

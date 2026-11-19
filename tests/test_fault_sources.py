@@ -248,6 +248,37 @@ async def test_a_source_answering_404_for_a_day_is_retired(
     assert tracker.diagnostics()["fault_sources"]["required"] == 2
 
 
+async def test_the_retired_source_notice_belongs_to_its_entry_and_ends_with_it(
+    hass: HomeAssistant,
+) -> None:
+    """L17: the notice names its entry and goes away when the entry is removed."""
+    from unittest.mock import patch
+
+    from custom_components.bosch_buderus_heating import async_remove_entry
+    from tests.ha_test_helpers import MockConfigEntry
+
+    entry = MockConfigEntry(domain=DOMAIN, data={}, version=4)
+    entry.add_to_hass(hass)
+    tracker = FaultTracker(hass, entry.entry_id, "gateway")
+    active = _notifications(FAULT)
+    tracker.process_resources({active.path: active, DEVICE: _device()}, observed_at=NOW)
+    tracker.record_results((BatchItemResult("gateway", DEVICE, 404),), observed_at=NOW)
+    for hours in (24, 25):
+        tracker.record_results(
+            (BatchItemResult("gateway", DEVICE, 404),),
+            observed_at=NOW + timedelta(hours=hours),
+        )
+    (issue,) = _issues(hass)
+    assert issue.data == {"entry_id": entry.entry_id}
+    with patch(
+        "custom_components.bosch_buderus_heating.store_cleanup."
+        "async_remove_entry_stores",
+        AsyncMock(),
+    ):
+        await async_remove_entry(hass, entry)
+    assert not _issues(hass)
+
+
 @pytest.mark.parametrize(
     "other",
     [

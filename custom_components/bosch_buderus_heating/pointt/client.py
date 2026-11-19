@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from collections.abc import Callable, Mapping, Sequence
+from datetime import date, datetime
 from typing import Literal, Protocol
 from urllib.parse import quote, urlencode
 
 import aiohttp
 
+from . import wallbox_paths
 from .bulk import chunk_resource_paths, normalize_query, normalize_resource_path
 from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
 from .exceptions import AccessTokenRejected
@@ -167,6 +170,85 @@ class PointTClient:
             resource_path=path,
         )
 
+    async def get_wallbox_leaf(self, gateway_id: str, leaf: str) -> JsonValue:
+        """Read one allowlisted cp0 value (``conf/locked``) as answered."""
+        if leaf not in wallbox_paths.READ_LEAVES:
+            raise ValueError("Invalid wallbox value")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{leaf}"
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource{path}",
+            retryable=True,
+            resource_path=path,
+        )
+
+    async def get_wallbox_history(
+        self,
+        gateway_id: str,
+        kind: Literal["chargelog", "energyhistory"],
+        start: datetime,
+        end: datetime,
+    ) -> JsonValue:
+        """Read the opt-in charge log or energy history of one period.
+
+        Called only while the wallbox history option is on. One request,
+        no automatic retry; the account pause applies as for every request.
+        """
+        if kind not in ("chargelog", "energyhistory"):
+            raise ValueError("Invalid wallbox history")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{kind}"
+        query = (
+            wallbox_paths.chargelog_query(start, end)
+            if kind == "chargelog"
+            else wallbox_paths.energyhistory_query(start, end)
+        )
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource{path}?{query}",
+            retryable=False,
+            resource_path=path,
+        )
+
+    async def put_wallbox_setting(
+        self, gateway_id: str, leaf: str, value: JsonValue
+    ) -> None:
+        """Set one allowlisted cp0 setting once (``{"value": value}``).
+
+        Never retried; the caller confirms the change by reading again.
+        """
+        if not wallbox_paths.setting_value_valid(leaf, value):
+            raise ValueError("Invalid wallbox setting")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/{leaf}"
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource{path}",
+            json_body={"value": value},
+            retryable=False,
+            resource_path=path,
+        )
+
+    async def post_wallbox_command(
+        self, gateway_id: str, command: str, body: JsonValue
+    ) -> None:
+        """Send one allowlisted cp0 command once with its exact body.
+
+        Never retried; the caller confirms the outcome by reading again.
+        """
+        if not wallbox_paths.command_body_valid(command, body):
+            raise ValueError("Invalid wallbox command")
+        gateway = self._encode_gateway(gateway_id)
+        path = f"/rest/v1/cp0/cmd/{command}"
+        await self._request(
+            "POST",
+            f"gateways/{gateway}/resource{path}",
+            json_body=body,
+            retryable=False,
+            resource_path=path,
+        )
+
     async def get_firmware_updates(self, gateway_id: str) -> FirmwareUpdates | None:
         """F1: the gateway's entry in the firmware update list, read-only.
 
@@ -234,6 +316,28 @@ class PointTClient:
             resource_path=normalized,
         )
 
+    async def put_resource_object(
+        self, gateway_id: str, path: str, body: dict[str, JsonValue]
+    ) -> None:
+        """Write a JSON object exactly once, without a ``{"value": ...}``
+        envelope (the WDDW2 weekly program ``{"switchPoints": [...]}``);
+        never retried.
+
+        The answer of the gateway is not used: the caller confirms the write
+        by reading the resource again.
+        """
+        if not isinstance(body, dict):
+            raise ValueError("A raw PointT object body is a dict")
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body=body,
+            retryable=False,
+            resource_path=normalized,
+        )
+
     async def post_resource(
         self, gateway_id: str, path: str, value: JsonValue
     ) -> JsonValue:
@@ -278,6 +382,29 @@ class PointTClient:
             resource_path=normalized,
         )
         return parse_resource(payload, path=normalized)
+
+    async def get_recording(
+        self, gateway_id: str, path: str, interval: str
+    ) -> JsonValue:
+        """Read one recording of the plant for a day, month or year.
+
+        ``path`` must be a ``/recordings/...`` path and ``interval`` a
+        calendar day (``2026-11-13``), month (``2026-11``) or year
+        (``2026``). The answer is returned as read: its ``recording`` list
+        is not part of a resource. Errors, metrics and logs name the path
+        without its query.
+        """
+        normalized = normalize_resource_path(path)
+        if not normalized.startswith("/recordings/") or not _valid_interval(interval):
+            raise ValueError("Invalid PointT recording request")
+        gateway = self._encode_gateway(gateway_id)
+        return await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}"
+            f"?{urlencode({'interval': interval})}",
+            retryable=True,
+            resource_path=normalized,
+        )
 
     async def put_icom_holiday_assignments(
         self, gateway_id: str, slot: int, circuits: tuple[str, ...]
@@ -488,3 +615,22 @@ def _validate_holiday_id(holiday_id: int) -> int:
     ):
         raise ValueError("Holiday ID must be a non-negative 32-bit integer")
     return holiday_id
+
+
+_INTERVAL = re.compile(r"[0-9]{4}(?:-[0-9]{2}(?:-[0-9]{2})?)?")
+
+
+def _valid_interval(value: object) -> bool:
+    """A real calendar day, month or year, nothing else (no other query)."""
+    if not isinstance(value, str) or _INTERVAL.fullmatch(value) is None:
+        return False
+    parts = [int(part) for part in value.split("-")]
+    try:
+        date(
+            parts[0],
+            parts[1] if len(parts) > 1 else 1,
+            parts[2] if len(parts) > 2 else 1,
+        )
+    except ValueError:
+        return False
+    return parts[0] >= 2000

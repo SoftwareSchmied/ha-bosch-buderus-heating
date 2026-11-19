@@ -15,6 +15,7 @@ from . import rrc, rrc_contracts
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .i18n import localize
 from .legacy_holidays import is_legacy_holiday_path
+from .name_translations import name_part
 from .pointt import Resource
 from .poll_group import PollGroup as PollGroup
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
@@ -257,6 +258,10 @@ _UNDERSTOOD_PATHS = frozenset(
         "/gateway/tzInfo",
         "/gateway/tzInfo/timeZone",
         "/gateway/update",
+        # Readings of the automatic update (a text, shown as reported).
+        "/gateway/update/enabled",
+        "/gateway/update/lastCheck",
+        "/gateway/update/lastUpdate",
         "/gateway/update/status",
         "/gateway/uuid",
         "/gateway/versionFirmware",
@@ -326,6 +331,9 @@ _UNDERSTOOD_PATTERNS = tuple(
         r"^/solarCircuits/[^/]+(?:/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature|maxTemperatureReached|pumpModulation|solarYield))?$",
         r"^/pool/(?:additionalHeater/poolMode|currentTemp|enabled|setpointTemp)$",
         r"^/ventilation/(?:operationModes/manual/fanSetpoint|zone[^/]+(?:/(?:exhaustFanLevel|maxIndoorAirQuality|maxRelativeHumidity|operationMode|ventilationLevels|filter/(?:maxRunTime|remainingTime)|sensors/supplyTemp))?)$",
+        # Read-only diagnostic readings of a ventilation unit, disabled by
+        # default (not in the default-enabled patterns below).
+        r"^/ventilation/zone[^/]+/(?:demand/(?:indoorAirQuality|relativeHumidity)|sensors/(?:exhaustTemp|extractTemp|internalAirQuality|internalHumidity|outdoorTemp))$",
         r"^/zones/zone[^/]+(?:/(?:averageActualHumidity|averageCurrentTemperature|childLock|currentRoomSetpoint|icon|name|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|operationMode|temporaryRoomSetpoint)))?$",
         r"^/devices/(?!list$)[^/]+(?:/(?:actualHumidity|assignedHC|battery|errors|name|productName|rfTimeofConnectionLost|roomtemperature|signal|type|versionFirmware|zoneId))?$",
         r"^/pv/(?:enable|surplusAvailable)$",
@@ -426,16 +434,27 @@ _APP_RESOURCE_SCHEMA_RULES = (
     ),
     _EntitySchemaRule(
         re.compile(
-            r"^(?:/heatingCircuits/[^/]+/(?:actualSupplyTemperature|awayTemperature|boostTemperature|roomtemperature|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint|cooling/(?:manualRoomSetpoint|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on)|/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|inletTemperature|manualsetpoint|outletTemperature|outTemp|sensor/(?:airBoxTemperature|exhaustFlueGasTemperature|externalTankTemperature|heatExchangerFlueGasTemperature|heatExchangerTemperature))|/system/(?:awayMode/temperature|sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)|seasonOptimizer/(?:coolingThreshold|heatingThreshold)|variableTariff/ch/(?:currentSetpoint|highPriceDelta|lowPriceDelta|midPriceSetpoint))|/heatSources/(?:hybrid/bivalentSetpoint|poolSetpointTemperature|poolTemperature)|/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature)|/pool/(?:currentTemp|setpointTemp)|/ventilation/zone[^/]+/sensors/supplyTemp|/zones/zone[^/]+/(?:averageCurrentTemperature|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|temporaryRoomSetpoint))|/devices/(?!list$)[^/]+/roomtemperature)$"
+            r"^(?:/heatingCircuits/[^/]+/(?:actualSupplyTemperature|awayTemperature|boostTemperature|roomtemperature|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint|cooling/(?:manualRoomSetpoint|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on)|/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|inletTemperature|manualsetpoint|outletTemperature|outTemp|sensor/(?:airBoxTemperature|exhaustFlueGasTemperature|externalTankTemperature|heatExchangerFlueGasTemperature|heatExchangerTemperature))|/system/(?:awayMode/temperature|sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)|seasonOptimizer/(?:coolingThreshold|heatingThreshold)|variableTariff/ch/(?:currentSetpoint|highPriceDelta|lowPriceDelta|midPriceSetpoint))|/heatSources/(?:hybrid/bivalentSetpoint|poolSetpointTemperature|poolTemperature)|/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature)|/pool/(?:currentTemp|setpointTemp)|/ventilation/zone[^/]+/sensors/(?:supplyTemp|exhaustTemp|extractTemp|outdoorTemp)|/zones/zone[^/]+/(?:averageCurrentTemperature|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|temporaryRoomSetpoint))|/devices/(?!list$)[^/]+/roomtemperature)$"
         ),
         frozenset({"floatValue"}),
         frozenset({"C"}),
     ),
     _EntitySchemaRule(
         re.compile(
-            r"^(?:/heatingCircuits/[^/]+/(?:actualHumidity|pumpModulation)|/dhwCircuits/[^/]+/(?:friwaPrimaryPumpModulation|sensor/fanSpeed)|/system/silentMode/powerReduction|/solarCircuits/[^/]+/pumpModulation|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/(?:actualHumidity|battery|signal))$"
+            r"^(?:/heatingCircuits/[^/]+/(?:actualHumidity|pumpModulation)|/dhwCircuits/[^/]+/(?:friwaPrimaryPumpModulation|sensor/fanSpeed)|/solarCircuits/[^/]+/pumpModulation|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/(?:actualHumidity|battery|signal))$"
         ),
         frozenset({"floatValue"}),
+        frozenset({"%"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/gateway/update/(?:enabled|lastCheck|lastUpdate)$"),
+        frozenset({"stringValue"}),
+    ),
+    # The power reduction of the silent mode is a whole percentage the
+    # gateway reports as an integer (``system_controls_extra``).
+    _EntitySchemaRule(
+        re.compile(r"^/system/silentMode/powerReduction$"),
+        frozenset({"floatValue", "integerValue"}),
         frozenset({"%"}),
     ),
     _EntitySchemaRule(
@@ -824,6 +843,16 @@ _ENGLISH_PATH_NAMES = {
     "/system/variableTariff/supportStatus": "Variable tariff \N{EN DASH} support",
 }
 
+# The weekly programs of the further program kinds, by translation key.
+_PROGRAM_ROOT = re.compile(r"^/(heatingCircuits|dhwCircuits|ventilation|zones)/[^/]+/")
+_FURTHER_PROGRAM_NAMES = {
+    "/heatingCircuits/*/cooling/switchPrograms/A": "name_part_program_cooling",
+    "/zones/*/switchPrograms/heating": "name_part_program_zone_heating",
+    "/zones/*/switchPrograms/cooling": "name_part_program_zone_cooling",
+    "/ventilation/*/switchPrograms/cp": "name_part_program_ventilation",
+    "/dhwCircuits/*/switchPrograms/program1": "name_part_program_hot_water",
+}
+
 # Reviewed names whose meaning depends on the parent resource. A wildcard
 # occupies exactly one circuit/zone ID, never an arbitrary suffix or subtree.
 # Keep both languages together so a technical leaf such as "on" or "gas"
@@ -857,6 +886,18 @@ _APP_PATH_NAMES = {
         "Energiepreis-Erinnerung fällig",
         "Energy price reminder due",
     ),
+    "/heatingCircuits/*/awayTemperature": (
+        "Abwesenheitstemperatur",
+        "Away temperature",
+    ),
+    "/heatingCircuits/*/temperatureLevels/awayTemperature": (
+        "Abwesenheitstemperatur",
+        "Away temperature",
+    ),
+    "/heatingCircuits/*/cooling/outdoorThreshold": (
+        "Kühlbetrieb ab Außentemperatur",
+        "Start cooling at outdoor temperature",
+    ),
     "/heatingCircuits/*/cooling/roomTempSetpoint": (
         "Kühlen: Raum-Solltemperatur",
         "Cooling: room setpoint",
@@ -864,6 +905,28 @@ _APP_PATH_NAMES = {
     "/heatingCircuits/*/cooling/temperatureLevels/on": (
         "Kühlen: Temperaturstufe",
         "Cooling: target temperature level",
+    ),
+    # Own names for the cooling paths of a circuit, so that they are not read
+    # as the heating circuit's second operating mode, control type or setpoint.
+    "/heatingCircuits/*/cooling/operationMode": (
+        "Kühlen: Betriebsart",
+        "Cooling: operation mode",
+    ),
+    "/heatingCircuits/*/cooling/controlType": (
+        "Kühlen: Regelungsart",
+        "Cooling: control type",
+    ),
+    "/heatingCircuits/*/cooling/manualRoomSetpoint": (
+        "Kühlen: Manueller Sollwert",
+        "Cooling: manual setpoint",
+    ),
+    "/heatingCircuits/*/cooling/temporaryRoomSetpoint": (
+        "Kühlen: Vorübergehender Raum-Sollwert",
+        "Cooling: temporary room setpoint",
+    ),
+    "/heatingCircuits/*/openWindowDetection/enabled": (
+        "Fenster-offen-Erkennung",
+        "Open window detection",
     ),
     "/heatingCircuits/*/suWiCoolingThreshold": (
         "Kühlbetrieb ab Außentemperatur",
@@ -889,10 +952,33 @@ _APP_PATH_NAMES = {
     "/system/energyTariff/electricity": ("Strompreis", "Electricity price"),
     "/system/energyTariff/gas": ("Gaspreis", "Gas price"),
     "/system/energyTariff/oil": ("Ölpreis", "Oil price"),
-    "/system/energyTariff/pv": ("PV-Strompreis", "PV electricity price"),
+    "/system/energyTariff/pv": ("Einspeisevergütung", "Feed-in tariff"),
     "/system/lowNoise/mode": (
         "Leiser Betrieb: Betriebsart",
         "Low-noise operation mode",
+    ),
+    "/system/lowNoise/duration": (
+        "Leiser Betrieb: Dauer",
+        "Low-noise operation: duration",
+    ),
+    "/system/silentMode/powerReduction": (
+        "Flüstermodus: Leistungsreduzierung",
+        "Silent mode: power reduction",
+    ),
+    "/system/silentMode/startTime": (
+        "Flüstermodus: Startzeit",
+        "Silent mode: start time",
+    ),
+    "/system/silentMode/stopTime": (
+        "Flüstermodus: Endzeit",
+        "Silent mode: stop time",
+    ),
+    "/gateway/update/enabled": ("Automatische Updates", "Automatic updates"),
+    "/gateway/update/lastCheck": ("Letzte Update-Prüfung", "Last update check"),
+    "/gateway/update/lastUpdate": ("Letztes Update", "Last update"),
+    "/gateway/leds/inactivityTimeout": (
+        "LED-Abschaltzeit",
+        "LED switch-off time",
     ),
     "/system/seasonOptimizer/coolingThreshold": (
         "Kühlbetrieb ab Außentemperatur",
@@ -903,6 +989,34 @@ _APP_PATH_NAMES = {
         "Stop heating at outdoor temperature",
     ),
     "/ventilation/*/sensors/supplyTemp": ("Zulufttemperatur", "Supply air temperature"),
+    "/ventilation/*/sensors/exhaustTemp": (
+        "Fortlufttemperatur",
+        "Exhaust air temperature",
+    ),
+    "/ventilation/*/sensors/extractTemp": (
+        "Ablufttemperatur",
+        "Extract air temperature",
+    ),
+    "/ventilation/*/sensors/outdoorTemp": (
+        "Außenlufttemperatur",
+        "Outdoor air temperature",
+    ),
+    "/ventilation/*/sensors/internalAirQuality": (
+        "Luftqualität innen",
+        "Indoor air quality",
+    ),
+    "/ventilation/*/sensors/internalHumidity": (
+        "Luftfeuchtigkeit innen",
+        "Indoor humidity",
+    ),
+    "/ventilation/*/demand/indoorAirQuality": (
+        "Bedarf nach Luftqualität",
+        "Air quality demand",
+    ),
+    "/ventilation/*/demand/relativeHumidity": (
+        "Bedarf nach Luftfeuchtigkeit",
+        "Humidity demand",
+    ),
     "/system/awayMode/temperature": ("Abwesenheitstemperatur", "Away temperature"),
     "/dhwCircuits/*/sensor/airBoxTemperature": (
         "Lufttemperatur im Gerätegehäuse",
@@ -1406,10 +1520,24 @@ _HOURLY_CONTAINER_PATTERN = re.compile(r"^/(?:solarCircuits|ventilation)/[^/]+$"
 # O40: settled cloud values that the 60-second group read only because their
 # names contain "status" or "temperature".
 _STATIC_SETTLED_PATHS = frozenset(
-    {"/system/iSRC/installationStatus", "/system/variableTariff/supportStatus"}
+    {
+        "/system/iSRC/installationStatus",
+        "/system/variableTariff/supportStatus",
+        # The variable tariff of an iCom gateway, read once (0.9.2).
+        "/application/tbso/enable",
+        "/application/tbso/electricity/tariffID",
+    }
 )
 _SLOW_SETTLED_PATHS = frozenset(
-    {"/system/sensors/temperatures/outdoorTemperatureSource", "/gateway/update/status"}
+    {
+        "/system/sensors/temperatures/outdoorTemperatureSource",
+        "/gateway/update/status",
+        # The automatic update changes rarely. The gateway clock stays in the
+        # regular cycle: the hot water program level needs a fresh reading.
+        "/gateway/update/enabled",
+        "/gateway/update/lastCheck",
+        "/gateway/update/lastUpdate",
+    }
 )
 _FAST_HEAT_SOURCE_PATTERN = re.compile(
     r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))"
@@ -1638,19 +1766,19 @@ def resource_name(
         return label
     if (softener := softener_capability(path)) is not None:
         if subkey == "low_salt":
-            return localize(language, "Salzvorrat niedrig", "Low salt")
+            return name_part(language, "name_part_low_salt")
         return localize(language, softener.name_de, softener.name_en)
     if is_additional_app_scalar(path):
         if path.endswith("/dhwType"):
-            return localize(language, "Warmwasser-Gerätetyp", "Hot-water device type")
+            return name_part(language, "name_part_hot_water_device_type")
         mode = (
-            localize(language, "Heizen", "Heating")
+            name_part(language, "name_part_mode_heating")
             if "/heating/" in path
-            else localize(language, "Kühlen", "Cooling")
+            else name_part(language, "name_part_mode_cooling")
         )
         key = path.rsplit("/", 1)[-1]
         label = (
-            localize(language, "Vorübergehender Sollwert", "Temporary setpoint")
+            name_part(language, "name_part_temporary_setpoint")
             if key == "temporaryRoomSetpoint"
             else _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, key)
         )
@@ -1659,53 +1787,51 @@ def resource_name(
     app_path = _APP_PATH_ROOT.sub(r"/\1/*/", path)
     if (app_names := _APP_PATH_NAMES.get(app_path)) is not None:
         base = localize(language, *app_names)
+    elif (
+        program := _FURTHER_PROGRAM_NAMES.get(_PROGRAM_ROOT.sub(r"/\1/*/", path))
+    ) is not None:
+        base = name_part(language, program)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "comfort2": localize(language, "Heiztemperatur", "Heating temperature"),
-            "eco": localize(language, "Absenktemperatur", "Setback temperature"),
+            "comfort2": name_part(language, "name_part_heating_temperature"),
+            "eco": name_part(language, "name_part_setback_temperature"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "eco": localize(language, "Startschwelle Eco+", "Start threshold Eco+"),
-            "high": localize(
-                language, "Startschwelle Komfort", "Start threshold Comfort"
-            ),
-            "low": localize(language, "Startschwelle Eco", "Start threshold Eco"),
-            "off": localize(language, "Sollwert Stufe Aus", "Setpoint level off"),
+            "eco": name_part(language, "name_part_start_threshold_eco_plus"),
+            "high": name_part(language, "name_part_start_threshold_comfort"),
+            "low": name_part(language, "name_part_start_threshold_eco"),
+            "off": name_part(language, "name_part_setpoint_level_off"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif _PROGRAM_NAME.fullmatch(tail):
         suffix = tail.removeprefix("name")
-        base = localize(
-            language, "Name des Zeitprogramms {suffix}", "Schedule {suffix} name"
-        ).format(suffix=suffix)
+        base = name_part(language, "name_part_schedule_name", suffix=suffix)
     elif path == "/gateway/update/status":
-        base = localize(language, "Softwareupdate", "Software update")
+        base = name_part(language, "name_part_software_update")
     elif path in _ENGLISH_PATH_NAMES:
         base = _name(language, _GERMAN_PATH_NAMES, _ENGLISH_PATH_NAMES, path)
     elif _HEAT_SOURCE_TYPE.fullmatch(path):
         # The kind of heat source, told apart from the system type.
-        base = localize(language, "Typ des Wärmeerzeugers", "Heat source type")
+        base = name_part(language, "name_part_heat_source_type")
     elif tail in _ENGLISH_NAMES:
         base = _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, tail)
     else:
         base = _humanize(tail)
     if "/emon/" in path:
         energy_domains = {
-            "totalConsumption": localize(language, "Gesamt", "Total"),
-            "chConsumption": localize(language, "Heizung", "Heating"),
-            "dhwConsumption": localize(language, "Warmwasser", "Hot water"),
-            "coolingConsumption": localize(language, "Kühlung", "Cooling"),
+            "totalConsumption": name_part(language, "name_part_consumption_total"),
+            "chConsumption": name_part(language, "name_part_consumption_heating"),
+            "dhwConsumption": name_part(language, "name_part_consumption_hot_water"),
+            "coolingConsumption": name_part(language, "name_part_consumption_cooling"),
         }
         domain = energy_domains.get(tail, base)
         if subkey is None:
             return domain
         subname = _subkey_name(language, subkey)
         if subkey == "outputProduced" and tail == "coolingConsumption":
-            subname = localize(
-                language, "Erzeugte Kühlenergie", "Cooling energy produced"
-            )
+            subname = name_part(language, "name_part_cooling_energy_produced")
         return f"{domain} \N{EN DASH} {subname}"
     if subkey is None:
         return base

@@ -33,7 +33,6 @@ from .configuration import LOCAL_KIND, ConfigurationError
 from .configuration_management import ConfigurationManagement
 from .const import DOMAIN
 from .ha_schema import validation as vol
-from .i18n import localize
 from .local_address import follow_address
 from .local_auth import AuthProblem, AuthState, LabelCredentials, rejection_status
 from .local_budget import LocalReadBudget, local_budget_manager
@@ -45,6 +44,7 @@ from .local_discovery import (
     dismiss_configured_discoveries,
     forget_discovery_flow,
     remember_discovery,
+    single_discovery,
     track_discovery_flow,
 )
 from .local_enrollment import PendingEnrollment, enrollment_journal
@@ -68,11 +68,28 @@ from .local_transport import (
     inspect_local_certificate,
 )
 from .markdown_text import markdown_literal
+from .plant_labels import plant_choices
 
 _LOGGER = logging.getLogger(__name__)
 
 # P49b step 7: the choice of a new plant set up from its local access alone.
 NEW_PLANT = "new_plant"
+# D22: a gateway found while entries exist can still start an entry of its own.
+NEW_ENTRY = "new_entry"
+# Steps after which another form follows ("Next"); the save step is the last.
+_INTERMEDIATE_STEPS = frozenset(
+    {
+        "local_discovered",
+        "local_owner",
+        "local_target",
+        "local_address",
+        "local_method",
+        "local_method_keep",
+        "local_certificate",
+        "local_auth",
+        "local_token",
+    }
+)
 # The unique ID of a discovery notice (never of an entry that holds an access).
 DISCOVERY_UNIQUE_ID_PREFIX = "local_discovery_"
 
@@ -240,6 +257,16 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     def local_available(self) -> bool:
         return setup_support(self.hass) is not None
 
+    def _local_found_address(self) -> str | None:
+        """The address of the gateway this dialog was opened for, if any."""
+        return self._local_choices[0].host if self._local_choices else None
+
+    def _local_preselect(self, host: object) -> None:
+        """Preselect the address a new entry's setup was started for."""
+        if isinstance(host, str) and not self._local_choices:
+            with suppress(ValueError):
+                self._local_choices = (LocalEndpoint(host),)
+
     def _local_management(self) -> ConfigurationManagement:
         entry = self.hass.config_entries.async_get_entry(self._local_owner_id or "")
         if entry is None:
@@ -297,6 +324,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         *,
         errors: dict[str, str] | None = None,
         placeholders: dict[str, str] | None = None,
+        step_id: str | None = None,
     ) -> ConfigFlowResult:
         self._local_phase = step
         noted, self._local_noted = self._local_noted, None
@@ -306,10 +334,15 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             if code != noted:
                 self._local_attempt(step, code)
         return self.async_show_form(
-            step_id=step,
+            step_id=step_id or step,
             data_schema=schema or vol.Schema({}),
             errors=errors or {},
             description_placeholders=placeholders,
+            last_step=False
+            if step in _INTERMEDIATE_STEPS
+            else True
+            if step == "local_result"
+            else None,
         )
 
     def _local_owner_entries(self) -> dict[str, ConfigEntry]:
@@ -320,6 +353,17 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             )
             if entry.version == 4
         }
+
+    def _local_unmigrated_entries(self) -> bool:
+        """Whether an entry of another version exists (for example one whose
+        update to the current version failed). It is no owner for local
+        access, but the system is not new either: no new entry is offered."""
+        return any(
+            entry.version != 4
+            for entry in self.hass.config_entries.async_entries(
+                DOMAIN, include_ignore=False
+            )
+        )
 
     async def _local_new_entry(self) -> ConfigFlowResult:
         """Create an entry without any access; only the config flow can."""
@@ -333,6 +377,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         owners = self._local_owner_entries()
         if owners and not self.local_available():
             return self.async_abort(reason="local_setup_unavailable")
+        if not owners and self._local_unmigrated_entries():
+            # An entry whose update failed: it, not the data supply, is why.
+            return self.async_abort(reason="local_entry_not_updated")
         try:
             self._local_choices = remember_discovery(self.hass, discovery_info)
         except LocalProbeError, AttributeError:
@@ -377,6 +424,8 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 return self.async_abort(reason="local_setup_unavailable")
             self._local_phase = ""
             return await self.async_step_local_setup()
+        if self._local_unmigrated_entries():
+            return self.async_abort(reason="local_entry_not_updated")
         if self._local_discovery is not None:
             # The notice may be older than the hint; the address step of the
             # new entry offers the found address again.
@@ -407,8 +456,17 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         entries = self._local_owner_entries()
         if not entries:
             return self.async_abort(reason="local_existing_owner_required")
+        # Only a discovered gateway may start an entry of its own here; the
+        # options of an entry always add to that entry.
+        offer_entry = self.source == "zeroconf"
         if user_input is not None:
             owner = user_input.get("owner")
+            if owner == NEW_ENTRY and offer_entry:
+                self._local_phase = ""
+                if self._local_discovery is not None:
+                    with suppress(LocalProbeError, AttributeError):
+                        remember_discovery(self.hass, self._local_discovery)
+                return await self._local_new_entry()
             if owner not in entries:
                 return self.async_abort(reason="local_session_changed")
             self._local_owner_id = owner
@@ -418,11 +476,21 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             "local_owner",
             vol.Schema(
                 {
-                    vol.Required("owner"): selection(
-                        [
-                            SelectOptionDict(value=key, label=entry.title)
-                            for key, entry in entries.items()
-                        ]
+                    vol.Required("owner"): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                *(
+                                    SelectOptionDict(value=key, label=entry.title)
+                                    for key, entry in entries.items()
+                                ),
+                                *(
+                                    [SelectOptionDict(value=NEW_ENTRY, label=NEW_ENTRY)]
+                                    if offer_entry
+                                    else []
+                                ),
+                            ],
+                            translation_key="local_owner",
+                        )
                     )
                 }
             ),
@@ -460,39 +528,48 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             # P49b step 7: an entry without any plant sets one up locally.
             user_input = {"target": NEW_PLANT}
         if user_input is None:
+            # One installation fits: it is preselected (#137); a new system
+            # stays a choice of its own.
+            field = (
+                vol.Required("target", default=next(iter(targets)))
+                if len(targets) == 1
+                else vol.Required("target")
+            )
             return self._local_form(
                 "local_target",
                 vol.Schema(
                     {
-                        vol.Required("target"): selection(
-                            [
-                                *(
-                                    SelectOptionDict(
-                                        value=key,
-                                        label=str(
-                                            cast(
-                                                list[dict[str, Any]],
-                                                target.to_data()["identities"],
-                                            )[0]["value"]
-                                        ),
-                                    )
-                                    for key, target in targets.items()
-                                ),
-                                *(
-                                    [
-                                        SelectOptionDict(
-                                            value=NEW_PLANT,
-                                            label=localize(
-                                                self.hass.config.language,
-                                                "Neue Anlage (nur lokal)",
-                                                "New system (local only)",
-                                            ),
-                                        )
-                                    ]
-                                    if offer_new
-                                    else []
-                                ),
-                            ]
+                        field: SelectSelector(
+                            SelectSelectorConfig(
+                                options=[
+                                    # The device name the user knows, not the
+                                    # gateway identifier alone.
+                                    *plant_choices(
+                                        self.hass,
+                                        current.owner_id,
+                                        {
+                                            key: str(
+                                                cast(
+                                                    list[dict[str, Any]],
+                                                    target.to_data()["identities"],
+                                                )[0]["value"]
+                                            )
+                                            for key, target in targets.items()
+                                        },
+                                    ),
+                                    *(
+                                        [
+                                            SelectOptionDict(
+                                                value=NEW_PLANT, label=NEW_PLANT
+                                            )
+                                        ]
+                                        if offer_new
+                                        else []
+                                    ),
+                                ],
+                                # Fixed choices in the profile language.
+                                translation_key="local_target",
+                            )
                         )
                     }
                 ),
@@ -577,11 +654,23 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             dict.fromkeys((*self._local_choices, *discovery_endpoints(self.hass)))
         )
         # Custom values keep manual entry available even with no mDNS answers.
+        # D22: the gateway this dialog was opened for, or the only one found
+        # now, is preselected; any other address can still be chosen.
+        preferred = (
+            self._local_choices[0]
+            if self._local_choices
+            else single_discovery(self.hass)
+        )
+        found = (
+            {"default": preferred.host}
+            if preferred is not None and not self._local_address
+            else {}
+        )
         return self._local_form(
             "local_address",
             vol.Schema(
                 {
-                    vol.Required("address"): SelectSelector(
+                    vol.Required("address", **found): SelectSelector(
                         SelectSelectorConfig(
                             options=[
                                 SelectOptionDict(value=e.host, label=e.host)
@@ -801,7 +890,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if user_input is not None and user_input.get("confirm") is True:
             return await self._local_start(self._local_accept_certificate)
         errors = {}
-        if user_input is None and self._local_error:
+        if user_input is not None:
+            # Not confirmed: say so instead of showing the same page again.
+            # Nothing is sent.
+            errors["confirm"] = "local_certificate_unconfirmed"
+        elif self._local_error:
             # Back here because the certificate changed during the sign-in.
             errors["base"] = self._local_error
             self._local_error = None
@@ -809,6 +902,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             "local_certificate",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
             errors=errors,
+            # The data port (after the sign-in) has a title of its own, so
+            # the second certificate page is told apart from the first.
+            step_id="local_certificate_data"
+            if observation.role == PortRole.RESOURCES
+            else None,
             placeholders={
                 "host": markdown_literal(self._local_address),
                 "port": str(observation.role.port),
@@ -816,6 +914,12 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 "previous": self._local_previous_pin(observation.role) or "?",
             },
         )
+
+    async def async_step_local_certificate_data(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The certificate page of the data port."""
+        return await self.async_step_local_certificate(user_input)
 
     async def _local_accept_certificate(self) -> None:
         observation = self._local_observation
@@ -1154,11 +1258,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     ) -> ConfigFlowResult:
         if denied := self._local_guard("local_result"):
             return denied
-        if user_input is not None and user_input.get("confirm") is True:
+        if user_input is not None:
+            # OK saves; to keep nothing, the dialog is closed.
             return await self._local_start(lambda: self._local_verify(final=True))
         return self._local_form(
             "local_result",
-            vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
             placeholders={
                 "host": markdown_literal(self._local_address),
                 "gateway": markdown_literal(self._local_gateway),

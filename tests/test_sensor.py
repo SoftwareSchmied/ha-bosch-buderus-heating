@@ -1251,6 +1251,7 @@ def test_energy_resources_accept_typed_pointt_items_and_empty_startup_shape(
     assert {item.value_key for item in descriptions} == {
         "compressor",
         "eheater",
+        "environmental_energy",
         "outputProduced",
         "total_electricity",
     }

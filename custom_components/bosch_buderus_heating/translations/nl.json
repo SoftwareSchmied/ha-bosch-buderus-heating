@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Aanmelden met SingleKey ID",
-        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
+        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen. Toont SingleKey ID een pagina die een doorsturing aankondigt en gebeurt er niets, kies dan de link of knop op die pagina.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
         "data": {
           "redirect_url": "Volledig doorverwijzingsadres"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Opnieuw configureren en opnieuw zoeken",
-        "description": "Kies het merk van de app, de gateways en het opvraagprofiel. Bij het opslaan wordt de integratie opnieuw geladen en worden alle bronnen volledig opnieuw gezocht. Gebruik dit na een firmware-update of wanneer verwarmingscircuits, warmwatersystemen, warmtebronnen of gateways zijn gewijzigd. **Standaard** leest actuele bedrijfswaarden elke minuut. **Cloudvriendelijk** vermindert het cloudverkeer door ze om de twee minuten te lezen en alle andere veranderende waarden minder vaak. Bij een ander appmerk moet je je opnieuw aanmelden bij SingleKey ID.",
+        "description": "Kies het app-merk, de gateways en het opvraagprofiel. Bij het opslaan wordt de integratie opnieuw geladen en zoekt ze alle resources opnieuw, bijvoorbeeld na een firmware-update of een gewijzigde installatie. Een ander app-merk vereist een nieuwe aanmelding met SingleKey ID.",
         "data": {
           "brand": "Merk van de app",
           "gateway_ids": "Gateways",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Bestaande configuratie kiezen",
-        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort. Hiermee wordt geen extra installatie aangemaakt.",
+        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort, of stel hem in als nieuwe configuratie met alleen lokale toegang.",
         "data": {
-          "owner": "Bestaande configuratie"
+          "owner": "Configuratie"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Installatie kiezen",
-        "description": "Selecteer de installatie waarmee lokaal verbinding moet worden gemaakt. De identiteit van de gateway wordt vóór het opslaan gecontroleerd.",
+        "description": "Selecteer het verwarmingssysteem dat lokaal moet worden verbonden: de warmtepomp of de ketel, geen laadpaal of airconditioner. De identiteit van de gateway wordt vóór het opslaan gecontroleerd.",
         "data": {
           "target": "Installatie / gateway"
         }
@@ -109,6 +109,13 @@
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
+      "local_certificate_data": {
+        "title": "Het certificaat van de datapoort bevestigen",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+        "data": {
+          "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
+        }
+      },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
         "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "De lokale verbinding bevestigen",
-        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie.",
-        "data": {
-          "confirm": "Deze lokale verbinding opslaan"
-        }
+        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie. Sluit in plaats daarvan het dialoogvenster om niets op te slaan."
       },
       "local_retry": {
         "title": "Lokale controle kon niet worden voltooid",
@@ -151,6 +155,7 @@
       "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
+      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Meldt die pagina dat je wordt doorgestuurd en gebeurt er niets, kies dan de link of knop op die pagina. Kopieer daarna in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
       "gateway_changed": "De gatewaylijst is gewijzigd terwijl dit dialoogvenster open was. Sluit het dialoogvenster en open Opnieuw configureren opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
       "unknown": "Er is een onverwachte fout in de cloudtoegang opgetreden. Wacht even en probeer het opnieuw.",
@@ -172,13 +177,14 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
+      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
       "local_unknown_firmware": "De firmwareversie kon niet worden geverifieerd.",
       "local_old_firmware": "Werk de firmware van de gateway bij voordat je de lokale verbinding instelt.",
       "local_unsupported_brand": "Dit gatewaymerk wordt niet ondersteund door de gedocumenteerde lokale interface.",
-      "local_incomplete_system": "De installatie-informatie van de gateway is nog niet volledig. Probeer de leescontrole later opnieuw.",
+      "local_incomplete_system": "De gateway verzamelt nog de installatie-informatie. Dat kan enkele minuten duren. Wacht enkele minuten en probeer de leescontrole daarna opnieuw.",
       "local_invalid_response": "Een vereist antwoord van de gateway kon niet worden geverifieerd.",
       "local_identity_unverified": "Deze installatie is nog niet ondubbelzinnig gekoppeld. Voor de eerste configuratie is een beschikbare cloudtoegang nodig, met overeenkomende identificaties van gateway en module uit beide interfaces. Geverifieerde koppelingen kunnen daarna zonder de cloud worden gebruikt.",
       "local_identity_conflict": "De identiteit van de gateway botst met de geselecteerde installatie of met een andere configuratie.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "already_in_progress": "De configuratie van deze lokale gateway is al bezig.",
-      "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer."
+      "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
+      "local_entry_not_updated": "Een bestaande vermelding van deze integratie kon niet naar de huidige versie worden bijgewerkt. Herstel of verwijder die vermelding eerst; daarna kan deze gateway worden toegevoegd."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Instellingen",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaties",
           "holidays": "Vakantieperiodes beheren",
@@ -248,7 +254,9 @@
           "connections": "Verbindingen",
           "connection_add_cloud": "Cloudtoegang verbinden",
           "local_setup": "Lokale toegang instellen",
-          "rescan": "De installatie opnieuw zoeken"
+          "rescan": "De installatie opnieuw zoeken",
+          "recordings": "Registraties van de installatie",
+          "wallbox": "Laadpaal"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Verwarmingstijdprogramma bekijken",
         "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nKies een weekdag. De tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. ∅ betekent dat voor die dag geen schakelpunt is opgeslagen. Wijzigingen gelden voor elke zone die dit tijdprogramma gebruikt.",
         "data": {
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "rrc_readonly": {
         "title": "Verwarmingstijdprogramma bekijken",
-        "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nDit tijdprogramma kan hier alleen worden bekeken. Het heeft geen bewerkbare schakelpunten of bevat niet-ondersteunde instellingen. ∅ betekent dat er geen schakelpunt is opgeslagen. Je kunt wijzigingen aanbrengen in de app van de fabrikant."
+        "description": "**{program}**\n\n**Maandag:** {mo}\n\n**Dinsdag:** {tu}\n\n**Woensdag:** {we}\n\n**Donderdag:** {th}\n\n**Vrijdag:** {fr}\n\n**Zaterdag:** {sa}\n\n**Zondag:** {su}\n\nDit tijdprogramma kan hier alleen worden bekeken. Het heeft geen bewerkbare schakelpunten of bevat niet-ondersteunde instellingen. ∅ betekent dat er geen schakelpunt is opgeslagen. Je kunt wijzigingen aanbrengen in de app van de fabrikant.",
+        "data": {
+          "week_view": "Weekoverzicht"
+        }
       },
       "rrc_point": {
         "title": "Schakelpunt bewerken",
         "description": "**{program}**\n\nKies een tijd in stappen van vijf minuten en een temperatuur van 5 tot 30 °C in stappen van 0,5 °C. De tijd herhaalt zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Wijzigingen gelden voor alle toegewezen zones.",
         "data": {
           "time": "Tijd",
-          "temperature": "Temperatuur"
+          "temperature": "Temperatuur",
+          "delete": "Dit schakelpunt verwijderen"
         }
+      },
+      "rrc_confirm": {
+        "title": "Schakelpunt opslaan",
+        "description": "**{program}**\n\n**Voor:** {before}\n\n**Na:** {after}\n\nDe wijziging wordt één keer verzonden en daarna teruggelezen. Ze geldt voor alle toegewezen zones."
       },
       "rrc_day": {
         "title": "Schakelpunt kiezen",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nKies een schakelpunt om het te wijzigen of te verwijderen, of voeg er een toe. Een dag heeft hoogstens {per_day} schakelpunten (de grens van de app van de fabrikant, niet gemeld door de regelaar); het laatste schakelpunt van een dag blijft staan.",
         "data": {
           "point": "Schakelpunt"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDit programma is niet het actieve programma van het verwarmingscircuit. Wijzigingen werken pas als het is geselecteerd.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nHet warmwaterprogramma geldt alleen zolang de bedrijfsmodus voor warm water op Auto staat.",
         "data": {
           "action": "Volgende stap",
-          "day": "Weekdag"
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Verbindingen",
-        "description": "{result}Kies de toegang die je wilt beheren.",
+        "description": "Kies de toegang die je wilt beheren.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Lokale toegang instellen",
           "back": "← Terug"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Verbindingstest",
-        "description": "{result}"
+        "description": "OK, antwoord na {ms} ms. De instellingen blijven ongewijzigd."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Verbindingstest",
+        "description": "OK, antwoord na {ms} ms; {count} gateway(s) in het account. De instellingen blijven ongewijzigd."
+      },
+      "connection_test_not_running": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: de toegang draait nu niet (uitgeschakeld, wordt gestart of gestopt)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Verbindingstest",
+        "description": "Aanmelding vereist: meld je opnieuw aan via “Opnieuw aanmelden”."
+      },
+      "connection_test_auth_local": {
+        "title": "Verbindingstest",
+        "description": "Aanmelding vereist: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Verbindingstest",
+        "description": "Het certificaat van het apparaat is gewijzigd: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”."
+      },
+      "connection_test_paused": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: verzoeken zijn gepauzeerd tot {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: verzoeken zijn nu gepauzeerd."
+      },
+      "connection_test_busy": {
+        "title": "Verbindingstest",
+        "description": "Niet getest: de toegang is nu bezet. Probeer het zo meteen opnieuw."
+      },
+      "connection_test_unreachable": {
+        "title": "Verbindingstest",
+        "description": "Niet bereikbaar: geen antwoord ({ms} ms). Controleer het netwerk en het apparaat."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Verbindingstest",
+        "description": "Niet bereikbaar: geen antwoord ({ms} ms). Controleer het netwerk en het apparaat. Tip: als het adres van de gateway verandert, bijvoorbeeld na een herstart van de router, helpt een vast adres: reserveer het IP-adres in de router (DHCP-reservering) of voer de hostnaam van de gateway in. Meldt de gateway zich op een nieuw adres, dan biedt een reparatiemelding aan dit te gebruiken."
+      },
+      "connection_test_other_gateway": {
+        "title": "Verbindingstest",
+        "description": "Op dit adres antwoordt een andere gateway. Stel de lokale toegang opnieuw in."
+      },
+      "connection_test_error": {
+        "title": "Verbindingstest",
+        "description": "Test mislukt: {kind}."
       },
       "connection": {
         "title": "Verbinding beheren",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Verbinding nu testen",
           "connection_enabled": "Toegang in- of uitschakelen",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Opvraagfrequentie",
-        "description": "Standaard leest actuele bedrijfswaarden van de verwarming elke minuut, instellingen en energiewaarden elke 5 minuten en tragere informatie elke 15 minuten. Cloudvriendelijk verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd. Het profiel geldt voor de opvraging van verwarming en laadpaal van de geselecteerde cloudverbinding; extra cloudapparaten melden wijzigingen als berichten. Aanmelden, apparaatcontroles en de bevestiging na een wijziging kunnen buiten dit schema extra verzoeken veroorzaken. Als een opvraagcyclus langer duurt dan het interval, begint de volgende later.",
+        "description": "**Standaard** leest actuele bedrijfswaarden elke minuut en instellingen en energiewaarden elke 5 minuten. **Cloudvriendelijk** verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd.",
         "data": {
           "polling_profile": "Opvraagprofiel"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Aanmelden met SingleKey ID",
-        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
+        "description": "SingleKey ID is dezelfde aanmelding die je Bosch- of Buderus-app gebruikt. Gebruik hetzelfde e-mailadres of mobiele nummer en hetzelfde wachtwoord. Je hebt geen nieuw account nodig en je voert je wachtwoord **niet** in Home Assistant in.\n\n1. Houd dit dialoogvenster open en open [SingleKey ID]({authorization_url}) in een nieuw Chrome-tabblad. Gebruik altijd deze nieuw gegenereerde link.\n2. Druk daar op `F12` en open **Console** in de ontwikkelaarstools.\n3. Meld je aan met de SingleKey ID-gegevens die je verwarmingsapp gebruikt.\n4. Na het aanmelden kan een melding over een netwerkprobleem verschijnen. Dat betekent meestal alleen dat Chrome het app-adres `{redirect_scheme}://` niet kon openen. Toont SingleKey ID een pagina die een doorsturing aankondigt en gebeurt er niets, kies dan de link of knop op die pagina.\n5. Zoek in de console de rode melding **Failed to launch** of **Connecting to**. Klik met de rechtermuisknop op het blauwe adres `{redirect_scheme}://` in die melding en kies **Copy link address**.\n6. Ga terug naar dit dialoogvenster, plak hieronder het volledige adres en selecteer **OK**. Het veld kan om veiligheidsredenen punten tonen.\n\nGebruik het adres van deze specifieke aanmeldpoging en kopieer niet alleen de parameter `code`. Het volledige adres bevat een kortlevende eenmalige code. Deel het nooit in een issue, chat, schermafbeelding of log.",
         "data": {
           "redirect_url": "Volledig doorverwijzingsadres"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Bestaande configuratie kiezen",
-        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort. Hiermee wordt geen extra installatie aangemaakt.",
+        "description": "Selecteer de configuratie waartoe deze lokale gateway behoort, of stel hem in als nieuwe configuratie met alleen lokale toegang.",
         "data": {
-          "owner": "Bestaande configuratie"
+          "owner": "Configuratie"
         }
       },
       "local_target": {
         "title": "Installatie kiezen",
-        "description": "Selecteer de installatie waarmee lokaal verbinding moet worden gemaakt. De identiteit van de gateway wordt vóór het opslaan gecontroleerd.",
+        "description": "Selecteer het verwarmingssysteem dat lokaal moet worden verbonden: de warmtepomp of de ketel, geen laadpaal of airconditioner. De identiteit van de gateway wordt vóór het opslaan gecontroleerd.",
         "data": {
           "target": "Installatie / gateway"
         }
@@ -607,6 +688,13 @@
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
+      "local_certificate_data": {
+        "title": "Het certificaat van de datapoort bevestigen",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+        "data": {
+          "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
+        }
+      },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
         "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "De lokale verbinding bevestigen",
-        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie.",
-        "data": {
-          "confirm": "Deze lokale verbinding opslaan"
-        }
+        "description": "De leescontrole voor **{host}** is geslaagd en gateway **{gateway}** komt overeen met de geselecteerde installatie. Bij het opslaan worden de actuele gegevens opnieuw gecontroleerd en wordt deze toegang toegevoegd aan of bijgewerkt in de bestaande configuratie. Sluit in plaats daarvan het dialoogvenster om niets op te slaan."
       },
       "local_retry": {
         "title": "Lokale controle kon niet worden voltooid",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Lokale opvraging",
-        "description": "Bevestigde bronnen: {known}. Nu beschikbaar: {available}. Deze aantallen tonen de toestand op het moment dat dit dialoogvenster werd geopend. Het interval is het streefinterval voor livewaarden. Instellingen, energiewaarden en diagnostiek worden elke 5 minuten gelezen en tellers elke 15 minuten, of met dit interval als het langer is; statische details worden dagelijks gelezen. Een waarde wordt niet beschikbaar na drie gemiste intervallen. Grote bronnensets kunnen langer duren. De cloudopvraging blijft onafhankelijk. Meetwaarden die de cloud ook levert, worden lokaal minstens even vaak gelezen als in de cloud.",
+        "description": "Bevestigde resources: {known}, nu beschikbaar: {available}. Het interval is het doel voor livewaarden; tragere waarden worden minder vaak gelezen. De documentatie beschrijft de exacte intervallen.",
         "data": {
           "interval": "Streefinterval voor livewaarden"
         }
       },
       "local_values": {
         "title": "Lokale waarden voor bestaande entiteiten",
-        "description": "Zolang de cloud actief is, bepaalt deze optie of bestaande sensoren de lokale waarde gebruiken van een meetwaarde die beide toegangen onder dezelfde gedocumenteerde bron leveren. Zonder de cloud (uitgeschakeld, aanmelding vereist, gepauzeerd, beperkt of onbereikbaar) worden altijd lokale waarden gebruikt. De optie staat standaard aan voor nieuwe configuraties met cloud- en lokale toegang.\n\nAls de optie is ingeschakeld, wordt de lokale waarde gebruikt zolang die actueel is. Als de lokale waarde verouderd is of ontbreekt, wordt de actuele cloudwaarde gebruikt; als beide verouderd zijn, wordt de sensor niet beschikbaar. Tellers voor energie, starts en bedrijfstijd gebruiken ook de lokale waarde, maar wisselen alleen van bron als elke getoonde stand minstens zo hoog is als de laatst getoonde stand, zodat een bronwissel ze nooit achteruit laat tellen. Instelbare instellingen blijven de cloud gebruiken. Entiteits-ID's, namen en geschiedenis blijven ongewijzigd. Bediening en wijzigingen worden nog steeds via de cloud verstuurd.",
+        "description": "Zolang de cloud draait, bepaalt deze optie of bestaande sensoren de lokale waarde gebruiken van een meetwaarde die beide toegangen leveren. Zonder cloud worden altijd de lokale waarden gebruikt; instellingen en bediening blijven via de cloud lopen. Entiteit-ID's, namen en geschiedenis blijven ongewijzigd.",
         "data": {
           "enabled": "Lokale waarden gebruiken"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "De installatie opnieuw zoeken",
         "description": "Zoekt de installatie nog eens naar onderdelen en meetwaarden, via de cloudtoegang en de lokale toegang. Gebruik dit na het toevoegen of wijzigen van componenten. Het zoeken gebeurt bij de volgende reguliere update en binnen de gebruikelijke limieten voor verzoeken; er wordt nooit een entiteit verwijderd en meetwaarden die niet opnieuw worden gevonden, blijven zoals ze zijn."
+      },
+      "recordings": {
+        "title": "Registraties van de installatie",
+        "description": "De warmtepomp registreert energie, starts en bedrijfstijd per uur. De integratie toont ze als entiteiten en kan de uurwaarden in de langetermijnstatistieken overnemen (energiedashboard, statistiekkaarten). Gevonden reeksen: {series}, overgenomen: {imported}.",
+        "data": {
+          "recordings_import": "Uurwaarden in de langetermijnstatistieken overnemen",
+          "delete_statistics": "Overgenomen statistieken verwijderen"
+        },
+        "data_description": {
+          "recordings_import": "Gebruik in het energiedashboard deze statistieken of de entiteiten van de tellers, niet allebei. Bij uitschakelen blijft het overgenomene behouden.",
+          "delete_statistics": "De volgende pagina vraagt om een bevestiging."
+        }
+      },
+      "recordings_delete": {
+        "title": "Overgenomen statistieken verwijderen",
+        "description": "Verwijdert alle statistieken die uit de registraties van de installatie van deze vermelding zijn overgenomen en schakelt het overnemen uit. De entiteiten en de eigen registraties van de installatie blijven. Dit kan niet ongedaan worden gemaakt.",
+        "data": {
+          "confirm": "Ja, overgenomen statistieken verwijderen"
+        }
       },
       "local_tokens": {
         "title": "Tokens op de gateway",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Dit token op de gateway intrekken",
           "confirm_end": "Een lokale toegang die dit token gebruikt, eindigt"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Resultaat",
+        "description": "De toegang is verwijderd."
+      },
+      "result_connection_saved": {
+        "title": "Resultaat",
+        "description": "De wijziging is opgeslagen."
+      },
+      "result_holiday_created": {
+        "title": "Resultaat",
+        "description": "De vakantie is aangemaakt en bevestigd door haar terug te lezen."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultaat",
+        "description": "De vakantie is verwijderd en het verwijderen is door de verwarmingsinstallatie bevestigd."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultaat",
+        "description": "Er is niets gewijzigd, dus er is niets naar de verwarmingsinstallatie verzonden."
+      },
+      "result_holiday_updated": {
+        "title": "Resultaat",
+        "description": "De vakantie-instellingen zijn opgeslagen en door de verwarmingsinstallatie bevestigd."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultaat",
+        "description": "Het was het token dat deze toegang gebruikte, dus de lokale toegang is beëindigd, maar de toegang kon niet worden uitgeschakeld. Schakel hem uit, verwijder hem of stel hem opnieuw in met het label op het apparaat."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultaat",
+        "description": "Het was het token dat deze toegang gebruikte. De lokale toegang is beëindigd en de toegang is uitgeschakeld. Stel hem opnieuw in met het label op het apparaat of verwijder hem."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultaat",
+        "description": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultaat",
+        "description": "Het gekozen token is op de gateway ingetrokken en de toegang is verwijderd. Het token dat deze toegang zelf gebruikte, staat nog op de gateway."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultaat",
+        "description": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultaat",
+        "description": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultaat",
+        "description": "Het token is ingetrokken; de gateway vermeldt het niet meer."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultaat",
+        "description": "Het token is op de gateway ingetrokken en de toegang is verwijderd."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultaat",
+        "description": "De tokenlijst is intussen gewijzigd. Er is niets ingetrokken of verwijderd. Open de lijst opnieuw."
+      },
+      "result_notifications_saved": {
+        "title": "Resultaat",
+        "description": "De meldingsinstellingen zijn opgeslagen."
+      },
+      "result_rescan_partial": {
+        "title": "Resultaat",
+        "description": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen."
+      },
+      "result_rescan_paused": {
+        "title": "Resultaat",
+        "description": "Het zoeken is niet gestart: verzoeken zijn nu gepauzeerd (bijvoorbeeld nadat de cloud om een pauze vroeg). Probeer het later opnieuw."
+      },
+      "result_rescan_planned": {
+        "title": "Resultaat",
+        "description": "Het zoeken is gepland en wordt uitgevoerd bij de volgende reguliere update; nieuwe onderdelen verschijnen zodra ze zijn gevonden."
+      },
+      "result_rescan_running": {
+        "title": "Resultaat",
+        "description": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultaat",
+        "description": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultaat",
+        "description": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultaat",
+        "description": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultaat",
+        "description": "De aanmelding is vernieuwd."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultaat",
+        "description": "De aanmelding is vernieuwd. {count} ingeschakelde installaties of apparaten zijn niet in het account gevonden; ze blijven geconfigureerd. Een reparatiemelding noemt ze en legt uit hoe je ze kunt vergeten."
+      },
+      "result_recordings_import_on": {
+        "title": "Resultaat",
+        "description": "Het overnemen van de registraties van de installatie is ingeschakeld; de eerste waarden volgen binnen enkele minuten."
+      },
+      "result_recordings_import_off": {
+        "title": "Resultaat",
+        "description": "Het overnemen van de registraties van de installatie is uitgeschakeld; overgenomen waarden blijven."
+      },
+      "result_recordings_deleted": {
+        "title": "Resultaat",
+        "description": "Verwijderde overgenomen statistieken: {count}. Het overnemen is uitgeschakeld."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Resultaat",
+        "description": "Er is niets verwijderd."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Warmwaterprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDe niveaus zijn die van het programma van de kamerregelaar. Het programma geldt zolang het warme water zijn eigen programma volgt. Hoogstens zes schakelpunten per dag is de grens van de app van de fabrikant, niet een grens die de regelaar meldt.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Schakelpunt bewerken",
+        "description": "**{program}** – **{day}**\n\nKies een tijd in stappen van {raster} minuten en een temperatuur van {minimum} tot {maximum} °C in stappen van {step} °C. Dit geldt vanaf deze tijd tot het volgende schakelpunt.",
+        "data": {
+          "time": "Tijd",
+          "value": "Temperatuur",
+          "off": "Uit in plaats van een temperatuur",
+          "delete": "Dit schakelpunt verwijderen"
+        }
+      },
+      "rrc_add": {
+        "title": "Schakelpunt toevoegen",
+        "description": "**{program}**\n\n{points}\n\nKies een tijd in stappen van vijf minuten en een temperatuur van 5 tot 30 °C in stappen van 0,5 °C. De tijd herhaalt zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Wijzigingen gelden voor alle toegewezen zones.",
+        "data": {
+          "time": "Tijd",
+          "temperature": "Temperatuur"
+        }
+      },
+      "wallbox": {
+        "title": "Laadpaal",
+        "description": "Een laadpaal die authenticatie vereist, begint pas te laden na een authenticatie door de integratie. Vóór elke start wordt dan één extra opdracht verzonden.",
+        "data": {
+          "wallbox_authentication": "Authenticatie vóór een start toestaan",
+          "wallbox_authentication_name": "Authenticatienaam (optioneel)",
+          "wallbox_history": "Laadgeschiedenis lezen"
+        },
+        "data_description": {
+          "wallbox_authentication": "Standaard uit. Vanaf software 5.1.0 authenticeert een start eerst; bij oudere software wordt de start alleen verzonden, zoals in de app van de fabrikant.",
+          "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven.",
+          "wallbox_history": "Standaard uit. Ongeveer elke 30 minuten (elke 60 minuten in het cloudvriendelijke profiel) worden de laatste lading (start, einde, laadtijd, energie) en de energie van deze maand van het net en van zonne-energie gelezen. Namen van kaarten, gebruikers of authenticatie worden nooit gelezen."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultaat",
+        "description": "De instellingen van de laadpaal zijn opgeslagen."
+      },
+      "switch_program_week_aircon": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende op dezelfde dag; vóór het eerste schakelpunt van een dag is de airconditioner uit. De tijden herhalen zich wekelijks volgens de klok van de airconditioner. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende op dezelfde dag; vóór het eerste schakelpunt van een dag is de airconditioner uit. De tijden herhalen zich wekelijks volgens de klok van de airconditioner. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDit programma is niet het actieve programma van de airconditioner. Wijzigingen werken pas als het is geselecteerd.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag",
+          "week_view": "Weekoverzicht"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Schakelpunt bewerken",
+        "description": "**{program}** – **{day}**\n\nKies een tijd in stappen van {raster} minuten en de instelling vanaf dat moment. De airconditioner biedt:\n\n{settings}\n\nDe temperatuur en de ventilatorsnelheid tellen alleen mee voor een modus die ze heeft. Uit schakelt de airconditioner uit tot het volgende schakelpunt.",
+        "data": {
+          "time": "Tijd",
+          "mode": "Modus",
+          "value": "Temperatuur",
+          "fan": "Ventilatorsnelheid",
+          "delete": "Dit schakelpunt verwijderen"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Schakel deze cloudverbinding in voordat je naar apparaten zoekt.",
       "cloud_rate_limited": "De cloud heeft om een pauze gevraagd. Wacht even voordat je het opnieuw probeert.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
+      "reauth_targets_missing": "Bij deze aanmelding is geen van de ingeschakelde installaties en apparaten gevonden. De vorige inloggegevens blijven behouden. Controleer of je je met hetzelfde account hebt aangemeld als eerder. Als de installaties uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang: schakel een installatie in die nog in het account staat onder **Gebruiken voor installaties en apparaten**, of schakel de verwijderde installaties uit en verwijder ze met **Niet-geselecteerde installaties vergeten**. Als er geen meer over is, verwijder dan de cloudtoegang en verbind deze opnieuw.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
+      "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Meldt die pagina dat je wordt doorgestuurd en gebeurt er niets, kies dan de link of knop op die pagina. Kopieer daarna in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
       "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
       "no_gateways": "Er zijn geen apparaten gevonden. Controleer of het geselecteerde merk en het SingleKey ID-account bij je app passen. Een kamerregelaar met oudere firmware verschijnt pas als de firmware is bijgewerkt en hij in de huidige app met je SingleKey ID is ingesteld.",
@@ -774,13 +1070,14 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
+      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
       "local_unknown_firmware": "De firmwareversie kon niet worden geverifieerd.",
       "local_old_firmware": "Werk de firmware van de gateway bij voordat je de lokale verbinding instelt.",
       "local_unsupported_brand": "Dit gatewaymerk wordt niet ondersteund door de gedocumenteerde lokale interface.",
-      "local_incomplete_system": "De installatie-informatie van de gateway is nog niet volledig. Probeer de leescontrole later opnieuw.",
+      "local_incomplete_system": "De gateway verzamelt nog de installatie-informatie. Dat kan enkele minuten duren. Wacht enkele minuten en probeer de leescontrole daarna opnieuw.",
       "local_invalid_response": "Een vereist antwoord van de gateway kon niet worden geverifieerd.",
       "local_identity_unverified": "Deze installatie is nog niet ondubbelzinnig gekoppeld. Voor de eerste configuratie is een beschikbare cloudtoegang nodig, met overeenkomende identificaties van gateway en module uit beide interfaces. Geverifieerde koppelingen kunnen daarna zonder de cloud worden gebruikt.",
       "local_identity_conflict": "De identiteit van de gateway botst met de geselecteerde installatie of met een andere configuratie.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
       "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd.",
       "local_token_end_unconfirmed": "Het intrekken van dit token kan een lokale toegang beëindigen. Vink ook het tweede vakje aan, of laat het eerste uitgevinkt om terug te gaan. Er is niets verstuurd.",
-      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd."
+      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd.",
+      "switch_program_value": "Voer een temperatuur in van {minimum} tot {maximum} °C in stappen van {step} °C.",
+      "switch_program_day_emptied": "Een dag met schakelpunten behoudt er minstens één; wat een lege dag voor de regelaar betekent, is niet bekend.",
+      "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
+      "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
+      "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip.",
+      "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
+      "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
       "notification_gateways_changed": "De selectie van installaties is gewijzigd. Open de instellingen opnieuw.",
       "holiday_changed": "De geselecteerde vakantie is gewijzigd of kan niet meer worden bewerkt. Open de vakantie opnieuw om de huidige gegevens te bekijken.",
-      "holiday_updated": "De vakantie-instellingen zijn opgeslagen en door de verwarmingsinstallatie bevestigd.",
-      "holiday_unchanged": "Er is niets gewijzigd, dus er is niets naar de verwarmingsinstallatie verzonden.",
       "no_writable_holidays": "Vakantiebeheer is momenteel niet beschikbaar. Wacht tot de installatie haar vakantie-instellingen heeft geleverd.",
-      "holiday_deleted": "De vakantie is verwijderd en het verwijderen is door de verwarmingsinstallatie bevestigd.",
       "not_loaded": "Bosch/Buderus Home Comfort moet zijn geladen voordat een vakantie kan worden geconfigureerd.",
-      "holiday_created": "De vakantie is aangemaakt en bevestigd door haar terug te lezen.",
       "holiday_previous_request_found": "Het eerdere onopgeloste verzoek is nu bevestigd. Je nieuwe invoer is niet verzonden. Controleer eerst de bestaande vakantie onder Vakantieperiodes beheren.",
       "holiday_already_exists": "Er bestaat al een vakantie met dit begin en deze circuitselectie. Er is geen extra vakantie aangemaakt. Open Vakantieperiodes beheren en bewerk de bestaande invoer.",
       "holiday_create_unconfirmed": "Het aanmaakverzoek kon niet worden bevestigd. De vakantie bestaat mogelijk al. Controleer Vakantieperiodes beheren of de app van de fabrikant. Een nieuwe poging controleert de komende 10 minuten het resultaat van dit verzoek zonder een tweede vakantie aan te maken.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "Er is geen actueel, ondersteund weektijdprogramma van een kamerregelaar beschikbaar.",
       "no_switch_programs": "Hier kan geen actueel tijdprogramma van een verwarmingscircuit of van het warm water worden gewijzigd.",
       "switch_program_changed": "Het tijdprogramma is intussen gewijzigd of kan niet meer worden gewijzigd. Open het opnieuw om de huidige schakelpunten te zien.",
-      "switch_program_saved": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}",
       "controls_not_loaded": "Bediening is alleen beschikbaar via de cloudtoegang; de lokale toegang leest alleen. Verbind een cloudtoegang of wacht tot die is geladen.",
       "controls_auth_required": "Bediening is niet beschikbaar: de cloudtoegang vereist een nieuwe aanmelding. Meetwaarden blijven zichtbaar.",
       "controls_cloud_stopped": "Bediening is niet beschikbaar: de cloudtoegang is gestopt of wordt opnieuw gestart. Meetwaarden blijven zichtbaar.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Bediening is nog niet beschikbaar: de cloud heeft nog geen actuele waarden geleverd. Probeer het over een moment opnieuw.",
       "controls_none": "Dit apparaat meldt momenteel geen instellingen die hier kunnen worden gewijzigd.",
       "configuration_changed": "De verbindingsinstellingen zijn gewijzigd terwijl dit dialoogvenster open was. Sluit het en probeer het opnieuw.",
+      "reauth_wrong_account": "Het geselecteerde account komt niet overeen met de geconfigureerde apparaten. Meld je aan met het oorspronkelijke account.",
+      "reauth_no_targets": "Deze cloudtoegang heeft geen installaties of apparaten meer en het account waartoe hij behoort kan niet worden bevestigd. De vorige inloggegevens blijven behouden. Om weer een cloudaccount te gebruiken, verwijder je de cloudtoegang onder Configureren → Verbindingen en verbind je deze opnieuw.",
       "no_connections": "Er is geen toegang geconfigureerd. Bestaande installaties en entiteiten blijven behouden.",
-      "connection_reauth_started": "Het opnieuw aanmelden is voorbereid. Sluit dit dialoogvenster en selecteer **Opnieuw configureren** voor deze integratie onder Instellingen → Apparaten en services, in het gedeelte **Aandacht vereist**.",
       "cloud_already_connected": "Er is al een cloudverbinding geconfigureerd. Gebruik de verbindingsinstellingen daarvan om meer apparaten te selecteren of je opnieuw aan te melden. Een tweede parallelle cloudaanmelding wordt nog niet ondersteund.",
       "cloud_setup_in_progress": "Er is al een andere cloudconfiguratie geopend. Voltooi of sluit dat dialoogvenster eerst.",
       "cloud_setup_taken_over": "Een nieuwer cloudconfiguratie-dialoogvenster heeft dit venster vervangen. Sluit dit dialoogvenster en ga verder in het nieuwere.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
-      "rescan_planned": "Het zoeken is gepland en wordt uitgevoerd bij de volgende reguliere update; nieuwe onderdelen verschijnen zodra ze zijn gevonden.",
-      "rescan_paused": "Het zoeken is niet gestart: verzoeken zijn nu gepauzeerd (bijvoorbeeld nadat de cloud om een pauze vroeg). Probeer het later opnieuw.",
-      "rescan_running": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is.",
-      "rescan_partial": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen.",
       "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed.",
-      "connection_saved": "De wijziging is opgeslagen.",
-      "connection_removed": "De toegang is verwijderd.",
-      "notifications_saved": "De meldingsinstellingen zijn opgeslagen.",
-      "rrc_program_saved": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen.",
-      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in.",
-      "local_tokens_changed": "De tokenlijst is intussen gewijzigd. Er is niets ingetrokken of verwijderd. Open de lijst opnieuw.",
-      "local_token_revoked": "Het token is ingetrokken; de gateway vermeldt het niet meer.",
-      "local_token_access_ended": "Het was het token dat deze toegang gebruikte. De lokale toegang is beëindigd en de toegang is uitgeschakeld. Stel hem opnieuw in met het label op het apparaat of verwijder hem.",
-      "local_token_revoke_rejected": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst.",
-      "local_token_revoke_unclear": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren.",
-      "local_token_revoked_removed": "Het token is op de gateway ingetrokken en de toegang is verwijderd.",
-      "local_token_not_removed": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw.",
-      "local_token_old_revoked_removed": "Het gekozen token is op de gateway ingetrokken en de toegang is verwijderd. Het token dat deze toegang zelf gebruikte, staat nog op de gateway.",
-      "local_token_access_end_failed": "Het was het token dat deze toegang gebruikte, dus de lokale toegang is beëindigd, maar de toegang kon niet worden uitgeschakeld. Schakel hem uit, verwijder hem of stel hem opnieuw in met het label op het apparaat."
+      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Overgenomen registraties blijven in de statistieken",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Overgenomen statistieken verwijderen",
+            "description": "De verwijderde vermelding heeft {count} statistieken uit de registraties van de installatie overgenomen; Home Assistant bewaart ze. Kies **Verzenden** om ze te verwijderen; dit kan niet ongedaan worden gemaakt. Kies **Negeren** om ze te bewaren. Deze melding verdwijnt na de volgende herstart."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "De overgenomen statistieken bestaan niet meer. Er is niets verwijderd."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Installaties niet gevonden in het cloudaccount",
       "description": "Bij de laatste aanmelding van de cloudtoegang in \"{title}\" zijn {count} ingeschakelde installaties of apparaten niet gevonden (eindigend op {systems}). Ze blijven geconfigureerd en niet beschikbaar totdat ze weer in het account verschijnen; deze melding verdwijnt dan.\n\nAls ze uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang, schakel ze uit onder **Gebruiken voor installaties en apparaten** en verwijder ze met **Niet-geselecteerde installaties vergeten**. Hun apparaten en entiteiten blijven in Home Assistant staan totdat je ze verwijdert. Als een gateway is vervangen, laat die dan ingeschakeld: een aparte reparatiemelding biedt aan om de installatie met haar geschiedenis voort te zetten."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Configuratie niet voltooid",
       "description": "De invoer \"{title}\" heeft nog geen toegang. Kies **Configureren** bij deze invoer en daarna \"Lokale toegang instellen\" (of verbind een cloudtoegang)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteiten lezen nu via de lokale toegang",
+      "description": "{count} gebruikte entiteiten tonen hun waarde nu via de lokale toegang, met de cloudwaarde als tweede bron: {entities}. Hun entiteits-ID's, instellingen en geschiedenis blijven behouden, dus automatiseringen, scripts en dashboards blijven werken. Hun namen, categorieën en toestanden volgen nu de lokale waarde. Je kunt deze melding negeren; ze verdwijnt na de volgende herstart."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteiten worden niet meer geleverd",
+      "description": "{count} cloudentiteiten worden niet meer geleverd omdat een andere entiteit van deze integratie dezelfde waarde via de lokale toegang toont (oud → nieuw): {entities}. Automatiseringen, scripts en dashboards die de oude entiteit gebruiken, moeten de nieuwe gebruiken. Verwijder de oude entiteit wanneer je haar niet meer nodig hebt; haar geschiedenis blijft tot dan behouden. Je kunt deze melding negeren; ze verschijnt bij de volgende herstart opnieuw zolang de oude entiteit bestaat."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Dit verwarmingscircuit heeft op dit moment geen tijdelijke instelwaarde die kan worden opgeheven."
     },
+    "zone_climate_command": {
+      "message": "Deze opdracht voor de zone is momenteel niet beschikbaar. Temperaturen kunnen alleen worden gewijzigd in de handmatige modus, of in de automatische modus wanneer de zone een tijdelijk setpoint aanbiedt. Kies de modus afzonderlijk en controleer of de zone actuele waarden levert."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Deze zone heeft momenteel geen tijdelijk setpoint om op te heffen."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Het apparaat bepaalt de huidige instelwaarde voor warm water. Je kunt de afzonderlijke starttemperaturen per modus aanpassen onder Apparaat bedienen."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "Het radioapparaat gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
+    },
+    "control_unused": {
+      "message": "Het apparaat gebruikt deze instelling op dit moment niet. Deze wijziging is niet verzonden."
+    },
+    "circuit_room_controller": {
+      "message": "Dit verwarmingscircuit wordt door een ruimteregelaar geregeld. De instelling kan alleen daar worden gewijzigd. Deze wijziging is niet verzonden."
+    },
+    "circuit_constant_control": {
+      "message": "Dit verwarmingscircuit werkt met constante waarden. De instellingen kunnen op dit moment niet worden gewijzigd. Deze wijziging is niet verzonden."
+    },
+    "cooling_not_offered": {
+      "message": "Dit verwarmingscircuit biedt op dit moment geen koeling. Deze wijziging is niet verzonden."
     },
     "rrc_setting_unused": {
       "message": "De kamerregelaar gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "Het gekozen tijdprogramma kan op dit moment niet worden gelezen. Er is niets verzonden."
+    },
+    "switch_points_no_target": {
+      "message": "Er is geen ingeschakelde tijdprogrammasensor van deze integratie gekozen. Schakel de tijdprogrammasensor in en kies deze als doel."
+    },
+    "not_a_program_entity": {
+      "message": "Alleen de tijdprogrammasensoren van deze integratie kunnen worden gekozen."
+    },
+    "switch_points_empty_week": {
+      "message": "De week heeft minstens één schakelpunt nodig."
+    },
+    "switch_points_invalid_time": {
+      "message": "Elke tijd moet in stappen van {raster} minuten liggen, zonder seconden."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Een dag heeft twee schakelpunten op hetzelfde tijdstip."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Een dag heeft meer schakelpunten dan de verwarmingsinstallatie toestaat ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "De week heeft meer schakelpunten dan de verwarmingsinstallatie toestaat ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Alleen deze niveaus kunnen worden gebruikt: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Alleen temperaturen van {minimum} tot {maximum} in stappen van {step} kunnen worden gebruikt."
+    },
+    "switch_points_not_writable": {
+      "message": "De verwarmingsinstallatie meldt dit tijdprogramma niet als wijzigbaar."
+    },
+    "switch_points_unused": {
+      "message": "De verwarmingsinstallatie gebruikt dit tijdprogramma op dit moment niet. Er is niets verzonden."
+    },
+    "switch_points_not_level_program": {
+      "message": "Het type van dit tijdprogramma kon niet worden gelezen of past niet bij de schakelpunten. Er is niets verzonden."
+    },
+    "switch_points_not_editable": {
+      "message": "Dit tijdprogramma kan alleen worden weergegeven, niet gewijzigd: de verwarmingsinstallatie meldt niet alle grenzen die voor een wijziging nodig zijn."
+    },
+    "switch_points_program_changed": {
+      "message": "Het tijdprogramma is intussen gewijzigd of komt niet meer overeen met de verwachte schakelpunten. Er is niets verzonden."
+    },
+    "switch_points_paused": {
+      "message": "Schrijven naar de verwarmingsinstallatie is enkele minuten gepauzeerd na herhaalde mislukte uitleesacties. Er is niets verzonden."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Het tijdprogramma is verzonden, maar kon niet worden bevestigd door het terug te lezen. Het kan toch zijn toegepast; het wordt niet opnieuw verzonden."
+    },
+    "switch_points_rejected": {
+      "message": "De verwarmingsinstallatie heeft het tijdprogramma geweigerd (HTTP {status}). Er is niets gewijzigd."
+    },
+    "switch_points_invalid": {
+      "message": "De schakelpunten passen niet binnen de grenzen van het tijdprogramma."
+    },
+    "program_name_empty": {
+      "message": "Voer een naam in; een lege naam wordt niet verzonden."
+    },
+    "program_name_too_long": {
+      "message": "De naam mag hoogstens {max} tekens hebben."
+    },
+    "program_name_charset": {
+      "message": "De naam bevat tekens die de verwarmingsinstallatie niet kan opslaan ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "De verwarmingsinstallatie meldt deze naam niet als wijzigbaar."
+    },
+    "program_name_changed": {
+      "message": "De naam is intussen gewijzigd. Er is niets verzonden."
+    },
+    "program_name_not_confirmed": {
+      "message": "De naam is verzonden, maar kon niet worden bevestigd door hem terug te lezen. Hij kan toch zijn toegepast; hij wordt niet opnieuw verzonden."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "De laadpaal is niet in een toestand die deze actie toelaat. Deze wijziging is niet verzonden."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "De laadstroom ligt onder 6 A. Stel eerst de laadstroom in. Deze wijziging is niet verzonden."
+    },
+    "wallbox_authentication_required": {
+      "message": "De laadpaal vereist authenticatie vóór het laden. Sta dit toe in de opties van de integratie (Wallbox). Deze wijziging is niet verzonden."
+    },
+    "wallbox_group_controlled": {
+      "message": "Deze laadpaal hoort bij een belastingsbeheergroep die deze functie stuurt. Deze wijziging is niet verzonden."
+    },
+    "wallbox_energy_manager": {
+      "message": "Een energiemanager stuurt deze laadpaal. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_manual": {
+      "message": "De laadstroom kan alleen in de normale laadmodus worden ingesteld. Deze wijziging is niet verzonden."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost is actief. Beëindig eerst Boost. Deze wijziging is niet verzonden."
+    },
+    "wallbox_value_unavailable": {
+      "message": "De laadpaal heeft voor deze functie geen actuele waarde geleverd. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_writeable": {
+      "message": "De laadpaal meldt deze instelling niet als wijzigbaar. Deze wijziging is niet verzonden."
+    },
+    "wallbox_firmware": {
+      "message": "De software van de laadpaal biedt deze functie niet aan. Deze wijziging is niet verzonden."
+    },
+    "wallbox_meter_missing": {
+      "message": "Deze functie heeft een verbonden externe meter nodig. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_offered": {
+      "message": "Deze functie wordt voor deze laadpaal niet aangeboden. Deze wijziging is niet verzonden."
+    },
+    "wallbox_not_solar": {
+      "message": "Deze instelling geldt alleen voor zonneladen. Zet de laadmodus eerst op zon. Deze wijziging is niet verzonden."
+    },
+    "aircon_switched_off": {
+      "message": "De airconditioner is uitgeschakeld. Schakel hem eerst in en wijzig daarna de modus. Er is niets verzonden."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "De airconditioner draait op zonnebedrijf, daarom zijn de modi automatisch en verwarmen niet beschikbaar. Er is niets verzonden."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Deze waarde is niet toegestaan voor de airconditioner. Er is niets verzonden."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "De wijziging is verzonden, maar de airconditioner heeft die nog niet bevestigd. Ze kan nog van kracht worden. Ik heb haar niet opnieuw verzonden; de waarde wordt bij de volgende uitlezing bijgewerkt."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Alleen deze instellingen kunnen worden gebruikt: {settings}. Een instelling wordt geschreven als modus, temperatuur en ventilatorsnelheid, bijvoorbeeld “cool 24.0 auto”, of “off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "De boiler accepteert wijzigingen van dit tijdprogramma alleen als hij is ingeschakeld, in programmabedrijf werkt en een tijdzone heeft, zoals in de app van de fabrikant. Er is niets verzonden."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Terug",
         "create": "Nieuwe vakantie"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Lopende poging verwerpen",
         "later": "Later doorgaan"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nieuwe installatie (gateway niet in het account)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nieuwe configuratie (alleen lokale toegang)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Terug"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Hele week vervangen",
+        "replace_days": "Alleen de opgegeven dagen vervangen"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Dag"
+        },
+        "time": {
+          "name": "Tijd"
+        },
+        "level": {
+          "name": "Niveau of temperatuur"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Uit",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Hoog",
+        "off": "Uit",
+        "low": "Laag",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Schakelpunt toevoegen"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Gewenste temperatuur zwembad"
+      },
+      "filter_maximum_run_time": {
+        "name": "Maximale filterlooptijd"
       },
       "heating_temperature": {
         "name": "Verwarmingstemperatuur"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Maximale aanvoertemperatuur"
       },
+      "summer_winter_threshold": {
+        "name": "Verwarming stoppen bij buitentemperatuur"
+      },
+      "cooling_room_setpoint": {
+        "name": "Koelen: kamerinstelwaarde"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "season_cooling_threshold": {
+        "name": "Koelen starten bij buitentemperatuur"
+      },
+      "season_heating_threshold": {
+        "name": "Verwarming stoppen bij buitentemperatuur"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boosttemperatuur"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boostduur"
+      },
+      "away_temperature": {
+        "name": "Afwezigheidstemperatuur"
+      },
+      "cooling_temperature": {
+        "name": "Koeltemperatuur"
+      },
       "softener_salt_threshold": {
         "name": "Drempel zoutmelding"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Helderheid sfeerverlichting"
+      },
+      "bacon_rac_timer_on": {
+        "name": "Inschakeltimer"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Uitschakeltimer"
       },
       "rrc_window_duration": {
         "name": "Duur open raam"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Afwezigheidstemperatuur"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Laadstroomlimiet"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximale netaanvulling"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimaal zonne-overschot"
+      },
+      "wallbox_filter_time": {
+        "name": "Filtertijd zonneladen"
+      },
+      "wallbox_power_limit": {
+        "name": "Vermogenslimiet"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Stroomlimiet fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Stroomlimiet fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Stroomlimiet fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Elektriciteitsprijs"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Terugleververgoeding"
+      },
+      "aircon_timer_on": {
+        "name": "Inschakeltimer"
+      },
+      "aircon_timer_off": {
+        "name": "Uitschakeltimer"
+      },
+      "hybrid_electricity_price": {
+        "name": "Elektriciteitsprijs"
+      },
+      "hybrid_gas_price": {
+        "name": "Gasprijs"
+      },
+      "hybrid_oil_price": {
+        "name": "Olieprijs"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Terugleververgoeding"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Stille modus: vermogensreductie"
+      },
+      "silent_mode_start_time": {
+        "name": "Stille modus: starttijd"
+      },
+      "silent_mode_stop_time": {
+        "name": "Stille modus: stoptijd"
+      },
+      "low_noise_duration": {
+        "name": "Geluidsarme werking: duur"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Gewenste temperatuur zwembad"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Auto"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Ventilatorstand afvoer",
+      "ventilation_operation_mode": {
+        "name": "Bedrijfsmodus ventilatie",
         "state": {
+          "time": "Tijdprogramma",
           "off": "Uit",
           "min": "Ventilatorstand 1",
           "red": "Ventilatorstand 2",
           "nom": "Ventilatorstand 3",
           "max": "Ventilatorstand 4",
-          "dem": "Vraaggestuurd"
+          "dem": "Vraaggestuurd",
+          "party": "Feest",
+          "power_vent": "Intensieve ventilatie",
+          "fireplace": "Open haard",
+          "fall_asleep": "Inslapen",
+          "freefct": "Vrije functie"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Zomer-/winteromschakeling",
+        "state": {
+          "automatic": "Automatisch",
+          "forced": "Alleen verwarmen",
+          "cooling": "Alleen koelen",
+          "off": "Uit"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Koelen: bedrijfsmodus",
+        "state": {
+          "off": "Uit",
+          "manual": "Handmatig",
+          "auto": "Auto"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Programma A",
           "b": "Programma B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Laadmodus",
+        "state": {
+          "manual": "Normaal",
+          "solar": "Zon"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Gerichte luchtstroom",
+        "state": {
+          "off": "Uit",
+          "on": "Aan",
+          "top_left": "Linksboven",
+          "top_center": "Middenboven",
+          "top_right": "Rechtsboven",
+          "bottom_left": "Linksonder",
+          "bottom_center": "Middenonder",
+          "bottom_right": "Rechtsonder"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Actief tijdprogramma",
+        "state": {
+          "program1": "Programma 1",
+          "program2": "Programma 2",
+          "program3": "Programma 3",
+          "program4": "Programma 4",
+          "program5": "Programma 5",
+          "program6": "Programma 6",
+          "program7": "Programma 7",
+          "program8": "Programma 8",
+          "program9": "Programma 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybride regelstrategie",
+        "state": {
+          "cost": "Kostengeoptimaliseerd",
+          "max_renewable_share": "Warmtepompgeoptimaliseerd",
+          "heat_pump_preferred": "Warmtepomp voorkeur",
+          "environment": "Meest klimaatvriendelijk",
+          "boiler_only": "Alleen ketel",
+          "bivalent_alternative": "Bivalent alternatief"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Geluidsarme bedrijfsmodus"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Zwembadmodus"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Afwezigheidsmodus"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detectie open raam"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimalisatie van de instelwaarde"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Vakantiemodus"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Kinderslot"
       },
+      "rrc_auto_away": {
+        "name": "Automatische afwezigheid"
+      },
+      "rrc_notification_light": {
+        "name": "Meldingslicht"
+      },
       "rrc_extra_dhw": {
         "name": "Extra warm water"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Haardfunctie"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Netaanvulling bij zonneladen"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Thuisbatterij voorrang geven"
+      },
+      "wallbox_current_limiter": {
+        "name": "Stroombegrenzer"
+      },
+      "wallbox_power_limiter": {
+        "name": "Vermogensbegrenzer"
+      },
+      "wallbox_locked": {
+        "name": "Laadpaal vergrendeld"
+      },
+      "aircon_full_power": {
+        "name": "Vol vermogen"
+      },
+      "aircon_sleep": {
+        "name": "Slaapstand"
+      },
+      "aircon_setback_8": {
+        "name": "Vorstbeveiligingsverwarming (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Vorstbeveiligingsverwarming (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Luchtzuivering"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Tijdprogramma actief"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Energie (geschat op basis van actueel vermogen)"
+      },
+      "calculated_activity": {
+        "name": "Activiteit (berekend)",
+        "state": {
+          "heating": "Verwarmen",
+          "cooling": "Koelen",
+          "defrosting": "Ontdooien",
+          "idle": "Inactief",
+          "off": "Uit"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Laatste ontdooiing (berekend)"
+      },
+      "calculated_defrost_count": {
+        "name": "Aantal ontdooiingen (berekend)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Totale ontdooitijd (berekend)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Bij ontdooien onttrokken warmte (berekend)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Stroom tijdens ontdooien (berekend)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettowarmte (berekend)"
+      },
+      "calculated_last_regeneration": {
+        "name": "Laatste regeneratie (berekend)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Gemiddelde looptijd per start, verwarming (berekend)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Aanvoer boven setpoint (berekend)"
+      },
+      "calculated_cop": {
+        "name": "Actuele COP (berekend)"
+      },
+      "calculated_performance_factor": {
+        "name": "Prestatiefactor (berekend)"
+      },
+      "calculated_primary_spread": {
+        "name": "Temperatuurverschil primair circuit (berekend)"
+      },
+      "calculated_brine_spread": {
+        "name": "Temperatuurverschil brine (berekend)"
       },
       "heating_switch_program": {
         "name": "Verwarmingstijdprogramma",
@@ -1962,11 +2744,11 @@
           "none": "Geen",
           "ch": "Verwarmen",
           "dhw": "Warm water",
-          "frost": "Vorstbeveiliging",
+          "frost": "Vorstbereik",
           "ch_dhw": "Verwarmen en warm water",
-          "ch_frost": "Verwarmen en vorstbeveiliging",
-          "dhw_frost": "Warm water en vorstbeveiliging",
-          "ch_dhw_frost": "Verwarmen, warm water en vorstbeveiliging"
+          "ch_frost": "Verwarmen en vorstbereik",
+          "dhw_frost": "Warm water en vorstbereik",
+          "ch_dhw_frost": "Verwarmen, warm water en vorstbereik"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Warmteopwekker"
       },
+      "outdoor_unit_software_version": {
+        "name": "Softwareversie buitenunit"
+      },
       "pointt_api_requests_total": {
         "name": "Cloudverzoeken totaal"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrische energie totaal (verwarmen)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrische energie totaal (koelen)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrische energie totaal (ontvochtigen)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrische energie totaal (alleen ventilator)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Afgegeven thermische energie totaal (verwarmen)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Afgegeven thermische energie totaal (koelen)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-waarde"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Gemelde geladen energie"
       },
+      "wallbox_energy_total": {
+        "name": "Totaal geladen energie"
+      },
       "wallbox_duration": {
         "name": "Actieve laadtijd"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardwarematige stroomlimiet"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Start van de laatste lading"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Einde van de laatste lading"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Laadtijd van de laatste lading"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energie van de laatste lading"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Deze maand van het net geladen"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Deze maand met zonne-energie geladen"
       },
       "smart_grid_mode": {
         "name": "Smart grid-modus",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "Bezig"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Vakantiemodus warm water",
+        "state": {
+          "none": "Geen",
+          "auto_sat": "Automatisch (AUTO_SAT)",
+          "off": "Uit",
+          "on_eco": "Aan – eco",
+          "on_low": "Aan – laag",
+          "on_high": "Aan – hoog"
+        }
+      },
       "signal_true_false": {
         "name": "Status",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Meetbereik",
             "state": {
               "below": "Onder het meetbereik"
+            }
+          },
+          "reported_state": {
+            "name": "Gemelde status",
+            "state": {
+              "low_flow": "Debiet te laag om te meten"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Stille klepaandrijving"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Voorspelling thuiskomst"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Instelling aanwezigheidssensor"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Totale zonne-opbrengst"
+      },
+      "rrc_hot_water_system": {
+        "name": "Warmwatersysteem"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Resultaat thermische desinfectie"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Status firmware-update"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Kamertemperatuur"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Actieve instelwaarde verwarmen"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Handmatige instelwaarde verwarmen"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Tijdelijke instelwaarde verwarmen"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Verwarmingsmodus"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Geselecteerd verwarmingstijdprogramma"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Kamertemperatuur instellen"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Actieve instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Handmatige instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Tijdelijke instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Verwarmingsmodus instellen"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Geselecteerd verwarmingstijdprogramma instellen"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Warmtepomp: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Warmtepomp: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Warmtepomp: stroom voor koelen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Ketel: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Ketel: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elektrische verwarmer: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elektrische verwarmer: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Opgewekte zonnestroom (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Warmtepomp: warmte voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Warmtepomp: warmte voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Warmtepomp: koelenergie (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Ketel: warmte voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Ketel: warmte voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas: voor verwarmen (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas: voor warm water (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Buitentemperatuur, daggemiddelde (onbevestigd)"
+      },
+      "name_part_low_salt": {
+        "name": "Weinig zout"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Type warmwaterapparaat"
+      },
+      "name_part_mode_heating": {
+        "name": "Verwarmen"
+      },
+      "name_part_mode_cooling": {
+        "name": "Koelen"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Tijdelijke instelwaarde"
+      },
+      "name_part_heating_temperature": {
+        "name": "Verwarmingstemperatuur"
+      },
+      "name_part_setback_temperature": {
+        "name": "Verlaagde temperatuur"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Startdrempel Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Startdrempel Comfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Startdrempel Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Instelwaarde niveau Uit"
+      },
+      "name_part_schedule_name": {
+        "name": "Naam tijdprogramma {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Software-update"
+      },
+      "name_part_heat_source_type": {
+        "name": "Type warmtebron"
+      },
+      "name_part_consumption_total": {
+        "name": "Totaal"
+      },
+      "name_part_consumption_heating": {
+        "name": "Verwarmen"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Warm water"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Koelen"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Opgewekte koelenergie"
+      },
+      "tariff_id": {
+        "name": "Tarief-ID"
+      },
+      "cooling_switch_program": {
+        "name": "Koeltijdprogramma",
+        "state": {
+          "on": "Koelen",
+          "off": "Uit"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Ventilatietijdprogramma",
+        "state": {
+          "min": "Minimaal",
+          "red": "Verlaagd",
+          "nom": "Nominaal",
+          "max": "Maximaal",
+          "dem": "Vraaggestuurd",
+          "off": "Uit"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Tijdprogramma (temperaturen)"
+      },
+      "wddw2_switch_program": {
+        "name": "Warmwatertijdprogramma (temperaturen)"
+      },
+      "name_part_program_cooling": {
+        "name": "Koeltijdprogramma"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Verwarmingstijdprogramma"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Koeltijdprogramma"
+      },
+      "name_part_program_ventilation": {
+        "name": "Ventilatietijdprogramma"
+      },
+      "name_part_program_hot_water": {
+        "name": "Warmwatertijdprogramma"
+      },
+      "wallbox_external_meter": {
+        "name": "Externe meter",
+        "state": {
+          "disconnected": "Niet verbonden",
+          "connected": "Verbonden",
+          "error": "Fout"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximale stroom externe meter"
+      },
+      "wallbox_currency": {
+        "name": "Valutasymbool"
+      },
+      "wallbox_limiter": {
+        "name": "Begrensd door",
+        "state": {
+          "none": "Niets",
+          "no_car": "Geen voertuig",
+          "derating": "Vermogensreductie",
+          "key": "Sleutelschakelaar",
+          "paragraph_14a": "Sturing door netbeheerder (§14a)",
+          "app": "App",
+          "web": "Webinterface",
+          "energy_manager": "Energiemanager",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Load balancer",
+          "watchdog": "Watchdog",
+          "solar": "Zonne-overschot",
+          "dynamic_load_management": "Dynamisch belastingsbeheer",
+          "static_load_management": "Statisch belastingsbeheer",
+          "meter_fail_safe": "Beveiliging bij meterstoring",
+          "external_limit": "Externe begrenzing"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energiemanager",
+        "state": {
+          "inactive": "Inactief",
+          "active_heating": "Actief (verwarming)",
+          "active_hot_water": "Actief (warm water)",
+          "active_energy_manager": "Stuurt de laadpaal"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Tijdprogramma {number}",
+        "state": {
+          "off": "Uit",
+          "auto": "Auto",
+          "cool": "Koelen",
+          "heat": "Verwarmen",
+          "dry": "Drogen",
+          "fan_only": "Alleen ventilator"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Tijdprogramma {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybride regelstrategie",
+        "state": {
+          "cost": "Kostengeoptimaliseerd",
+          "max_renewable_share": "Warmtepompgeoptimaliseerd",
+          "heat_pump_preferred": "Warmtepomp voorkeur",
+          "environment": "Meest klimaatvriendelijk",
+          "boiler_only": "Alleen ketel",
+          "bivalent_alternative": "Bivalent alternatief"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Afwijking van de gatewayklok (berekend)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Installatiestoring"
+      },
+      "calculated_defrost_active": {
+        "name": "Ontdooien actief (berekend)"
       },
       "bacon_connectivity": {
         "name": "Apparaatverbinding"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Klepprobleem"
       },
+      "rrc_coming_home": {
+        "name": "Thuiskomst verwacht"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulische balancering"
+      },
       "rrc_locking_error": {
         "name": "Vergrendelende storing"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Bijvullen nodig"
+      },
+      "primary_flow_below_range": {
+        "name": "Primair debiet onder het meetbereik"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Debiet verwarmingscircuit 1 onder het meetbereik (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Variabel tarief actief"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost actief"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Netgestuurde ingang actief"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Netgestuurd laden ingesteld"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Netgestuurd laden actief"
+      },
+      "wallbox_relays_available": {
+        "name": "Relais aanwezig"
+      },
+      "wallbox_authentication_required": {
+        "name": "Authenticatie vereist"
+      },
+      "aircon_solar_operation": {
+        "name": "Zonnebedrijf"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Ontdooiing (berekend)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Ontdooiing beëindigd"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Volgend schakelpunt vervroegen"
+      },
+      "wallbox_start_charging": {
+        "name": "Laden starten"
+      },
+      "wallbox_pause_charging": {
+        "name": "Laden pauzeren"
+      },
+      "aircon_end_temporary": {
+        "name": "Tijdelijke afwijking beëindigen"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Airconditioner",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Auto",
+              "quiet": "Stil",
+              "low": "Laag",
+              "medium": "Gemiddeld",
+              "high": "Hoog",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Uit",
+              "on": "Aan",
+              "auto": "Auto",
+              "swing": "Zwenken",
+              "angle1": "Stand 1",
+              "angle2": "Stand 2",
+              "angle3": "Stand 3",
+              "angle4": "Stand 4",
+              "angle5": "Stand 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Uit",
+              "on": "Aan",
+              "auto": "Auto",
+              "swing": "Zwenken",
+              "left": "Links",
+              "center": "Midden",
+              "right": "Rechts",
+              "wide": "Breed",
+              "ultra_wide": "Extra breed",
+              "fixed": "Vast"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Geen",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Onbekend"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Naam van het tijdprogramma"
+      },
+      "wallbox_label": {
+        "name": "Weergavenaam"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Schakelpunten van een tijdprogramma instellen",
+      "description": "Stelt de schakelpunten van een of meer wekelijkse tijdprogramma's van de verwarmingsinstallatie in, vers uitgelezen en gecontroleerd aan de hand van de grenzen die de installatie meldt. Elk programma wordt één keer verzonden en teruggelezen; niets wordt automatisch herhaald.",
+      "fields": {
+        "mode": {
+          "name": "Wijze",
+          "description": "De hele week vervangen, of alleen de dagen die in de schakelpunten voorkomen (de overige dagen blijven zoals uitgelezen)."
+        },
+        "switch_points": {
+          "name": "Schakelpunten",
+          "description": "Dag (mo tot su), tijd (HH:MM, volgens de klok van de verwarmingsinstallatie) en niveau van elk schakelpunt. Bij een programma met temperaturen is het niveau een getal zoals 21.5. Bij een airconditioner is het niveau de instelling ervan: modus, temperatuur en ventilatorsnelheid, zoals cool 24.0 auto, of off."
+        },
+        "expected": {
+          "name": "Verwachte schakelpunten",
+          "description": "Optioneel: de schakelpunten die het programma op dit moment moet hebben. Heeft het andere (bijvoorbeeld in de app gewijzigd), dan wordt niets verzonden."
+        },
+        "validate_only": {
+          "name": "Alleen controleren",
+          "description": "Controleert de schakelpunten en antwoordt, zonder te verzenden."
         }
       }
     }

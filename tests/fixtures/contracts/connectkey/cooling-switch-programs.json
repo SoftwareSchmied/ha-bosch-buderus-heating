@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed heating circuit with a cooling level and the cooling time program A",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-09: the cooling program A of a heating circuit is read as on/off points and written as a raw array within the reported limits.",
+    "source": "behaviour of the manufacturer's app: cooling program A of a heating circuit with the levels off and on"
+  },
+  "resources": [
+    {
+      "id": "/heatingCircuits/hc1/cooling/temperatureLevels/on",
+      "type": "floatValue",
+      "value": 24.0,
+      "unitOfMeasure": "C",
+      "writeable": 1,
+      "minValue": 20.0,
+      "maxValue": 30.0
+    },
+    {
+      "id": "/heatingCircuits/hc1/cooling/switchPrograms/A",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1080,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 600,
+          "setpoint": "on"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1080,
+          "setpoint": "off"
+        }
+      ]
+    }
+  ]
+}

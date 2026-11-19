@@ -337,6 +337,43 @@ class LocalSource:
             return None
         return observation.data
 
+    async def read_explicit(self, request: ReadRequest) -> ReadResult | None:
+        """Read one resource on request of a feature (the recordings).
+
+        Uses the running client and its limits like ``read_system``: while
+        the regular reads hold the access, it waits for its turn a few times
+        and then returns the deferred result. Never retried after an answer.
+        None when the source is not running or was closed during the read.
+        """
+        client = self.client
+        if client is None or not self.current():
+            return None
+        deadline = monotonic() + SYSTEM_READ_SECONDS
+        result: ReadResult | None = None
+        for attempt in range(SYSTEM_READ_ATTEMPTS):
+            try:
+                result = await client.read(request)
+            except StaleLocalRequest:
+                return None
+            except asyncio.CancelledError:
+                task = asyncio.current_task()
+                if task is not None and task.cancelling():
+                    raise
+                return None
+            wait = result.retry_after_seconds
+            if (
+                result.state is not ReadState.DEFERRED
+                or wait is None
+                or wait > SYSTEM_READ_WAIT_SECONDS
+                or attempt == SYSTEM_READ_ATTEMPTS - 1
+                or monotonic() + wait > deadline
+            ):
+                break
+            await asyncio.sleep(wait)
+            if not self.current():
+                return None
+        return result if self.current() else None
+
     def current(self) -> bool:
         return (
             not self._closed

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 
 import pytest
 
@@ -258,11 +259,11 @@ async def test_missing_refresh_token_is_reported_as_rejection() -> None:
     assert attempts[0].presented_refresh_token is None
 
 
-@pytest.mark.parametrize(("remaining", "refreshed"), [(121.0, False), (119.0, True)])
-async def test_access_token_is_renewed_with_two_minutes_left(
+@pytest.mark.parametrize(("remaining", "refreshed"), [(601.0, False), (599.0, True)])
+async def test_access_token_is_renewed_with_ten_minutes_left(
     remaining: float, refreshed: bool
 ) -> None:
-    """O94: renew while 120 s remain, not first with 30-40 s left."""
+    """H-B3-1: renew while 600 s remain; the request goes on with the old token."""
     oauth = FakeOAuthClient()
     manager = TokenManager(
         oauth,
@@ -270,9 +271,12 @@ async def test_access_token_is_renewed_with_two_minutes_left(
         lambda tokens: None,
         clock=lambda: 1000.0,
     )
-    token = await manager.get_access_token()
-    assert token == ("fresh" if refreshed else "current")
+    # The early renewal does not hold the request back.
+    assert await manager.get_access_token() == "current"
+    await manager.async_wait_for_refresh()
+    assert manager.tokens.access_token == ("fresh" if refreshed else "current")
     assert oauth.calls == (["refresh"] if refreshed else [])
+    assert await manager.get_access_token() == ("fresh" if refreshed else "current")
 
 
 # --- C15/AUTH-2: a pause after a temporary refresh failure ---
@@ -445,7 +449,7 @@ class _ShortLivedOAuth:
 async def test_a_short_token_lifetime_never_refreshes_before_every_request(
     lifetime: float,
 ) -> None:
-    """D15: below the 120 s margin, the margin shrinks to half the lifetime."""
+    """D15: below the 600 s margin, the margin shrinks to half the lifetime."""
     clock = [1000.0]
     oauth = _ShortLivedOAuth(clock, lifetime)
     manager = TokenManager(
@@ -460,6 +464,8 @@ async def test_a_short_token_lifetime_never_refreshes_before_every_request(
     assert oauth.calls == 1
     # Within the second half of the lifetime the token is renewed once.
     clock[0] += lifetime / 2
+    await manager.get_access_token()
+    await manager.async_wait_for_refresh()
     assert await manager.get_access_token() == "access-2"
     assert await manager.get_access_token() == "access-2"
     assert oauth.calls == 2
@@ -475,9 +481,11 @@ async def test_a_long_token_lifetime_keeps_the_full_margin() -> None:
         clock=lambda: clock[0],
     )
     assert await manager.get_access_token() == "access-1"
-    clock[0] += 3600.0 - 121.0
+    clock[0] += 3600.0 - 601.0
     assert await manager.get_access_token() == "access-1"
     clock[0] += 2.0
+    await manager.get_access_token()
+    await manager.async_wait_for_refresh()
     assert await manager.get_access_token() == "access-2"
 
 
@@ -485,11 +493,13 @@ async def test_stored_tokens_without_issue_time_keep_the_full_margin() -> None:
     oauth = FakeOAuthClient()
     manager = TokenManager(
         oauth,
-        AuthTokens("current", "refresh", expires_at=1100.0),
+        AuthTokens("current", "refresh", expires_at=1500.0),
         lambda _tokens: None,
         clock=lambda: 1000.0,
     )
-    assert await manager.get_access_token() == "fresh"
+    await manager.get_access_token()
+    await manager.async_wait_for_refresh()
+    assert manager.tokens.access_token == "fresh"
     assert oauth.calls == ["refresh"]
 
 
@@ -595,3 +605,257 @@ async def test_an_expired_answer_respects_a_rate_limit_pause() -> None:
         await manager.get_access_token()
     assert oauth.presented == ["refresh"]
     assert manager.tokens.refresh_token == "rotated-1"
+
+
+# --- H-B3-1: an early renewal that fails does not fail the request ---
+
+
+class _TimedClient:
+    """The sign-in service on a simulated clock; fails while ``failing``."""
+
+    def __init__(self, clock: list[float], error: Exception | None = None) -> None:
+        self.clock = clock
+        self.failing = True
+        self.error = error or RequestTimeout()
+        self.requests: list[float] = []
+
+    async def refresh(self, refresh_token: str) -> AuthTokens:
+        self.requests.append(self.clock[0])
+        await asyncio.sleep(0)
+        if self.failing:
+            raise self.error
+        count = len(self.requests)
+        return AuthTokens(
+            f"access-{count}",
+            f"rotated-{count}",
+            expires_at=self.clock[0] + 3600.0,
+            issued_at=self.clock[0],
+        )
+
+
+def _timed_manager(
+    client: _TimedClient, clock: list[float], remaining: float
+) -> TokenManager:
+    return TokenManager(
+        client,
+        AuthTokens(
+            "old",
+            "refresh",
+            expires_at=clock[0] + remaining,
+            issued_at=clock[0] + remaining - 3600.0,
+        ),
+        lambda _tokens: None,
+        clock=lambda: clock[0],
+        retry_clock=lambda: clock[0],
+    )
+
+
+async def _settle(manager: TokenManager) -> None:
+    with contextlib.suppress(SignInUnavailable):
+        await manager.async_wait_for_refresh()
+
+
+async def test_a_failed_early_renewal_serves_the_valid_token_and_paces_retries() -> (
+    None
+):
+    clock = [1000.0]
+    client = _TimedClient(clock)
+    manager = _timed_manager(client, clock, remaining=590.0)
+    # Due, but the old token works: the request goes on at once.
+    assert await manager.get_access_token() == "old"
+    await _settle(manager)
+    assert client.requests == [1000.0]
+    # Inside the wait after the failure no further token request is sent (the
+    # refresh token is never presented twice in a row), and the token is served.
+    for moment in (1001.0, 1010.0, 1029.9):
+        clock[0] = moment
+        assert await manager.get_access_token() == "old"
+        await _settle(manager)
+    assert client.requests == [1000.0]
+    # After the wait one more attempt runs in the background.
+    clock[0] = 1030.0
+    assert await manager.get_access_token() == "old"
+    await _settle(manager)
+    assert client.requests == [1000.0, 1030.0]
+    # The service answers: the next attempt renews, and the pause ends.
+    client.failing = False
+    clock[0] = 1100.0
+    assert await manager.get_access_token() == "old"
+    await _settle(manager)
+    assert client.requests == [1000.0, 1030.0, 1100.0]
+    assert await manager.get_access_token() == "access-3"
+    assert manager.refresh_rejected is False
+
+
+async def test_the_old_token_is_not_served_in_its_last_seconds() -> None:
+    clock = [1000.0]
+    client = _TimedClient(clock)
+    manager = _timed_manager(client, clock, remaining=29.0)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.reason == "timeout"
+    # The pause holds the request back at once, also while it is that short.
+    clock[0] = 1005.0
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token()
+    assert client.requests == [1000.0]
+
+
+async def test_a_token_the_api_refused_is_never_served_during_a_renewal() -> None:
+    clock = [1000.0]
+    client = _TimedClient(clock)
+    manager = _timed_manager(client, clock, remaining=500.0)
+    assert await manager.get_access_token() == "old"
+    await _settle(manager)
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token(force_refresh=True, rejected_token="old")
+    clock[0] = 1040.0
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token(force_refresh=True, rejected_token="old")
+    assert client.requests == [1000.0, 1040.0]
+
+
+async def test_a_rejected_early_renewal_stops_the_next_request() -> None:
+    clock = [1000.0]
+    client = _TimedClient(
+        clock, error=RefreshTokenRejected(rejection=TokenEndpointRejection(400))
+    )
+    manager = _timed_manager(client, clock, remaining=500.0)
+    assert await manager.get_access_token() == "old"
+    await asyncio.sleep(0.01)
+    assert manager.refresh_rejected is True
+    with pytest.raises(RefreshTokenRejected):
+        await manager.get_access_token()
+
+
+async def test_many_requests_share_one_early_renewal_without_waiting() -> None:
+    """One request of the token endpoint, however many callers (the refresh
+    token rotates); nobody waits for its slow answer while the token works."""
+    clock = [1000.0]
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    calls: list[str] = []
+
+    class Slow:
+        async def refresh(self, refresh_token: str) -> AuthTokens:
+            calls.append(refresh_token)
+            entered.set()
+            await release.wait()
+            return AuthTokens(
+                "new", "rotated", expires_at=clock[0] + 3600.0, issued_at=clock[0]
+            )
+
+    manager = TokenManager(
+        Slow(),
+        AuthTokens(
+            "old", "refresh", expires_at=clock[0] + 400.0, issued_at=clock[0] - 3200.0
+        ),
+        lambda _tokens: None,
+        clock=lambda: clock[0],
+        retry_clock=lambda: clock[0],
+    )
+    first = await asyncio.wait_for(manager.get_access_token(), 1)
+    await entered.wait()
+    others = await asyncio.wait_for(
+        asyncio.gather(*(manager.get_access_token() for _ in range(10))), 1
+    )
+    assert [first, *others] == ["old"] * 11
+    assert manager.refresh_in_progress
+    # The token runs out while the answer is awaited: callers wait for the
+    # same renewal, none starts a second one.
+    clock[0] += 390.0
+    waiters = [asyncio.create_task(manager.get_access_token()) for _ in range(3)]
+    await asyncio.sleep(0)
+    assert not any(waiter.done() for waiter in waiters)
+    release.set()
+    assert await asyncio.gather(*waiters) == ["new"] * 3
+    assert calls == ["refresh"]
+
+
+async def test_the_retry_wait_never_ends_after_the_token_that_still_works() -> None:
+    clock = [1000.0]
+    client = _TimedClient(clock)
+    manager = _timed_manager(client, clock, remaining=590.0)
+    waits: list[float] = []
+    for _ in range(8):
+        await manager.get_access_token()
+        await _settle(manager)
+        waits.append(manager._retry_not_before - clock[0])
+        # Attempts keep coming while the token works: 30 s at the least.
+        assert waits[-1] >= 30.0
+        clock[0] = manager._retry_not_before
+        if manager.tokens.expires_at - clock[0] <= 30.0:
+            break
+    # Plain doubling would have waited 30, 60, 120, 240, ...: the waits shrink
+    # with the lifetime left, so more attempts fall into the last minutes.
+    assert waits[:3] == [30.0, 60.0, 120.0]
+    assert waits[3] <= (590.0 - 210.0 - 30.0) / 2 + 0.01
+    assert len(client.requests) >= 5
+
+
+async def test_a_failed_early_renewal_leaves_the_refresh_token_for_the_next_try() -> (
+    None
+):
+    """The old refresh token stays until an answer rotates it: the next
+    attempt presents it again, and only after the wait."""
+    clock = [1000.0]
+    presented: list[str] = []
+
+    class Recorder(_TimedClient):
+        async def refresh(self, refresh_token: str) -> AuthTokens:
+            presented.append(refresh_token)
+            return await super().refresh(refresh_token)
+
+    client = Recorder(clock)
+    manager = _timed_manager(client, clock, remaining=300.0)
+    await manager.get_access_token()
+    await _settle(manager)
+    client.failing = False
+    clock[0] += 31.0
+    await manager.get_access_token()
+    await _settle(manager)
+    assert presented == ["refresh", "refresh"]
+    assert manager.tokens.refresh_token == "rotated-2"
+
+
+async def _settle_any(manager: TokenManager) -> None:
+    with contextlib.suppress(Exception):
+        await manager.async_wait_for_refresh()
+
+
+async def test_an_unexpected_error_of_the_early_renewal_waits_before_the_next_try(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A failure that is no PointT error used to leave no wait behind: each of
+    the next requests started another token request."""
+    clock = [1000.0]
+    client = _TimedClient(clock, error=RuntimeError("secret-detail"))
+    manager = _timed_manager(client, clock, remaining=590.0)
+    for _ in range(20):
+        assert await manager.get_access_token() == "old"
+        await _settle_any(manager)
+        await asyncio.sleep(0)
+    assert client.requests == [1000.0]
+    # Logged once, with the kind of error only.
+    warnings = [r for r in caplog.records if "early renewal" in r.getMessage()]
+    assert len(warnings) == 1
+    assert "RuntimeError" in warnings[0].getMessage()
+    assert "secret-detail" not in warnings[0].getMessage()
+    # After the wait the next attempt runs, as for every other failure.
+    clock[0] = 1030.0
+    assert await manager.get_access_token() == "old"
+    await _settle_any(manager)
+    assert client.requests == [1000.0, 1030.0]
+
+
+async def test_an_unexpected_error_of_a_waited_renewal_still_reaches_the_caller() -> (
+    None
+):
+    """#49: a renewal somebody waits for fails as before and sets no wait."""
+    clock = [1000.0]
+    client = _TimedClient(clock, error=RuntimeError("secret-detail"))
+    manager = _timed_manager(client, clock, remaining=-10.0)
+    for _ in range(2):
+        with pytest.raises(RuntimeError):
+            await manager.get_access_token()
+    assert client.requests == [1000.0, 1000.0]

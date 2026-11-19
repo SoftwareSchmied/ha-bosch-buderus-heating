@@ -268,8 +268,10 @@ def test_the_local_plant_view_builds_from_the_capture() -> None:
     # fan (PL3) and the primary heating pump (PC0) speeds, TC1, TL2 and the
     # refrigerant circuit temperatures TR3, TR5, TR6, JR0 and JR1. Since
     # 0.9.0 the totals of the only heat source (starts, system run time) and
-    # the burner status of this heat pump are created disabled.
-    assert Counter(platform for platform, _ in shapes) == {"sensor": 191}
+    # the burner status of this heat pump are created disabled. The
+    # environmental energy of the heating and hot water modes adds two more
+    # (disabled).
+    assert Counter(platform for platform, _ in shapes) == {"sensor": 193}
     assert sum(bool(shape.enabled) for shape in shapes.values()) == 84
 
 

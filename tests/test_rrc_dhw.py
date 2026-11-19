@@ -232,7 +232,7 @@ def test_unavailable_extra_hot_water_has_no_control_and_unused_one_is_locked() -
         id=EXTRA, type="stringValue", writeable=1, value="off", available="no"
     )
     assert assess_control(malformed, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
-    # A generic policy is not affected by the contract rule.
+    # A generic policy follows the same flag rule with tokens of its own.
     away = item(
         id="/system/awayMode/enabled",
         type="stringValue",
@@ -243,7 +243,7 @@ def test_unavailable_extra_hot_water_has_no_control_and_unused_one_is_locked() -
     )
     # Its generic policy (the absence contract, W2, owns the path now).
     with w0_state():
-        assert assess_control(away, RRC_CONTEXT).eligible
+        assert assess_control(away, RRC_CONTEXT).rejection_reason == "not_available"
 
 
 def test_extra_hot_water_duration_is_a_whole_number_on_the_grid() -> None:

@@ -1,6 +1,6 @@
 # Glossary: Polish (pl)
 
-Draft, awaiting review by a native speaker. The Polish texts in
+Corrections are welcome. The Polish texts in
 `translations/pl.json` and `i18n/pl.json` use these terms consistently.
 
 Style: sentence case; the user is addressed in the second person singular

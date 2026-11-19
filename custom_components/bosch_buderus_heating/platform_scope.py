@@ -11,6 +11,7 @@ from homeassistant.const import Platform
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .aircon import AirconCoordinator
 from .bacon.access import BaconAccess
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .pointt.metrics import RequestMetrics
@@ -34,6 +35,7 @@ class PlatformScope:
     async_on_unload: Callable[[Listener], None]
     coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...] = ()
     wallboxes: tuple[WallboxCoordinator, ...] = ()
+    aircons: tuple[AirconCoordinator, ...] = ()
     bacon: BaconAccess | None = None
     metrics: RequestMetrics | None = None
     metric_updates: Subscribe | None = None
@@ -90,6 +92,7 @@ def setup_platform(
             async_on_unload=lambda listener: entry.async_on_unload(listener),
             coordinators=getattr(runtime, "coordinators", ()),
             wallboxes=getattr(runtime, "wallboxes", ()),
+            aircons=getattr(runtime, "aircons", ()),
             bacon=getattr(runtime, "bacon", None),
             metrics=(
                 runtime.client.metrics

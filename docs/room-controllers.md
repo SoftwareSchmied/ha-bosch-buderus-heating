@@ -401,6 +401,30 @@ on a TC100.2; everything else is expected, untested.*
   does not show in the bell. See
   [display levels on room controllers](faults.md#display-levels-on-room-controllers).
 
+## Further settings and readings
+
+*Expected, untested on a real plant: the leaf names and JSON types were seen
+on a TC100.2, nothing was switched or compared against the app.*
+
+- **Automatic absence** and **Notification light** are switches over the
+  strings `true`/`false`, disabled by default. They exist only while the
+  controller offers the leaf as writable with these two values; a plant that
+  reports another format gets no switch. The list of users of the automatic
+  absence is never read.
+- Binary sensor **Coming home expected** (the controller's coming-home flag)
+  and sensor **Coming home prediction** (the controller's value in minutes,
+  disabled by default).
+- **Presence sensor setting** (the controller's text value, disabled by
+  default, diagnostic) and binary sensor **Hydraulic balancing** (disabled by
+  default, diagnostic). Both are writable on the controller but shown as
+  readings only.
+- **Total solar yield** per solar circuit (kWh, total increasing, only with
+  the unit kWh) and **Hot water system** per hot water circuit (the
+  controller's text, disabled by default, diagnostic).
+- A leaf the controller does not list, reports unavailable or reports in
+  another shape gets no entity. The writes follow the usual rules: one
+  request, read back, no retry.
+
 ## Energy history
 
 *Expected, untested.* The unit kWh is assumed but not confirmed on a real
@@ -639,6 +663,13 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   für Fachleute oder
   Installateure (Anzeigeebene 0, 2 oder 4) nur unter „Aktive Meldungen“,
   siehe [Störungen](faults.md#display-levels-on-room-controllers).
+- **Weitere Einstellungen und Messwerte (erwartet, ungetestet):**
+  Schalter „Auto-Abwesenheit“ und „Benachrichtigungslicht“ (Zeichenketten
+  `true`/`false`, standardmäßig deaktiviert, nur bei genau diesen Werten),
+  Binärsensor „Heimkehr erwartet“, Sensor „Prognose Heimkehr“ (Minuten),
+  „Einstellung Präsenzsensor“ und „Hydraulischer Abgleich“ (nur lesend),
+  „Solar-Gesamtertrag“ (kWh, `total_increasing`) und „Warmwassersystem“.
+  Die Nutzerliste der Auto-Abwesenheit wird nie gelesen.
 - **Energiehistorie:** Tageswerte als Statistiken mit dem Zusatz
   „(kWh erwartet)“, weil die Einheit nicht bestätigt ist; Gas nur mit
   bestätigter Einheit; die älteren Schlüssel `eCH`/`eHW` je nach

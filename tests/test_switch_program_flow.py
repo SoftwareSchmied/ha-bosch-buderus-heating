@@ -90,7 +90,9 @@ async def test_menu_and_program_choice(hass, environment):
     ]
     first = await flow.async_step_switch_programs()
     labels = {item["value"]: item["label"] for item in _options(first, "program")}
-    assert set(labels) == {f"1:{PROGRAM_A}", f"1:{PROGRAM_B}", f"1:{DHW}"}
+    # The first choice leads back to the main menu.
+    assert next(iter(labels)) == "back"
+    assert set(labels) == {"back", f"1:{PROGRAM_A}", f"1:{PROGRAM_B}", f"1:{DHW}"}
     # The name the gateway reports; an empty name adds nothing.
     assert labels[f"1:{PROGRAM_A}"].endswith("(Home office)")
     assert "(" not in labels[f"1:{PROGRAM_B}"]
@@ -136,8 +138,9 @@ async def test_move_one_point_and_save_sends_the_week_once(hass, environment):
     assert "08:15" in confirm["description_placeholders"]["after"]
     assert "Monday" not in confirm["description_placeholders"]["after"]
     done = await flow.async_step_switch_program_confirm({})
-    # Back in the main menu; the note repeats the previous switch points.
-    note = await menu_note(hass, done, "switch_program_saved")
+    # The outcome page repeats the previous switch points; OK leads back to
+    # the main menu.
+    note = await menu_note(hass, done, "switch_program_saved", flow=flow)
     assert "08:00" in note
     ((path, body),) = gateway.raw_puts
     assert path == PROGRAM_A
@@ -448,7 +451,7 @@ async def test_level_names_and_the_saved_program_are_plain_text(hass, environmen
     flow, gateway = make_flow(hass, environment, **{f"{HC}/switchPrograms/nameA": item})
     await _to_confirm(flow)
     done = await flow.async_step_switch_program_confirm({})
-    shown = await menu_note(hass, done, "switch_program_saved")
+    shown = await menu_note(hass, done, "switch_program_saved", flow=flow)
     assert f"({name})" in _rendered(shown)
     assert "![" not in _strip(shown) and "://" not in _strip(shown)
     assert len(gateway.raw_puts) == 1

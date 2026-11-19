@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Iniciar sesión con SingleKey ID",
-        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
+        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`. Si SingleKey ID muestra una página que anuncia una redirección y no ocurre nada, selecciona el enlace o el botón de esa página.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
         "data": {
           "redirect_url": "Dirección de redirección completa"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Volver a configurar y volver a detectar",
-        "description": "Elige la marca de la aplicación, las pasarelas y el perfil de consulta. Al guardar se vuelve a cargar la integración y se realiza una detección completa de recursos. Úsalo después de una actualización de firmware o cuando hayan cambiado los circuitos, los sistemas de agua caliente, las fuentes de calor o las pasarelas. **Estándar** lee los valores de funcionamiento actuales cada minuto. **Ligero para la nube** reduce el tráfico de la nube leyéndolos cada dos minutos y todos los demás valores cambiantes con menos frecuencia. Cambiar la marca de la aplicación requiere un nuevo inicio de sesión con SingleKey ID.",
+        "description": "Elige la marca de la aplicación, las pasarelas y el perfil de consulta. Al guardar se recarga la integración y vuelve a buscar todos los recursos, por ejemplo tras una actualización de firmware o un cambio en la instalación. Cambiar la marca de la aplicación requiere un nuevo inicio de sesión con SingleKey ID.",
         "data": {
           "brand": "Marca de la aplicación",
           "gateway_ids": "Pasarelas",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Elegir la configuración existente",
-        "description": "Selecciona la configuración a la que pertenece esta pasarela local. No se creará otra instalación.",
+        "description": "Selecciona la configuración a la que pertenece esta pasarela local o configúrala como una configuración nueva solo con acceso local.",
         "data": {
-          "owner": "Configuración existente"
+          "owner": "Configuración"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Elegir la instalación",
-        "description": "Selecciona la instalación que se conectará de forma local. Se comprobará la identidad de su pasarela antes de guardar.",
+        "description": "Selecciona el sistema de calefacción que quieres conectar de forma local: la bomba de calor o la caldera, no una wallbox ni un aire acondicionado. Se comprobará la identidad de su pasarela antes de guardar.",
         "data": {
           "target": "Instalación / pasarela"
         }
@@ -109,6 +109,13 @@
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmar el certificado del puerto de datos",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
         "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Confirmar la conexión local",
-        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente.",
-        "data": {
-          "confirm": "Guardar esta conexión local"
-        }
+        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente. Para no guardar nada, cierra el diálogo."
       },
       "local_retry": {
         "title": "No se pudo terminar la comprobación local",
@@ -151,6 +155,7 @@
       "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
+      "singlekey_page": "Esta es la dirección de la página de SingleKey ID, no la dirección de la aplicación. Si esa página indica que serás redirigido y no ocurre nada, selecciona su enlace o botón. Después copia, en la consola de Chrome, la dirección `{redirect_scheme}://` del mensaje rojo **Failed to launch**.",
       "gateway_changed": "La lista de pasarelas cambió mientras este cuadro de diálogo estaba abierto. Cierra el cuadro de diálogo y abre Volver a configurar de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
       "unknown": "Se ha producido un error inesperado en el acceso a la nube. Espera un momento e inténtalo de nuevo.",
@@ -172,13 +177,14 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
+      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
       "local_unknown_firmware": "No se pudo verificar la versión del firmware.",
       "local_old_firmware": "Actualiza el firmware de la pasarela antes de configurar la conexión local.",
       "local_unsupported_brand": "La interfaz local documentada no admite la marca de esta pasarela.",
-      "local_incomplete_system": "La información de la instalación de la pasarela aún no está completa. Vuelve a probar la comprobación de lectura más tarde.",
+      "local_incomplete_system": "La pasarela todavía está recopilando la información de su instalación. Puede tardar unos minutos. Espera unos minutos y vuelve a probar la comprobación de lectura.",
       "local_invalid_response": "No se pudo verificar una respuesta necesaria de la pasarela.",
       "local_identity_unverified": "Esta instalación aún no se ha emparejado de forma inequívoca. La primera configuración requiere un acceso a la nube disponible e identificadores de pasarela y de módulo coincidentes de ambas interfaces. Los vínculos verificados se pueden usar después sin la nube.",
       "local_identity_conflict": "La identidad de la pasarela entra en conflicto con la instalación seleccionada o con otra configuración.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "already_in_progress": "La configuración de esta pasarela local ya está en curso.",
-      "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada."
+      "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
+      "local_entry_not_updated": "Una entrada existente de esta integración no se pudo actualizar a la versión actual. Repara o elimina primero esa entrada; después se podrá añadir esta pasarela."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Ajustes",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaciones",
           "holidays": "Gestionar períodos de vacaciones",
@@ -248,7 +254,9 @@
           "connections": "Conexiones",
           "connection_add_cloud": "Conectar el acceso a la nube",
           "local_setup": "Configurar el acceso local",
-          "rescan": "Volver a buscar en la instalación"
+          "rescan": "Volver a buscar en la instalación",
+          "recordings": "Registros de la instalación",
+          "wallbox": "Punto de recarga"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Ver programa horario de calefacción",
         "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nElige un día de la semana. Las horas se repiten cada semana en la hora local de la instalación de calefacción. ∅ significa que no hay ningún punto de conmutación guardado para ese día. Los cambios afectan a todas las zonas que usan este programa horario.",
         "data": {
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "rrc_readonly": {
         "title": "Ver programa horario de calefacción",
-        "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horario solo se puede ver aquí. No tiene puntos de conmutación editables o contiene ajustes no admitidos. ∅ significa que no hay ningún punto de conmutación guardado. Puedes hacer cambios en la aplicación del fabricante."
+        "description": "**{program}**\n\n**Lunes:** {mo}\n\n**Martes:** {tu}\n\n**Miércoles:** {we}\n\n**Jueves:** {th}\n\n**Viernes:** {fr}\n\n**Sábado:** {sa}\n\n**Domingo:** {su}\n\nEste programa horario solo se puede ver aquí. No tiene puntos de conmutación editables o contiene ajustes no admitidos. ∅ significa que no hay ningún punto de conmutación guardado. Puedes hacer cambios en la aplicación del fabricante.",
+        "data": {
+          "week_view": "Vista semanal"
+        }
       },
       "rrc_point": {
         "title": "Editar punto de conmutación",
         "description": "**{program}**\n\nElige una hora en pasos de cinco minutos y una temperatura de 5 a 30 °C en pasos de 0,5 °C. La hora se repite cada semana en la hora local de la instalación de calefacción. Los cambios afectan a todas las zonas asignadas.",
         "data": {
           "time": "Hora",
-          "temperature": "Temperatura"
+          "temperature": "Temperatura",
+          "delete": "Eliminar este punto de conmutación"
         }
+      },
+      "rrc_confirm": {
+        "title": "Guardar punto de conmutación",
+        "description": "**{program}**\n\n**Antes:** {before}\n\n**Después:** {after}\n\nEl cambio se envía una vez y después se vuelve a leer. Se aplica a todas las zonas asignadas."
       },
       "rrc_day": {
         "title": "Elegir punto de conmutación",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nElige un punto de conmutación para cambiarlo o eliminarlo, o añade uno. Un día tiene como máximo {per_day} puntos de conmutación (el límite de la aplicación del fabricante, no informado por el regulador); el último punto de conmutación de un día se conserva.",
         "data": {
           "point": "Punto de conmutación"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEste programa no es el programa activo del circuito de calefacción. Los cambios surten efecto cuando se selecciona.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEl programa del agua caliente solo se aplica mientras el modo de funcionamiento del agua caliente está en Automático.",
         "data": {
           "action": "Siguiente paso",
-          "day": "Día de la semana"
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Conexiones",
-        "description": "{result}Elige el acceso que quieres gestionar.",
+        "description": "Elige el acceso que quieres gestionar.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Configurar el acceso local",
           "back": "← Atrás"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Prueba de conexión",
-        "description": "{result}"
+        "description": "Correcto, respuesta tras {ms} ms. Los ajustes no cambian."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Prueba de conexión",
+        "description": "Correcto, respuesta tras {ms} ms; {count} pasarela(s) en la cuenta. Los ajustes no cambian."
+      },
+      "connection_test_not_running": {
+        "title": "Prueba de conexión",
+        "description": "No probado: el acceso no está en funcionamiento en este momento (desactivado, arrancando o detenido)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Prueba de conexión",
+        "description": "Inicio de sesión necesario: vuelve a iniciar sesión mediante «Volver a iniciar sesión»."
+      },
+      "connection_test_auth_local": {
+        "title": "Prueba de conexión",
+        "description": "Inicio de sesión necesario: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Prueba de conexión",
+        "description": "El certificado del dispositivo ha cambiado: vuelve a configurar el acceso local mediante «Cambiar el acceso local»."
+      },
+      "connection_test_paused": {
+        "title": "Prueba de conexión",
+        "description": "No probado: las consultas están en pausa hasta {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Prueba de conexión",
+        "description": "No probado: las consultas están en pausa en este momento."
+      },
+      "connection_test_busy": {
+        "title": "Prueba de conexión",
+        "description": "No probado: el acceso está ocupado en este momento. Inténtalo de nuevo en breve."
+      },
+      "connection_test_unreachable": {
+        "title": "Prueba de conexión",
+        "description": "No accesible: sin respuesta ({ms} ms). Comprueba la red y el dispositivo."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Prueba de conexión",
+        "description": "No accesible: sin respuesta ({ms} ms). Comprueba la red y el dispositivo. Consejo: si la dirección de la pasarela cambia, por ejemplo tras reiniciar el router, ayuda una dirección fija: reserve su dirección IP en el router (reserva DHCP) o introduzca el nombre de host de la pasarela. Si la pasarela se anuncia en una dirección nueva, un aviso de reparación ofrece usarla."
+      },
+      "connection_test_other_gateway": {
+        "title": "Prueba de conexión",
+        "description": "Otra pasarela responde en esta dirección. Vuelve a configurar el acceso local."
+      },
+      "connection_test_error": {
+        "title": "Prueba de conexión",
+        "description": "Prueba fallida: {kind}."
       },
       "connection": {
         "title": "Gestionar conexión",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Probar la conexión ahora",
           "connection_enabled": "Activar o desactivar el acceso",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Frecuencia de consulta",
-        "description": "Estándar lee los valores de funcionamiento actuales de la calefacción cada minuto, los ajustes y los valores de energía cada 5 minutos y la información más lenta cada 15 minutos. Ligero para la nube duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles. El perfil se aplica a la consulta de calefacción y punto de recarga de la conexión a la nube seleccionada; los dispositivos adicionales en la nube notifican los cambios como mensajes. El inicio de sesión, las comprobaciones de dispositivos y la confirmación tras un cambio pueden añadir solicitudes fuera de este calendario. Si un ciclo de consulta tarda más que su intervalo, el siguiente empieza más tarde.",
+        "description": "**Estándar** lee los valores de funcionamiento actuales cada minuto y los ajustes y valores de energía cada 5 minutos. **Moderado con la nube** duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles.",
         "data": {
           "polling_profile": "Perfil de consulta"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Iniciar sesión con SingleKey ID",
-        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
+        "description": "SingleKey ID es el mismo inicio de sesión que usa tu aplicación de Bosch o Buderus. Usa la misma dirección de correo electrónico o número de móvil y la misma contraseña. No necesitas una cuenta nueva y **no** introduces tu contraseña en Home Assistant.\n\n1. Mantén abierto este cuadro de diálogo y abre [SingleKey ID]({authorization_url}) en una pestaña nueva de Chrome. Usa siempre este enlace recién generado.\n2. Pulsa `F12` allí y abre **Console** en las herramientas para desarrolladores.\n3. Inicia sesión con las credenciales de SingleKey ID que usa tu aplicación de calefacción.\n4. Después de iniciar sesión puede aparecer un mensaje de problema de red. En ese caso, normalmente solo significa que Chrome no pudo abrir la dirección de aplicación `{redirect_scheme}://`. Si SingleKey ID muestra una página que anuncia una redirección y no ocurre nada, selecciona el enlace o el botón de esa página.\n5. Busca en la consola el mensaje rojo **Failed to launch** o **Connecting to**. Haz clic con el botón derecho en la dirección azul `{redirect_scheme}://` de ese mensaje y elige **Copy link address**.\n6. Vuelve a este cuadro de diálogo, pega abajo la dirección completa y selecciona **Aceptar**. Por seguridad, el campo puede mostrar puntos.\n\nUsa la dirección de este intento de inicio de sesión exacto y no copies solo el parámetro `code`. La dirección completa contiene un código de un solo uso de corta duración. No lo compartas nunca en una incidencia, un chat, una captura de pantalla ni un registro.",
         "data": {
           "redirect_url": "Dirección de redirección completa"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Elegir la configuración existente",
-        "description": "Selecciona la configuración a la que pertenece esta pasarela local. No se creará otra instalación.",
+        "description": "Selecciona la configuración a la que pertenece esta pasarela local o configúrala como una configuración nueva solo con acceso local.",
         "data": {
-          "owner": "Configuración existente"
+          "owner": "Configuración"
         }
       },
       "local_target": {
         "title": "Elegir la instalación",
-        "description": "Selecciona la instalación que se conectará de forma local. Se comprobará la identidad de su pasarela antes de guardar.",
+        "description": "Selecciona el sistema de calefacción que quieres conectar de forma local: la bomba de calor o la caldera, no una wallbox ni un aire acondicionado. Se comprobará la identidad de su pasarela antes de guardar.",
         "data": {
           "target": "Instalación / pasarela"
         }
@@ -607,6 +688,13 @@
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
+      "local_certificate_data": {
+        "title": "Confirmar el certificado del puerto de datos",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.\n\nSi el certificado no pertenece a tu pasarela, cierra el cuadro de diálogo; no se envía nada.",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
         "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si corregir un error al escribir lleva más de cinco minutos, vuelve a pulsar los botones. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El Login y el Pass no se guardan.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "Confirmar la conexión local",
-        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente.",
-        "data": {
-          "confirm": "Guardar esta conexión local"
-        }
+        "description": "La comprobación de lectura de **{host}** se realizó correctamente y la pasarela **{gateway}** coincide con la instalación seleccionada. Al guardar se vuelven a comprobar los datos actuales y se añade o actualiza este acceso en la configuración existente. Para no guardar nada, cierra el diálogo."
       },
       "local_retry": {
         "title": "No se pudo terminar la comprobación local",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Consulta local",
-        "description": "Recursos confirmados: {known}. Disponibles actualmente: {available}. Estos recuentos muestran el estado en el momento en que se abrió este cuadro de diálogo. El intervalo es el objetivo para los valores en tiempo real. Los ajustes, los valores de energía y el diagnóstico se leen cada 5 minutos y los contadores cada 15 minutos, o con este intervalo si es mayor; los datos estáticos se leen a diario. Un valor deja de estar disponible tras tres intervalos perdidos. Los conjuntos grandes de recursos pueden tardar más. La consulta a la nube sigue siendo independiente. Los valores que también ofrece la nube se leen localmente al menos con la misma frecuencia que en la nube.",
+        "description": "Recursos confirmados: {known}, disponibles ahora: {available}. El intervalo es el objetivo para los valores en vivo; los valores más lentos se leen con menos frecuencia. La documentación describe los intervalos exactos.",
         "data": {
           "interval": "Intervalo objetivo para los valores en tiempo real"
         }
       },
       "local_values": {
         "title": "Valores locales para las entidades existentes",
-        "description": "Mientras la nube está en funcionamiento, esta opción decide si los sensores existentes usan el valor local de un valor medido que ambos accesos proporcionan bajo el mismo recurso documentado. Sin la nube (desactivada, con inicio de sesión necesario, en pausa, limitada o inaccesible), siempre se usan los valores locales. La opción está activada de forma predeterminada en las configuraciones nuevas con acceso a la nube y local.\n\nCuando está activada, se usa el valor local mientras esté actualizado. Si el valor local está obsoleto o falta, se usa el valor actual de la nube; si ambos están obsoletos, el sensor deja de estar disponible. Los contadores de energía, de arranques y de tiempo de funcionamiento también usan el valor local, pero solo cambian de origen cuando todos los recuentos mostrados son al menos iguales al último recuento mostrado, de modo que un cambio de origen nunca hace que cuenten hacia atrás. Los ajustes modificables siguen usando la nube. Los ID de entidad, los nombres y el historial no cambian. Los controles y los cambios se siguen enviando a través de la nube.",
+        "description": "Mientras la nube funciona, esta opción decide si los sensores existentes usan el valor local de una magnitud que ofrecen ambos accesos. Sin la nube se usan siempre los valores locales; los ajustes y el manejo siguen pasando por la nube. Los ID de entidad, los nombres y el historial no cambian.",
         "data": {
           "enabled": "Usar valores locales"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "Volver a buscar en la instalación",
         "description": "Vuelve a buscar en la instalación componentes y valores, a través del acceso a la nube y del acceso local. Úsalo después de añadir o cambiar componentes. La búsqueda se ejecuta con la siguiente actualización periódica y dentro de los límites habituales de consultas; nunca elimina una entidad y los valores que no vuelva a encontrar se quedan como están."
+      },
+      "recordings": {
+        "title": "Registros de la instalación",
+        "description": "La bomba de calor registra la energía, los arranques y el tiempo de funcionamiento por horas. La integración los muestra como entidades y puede importar los valores horarios a las estadísticas a largo plazo (panel de energía, tarjetas de estadísticas). Series encontradas: {series}, importadas: {imported}.",
+        "data": {
+          "recordings_import": "Importar los valores horarios a las estadísticas a largo plazo",
+          "delete_statistics": "Eliminar las estadísticas importadas"
+        },
+        "data_description": {
+          "recordings_import": "En el panel de energía use estas estadísticas o las entidades de los contadores, no ambas. Al desactivarlo, lo importado se conserva.",
+          "delete_statistics": "La página siguiente pide una confirmación."
+        }
+      },
+      "recordings_delete": {
+        "title": "Eliminar las estadísticas importadas",
+        "description": "Elimina todas las estadísticas importadas de los registros de la instalación de esta entrada y desactiva la importación. Las entidades y los registros propios de la instalación se conservan. No se puede deshacer.",
+        "data": {
+          "confirm": "Sí, eliminar las estadísticas importadas"
+        }
       },
       "local_tokens": {
         "title": "Tokens en la pasarela",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Revocar este token en la pasarela",
           "confirm_end": "Un acceso local que use este token termina"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Resultado",
+        "description": "El acceso se eliminó."
+      },
+      "result_connection_saved": {
+        "title": "Resultado",
+        "description": "El cambio se guardó."
+      },
+      "result_holiday_created": {
+        "title": "Resultado",
+        "description": "Las vacaciones se crearon y se confirmaron volviendo a leerlas."
+      },
+      "result_holiday_deleted": {
+        "title": "Resultado",
+        "description": "Las vacaciones se eliminaron y la instalación de calefacción confirmó su eliminación."
+      },
+      "result_holiday_unchanged": {
+        "title": "Resultado",
+        "description": "No se cambió nada, por lo que no se envió nada a la instalación de calefacción."
+      },
+      "result_holiday_updated": {
+        "title": "Resultado",
+        "description": "Los ajustes de las vacaciones se guardaron y la instalación de calefacción los confirmó."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Resultado",
+        "description": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
+      },
+      "result_local_token_access_ended": {
+        "title": "Resultado",
+        "description": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo."
+      },
+      "result_local_token_not_removed": {
+        "title": "Resultado",
+        "description": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Resultado",
+        "description": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Resultado",
+        "description": "La pasarela rechazó la revocación; el token sigue en la lista."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Resultado",
+        "description": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo."
+      },
+      "result_local_token_revoked": {
+        "title": "Resultado",
+        "description": "El token se ha revocado; la pasarela ya no lo muestra."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Resultado",
+        "description": "El token se revocó en la pasarela y el acceso se eliminó."
+      },
+      "result_local_tokens_changed": {
+        "title": "Resultado",
+        "description": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo."
+      },
+      "result_notifications_saved": {
+        "title": "Resultado",
+        "description": "Los ajustes de notificaciones se guardaron."
+      },
+      "result_rescan_partial": {
+        "title": "Resultado",
+        "description": "La búsqueda está planificada para los componentes que están listos y se ejecuta con la siguiente actualización periódica. Se omitieron los componentes que están en pausa en este momento; inténtalo de nuevo más tarde para ellos."
+      },
+      "result_rescan_paused": {
+        "title": "Resultado",
+        "description": "La búsqueda no se inició: las consultas están en pausa en este momento (por ejemplo, después de que la nube pidiera una pausa). Inténtalo de nuevo más tarde."
+      },
+      "result_rescan_planned": {
+        "title": "Resultado",
+        "description": "La búsqueda está planificada y se ejecuta con la siguiente actualización periódica; los componentes nuevos aparecen en cuanto se encuentran."
+      },
+      "result_rescan_running": {
+        "title": "Resultado",
+        "description": "Ya hay una búsqueda en curso o planificada. Espera a que termine."
+      },
+      "result_rescan_unavailable": {
+        "title": "Resultado",
+        "description": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento."
+      },
+      "result_rrc_program_saved": {
+        "title": "Resultado",
+        "description": "El punto de conmutación se guardó y se confirmó al volver a leerlo."
+      },
+      "result_switch_program_saved": {
+        "title": "Resultado",
+        "description": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado correctamente."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado. {count} instalaciones o dispositivos activados no se encontraron en la cuenta; siguen configurados. Una nota de reparación los nombra y explica cómo olvidarlos."
+      },
+      "result_recordings_import_on": {
+        "title": "Resultado",
+        "description": "La importación de los registros de la instalación está activada; los primeros valores llegan en pocos minutos."
+      },
+      "result_recordings_import_off": {
+        "title": "Resultado",
+        "description": "La importación de los registros de la instalación está desactivada; los valores importados se conservan."
+      },
+      "result_recordings_deleted": {
+        "title": "Resultado",
+        "description": "Estadísticas importadas eliminadas: {count}. La importación está desactivada."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Resultado",
+        "description": "No se eliminó nada."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Cambiar el programa del agua caliente",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente; las horas se repiten cada semana en la hora local de la instalación de calefacción. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nLos niveles son los del programa del regulador de ambiente. El programa se aplica mientras el agua caliente sigue su propio programa. Un máximo de seis puntos de conmutación por día es el límite de la aplicación del fabricante, no uno informado por el regulador.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Editar punto de conmutación",
+        "description": "**{program}** – **{day}**\n\nElige una hora en pasos de {raster} minutos y una temperatura de {minimum} a {maximum} °C en pasos de {step} °C. Se aplica desde esta hora hasta el siguiente punto de conmutación.",
+        "data": {
+          "time": "Hora",
+          "value": "Temperatura",
+          "off": "Apagado en lugar de una temperatura",
+          "delete": "Eliminar este punto de conmutación"
+        }
+      },
+      "rrc_add": {
+        "title": "Añadir punto de conmutación",
+        "description": "**{program}**\n\n{points}\n\nElige una hora en pasos de cinco minutos y una temperatura de 5 a 30 °C en pasos de 0,5 °C. La hora se repite cada semana en la hora local de la instalación de calefacción. Los cambios afectan a todas las zonas asignadas.",
+        "data": {
+          "time": "Hora",
+          "temperature": "Temperatura"
+        }
+      },
+      "wallbox": {
+        "title": "Punto de recarga",
+        "description": "Un punto de recarga que exige autenticación solo empieza a cargar tras una autenticación de la integración. Entonces se envía un comando adicional antes de cada inicio.",
+        "data": {
+          "wallbox_authentication": "Permitir la autenticación antes de un inicio",
+          "wallbox_authentication_name": "Nombre de autenticación (opcional)",
+          "wallbox_history": "Leer el historial de carga"
+        },
+        "data_description": {
+          "wallbox_authentication": "Desactivado por defecto. Desde el software 5.1.0 un inicio se autentica primero; con software anterior el inicio se envía solo, como en la app del fabricante.",
+          "wallbox_authentication_name": "El nombre que usa la aplicación del fabricante para la autenticación; puede quedar vacío.",
+          "wallbox_history": "Desactivado por defecto. Aproximadamente cada 30 minutos (cada 60 minutos en el perfil respetuoso con la nube) se lee la última carga (inicio, fin, duración, energía) y la energía de este mes procedente de la red y de la solar. Nunca se leen nombres de tarjetas, usuarios ni de autenticación."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Resultado",
+        "description": "Los ajustes del punto de recarga se han guardado."
+      },
+      "switch_program_week_aircon": {
+        "title": "Cambiar programa horario",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente del mismo día; antes del primer punto de conmutación de un día, el aire acondicionado está apagado. Las horas se repiten cada semana según el reloj del aire acondicionado. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Cambiar programa horario",
+        "description": "**{program}**\n\n{week}\n\nComo máximo {per_day} puntos de conmutación por día y {total} por semana, horas en pasos de {raster} minutos. Cada punto de conmutación se aplica hasta el siguiente del mismo día; antes del primer punto de conmutación de un día, el aire acondicionado está apagado. Las horas se repiten cada semana según el reloj del aire acondicionado. Los días marcados con * tienen cambios aún no guardados. No se envía nada antes del último paso.\n\nEste programa no es el programa activo del aire acondicionado. Los cambios surten efecto cuando se selecciona.",
+        "data": {
+          "action": "Siguiente paso",
+          "day": "Día de la semana",
+          "week_view": "Vista semanal"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Editar punto de conmutación",
+        "description": "**{program}** – **{day}**\n\nElige una hora en pasos de {raster} minutos y el ajuste a partir de esa hora. El aire acondicionado ofrece:\n\n{settings}\n\nLa temperatura y la velocidad del ventilador solo cuentan para un modo que las tenga. Apagado apaga el aire acondicionado hasta el siguiente punto de conmutación.",
+        "data": {
+          "time": "Hora",
+          "mode": "Modo",
+          "value": "Temperatura",
+          "fan": "Velocidad del ventilador",
+          "delete": "Eliminar este punto de conmutación"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Habilita esta conexión a la nube antes de buscar dispositivos.",
       "cloud_rate_limited": "La nube ha solicitado una pausa. Espera antes de volver a intentarlo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
+      "reauth_targets_missing": "Este inicio de sesión no encontró ninguna de las instalaciones y dispositivos activados. Se conservan las credenciales anteriores. Comprueba que has iniciado sesión con la misma cuenta que antes. Si las instalaciones se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube: activa una instalación que siga en la cuenta en **Usar para instalaciones y dispositivos**, o desactiva las eliminadas y quítalas con **Olvidar las instalaciones desmarcadas**. Si no queda ninguna, elimina el acceso a la nube y vuelve a conectarlo.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
+      "singlekey_page": "Esta es la dirección de la página de SingleKey ID, no la dirección de la aplicación. Si esa página indica que serás redirigido y no ocurre nada, selecciona su enlace o botón. Después copia, en la consola de Chrome, la dirección `{redirect_scheme}://` del mensaje rojo **Failed to launch**.",
       "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
       "no_gateways": "No se encontró ningún dispositivo. Comprueba que la marca seleccionada y la cuenta de SingleKey ID coinciden con tu aplicación. Un regulador de ambiente con un firmware antiguo solo aparece cuando su firmware se ha actualizado y se ha configurado en la aplicación actual con tu SingleKey ID.",
@@ -774,13 +1070,14 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
+      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
       "local_unknown_firmware": "No se pudo verificar la versión del firmware.",
       "local_old_firmware": "Actualiza el firmware de la pasarela antes de configurar la conexión local.",
       "local_unsupported_brand": "La interfaz local documentada no admite la marca de esta pasarela.",
-      "local_incomplete_system": "La información de la instalación de la pasarela aún no está completa. Vuelve a probar la comprobación de lectura más tarde.",
+      "local_incomplete_system": "La pasarela todavía está recopilando la información de su instalación. Puede tardar unos minutos. Espera unos minutos y vuelve a probar la comprobación de lectura.",
       "local_invalid_response": "No se pudo verificar una respuesta necesaria de la pasarela.",
       "local_identity_unverified": "Esta instalación aún no se ha emparejado de forma inequívoca. La primera configuración requiere un acceso a la nube disponible e identificadores de pasarela y de módulo coincidentes de ambas interfaces. Los vínculos verificados se pueden usar después sin la nube.",
       "local_identity_conflict": "La identidad de la pasarela entra en conflicto con la instalación seleccionada o con otra configuración.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
       "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
       "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Marca también la segunda casilla o deja la primera sin marcar para volver. No se ha enviado nada.",
-      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada."
+      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada.",
+      "switch_program_value": "Introduce una temperatura de {minimum} a {maximum} °C en pasos de {step} °C.",
+      "switch_program_day_emptied": "Un día que tiene puntos de conmutación conserva al menos uno; no se sabe qué significa un día vacío para el regulador.",
+      "rrc_point_limit": "Este día ya tiene el mayor número de puntos de conmutación que permite la aplicación ({per_day}).",
+      "rrc_point_last": "El último punto de conmutación de un día no se puede eliminar; no se sabe qué significa un día vacío para el regulador.",
+      "rrc_point_duplicate": "Este día ya tiene un punto de conmutación a esta hora.",
+      "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
+      "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
       "notification_gateways_changed": "La selección de instalaciones ha cambiado. Vuelve a abrir los ajustes.",
       "holiday_changed": "Las vacaciones seleccionadas han cambiado o ya no se pueden editar. Vuelve a abrir las vacaciones para revisar sus datos actuales.",
-      "holiday_updated": "Los ajustes de las vacaciones se guardaron y la instalación de calefacción los confirmó.",
-      "holiday_unchanged": "No se cambió nada, por lo que no se envió nada a la instalación de calefacción.",
       "no_writable_holidays": "La gestión de vacaciones no está disponible en este momento. Espera hasta que la instalación haya proporcionado sus ajustes de vacaciones.",
-      "holiday_deleted": "Las vacaciones se eliminaron y la instalación de calefacción confirmó su eliminación.",
       "not_loaded": "Bosch/Buderus Home Comfort debe estar cargado antes de poder configurar unas vacaciones.",
-      "holiday_created": "Las vacaciones se crearon y se confirmaron volviendo a leerlas.",
       "holiday_previous_request_found": "La solicitud anterior sin resolver ya está confirmada. Tus nuevos datos no se enviaron. Comprueba primero las vacaciones existentes en Gestionar períodos de vacaciones.",
       "holiday_already_exists": "Ya existen unas vacaciones con este inicio y esta selección de circuitos. No se creó ninguna vacación adicional. Abre Gestionar períodos de vacaciones y edita la entrada existente.",
       "holiday_create_unconfirmed": "No se pudo confirmar la solicitud de creación. Puede que las vacaciones ya existan. Comprueba Gestionar períodos de vacaciones o la aplicación del fabricante. Durante los próximos 10 minutos, otro intento comprobará el resultado de esta solicitud sin crear unas segundas vacaciones.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "No hay ningún programa semanal actual y compatible de un regulador de ambiente disponible.",
       "no_switch_programs": "Aquí no se puede cambiar ningún programa horario actual de un circuito de calefacción ni del agua caliente.",
       "switch_program_changed": "El programa horario ha cambiado entretanto o ya no se puede cambiar. Vuelve a abrirlo para ver los puntos de conmutación actuales.",
-      "switch_program_saved": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}",
       "controls_not_loaded": "Los controles solo están disponibles a través del acceso a la nube; el acceso local solo lee. Conecta un acceso a la nube o espera a que se haya cargado.",
       "controls_auth_required": "Los controles no están disponibles: el acceso a la nube necesita un nuevo inicio de sesión. Los valores siguen visibles.",
       "controls_cloud_stopped": "Los controles no están disponibles: el acceso a la nube está detenido o se está reiniciando. Los valores siguen visibles.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Los controles aún no están disponibles: la nube no ha entregado valores actuales. Inténtalo de nuevo dentro de un momento.",
       "controls_none": "Este equipo no informa actualmente de ningún ajuste que se pueda cambiar aquí.",
       "configuration_changed": "Los ajustes de conexión cambiaron mientras este cuadro de diálogo estaba abierto. Ciérralo e inténtalo de nuevo.",
+      "reauth_wrong_account": "La cuenta seleccionada no coincide con los dispositivos configurados. Inicia sesión con la cuenta original.",
+      "reauth_no_targets": "Este acceso a la nube ya no tiene instalaciones ni dispositivos, y no se puede confirmar la cuenta a la que pertenece. Se conservan las credenciales anteriores. Para volver a usar una cuenta en la nube, elimina el acceso a la nube en Configurar → Conexiones y vuelve a conectarlo.",
       "no_connections": "No hay ningún acceso configurado. Se conservan las instalaciones y las entidades existentes.",
-      "connection_reauth_started": "El nuevo inicio de sesión está preparado. Cierra este cuadro de diálogo y selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios, en la sección **Requiere atención**.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_setup_taken_over": "Un cuadro de diálogo de configuración de la nube más reciente ha sustituido a este. Cierra este cuadro de diálogo y continúa en el más reciente.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "El intento pendiente se conserva. Puedes reanudarlo desde la configuración local.",
       "local_storage_failed": "No se pudo leer o guardar el registro privado de la configuración. Comprueba el almacenamiento de Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalación ya está configurada mediante su acceso local en otra entrada de esta integración. Añade el acceso a la nube en esa entrada.",
-      "rescan_planned": "La búsqueda está planificada y se ejecuta con la siguiente actualización periódica; los componentes nuevos aparecen en cuanto se encuentran.",
-      "rescan_paused": "La búsqueda no se inició: las consultas están en pausa en este momento (por ejemplo, después de que la nube pidiera una pausa). Inténtalo de nuevo más tarde.",
-      "rescan_running": "Ya hay una búsqueda en curso o planificada. Espera a que termine.",
-      "rescan_partial": "La búsqueda está planificada para los componentes que están listos y se ejecuta con la siguiente actualización periódica. Se omitieron los componentes que están en pausa en este momento; inténtalo de nuevo más tarde para ellos.",
       "rescan_unavailable": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento.",
-      "connection_saved": "El cambio se guardó.",
-      "connection_removed": "El acceso se eliminó.",
-      "notifications_saved": "Los ajustes de notificaciones se guardaron.",
-      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo.",
-      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local.",
-      "local_tokens_changed": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo.",
-      "local_token_revoked": "El token se ha revocado; la pasarela ya no lo muestra.",
-      "local_token_access_ended": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo.",
-      "local_token_revoke_rejected": "La pasarela rechazó la revocación; el token sigue en la lista.",
-      "local_token_revoke_unclear": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo.",
-      "local_token_revoked_removed": "El token se revocó en la pasarela y el acceso se eliminó.",
-      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso.",
-      "local_token_old_revoked_removed": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela.",
-      "local_token_access_end_failed": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
+      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Los registros importados permanecen en las estadísticas",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Eliminar las estadísticas importadas",
+            "description": "La entrada eliminada importó {count} estadísticas de los registros de la instalación; Home Assistant las conserva. Selecciona **Enviar** para eliminarlas; no se puede deshacer. Para conservarlas, selecciona **Ignorar**. Este aviso desaparece tras el próximo reinicio."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Las estadísticas importadas ya no existen. No se ha eliminado nada."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Instalaciones no encontradas en la cuenta de la nube",
       "description": "El último inicio de sesión del acceso a la nube en «{title}» no encontró {count} instalaciones o dispositivos activados (que terminan en {systems}). Siguen configurados y no disponibles hasta que vuelvan a aparecer en la cuenta; entonces esta nota desaparece.\n\nSi se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube, desactívalos en **Usar para instalaciones y dispositivos** y quítalos con **Olvidar las instalaciones desmarcadas**. Sus dispositivos y entidades permanecen en Home Assistant hasta que los elimines. Si se cambió una pasarela, mantenla activada: una nota de reparación aparte ofrece continuar la instalación con su historial."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Configuración sin terminar",
       "description": "La entrada «{title}» aún no tiene ningún acceso. Selecciona **Configurar** en ella y después «Configurar el acceso local» (o conecta un acceso a la nube)."
+    },
+    "local_only_entities_continued": {
+      "title": "Las entidades leen ahora a través del acceso local",
+      "description": "{count} entidades en uso muestran ahora su valor a través del acceso local, con el valor de la nube como segunda fuente: {entities}. Sus ID de entidad, ajustes e historial se mantienen, así que las automatizaciones, los scripts y los paneles siguen funcionando. Sus nombres, categorías y estados siguen ahora el valor local. Puedes ignorar este aviso; desaparece tras el siguiente reinicio."
+    },
+    "local_only_entities_kept": {
+      "title": "Entidades que ya no se proporcionan",
+      "description": "{count} entidades de la nube ya no se proporcionan porque otra entidad de esta integración muestra el mismo valor a través del acceso local (antigua → nueva): {entities}. Las automatizaciones, los scripts y los paneles que usan la entidad antigua deberían usar la nueva. Elimina la entidad antigua cuando ya no la necesites; su historial se mantiene hasta entonces. Puedes ignorar este aviso; vuelve a aparecer en el siguiente reinicio mientras exista la entidad antigua."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Este circuito de calefacción no tiene ahora ninguna consigna temporal que anular."
     },
+    "zone_climate_command": {
+      "message": "Este comando para la zona no está disponible en este momento. Las temperaturas solo se pueden cambiar en modo manual o en modo automático cuando la zona ofrece una consigna temporal. Seleccione el modo por separado y compruebe que la zona proporciona valores actuales."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Esta zona no tiene ninguna consigna temporal que cancelar en este momento."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "El equipo determina la consigna actual del agua caliente. Puedes ajustar las temperaturas de arranque de los modos por separado en Manejar el equipo."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "El dispositivo de radio no utiliza este ajuste en este momento, por lo que no se cambió."
+    },
+    "control_unused": {
+      "message": "El equipo no utiliza este ajuste en este momento. Este cambio no se envió."
+    },
+    "circuit_room_controller": {
+      "message": "Este circuito de calefacción está controlado por un regulador de ambiente. El ajuste solo se puede cambiar allí. Este cambio no se envió."
+    },
+    "circuit_constant_control": {
+      "message": "Este circuito de calefacción funciona con valores constantes. Sus ajustes no se pueden cambiar en este momento. Este cambio no se envió."
+    },
+    "cooling_not_offered": {
+      "message": "Este circuito de calefacción no ofrece refrigeración en este momento. Este cambio no se envió."
     },
     "rrc_setting_unused": {
       "message": "El regulador de ambiente no utiliza este ajuste en este momento, por lo que no se cambió."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "El programa horario seleccionado no se puede leer en este momento. No se envió nada."
+    },
+    "switch_points_no_target": {
+      "message": "No se ha elegido ningún sensor de programa horario activado de esta integración. Activa el sensor de programa horario y elígelo como destino."
+    },
+    "not_a_program_entity": {
+      "message": "Solo se pueden elegir los sensores de programa horario de esta integración."
+    },
+    "switch_points_empty_week": {
+      "message": "La semana necesita al menos un punto de conmutación."
+    },
+    "switch_points_invalid_time": {
+      "message": "Cada hora debe estar en pasos de {raster} minutos, sin segundos."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Un día tiene dos puntos de conmutación a la misma hora."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Un día tiene más puntos de conmutación de los que permite la instalación de calefacción ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "La semana tiene más puntos de conmutación de los que permite la instalación de calefacción ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Solo se pueden usar estos niveles: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Solo se pueden usar temperaturas de {minimum} a {maximum} en pasos de {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "La instalación de calefacción no informa de que este programa horario se pueda cambiar."
+    },
+    "switch_points_unused": {
+      "message": "La instalación de calefacción no usa este programa horario en este momento. No se envió nada."
+    },
+    "switch_points_not_level_program": {
+      "message": "No se pudo leer el tipo de este programa horario o no encaja con sus puntos de conmutación. No se envió nada."
+    },
+    "switch_points_not_editable": {
+      "message": "Este programa horario solo se puede mostrar, no cambiar: la instalación de calefacción no informa de todos los límites necesarios para un cambio."
+    },
+    "switch_points_program_changed": {
+      "message": "El programa horario ha cambiado entretanto o ya no coincide con los puntos de conmutación esperados. No se envió nada."
+    },
+    "switch_points_paused": {
+      "message": "La escritura en la instalación de calefacción está en pausa durante unos minutos tras lecturas fallidas repetidas. No se envió nada."
+    },
+    "switch_points_not_confirmed": {
+      "message": "El programa horario se envió, pero no se pudo confirmar volviendo a leerlo. Puede que aun así se haya aplicado; no se envía de nuevo."
+    },
+    "switch_points_rejected": {
+      "message": "La instalación de calefacción rechazó el programa horario (HTTP {status}). No se cambió nada."
+    },
+    "switch_points_invalid": {
+      "message": "Los puntos de conmutación no encajan con los límites del programa horario."
+    },
+    "program_name_empty": {
+      "message": "Introduce un nombre; un nombre vacío no se envía."
+    },
+    "program_name_too_long": {
+      "message": "El nombre puede tener como máximo {max} caracteres."
+    },
+    "program_name_charset": {
+      "message": "El nombre contiene caracteres que la instalación de calefacción no puede guardar ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "La instalación de calefacción no informa de que este nombre se pueda cambiar."
+    },
+    "program_name_changed": {
+      "message": "El nombre ha cambiado entretanto. No se envió nada."
+    },
+    "program_name_not_confirmed": {
+      "message": "El nombre se envió, pero no se pudo confirmar volviendo a leerlo. Puede que aun así se haya aplicado; no se envía de nuevo."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "El punto de recarga no está en un estado que permita esta acción. Este cambio no se envió."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "La corriente de carga es inferior a 6 A. Ajuste primero la corriente de carga. Este cambio no se envió."
+    },
+    "wallbox_authentication_required": {
+      "message": "El punto de recarga exige autenticación antes de cargar. Permítala en las opciones de la integración (Wallbox). Este cambio no se envió."
+    },
+    "wallbox_group_controlled": {
+      "message": "Este punto de recarga pertenece a un grupo de gestión de carga que controla esta función. Este cambio no se envió."
+    },
+    "wallbox_energy_manager": {
+      "message": "Un gestor de energía controla este punto de recarga. Este cambio no se envió."
+    },
+    "wallbox_not_manual": {
+      "message": "La corriente de carga solo se puede ajustar en el modo de carga normal. Este cambio no se envió."
+    },
+    "wallbox_boost_active": {
+      "message": "El Boost está activo. Termine primero el Boost. Este cambio no se envió."
+    },
+    "wallbox_value_unavailable": {
+      "message": "El punto de recarga no ha facilitado un valor actual para esta función. Este cambio no se envió."
+    },
+    "wallbox_not_writeable": {
+      "message": "El punto de recarga no indica que este ajuste se pueda cambiar. Este cambio no se envió."
+    },
+    "wallbox_firmware": {
+      "message": "El software del punto de recarga no ofrece esta función. Este cambio no se envió."
+    },
+    "wallbox_meter_missing": {
+      "message": "Esta función necesita un contador externo conectado. Este cambio no se envió."
+    },
+    "wallbox_not_offered": {
+      "message": "Esta función no se ofrece para este punto de recarga. Este cambio no se envió."
+    },
+    "wallbox_not_solar": {
+      "message": "Este ajuste solo se aplica a la carga solar. Cambie primero el modo de carga a solar. Este cambio no se envió."
+    },
+    "aircon_switched_off": {
+      "message": "El aire acondicionado está apagado. Enciéndalo primero y después cambie el modo. No se ha enviado nada."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "El aire acondicionado funciona en modo solar, por lo que los modos automático y calor no están disponibles. No se ha enviado nada."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Este valor no está permitido para el aire acondicionado. No se ha enviado nada."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "El cambio se ha enviado, pero el aire acondicionado aún no lo ha confirmado. Puede que todavía se aplique. No lo he vuelto a enviar; el valor se actualiza con la siguiente lectura."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Solo se pueden usar estos ajustes: {settings}. Un ajuste se escribe como modo, temperatura y velocidad del ventilador, por ejemplo «cool 24.0 auto», o «off»."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "El calentador de agua solo acepta cambios en este programa horario mientras está encendido, funciona en modo programa y tiene una zona horaria, como en la app del fabricante. No se envió nada."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Atrás",
         "create": "Vacaciones nuevas"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Descartar el intento pendiente",
         "later": "Continuar más tarde"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Instalación nueva (pasarela no incluida en tu cuenta)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Configuración nueva (solo acceso local)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Atrás"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Sustituir toda la semana",
+        "replace_days": "Sustituir solo los días indicados"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Día"
+        },
+        "time": {
+          "name": "Hora"
+        },
+        "level": {
+          "name": "Nivel o temperatura"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Apagado",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Alto",
+        "off": "Apagado",
+        "low": "Bajo",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Añadir un punto de conmutación"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Temperatura deseada de la piscina"
+      },
+      "filter_maximum_run_time": {
+        "name": "Tiempo máximo de uso del filtro"
       },
       "heating_temperature": {
         "name": "Temperatura de calefacción"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Temperatura de impulsión máxima"
       },
+      "summer_winter_threshold": {
+        "name": "Fin de la calefacción a la temperatura exterior"
+      },
+      "cooling_room_setpoint": {
+        "name": "Refrigeración: consigna de ambiente"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "season_cooling_threshold": {
+        "name": "Iniciar refrigeración a temperatura exterior"
+      },
+      "season_heating_threshold": {
+        "name": "Fin de la calefacción a la temperatura exterior"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Temperatura Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Duración del Boost"
+      },
+      "away_temperature": {
+        "name": "Temperatura de ausencia"
+      },
+      "cooling_temperature": {
+        "name": "Temperatura de refrigeración"
+      },
       "softener_salt_threshold": {
         "name": "Umbral de aviso de sal"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Brillo de la luz ambiental"
+      },
+      "bacon_rac_timer_on": {
+        "name": "Temporizador de encendido"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Temporizador de apagado"
       },
       "rrc_window_duration": {
         "name": "Duración de ventana abierta"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Temperatura de ausencia"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Límite de corriente de carga"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Aporte máximo de la red"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Excedente solar mínimo"
+      },
+      "wallbox_filter_time": {
+        "name": "Tiempo de filtrado solar"
+      },
+      "wallbox_power_limit": {
+        "name": "Límite de potencia"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Límite de corriente fase L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Límite de corriente fase L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Límite de corriente fase L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Precio de la electricidad"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Tarifa de inyección"
+      },
+      "aircon_timer_on": {
+        "name": "Temporizador de encendido"
+      },
+      "aircon_timer_off": {
+        "name": "Temporizador de apagado"
+      },
+      "hybrid_electricity_price": {
+        "name": "Precio de la electricidad"
+      },
+      "hybrid_gas_price": {
+        "name": "Precio del gas"
+      },
+      "hybrid_oil_price": {
+        "name": "Precio del gasóleo"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Tarifa de inyección"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Modo silencioso: reducción de potencia"
+      },
+      "silent_mode_start_time": {
+        "name": "Modo silencioso: hora de inicio"
+      },
+      "silent_mode_stop_time": {
+        "name": "Modo silencioso: hora de fin"
+      },
+      "low_noise_duration": {
+        "name": "Modo silencioso: duración"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Temperatura deseada de la piscina"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Automático"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Nivel del ventilador de extracción",
+      "ventilation_operation_mode": {
+        "name": "Modo de funcionamiento de la ventilación",
         "state": {
+          "time": "Programa horario",
           "off": "Apagado",
           "min": "Nivel de ventilación 1",
           "red": "Nivel de ventilación 2",
           "nom": "Nivel de ventilación 3",
           "max": "Nivel de ventilación 4",
-          "dem": "Según demanda"
+          "dem": "Según demanda",
+          "party": "Fiesta",
+          "power_vent": "Ventilación intensiva",
+          "fireplace": "Chimenea",
+          "fall_asleep": "Conciliar el sueño",
+          "freefct": "Función libre"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Conmutación verano/invierno",
+        "state": {
+          "automatic": "Automática",
+          "forced": "Solo calefacción",
+          "cooling": "Solo refrigeración",
+          "off": "Apagada"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Refrigeración: modo de funcionamiento",
+        "state": {
+          "off": "Apagado",
+          "manual": "Manual",
+          "auto": "Automático"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Programa A",
           "b": "Programa B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Modo de carga",
+        "state": {
+          "manual": "Normal",
+          "solar": "Solar"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Dirección de aire puntual",
+        "state": {
+          "off": "Apagado",
+          "on": "Encendido",
+          "top_left": "Arriba a la izquierda",
+          "top_center": "Arriba en el centro",
+          "top_right": "Arriba a la derecha",
+          "bottom_left": "Abajo a la izquierda",
+          "bottom_center": "Abajo en el centro",
+          "bottom_right": "Abajo a la derecha"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Programa horario seleccionado",
+        "state": {
+          "program1": "Programa 1",
+          "program2": "Programa 2",
+          "program3": "Programa 3",
+          "program4": "Programa 4",
+          "program5": "Programa 5",
+          "program6": "Programa 6",
+          "program7": "Programa 7",
+          "program8": "Programa 8",
+          "program9": "Programa 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Estrategia de regulación híbrida",
+        "state": {
+          "cost": "Optimizado en costes",
+          "max_renewable_share": "Optimizado para la bomba de calor",
+          "heat_pump_preferred": "Bomba de calor preferente",
+          "environment": "Más respetuoso con el clima",
+          "boiler_only": "Solo caldera",
+          "bivalent_alternative": "Bivalente alternativo"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Modo de funcionamiento silencioso"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Modo piscina"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Modo ausente"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detección de ventana abierta"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimización de la consigna"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Modo vacaciones"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Bloqueo infantil"
       },
+      "rrc_auto_away": {
+        "name": "Ausencia automática"
+      },
+      "rrc_notification_light": {
+        "name": "Luz de notificaciones"
+      },
       "rrc_extra_dhw": {
         "name": "Agua caliente extra"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Función chimenea"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Aporte de la red en la carga solar"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Priorizar la batería doméstica"
+      },
+      "wallbox_current_limiter": {
+        "name": "Limitador de corriente"
+      },
+      "wallbox_power_limiter": {
+        "name": "Limitador de potencia"
+      },
+      "wallbox_locked": {
+        "name": "Punto de recarga bloqueado"
+      },
+      "aircon_full_power": {
+        "name": "Potencia máxima"
+      },
+      "aircon_sleep": {
+        "name": "Modo sueño"
+      },
+      "aircon_setback_8": {
+        "name": "Calefacción antiheladas (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Calefacción antiheladas (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Purificación del aire"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Programa horario activo"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Energía (estimada a partir de la potencia actual)"
+      },
+      "calculated_activity": {
+        "name": "Actividad (calculada)",
+        "state": {
+          "heating": "Calefacción",
+          "cooling": "Refrigeración",
+          "defrosting": "Desescarche",
+          "idle": "Inactivo",
+          "off": "Apagado"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Último desescarche (calculado)"
+      },
+      "calculated_defrost_count": {
+        "name": "Número de desescarches (calculado)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Tiempo total de desescarche (calculado)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Calor extraído por el desescarche (calculado)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Electricidad durante el desescarche (calculada)"
+      },
+      "calculated_net_heat": {
+        "name": "Calor neto (calculado)"
+      },
+      "calculated_last_regeneration": {
+        "name": "Última regeneración (calculada)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Tiempo medio de funcionamiento por arranque, calefacción (calculado)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Impulsión por encima de la consigna (calculado)"
+      },
+      "calculated_cop": {
+        "name": "COP actual (calculado)"
+      },
+      "calculated_performance_factor": {
+        "name": "Factor de rendimiento (calculado)"
+      },
+      "calculated_primary_spread": {
+        "name": "Salto térmico del circuito primario (calculado)"
+      },
+      "calculated_brine_spread": {
+        "name": "Salto térmico de la salmuera (calculado)"
       },
       "heating_switch_program": {
         "name": "Programa horario de calefacción",
@@ -1962,11 +2744,11 @@
           "none": "Ninguna",
           "ch": "Calefacción",
           "dhw": "Agua caliente",
-          "frost": "Protección antihielo",
+          "frost": "Rango de heladas",
           "ch_dhw": "Calefacción y agua caliente",
-          "ch_frost": "Calefacción y protección antihielo",
-          "dhw_frost": "Agua caliente y protección antihielo",
-          "ch_dhw_frost": "Calefacción, agua caliente y protección antihielo"
+          "ch_frost": "Calefacción y rango de heladas",
+          "dhw_frost": "Agua caliente y rango de heladas",
+          "ch_dhw_frost": "Calefacción, agua caliente y rango de heladas"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Generador de calor"
       },
+      "outdoor_unit_software_version": {
+        "name": "Versión de software de la unidad exterior"
+      },
       "pointt_api_requests_total": {
         "name": "Solicitudes a la nube en total"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Energía eléctrica total (calefacción)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Energía eléctrica total (refrigeración)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Energía eléctrica total (deshumidificación)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Energía eléctrica total (solo ventilador)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Energía térmica entregada total (calefacción)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Energía térmica entregada total (refrigeración)"
       },
       "bacon_purifier_tvoc": {
         "name": "Valor de TVOC"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Energía cargada informada"
       },
+      "wallbox_energy_total": {
+        "name": "Energía cargada total"
+      },
       "wallbox_duration": {
         "name": "Tiempo de carga activa"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Límite de corriente del hardware"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Inicio de la última carga"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Fin de la última carga"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Duración de la última carga"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energía de la última carga"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Cargado de la red este mes"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Cargado con energía solar este mes"
       },
       "smart_grid_mode": {
         "name": "Modo de red inteligente",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "En curso"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Modo vacaciones del agua caliente",
+        "state": {
+          "none": "Ninguno",
+          "auto_sat": "Automático (AUTO_SAT)",
+          "off": "Apagado",
+          "on_eco": "Encendido – eco",
+          "on_low": "Encendido – bajo",
+          "on_high": "Encendido – alto"
+        }
+      },
       "signal_true_false": {
         "name": "Estado",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Rango de medición",
             "state": {
               "below": "Por debajo del rango de medición"
+            }
+          },
+          "reported_state": {
+            "name": "Estado notificado",
+            "state": {
+              "low_flow": "Caudal demasiado bajo para medirlo"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Funcionamiento silencioso de la válvula"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Previsión de regreso a casa"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Ajuste del sensor de presencia"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Rendimiento solar total"
+      },
+      "rrc_hot_water_system": {
+        "name": "Sistema de agua caliente"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Resultado de la desinfección térmica"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Estado de la actualización del firmware"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Temperatura ambiente"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Consigna de calefacción activa"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Consigna de calefacción manual"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Consigna de calefacción temporal"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Modo de calefacción"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Programa horario de calefacción seleccionado"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Definir temperatura ambiente"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Definir consigna de calefacción activa"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Definir consigna de calefacción manual"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Definir consigna de calefacción temporal"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Definir modo de calefacción"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Definir programa horario de calefacción seleccionado"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Electricidad bomba de calor, calefacción (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Electricidad bomba de calor, agua caliente (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Electricidad bomba de calor, refrigeración (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Electricidad caldera, calefacción (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Electricidad caldera, agua caliente (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Resistencia eléctrica, calefacción (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Resistencia eléctrica, agua caliente (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Electricidad solar producida (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Calor bomba de calor, calefacción (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Calor bomba de calor, agua caliente (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Energía de refrigeración bomba de calor (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Calor caldera, calefacción (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Calor caldera, agua caliente (kWh, sin confirmar)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas, calefacción (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas, agua caliente (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Temperatura exterior, media diaria (sin confirmar)"
+      },
+      "name_part_low_salt": {
+        "name": "Sal baja"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Tipo de equipo de agua caliente"
+      },
+      "name_part_mode_heating": {
+        "name": "Calefacción"
+      },
+      "name_part_mode_cooling": {
+        "name": "Refrigeración"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Consigna temporal"
+      },
+      "name_part_heating_temperature": {
+        "name": "Temperatura de calefacción"
+      },
+      "name_part_setback_temperature": {
+        "name": "Temperatura de reducción"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Umbral de arranque Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Umbral de arranque Confort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Umbral de arranque Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Consigna del nivel Apagado"
+      },
+      "name_part_schedule_name": {
+        "name": "Nombre del programa horario {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Actualización de software"
+      },
+      "name_part_heat_source_type": {
+        "name": "Tipo de fuente de calor"
+      },
+      "name_part_consumption_total": {
+        "name": "Total"
+      },
+      "name_part_consumption_heating": {
+        "name": "Calefacción"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Agua caliente"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Refrigeración"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Energía de refrigeración producida"
+      },
+      "tariff_id": {
+        "name": "ID de tarifa"
+      },
+      "cooling_switch_program": {
+        "name": "Programa horario de refrigeración",
+        "state": {
+          "on": "Refrigeración",
+          "off": "Apagado"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Programa horario de ventilación",
+        "state": {
+          "min": "Mínimo",
+          "red": "Reducido",
+          "nom": "Nominal",
+          "max": "Máximo",
+          "dem": "Según demanda",
+          "off": "Apagado"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Programa horario (temperaturas)"
+      },
+      "wddw2_switch_program": {
+        "name": "Programa horario del agua caliente (temperaturas)"
+      },
+      "name_part_program_cooling": {
+        "name": "Programa horario de refrigeración"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Programa horario de calefacción"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Programa horario de refrigeración"
+      },
+      "name_part_program_ventilation": {
+        "name": "Programa horario de ventilación"
+      },
+      "name_part_program_hot_water": {
+        "name": "Programa horario del agua caliente"
+      },
+      "wallbox_external_meter": {
+        "name": "Contador externo",
+        "state": {
+          "disconnected": "No conectado",
+          "connected": "Conectado",
+          "error": "Error"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Corriente máxima del contador externo"
+      },
+      "wallbox_currency": {
+        "name": "Símbolo de moneda"
+      },
+      "wallbox_limiter": {
+        "name": "Limitado por",
+        "state": {
+          "none": "Nada",
+          "no_car": "Sin vehículo",
+          "derating": "Reducción de potencia",
+          "key": "Interruptor de llave",
+          "paragraph_14a": "Control del operador de red (§14a)",
+          "app": "Aplicación",
+          "web": "Interfaz web",
+          "energy_manager": "Gestor de energía",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Equilibrio de carga",
+          "watchdog": "Watchdog",
+          "solar": "Excedente solar",
+          "dynamic_load_management": "Gestión dinámica de carga",
+          "static_load_management": "Gestión estática de carga",
+          "meter_fail_safe": "Protección ante fallo del contador",
+          "external_limit": "Límite externo"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Gestor de energía",
+        "state": {
+          "inactive": "Inactivo",
+          "active_heating": "Activo (calefacción)",
+          "active_hot_water": "Activo (agua caliente)",
+          "active_energy_manager": "Controla el punto de recarga"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Programa horario {number}",
+        "state": {
+          "off": "Apagado",
+          "auto": "Automático",
+          "cool": "Frío",
+          "heat": "Calor",
+          "dry": "Seco",
+          "fan_only": "Solo ventilador"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Programa horario {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Estrategia de regulación híbrida",
+        "state": {
+          "cost": "Optimizado en costes",
+          "max_renewable_share": "Optimizado para la bomba de calor",
+          "heat_pump_preferred": "Bomba de calor preferente",
+          "environment": "Más respetuoso con el clima",
+          "boiler_only": "Solo caldera",
+          "bivalent_alternative": "Bivalente alternativo"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Desviación del reloj de la pasarela (calculada)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Avería de la instalación"
+      },
+      "calculated_defrost_active": {
+        "name": "Desescarche activo (calculado)"
       },
       "bacon_connectivity": {
         "name": "Conexión del dispositivo"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Problema de válvula"
       },
+      "rrc_coming_home": {
+        "name": "Regreso a casa previsto"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Equilibrado hidráulico"
+      },
       "rrc_locking_error": {
         "name": "Avería con rearme manual"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Rellenado necesario"
+      },
+      "primary_flow_below_range": {
+        "name": "Caudal primario por debajo del rango de medición"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Caudal del circuito de calefacción 1 por debajo del rango de medición (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Tarifa variable activa"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost activo"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Entrada de control de red activa"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Carga controlada por la red configurada"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Carga controlada por la red activa"
+      },
+      "wallbox_relays_available": {
+        "name": "Relés disponibles"
+      },
+      "wallbox_authentication_required": {
+        "name": "Autenticación necesaria"
+      },
+      "aircon_solar_operation": {
+        "name": "Funcionamiento solar"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Desescarche (calculado)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Desescarche finalizado"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Adelantar el próximo punto de conmutación"
+      },
+      "wallbox_start_charging": {
+        "name": "Iniciar la carga"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pausar la carga"
+      },
+      "aircon_end_temporary": {
+        "name": "Finalizar el cambio temporal"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Aire acondicionado",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automático",
+              "quiet": "Silencioso",
+              "low": "Bajo",
+              "medium": "Medio",
+              "high": "Alto",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Apagado",
+              "on": "Encendido",
+              "auto": "Automático",
+              "swing": "Oscilación",
+              "angle1": "Posición 1",
+              "angle2": "Posición 2",
+              "angle3": "Posición 3",
+              "angle4": "Posición 4",
+              "angle5": "Posición 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Apagado",
+              "on": "Encendido",
+              "auto": "Automático",
+              "swing": "Oscilación",
+              "left": "Izquierda",
+              "center": "Centro",
+              "right": "Derecha",
+              "wide": "Amplio",
+              "ultra_wide": "Muy amplio",
+              "fixed": "Fijo"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ninguno",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Desconocido"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Nombre del programa horario"
+      },
+      "wallbox_label": {
+        "name": "Nombre mostrado"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Establecer los puntos de conmutación de un programa horario",
+      "description": "Establece los puntos de conmutación de uno o más programas horarios semanales de la instalación de calefacción, leídos de nuevo y comprobados con los límites que informa la instalación. Cada programa se envía una vez y se vuelve a leer; nada se repite automáticamente.",
+      "fields": {
+        "mode": {
+          "name": "Modo",
+          "description": "Sustituir toda la semana o solo los días que aparecen en los puntos de conmutación (los demás días quedan como se leyeron)."
+        },
+        "switch_points": {
+          "name": "Puntos de conmutación",
+          "description": "Día (mo a su), hora (HH:MM, según el reloj de la instalación de calefacción) y nivel de cada punto de conmutación. En un programa con temperaturas, el nivel es un número como 21.5. Para un aire acondicionado, el nivel es su ajuste: modo, temperatura y velocidad del ventilador, como cool 24.0 auto, o off."
+        },
+        "expected": {
+          "name": "Puntos de conmutación esperados",
+          "description": "Opcional: los puntos de conmutación que el programa debe tener ahora mismo. Si tiene otros (por ejemplo, cambiados en la aplicación), no se envía nada."
+        },
+        "validate_only": {
+          "name": "Solo comprobar",
+          "description": "Comprueba los puntos de conmutación y responde, sin enviar."
         }
       }
     }

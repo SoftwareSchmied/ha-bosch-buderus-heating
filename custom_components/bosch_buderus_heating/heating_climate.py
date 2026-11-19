@@ -3,11 +3,17 @@
 ``heat`` is the mode ``manual``, whose target is ``manualRoomSetpoint``. In
 the mode ``auto`` the program sets the target; a circuit that offers a
 writable ``temporaryRoomSetpoint`` takes a target there for now, and a clear
-button ends it again (the value -1, offered only when the advertised limits
-include it). A reading of 0 or more is an active temporary setpoint, a
-negative one none. A room controller's zones have climates of their own
-(``rrc_climate``); their circuits get none here. The temporary setpoint is
-expected, untested on a real device.
+button ends it again (the value -1, as the manufacturer's app writes it; when
+the advertised limits leave -1 out, the button is created disabled). A
+reading of 0 or more is an active temporary setpoint, a negative one none. A
+room controller's zones have climates of their own (``rrc_climate``); their
+circuits get none here. The temporary setpoint is expected, untested on a
+real device.
+
+Every write of a climate or its clear button reads the circuit's
+``controlType`` again on the gateway, together with the mode and the heating
+context, right before its one request; a change since it was shown refuses
+the write unsent.
 """
 
 from __future__ import annotations
@@ -21,7 +27,7 @@ from typing import Any
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import ClimateEntityFeature as Feature
-from homeassistant.components.climate.const import HVACMode
+from homeassistant.components.climate.const import HVACAction, HVACMode
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
@@ -45,6 +51,7 @@ from .control import (
     track_control_entities,
 )
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .derived_activity import circuit_activity, circuit_input_paths
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members, temperature_unit
@@ -55,18 +62,21 @@ from .unit_contracts import TEMPERATURE_UNITS
 from .writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+    TEMPORARY_SETPOINT_CLEAR_VALUE,
     ControlContext,
+    NumberWritePolicy,
     assess_control,
     context_of,
     number_policy_for_resource,
+    sentinel_outside_limits,
 )
 
 _MODE_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/operationMode$")
 _TEMPORARY_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/temporaryRoomSetpoint$")
 TEMPORARY = "temporaryRoomSetpoint"
-# The value that ends a temporary setpoint; written only when the advertised
-# limits include it.
-CLEAR_VALUE = -1.0
+# The value that ends a temporary setpoint; within the advertised limits it
+# must lie on their grid, outside them it is written as the app does.
+CLEAR_VALUE = TEMPORARY_SETPOINT_CLEAR_VALUE
 _SERVICE_KEYS = frozenset(
     {ATTR_TEMPERATURE, ATTR_ENTITY_ID, "device_id", "area_id", "floor_id", "label_id"}
 )
@@ -74,6 +84,10 @@ _MODES = {"off": HVACMode.OFF, "manual": HVACMode.HEAT, "auto": HVACMode.AUTO}
 # A circuit with this control type is not controlled here; the climate then
 # only shows it (expected, untested on a real device).
 _READ_ONLY_CONTROL_TYPES = frozenset({"constants"})
+# Neither a temporary target nor its clearing with these control types; the
+# manufacturer's app locks such settings of a circuit run by a room
+# controller (ISRC).
+_NO_TEMPORARY_CONTROL_TYPES = frozenset({"constants", "ISRC"})
 
 
 def track_heating_climates(
@@ -160,6 +174,8 @@ class HeatingCircuitClimate(
         self._attr_name = grouped_entity_name(
             coordinator, root + "/operationMode", ""
         ).rstrip(" \N{EN DASH}")
+        # The readings the calculated action combines (entity use).
+        self.extra_resource_paths = circuit_input_paths(coordinator, root)
 
     def _resource(self, suffix: str, *, strict: bool = False) -> Resource | None:
         """A reading within its validity limit; ``strict`` for a change.
@@ -235,8 +251,21 @@ class HeatingCircuitClimate(
         mode = self._mode
         return _MODES.get(str(mode.value)) if self.available and mode else None
 
-    def _read_only_control(self, *, strict: bool = False) -> bool:
-        """The circuit reports a control type without control.
+    @property
+    def hvac_action(self) -> HVACAction | None:
+        """Calculated from the plant's readings; none without its inputs."""
+        if not self.available:
+            return None
+        action = circuit_activity(self.coordinator, self.root).value
+        return HVACAction(action) if action is not None else None
+
+    def _read_only_control(
+        self,
+        *,
+        strict: bool = False,
+        types: frozenset[str] = _READ_ONLY_CONTROL_TYPES,
+    ) -> bool:
+        """The circuit reports a control type without control (``types``).
 
         Without a current reading the last known value decides, so the lock
         never ends without a reading that ends it (a stale or failed reading
@@ -244,7 +273,7 @@ class HeatingCircuitClimate(
         """
         resource = self._resource("controlType", strict=strict)
         if resource is not None:
-            return resource.value in _READ_ONLY_CONTROL_TYPES
+            return resource.value in types
         path = self.root + "/controlType"
         snapshot = (self.coordinator.data or {}).get(path)
         last = (
@@ -252,11 +281,28 @@ class HeatingCircuitClimate(
             if snapshot is not None
             else self.coordinator.resources.get(path)
         )
-        return (
-            last is not None
-            and last.has_value
-            and last.value in _READ_ONLY_CONTROL_TYPES
-        )
+        return last is not None and last.has_value and last.value in types
+
+    def _control_type_guard(self) -> tuple[Resource, ...] | None:
+        """The circuit's control type as a guard of a write (``expected``).
+
+        The coordinator reads it again on the gateway right before the one
+        request; a change since it was shown refuses the write unsent. ``()``
+        for a circuit without a control type (never reported), ``None`` for
+        one without a current reading of it: then nothing is written.
+        """
+        path = self.root + "/controlType"
+        snapshot = (self.coordinator.data or {}).get(path)
+        if snapshot is None:
+            return ()
+        if (
+            not self.coordinator.last_update_success
+            or not snapshot.available
+            or snapshot.freshness is not Freshness.FRESH
+            or snapshot.resource.path != path
+        ):
+            return None
+        return (snapshot.resource,)
 
     @property
     def hvac_modes(self) -> list[HVACMode]:
@@ -294,7 +340,11 @@ class HeatingCircuitClimate(
     def _temporary_target(self, *, strict: bool = False) -> TemporarySetpoint | None:
         """The temporary setpoint as the target of the mode ``auto``."""
         mode = self._checked_mode(strict=strict)
-        if mode is None or mode.value != "auto":
+        if (
+            mode is None
+            or mode.value != "auto"
+            or self._read_only_control(strict=strict, types=_NO_TEMPORARY_CONTROL_TYPES)
+        ):
             return None
         temporary = temporary_setpoint(self.coordinator, self.root, strict=strict)
         return temporary if temporary is not None and temporary.settable else None
@@ -418,9 +468,11 @@ class HeatingCircuitClimate(
             raise down
         mode = self._checked_mode(strict=True)
         context = self._checked_context(strict=True)
+        guard = self._control_type_guard()
         if (
             mode is None
             or context is None
+            or guard is None
             or hvac_mode not in self.hvac_modes
             or self._read_only_control(strict=True)
         ):
@@ -431,7 +483,7 @@ class HeatingCircuitClimate(
             mode.path,
             raw,
             HEATING_CIRCUIT_OPERATION_MODE_POLICY,
-            expected=(mode, *context),
+            expected=(mode, *context, *guard),
         )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
@@ -440,11 +492,13 @@ class HeatingCircuitClimate(
         value = kwargs.get(ATTR_TEMPERATURE)
         mode = self._checked_mode(strict=True)
         context = self._checked_context(strict=True)
+        guard = self._control_type_guard()
         # A combined mode/temperature command must never partly change a mode.
         if (
             set(kwargs) - _SERVICE_KEYS
             or mode is None
             or context is None
+            or guard is None
             or self._read_only_control(strict=True)
             or isinstance(value, bool)
             or not isinstance(value, (int, float))
@@ -452,7 +506,7 @@ class HeatingCircuitClimate(
         ):
             raise _invalid()
         if mode.value == "auto":
-            await self._async_set_temporary(float(value), mode, context)
+            await self._async_set_temporary(float(value), mode, (*context, *guard))
             return
         target = self._checked_target(strict=True)
         if mode.value != "manual" or target is None:
@@ -468,21 +522,26 @@ class HeatingCircuitClimate(
             # C31: a converted value, such as 70 °F, never lies exactly on the
             # gateway's grid. Use the nearest grid value instead of rejecting.
             raw = round(raw / policy.step) * policy.step
+        # The target is read again with the mode and the guards: its limits
+        # and flags come from that reading. A new value of its own since the
+        # last poll does not refuse it; the requested value replaces it.
         await async_set_control(
             self.coordinator,
             target.path,
             raw,
             policy,
-            expected=(mode, target, *context),
+            expected=(mode, *context, *guard),
+            fresh=(target,),
         )
 
     async def _async_set_temporary(
-        self, value: float, mode: Resource, context: tuple[Resource, ...]
+        self, value: float, mode: Resource, guards: tuple[Resource, ...]
     ) -> None:
         """Write a target of the mode ``auto`` to the temporary setpoint.
 
         Never a value outside the offered range: -1 and 0 end or switch off
-        a temporary setpoint and are no targets.
+        a temporary setpoint and are no targets. ``guards``: the heating
+        context and the control type, read again before the request.
         """
         temporary = self._temporary_target(strict=True)
         if temporary is None:
@@ -504,7 +563,14 @@ class HeatingCircuitClimate(
             temporary.resource.path,
             raw,
             HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
-            expected=(mode, temporary.resource, *context),
+            expected=(mode, *guards),
+            # Read again with the mode: a temporary setpoint the gateway
+            # ended at a switch point since the last poll does not refuse
+            # the new one.
+            fresh=(
+                temporary.resource,
+                *manual_floor_reading(self.coordinator, self.root),
+            ),
         )
 
 
@@ -516,7 +582,7 @@ class TemporarySetpoint:
     one, from the lowest grid value above 0. The advertised minimum may be -1
     or 0, which end or switch off a temporary setpoint; the manual setpoint's
     minimum then is the lower limit, and without one no target is offered
-    (``settable``). ``clearable``: the advertised limits include -1.
+    (``settable``). ``clearable``: -1 can be written (``takes_clear_value``).
     """
 
     resource: Resource
@@ -565,20 +631,28 @@ class TemporarySetpoint:
 
 
 def temporary_setpoint(
-    coordinator: BoschBuderusDataUpdateCoordinator, root: str, *, strict: bool
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    root: str,
+    *,
+    strict: bool,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+    flags: bool = True,
 ) -> TemporarySetpoint | None:
     """The circuit's temporary setpoint, if it can be written.
 
     Never on a room controller, whose zones have temporary setpoints of their
     own. ``strict`` for a change: a fresh reading of a successful cloud
-    cycle, as every write needs.
+    cycle, as every write needs. ``policy``: the one of a ConnectKey zone's
+    side (``root``: ``/zones/zone1/heating``), whose layout is the same.
+    Without ``flags`` (with ``strict``) its flags are left to the write,
+    which reads it again (``fresh_resource``).
     """
     context = context_of(coordinator)
     if context.rrc_plant:
         return None
     path = f"{root}/{TEMPORARY}"
     resource = (
-        fresh_resource(coordinator, path)
+        fresh_resource(coordinator, path, flags=flags)
         if strict
         else valid_resource(coordinator, path)
     )
@@ -591,7 +665,7 @@ def temporary_setpoint(
     advertised, maximum = metadata.minimum, metadata.maximum
     if (
         not assessment.eligible
-        or assessment.policy is not HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY
+        or assessment.policy is not policy
         or unit is None
         or advertised is None
         or maximum is None
@@ -602,7 +676,7 @@ def temporary_setpoint(
     floor = (
         advertised
         if advertised > 0
-        else _manual_minimum(coordinator, root, metadata.unit)
+        else _manual_minimum(coordinator, root, metadata.unit, strict=strict)
     )
     minimum = advertised
     if floor is not None:
@@ -616,18 +690,32 @@ def temporary_setpoint(
         maximum,
         step,
         settable=floor is not None and 0 < minimum <= maximum,
-        clearable=takes_clear_value(resource, step),
+        clearable=takes_clear_value(resource, step, policy),
     )
     return temporary if temporary.value is not None else None
 
 
 def _manual_minimum(
-    coordinator: BoschBuderusDataUpdateCoordinator, root: str, unit: str | None
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    root: str,
+    unit: str | None,
+    *,
+    strict: bool,
 ) -> float | None:
     """The positive minimum of the circuit's manual setpoint in the same unit,
     whatever its flags say (it may be reported as not used in the mode
-    auto)."""
-    snapshot = (coordinator.data or {}).get(f"{root}/manualRoomSetpoint")
+    auto).
+
+    ``strict`` for a change: a fresh reading of the last cloud cycle. The
+    display takes the cloud reading within its validity limit, so
+    the range and the target do not vanish when one cycle missed it.
+    """
+    path = f"{root}/manualRoomSetpoint"
+    snapshot = (
+        (coordinator.data or {}).get(path)
+        if strict
+        else coordinator.displayed_cloud_snapshot(path)
+    )
     if (
         snapshot is None
         or not snapshot.available
@@ -646,15 +734,53 @@ def _manual_minimum(
     return minimum
 
 
-def takes_clear_value(resource: Resource, step: float | None) -> bool:
-    """Whether -1 lies within the advertised limits and on the grid."""
+def manual_floor_reading(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str
+) -> tuple[Resource, ...]:
+    """The manual setpoint whose minimum may limit a temporary target, as
+    last read: a temporary write reads it again in its request (``fresh``)
+    and checks the target against its current minimum.
+
+    Only a current reading: some gateways do not answer for the manual
+    setpoint in the mode auto, and its older reading then sets no limit
+    (``_manual_minimum``). Should the gateway not answer for it in the
+    write's own request either, the rule does not apply.
+    """
+    snapshot = (coordinator.data or {}).get(f"{root}/manualRoomSetpoint")
+    if (
+        snapshot is None
+        or not snapshot.available
+        or snapshot.freshness is not Freshness.FRESH
+    ):
+        return ()
+    return (snapshot.resource,)
+
+
+def takes_clear_value(
+    resource: Resource,
+    step: float | None,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+) -> bool:
+    """Whether -1 can be written: on the grid when it lies within the
+    advertised limits, or outside them as the manufacturer's app writes it
+    (``clear_outside_limits``)."""
     minimum, maximum = resource.metadata.minimum, resource.metadata.maximum
     if minimum is None or maximum is None or not step or step <= 0:
         return False
+    if clear_outside_limits(resource, policy):
+        return True
     ticks = (CLEAR_VALUE - minimum) / step
     return minimum <= CLEAR_VALUE <= maximum and math.isclose(
         ticks, round(ticks), abs_tol=1e-7
     )
+
+
+def clear_outside_limits(
+    resource: Resource,
+    policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
+) -> bool:
+    """Whether the advertised limits leave the clear value -1 out."""
+    return sentinel_outside_limits(resource, policy)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -666,7 +792,9 @@ def clear_button_descriptions(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[TemporaryClearDescription, ...]:
     """A circuit whose writable temporary setpoint takes -1 gets a clear
-    button; never on a room controller."""
+    button; never on a room controller. Created disabled when the limits
+    leave -1 out (written as the manufacturer's app does, expected,
+    untested on a real device)."""
     if context.rrc_plant:
         return ()
     descriptions = []
@@ -680,7 +808,12 @@ def clear_button_descriptions(
             and assessment.policy is HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY
             and takes_clear_value(resource, assessment.ui_step)
         ):
-            descriptions.append(TemporaryClearDescription(key=match[1]))
+            descriptions.append(
+                TemporaryClearDescription(
+                    key=match[1],
+                    entity_registry_enabled_default=not clear_outside_limits(resource),
+                )
+            )
     return tuple(descriptions)
 
 
@@ -695,7 +828,9 @@ def track_temporary_clear_buttons(
         add_entities,
         clear_button_descriptions,
         lambda owner, description: HeatingCircuitTemporaryClearButton(
-            owner, description.key
+            owner,
+            description.key,
+            enabled_default=description.entity_registry_enabled_default,
         ),
     )
 
@@ -706,18 +841,23 @@ class HeatingCircuitTemporaryClearButton(
     """End the temporary setpoint of a heating circuit (write -1).
 
     Available in the mode ``auto`` while a temporary setpoint is active; the
-    read-back must show -1. Expected, untested on a real device.
+    read-back must show -1 or another negative value (no setpoint active).
+    Expected, untested on a real device.
     """
 
     _attr_has_entity_name = True
     _attr_translation_key = "heating_temporary_setpoint_clear"
-    _attr_icon = "mdi:timer-off-outline"
 
     def __init__(
-        self, coordinator: BoschBuderusDataUpdateCoordinator, root: str
+        self,
+        coordinator: BoschBuderusDataUpdateCoordinator,
+        root: str,
+        *,
+        enabled_default: bool = True,
     ) -> None:
         super().__init__(coordinator)
         self.root = root
+        self._attr_entity_registry_enabled_default = enabled_default
         self.resource_path = f"{root}/{TEMPORARY}"
         self.extra_resource_paths = (f"{root}/operationMode",)
         key = self.resource_path.strip("/").replace("/", ":")
@@ -737,23 +877,28 @@ class HeatingCircuitTemporaryClearButton(
     def _state(
         self, *, strict: bool
     ) -> tuple[Resource, Resource, tuple[Resource, ...]] | None:
-        """The active temporary setpoint, the mode ``auto`` and the heating
-        context, while -1 lies within the limits."""
+        """The active temporary setpoint, the mode ``auto`` and the guards
+        (heating context and, for a change, the control type), while -1 can
+        be written."""
         climate = self._climate
         mode = climate._checked_mode(strict=strict)
         context = climate._checked_context(strict=strict)
+        guard = climate._control_type_guard() if strict else ()
         temporary = temporary_setpoint(self.coordinator, self.root, strict=strict)
         if (
             mode is None
             or mode.value != "auto"
             or context is None
-            or climate._read_only_control(strict=strict)
+            or guard is None
+            or climate._read_only_control(
+                strict=strict, types=_NO_TEMPORARY_CONTROL_TYPES
+            )
             or temporary is None
             or not temporary.clearable
             or not temporary.active
         ):
             return None
-        return temporary.resource, mode, context
+        return temporary.resource, mode, (*context, *guard)
 
     @property
     def available(self) -> bool:

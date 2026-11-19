@@ -1165,3 +1165,46 @@ async def test_frequent_counter_changes_never_postpone_the_save(
     store.set("o|t|/c", ShownCounter("cloud", {"v": 2.0}))
     await tick(61)
     assert saved("o|t|/c") == {"v": 2.0}
+
+
+async def test_a_stored_cooling_environmental_part_does_not_block_a_source_switch(
+    hass,
+) -> None:
+    """An older version stored ``=environmental_energy`` for the cooling
+    collection, which no longer has it: it must not bind the source change."""
+    cooling = "/heatSources/emon/coolingConsumption"
+    row_key = f"owner|{TARGET}|{cooling}"
+
+    def cooling_energy(produced: float, compressor: float, eheater: float):
+        return Resource(
+            cooling,
+            values=(
+                {"outputProduced": produced},
+                {"compressor": compressor},
+                {"eheater": eheater},
+            ),
+            metadata=ResourceMetadata(resource_type="emonValue"),
+        )
+
+    store = CounterSourceStore(hass)
+    store.set(
+        row_key,
+        ShownCounter(
+            "cloud",
+            {
+                "outputProduced": 500.0,
+                "compressor": 100.0,
+                "eheater": 0.0,
+                "=total_electricity": 100.0,
+                "=environmental_energy": 400.0,
+            },
+        ),
+    )
+    guard = CounterGuard(store, "owner", TARGET)
+    local = cooling_energy(510.0, 101.0, 0.0)
+    assert "=environmental_energy" not in (counter_vector(local) or {})
+    shown = guard.decide(cooling, (("local", snap(local)),), partial=False)
+    assert shown is not None
+    row = store.get(row_key)
+    assert row.source == "local"
+    assert "=environmental_energy" not in row.values

@@ -56,9 +56,9 @@ every changed field. An omitted `ro` is read-only.
   claim about manufacturer limits or a list of all possible error sentinels.
 - Missing, null, malformed and incompatible fields stay unknown. Missing
   status flags are never treated as false.
-- Online status comes from the newest device-information message. It stays
-  usable while a non-retained device message on any channel arrived within
-  the last hour; an explicit offline message applies immediately. Reported
+- Online status comes from the newest device-information message (see
+  [the connection foundation](bacon-connection.md)); an explicit offline
+  message applies immediately. Reported
   state fields expire after 15 minutes, sensor fields independently after one
   hour. Sensor timestamps establish
   order only; their epoch unit is not assumed. Duplicate, older and retained
@@ -81,6 +81,13 @@ disinfection-temperature controls. The inspected DHW command contract covers
 operation mode and target temperature; these additional actions need their
 own complete command and lifecycle evidence. A status indicator is not a
 promise that the corresponding action can be started from Home Assistant.
+
+I re-checked this for 0.9.2-beta.3 against the vendor app's command set for
+these water heaters: it offers only operation mode, target temperature, power
+on/off, card title and history export. Holiday, thermal disinfection and
+boost appear there as status only, without a command, field value or
+confirmation field to send. I therefore do not offer holiday, boost or
+disinfection controls; I will add them if a device shows a complete command.
 
 ## Writes and diagnostics
 
@@ -132,6 +139,14 @@ erhalten bei passender Metadatendeklaration eigene Statusanzeigen.
 Urlaubsplanung, Boost sowie das Starten oder Abbrechen der Desinfektion und
 deren Temperatureinstellung bleiben offen. Dafür fehlt ein vollständig
 belegter Bedienablauf im geprüften Warmwasservertrag.
+
+Ich habe das für 0.9.2-beta.3 am Befehlsumfang der Hersteller-App für diese
+Warmwassergeräte erneut geprüft: Sie bietet nur Betriebsart, Zieltemperatur,
+Ein/Aus, Kartentitel und Verlaufsexport an. Urlaub, thermische Desinfektion
+und Boost erscheinen dort nur als Status, ohne Befehl, Feldwert oder
+Bestätigungsfeld zum Senden. Deshalb biete ich keine Urlaubs-, Boost- oder
+Desinfektionssteuerung an; ich ergänze sie, sobald ein Gerät einen
+vollständigen Befehl zeigt.
 
 Ich prüfe vor jedem Befehl erneut den aktuellen Zustand und die erlaubten
 Einstellungen. Temperatur und Betriebsart werden einzeln geändert; kombinierte

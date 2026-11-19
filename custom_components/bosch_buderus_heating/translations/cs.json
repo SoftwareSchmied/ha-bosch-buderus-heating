@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Přihlášení pomocí SingleKey ID",
-        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`. Pokud SingleKey ID zobrazí stránku oznamující přesměrování a nic se nestane, zvolte odkaz nebo tlačítko na této stránce.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
         "data": {
           "redirect_url": "Úplná přesměrovací adresa"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Překonfigurovat a znovu vyhledat",
-        "description": "Zvolte značku aplikace, brány a profil dotazování. Uložením se integrace znovu načte a provede se úplné nové vyhledání prostředků. Použijte to po aktualizaci firmwaru nebo když se změnily okruhy, systémy teplé vody, zdroje tepla či brány. **Standardní** čte aktuální provozní hodnoty každou minutu. **Šetrný ke cloudu** snižuje provoz cloudu tím, že je čte každé dvě minuty a všechny ostatní měnící se hodnoty méně často. Změna značky aplikace vyžaduje nové přihlášení pomocí SingleKey ID.",
+        "description": "Vyberte značku aplikace, brány a profil dotazování. Uložení znovu načte integraci a znovu vyhledá všechny prostředky, například po aktualizaci firmwaru nebo změně instalace. Změna značky aplikace vyžaduje nové přihlášení přes SingleKey ID.",
         "data": {
           "brand": "Značka aplikace",
           "gateway_ids": "Brány",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Výběr existující konfigurace",
-        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří, nebo ji nastavte jako novou konfiguraci pouze s místním přístupem.",
         "data": {
-          "owner": "Existující konfigurace"
+          "owner": "Konfigurace"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Výběr instalace",
-        "description": "Vyberte instalaci, která se má připojit místně. Před uložením se ověří identita její brány.",
+        "description": "Vyberte topný systém, který chcete připojit místně: tepelné čerpadlo nebo kotel, nikoli wallbox či klimatizaci. Před uložením se ověří identita jeho brány.",
         "data": {
           "target": "Instalace / brána"
         }
@@ -109,6 +109,13 @@
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrzení certifikátu datového portu",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
         "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Potvrzení místního připojení",
-        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
-        "data": {
-          "confirm": "Uložit toto místní připojení"
-        }
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace. Pokud nechcete nic uložit, místo toho dialog zavřete."
       },
       "local_retry": {
         "title": "Místní kontrolu nebylo možné dokončit",
@@ -151,6 +155,7 @@
       "cannot_connect": "Cloudový přístup není dostupný. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
       "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
       "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Pokud tato stránka oznamuje přesměrování a nic se nestane, zvolte její odkaz nebo tlačítko. Potom zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
       "gateway_changed": "Seznam bran se během otevření tohoto okna změnil. Zavřete okno a znovu otevřete Překonfigurovat.",
       "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
       "unknown": "V cloudovém přístupu došlo k neočekávané chybě. Chvíli počkejte a zkuste to znovu.",
@@ -172,13 +177,14 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
       "local_unknown_firmware": "Verzi firmwaru se nepodařilo ověřit.",
       "local_old_firmware": "Před nastavením místního připojení aktualizujte firmware brány.",
       "local_unsupported_brand": "Tato značka brány není podporována zdokumentovaným místním rozhraním.",
-      "local_incomplete_system": "Informace o soustavě z brány zatím nejsou úplné. Kontrolu čtení zopakujte později.",
+      "local_incomplete_system": "Brána stále shromažďuje informace o soustavě. Může to trvat několik minut. Počkejte několik minut a pak kontrolu čtení zopakujte.",
       "local_invalid_response": "Požadovanou odpověď brány se nepodařilo ověřit.",
       "local_identity_unverified": "Tato soustava zatím nebyla jednoznačně přiřazena. První nastavení vyžaduje dostupný cloudový přístup a shodné identifikátory brány a modulu z obou rozhraní. Ověřená propojení lze následně používat bez cloudu.",
       "local_identity_conflict": "Identita brány je v rozporu s vybranou instalací nebo jinou konfigurací.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "already_in_progress": "Nastavení této místní brány již probíhá.",
-      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce."
+      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
+      "local_entry_not_updated": "Existující záznam této integrace nebylo možné aktualizovat na aktuální verzi. Nejprve tento záznam opravte nebo odeberte; potom lze tuto bránu přidat."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Nastavení",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Oznámení",
           "holidays": "Správa období dovolené",
@@ -248,7 +254,9 @@
           "connections": "Připojení",
           "connection_add_cloud": "Připojit cloudový přístup",
           "local_setup": "Nastavit místní přístup",
-          "rescan": "Znovu vyhledat soustavu"
+          "rescan": "Znovu vyhledat soustavu",
+          "recordings": "Záznam systému",
+          "wallbox": "Nabíjecí stanice"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Zobrazení časového programu topení",
         "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nVyberte den v týdnu. Časy se opakují každý týden v místním čase topné soustavy. ∅ znamená, že pro tento den není uložen žádný spínací bod. Změny se týkají každé zóny, která tento program používá.",
         "data": {
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "rrc_readonly": {
         "title": "Zobrazení časového programu topení",
-        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nTento program lze zde pouze zobrazit. Nemá žádné upravitelné spínací body nebo obsahuje nepodporovaná nastavení. ∅ znamená, že není uložen žádný spínací bod. Změny můžete provést v aplikaci výrobce."
+        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nTento program lze zde pouze zobrazit. Nemá žádné upravitelné spínací body nebo obsahuje nepodporovaná nastavení. ∅ znamená, že není uložen žádný spínací bod. Změny můžete provést v aplikaci výrobce.",
+        "data": {
+          "week_view": "Týdenní přehled"
+        }
       },
       "rrc_point": {
         "title": "Úprava spínacího bodu",
         "description": "**{program}**\n\nZvolte čas v pětiminutových krocích a teplotu od 5 do 30 °C v krocích po 0,5 °C. Čas se opakuje každý týden v místním čase topné soustavy. Změny se týkají všech přiřazených zón.",
         "data": {
           "time": "Čas",
-          "temperature": "Teplota"
+          "temperature": "Teplota",
+          "delete": "Smazat tento spínací bod"
         }
+      },
+      "rrc_confirm": {
+        "title": "Uložit spínací bod",
+        "description": "**{program}**\n\n**Před:** {before}\n\n**Po:** {after}\n\nZměna se odešle jednou a poté se zpětně načte. Platí pro všechny přiřazené zóny."
       },
       "rrc_day": {
         "title": "Výběr spínacího bodu",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nZvolte spínací bod, který chcete změnit nebo smazat, nebo přidejte nový. Den má nejvýše {per_day} spínacích bodů (mez aplikace výrobce, regulátorem nehlášená); poslední spínací bod dne zůstává.",
         "data": {
           "point": "Spínací bod"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nTento program není aktivním programem topného okruhu. Změny se projeví, až bude vybrán.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nProgram teplé vody platí jen tehdy, když je provozní režim teplé vody nastaven na Automatický.",
         "data": {
           "action": "Další krok",
-          "day": "Den v týdnu"
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Připojení",
-        "description": "{result}Vyberte přístup, který chcete spravovat.",
+        "description": "Vyberte přístup, který chcete spravovat.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Nastavit místní přístup",
           "back": "← Zpět"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Test připojení",
-        "description": "{result}"
+        "description": "OK, odpověď po {ms} ms. Nastavení zůstávají beze změny."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Test připojení",
+        "description": "OK, odpověď po {ms} ms; počet bran v účtu: {count}. Nastavení zůstávají beze změny."
+      },
+      "connection_test_not_running": {
+        "title": "Test připojení",
+        "description": "Netestováno: přístup právě neběží (je vypnutý, spouští se nebo je zastaven)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Test připojení",
+        "description": "Vyžadováno přihlášení: přihlaste se prosím znovu pomocí „Přihlásit se znovu“."
+      },
+      "connection_test_auth_local": {
+        "title": "Test připojení",
+        "description": "Vyžadováno přihlášení: nastavte prosím místní přístup znovu pomocí „Změna místního přístupu“."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Test připojení",
+        "description": "Certifikát zařízení se změnil: nastavte prosím místní přístup znovu pomocí „Změna místního přístupu“."
+      },
+      "connection_test_paused": {
+        "title": "Test připojení",
+        "description": "Netestováno: dotazy jsou pozastaveny do {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Test připojení",
+        "description": "Netestováno: dotazy jsou právě pozastaveny."
+      },
+      "connection_test_busy": {
+        "title": "Test připojení",
+        "description": "Netestováno: přístup je právě zaneprázdněn. Zkuste to za chvíli znovu."
+      },
+      "connection_test_unreachable": {
+        "title": "Test připojení",
+        "description": "Nedosažitelné: žádná odpověď ({ms} ms). Zkontrolujte síť a zařízení."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Test připojení",
+        "description": "Nedosažitelné: žádná odpověď ({ms} ms). Zkontrolujte síť a zařízení. Tip: pokud se adresa brány mění, například po restartu routeru, pomůže pevná adresa: rezervujte její IP adresu v routeru (rezervace DHCP) nebo zadejte název hostitele brány. Pokud se brána ohlásí na nové adrese, upozornění k opravě nabídne její použití."
+      },
+      "connection_test_other_gateway": {
+        "title": "Test připojení",
+        "description": "Na této adrese odpovídá jiná brána. Nastavte místní přístup znovu."
+      },
+      "connection_test_error": {
+        "title": "Test připojení",
+        "description": "Test selhal: {kind}."
       },
       "connection": {
         "title": "Správa připojení",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Otestovat připojení nyní",
           "connection_enabled": "Zapnout nebo vypnout přístup",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Frekvence dotazování",
-        "description": "Standardní profil čte aktuální provozní hodnoty topení každou minutu, nastavení a hodnoty energie každých 5 minut a pomalejší informace každých 15 minut. Šetrný ke cloudu tyto intervaly zdvojnásobuje. Aktivní poruchy se v obou profilech kontrolují každou minutu. Profil se vztahuje na dotazování topení a nabíjecích stanic u vybraného cloudového připojení; další cloudová zařízení hlásí změny zprávami. Přihlášení, kontroly zařízení a potvrzení po změně mohou přidat dotazy mimo tento rozvrh. Pokud cyklus dotazování trvá déle než jeho interval, další začne později.",
+        "description": "**Standardní** čte aktuální provozní hodnoty každou minutu a nastavení a energetické hodnoty každých 5 minut. **Šetrný ke cloudu** tyto intervaly zdvojnásobí. Aktivní poruchy se v obou profilech kontrolují každou minutu.",
         "data": {
           "polling_profile": "Profil dotazování"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Přihlášení pomocí SingleKey ID",
-        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`. Pokud SingleKey ID zobrazí stránku oznamující přesměrování a nic se nestane, zvolte odkaz nebo tlačítko na této stránce.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
         "data": {
           "redirect_url": "Úplná přesměrovací adresa"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Výběr existující konfigurace",
-        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří, nebo ji nastavte jako novou konfiguraci pouze s místním přístupem.",
         "data": {
-          "owner": "Existující konfigurace"
+          "owner": "Konfigurace"
         }
       },
       "local_target": {
         "title": "Výběr instalace",
-        "description": "Vyberte instalaci, která se má připojit místně. Před uložením se ověří identita její brány.",
+        "description": "Vyberte topný systém, který chcete připojit místně: tepelné čerpadlo nebo kotel, nikoli wallbox či klimatizaci. Před uložením se ověří identita jeho brány.",
         "data": {
           "target": "Instalace / brána"
         }
@@ -607,6 +688,13 @@
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
+      "local_certificate_data": {
+        "title": "Potvrzení certifikátu datového portu",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.\n\nPokud certifikát nepatří vaší bráně, zavřete okno; nic se neodešle.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
         "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Pokud oprava překlepu trvá déle než pět minut, stiskněte tlačítka znovu. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a Pass se neukládají.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "Potvrzení místního připojení",
-        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
-        "data": {
-          "confirm": "Uložit toto místní připojení"
-        }
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace. Pokud nechcete nic uložit, místo toho dialog zavřete."
       },
       "local_retry": {
         "title": "Místní kontrolu nebylo možné dokončit",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Místní dotazování",
-        "description": "Potvrzené prostředky: {known}. Aktuálně dostupné: {available}. Tyto počty ukazují stav při otevření tohoto okna. Interval je cílem pro aktuální hodnoty. Nastavení, hodnoty energie a diagnostika se čtou každých 5 minut a počítadla každých 15 minut, případně v tomto intervalu, je-li delší; statické údaje se čtou denně. Hodnota se stane nedostupnou po třech zmeškaných intervalech. Rozsáhlé sady prostředků mohou trvat déle. Dotazování cloudu zůstává nezávislé. Hodnoty, které poskytuje i cloud, se místně čtou alespoň tak často jako v cloudu.",
+        "description": "Potvrzené prostředky: {known}, nyní dostupné: {available}. Interval je cílem pro aktuální hodnoty; pomalejší hodnoty se čtou méně často. Přesné intervaly popisuje dokumentace.",
         "data": {
           "interval": "Cílový interval pro aktuální hodnoty"
         }
       },
       "local_values": {
         "title": "Místní hodnoty pro existující entity",
-        "description": "Dokud cloud běží, tato volba určuje, zda existující senzory používají místní hodnotu údaje, který oba přístupy poskytují pod stejným zdokumentovaným prostředkem. Bez cloudu (vypnutého, vyžadujícího přihlášení, pozastaveného, omezeného nebo nedostupného) se místní hodnoty používají vždy. Volba je u nových konfigurací s cloudovým i místním přístupem ve výchozím stavu zapnuta.\n\nPři zapnutí se místní hodnota používá, dokud je aktuální. Je-li místní hodnota zastaralá nebo chybí, použije se aktuální hodnota z cloudu; jsou-li zastaralé obě, senzor se stane nedostupným. Počítadla energie, startů a doby provozu používají také místní hodnotu, ale zdroj mění jen tehdy, když je každý zobrazený počet alespoň tak velký jako naposledy zobrazený, takže změna zdroje nikdy nezpůsobí zpětný chod počítadla. Nastavitelné hodnoty nadále používají cloud. ID entit, názvy a historie zůstávají beze změny. Ovládání a změny se stále odesílají přes cloud.",
+        "description": "Dokud cloud běží, tato volba určuje, zda stávající senzory používají místní hodnotu veličiny, kterou poskytují oba přístupy. Bez cloudu se vždy používají místní hodnoty; nastavení a ovládání dál probíhají přes cloud. ID entit, názvy a historie zůstávají beze změny.",
         "data": {
           "enabled": "Použít místní hodnoty"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "Znovu vyhledat soustavu",
         "description": "Znovu prohledá soustavu kvůli součástem a hodnotám, přes cloudový i místní přístup. Použijte po přidání nebo změně komponent. Vyhledávání proběhne při příští pravidelné aktualizaci a v rámci obvyklých omezení počtu dotazů; nikdy neodstraní žádnou entitu a hodnoty, které znovu nenajde, zůstanou, jak jsou."
+      },
+      "recordings": {
+        "title": "Záznam systému",
+        "description": "Tepelné čerpadlo zaznamenává energii, starty a dobu provozu po hodinách. Integrace je zobrazuje jako entity a může hodinové hodnoty převzít do dlouhodobé statistiky (energetický panel, karty statistiky). Nalezené řady: {series}, převzaté: {imported}.",
+        "data": {
+          "recordings_import": "Převzít hodinové hodnoty do dlouhodobé statistiky",
+          "delete_statistics": "Smazat převzatou statistiku"
+        },
+        "data_description": {
+          "recordings_import": "V energetickém panelu použijte buď tuto statistiku, nebo entity počítadel, ne obojí. Po vypnutí převzaté hodnoty zůstanou.",
+          "delete_statistics": "Další stránka si vyžádá potvrzení."
+        }
+      },
+      "recordings_delete": {
+        "title": "Smazat převzatou statistiku",
+        "description": "Smaže všechny statistiky převzaté ze záznamu systému tohoto záznamu a vypne převzetí. Entity a vlastní záznam systému zůstanou. Tuto akci nelze vrátit.",
+        "data": {
+          "confirm": "Ano, smazat převzatou statistiku"
+        }
       },
       "local_tokens": {
         "title": "Tokeny na bráně",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Odvolat tento token na bráně",
           "confirm_end": "Místní přístup, který tento token používá, skončí"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Výsledek",
+        "description": "Přístup byl odebrán."
+      },
+      "result_connection_saved": {
+        "title": "Výsledek",
+        "description": "Změna byla uložena."
+      },
+      "result_holiday_created": {
+        "title": "Výsledek",
+        "description": "Dovolená byla vytvořena a potvrzena zpětným načtením."
+      },
+      "result_holiday_deleted": {
+        "title": "Výsledek",
+        "description": "Dovolená byla odstraněna a její odstranění potvrdila topná soustava."
+      },
+      "result_holiday_unchanged": {
+        "title": "Výsledek",
+        "description": "Nic se nezměnilo, proto nebylo topné soustavě nic odesláno."
+      },
+      "result_holiday_updated": {
+        "title": "Výsledek",
+        "description": "Nastavení dovolené bylo uloženo a potvrzeno topnou soustavou."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Výsledek",
+        "description": "Byl to token, který tento přístup používal, takže místní přístup skončil, ale přístup se nepodařilo vypnout. Vypněte ho, odstraňte ho, nebo ho nastavte znovu pomocí štítku zařízení."
+      },
+      "result_local_token_access_ended": {
+        "title": "Výsledek",
+        "description": "Byl to token, který tento přístup používal. Místní přístup skončil a přístup byl vypnut. Nastavte ho znovu pomocí štítku zařízení, nebo ho odstraňte."
+      },
+      "result_local_token_not_removed": {
+        "title": "Výsledek",
+        "description": "Odvolání nebylo potvrzeno, proto přístup nebyl odstraněn. Zkontrolujte seznam tokenů a pak přístup odstraňte znovu."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Výsledek",
+        "description": "Vybraný token byl na bráně odvolán a přístup byl odstraněn. Token, který tento přístup sám používal, na bráně zůstává."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Výsledek",
+        "description": "Brána odvolání odmítla; token je stále v seznamu."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Výsledek",
+        "description": "Brána odvolání nepotvrdila. Nic se neopakovalo. Pro kontrolu otevřete seznam tokenů znovu."
+      },
+      "result_local_token_revoked": {
+        "title": "Výsledek",
+        "description": "Token byl odvolán; brána ho už nevede."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Výsledek",
+        "description": "Token byl na bráně odvolán a přístup byl odstraněn."
+      },
+      "result_local_tokens_changed": {
+        "title": "Výsledek",
+        "description": "Seznam tokenů se mezitím změnil. Nic nebylo odvoláno ani odstraněno. Otevřete seznam znovu."
+      },
+      "result_notifications_saved": {
+        "title": "Výsledek",
+        "description": "Nastavení oznámení bylo uloženo."
+      },
+      "result_rescan_partial": {
+        "title": "Výsledek",
+        "description": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu."
+      },
+      "result_rescan_paused": {
+        "title": "Výsledek",
+        "description": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu."
+      },
+      "result_rescan_planned": {
+        "title": "Výsledek",
+        "description": "Vyhledávání je naplánováno a proběhne při příští pravidelné aktualizaci; nové součásti se objeví, jakmile budou nalezeny."
+      },
+      "result_rescan_running": {
+        "title": "Výsledek",
+        "description": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí."
+      },
+      "result_rescan_unavailable": {
+        "title": "Výsledek",
+        "description": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven."
+      },
+      "result_rrc_program_saved": {
+        "title": "Výsledek",
+        "description": "Spínací bod byl uložen a potvrzen zpětným načtením."
+      },
+      "result_switch_program_saved": {
+        "title": "Výsledek",
+        "description": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Výsledek",
+        "description": "Přihlášení bylo úspěšně obnoveno."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Výsledek",
+        "description": "Přihlášení bylo obnoveno. Počet zapnutých soustav nebo zařízení nenalezených v účtu: {count}. Zůstávají nakonfigurovány. Oznámení o opravě je jmenuje a vysvětluje, jak je zapomenout."
+      },
+      "result_recordings_import_on": {
+        "title": "Výsledek",
+        "description": "Převzetí záznamu systému je zapnuté; první hodnoty následují během několika minut."
+      },
+      "result_recordings_import_off": {
+        "title": "Výsledek",
+        "description": "Převzetí záznamu systému je vypnuté; převzaté hodnoty zůstávají."
+      },
+      "result_recordings_deleted": {
+        "title": "Výsledek",
+        "description": "Smazané převzaté statistiky: {count}. Převzetí je vypnuté."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Výsledek",
+        "description": "Nic nebylo smazáno."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Změna programu teplé vody",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nÚrovně jsou ty z programu pokojového regulátoru. Program platí, dokud se teplá voda řídí vlastním programem. Nejvýše šest spínacích bodů za den je mez aplikace výrobce, nikoli mez hlášená regulátorem.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}** – **{day}**\n\nZvolte čas v krocích po {raster} minutách a teplotu od {minimum} do {maximum} °C v krocích po {step} °C. Platí od tohoto času do dalšího spínacího bodu.",
+        "data": {
+          "time": "Čas",
+          "value": "Teplota",
+          "off": "Vypnuto místo teploty",
+          "delete": "Smazat tento spínací bod"
+        }
+      },
+      "rrc_add": {
+        "title": "Přidat spínací bod",
+        "description": "**{program}**\n\n{points}\n\nZvolte čas v pětiminutových krocích a teplotu od 5 do 30 °C v krocích po 0,5 °C. Čas se opakuje každý týden v místním čase topné soustavy. Změny se týkají všech přiřazených zón.",
+        "data": {
+          "time": "Čas",
+          "temperature": "Teplota"
+        }
+      },
+      "wallbox": {
+        "title": "Nabíjecí stanice",
+        "description": "Nabíjecí stanice, která vyžaduje ověření, začne nabíjet až po ověření integrací. Před každým spuštěním se pak odešle jeden příkaz navíc.",
+        "data": {
+          "wallbox_authentication": "Povolit ověření před spuštěním",
+          "wallbox_authentication_name": "Název pro ověření (volitelný)",
+          "wallbox_history": "Číst historii nabíjení"
+        },
+        "data_description": {
+          "wallbox_authentication": "Ve výchozím stavu vypnuto. Od softwaru 5.1.0 se při startu nejprve provede ověření; u staršího softwaru se odešle jen start, stejně jako v aplikaci výrobce.",
+          "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný.",
+          "wallbox_history": "Standardně vypnuto. Přibližně každých 30 minut (60 minut v profilu šetrném k cloudu) se čte poslední nabíjení (začátek, konec, doba, energie) a energie za tento měsíc ze sítě a ze solárních zdrojů. Jména karet, uživatelů ani ověření se nikdy nečtou."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Výsledek",
+        "description": "Nastavení nabíjecí stanice je uloženo."
+      },
+      "switch_program_week_aircon": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího téhož dne; před prvním spínacím bodem dne je klimatizace vypnutá. Časy se opakují každý týden podle hodin klimatizace. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího téhož dne; před prvním spínacím bodem dne je klimatizace vypnutá. Časy se opakují každý týden podle hodin klimatizace. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nTento program není aktivním programem klimatizace. Změny se projeví, až bude vybrán.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu",
+          "week_view": "Týdenní přehled"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}** – **{day}**\n\nZvolte čas v krocích po {raster} minutách a nastavení od tohoto času. Klimatizace nabízí:\n\n{settings}\n\nTeplota a rychlost ventilátoru se uplatní jen u režimu, který je má. Vypnuto vypne klimatizaci do dalšího spínacího bodu.",
+        "data": {
+          "time": "Čas",
+          "mode": "Režim",
+          "value": "Teplota",
+          "fan": "Rychlost ventilátoru",
+          "delete": "Smazat tento spínací bod"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Před vyhledáním zařízení zapněte toto cloudové připojení.",
       "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
       "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
+      "reauth_targets_missing": "Při tomto přihlášení nebyla nalezena žádná ze zapnutých soustav a zařízení. Předchozí přihlašovací údaje zůstávají zachovány. Zkontrolujte, zda jste se přihlásili ke stejnému účtu jako dříve. Pokud byly soustavy z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup: u položky **Použít pro soustavy a zařízení** zapněte soustavu, která v účtu stále je, nebo odebrané soustavy vypněte a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Pokud žádná nezůstane, odstraňte cloudový přístup a připojte jej znovu.",
       "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
+      "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Pokud tato stránka oznamuje přesměrování a nic se nestane, zvolte její odkaz nebo tlačítko. Potom zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
       "cannot_connect": "Cloudový přístup není dostupný. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
       "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
       "no_gateways": "Nebyla nalezena žádná zařízení. Zkontrolujte, zda vybraná značka a účet SingleKey ID odpovídají vaší aplikaci. Prostorový regulátor se starším firmwarem se zobrazí až po aktualizaci firmwaru a po jeho nastavení v aktuální aplikaci s vaším SingleKey ID.",
@@ -774,13 +1070,14 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
       "local_unknown_firmware": "Verzi firmwaru se nepodařilo ověřit.",
       "local_old_firmware": "Před nastavením místního připojení aktualizujte firmware brány.",
       "local_unsupported_brand": "Tato značka brány není podporována zdokumentovaným místním rozhraním.",
-      "local_incomplete_system": "Informace o soustavě z brány zatím nejsou úplné. Kontrolu čtení zopakujte později.",
+      "local_incomplete_system": "Brána stále shromažďuje informace o soustavě. Může to trvat několik minut. Počkejte několik minut a pak kontrolu čtení zopakujte.",
       "local_invalid_response": "Požadovanou odpověď brány se nepodařilo ověřit.",
       "local_identity_unverified": "Tato soustava zatím nebyla jednoznačně přiřazena. První nastavení vyžaduje dostupný cloudový přístup a shodné identifikátory brány a modulu z obou rozhraní. Ověřená propojení lze následně používat bez cloudu.",
       "local_identity_conflict": "Identita brány je v rozporu s vybranou instalací nebo jinou konfigurací.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
       "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
       "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zaškrtněte i druhé políčko, nebo nechte první nezaškrtnuté a vraťte se. Nic nebylo odesláno.",
-      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno."
+      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
+      "switch_program_value": "Zadejte teplotu od {minimum} do {maximum} °C v krocích po {step} °C.",
+      "switch_program_day_emptied": "Den se spínacími body si ponechá alespoň jeden; co znamená prázdný den pro regulátor, není známo.",
+      "rrc_point_limit": "Tento den již má nejvyšší počet spínacích bodů, který aplikace dovoluje ({per_day}).",
+      "rrc_point_last": "Poslední spínací bod dne nelze smazat; co znamená prázdný den pro regulátor, není známo.",
+      "rrc_point_duplicate": "Tento den již má spínací bod v tento čas.",
+      "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků.",
+      "switch_program_aircon_setting": "Zvolte režim, který klimatizace nabízí, a k němu teplotu v jejím rozsahu a krocích a jednu z jejích rychlostí ventilátoru."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
       "notification_gateways_changed": "Výběr instalace se změnil. Znovu otevřete nastavení.",
       "holiday_changed": "Vybraná dovolená se změnila nebo ji již nelze upravovat. Znovu otevřete dovolenou a zkontrolujte její aktuální údaje.",
-      "holiday_updated": "Nastavení dovolené bylo uloženo a potvrzeno topnou soustavou.",
-      "holiday_unchanged": "Nic se nezměnilo, proto nebylo topné soustavě nic odesláno.",
       "no_writable_holidays": "Správa dovolené momentálně není dostupná. Počkejte, až instalace poskytne svá nastavení dovolené.",
-      "holiday_deleted": "Dovolená byla odstraněna a její odstranění potvrdila topná soustava.",
       "not_loaded": "Před nastavením dovolené musí být Bosch/Buderus Home Comfort načten.",
-      "holiday_created": "Dovolená byla vytvořena a potvrzena zpětným načtením.",
       "holiday_previous_request_found": "Dřívější nevyřešený požadavek je nyní potvrzen. Vaše nové vstupy nebyly odeslány. Nejprve zkontrolujte existující dovolenou v části Správa období dovolené.",
       "holiday_already_exists": "Dovolená se stejným začátkem a výběrem okruhů již existuje. Nebyla vytvořena žádná další dovolená. Otevřete Správa období dovolené a upravte existující položku.",
       "holiday_create_unconfirmed": "Požadavek na vytvoření se nepodařilo potvrdit. Dovolená již může existovat. Zkontrolujte Správa období dovolené nebo aplikaci výrobce. Následujících 10 minut další pokus ověří výsledek tohoto požadavku, aniž by vytvořil druhou dovolenou.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program prostorového regulátoru.",
       "no_switch_programs": "Zde nelze změnit žádný aktuální časový program topného okruhu ani teplé vody.",
       "switch_program_changed": "Časový program se mezitím změnil nebo jej již nelze měnit. Znovu jej otevřete a podívejte se na aktuální spínací body.",
-      "switch_program_saved": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}",
       "controls_not_loaded": "Ovládání je dostupné pouze přes cloudový přístup; místní přístup pouze čte. Připojte cloudový přístup nebo počkejte, až se načte.",
       "controls_auth_required": "Ovládání není dostupné: cloudový přístup vyžaduje nové přihlášení. Hodnoty zůstávají viditelné.",
       "controls_cloud_stopped": "Ovládání není dostupné: cloudový přístup je zastaven nebo se restartuje. Hodnoty zůstávají viditelné.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Ovládání zatím není dostupné: cloud nedodal aktuální hodnoty. Zkuste to za chvíli znovu.",
       "controls_none": "Tento spotřebič momentálně nehlásí žádná nastavení, která by zde šlo měnit.",
       "configuration_changed": "Nastavení připojení se během otevření tohoto okna změnilo. Zavřete je a zkuste to znovu.",
+      "reauth_wrong_account": "Vybraný účet neodpovídá nakonfigurovaným zařízením. Přihlaste se původním účtem.",
+      "reauth_no_targets": "Tento cloudový přístup již nemá žádné soustavy ani zařízení a nelze potvrdit účet, ke kterému patří. Předchozí přihlašovací údaje zůstávají zachovány. Chcete-li znovu použít cloudový účet, odstraňte cloudový přístup v Konfigurovat → Připojení a připojte jej znovu.",
       "no_connections": "Není nakonfigurován žádný přístup. Existující soustavy a entity zůstávají zachovány.",
-      "connection_reauth_started": "Nové přihlášení je připraveno. Zavřete toto okno a u této integrace vyberte v Nastavení → Zařízení a služby v části **Vyžaduje pozornost** možnost **Překonfigurovat**.",
       "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
       "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
       "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
       "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
       "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
-      "rescan_planned": "Vyhledávání je naplánováno a proběhne při příští pravidelné aktualizaci; nové součásti se objeví, jakmile budou nalezeny.",
-      "rescan_paused": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu.",
-      "rescan_running": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí.",
-      "rescan_partial": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu.",
       "rescan_unavailable": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven.",
-      "connection_saved": "Změna byla uložena.",
-      "connection_removed": "Přístup byl odebrán.",
-      "notifications_saved": "Nastavení oznámení bylo uloženo.",
-      "rrc_program_saved": "Spínací bod byl uložen a potvrzen zpětným načtením.",
-      "local_tokens_unavailable": "Tento přístup nemá použitelný uložený token pro seznam tokenů. Nejprve znovu nastavte místní přístup.",
-      "local_tokens_changed": "Seznam tokenů se mezitím změnil. Nic nebylo odvoláno ani odstraněno. Otevřete seznam znovu.",
-      "local_token_revoked": "Token byl odvolán; brána ho už nevede.",
-      "local_token_access_ended": "Byl to token, který tento přístup používal. Místní přístup skončil a přístup byl vypnut. Nastavte ho znovu pomocí štítku zařízení, nebo ho odstraňte.",
-      "local_token_revoke_rejected": "Brána odvolání odmítla; token je stále v seznamu.",
-      "local_token_revoke_unclear": "Brána odvolání nepotvrdila. Nic se neopakovalo. Pro kontrolu otevřete seznam tokenů znovu.",
-      "local_token_revoked_removed": "Token byl na bráně odvolán a přístup byl odstraněn.",
-      "local_token_not_removed": "Odvolání nebylo potvrzeno, proto přístup nebyl odstraněn. Zkontrolujte seznam tokenů a pak přístup odstraňte znovu.",
-      "local_token_old_revoked_removed": "Vybraný token byl na bráně odvolán a přístup byl odstraněn. Token, který tento přístup sám používal, na bráně zůstává.",
-      "local_token_access_end_failed": "Byl to token, který tento přístup používal, takže místní přístup skončil, ale přístup se nepodařilo vypnout. Vypněte ho, odstraňte ho, nebo ho nastavte znovu pomocí štítku zařízení."
+      "local_tokens_unavailable": "Tento přístup nemá použitelný uložený token pro seznam tokenů. Nejprve znovu nastavte místní přístup."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Převzatý záznam systému zůstává ve statistice",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Smazat převzatou statistiku",
+            "description": "Odstraněný záznam převzal {count} statistik ze záznamu systému; Home Assistant si je ponechává. Zvolte **Odeslat**, chcete-li je smazat; tuto akci nelze vrátit. Chcete-li je ponechat, zvolte **Ignorovat**. Toto upozornění po dalším restartu zmizí."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Převzaté statistiky již neexistují. Nic nebylo smazáno."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Soustavy nenalezené v cloudovém účtu",
       "description": "Při posledním přihlášení cloudového přístupu v „{title}“ nebyly nalezeny zapnuté soustavy nebo zařízení (počet: {count}; končící na {systems}). Zůstávají nakonfigurovány a nedostupné, dokud se v účtu znovu neobjeví; poté toto oznámení zmizí.\n\nPokud byly z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup, vypněte je u položky **Použít pro soustavy a zařízení** a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Jejich zařízení a entity zůstávají v Home Assistantu, dokud je neodstraníte. Pokud byla brána vyměněna, ponechte ji zapnutou: samostatné oznámení o opravě nabídne pokračování soustavy i s historií."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Nastavení není dokončeno",
       "description": "Položka „{title}“ zatím nemá žádný přístup. Vyberte u ní **Konfigurovat** a potom „Nastavit místní přístup“ (nebo připojte cloudový přístup)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entity nyní čtou přes místní přístup",
+      "description": "{count} používaných entit nyní zobrazuje svou hodnotu přes místní přístup, hodnota z cloudu je druhým zdrojem: {entities}. Jejich ID entit, nastavení a historie zůstávají, takže automatizace, skripty a dashboardy dál fungují. Jejich názvy, kategorie a stavy se nyní řídí místní hodnotou. Toto upozornění můžete ignorovat; po příštím restartu zmizí."
+    },
+    "local_only_entities_kept": {
+      "title": "Entity už nejsou poskytovány",
+      "description": "{count} cloudových entit už není poskytováno, protože jiná entita této integrace zobrazuje stejnou hodnotu přes místní přístup (stará → nová): {entities}. Automatizace, skripty a dashboardy, které používají starou entitu, by měly používat novou. Starou entitu odstraňte, až ji nebudete potřebovat; její historie do té doby zůstává. Toto upozornění můžete ignorovat; při příštím restartu se objeví znovu, dokud stará entita existuje."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Tento topný okruh momentálně nemá žádnou dočasnou požadovanou hodnotu, kterou by bylo možné zrušit."
     },
+    "zone_climate_command": {
+      "message": "Tento příkaz pro zónu momentálně není k dispozici. Teploty lze měnit pouze v ručním režimu nebo v automatickém režimu, pokud zóna nabízí dočasnou požadovanou hodnotu. Vyberte režim zvlášť a zkontrolujte, zda zóna poskytuje aktuální hodnoty."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Tato zóna momentálně nemá žádnou dočasnou požadovanou hodnotu, kterou by bylo možné zrušit."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Aktuální požadovanou hodnotu teplé vody určuje spotřebič. Samostatné počáteční teploty režimů můžete upravit v části Obsluha spotřebiče."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "Rádiové zařízení toto nastavení momentálně nepoužívá, proto nebylo změněno."
+    },
+    "control_unused": {
+      "message": "Spotřebič toto nastavení momentálně nepoužívá. Tato změna nebyla odeslána."
+    },
+    "circuit_room_controller": {
+      "message": "Tento topný okruh je řízen prostorovým regulátorem. Nastavení lze změnit pouze tam. Tato změna nebyla odeslána."
+    },
+    "circuit_constant_control": {
+      "message": "Tento topný okruh běží s konstantními hodnotami. Jeho nastavení nyní nelze změnit. Tato změna nebyla odeslána."
+    },
+    "cooling_not_offered": {
+      "message": "Tento topný okruh momentálně nenabízí chlazení. Tato změna nebyla odeslána."
     },
     "rrc_setting_unused": {
       "message": "Prostorový regulátor toto nastavení momentálně nepoužívá, proto nebylo změněno."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "Vybraný časový program teď nelze načíst. Nic nebylo odesláno."
+    },
+    "switch_points_no_target": {
+      "message": "Nebyl zvolen žádný povolený senzor časového programu této integrace. Povolte senzor časového programu a zvolte ho jako cíl."
+    },
+    "not_a_program_entity": {
+      "message": "Zvolit lze pouze senzory časového programu této integrace."
+    },
+    "switch_points_empty_week": {
+      "message": "Týden potřebuje alespoň jeden spínací bod."
+    },
+    "switch_points_invalid_time": {
+      "message": "Každý čas musí být v krocích po {raster} minutách, bez sekund."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Den má dva spínací body ve stejný čas."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Den má více spínacích bodů, než topná soustava dovoluje ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Týden má více spínacích bodů, než topná soustava dovoluje ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Použít lze pouze tyto úrovně: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Použít lze pouze teploty od {minimum} do {maximum} v krocích po {step}."
+    },
+    "switch_points_not_writable": {
+      "message": "Topná soustava nehlásí tento časový program jako měnitelný."
+    },
+    "switch_points_unused": {
+      "message": "Topná soustava tento časový program momentálně nepoužívá. Nic nebylo odesláno."
+    },
+    "switch_points_not_level_program": {
+      "message": "Typ tohoto časového programu se nepodařilo přečíst nebo neodpovídá jeho spínacím bodům. Nic nebylo odesláno."
+    },
+    "switch_points_not_editable": {
+      "message": "Tento časový program lze pouze zobrazit, nikoli změnit: topná soustava nehlásí všechny meze potřebné pro změnu."
+    },
+    "switch_points_program_changed": {
+      "message": "Časový program se mezitím změnil nebo již neodpovídá očekávaným spínacím bodům. Nic nebylo odesláno."
+    },
+    "switch_points_paused": {
+      "message": "Zápis do topné soustavy je na několik minut pozastaven po opakovaných neúspěšných čteních. Nic nebylo odesláno."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Časový program byl odeslán, ale nepodařilo se ho potvrdit zpětným přečtením. Může být přesto použit; znovu se neodesílá."
+    },
+    "switch_points_rejected": {
+      "message": "Topná soustava časový program odmítla (HTTP {status}). Nic nebylo změněno."
+    },
+    "switch_points_invalid": {
+      "message": "Spínací body neodpovídají mezím časového programu."
+    },
+    "program_name_empty": {
+      "message": "Zadejte název; prázdný název se neodesílá."
+    },
+    "program_name_too_long": {
+      "message": "Název může mít nejvýše {max} znaků."
+    },
+    "program_name_charset": {
+      "message": "Název obsahuje znaky, které topná soustava neumí uložit ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Topná soustava nehlásí tento název jako měnitelný."
+    },
+    "program_name_changed": {
+      "message": "Název se mezitím změnil. Nic nebylo odesláno."
+    },
+    "program_name_not_confirmed": {
+      "message": "Název byl odeslán, ale nepodařilo se ho potvrdit zpětným přečtením. Může být přesto použit; znovu se neodesílá."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Nabíjecí stanice není ve stavu, který tuto akci umožňuje. Tato změna nebyla odeslána."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Nabíjecí proud je nižší než 6 A. Nejprve nastavte nabíjecí proud. Tato změna nebyla odeslána."
+    },
+    "wallbox_authentication_required": {
+      "message": "Nabíjecí stanice vyžaduje před nabíjením ověření. Povolte ho v možnostech integrace (Wallbox). Tato změna nebyla odeslána."
+    },
+    "wallbox_group_controlled": {
+      "message": "Tato nabíjecí stanice patří do skupiny řízení zátěže, která tuto funkci řídí. Tato změna nebyla odeslána."
+    },
+    "wallbox_energy_manager": {
+      "message": "Tuto nabíjecí stanici řídí energetický manažer. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_manual": {
+      "message": "Nabíjecí proud lze nastavit jen v normálním režimu nabíjení. Tato změna nebyla odeslána."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost je aktivní. Nejprve Boost ukončete. Tato změna nebyla odeslána."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Nabíjecí stanice pro tuto funkci nedodala aktuální hodnotu. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_writeable": {
+      "message": "Nabíjecí stanice nehlásí toto nastavení jako měnitelné. Tato změna nebyla odeslána."
+    },
+    "wallbox_firmware": {
+      "message": "Software nabíjecí stanice tuto funkci nenabízí. Tato změna nebyla odeslána."
+    },
+    "wallbox_meter_missing": {
+      "message": "Tato funkce potřebuje připojený externí elektroměr. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_offered": {
+      "message": "Tato funkce není pro tuto nabíjecí stanici nabízena. Tato změna nebyla odeslána."
+    },
+    "wallbox_not_solar": {
+      "message": "Toto nastavení platí jen pro solární nabíjení. Nejprve přepněte režim nabíjení na solární. Tato změna nebyla odeslána."
+    },
+    "aircon_switched_off": {
+      "message": "Klimatizace je vypnutá. Nejprve ji zapněte a potom změňte režim. Nic nebylo odesláno."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Klimatizace běží v solárním provozu, proto nejsou režimy automatika a topení k dispozici. Nic nebylo odesláno."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Tato hodnota není pro klimatizaci povolena. Nic nebylo odesláno."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Změna byla odeslána, ale klimatizace ji zatím nepotvrdila. Může se ještě projevit. Znovu jsem ji neodeslal; hodnota se aktualizuje při dalším čtení."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Použít lze pouze tato nastavení: {settings}. Nastavení se zapisuje jako režim, teplota a rychlost ventilátoru, například „cool 24.0 auto“, nebo „off“."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Ohřívač vody přijímá změny tohoto časového programu jen tehdy, když je zapnutý, běží v režimu časového programu a má nastavené časové pásmo, stejně jako v aplikaci výrobce. Nic nebylo odesláno."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Zpět",
         "create": "Nová dovolená"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Zahodit čekající pokus",
         "later": "Pokračovat později"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Nová soustava (brána není ve vašem účtu)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Nová konfigurace (pouze místní přístup)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Zpět"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Nahradit celý týden",
+        "replace_days": "Nahradit jen zadané dny"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Den"
+        },
+        "time": {
+          "name": "Čas"
+        },
+        "level": {
+          "name": "Úroveň nebo teplota"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Vypnuto",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Vysoká",
+        "off": "Vypnuto",
+        "low": "Nízká",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Přidat spínací bod"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Požadovaná teplota bazénu"
+      },
+      "filter_maximum_run_time": {
+        "name": "Maximální doba provozu filtru"
       },
       "heating_temperature": {
         "name": "Teplota topení"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Maximální výstupní teplota"
       },
+      "summer_winter_threshold": {
+        "name": "Zastavit topení při venkovní teplotě"
+      },
+      "cooling_room_setpoint": {
+        "name": "Chlazení: požadovaná pokojová teplota"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Zahájit chlazení při venkovní teplotě"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Zahájit chlazení při venkovní teplotě"
+      },
+      "season_cooling_threshold": {
+        "name": "Zahájit chlazení při venkovní teplotě"
+      },
+      "season_heating_threshold": {
+        "name": "Zastavit topení při venkovní teplotě"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Teplota Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Doba Boost"
+      },
+      "away_temperature": {
+        "name": "Teplota při nepřítomnosti"
+      },
+      "cooling_temperature": {
+        "name": "Teplota chlazení"
+      },
       "softener_salt_threshold": {
         "name": "Práh upozornění na sůl"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Jas okolního osvětlení"
+      },
+      "bacon_rac_timer_on": {
+        "name": "Časovač zapnutí"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Časovač vypnutí"
       },
       "rrc_window_duration": {
         "name": "Trvání otevřeného okna"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Teplota při nepřítomnosti"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Limit nabíjecího proudu"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Maximální doplnění ze sítě"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Minimální solární přebytek"
+      },
+      "wallbox_filter_time": {
+        "name": "Solární filtrační doba"
+      },
+      "wallbox_power_limit": {
+        "name": "Limit výkonu"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Proudový limit fáze L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Proudový limit fáze L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Proudový limit fáze L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Cena elektřiny"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Výkupní cena"
+      },
+      "aircon_timer_on": {
+        "name": "Časovač zapnutí"
+      },
+      "aircon_timer_off": {
+        "name": "Časovač vypnutí"
+      },
+      "hybrid_electricity_price": {
+        "name": "Cena elektřiny"
+      },
+      "hybrid_gas_price": {
+        "name": "Cena plynu"
+      },
+      "hybrid_oil_price": {
+        "name": "Cena oleje"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Výkupní cena"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Tichý režim: snížení výkonu"
+      },
+      "silent_mode_start_time": {
+        "name": "Tichý režim: čas zahájení"
+      },
+      "silent_mode_stop_time": {
+        "name": "Tichý režim: čas ukončení"
+      },
+      "low_noise_duration": {
+        "name": "Tichý provoz: doba trvání"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Požadovaná teplota bazénu"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Automatický"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Stupeň odtahového ventilátoru",
+      "ventilation_operation_mode": {
+        "name": "Provozní režim větrání",
         "state": {
+          "time": "Časový program",
           "off": "Vypnuto",
           "min": "Stupeň ventilátoru 1",
           "red": "Stupeň ventilátoru 2",
           "nom": "Stupeň ventilátoru 3",
           "max": "Stupeň ventilátoru 4",
-          "dem": "Podle potřeby"
+          "dem": "Podle potřeby",
+          "party": "Párty",
+          "power_vent": "Intenzivní větrání",
+          "fireplace": "Krb",
+          "fall_asleep": "Usínání",
+          "freefct": "Volná funkce"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Letní/zimní přepínání",
+        "state": {
+          "automatic": "Automatický",
+          "forced": "Pouze topení",
+          "cooling": "Pouze chlazení",
+          "off": "Vypnuto"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Chlazení: provozní režim",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Ruční",
+          "auto": "Automatický"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Program A",
           "b": "Program B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Režim nabíjení",
+        "state": {
+          "manual": "Normální",
+          "solar": "Solární"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Bodové směrování vzduchu",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto",
+          "top_left": "Nahoře vlevo",
+          "top_center": "Nahoře uprostřed",
+          "top_right": "Nahoře vpravo",
+          "bottom_left": "Dole vlevo",
+          "bottom_center": "Dole uprostřed",
+          "bottom_right": "Dole vpravo"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktivní časový program",
+        "state": {
+          "program1": "Program 1",
+          "program2": "Program 2",
+          "program3": "Program 3",
+          "program4": "Program 4",
+          "program5": "Program 5",
+          "program6": "Program 6",
+          "program7": "Program 7",
+          "program8": "Program 8",
+          "program9": "Program 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategie hybridní regulace",
+        "state": {
+          "cost": "Optimalizace nákladů",
+          "max_renewable_share": "Optimalizace pro tepelné čerpadlo",
+          "heat_pump_preferred": "Přednost tepelného čerpadla",
+          "environment": "Nejšetrnější ke klimatu",
+          "boiler_only": "Pouze kotel",
+          "bivalent_alternative": "Bivalentní alternativní"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Režim tichého provozu"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Režim bazénu"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Režim nepřítomnosti"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Detekce otevřeného okna"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Optimalizace požadované hodnoty"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Režim dovolené"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Dětský zámek"
       },
+      "rrc_auto_away": {
+        "name": "Automatická nepřítomnost"
+      },
+      "rrc_notification_light": {
+        "name": "Oznamovací světlo"
+      },
       "rrc_extra_dhw": {
         "name": "Extra ohřev"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Funkce krbu"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Doplnění ze sítě při solárním nabíjení"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Upřednostnit domácí baterii"
+      },
+      "wallbox_current_limiter": {
+        "name": "Omezovač proudu"
+      },
+      "wallbox_power_limiter": {
+        "name": "Omezovač výkonu"
+      },
+      "wallbox_locked": {
+        "name": "Nabíjecí stanice zamčena"
+      },
+      "aircon_full_power": {
+        "name": "Plný výkon"
+      },
+      "aircon_sleep": {
+        "name": "Režim spánku"
+      },
+      "aircon_setback_8": {
+        "name": "Protimrazové topení (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Protimrazové topení (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Čištění vzduchu"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Časový program aktivní"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Energie (odhad z aktuálního výkonu)"
+      },
+      "calculated_activity": {
+        "name": "Činnost (vypočteno)",
+        "state": {
+          "heating": "Topení",
+          "cooling": "Chlazení",
+          "defrosting": "Odmrazování",
+          "idle": "Nečinný",
+          "off": "Vypnuto"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Poslední odmrazování (vypočteno)"
+      },
+      "calculated_defrost_count": {
+        "name": "Počet odmrazování (vypočteno)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Celková doba odmrazování (vypočteno)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Teplo odebrané při odmrazování (vypočteno)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Elektřina při odmrazování (vypočteno)"
+      },
+      "calculated_net_heat": {
+        "name": "Čisté teplo (vypočteno)"
+      },
+      "calculated_last_regeneration": {
+        "name": "Poslední regenerace (vypočteno)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Průměrná doba chodu na start, topení (vypočteno)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Výstup nad požadovanou hodnotou (vypočteno)"
+      },
+      "calculated_cop": {
+        "name": "Aktuální COP (vypočteno)"
+      },
+      "calculated_performance_factor": {
+        "name": "Topný faktor (vypočteno)"
+      },
+      "calculated_primary_spread": {
+        "name": "Teplotní rozdíl primárního okruhu (vypočteno)"
+      },
+      "calculated_brine_spread": {
+        "name": "Teplotní rozdíl solanky (vypočteno)"
       },
       "heating_switch_program": {
         "name": "Časový program topení",
@@ -1962,11 +2744,11 @@
           "none": "Žádný",
           "ch": "Topení",
           "dhw": "Teplá voda",
-          "frost": "Ochrana proti zamrznutí",
+          "frost": "Mrazová oblast",
           "ch_dhw": "Topení a teplá voda",
-          "ch_frost": "Topení a ochrana proti zamrznutí",
-          "dhw_frost": "Teplá voda a ochrana proti zamrznutí",
-          "ch_dhw_frost": "Topení, teplá voda a ochrana proti zamrznutí"
+          "ch_frost": "Topení a mrazová oblast",
+          "dhw_frost": "Teplá voda a mrazová oblast",
+          "ch_dhw_frost": "Topení, teplá voda a mrazová oblast"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Zdroj tepla"
       },
+      "outdoor_unit_software_version": {
+        "name": "Verze softwaru venkovní jednotky"
+      },
       "pointt_api_requests_total": {
         "name": "Počet požadavků na cloud celkem"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Elektrická energie celkem (vytápění)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Elektrická energie celkem (chlazení)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Elektrická energie celkem (odvlhčování)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Elektrická energie celkem (pouze ventilátor)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Dodaná tepelná energie celkem (vytápění)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Dodaná tepelná energie celkem (chlazení)"
       },
       "bacon_purifier_tvoc": {
         "name": "Hodnota TVOC"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Hlášená nabitá energie"
       },
+      "wallbox_energy_total": {
+        "name": "Celková nabitá energie"
+      },
       "wallbox_duration": {
         "name": "Doba aktivního nabíjení"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardwarový proudový limit"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Začátek posledního nabíjení"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Konec posledního nabíjení"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Doba posledního nabíjení"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Energie posledního nabíjení"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Nabito ze sítě tento měsíc"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Nabito ze solární energie tento měsíc"
       },
       "smart_grid_mode": {
         "name": "Režim Smart Grid",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "Probíhá"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Režim dovolené teplé vody",
+        "state": {
+          "none": "Žádný",
+          "auto_sat": "Automaticky (AUTO_SAT)",
+          "off": "Vyp.",
+          "on_eco": "Zap. – eco",
+          "on_low": "Zap. – nízký",
+          "on_high": "Zap. – vysoký"
+        }
+      },
       "signal_true_false": {
         "name": "Stav",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Rozsah měření",
             "state": {
               "below": "Pod rozsahem měření"
+            }
+          },
+          "reported_state": {
+            "name": "Hlášený stav",
+            "state": {
+              "low_flow": "Průtok příliš nízký k měření"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Tichý chod ventilu"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Předpověď návratu domů"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Nastavení čidla přítomnosti"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Celkový solární zisk"
+      },
+      "rrc_hot_water_system": {
+        "name": "Systém teplé vody"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Výsledek termické dezinfekce"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Stav aktualizace firmwaru"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Pokojová teplota"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivní požadovaná hodnota topení"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Ruční požadovaná hodnota topení"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Dočasná požadovaná hodnota topení"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Režim topení"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Vybraný časový program topení"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Nastavit pokojovou teplotu"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Nastavit aktivní požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Nastavit ruční požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Nastavit dočasnou požadovanou hodnotu topení"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Nastavit režim topení"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Nastavit vybraný časový program topení"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Elektřina tepelného čerpadla pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Elektřina tepelného čerpadla pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Elektřina tepelného čerpadla pro chlazení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Elektřina kotle pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Elektřina kotle pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elektrický ohřívač pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elektrický ohřívač pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Vyrobená solární elektřina (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Teplo tepelného čerpadla pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Teplo tepelného čerpadla pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Chladicí energie tepelného čerpadla (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Teplo kotle pro topení (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Teplo kotle pro teplou vodu (kWh, nepotvrzeno)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Plyn pro topení (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Plyn pro teplou vodu (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Venkovní teplota, denní průměr (nepotvrzeno)"
+      },
+      "name_part_low_salt": {
+        "name": "Nízká hladina soli"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Typ zařízení teplé vody"
+      },
+      "name_part_mode_heating": {
+        "name": "Topení"
+      },
+      "name_part_mode_cooling": {
+        "name": "Chlazení"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Dočasná požadovaná hodnota"
+      },
+      "name_part_heating_temperature": {
+        "name": "Teplota topení"
+      },
+      "name_part_setback_temperature": {
+        "name": "Teplota útlumu"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Práh spuštění Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Práh spuštění Komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Práh spuštění Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Požadovaná hodnota úrovně Vypnuto"
+      },
+      "name_part_schedule_name": {
+        "name": "Název časového programu {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Aktualizace softwaru"
+      },
+      "name_part_heat_source_type": {
+        "name": "Typ zdroje tepla"
+      },
+      "name_part_consumption_total": {
+        "name": "Celkem"
+      },
+      "name_part_consumption_heating": {
+        "name": "Topení"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Teplá voda"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Chlazení"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Vyrobená energie chlazení"
+      },
+      "tariff_id": {
+        "name": "ID tarifu"
+      },
+      "cooling_switch_program": {
+        "name": "Časový program chlazení",
+        "state": {
+          "on": "Chlazení",
+          "off": "Vypnuto"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Časový program větrání",
+        "state": {
+          "min": "Minimální",
+          "red": "Snížené",
+          "nom": "Jmenovité",
+          "max": "Maximální",
+          "dem": "Podle potřeby",
+          "off": "Vypnuto"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Časový program (teploty)"
+      },
+      "wddw2_switch_program": {
+        "name": "Časový program teplé vody (teploty)"
+      },
+      "name_part_program_cooling": {
+        "name": "Časový program chlazení"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Časový program topení"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Časový program chlazení"
+      },
+      "name_part_program_ventilation": {
+        "name": "Časový program větrání"
+      },
+      "name_part_program_hot_water": {
+        "name": "Časový program teplé vody"
+      },
+      "wallbox_external_meter": {
+        "name": "Externí elektroměr",
+        "state": {
+          "disconnected": "Nepřipojen",
+          "connected": "Připojen",
+          "error": "Chyba"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Maximální proud externího elektroměru"
+      },
+      "wallbox_currency": {
+        "name": "Symbol měny"
+      },
+      "wallbox_limiter": {
+        "name": "Zdroj omezení",
+        "state": {
+          "none": "Nic",
+          "no_car": "Žádné vozidlo",
+          "derating": "Snížení výkonu",
+          "key": "Klíčový spínač",
+          "paragraph_14a": "Řízení provozovatelem sítě (§14a)",
+          "app": "Aplikace",
+          "web": "Webové rozhraní",
+          "energy_manager": "Energetický manažer",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Rozdělování zátěže",
+          "watchdog": "Watchdog",
+          "solar": "Solární přebytek",
+          "dynamic_load_management": "Dynamické řízení zátěže",
+          "static_load_management": "Statické řízení zátěže",
+          "meter_fail_safe": "Ochrana při výpadku elektroměru",
+          "external_limit": "Externí omezení"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energetický manažer",
+        "state": {
+          "inactive": "Neaktivní",
+          "active_heating": "Aktivní (vytápění)",
+          "active_hot_water": "Aktivní (teplá voda)",
+          "active_energy_manager": "Řídí nabíjecí stanici"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Časový program {number}",
+        "state": {
+          "off": "Vypnuto",
+          "auto": "Automaticky",
+          "cool": "Chlazení",
+          "heat": "Topení",
+          "dry": "Odvlhčování",
+          "fan_only": "Pouze ventilátor"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Časový program {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Strategie hybridní regulace",
+        "state": {
+          "cost": "Optimalizace nákladů",
+          "max_renewable_share": "Optimalizace pro tepelné čerpadlo",
+          "heat_pump_preferred": "Přednost tepelného čerpadla",
+          "environment": "Nejšetrnější ke klimatu",
+          "boiler_only": "Pouze kotel",
+          "bivalent_alternative": "Bivalentní alternativní"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Odchylka hodin brány (vypočteno)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Porucha soustavy"
+      },
+      "calculated_defrost_active": {
+        "name": "Odmrazování aktivní (vypočteno)"
       },
       "bacon_connectivity": {
         "name": "Připojení zařízení"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Problém s ventilem"
       },
+      "rrc_coming_home": {
+        "name": "Očekává se návrat domů"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulické vyvážení"
+      },
       "rrc_locking_error": {
         "name": "Porucha vyžadující reset"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Nutné doplnění"
+      },
+      "primary_flow_below_range": {
+        "name": "Primární průtok pod rozsahem měření"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Průtok topného okruhu 1 pod rozsahem měření (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Proměnný tarif aktivní"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost aktivní"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Vstup pro řízení sítí aktivní"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Nabíjení řízené sítí nastaveno"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Nabíjení řízené sítí aktivní"
+      },
+      "wallbox_relays_available": {
+        "name": "Relé k dispozici"
+      },
+      "wallbox_authentication_required": {
+        "name": "Vyžadováno ověření"
+      },
+      "aircon_solar_operation": {
+        "name": "Solární provoz"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Odmrazování (vypočteno)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Odmrazování dokončeno"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Předsunout další spínací bod"
+      },
+      "wallbox_start_charging": {
+        "name": "Spustit nabíjení"
+      },
+      "wallbox_pause_charging": {
+        "name": "Pozastavit nabíjení"
+      },
+      "aircon_end_temporary": {
+        "name": "Ukončit dočasnou změnu"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Klimatizace",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatický",
+              "quiet": "Tichý",
+              "low": "Nízký",
+              "medium": "Střední",
+              "high": "Vysoký",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto",
+              "auto": "Automatický",
+              "swing": "Kývání",
+              "angle1": "Poloha 1",
+              "angle2": "Poloha 2",
+              "angle3": "Poloha 3",
+              "angle4": "Poloha 4",
+              "angle5": "Poloha 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto",
+              "auto": "Automatický",
+              "swing": "Kývání",
+              "left": "Vlevo",
+              "center": "Střed",
+              "right": "Vpravo",
+              "wide": "Široce",
+              "ultra_wide": "Velmi široce",
+              "fixed": "Pevně"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Žádný",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Neznámý"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Název časového programu"
+      },
+      "wallbox_label": {
+        "name": "Zobrazovaný název"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Nastavit spínací body časového programu",
+      "description": "Nastaví spínací body jednoho nebo více týdenních časových programů topné soustavy, čerstvě načtené a zkontrolované podle mezí, které soustava hlásí. Každý program se odešle jednou a přečte zpět; nic se automaticky neopakuje.",
+      "fields": {
+        "mode": {
+          "name": "Způsob",
+          "description": "Nahradit celý týden, nebo jen dny, které se vyskytují ve spínacích bodech (ostatní dny zůstanou tak, jak byly načteny)."
+        },
+        "switch_points": {
+          "name": "Spínací body",
+          "description": "Den (mo až su), čas (HH:MM, podle hodin topné soustavy) a úroveň každého spínacího bodu. U programu s teplotami je úrovní číslo, například 21.5. U klimatizace je úrovní její nastavení: režim, teplota a rychlost ventilátoru, například cool 24.0 auto, nebo off."
+        },
+        "expected": {
+          "name": "Očekávané spínací body",
+          "description": "Volitelné: spínací body, které musí program právě obsahovat. Pokud obsahuje jiné (například změněné v aplikaci), nic se neodešle."
+        },
+        "validate_only": {
+          "name": "Pouze zkontrolovat",
+          "description": "Zkontroluje spínací body a odpoví, aniž by cokoli odeslal."
         }
       }
     }

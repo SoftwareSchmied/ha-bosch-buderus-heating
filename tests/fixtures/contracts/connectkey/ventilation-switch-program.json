@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed ventilation unit with four listed ventilation levels and its time program cp",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-11: the ventilation program uses only the levels listed as references of ventilationLevels and is written as a raw array.",
+    "source": "behaviour of the manufacturer's app: ventilation program with the level endings min, red, nom, max, dem and off"
+  },
+  "resources": [
+    {
+      "id": "/ventilation/zone1/ventilationLevels",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/ventilation/zone1/ventilationLevels/min"
+        },
+        {
+          "id": "/ventilation/zone1/ventilationLevels/red"
+        },
+        {
+          "id": "/ventilation/zone1/ventilationLevels/nom"
+        },
+        {
+          "id": "/ventilation/zone1/ventilationLevels/max"
+        }
+      ]
+    },
+    {
+      "id": "/ventilation/zone1/switchPrograms/cp",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "red"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 420,
+          "setpoint": "nom"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "red"
+        }
+      ]
+    }
+  ]
+}

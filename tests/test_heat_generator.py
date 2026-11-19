@@ -1033,6 +1033,42 @@ async def test_a_start_from_the_stored_inventory_keeps_the_last_state(hass) -> N
     await coordinator.async_shutdown()
 
 
+@pytest.mark.parametrize("stored", ["air", "plasma", None])
+async def test_a_start_keeps_the_heat_source_type_until_its_evidence(
+    hass, stored
+) -> None:
+    """The kind is restored with the modules (only a known kind), so it does
+    not show as null until the evidence is read again."""
+    coordinator = coordinator_for(hass)
+    entity_id = (
+        er.async_get(hass)
+        .async_get_or_create(
+            "sensor", DOMAIN, UNIQUE_ID, config_entry=coordinator.config_entry
+        )
+        .entity_id
+    )
+    kept = own_plant()
+    assert kept is not None
+    mock_restore_cache_with_extra_data(
+        hass,
+        [
+            (
+                State(entity_id, INDOOR),
+                {"heat_generators": kept.to_data(), "heat_source_type": stored},
+            )
+        ],
+    )
+    coordinator.data = {
+        "/system/info": ResourceSnapshot(cloud_resource(()), True, NOW),
+    }
+    entity = await added(hass, coordinator)
+    state = shown(hass, entity)
+    expected = "air" if stored == "air" else None
+    assert state.attributes["heat_source_type"] == expected
+    assert entity.extra_restore_state_data.as_dict()["heat_source_type"] == expected
+    await coordinator.async_shutdown()
+
+
 async def test_a_registered_entity_without_kept_data_is_unknown(hass) -> None:
     coordinator = coordinator_for(hass)
     er.async_get(hass).async_get_or_create(
@@ -1254,7 +1290,7 @@ async def test_the_diagnostics_report_modules_without_serial_numbers(hass) -> No
 
 def test_the_anonymized_inventory_drops_the_heat_generators() -> None:
     diagnostics = inventory_diagnostics()
-    diagnostics["diagnostics_schema"] = 47
+    diagnostics["diagnostics_schema"] = 48
     diagnostics["privacy"].update(
         contains_raw_resource_values=True,
         raw_resource_values_scope="allowlisted_technical_metadata",

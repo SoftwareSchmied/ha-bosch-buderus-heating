@@ -42,6 +42,7 @@ ENTITY_MODULES: Final = (
     "rrc_circuit_entities",
     "rrc_system_entities",
     "rrc_device_setting_entities",
+    "rrc_extras_entities",
 )
 # The platforms whose setup calls ``track``.
 PLATFORMS: Final = frozenset(

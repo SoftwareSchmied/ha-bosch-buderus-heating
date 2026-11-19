@@ -280,10 +280,18 @@ async def async_set_control(
     policy: EnumWritePolicy | NumberWritePolicy,
     *,
     expected: tuple[Resource, ...] = (),
+    fresh: tuple[Resource, ...] = (),
 ) -> None:
-    """Write a control and expose only translated, value-free HA errors."""
+    """Write a control and expose only translated, value-free HA errors.
+
+    ``expected`` and ``fresh``: see ``async_write_control``.
+    """
     try:
-        if expected:
+        if fresh:
+            await coordinator.async_write_control(
+                path, value, policy, expected=expected, fresh=fresh
+            )
+        elif expected:
             await coordinator.async_write_control(
                 path, value, policy, expected=expected
             )
@@ -291,7 +299,10 @@ async def async_set_control(
             await coordinator.async_write_control(path, value, policy)
     except ControlUnused as err:
         raise ServiceValidationError(
-            translation_domain=DOMAIN, translation_key=unused_translation_key(path)
+            translation_domain=DOMAIN,
+            translation_key=unused_translation_key(path)
+            if err.contract
+            else "control_unused",
         ) from err
     except ControlLocked as err:
         raise ServiceValidationError(

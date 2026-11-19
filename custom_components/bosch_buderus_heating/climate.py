@@ -20,6 +20,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
 from . import BoschBuderusConfigEntry, rrc_platforms
+from .aircon_climate import track_aircon_climates
 from .bacon import rac
 from .bacon.access import BaconAccess
 from .bacon.entity import BaconEntity
@@ -29,6 +30,7 @@ from .const import DOMAIN
 from .ha_compat import temperature_members, temperature_unit
 from .heating_climate import track_heating_climates
 from .platform_scope import PlatformScope, setup_platform
+from .zone_climate import track_zone_climates
 
 
 async def async_setup_entry(
@@ -43,8 +45,10 @@ def _setup_entities(
     entry: PlatformScope,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    track_aircon_climates(entry, async_add_entities)
     for coordinator in entry.coordinators:
         track_heating_climates(entry, coordinator, async_add_entities)
+        track_zone_climates(entry, coordinator, async_add_entities)
         rrc_platforms.track(Platform.CLIMATE, entry, coordinator, async_add_entities)
     if (account := entry.bacon) is None:
         return

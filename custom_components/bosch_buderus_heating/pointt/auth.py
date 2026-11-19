@@ -17,12 +17,12 @@ import aiohttp
 
 from .const import (
     DEFAULT_CONNECT_TIMEOUT,
-    DEFAULT_TOTAL_TIMEOUT,
     DEFAULT_USER_AGENT,
     OAUTH_AUTHORIZE_URL,
     OAUTH_CLIENT_ID,
     OAUTH_SCOPES,
     OAUTH_TOKEN_URL,
+    TOKEN_TOTAL_TIMEOUT,
 )
 from .exceptions import (
     AuthenticationError,
@@ -187,7 +187,7 @@ class OAuthClient:
         self._clock = clock
         self._user_agent = user_agent
         self._timeout = aiohttp.ClientTimeout(
-            connect=DEFAULT_CONNECT_TIMEOUT, total=DEFAULT_TOTAL_TIMEOUT
+            connect=DEFAULT_CONNECT_TIMEOUT, total=TOKEN_TOTAL_TIMEOUT
         )
 
     async def exchange_code(

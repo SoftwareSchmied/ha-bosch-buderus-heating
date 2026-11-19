@@ -46,6 +46,9 @@ from custom_components.bosch_buderus_heating.local_only_sensor import (
     BoschBuderusInstallationDateSensor,
     local_only_unique_id,
 )
+from custom_components.bosch_buderus_heating.name_translations import (
+    NAMES as NAME_PARTS,
+)
 from custom_components.bosch_buderus_heating.pointt import Resource
 from custom_components.bosch_buderus_heating.pointt.models import ResourceMetadata
 from custom_components.bosch_buderus_heating.resource_catalog import (
@@ -221,14 +224,11 @@ LOCAL_NAMES = [
 ]
 
 # Signals whose meaning is open keep the signal path as their name.
+# Named in 0.9.2 where the meaning is evidenced or likely; these stay open.
 OPEN_SIGNALS = (
-    "SRC.CUHP.HP1.HighestPermittedAirTemp",
     "SRC.CUHP.HP1.HighestPermittedTemp",
-    "SRC.CUHP.HP1.LowestPermittedAirTemp",
     "SRC.CUHP.HP1.LowestPermittedFlowTemp",
-    "SRC.CUHP.HP1.HeatingCable",
     "SRC.CUHP.HP1.G3Relay",
-    "SRC.CUHP.HP1.CompressorStartTemp",
 )
 
 # English texts that left the names, with their replacement.
@@ -244,8 +244,11 @@ OLD_ENGLISH = (
 
 
 def _catalog(code: str) -> dict[str, str]:
+    """The built texts and the composed name parts (0.9.2), by English text."""
     path = COMPONENT / "i18n" / f"{code}.json"
-    return json.loads(path.read_text(encoding="utf-8"))["texts"]
+    texts = json.loads(path.read_text(encoding="utf-8"))["texts"]
+    parts = {NAME_PARTS["en"][key]: text for key, text in NAME_PARTS[code].items()}
+    return {**texts, **parts}
 
 
 def _local(signal: str, language: str) -> str:

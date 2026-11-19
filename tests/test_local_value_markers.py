@@ -1,9 +1,8 @@
-"""#73 flow below the measuring range, #76 energy manager placeholders."""
+"""#73 flow below the measuring range; the energy manager setpoints show 0."""
 
 from __future__ import annotations
 
 import json
-from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -13,8 +12,6 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.bosch_buderus_heating.local_only import (
     below_measuring_range,
-    energy_manager_not_connected,
-    energy_manager_setpoint,
 )
 from custom_components.bosch_buderus_heating.local_only_sensor import (
     track_local_only_sensors,
@@ -28,7 +25,6 @@ from tests.test_local_only import (
     by_path,
     coordinator_with,
     number,
-    text,
     track,
 )
 from tests.test_managed_local_plant import plant, reading
@@ -39,7 +35,7 @@ EM_LOWER = "/signals/SRC.CUHP.EM.UsedLowerFlowTempSetp"
 EM_UPPER = "/signals/SRC.CUHP.EM.UsedUpperFlowTempSetp"
 FLOW_SETPOINT = "/signals/SC.HC1.FlowTempSetp"
 EM_STATUS = "/heatSources/emStatus"
-BELOW = {"measuring_range": "below"}
+BELOW = {"measuring_range": "below", "reported_state": "low_flow"}
 
 
 # ------------------------------------------------------------------- #73
@@ -159,7 +155,7 @@ def test_the_attribute_is_translated() -> None:
         assert attribute == {"name": label, "state": {"below": below}}, name
 
 
-# ------------------------------------------------------------------- #76
+# ------------------------------------------------- energy manager setpoints
 
 
 def em_status(value: str) -> Resource:
@@ -182,73 +178,26 @@ def em_readings():
     ]
 
 
-async def test_energy_manager_setpoints_are_unknown_while_not_connected(
-    hass: HomeAssistant,
+@pytest.mark.parametrize("status", ["notConnected", "activeCh", "inactive", None])
+async def test_energy_manager_setpoints_show_the_reported_zero(
+    hass: HomeAssistant, status
 ) -> None:
-    coordinator = coordinator_with(hass, em_readings(), em_status("notConnected"))
+    """0.9.2: the raw 0 is shown as 0, whatever the energy manager status
+    (0.9.0 showed unknown while no energy manager was connected)."""
+    resources = () if status is None else (em_status(status),)
+    coordinator = coordinator_with(hass, em_readings(), *resources)
     entities = by_path(track(coordinator))
     for path in (EM_LOWER, EM_UPPER):
         assert entities[path].available
-        assert entities[path].native_value is None
+        assert entities[path].native_value == 0
         assert entities[path].native_unit_of_measurement == "°C"
-    # Other setpoints are unaffected.
     assert entities[FLOW_SETPOINT].native_value == 23
     await coordinator.async_shutdown()
 
 
-@pytest.mark.parametrize("status", ["activeCh", "inactive", None])
-async def test_energy_manager_setpoints_show_otherwise(
-    hass: HomeAssistant, status
-) -> None:
-    resources = () if status is None else (em_status(status),)
-    coordinator = coordinator_with(hass, em_readings(), *resources)
-    entities = by_path(track(coordinator))
-    assert entities[EM_LOWER].native_value == 0
-    assert entities[EM_UPPER].native_value == 0
-    await coordinator.async_shutdown()
-
-
-EM_STATES = ["notConnected", "inactive", "activeCh", "activeDhw"]
-
-
-@pytest.mark.parametrize(
-    ("cloud", "local", "placeholder"),
-    [
-        # The shown (local) status decides, not the slower cloud copy (O45).
-        ("activeCh", "notConnected", True),
-        ("notConnected", "activeCh", False),
-    ],
-)
-async def test_the_shown_energy_manager_status_decides(
-    hass: HomeAssistant, cloud, local, placeholder
-) -> None:
-    coordinator = coordinator_with(
-        hass,
-        [*em_readings(), text(EM_STATUS, local, EM_STATES)],
-        em_status(cloud),
-        local_values=True,
-    )
-    assert coordinator.display_snapshot(EM_STATUS).resource.value == local
-    entities = by_path(track(coordinator))
-    assert entities[EM_LOWER].available
-    assert entities[EM_LOWER].native_value == (None if placeholder else 0)
-    await coordinator.async_shutdown()
-
-
-async def test_a_status_no_longer_current_shows_the_setpoints(
+async def test_the_local_plant_view_shows_the_reported_zero(
     hass: HomeAssistant,
 ) -> None:
-    coordinator = coordinator_with(hass, em_readings(), em_status("notConnected"))
-    snapshot = coordinator.data[EM_STATUS]
-    coordinator.data[EM_STATUS] = replace(
-        snapshot, available=False, ended=True, last_error_category="http_404"
-    )
-    entities = by_path(track(coordinator))
-    assert entities[EM_LOWER].native_value == 0
-    await coordinator.async_shutdown()
-
-
-async def test_the_local_plant_view_uses_its_local_status(hass: HomeAssistant) -> None:
     coordinator, runtime = await plant(hass)
     runtime.publish(
         [
@@ -261,44 +210,11 @@ async def test_the_local_plant_view_uses_its_local_status(hass: HomeAssistant) -
             reading(EM_LOWER, "integerValue", 0, unitOfMeasure="C"),
         ]
     )
-    assert EM_STATUS in coordinator.resources
     entities: list = []
     track_local_only_sensors(
         SimpleNamespace(async_on_unload=Mock()), coordinator, entities.extend
     )
     (entity,) = (item for item in entities if item.resource_path == EM_LOWER)
     entity.hass = hass
-    assert entity.available and entity.native_value is None
+    assert entity.available and entity.native_value == 0
     await coordinator.async_release_retention()
-
-
-@pytest.mark.parametrize(
-    ("path", "setpoint"),
-    [
-        (EM_LOWER, True),
-        (EM_UPPER, True),
-        ("/signals/EM.FlowTempSetp", True),
-        (FLOW_SETPOINT, False),
-        ("/signals/SRC.CUHP.EM.Status", False),
-        ("/signals/SRC.CUHP.EMX.UsedLowerFlowTempSetp", False),
-        ("/heatSources/hs1/EM.Setp", False),
-    ],
-)
-def test_energy_manager_setpoint_paths(path, setpoint) -> None:
-    assert energy_manager_setpoint(path) is setpoint
-
-
-@pytest.mark.parametrize(
-    ("status", "absent"),
-    [
-        ("notConnected", True),
-        ("not_connected", True),
-        ("NOT_CONNECTED", True),
-        ("connected", False),
-        ("activeCh", False),
-        (None, False),
-        (0, False),
-    ],
-)
-def test_energy_manager_status(status, absent) -> None:
-    assert energy_manager_not_connected(status) is absent

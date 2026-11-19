@@ -39,7 +39,6 @@ DESCRIPTIONS = (
         translation_key="wallbox_state",
         device_class=SensorDeviceClass.ENUM,
         options=list(STATES.values()),
-        icon="mdi:ev-station",
     ),
     WallboxSensorDescription(
         key="power",
@@ -54,6 +53,15 @@ DESCRIPTIONS = (
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         # The meter's reset scope has not been established on hardware.
+    ),
+    WallboxSensorDescription(
+        key="energy_total",
+        translation_key="wallbox_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        # The wallbox's own lifetime counter (telemetry.energyTotal), for the
+        # Energy dashboard; it matches the total in the wallbox app.
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     WallboxSensorDescription(
         key="duration",
@@ -91,6 +99,23 @@ DESCRIPTIONS = (
 )
 
 
+def wallbox_device_info(coordinator: WallboxCoordinator) -> DeviceInfo:
+    """The wallbox device, shared by its readings and its controls."""
+    gateway = coordinator.gateway
+    product = coordinator.reading("info", "product")
+    software = coordinator.reading("info", "software")
+    info = DeviceInfo(
+        identifiers={(DOMAIN, gateway.gateway_id)},
+        manufacturer=DEFAULT_MANUFACTURER,
+        model=product if isinstance(product, str) else gateway.model,
+        sw_version=software if isinstance(software, str) else gateway.firmware_version,
+    )
+    if not registered_device(coordinator.hass, gateway.gateway_id):
+        # C8: a new device is named without the brand.
+        info["name"] = "Wallbox"
+    return info
+
+
 class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
     """Expose only a currently valid interpretation of an allowlisted field."""
 
@@ -108,21 +133,7 @@ class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        gateway = self.coordinator.gateway
-        product = self.coordinator.reading("info", "product")
-        software = self.coordinator.reading("info", "software")
-        info = DeviceInfo(
-            identifiers={(DOMAIN, gateway.gateway_id)},
-            manufacturer=DEFAULT_MANUFACTURER,
-            model=product if isinstance(product, str) else gateway.model,
-            sw_version=software
-            if isinstance(software, str)
-            else gateway.firmware_version,
-        )
-        if not registered_device(self.coordinator.hass, gateway.gateway_id):
-            # C8: a new device is named without the brand.
-            info["name"] = "Wallbox"
-        return info
+        return wallbox_device_info(self.coordinator)
 
     @property
     def available(self) -> bool:

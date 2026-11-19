@@ -61,7 +61,6 @@ def descriptions(
             resource_path=path,
             translation_key="active_switch_program",
             entity_category=EntityCategory.CONFIG,
-            icon="mdi:calendar-clock",
         )
         for path, resource in resources.items()
         if is_active_program_path(path) and _offered(resource, resources, context)

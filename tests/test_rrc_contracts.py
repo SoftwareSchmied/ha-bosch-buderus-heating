@@ -175,6 +175,7 @@ def test_w0_contracts_are_empty_and_the_zone_block_is_lifted() -> None:
         "circuit",
         "system",
         "devices",
+        "extras",
     ]
     # W0 itself declared nothing else; the packages fill their contracts.
     with installed() as w0:

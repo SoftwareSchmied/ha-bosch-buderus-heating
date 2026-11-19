@@ -21,6 +21,7 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, SnapshotS
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members
+from .held_readings import cloud_usable, held_snapshot
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_dhw import OPERATION_MODE_POLICY as RRC_OPERATION_MODE_POLICY
@@ -97,7 +98,6 @@ class PointTWaterHeater(
     _attr_translation_key = "pointt_dhw"
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 0.1
-    _attr_icon = "mdi:water-boiler"
 
     def __init__(
         self, coordinator: BoschBuderusDataUpdateCoordinator, root: str
@@ -126,7 +126,8 @@ class PointTWaterHeater(
         super()._handle_coordinator_update()
 
     def _resource(self, suffix: str) -> Resource | None:
-        resource = fresh_resource(self.coordinator, self.root + "/" + suffix)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        resource = fresh_resource(self.coordinator, self.root + "/" + suffix, held=True)
         return resource if resource is not None and not resource.references else None
 
     @property
@@ -143,9 +144,9 @@ class PointTWaterHeater(
         resource = self._resource("operationMode")
         if resource is not None or not context_of(self.coordinator).rrc_plant:
             return resource
-        snapshot = (self.coordinator.data or {}).get(self.root + "/operationMode")
+        snapshot = held_snapshot(self.coordinator, self.root + "/operationMode")
         if (
-            not self.coordinator.last_update_success
+            not cloud_usable(self.coordinator)
             or snapshot is None
             or not snapshot.available
             or snapshot.freshness is not Freshness.FRESH
@@ -183,7 +184,7 @@ class PointTWaterHeater(
         # The same reading as the hot-water temperature sensor: local first
         # (P13), with the usual checks. Mode, targets and writes stay cloud.
         resource = fresh_resource(
-            self.coordinator, self.root + "/actualTemp", displayed=True
+            self.coordinator, self.root + "/actualTemp", displayed=True, held=True
         )
         return temperature(resource if resource and not resource.references else None)
 

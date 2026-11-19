@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "family": "rrc",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed room controller program with days of 0, 1, 2, 3 and 6 switch points; day programs with and without d, Friday with integer names",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Point form {d,t,Th} with optional integer name as in the anonymized TC100.2 structure; every time and temperature is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-17: add or delete a switch point of one day: the whole day {d,t,Th} once to /programs/pgN/<day>, at most six points per day (app limit), the last point of a day stays, read-back of the week.",
+    "source": "behaviour of the room controller app: at most 6 switch points per day, a new point at 12:00/15 C, day write {value:[{d,t,Th}]}"
+  },
+  "resources": [
+    {
+      "id": "/programs/list",
+      "type": "programArray",
+      "value": [
+        {
+          "id": 3,
+          "name": "UHJvZ3JhbSAz"
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/week",
+      "type": "weekProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Mo",
+          "t": 360,
+          "Th": 21.0
+        },
+        {
+          "d": "Mo",
+          "t": 480,
+          "Th": 17.0
+        },
+        {
+          "d": "Mo",
+          "t": 1320,
+          "Th": 16.0
+        },
+        {
+          "d": "Tu",
+          "t": 300,
+          "Th": 20.0
+        },
+        {
+          "d": "Tu",
+          "t": 420,
+          "Th": 18.0
+        },
+        {
+          "d": "Tu",
+          "t": 600,
+          "Th": 21.0
+        },
+        {
+          "d": "Tu",
+          "t": 780,
+          "Th": 19.0
+        },
+        {
+          "d": "Tu",
+          "t": 1020,
+          "Th": 21.5
+        },
+        {
+          "d": "Tu",
+          "t": 1320,
+          "Th": 16.0
+        },
+        {
+          "d": "We",
+          "t": 390,
+          "Th": 21.0
+        },
+        {
+          "d": "Fr",
+          "t": 360,
+          "Th": 21.0,
+          "name": 1
+        },
+        {
+          "d": "Fr",
+          "t": 1320,
+          "Th": 16.0,
+          "name": 2
+        },
+        {
+          "d": "Sa",
+          "t": 480,
+          "Th": 21.0
+        },
+        {
+          "d": "Sa",
+          "t": 1380,
+          "Th": 16.0
+        },
+        {
+          "d": "Su",
+          "t": 480,
+          "Th": 21.0
+        },
+        {
+          "d": "Su",
+          "t": 1380,
+          "Th": 16.0
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/monday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Mo",
+          "t": 360,
+          "Th": 21.0
+        },
+        {
+          "d": "Mo",
+          "t": 480,
+          "Th": 17.0
+        },
+        {
+          "d": "Mo",
+          "t": 1320,
+          "Th": 16.0
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/tuesday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Tu",
+          "t": 300,
+          "Th": 20.0
+        },
+        {
+          "d": "Tu",
+          "t": 420,
+          "Th": 18.0
+        },
+        {
+          "d": "Tu",
+          "t": 600,
+          "Th": 21.0
+        },
+        {
+          "d": "Tu",
+          "t": 780,
+          "Th": 19.0
+        },
+        {
+          "d": "Tu",
+          "t": 1020,
+          "Th": 21.5
+        },
+        {
+          "d": "Tu",
+          "t": 1320,
+          "Th": 16.0
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/wednesday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "t": 390,
+          "Th": 21.0
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/thursday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": []
+    },
+    {
+      "id": "/programs/pg3/friday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Fr",
+          "t": 360,
+          "Th": 21.0,
+          "name": 1
+        },
+        {
+          "d": "Fr",
+          "t": 1320,
+          "Th": 16.0,
+          "name": 2
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/saturday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Sa",
+          "t": 480,
+          "Th": 21.0
+        },
+        {
+          "d": "Sa",
+          "t": 1380,
+          "Th": 16.0
+        }
+      ]
+    },
+    {
+      "id": "/programs/pg3/sunday",
+      "type": "dayProgram",
+      "writeable": true,
+      "value": [
+        {
+          "d": "Su",
+          "t": 480,
+          "Th": 21.0
+        },
+        {
+          "d": "Su",
+          "t": 1380,
+          "Th": 16.0
+        }
+      ]
+    }
+  ]
+}

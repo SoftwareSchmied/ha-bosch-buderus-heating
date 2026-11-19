@@ -31,6 +31,10 @@ MAX_BULK_PATHS: Final = 30
 DEFAULT_CONCURRENCY: Final = 3
 DEFAULT_CONNECT_TIMEOUT: Final = 10.0
 DEFAULT_TOTAL_TIMEOUT: Final = 30.0
+# The token endpoint rotates the refresh token on every request. A request that
+# reached it may answer slowly; giving up early would leave the old token
+# consumed. Only the token endpoint gets this longer total timeout.
+TOKEN_TOTAL_TIMEOUT: Final = 90.0
 # PointT expects requests to look like the official DashApp client. A generic
 # integration user agent is rejected by some API paths even after a successful
 # SingleKey ID token exchange.

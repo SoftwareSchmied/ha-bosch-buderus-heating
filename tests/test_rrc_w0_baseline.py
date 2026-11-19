@@ -13,6 +13,19 @@ heat source and its burner status disabled, and the request sensors carry
 neutral names. 0.9.1 adds the heat generator sensor of the module list on
 purpose, without a request of its own, and corrected the name of its system
 supply temperature (before "Supply temperature"); its unique ID stays.
+0.9.2 moves fixed icons to ``icons.json`` on purpose: those entities record
+no icon of their own any more (``original_icon`` empty); nothing else changes.
+0.9.2 also adds the calculated activity, defrost, net heat and run time
+entities of the K40 heat pump on purpose (new unique IDs only); its empty
+``/ventilation/zone1`` directory is a valid answer and is not probed, so the
+requests of setup and cycle stay the same. 0.9.2 also adds the 21 calculated
+performance factors of the K40 heat pump on purpose (new unique IDs only, no
+request). A fresh setup enables the time program sensors the gateway reports
+as writable (existing entities keep their state), and every temperature
+number carries the device class ``temperature`` (an offset
+``temperature_delta``); unique IDs, names and requests stay the same.
+The wallbox and air-conditioner controls of 0.9.2 (including the programs
+of an air conditioner) add no entity and no request to these three plants.
 """
 
 from __future__ import annotations

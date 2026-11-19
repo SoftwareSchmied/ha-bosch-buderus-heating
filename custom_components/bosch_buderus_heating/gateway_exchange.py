@@ -325,6 +325,7 @@ def exchange_candidates(
     No wallbox, nothing this entry knows already (as a binding or as a stored
     identity of any target) and nothing another entry owns.
     """
+    from .aircon import is_aircon_gateway
     from .cloud_configuration import foreign_identities
     from .wallbox import is_wallbox
 
@@ -347,6 +348,7 @@ def exchange_candidates(
         gateway
         for gateway in gateways
         if not is_wallbox(gateway)
+        and not is_aircon_gateway(gateway)
         and gateway.gateway_id not in known
         and gateway.gateway_id not in foreign
     )
@@ -366,6 +368,7 @@ def exchange_candidate(
     Exactly one enabled system of this access is missing from the list and
     exactly one listed gateway is free; anything else stays undecided.
     """
+    from .aircon import is_aircon_gateway
     from .wallbox import is_wallbox
 
     listed = tuple(gateways)
@@ -382,7 +385,9 @@ def exchange_candidate(
     if missing != [binding_id]:
         _LOGGER.debug("Gateway exchange undecided: %s systems missing", len(missing))
         return None
-    if old_gateway is not None and is_wallbox(old_gateway):
+    if old_gateway is not None and (
+        is_wallbox(old_gateway) or is_aircon_gateway(old_gateway)
+    ):
         return None
     candidates = exchange_candidates(hass, snapshot, listed)
     if len(candidates) != 1:

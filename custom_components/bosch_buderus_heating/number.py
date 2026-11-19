@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
-    NumberEntity,
+    NumberDeviceClass,
     NumberEntityDescription,
     NumberMode,
 )
@@ -17,7 +17,15 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
+from . import (
+    BoschBuderusConfigEntry,
+    circuit_controls,
+    hybrid_controls,
+    rrc,
+    rrc_contracts,
+    rrc_platforms,
+)
+from .aircon_entities import track_aircon_numbers
 from .bacon import purifier
 from .bacon.purifier_entities import (
     BaconPurifierNumber,
@@ -25,7 +33,10 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
-from .control import HeldCapabilities, async_set_control, track_control_entities
+from .bacon.rac_entities import track_entities as track_rac_entities
+from .circuit_control_writes import async_set_guarded, offered_on
+from .circuit_controls import display_minimum, offered
+from .control import HeldCapabilities, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -33,11 +44,19 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .hc_controls_extra import BOOST_DURATION_POLICY, number_identity
+from .hc_controls_extra import icon as extra_icon
+from .held_readings import cloud_usable, held_snapshot
+from .number_temperature import TemperatureNumber, temperature_device_class
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
+from .system_controls_extra import DURATION_POLICIES as SYSTEM_DURATION_POLICIES
+from .system_controls_extra import icon as system_icon
+from .system_controls_extra import number_identity as system_number_identity
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     ControlContext,
     NumberWritePolicy,
@@ -77,10 +96,13 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create numeric controls only from matching live metadata."""
+    track_wallbox_entities(Platform.NUMBER, entry, async_add_entities)
+    track_aircon_numbers(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS
         )
+        track_rac_entities(entry, account, async_add_entities, "number")
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,
@@ -110,6 +132,10 @@ def build_number_descriptions(
             or minimum is None
             or maximum is None
             or not policy.create_entity
+            # The cooling threshold only while the circuit offers cooling.
+            or not offered(resource.path, resources)
+            # The oil price only without a gas price.
+            or not hybrid_controls.offered(resource.path, resources)
         ):
             continue
         contract = rrc_contracts.owns(policy)
@@ -119,20 +145,31 @@ def build_number_descriptions(
                 resource.path
             )
         else:
-            key, name = _number_identity(resource.path)
+            key, name = (
+                number_identity(resource.path)
+                or system_number_identity(resource.path)
+                or _identity(resource.path)
+            )
         assessment = assess_control(resource, context)
+        unit = _policy_unit(policy, assessment.unit)
         descriptions.append(
             BoschBuderusNumberEntityDescription(
                 key=_semantic_key(resource.path, None),
                 name=name,
                 resource_path=resource.path,
                 write_policy=policy,
-                native_min_value=minimum,
+                native_min_value=display_minimum(policy, minimum, assessment.ui_step),
                 native_max_value=maximum,
                 native_step=assessment.ui_step,
-                native_unit_of_measurement=_policy_unit(policy, assessment.unit),
+                native_unit_of_measurement=unit,
+                device_class=policy_device_class(policy, unit),
                 mode=NumberMode.BOX,
-                icon=control_icon(resource.path, numeric=True, contract=contract),
+                # The heating circuit settings take theirs from icons.json.
+                icon=None
+                if circuit_controls.icon(resource.path)
+                or extra_icon(resource.path)
+                or system_icon(resource.path)
+                else control_icon(resource.path, numeric=True, contract=contract),
                 entity_category=control_category(
                     resource.path, numeric=True, contract=contract
                 ),
@@ -143,18 +180,34 @@ def build_number_descriptions(
     return tuple(descriptions)
 
 
+def policy_device_class(
+    policy: NumberWritePolicy, unit: str | None
+) -> NumberDeviceClass | None:
+    """``temperature`` for a temperature setting shown in a temperature unit.
+
+    All temperature settings of the write policies are absolute
+    temperatures (setpoints, levels, limits, outdoor thresholds).
+    """
+    if policy is BOOST_DURATION_POLICY or policy in SYSTEM_DURATION_POLICIES:
+        return NumberDeviceClass.DURATION if unit in {"s", "min", "h"} else None
+    return temperature_device_class(unit) if policy.unit == "C" else None
+
+
 def _policy_unit(policy: NumberWritePolicy, unit: str | None) -> str | None:
     """The unit shown: a contract's override ("" for none), else the
     resource's."""
     if policy.ui_unit_override is not None:
         return policy.ui_unit_override or None
+    if policy.free_unit:
+        # A price: the unit the plant reports, none when it reports none.
+        return hybrid_controls.display_unit(unit)
     return _native_unit(unit)
 
 
 class BoschBuderusNumber(
     HeldCapabilities,
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
-    NumberEntity,
+    TemperatureNumber,
 ):
     """Represent one numeric setting confirmed by PointT read-back."""
 
@@ -204,20 +257,21 @@ class BoschBuderusNumber(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
             and self._policy(snapshot.resource) is not None
+            and offered_on(self.coordinator, self.entity_description.resource_path)
         )
 
     @property
     def native_min_value(self) -> float:
         snapshot = self._snapshot
-        if snapshot is not None and self._policy(snapshot.resource):
+        if snapshot is not None and (policy := self._policy(snapshot.resource)):
             minimum = snapshot.resource.metadata.minimum
             if minimum is not None:
-                return minimum
+                return display_minimum(policy, minimum, self.native_step)
         return super().native_min_value
 
     @property
@@ -271,7 +325,8 @@ class BoschBuderusNumber(
         return super().native_unit_of_measurement
 
     async def async_set_native_value(self, value: float) -> None:
-        await async_set_control(
+        # The settings of a heating circuit read their guards again.
+        await async_set_guarded(
             self.coordinator,
             self.entity_description.resource_path,
             value,
@@ -286,7 +341,8 @@ class BoschBuderusNumber(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)
 
 
 def _number_identity(path: str) -> tuple[str, str]:
@@ -314,4 +370,22 @@ def _number_identity(path: str) -> tuple[str, str]:
         "high": ("hot_water_comfort", "Startschwelle Komfort"),
         "low": ("hot_water_eco", "Startschwelle Eco"),
         "setpointTemp": ("pool_setpoint_temperature", "Pool-Solltemperatur"),
+        "maxRunTime": ("filter_maximum_run_time", "Maximale Filterlaufzeit"),
+        "suWiThreshold": (
+            "summer_winter_threshold",
+            "Heizbetrieb bis Außentemperatur",
+        ),
+        "roomTempSetpoint": ("cooling_room_setpoint", "Kühlen: Raum-Solltemperatur"),
+        "outdoorThreshold": (
+            "cooling_outdoor_threshold",
+            "Kühlbetrieb ab Außentemperatur",
+        ),
+        "awayTemperature": ("away_temperature", "Abwesenheitstemperatur"),
+        "on": ("cooling_temperature", "Kühltemperatur"),
     }[tail]
+
+
+def _identity(path: str) -> tuple[str, str]:
+    if (key := hybrid_controls.PRICE_KEYS.get(path)) is not None:
+        return key, resource_name(path)
+    return _number_identity(path)

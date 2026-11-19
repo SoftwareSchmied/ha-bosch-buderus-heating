@@ -24,7 +24,7 @@ from typing import Any, Final
 from weakref import WeakKeyDictionary
 
 from homeassistant.components.number import (
-    NumberEntity,
+    NumberDeviceClass,
     NumberEntityDescription,
     NumberMode,
 )
@@ -45,6 +45,7 @@ from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
 from .i18n import localize
+from .number_temperature import TemperatureNumber
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource, WriteValidationError
 from .rrc_boost import BOOST_PATH, Boost, Preset, Setting
@@ -94,6 +95,7 @@ _NUMBERS: Final = (
         translation_key="rrc_boost_temperature",
         setting="temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        device_class=NumberDeviceClass.TEMPERATURE,
         entity_category=EntityCategory.CONFIG,
         mode=NumberMode.BOX,
         icon="mdi:thermometer-chevron-up",
@@ -351,7 +353,7 @@ class _PresetData(ExtraStoredData):
         return {"next_start": self.value}
 
 
-class RrcBoostNumber(_BoostEntity, RestoreEntity, NumberEntity):
+class RrcBoostNumber(_BoostEntity, RestoreEntity, TemperatureNumber):
     """The temperature or the duration of the next boost start (AWAY-06).
 
     Nothing is sent from here: while the boost is off a new value is kept

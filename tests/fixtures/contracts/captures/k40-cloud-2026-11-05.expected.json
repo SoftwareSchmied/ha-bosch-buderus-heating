@@ -37,10 +37,12 @@
    "heatSources:emStatus",
    "heatSources:emon:chConsumption:compressor",
    "heatSources:emon:chConsumption:eheater",
+   "heatSources:emon:chConsumption:environmental_energy",
    "heatSources:emon:coolingConsumption:compressor",
    "heatSources:emon:coolingConsumption:outputProduced",
    "heatSources:emon:dhwConsumption:compressor",
    "heatSources:emon:dhwConsumption:eheater",
+   "heatSources:emon:dhwConsumption:environmental_energy",
    "heatSources:emon:totalConsumption:compressor",
    "heatSources:emon:totalConsumption:eheater",
    "heatSources:flameStatus",
@@ -117,6 +119,7 @@
    "dhwCircuits:dhw1:temperatureLevels:eco",
    "dhwCircuits:dhw1:temperatureLevels:high",
    "dhwCircuits:dhw1:temperatureLevels:low",
+   "heatingCircuits:hc1:boostDuration",
    "heatingCircuits:hc1:manualRoomSetpoint",
    "heatingCircuits:hc1:maxFlowTemp",
    "heatingCircuits:hc1:temperatureLevels:comfort2",
@@ -132,6 +135,7 @@
   "switch": [
    "dhwCircuits:dhw1:charge",
    "dhwCircuits:dhw1:reduceTempOnAlarm",
+   "heatingCircuits:hc1:boostMode",
    "system:awayMode:enabled"
   ],
   "button": []

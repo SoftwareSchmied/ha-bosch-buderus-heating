@@ -31,6 +31,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
+from custom_components.bosch_buderus_heating.pointt.models import BatchItemResult
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.select import build_select_descriptions
 from custom_components.bosch_buderus_heating.switch import (
@@ -66,6 +67,14 @@ def writable(
             minimum=minimum,
             maximum=maximum,
         ),
+    )
+
+
+def serve_live(coordinator, resource):
+    """L16: what the gateway answers to the live read before a write."""
+    coordinator.client.get_resource.return_value = resource
+    coordinator.client.get_resources_bulk.side_effect = lambda gateway, paths: tuple(
+        BatchItemResult(gateway, path, 200, resource=resource) for path in paths
     )
 
 
@@ -256,6 +265,8 @@ async def test_read_only_and_withdrawn_metadata_never_write(hass):
     coordinator.data[current.path] = ResourceSnapshot(
         withdrawn, True, datetime.now(UTC)
     )
+    # L16: the gateway's live reading says the same.
+    serve_live(coordinator, withdrawn)
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(
             current.path, "on", SOFTENER_REGENERATION_POLICY
@@ -324,6 +335,7 @@ async def test_changed_wire_schema_blocks_existing_controls_and_recovers(
         payload["value"] = {"value": current}
     bad = parse_resource(payload)
     coordinator.data[path] = ResourceSnapshot(bad, True, datetime.now(UTC))
+    serve_live(coordinator, bad)
     assert not entity.available
     assert build({path: bad}) == ()
     diagnosis = _control_diagnostics(bad)
@@ -356,10 +368,12 @@ async def test_same_value_recheck_rejects_changed_softener_schema(
 ):
     good = writable(suffix, current, minimum=0)
     coordinator = coordinator_for(hass, {good.path: good})
-    coordinator.client.get_resource.return_value = replace(good, values=(current,))
+    serve_live(coordinator, replace(good, values=(current,)))
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(
             good.path, current, assess_control(good).policy
         )
-    coordinator.client.get_resource.assert_awaited_once_with("softener", good.path)
+    coordinator.client.get_resources_bulk.assert_awaited_once_with(
+        "softener", (good.path,)
+    )
     coordinator.client.put_resource_value.assert_not_awaited()

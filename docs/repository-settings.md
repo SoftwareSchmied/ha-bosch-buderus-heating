@@ -27,7 +27,8 @@ URLs, domain and archive name remain unchanged. See
   versions.
 - Independently of these settings, the tag-triggered release workflow runs
   the browser tests, both older Home Assistant versions and the source checks
-  again, and publishes only when all of them pass.
+  again, and publishes only when all of them pass. These jobs run in parallel,
+  and the full test suites use `pytest-xdist` (`-n auto`).
 - Branches must be current before merging.
 - Review conversations must be resolved.
 - Force pushes and branch deletion are disabled.

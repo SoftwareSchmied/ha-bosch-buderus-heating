@@ -16,7 +16,9 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.helpers.translation import async_get_translations
 
-from . import rrc_contracts
+from . import hybrid_controls, rrc_contracts
+from .circuit_control_writes import offered_on, write_guards
+from .circuit_controls import display_minimum
 from .const import DOMAIN
 from .control import pause_end_text
 from .control_presentation import control_category, control_icon, control_label
@@ -27,7 +29,12 @@ from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
 from .i18n import LANGUAGES, dialog_config
 from .notifications import gateway_notification_key, installation_name
-from .options_navigation import NavigatingOptionsFlow
+from .options_navigation import (
+    BACK,
+    BACK_CHOICE,
+    NAVIGATION,
+    NavigatingOptionsFlow,
+)
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -96,11 +103,13 @@ class ControlsSelector(ObjectSelector):
 
 
 # Tabs: heating circuits, then hot water, then the remaining system settings.
-_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1}
+_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1, "hybrid": 3}
 
 
 def control_group(path: str) -> str:
     """The dialog tab of a control path."""
+    if path in hybrid_controls.CONTROL_PATHS:
+        return "hybrid"
     parts = path.strip("/").split("/")
     if parts[0] in _GROUP_RANK and len(parts) > 1:
         return "/".join(parts[:2])
@@ -140,6 +149,8 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
                 "/system/seasonOptimizer/mode",
                 "/heatSources/additionalHeater/operationMode",
             }
+            # Hybrid plants: the strategy and the energy prices.
+            or path in hybrid_controls.CONTROL_PATHS
             or (context.rrc_plant and rrc_contracts.in_dialog(path))
         ):
             continue
@@ -154,6 +165,8 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
             and assessment.current_value_issue is None
             and assessment.platform != "button"
             and _dialog_policy(assessment.policy)
+            # The cooling threshold only while the circuit offers cooling.
+            and offered_on(coordinator, path)
         ):
             result[path] = resource
     return result
@@ -181,8 +194,8 @@ def _weather_control_off(
 
 
 # Settings precede activation: a mode, a charge, extra hot water (after its
-# duration).
-_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw")
+# duration), a boost (after its temperature and duration).
+_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw", "/boostMode")
 # A heating curve point or supply limit: lowered lower limits first, then
 # raised upper ones, lowered upper ones and raised lower ones, so that each
 # write keeps every lower limit at or below every upper one.
@@ -229,7 +242,9 @@ def _refusal_error(err: WriteValidationError) -> str | None:
 
 
 def _guards(
-    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    path: str,
+    policy: EnumWritePolicy | NumberWritePolicy | None = None,
 ) -> tuple[Resource, ...] | None:
     """S5: the readings a heating circuit setting is checked against (the
     limits it is ordered against, the control strategy), read again with it
@@ -241,7 +256,9 @@ def _guards(
     entity refuses it the same way) instead of checking without that limit.
     """
     if not context_of(coordinator).rrc_plant:
-        return ()
+        # A heating circuit setting: its control type and the settings it
+        # depends on (``circuit_controls``); none for the others.
+        return write_guards(coordinator, path, policy, include_target=False)
     snapshots = coordinator.data or {}
     guards: list[Resource] = []
     for item in guard_paths(path):
@@ -329,6 +346,8 @@ def _missing_cloud_reason(entry: ConfigEntry) -> str:
 
 def _translation_key(path: str) -> str:
     if path.endswith("/operationMode"):
+        if path.startswith("/heatingCircuits/") and "/cooling/" in path:
+            return "cooling_operation_mode"
         if path.startswith("/heatingCircuits/"):
             return "heating_circuit_operation_mode"
         if path.startswith("/dhwCircuits/"):
@@ -338,6 +357,10 @@ def _translation_key(path: str) -> str:
         return "silent_mode"
     if "/seasonOptimizer/" in path:
         return "season_switching"
+    if path.startswith("/heatingCircuits/") and path.endswith("/suWiSwitchMode"):
+        return "summer_winter_switching"
+    if path == hybrid_controls.STRATEGY_PATH:
+        return hybrid_controls.TRANSLATION_KEY
     return ""
 
 
@@ -368,26 +391,39 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
             self._control_gateway = next(iter(gateways))
             self._control_displayed = None
             return await self.async_step_operate()
+        if user_input is not None and user_input.get("installation") == BACK:
+            return await self._show_menu("init")
         if user_input is not None and user_input.get("installation") in gateways:
             self._control_gateway = user_input["installation"]
             self._control_displayed = None
             return await self.async_step_operate()
-        choices = [
-            SelectOptionDict(
-                value=key,
-                label=installation_name(
-                    self.hass, self._entry.entry_id, item.gateway.gateway_id, index
-                )
-                + f" ({index})",
+        names = [
+            installation_name(
+                self.hass, self._entry.entry_id, item.gateway.gateway_id, index
             )
-            for index, (key, item) in enumerate(gateways.items(), 1)
+            for index, item in enumerate(gateways.values(), 1)
+        ]
+        # The number only where two systems have the same name.
+        choices = [
+            BACK_CHOICE,
+            *(
+                SelectOptionDict(
+                    value=key,
+                    label=f"{name} ({index})" if names.count(name) > 1 else name,
+                )
+                for index, (key, name) in enumerate(
+                    zip(gateways, names, strict=True), 1
+                )
+            ),
         ]
         return self.async_show_form(
             step_id="controls",
             data_schema=vol.Schema(
                 {
                     vol.Required("installation"): SelectSelector(
-                        SelectSelectorConfig(options=choices)
+                        SelectSelectorConfig(
+                            options=choices, translation_key=NAVIGATION
+                        )
                     )
                 }
             ),
@@ -492,7 +528,7 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                             continue
                         policy = assess_control(before, context_of(coordinator)).policy
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
-                        guards = _guards(coordinator, path)
+                        guards = _guards(coordinator, path, policy)
                         if guards is None:
                             # A limit it is ordered against has no current
                             # reading: nothing is sent.
@@ -636,10 +672,16 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                     else assessment.platform,
                     "value": value,
                     "options": options,
-                    "minimum": assessment.minimum,
+                    "minimum": display_minimum(
+                        assessment.policy, assessment.minimum, assessment.ui_step
+                    )
+                    if assessment.minimum is not None
+                    else None,
                     "maximum": assessment.maximum,
                     "step": assessment.ui_step,
-                    "unit": {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
+                    "unit": (hybrid_controls.display_unit(assessment.unit) or "")
+                    if hybrid_controls.is_price_path(path)
+                    else {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
                         assessment.unit or "", assessment.unit or ""
                     ),
                     "icon": control_icon(
@@ -656,7 +698,9 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
                     and not (
                         path.startswith("/heatingCircuits/")
                         and path.endswith(("/operationMode", "/manualRoomSetpoint"))
-                    ),
+                    )
+                    # The strategy and the prices are main settings of a hybrid plant.
+                    and path not in hybrid_controls.CONTROL_PATHS,
                     "available": current.get(path) == resource,
                 }
             )

@@ -24,11 +24,11 @@ account, gateway, controller and heating system.
 | Status | Systems |
 |---|---|
 | In use | Many installations with heat pumps and gas condensing boilers; see [confirmed installations](confirmed-installations.md) |
-| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus |
+| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus and Bosch |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
 | Room controllers (RRC 2.0) | TC100.2: zone readings and control, programs, temporary setpoint, open window detection, one-day absence, hot water mode, boost, away mode and next switch point confirmed; editing switch points, other absences and hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings untested. CT200: untested. Cloud only, no local access. See [room controllers](room-controllers.md) |
-| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes; see [device families](device-support-plan.md) |
+| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and wallboxes (controls expected, untested); see [device families](device-support-plan.md) |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [checked systems](#checked-systems) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
 
@@ -136,6 +136,16 @@ The examples are checked against their meaning, not only against the schema
 | ventilation temperatures | `-32768` without a declared marker | treated as an error marker (also `32767` and the tenth forms); the disabled local-only sensors show no value |
 | `/ventilation/…/supplyFanRotation` | misspelled unit `rpm"` | kept on the reading, never used as a measurement |
 | `/devices/{deviceId}/type` | value outside its own allowed values | text shown as reported |
+
+### Known deviations of real firmware
+
+These come from reports of real gateways, not from the official examples. The
+read check accepts them only as named here; every other deviation from the
+pinned schema is still rejected.
+
+| Resource | Deviation | Handling |
+| --- | --- | --- |
+| `/system/basicInfo` | a module row without `ModuleSerialNumber`, `ModuleHwIdentStr` or `Ver` (reported for a burner module of a K40RF on firmware 15.00.01) | accepted; the missing value stays missing, nothing is filled in. A module without a serial number is left out of the identity comparison. A `null` or wrongly typed value and a missing `Tok` or `Id` are still rejected |
 
 ## Checked systems
 

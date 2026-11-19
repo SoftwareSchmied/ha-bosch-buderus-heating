@@ -14,10 +14,13 @@ from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator
+from .derived_defrost import events as defrost_events
+from .derived_defrost import track_defrost_entities
 from .device import device_info_for_resource
 from .faults import (
     FaultEventType,
     FaultLifecycleEvent,
+    fault_code_search_url,
     fault_severity_label,
     fault_summary,
 )
@@ -47,6 +50,8 @@ def _setup_entities(
     async_add_entities(
         BoschBuderusNotificationEvent(coordinator) for coordinator in entry.coordinators
     )
+    for coordinator in entry.coordinators:
+        track_defrost_entities(entry, coordinator, async_add_entities, defrost_events)
 
 
 class BoschBuderusNotificationEvent(
@@ -56,7 +61,6 @@ class BoschBuderusNotificationEvent(
 
     _attr_has_entity_name = True
     _attr_translation_key = "system_notifications"
-    _attr_icon = "mdi:alert-circle-outline"
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
@@ -132,6 +136,8 @@ class BoschBuderusNotificationEvent(
         }
         if fault.code is not None:
             attributes["code"] = fault.code
+        if (url := fault_code_search_url(fault)) is not None:
+            attributes["code_search_url"] = url
         if fault.subcode is not None:
             attributes["subcode"] = fault.subcode
         if fault.occurred_at is not None:

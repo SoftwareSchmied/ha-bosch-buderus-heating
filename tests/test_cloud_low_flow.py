@@ -14,7 +14,7 @@ from custom_components.bosch_buderus_heating.pointt.parsers import parse_resourc
 from tests.test_read_contracts import sensor_for
 
 FLOW = "/heatSources/hs1/pumpVolumeFlow"
-BELOW = {"measuring_range": "below"}
+BELOW = {"measuring_range": "below", "reported_state": "low_flow"}
 
 
 def flow(value, state=None, *, path=FLOW, unit="l/min"):

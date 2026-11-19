@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed program names A/B with the codings of the app's string configuration",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-05: program names are decoded and coded as valueConfig says (Base64 in UTF-8/UTF-16/UTF-32 big-endian, ascii as is) and written once with read-back.",
+    "source": "behaviour of the manufacturer's app: program names coded as Base64 or ASCII with charset, coding type and maximum length; a name is editable only with a value configuration"
+  },
+  "cases": {
+    "utf8_base64": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "SG9tZW9mZmljZQ==",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "UTF-8",
+        "codingType": "base64",
+        "maxLength": 20
+      }
+    },
+    "utf16_base64": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "AFcAbwBjAGgAZQ==",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "UTF-16",
+        "codingType": "base64",
+        "maxLength": 20
+      }
+    },
+    "ascii_plain": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "Office",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "ASCII",
+        "codingType": "ascii",
+        "maxLength": 12
+      }
+    },
+    "no_valueconfig": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "Office",
+      "writeable": 1
+    },
+    "maxlength_zero": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "UTF-8",
+        "codingType": "base64",
+        "maxLength": 0
+      }
+    },
+    "empty_value": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "UTF-8",
+        "codingType": "base64",
+        "maxLength": 20
+      }
+    },
+    "writeable_0": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "Office",
+      "writeable": 0,
+      "valueConfig": {
+        "charset": "ASCII",
+        "codingType": "ascii",
+        "maxLength": 12
+      }
+    },
+    "unknown_coding": {
+      "id": "/heatingCircuits/hc1/switchPrograms/nameA",
+      "type": "stringValue",
+      "value": "Office",
+      "writeable": 1,
+      "valueConfig": {
+        "charset": "UTF-8",
+        "codingType": "hex",
+        "maxLength": 12
+      }
+    }
+  }
+}

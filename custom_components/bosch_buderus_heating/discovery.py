@@ -7,10 +7,22 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
-from itertools import islice
 
 from . import rrc_contracts
+from .discovery_containers import (
+    ContainerProbe,
+    ContainerProbes,
+    DirectProbeDiagnostic,
+    known_child_suffixes,
+)
+from .discovery_zones import (
+    IDENTICAL_DEVICE_REFUSED,
+    Admission,
+    IdenticalDeviceRefusals,
+    zone_side_paths,
+)
 from .holidays import HOLIDAY_RESOURCE_PATHS
+from .icom_profile import is_icom_gateway
 from .legacy_holidays import (
     ICOM_FIELDS,
     ICOM_HOLIDAY_ROOT,
@@ -33,7 +45,7 @@ from .pointt import (
     UnexpectedHttpStatus,
 )
 from .pointt.const import MAX_BULK_PATHS
-from .pointt.redaction import resource_path_template
+from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .resource_catalog import is_never_read
 from .rrc import (
     DEVICE_LIST,
@@ -54,6 +66,7 @@ from .rrc import (
 )
 from .rrc_contract_absence import EVENT_LISTS
 from .startup_data import LICENSE_PATH, StartupGatewayData, is_startup_path
+from .variable_tariff import ICOM_TARIFF_PATHS
 from .water_softener import (
     SOFTENER_CAPABILITIES,
     SOFTENER_CIRCUIT,
@@ -99,6 +112,11 @@ MAX_RRC_DEVICE_PROBES = 64
 # W6: the setting leaves the contracts declare per listed device type, at
 # most this many, read after every other path.
 MAX_RRC_DEVICE_SETTING_PROBES = 192
+# #131: once the shared budget is used up, optional probes and the direct
+# reads below refused containers may go on with an allowance of their own,
+# at most this many per discovery. A discovery that stays within the
+# shared budget never uses it. Only the start-up discovery passes it.
+MAX_EXTRA_PROBES = 400
 
 
 class DiscoveryPathSource(StrEnum):
@@ -141,10 +159,24 @@ class DiscoveryDiagnostics:
     device_profile: str = "generic"
     # C8: what showed an RRC controller (device_type, product_type, zones).
     rrc_evidence: tuple[str, ...] = ()
+    # Containers whose known children were requested directly, because their
+    # directory was refused, empty, or shorter than a sibling's.
+    direct_probes: dict[str, DirectProbeDiagnostic] = field(default_factory=dict)
+    direct_probes_over_limit: int = 0
+    # #131: the allowance outside the shared budget, its use, and which
+    # limit ended a discovery at ``resource_limit``.
+    extra_probe_limit: int = 0
+    extra_probes_requested: int = 0
+    resource_limit_scope: str | None = None
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
         self.paths.clear()
+        self.direct_probes.clear()
+        self.direct_probes_over_limit = 0
+        self.extra_probe_limit = 0
+        self.extra_probes_requested = 0
+        self.resource_limit_scope = None
         self.completed = False
         self.stop_reason = "running"
         self.depth_limit_reached = False
@@ -226,6 +258,9 @@ class DiscoveryDiagnostics:
             "catalog_paths_discovered": sum(item.discovered for item in catalog),
             "optional_paths": len(optionals),
             "optional_paths_discovered": sum(item.discovered for item in optionals),
+            "extra_probe_limit": self.extra_probe_limit,
+            "extra_probes_requested": self.extra_probes_requested,
+            "resource_limit_scope": self.resource_limit_scope,
             "fallback_attempts": len(fallbacks),
             "fallback_successes": sum(
                 item.fallback_result == "success" for item in fallbacks
@@ -245,6 +280,45 @@ class DiscoveryDiagnostics:
                     ).items()
                 )
             ),
+            **self._direct_probe_snapshot(),
+        }
+
+    def _direct_probe_snapshot(self) -> dict[str, object]:
+        """Which containers had their children requested directly, and why."""
+        entries: list[dict[str, object]] = []
+        scheduled = discovered = 0
+        for container, record in sorted(
+            self.direct_probes.items(),
+            key=lambda entry: diagnostic_resource_path(entry[0]),
+        ):
+            probes = tuple(
+                item
+                for path in record.paths
+                if (item := self.paths.get(path)) is not None
+            )
+            found = sum(item.discovered for item in probes)
+            scheduled += len(probes)
+            discovered += found
+            entries.append(
+                {
+                    "container": diagnostic_resource_path(container),
+                    "reason": record.reason,
+                    "reference_containers": sorted(
+                        diagnostic_resource_path(path) for path in record.references
+                    ),
+                    "paths_scheduled": len(probes),
+                    "paths_requested": sum(
+                        item.bulk_result != "not_attempted" for item in probes
+                    ),
+                    "resources_discovered": found,
+                }
+            )
+        return {
+            "direct_probe_containers": len(entries),
+            "direct_probe_paths": scheduled,
+            "direct_probe_paths_discovered": discovered,
+            "direct_probe_paths_over_limit": self.direct_probes_over_limit,
+            "direct_probes": entries,
         }
 
     def _access_reason(self, forbidden: int) -> str | None:
@@ -273,11 +347,13 @@ class DiscoveryDiagnostics:
 # C8: read policies of paths that were scheduled but deliberately not read.
 _NOT_READ_POLICIES = frozenset(
     {
+        IDENTICAL_DEVICE_REFUSED,
         "never_read_private",
         "outside_rrc_device_scope",
         "rrc_5xx_assumed_missing",
         "rrc_device_setting_limit",
         "rrc_event_entry",
+        "optional_5xx_assumed_missing",
     }
 )
 
@@ -287,7 +363,8 @@ _NOT_READ_POLICIES = frozenset(
 # every listed path is a known public resource and remains optional when a
 # particular installation does not provide it.
 OPAQUE_CONTAINER_CHILDREN: dict[str, tuple[str, ...]] = {
-    "/gateway": ("/gateway/dataProcessing/status",),
+    # The LED switch-off time is read only (a reading of the gateway).
+    "/gateway": ("/gateway/dataProcessing/status", "/gateway/leds/inactivityTimeout"),
     "/system": (
         "/system/appliance/enabled",
         "/system/appliance/model",
@@ -538,6 +615,23 @@ _DEVICE_OPTIONAL_SUFFIXES = (
     "/zoneId",
 )
 
+# Every known child per circuit kind, for direct reads below a container
+# that cannot be listed (#130); the always-requested children are included
+# for nested containers such as ``cooling`` or ``temperatureLevels``.
+_DIRECT_CHILD_SUFFIXES = known_child_suffixes(
+    {
+        "heatingCircuits": (
+            *_HEATING_CIRCUIT_CATALOG_SUFFIXES,
+            *_HEATING_CIRCUIT_OPTIONAL_SUFFIXES,
+        ),
+        "dhwCircuits": _DHW_CIRCUIT_OPTIONAL_SUFFIXES,
+        "heatSources": _HEAT_SOURCE_OPTIONAL_SUFFIXES,
+        "solarCircuits": _SOLAR_CIRCUIT_OPTIONAL_SUFFIXES,
+        "ventilation": _VENTILATION_ZONE_OPTIONAL_SUFFIXES,
+        "zones": _ZONE_OPTIONAL_SUFFIXES,
+    }
+)
+
 
 async def async_discover_resources(
     client: PointTClient,
@@ -551,6 +645,7 @@ async def async_discover_resources(
     gateway: Gateway | None = None,
     rediscovery: bool = False,
     rrc_evidence: tuple[str, ...] = (),
+    maximum_extra_probes: int = 0,
 ) -> dict[str, Resource]:
     """Follow PointT references without escaping configured safety bounds.
 
@@ -559,12 +654,16 @@ async def async_discover_resources(
     stay queued in the existing start-up state instead of resetting it.
     ``rrc_evidence`` is what earlier readings showed of an RRC controller;
     its profile then applies from the first request on.
+    ``maximum_extra_probes``: the allowance outside ``maximum_resources``
+    for optional probes and direct reads below refused containers, used
+    only once ``maximum_resources`` is used up.
     """
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
 
     report = diagnostics or DiscoveryDiagnostics()
     report.reset()
+    report.extra_probe_limit = max(0, maximum_extra_probes)
     discovered: dict[str, Resource] = {}
     softener_profile = is_water_softener(gateway, discovered)
     # A known family changes probes, not the permission to follow advertised
@@ -603,6 +702,53 @@ async def async_discover_resources(
     consecutive_5xx = 0
     processed: set[str] = set()
     depth_limited: set[str] = set()
+    containers = ContainerProbes(
+        _DIRECT_CHILD_SUFFIXES,
+        known=report.paths.__contains__,
+        records=report.direct_probes,
+    )
+    # #131: a leaf refused on one radio device is not requested again for
+    # devices that list exactly the same children.
+    identical = IdenticalDeviceRefusals()
+    # #131: the mode and setpoint leaves of the zones join the next batch
+    # like the RRC lists; this changes only their order.
+    zone_sides: set[str] = set()
+    # #131: the direct reads below refused or incomplete containers.
+    direct_paths: set[str] = set()
+
+    # Directories the extra allowance read: what they list is read from it too.
+    extra_parents: set[str] = set()
+
+    def extra_eligible(path: str) -> bool:
+        """A path the allowance outside the shared budget may read."""
+        return (
+            report.paths[path].source is DiscoveryPathSource.OPTIONAL
+            or path in direct_paths
+            or _below_any(path, extra_parents)
+        )
+
+    def admitted(
+        queue: dict[str, int], limit: int, *, extra: bool = False
+    ) -> dict[str, int]:
+        """Up to ``limit`` queued paths for the next batch, in queue order.
+
+        A path an identical device was refused leaves its queue unread; one
+        that waits for the answer of an identical device stays queued.
+        ``extra``: only paths the extra allowance may read.
+        """
+        chosen: dict[str, int] = {}
+        for path, depth in tuple(queue.items()):
+            if len(chosen) >= limit:
+                break
+            if extra and not extra_eligible(path):
+                continue
+            admission = identical.admit(path)
+            if admission is Admission.SKIP:
+                del queue[path]
+                report.paths[path].read_policy = IDENTICAL_DEVICE_REFUSED
+            elif admission is Admission.SEND:
+                chosen[path] = depth
+        return chosen
 
     def schedule(path: str, depth: int, source: DiscoveryPathSource) -> None:
         report.scheduled(path, source)
@@ -628,7 +774,7 @@ async def async_discover_resources(
                 path, depth, advertised=source is DiscoveryPathSource.REFERENCE
             )
             return
-        if path in processed:
+        if path in processed or path in identical.skipped:
             return
         depth = min(depth, *(queue.get(path, depth) for queue in queues))
         if depth > maximum_depth:
@@ -639,7 +785,7 @@ async def async_discover_resources(
         report.depth_limit_reached = bool(depth_limited)
         target = (
             priority_pending
-            if path in priority_paths
+            if path in priority_paths or path in zone_sides
             else device_pending
             if path in device_settings
             else queues[1 + _source_priority(report.paths[path].source)]
@@ -648,6 +794,19 @@ async def async_discover_resources(
             if queue is not target:
                 queue.pop(path, None)
         target[path] = depth
+
+    def schedule_direct(probes: list[ContainerProbe]) -> None:
+        """#130: children of a container read without its directory."""
+        for probe in probes:
+            direct_paths.add(probe.path)
+            schedule(
+                probe.path,
+                probe.depth,
+                DiscoveryPathSource.CATALOG
+                if probe.core
+                else DiscoveryPathSource.OPTIONAL,
+            )
+        report.direct_probes_over_limit = len(containers.over_limit)
 
     def enable_rrc_lists(depth: int) -> None:
         nonlocal rrc_enabled, allowed_roots
@@ -759,10 +918,17 @@ async def async_discover_resources(
         enable_rrc_profile(evidence, 1)
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
+    if is_icom_gateway(gateway) and not rediscovery:
+        # The variable tariff of an iCom gateway: two leaves, probed once.
+        for tariff_path in ICOM_TARIFF_PATHS:
+            schedule(tariff_path, 1, DiscoveryPathSource.OPTIONAL)
 
     if softener_profile and not rediscovery:
         schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
     device_reads = 0
+    extra_reads = 0
+    # #131: the shared budget is used up; only the extra allowance reads.
+    extra_mode = False
     while any(queues):
         # W6: the setting leaves of listed devices come after every other path
         # and have their own cap (MAX_RRC_DEVICE_SETTING_PROBES, applied when
@@ -771,24 +937,51 @@ async def async_discover_resources(
         device_frontier = not any(queues[:-1])
         if device_frontier:
             capacity = MAX_BULK_PATHS
+        elif extra_mode:
+            capacity = min(MAX_BULK_PATHS, report.extra_probe_limit - extra_reads)
         else:
             capacity = min(
-                MAX_BULK_PATHS, maximum_resources - (len(processed) - device_reads)
+                MAX_BULK_PATHS,
+                maximum_resources - (len(processed) - device_reads - extra_reads),
             )
         if capacity <= 0:
+            if not extra_mode and report.extra_probe_limit > 0:
+                extra_mode = True
+                continue
             report.stop_reason = "resource_limit"
+            report.resource_limit_scope = (
+                "extra_allowance" if extra_mode else "shared_budget"
+            )
             break
         # Leave spare capacity unused so returned references are expanded before
         # catalog paths, and catalog paths before other optional probes. The
         # RRC lists join the next batch instead of needing a request of their own.
-        frontier_entries = dict(islice(priority_pending.items(), capacity))
-        pending = next((queue for queue in queues[1:] if queue), priority_pending)
-        if pending is not priority_pending and pending is not device_pending:
-            frontier_entries.update(
-                islice(pending.items(), capacity - len(frontier_entries))
-            )
-        elif device_frontier:
-            frontier_entries = dict(islice(device_pending.items(), capacity))
+        identical.begin_batch()
+        if extra_mode and not device_frontier:
+            # Optional probes and direct reads only, in the usual order;
+            # an advertised reference or catalog path waits for no one.
+            frontier_entries: dict[str, int] = {}
+            for queue in queues[:-1]:
+                frontier_entries.update(
+                    admitted(queue, capacity - len(frontier_entries), extra=True)
+                )
+            if not frontier_entries:
+                if any(extra_eligible(path) for queue in queues[:-1] for path in queue):
+                    continue  # paths an identical device was refused left
+                report.stop_reason = "resource_limit"
+                report.resource_limit_scope = "shared_budget"
+                break
+        else:
+            frontier_entries = admitted(priority_pending, capacity)
+            pending = next((queue for queue in queues[1:] if queue), priority_pending)
+            if pending is not priority_pending and pending is not device_pending:
+                frontier_entries.update(
+                    admitted(pending, capacity - len(frontier_entries))
+                )
+            elif device_frontier:
+                frontier_entries = admitted(device_pending, capacity)
+        if not frontier_entries:
+            continue  # only paths an identical device was refused left
         # SYSTEM-12: a batch of probes that the 5xx rule may take as missing
         # carries one path read before. Its answer shows whether the cloud
         # answers at all; a path left out for it stays queued.
@@ -807,13 +1000,22 @@ async def async_discover_resources(
         if device_frontier:
             # Not charged to the shared distinct-path budget either.
             device_reads += len(frontier_entries)
+        elif extra_mode:
+            # Neither: charged to the extra allowance only.
+            extra_reads += len(frontier_entries)
+            report.extra_probes_requested = extra_reads
         elif startup_data is not None:
             frontier_entries = {
                 path: frontier_entries[path]
                 for path in startup_data.reserve_discovery(tuple(frontier_entries))
             }
             if not frontier_entries:
+                # The shared budget, counted with the start-up reads, is used up.
+                if report.extra_probe_limit > 0:
+                    extra_mode = True
+                    continue
                 report.stop_reason = "resource_limit"
+                report.resource_limit_scope = "shared_budget"
                 break
         frontier = tuple(frontier_entries)
         for path in frontier:
@@ -870,7 +1072,9 @@ async def async_discover_resources(
         for result in results:
             depth = frontier_entries[result.path]
             resource = result.resource
+            identical.answered(result.path, result.status)
             if resource is None:
+                schedule_direct(containers.refused(result.path, result.status, depth))
                 _LOGGER.debug(
                     "Ignoring PointT discovery item %s: status=%s, error=%s (%s)",
                     resource_path_template(result.path),
@@ -880,6 +1084,8 @@ async def async_discover_resources(
                 )
                 continue
             discovered[result.path] = resource
+            if extra_mode and not device_frontier:
+                extra_parents.add(result.path)
             if resource.path == ZONE_LIST and listed_ids(resource) is not None:
                 enable_rrc_profile("zones", depth + 1)
                 enable_rrc_lists(depth + 1)
@@ -911,12 +1117,19 @@ async def async_discover_resources(
                 schedule(SOFTENER_ROOT, 0, DiscoveryPathSource.CATALOG)
                 schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
             schedule_children(result.path, depth)
+            identical.listed(result.path, resource)
+            # #131: the mode and setpoints of each side a zone lists, before
+            # the optional probes; the side directory itself may be refused.
+            for child in zone_side_paths(result.path, resource):
+                zone_sides.add(child)
+                schedule(child, depth + 2, DiscoveryPathSource.CATALOG)
             for reference in resource.references:
                 child = reference.path
                 if not _is_allowed_reference(child, allowed_roots):
                     continue
                 schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
                 schedule_children(child, depth + 1)
+            schedule_direct(containers.listed(result.path, resource, depth))
     else:
         report.completed = not report.depth_limit_reached
         report.stop_reason = "complete" if report.completed else "depth_limit"
@@ -975,6 +1188,12 @@ async def _recover_invalid_bulk_results(
             recovered.append(result)
             continue
 
+        if fallback_reason == "item_5xx" and result.path in ICOM_TARIFF_PATHS:
+            # A tariff leaf the gateway does not answer counts as missing; it
+            # neither counts towards the outage series nor ends it.
+            diagnostics.paths[result.path].read_policy = "optional_5xx_assumed_missing"
+            recovered.append(result)
+            continue
         diagnostics.fallback_started(result.path, fallback_reason)
         _LOGGER.debug(
             "Retrying recoverable PointT discovery item %s with one individual "
@@ -1151,6 +1370,18 @@ def _optional_children(path: str) -> tuple[str, ...]:
     elif _DEVICE_PATH.fullmatch(path):
         suffixes = _DEVICE_OPTIONAL_SUFFIXES
     return (*fixed, *(f"{path}{suffix}" for suffix in suffixes))
+
+
+def _below_any(path: str, parents: set[str]) -> bool:
+    """Whether a path lies below one of ``parents``."""
+    if not parents:
+        return False
+    position = path.rfind("/")
+    while position > 0:
+        if path[:position] in parents:
+            return True
+        position = path.rfind("/", 0, position)
+    return False
 
 
 def _is_allowed_reference(path: str, roots: tuple[str, ...]) -> bool:

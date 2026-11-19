@@ -26,13 +26,14 @@ from dataclasses import dataclass
 from . import rrc
 from .pointt import (
     PointTClient,
+    ProtocolError,
     Resource,
     WriteValidationError,
 )
 from .pointt.models import JsonValue
 from .rrc_write import RrcStructWrite
 from .start_counters import value_shape
-from .write_policies import RRC_READ_BACK_DELAYS
+from .write_policies import RRC_READ_BACK_DELAYS, ContractRejected
 
 DAYS = ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 DAY_PATHS = (
@@ -318,6 +319,98 @@ def edit_point(
     return day_points
 
 
+# TP-17: the most switch points a day may have. A constant of the room
+# controller app, not reported by the controller; never more.
+APP_MAX_POINTS_PER_DAY = 6
+
+
+def _valid_point(minute: object, temperature: object) -> bool:
+    return (
+        type(minute) is int
+        and 0 <= minute < 1440
+        and minute % 5 == 0
+        and not isinstance(temperature, bool)
+        and isinstance(temperature, int | float)
+        and math.isfinite(temperature)
+        and 5 <= temperature <= 30
+        and float(temperature * 2).is_integer()
+    )
+
+
+def day_body(
+    schedule: Schedule, day: str, points: list[tuple[int, float]]
+) -> list[JsonValue]:
+    """TP-17: the new points of one day as ``{d, t, Th}``, sorted.
+
+    At least one and at most ``APP_MAX_POINTS_PER_DAY`` points, each on the
+    5-minute grid from 5 to 30 °C in steps of 0.5, no two at the same time.
+    A point as read keeps its temperature as read; ``name`` is never sent.
+    """
+    if not schedule.editable or day not in DAYS:
+        raise WriteValidationError("Unsupported RRC schedule change")
+    if not points:
+        # What an empty day means on the controller is not known.
+        raise ContractRejected("rrc_point_last")
+    if len(points) > APP_MAX_POINTS_PER_DAY:
+        raise ContractRejected("rrc_point_limit")
+    if any(not _valid_point(minute, temperature) for minute, temperature in points):
+        raise WriteValidationError("Unsupported RRC schedule change")
+    minutes = [minute for minute, _temperature in points]
+    if len(set(minutes)) != len(minutes):
+        raise ContractRejected("rrc_point_duplicate")
+    read: dict[tuple[int, float], JsonValue] = {}
+    for position, item in enumerate(schedule.encode()):
+        point = schedule.points[position]
+        if point.day == day and isinstance(item, dict):
+            read[(point.minute, point.temperature)] = item.get("Th")
+    body: list[JsonValue] = [
+        {
+            "d": day,
+            "t": minute,
+            "Th": read.get((minute, float(temperature)), temperature),
+        }
+        for minute, temperature in points
+    ]
+    body.sort(key=_minute_of)
+    return body
+
+
+def day_change(
+    schedule: Schedule,
+    day: str,
+    *,
+    add: tuple[int, float] | None = None,
+    delete: int | None = None,
+) -> list[tuple[int, float]]:
+    """TP-17: the points of ``day`` with one point added or one deleted
+    (``delete`` is the index in ``schedule.points``)."""
+    points = [
+        (point.minute, point.temperature)
+        for position, point in enumerate(schedule.points)
+        if point.day == day and position != delete
+    ]
+    if delete is not None and (
+        not 0 <= delete < len(schedule.points) or schedule.points[delete].day != day
+    ):
+        raise WriteValidationError("Unsupported RRC schedule change")
+    if add is not None:
+        if len(points) >= APP_MAX_POINTS_PER_DAY:
+            raise ContractRejected("rrc_point_limit")
+        points.append(add)
+    return points
+
+
+def day_shows(
+    path: str, day: str, desired: tuple[SwitchPoint, ...]
+) -> Callable[[Resource], bool]:
+    """Whether a later reading of the week shows ``desired`` for ``day``."""
+
+    def shows(resource: Resource) -> bool:
+        return resource.path == path and _day_of(resource, day) == desired
+
+    return shows
+
+
 def _minute_of(item: JsonValue) -> int:
     assert isinstance(item, dict) and type(item["t"]) is int
     return item["t"]
@@ -498,8 +591,36 @@ class RrcProgramService:
         if original is None or WEEK.fullmatch(expected.path) is None:
             raise WriteValidationError("Unsupported RRC week")
         body = edit_point(original, index, minute, temperature)
+        return await self._write_day(
+            gateway_id, expected, original, original.points[index].day, body, on_sent
+        )
+
+    async def write_day(
+        self,
+        gateway_id: str,
+        expected: Resource,
+        day: str,
+        points: list[tuple[int, float]],
+        *,
+        on_sent: Callable[[], None] | None = None,
+    ) -> tuple[Resource, ...]:
+        """TP-17: write one day with points added or deleted, once."""
+        original = parse_schedule(expected)
+        if original is None or WEEK.fullmatch(expected.path) is None:
+            raise WriteValidationError("Unsupported RRC week")
+        body = day_body(original, day, points)
+        return await self._write_day(gateway_id, expected, original, day, body, on_sent)
+
+    async def _write_day(
+        self,
+        gateway_id: str,
+        expected: Resource,
+        original: Schedule,
+        day: str,
+        body: list[JsonValue],
+        on_sent: Callable[[], None] | None,
+    ) -> tuple[Resource, ...]:
         desired = projection(body)
-        day = original.points[index].day
         day_path = expected.path.removesuffix("week") + DAY_PATHS[DAYS.index(day)]
         current_week = await self.client.get_resource(gateway_id, expected.path)
         current = parse_schedule(current_week)
@@ -528,7 +649,12 @@ class RrcProgramService:
             return None
 
         async def send(_state: None) -> None:
-            await self.client.put_resource_value(gateway_id, day_path, body)
+            try:
+                await self.client.put_resource_value(gateway_id, day_path, body)
+            except ProtocolError:
+                # Accepted (2xx) with an answer that cannot be read: only the
+                # read-back tells whether the day was stored.
+                return
 
         async def confirm(_state: None) -> tuple[Resource, ...] | None:
             confirmed = await self.client.get_resource(gateway_id, expected.path)

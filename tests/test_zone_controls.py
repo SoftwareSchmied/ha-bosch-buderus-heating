@@ -22,6 +22,7 @@ from custom_components.bosch_buderus_heating.number import (
 )
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
+    BatchItemResult,
     RateLimited,
     RequestTimeout,
     ResourceReference,
@@ -68,12 +69,29 @@ def entity_for(coordinator, resource):
     return cls(coordinator, builder({resource.path: resource})[0])
 
 
+def gateway_holds(client, *resources):
+    """The gateway's answer to the read of a write's own request: these
+    readings (the state before the write); every other path is missing."""
+    held = {resource.path: resource for resource in resources}
+
+    async def bulk(gateway, paths, **_kwargs):
+        return tuple(
+            BatchItemResult(gateway, path, 200, resource=held[path])
+            if path in held
+            else BatchItemResult(gateway, path, 404)
+            for path in paths
+        )
+
+    client.get_resources_bulk.side_effect = bulk
+
+
 @pytest.mark.parametrize("resource", RESOURCES, ids=lambda r: r.path)
 async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
     environment, resource
 ):
     coordinator, client, _ = environment
     coordinator.data = snapshots(*RESOURCES)
+    gateway_holds(client, *RESOURCES)
     entity = entity_for(coordinator, resource)
     if resource.path.endswith("/operationMode"):
         assert entity.options == [
@@ -90,8 +108,8 @@ async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
         assert entity.native_max_value == resource.metadata.maximum
         assert entity.native_step == (resource.metadata.step_size or 0.5)
         assert entity.native_unit_of_measurement == "°C"
-        # The UI increment is not an unproven API quantization rule.
-        target = resource.value + 0.1
+        # A value on the advertised step, counted from the minimum.
+        target = resource.value + (resource.metadata.step_size or 0.5)
         client.get_resource.return_value = replace(resource, value=target)
         await entity.async_set_native_value(target)
         assert entity.native_value == target
@@ -103,6 +121,39 @@ async def test_each_zone_command_writes_only_its_path_and_uses_its_metadata(
         coordinator.data[other.path].resource == other
         for other in RESOURCES
         if other.path != resource.path
+    )
+
+
+@pytest.mark.parametrize("step", [0.5, 0.25])
+async def test_zone_manual_setpoint_between_two_steps_sends_nothing(environment, step):
+    """An advertised step is a rule of the gateway, counted from the
+    minimum: a value between two steps is refused instead of being cut."""
+    coordinator, client, _ = environment
+    resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=step))
+    coordinator.data = snapshots(resource)
+    entity = entity_for(coordinator, resource)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_native_value(resource.value + 0.1)
+    client.put_resource_value.assert_not_awaited()
+
+
+async def test_zone_manual_setpoint_without_a_step_takes_half_degrees(environment):
+    """Without an advertised step the zone takes 0.5 steps counted from the
+    minimum, as the manufacturer's app sets it."""
+    coordinator, client, _ = environment
+    resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=None))
+    coordinator.data = snapshots(resource)
+    gateway_holds(client, resource)
+    entity = entity_for(coordinator, resource)
+    assert entity.native_step == 0.5
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_native_value(resource.value + 0.1)
+    client.put_resource_value.assert_not_awaited()
+    target = resource.value + 0.5
+    client.get_resource.return_value = replace(resource, value=target)
+    await entity.async_set_native_value(target)
+    client.put_resource_value.assert_awaited_once_with(
+        "synthetic-gateway", resource.path, target
     )
 
 
@@ -234,14 +285,12 @@ async def test_changed_options_bounds_and_step_are_checked_at_write(environment)
 
 
 @pytest.mark.parametrize("mode", ["heating", "cooling"])
-def test_temporary_control_stays_read_only_even_with_writable_metadata(mode):
+def test_temporary_setpoint_keeps_its_reading_and_gets_no_number(mode):
+    """Only the zone climate and its clear button write it."""
     temporary = replace(NUMBER, path=f"/zones/zone2/{mode}/temporaryRoomSetpoint")
     assert len(build_sensor_descriptions({temporary.path: temporary})) == 1
     assert not build_number_descriptions({temporary.path: temporary})
-    assert (
-        _control_diagnostics(temporary)["rejection_reason"]
-        == "zone_override_lifecycle_unverified"
-    )
+    assert _control_diagnostics(temporary)["rejection_reason"] is None
 
 
 @pytest.mark.parametrize(
@@ -424,9 +473,12 @@ async def test_queued_write_revalidates_permission_after_first_confirmation(
         await finish.wait()
 
     client.put_resource_value.side_effect = put
-    client.get_resource.return_value = replace(
+    read_only = replace(
         NUMBER, value=21, metadata=replace(NUMBER.metadata, writable=False)
     )
+    # L16: the first write reads the setting live (still writable), its
+    # read-back shows it read-only, and the queued write's live read too.
+    client.get_resource.side_effect = [NUMBER, read_only, read_only]
     policy = assess_control(NUMBER).policy
     first = asyncio.create_task(
         coordinator.async_write_control(NUMBER.path, 21, policy)

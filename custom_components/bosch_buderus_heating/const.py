@@ -66,6 +66,8 @@ PLATFORMS: Final = (
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    # Weekly program names (disabled by default) and the wallbox display name.
+    Platform.TEXT,
     # W3 (RRC): the disinfection time; no entity on other gateways.
     Platform.TIME,
     # F1: the read-only gateway firmware entity.

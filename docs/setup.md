@@ -231,20 +231,34 @@ home network. I checked it with gateway firmware 15.00.01; older firmware
 pauses the local access (see [compatibility](compatibility.md#checked-systems)).
 
 1. Choose **Cloud and local access** when adding the integration, or add the
-   local access later with **Set up local access** in the entry's options.
-2. Select the discovered gateway address or enter its IP address or hostname.
-3. Confirm the gateway certificate when Home Assistant asks for it.
-4. Sign in with the device label: enter **Login** and **Pass** from the label
+   local access later under **Configure → Connections → Set up local
+   access**.
+2. If the entry already has a system, choose it in **Choose the
+   installation**: the heating system you connect locally, the heat pump or
+   the boiler, not a wallbox or an air conditioner. The list shows the device
+   names; if only one installation fits, it is preselected. **New system
+   (gateway not in your account)** is only for a gateway that is not in your
+   account; for a gateway that is, it would set the system up a second time.
+   Without any system, this step does not appear.
+3. Select the discovered gateway address or enter its IP address or hostname.
+4. Confirm the gateway certificate when Home Assistant asks for it.
+5. Sign in with the device label: enter **Login** and **Pass** from the label
    on the gateway. The login is shown as you type it; the pass field can be
    shown with its eye symbol. Spaces and line breaks at the start or end, for
    example from copying, are removed. Home Assistant does not save them.
-5. Release the local sign-in on the gateway: press the Wi-Fi and wireless
+6. Release the local sign-in on the gateway: press the Wi-Fi and wireless
    buttons together for 1 second, wait for the blue signal and continue within
    five minutes. After a typo, press the buttons again, because the gateway
    accepts a sign-in only within five minutes after the release.
-6. Confirm the certificate once more. The gateway has its own certificate for
+7. Confirm the certificate once more. The gateway has its own certificate for
    the sign-in port 9442 and for the data port 9443, so this page can appear
    twice.
+
+If the read check reports that the gateway's system information is not
+complete yet, the gateway is still collecting it. This can take several
+minutes; on a K40RF with firmware 15.00.01 it took about nine minutes during
+the first local setup. Wait a few minutes and try the read check again; there
+is no need to start over.
 
 If Home Assistant shows more than one "Discovered" card for the gateway, open
 the one of Bosch/Buderus Home Comfort.
@@ -421,11 +435,17 @@ to open the app address. It is not enough to identify an expired token.
    signing in. Open the small **Console settings** gear and enable
    **Preserve log**. Clear **Filter** and select **All levels**. Keep Developer
    Tools open while completing every sign-in step.
-3. Look for **Failed to launch** or **Connecting to** and the
+3. After the sign-in, SingleKey ID may show a page saying that you will be
+   redirected, for example in about three seconds, and then nothing happens.
+   Select the link or button on that page; only then does the app address
+   appear in the Console. Do not copy the address of that page itself
+   (`singlekey-id.com/...`): it is not the app address, and the dialog says
+   so if it is pasted.
+4. Look for **Failed to launch** or **Connecting to** and the
    `com.bosch...://` or `com.buderus...://` address. If it appears, use
    **Copy link address** and paste the full address into the still-open
    Home Assistant dialog.
-4. If no address appears, note the page displayed after sign-in. If it is the
+5. If no address appears, note the page displayed after sign-in. If it is the
    SingleKey ID account home page, follow
    [SingleKey ID home page appears after sign-in](#singlekey-id-home-page-appears-after-sign-in).
    Otherwise, [request help](#request-help) with your Chrome version, operating
@@ -460,10 +480,16 @@ oder der Browser versucht hat, die App-Adresse zu öffnen.
    **Protokoll beibehalten / Preserve log**. Leere das Filterfeld und wähle
    **Alle Ebenen / All levels**. Lasse die Entwicklerwerkzeuge während der
    gesamten Anmeldung geöffnet.
-3. Suche nach **Failed to launch** oder **Connecting to** und der
+3. Nach der Anmeldung kann SingleKey ID eine Seite zeigen, die eine
+   Weiterleitung ankündigt, etwa in rund drei Sekunden, und dann passiert
+   nichts. Wähle den Link oder die Schaltfläche auf dieser Seite; erst danach
+   erscheint die App-Adresse in der Konsole. Kopiere nicht die Adresse dieser
+   Seite selbst (`singlekey-id.com/...`): Sie ist keine App-Adresse, und der
+   Dialog weist darauf hin, wenn sie eingefügt wird.
+4. Suche nach **Failed to launch** oder **Connecting to** und der
    `com.bosch...://`- beziehungsweise `com.buderus...://`-Adresse. Kopiere sie
    über **Link-Adresse kopieren** vollständig in den offenen HA-Dialog.
-4. Bleibt die Adresse aus, nenne bei einer Rückfrage die Chrome-Version,
+5. Bleibt die Adresse aus, nenne bei einer Rückfrage die Chrome-Version,
    das Betriebssystem, die HA- und Integrationsversion sowie die nach der
    Anmeldung angezeigte Seite oder Fehlermeldung. Schreibe dazu, ob die
    Entwicklerwerkzeuge schon vor der Anmeldung geöffnet waren.
@@ -495,6 +521,15 @@ before opening the app, select **Cancel**. Before the next attempt, press
 `F12` and open the Console. Then copy the complete
 `com.bosch...://` or `com.buderus...://` address from the **Failed to
 launch** or **Connecting to** message as described above.
+
+### Signing in with a tablet or phone does not work
+
+Doing part of the sign-in on a tablet or phone and copying the address to a
+computer is error-prone: the address may be cut off, come from an older
+attempt or arrive after the attempt has expired. Do the whole sign-in on one
+computer in one browser instead: open Home Assistant and the **SingleKey ID**
+link from the dialog in the same browser, sign in, copy the `com.bosch...://`
+or `com.buderus...://` address from the console and paste it straight away.
 
 ### Home Assistant reports an invalid redirect address
 

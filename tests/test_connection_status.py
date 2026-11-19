@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -24,6 +26,21 @@ from custom_components.bosch_buderus_heating.pointt import (
 from tests.test_validity import _coordinator
 
 CLOUD, LAN = "cloud", "lan"
+TRANSLATIONS = (
+    Path(__file__).parents[1] / "custom_components/bosch_buderus_heating/translations"
+)
+
+
+async def outcome_text(hass: HomeAssistant, entry, key: str) -> str:
+    """The text of the page the test outcome opens, as the frontend fills it."""
+    code, values = await status.test_connection(hass, entry, key)
+    assert code in status.TEST_CODES
+    data = json.loads(
+        (TRANSLATIONS / f"{hass.config.language}.json").read_text("utf-8")
+    )
+    return data["options"]["step"][f"connection_test_{code}"]["description"].format(
+        **values
+    )
 
 
 class Runtime:
@@ -215,7 +232,7 @@ async def test_menu_description_from_existing_state(hass: HomeAssistant) -> None
 async def test_cloud_test_reads_once_and_reports(hass: HomeAssistant) -> None:
     hass.config.language = "de"
     runtime = Runtime(hass)
-    result = await status.test_connection(hass, entry_with(runtime), CLOUD)
+    result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert result.startswith("In Ordnung") and "2 Gateway(s)" in result
     runtime.client.get_gateways.assert_awaited_once()
 
@@ -223,7 +240,7 @@ async def test_cloud_test_reads_once_and_reports(hass: HomeAssistant) -> None:
 async def test_cloud_test_sends_nothing_during_a_pause(hass: HomeAssistant) -> None:
     hass.config.language = "de"
     runtime = Runtime(hass, paused=900.0)
-    result = await status.test_connection(hass, entry_with(runtime), CLOUD)
+    result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert result.startswith("Nicht getestet: Abfragen sind pausiert bis")
     runtime.client.get_gateways.assert_not_awaited()
 
@@ -240,26 +257,34 @@ async def test_cloud_test_failures(hass: HomeAssistant, error, expected) -> None
     hass.config.language = "de"
     runtime = Runtime(hass)
     runtime.client.get_gateways.side_effect = error
-    assert expected in await status.test_connection(hass, entry_with(runtime), CLOUD)
+    assert expected in await outcome_text(hass, entry_with(runtime), CLOUD)
 
 
 async def test_local_test_uses_the_running_source(hass: HomeAssistant) -> None:
     hass.config.language = "de"
     runtime = Runtime(hass, local=ready_local())
     entry = entry_with(runtime)
-    assert (await status.test_connection(hass, entry, LAN)).startswith(
+    assert (await outcome_text(hass, entry, LAN)).startswith(
         "In Ordnung, Antwort nach 12 ms."
     )
     runtime.local_driver.test_connection.return_value = ("other_gateway", 30)
-    assert "anderes Gateway" in await status.test_connection(hass, entry, LAN)
+    assert "anderes Gateway" in await outcome_text(hass, entry, LAN)
+    # Not reachable: with the tip on a fixed address, unlike the cloud.
+    runtime.local_driver.test_connection.return_value = ("unreachable", 40)
+    text = await outcome_text(hass, entry, LAN)
+    assert text.startswith("Nicht erreichbar: Keine Antwort (40 ms).")
+    assert "DHCP-Reservierung" in text
+    runtime.local_driver.test_connection.return_value = ("odd code!", 5)
+    assert await status.test_connection(hass, entry, LAN) == (
+        "error",
+        {"kind": "unknown"},
+    )
 
 
 async def test_no_test_for_a_disabled_access(hass: HomeAssistant) -> None:
     hass.config.language = "en"
     runtime = Runtime(hass)
-    result = await status.test_connection(
-        hass, entry_with(runtime, cloud_enabled=False), CLOUD
-    )
+    result = await outcome_text(hass, entry_with(runtime, cloud_enabled=False), CLOUD)
     assert result.startswith("Not tested: the access is not running")
     runtime.client.get_gateways.assert_not_awaited()
 
@@ -377,12 +402,12 @@ async def test_cloud_test_names_known_causes_without_a_request(
 
     hass.config.language = "de"
     runtime = Runtime(hass, cloud_phase=ConnectionPhase.AUTH_REQUIRED)
-    result = await status.test_connection(hass, entry_with(runtime), CLOUD)
+    result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert "Erneut anmelden" in result
     runtime.client.get_gateways.assert_not_awaited()
     runtime = Runtime(hass)
     runtime.client.get_gateways.side_effect = SourceStopped()
-    assert (await status.test_connection(hass, entry_with(runtime), CLOUD)).startswith(
+    assert (await outcome_text(hass, entry_with(runtime), CLOUD)).startswith(
         "Nicht getestet: Der Zugang läuft gerade nicht"
     )
 
@@ -398,7 +423,7 @@ async def test_rate_limit_without_retry_after_uses_the_pause(
         raise RateLimited(None)
 
     runtime.client.get_gateways.side_effect = limited
-    result = await status.test_connection(hass, entry_with(runtime), CLOUD)
+    result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert result.startswith("Nicht getestet: Abfragen sind pausiert bis")
 
 
@@ -420,7 +445,7 @@ async def test_local_test_names_known_causes_without_a_request(
     runtime.local_driver.service = SimpleNamespace(
         snapshot=lambda: SimpleNamespace(gateway_pause_seconds=300.0)
     )
-    result = await status.test_connection(hass, entry_with(runtime), LAN)
+    result = await outcome_text(hass, entry_with(runtime), LAN)
     assert expected in result
     runtime.local_driver.test_connection.assert_not_awaited()
 
@@ -493,9 +518,15 @@ async def test_options_dialog_shows_state_and_offers_the_test(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"next_step_id": "connections"}
     )
-    # The accesses are a menu with their labels and a way back.
-    labels = [label for step, label in result["menu_options"].items() if step != "back"]
-    assert list(result["menu_options"])[-1] == "back"
+    # The accesses are a menu with their labels and a way back; each entry
+    # has a translation that shows its label (a placeholder).
+    options = result["menu_options"]
+    labels = [
+        result["description_placeholders"][step]
+        for step in options
+        if step.startswith("connection_open_")
+    ]
+    assert options[-1] == "back"
     assert any(item.startswith("Cloud access (") for item in labels)
     assert not any("bosch" in item.casefold() for item in labels)
     hass.config_entries.options.async_abort(result["flow_id"])
@@ -506,8 +537,9 @@ async def test_options_dialog_shows_state_and_offers_the_test(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"next_step_id": "connection_test"}
     )
-    assert result["step_id"] == "connection_test"
-    assert result["description_placeholders"]["result"].startswith("Not tested")
+    # The outcome is a page with a fixed text in the profile language.
+    assert result["step_id"] == "connection_test_not_running"
+    assert result["description_placeholders"] == {}
     result = await hass.config_entries.options.async_configure(result["flow_id"], {})
     assert result["step_id"] == "connection"
 
@@ -525,6 +557,84 @@ async def test_no_test_for_an_access_without_appliances(hass: HomeAssistant) -> 
     hass.config.language = "en"
     runtime = Runtime(hass)
     runtime.source_phases["b-cloud"] = ConnectionPhase.DISABLED
-    result = await status.test_connection(hass, entry_with(runtime), CLOUD)
+    result = await outcome_text(hass, entry_with(runtime), CLOUD)
     assert result.startswith("Not tested: the access is not running")
     runtime.client.get_gateways.assert_not_awaited()
+
+
+# ---------------------------------- accounts with a wallbox or air conditioner only
+
+
+def _managed(kind, *, ok=True):
+    from custom_components.bosch_buderus_heating.managed_aircon import (
+        ManagedAirconCoordinator,
+    )
+    from custom_components.bosch_buderus_heating.managed_wallbox import (
+        ManagedWallboxCoordinator,
+    )
+
+    coordinator = (
+        ManagedWallboxCoordinator if kind == "wallbox" else ManagedAirconCoordinator
+    ).__new__(
+        ManagedWallboxCoordinator if kind == "wallbox" else ManagedAirconCoordinator
+    )
+    coordinator.last_update_success = ok
+    coordinator.data = None
+    return coordinator
+
+
+@pytest.mark.parametrize("kind", ["wallbox", "aircon"])
+@pytest.mark.parametrize(
+    ("ok", "expected"), [(True, "verbunden"), (False, "nicht erreichbar")]
+)
+async def test_cloud_account_without_heat_pump_is_not_starting(
+    hass: HomeAssistant, kind, ok, expected
+) -> None:
+    hass.config.language = "de"
+    runtime = Runtime(hass)
+    runtime.coordinator = _managed(kind, ok=ok)
+    assert expected in label(hass, entry_with(runtime), CLOUD, 1)
+    assert "startet" not in label(hass, entry_with(runtime), CLOUD, 1)
+
+
+def _bacon_access(error=None):
+    from custom_components.bosch_buderus_heating.managed_bacon import (
+        BaconDeviceAccess,
+    )
+
+    access = BaconDeviceAccess.__new__(BaconDeviceAccess)
+    access.account = SimpleNamespace(error=error)
+    return access
+
+
+class WithSecondCloud(Runtime):
+    """One account with a heat pump (optional) and two second-cloud devices."""
+
+    def __init__(self, hass, *, heat_pump, error=None):
+        super().__init__(hass)
+        bindings = {
+            "b-bacon-1": SimpleNamespace(connection_id=CLOUD, target_id="t1"),
+            "b-bacon-2": SimpleNamespace(connection_id=CLOUD, target_id="t2"),
+        }
+        if heat_pump:
+            bindings["b-cloud"] = SimpleNamespace(connection_id=CLOUD, target_id="t")
+        self.snapshot.bindings = bindings
+        self.access = {"b-bacon-1": _bacon_access(error), "b-bacon-2": _bacon_access()}
+
+    def source_data(self, key):
+        return self.access.get(key, self.coordinator if key == "b-cloud" else None)
+
+
+@pytest.mark.parametrize("heat_pump", [False, True])
+async def test_second_cloud_devices_do_not_keep_the_account_starting(
+    hass: HomeAssistant, heat_pump
+) -> None:
+    entry = entry_with(WithSecondCloud(hass, heat_pump=heat_pump))
+    assert status.access_status(entry, CLOUD).state == "connected"
+
+
+async def test_a_failed_second_cloud_account_is_not_reachable(
+    hass: HomeAssistant,
+) -> None:
+    runtime = WithSecondCloud(hass, heat_pump=False, error="connection")
+    assert status.access_status(entry_with(runtime), CLOUD).state == "unreachable"

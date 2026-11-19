@@ -14,6 +14,7 @@
     "values": {
       "wbState": "Charging",
       "meter": "1250;7.2",
+      "energyTotal": 4321.5,
       "limit": "16",
       "activeChargingTime": 35,
       "chargingStart": "2026-10-24T09:00:00+02:00",

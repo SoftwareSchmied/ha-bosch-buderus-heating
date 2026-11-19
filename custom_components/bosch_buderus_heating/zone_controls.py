@@ -12,9 +12,10 @@ from .resource_catalog import additional_app_value
 
 ZONE_MODE_PATTERN = r"^/zones/zone[^/:]+/(?:heating|cooling)/operationMode$"
 ZONE_MANUAL_PATTERN = r"^/zones/zone[^/:]+/(?:heating|cooling)/manualRoomSetpoint$"
-_ZONE_TEMPORARY = re.compile(
+ZONE_TEMPORARY_PATTERN = (
     r"^/zones/zone[^/:]+/(?:heating|cooling)/temporaryRoomSetpoint$"
 )
+_ZONE_TEMPORARY = re.compile(ZONE_TEMPORARY_PATTERN)
 ZONE_MODES = frozenset({"off", "manual", "auto"})
 _ZONE_CONTROLS = (re.compile(ZONE_MODE_PATTERN), re.compile(ZONE_MANUAL_PATTERN))
 
@@ -26,7 +27,7 @@ def is_zone_control(path: str) -> bool:
 
 
 def is_zone_temporary(path: str) -> bool:
-    """Recognize the read-only override without promising its lifecycle."""
+    """A zone's temporary setpoint; only the zone climate writes it."""
     return _ZONE_TEMPORARY.fullmatch(path) is not None
 
 

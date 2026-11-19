@@ -1,8 +1,9 @@
-"""Z2: one write transaction for an EMS/iCom weekly switch program.
+"""Z2: one write transaction for a PointT weekly switch program.
 
 Fresh read of the program and, on a heating circuit that reports it, of its
 program type, comparison with the program shown, exactly one PUT of the whole
-week as a raw JSON array, read-back of the whole week. The PUT is never
+week (a raw JSON array; for the WDDW2 hot water program the object
+``{"switchPoints": [...]}``), read-back of the whole week. The PUT is never
 repeated: a lost answer or a server error after sending is resolved only by
 reading (``rrc_write.RrcStructWrite``, the same rules as the structured room
 controller writes). The coordinator runs it under its polling/write lock and
@@ -30,18 +31,26 @@ from .rrc_write import RrcStructWrite
 from .switch_program_edit import (
     EditableProgram,
     editable_program,
-    encode_week,
+    encode_body,
     fingerprint,
     program_mode_issue,
     program_mode_path,
     same_points,
     week_issue,
+    wire_week,
 )
 from .switch_programs import SwitchPoint, assess_switch_program
 from .write_policies import ContractRejected
 from .writes import ControlUnused
 
 DEFAULT_DELAYS = (0.5, 1.0, 2.0)
+
+# TP-06: builds the new week from a fresh reading (the program, the gateway's
+# readings, the fresh program type); ``None`` sends nothing.
+type SwitchProgramPlan = Callable[
+    [Resource, Mapping[str, Resource], Resource | None],
+    tuple[SwitchPoint, ...] | None,
+]
 
 
 class SwitchProgramChanged(ContractRejected):
@@ -54,14 +63,17 @@ class SwitchProgramChanged(ContractRejected):
 def program_shows(
     path: str, points: Sequence[SwitchPoint]
 ) -> Callable[[Resource], bool]:
-    """Whether a reading of ``path`` holds exactly these points (any order)."""
-    desired = tuple(points)
+    """Whether a reading of ``path`` holds exactly these points (any order),
+    both as written (``wire_week``)."""
+    desired = wire_week(path, points)
 
     def shows(resource: Resource) -> bool:
         if resource.path != path:
             return False
         assessment = assess_switch_program(resource)
-        return assessment.supported and same_points(assessment.points, desired)
+        return assessment.supported and same_points(
+            wire_week(path, assessment.points), desired
+        )
 
     return shows
 
@@ -107,12 +119,17 @@ class SwitchProgramService:
             raise ContractRejected("program_not_editable")
         if (reason := week_issue(points, shown)) is not None:
             raise ContractRejected(f"program_{reason}")
-        desired = tuple(points)
         path = expected.path
+        # As written: the points the week gains or loses count as well.
+        desired = wire_week(path, points)
+        if (reason := week_issue(desired, shown)) is not None:
+            raise ContractRejected(f"program_{reason}")
         shows = program_shows(path, desired)
         mode_path = program_mode_path(path)
         reads_mode = mode_path is not None and (
-            program_mode is not None or mode_path in resources
+            shown.value_type == "absolute"
+            or program_mode is not None
+            or mode_path in resources
         )
 
         async def preflight() -> Resource:
@@ -130,17 +147,25 @@ class SwitchProgramService:
                 # The program type is read again with the program; an
                 # absolute program or one whose type cannot be read is never
                 # written as a level program.
-                mode = await self._read_mode(gateway_id, mode_path)
-                if (issue := program_mode_issue(path, mode)) is not None:
+                mode = await self.read_mode(gateway_id, mode_path)
+                issue = program_mode_issue(path, mode, shown.value_type)
+                if issue is not None:
                     raise ContractRejected(
                         "program_mode_unknown"
                         if issue == "program_mode_unknown"
+                        else "program_mode_not_absolute"
+                        if shown.value_type == "absolute"
                         else "program_mode_not_level"
                     )
             live: EditableProgram | None = editable_program(
                 current, resources, program_mode=mode
             )
-            if live is None or week_issue(desired, live) is not None:
+            if (
+                live is None
+                or live.body != shown.body
+                or live.value_type != shown.value_type
+                or week_issue(desired, live) is not None
+            ):
                 raise SwitchProgramChanged
             return current
 
@@ -155,10 +180,13 @@ class SwitchProgramService:
 
         async def send(_current: Resource) -> None:
             started.append(self._clock())
+            body = encode_body(desired, shown)
             try:
-                await self.client.put_resource_raw_json(
-                    gateway_id, path, encode_week(desired)
-                )
+                if isinstance(body, dict):
+                    # Only the WDDW2 program is written as an object.
+                    await self.client.put_resource_object(gateway_id, path, body)
+                else:
+                    await self.client.put_resource_raw_json(gateway_id, path, body)
             except ProtocolError:
                 # The gateway accepted the request (2xx) but its answer could
                 # not be read (not JSON, too large, an unexpected envelope):
@@ -177,7 +205,7 @@ class SwitchProgramService:
             self.last_read_back_seconds = round(self._clock() - started[0], 1)
         return confirmed
 
-    async def _read_mode(self, gateway_id: str, mode_path: str) -> Resource | None:
+    async def read_mode(self, gateway_id: str, mode_path: str) -> Resource | None:
         """The current program type; ``None`` if it cannot be read now."""
         try:
             return await self.client.get_resource(gateway_id, mode_path)

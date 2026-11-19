@@ -1,6 +1,6 @@
 # Bulgarian glossary (bg)
 
-Draft, awaiting review by a native speaker. The Bulgarian texts in
+Corrections are welcome. The Bulgarian texts in
 `translations/bg.json` and `i18n/bg.json` use these terms consistently; a
 correction to one term usually applies to every text that uses it.
 

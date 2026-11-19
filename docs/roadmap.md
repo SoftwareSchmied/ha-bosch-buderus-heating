@@ -125,8 +125,10 @@ non-functional entities.
 
 Consumption history, historical `/recordings` imports and regeneration logs
 are not planned under the current scope because P15 was cancelled. Wallbox
-controls remain outside the implemented scope; the eight read-only wallbox
-entities and identified Midea air conditioners are already in Beta.6.
+controls (start, pause, charging current, boost, charging mode, solar,
+overload and price settings) follow in 0.9.2-beta.2, expected but untested on
+a real wallbox; access control, RFID, charge logs and energy history stay
+excluded. Identified Midea air conditioners are already in Beta.6.
 Gateway network configuration, device pairing, factory reset, raw EMS commands,
 gateway removal and user administration remain excluded.
 
@@ -140,7 +142,7 @@ must not be described as local MX300/MX400 access.
 
 The integration was accepted into the default HACS catalog on 2026-10-20 through
 [hacs/default#10040](https://github.com/hacs/default/pull/10040). I have updated
-the [installation guide](setup.md#install-boschbuderus-heating) for direct HACS
+the [installation guide](setup.md#install-boschbuderus-home-comfort) for direct HACS
 search and installation. Thank you to the HACS maintainers for reviewing and
 accepting the submission.
 

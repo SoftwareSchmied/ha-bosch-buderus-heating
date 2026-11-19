@@ -15,15 +15,20 @@ from homeassistant.util import dt as dt_util
 
 from . import (
     BoschBuderusConfigEntry,
+    hybrid_controls,
+    recordings,
     rrc,
     rrc_boost,
     rrc_confirmations,
     rrc_contracts,
     rrc_devices,
     rrc_energy_statistics,
+    system_controls_extra,
 )
+from .aircon import AirconCoordinator
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
+from .circuit_control_writes import circuit_control_diagnostics
 from .cloud_pauses import cloud_pause_store
 from .configuration import CLOUD_KIND, LOCAL_KIND
 from .configuration_access import EntryConfiguration
@@ -35,6 +40,8 @@ from .coordinator import (
     Freshness,
     ResourceSnapshot,
 )
+from .derived_activity import activity_inputs_missing
+from .derived_defrost import calculated_diagnostics
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
 from .energy_contracts import energy_diagnostics, is_energy_collection
@@ -45,7 +52,10 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .icom_diagnostics import icom_diagnostics
+from .icom_profile import is_icom_gateway
 from .local_only import hybrid_evidence, volume_flow_path
+from .local_only_heal import diagnostics as local_only_heal_diagnostics
+from .local_probe import GatewayBrand
 from .local_setup_history import cloud_sign_in_history, local_setup_history
 from .observations import (
     Observation,
@@ -55,8 +65,10 @@ from .observations import (
     pair_observations,
     pair_summary,
 )
+from .performance_history import performance_diagnostics
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
+from .program_names import config_issue, is_name_path
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .resource_catalog import (
     PollGroup,
@@ -83,7 +95,7 @@ from .start_counters import (
     structure_summary,
 )
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
-from .switch_program_edit import edit_issue, points_per_day
+from .switch_program_edit import edit_issue, points_per_day, program_shapes
 from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
@@ -102,8 +114,9 @@ from .writes import (
     assess_control,
     context_of,
 )
+from .zone_climate import zone_climate_diagnostics
 
-DIAGNOSTICS_SCHEMA_VERSION = 47
+DIAGNOSTICS_SCHEMA_VERSION = 48
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -185,6 +198,9 @@ async def async_get_config_entry_diagnostics(
         "request_metrics": runtime.client.metrics.snapshot(),
         "gateways": gateway_reports,
         "wallboxes": [coordinator.diagnostics() for coordinator in runtime.wallboxes],
+        "pointt_air_conditioners": [
+            coordinator.diagnostics() for coordinator in runtime.aircons
+        ],
         "bacon": runtime.bacon.diagnostics()
         if runtime.bacon
         else {"configured": False},
@@ -277,6 +293,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
     sources = []
     gateways: list[dict[str, Any]] = []
     wallboxes = []
+    aircons = []
     for key, number in bindings.items():
         binding = snapshot.bindings[key]
         relationship = {
@@ -305,6 +322,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
             )
         elif isinstance(value, WallboxCoordinator):
             wallboxes.append({**value.diagnostics(), **relationship})
+        elif isinstance(value, AirconCoordinator):
+            aircons.append({**value.diagnostics(), **relationship})
     base["config"].pop("brand", None)
     base["config"]["configured_gateway_count"] = sum(
         target.kind == "pointt_object" for target in snapshot.targets.values()
@@ -330,6 +349,13 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
                 "binding_count": sum(
                     item.target_id == key for item in snapshot.bindings.values()
                 ),
+                # The brand the gateway reported at the local setup, or that
+                # it reported none the integration knows.
+                **(
+                    {"gateway_brand": _local_brand(snapshot.targets[key])}
+                    if snapshot.targets[key].kind == "local_installation"
+                    else {}
+                ),
             }
             for key, number in targets.items()
         ],
@@ -347,6 +373,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         },
         "gateways": gateways,
         "wallboxes": wallboxes,
+        "pointt_air_conditioners": aircons,
     }
 
 
@@ -720,6 +747,10 @@ def _gateway_diagnostics(
         if rrc.profile_evidence(coordinator.gateway.device_type, coordinator.resources)
         else "generic",
         "rrc_profile": _rrc_profile_diagnostics(coordinator),
+        # The plant's recordings: reads, series and import, without values.
+        "recordings": recordings.diagnostics(
+            coordinator.hass, coordinator.gateway.gateway_id
+        ),
         "softener_entities": _softener_entity_registration(coordinator),
         "runtime": {
             **coordinator.diagnostics_summary(),
@@ -727,7 +758,22 @@ def _gateway_diagnostics(
             **coordinator.cloud_rate_summary(),
         },
         "discovery": _discovery_diagnostics(coordinator),
+        # Per heating circuit the inputs of the calculated activity the plant
+        # does not offer (no pump value: no activity sensor).
+        "activity_inputs_missing": (
+            {} if context.rrc_plant else activity_inputs_missing(coordinator)
+        ),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
+        # Only for a zone controller; other gateways keep their report.
+        **(
+            {
+                "zone_climates": zones,
+                # Counts of the reads that look for the setpoint of a new mode.
+                "zone_setpoint_recovery": coordinator.zone_recovery.diagnostics(),
+            }
+            if (zones := zone_climate_diagnostics(coordinator))
+            else {}
+        ),
         "rrc_programs": _rrc_program_diagnostics(coordinator),
         # S12/E04: only for an RRC controller; other gateways keep their report.
         **(
@@ -753,6 +799,16 @@ def _gateway_diagnostics(
             if (generators := heat_generator_diagnostics(coordinator)) is not None
             else {}
         ),
+        # The calculated defrost: states and counts only, no readings.
+        "calculated_values": calculated_diagnostics(coordinator),
+        # Local-only entities taken back from the cloud at setup: counts only.
+        "local_only_healed": local_only_heal_diagnostics(coordinator),
+        # Heating circuit settings and the iCom tariff: counts and types only.
+        "circuit_controls": circuit_control_diagnostics(coordinator),
+        # Silent mode window, low-noise operation, pool: counts only.
+        "system_controls": system_controls_extra.diagnostics(coordinator.resources),
+        # The performance factors' history: counts and states, no values.
+        "performance": performance_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         # F1: the firmware update list (read-only); no gateway ID, no links.
@@ -1351,6 +1407,9 @@ def _control_diagnostics(
             if assessment.unit in {"C", "F", "K", "°C", "°F", "mins", "min", "s", "h"}
             else None,
         )
+    if resource.path in hybrid_controls.CONTROL_PATHS:
+        # The reported limits, step, unit class and strategies; no values.
+        result["hybrid"] = hybrid_controls.diagnostics(resource)
     return result
 
 
@@ -1523,6 +1582,18 @@ def _value_shape(resource: Resource) -> str:
     return "object"
 
 
+def _local_brand(target: Any) -> str:
+    """A known brand token or ``not_reported``; never the reported text."""
+    try:
+        details = target.to_data().get("local_details")
+    except Exception:  # the rest of the report stays available
+        details = None
+    brand = details.get("brand") if isinstance(details, dict) else None
+    if isinstance(brand, str) and brand in tuple(GatewayBrand):
+        return brand
+    return "not_reported"
+
+
 def _safe_token(value: object) -> str:
     if value is None:
         return "none"
@@ -1571,6 +1642,8 @@ def switch_program_write_diagnostics(
             "editable": issue is None,
             "edit_issue": issue,
             "points_per_day": points_per_day(snapshot.resource),
+            # Block G: the form of the program, without values.
+            **program_shapes(snapshot.resource),
         }
     return {
         "read_back_delays": list(coordinator.write_read_back_delays()),
@@ -1579,5 +1652,31 @@ def switch_program_write_diagnostics(
         ),
         "heating": stats.snapshot("heating"),
         "dhw": stats.snapshot("dhw"),
+        **{
+            kind: stats.snapshot(kind)
+            for kind in ("cooling", "zone", "ventilation", "wddw2")
+        },
         "programs": programs,
+        "program_names": _program_name_diagnostics(coordinator),
     }
+
+
+def _program_name_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """TP-05: per program name whether it can be changed, or why not; no
+    name, no coding values."""
+    names: dict[str, object] = {}
+    icom = is_icom_gateway(coordinator.gateway)
+    for path, snapshot in sorted((coordinator.data or {}).items()):
+        if not is_name_path(path):
+            continue
+        issue = (
+            "name_write_unproven_icom"
+            if icom
+            else config_issue(snapshot.resource)
+            if snapshot.resource.metadata.writable
+            else "not_writable"
+        )
+        names[path] = {"editable": issue is None, "issue": issue}
+    return names

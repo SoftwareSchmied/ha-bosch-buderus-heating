@@ -14,6 +14,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
+from .aircon_entities import track_aircon_switches
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -30,10 +31,13 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .hc_controls_extra import switch_key
+from .held_readings import cloud_usable, held_snapshot
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     POOL_ENABLED_POLICY,
     SOFTENER_HOLIDAY_POLICY,
@@ -69,6 +73,8 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create switches only from exact current capability metadata."""
+    track_wallbox_entities(Platform.SWITCH, entry, async_add_entities)
+    track_aircon_switches(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "switch")
         track_purifier_entities(
@@ -101,6 +107,13 @@ def build_switch_descriptions(
             and assess_control(resource, context).supports_switch
         ):
             descriptions.append(_contract_switch(resource, policy, *values))
+            continue
+        if (
+            policy is not None
+            and (key := switch_key(policy)) is not None
+            and assess_control(resource, context).supports_switch
+        ):
+            descriptions.append(_circuit_switch(resource, policy, key))
             continue
         if (
             policy not in STRING_SWITCH_POLICIES
@@ -140,6 +153,26 @@ def build_switch_descriptions(
             )
         )
     return tuple(descriptions)
+
+
+def _circuit_switch(
+    resource: Resource, policy: EnumWritePolicy, key: str
+) -> BoschBuderusSwitchEntityDescription:
+    """A heating circuit switch of ``hc_controls_extra`` (boost, setpoint
+    optimization, open window detection): a configuration entity; the icon
+    comes from icons.json."""
+    on_value, off_value = policy.switch_values or ("on", "off")
+    return BoschBuderusSwitchEntityDescription(
+        key=_semantic_key(resource.path, None),
+        name=resource_name(resource.path),
+        resource_path=resource.path,
+        write_policy=policy,
+        on_value=on_value,
+        off_value=off_value,
+        translation_key=key,
+        entity_registry_enabled_default=policy.enabled_by_default,
+        entity_category=EntityCategory.CONFIG,
+    )
 
 
 def _contract_switch(
@@ -197,7 +230,7 @@ class BoschBuderusSwitch(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -250,4 +283,5 @@ class BoschBuderusSwitch(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)

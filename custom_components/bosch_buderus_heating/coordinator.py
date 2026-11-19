@@ -21,7 +21,7 @@ from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from itertools import islice
 from time import monotonic
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -32,9 +32,17 @@ from homeassistant.helpers.event import async_call_later, async_track_point_in_u
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .circuit_controls import (
+    GENERIC_ONLY_POLICIES,
+    coupled_paths,
+    evidence_answers,
+    room_controller_check_complete,
+)
+from .cloud_hold import CloudHold, LastFailedRefresh
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
+    MAX_EXTRA_PROBES,
     ROOT_RESOURCE_PATHS,
     DiscoveryDiagnostics,
     DiscoveryPathSource,
@@ -78,6 +86,7 @@ from .icom_profile import (
 )
 from .legacy_holiday_writes import IcomHolidayWriteService
 from .legacy_holidays import SYSTEM_INFO_PATH, is_icom_slot
+from .live_target import with_live_target
 from .plant_model import PlantModel
 from .pointt import (
     AuthenticationError,
@@ -97,6 +106,8 @@ from .pointt.const import MAX_BULK_PATHS
 from .pointt.exceptions import (
     ProtocolError,
     RequestTimeout,
+    ResourceForbidden,
+    ResourceNotFound,
     ServiceUnavailable,
     SourceStopped,
     TransportError,
@@ -106,21 +117,32 @@ from .pointt.models import BatchItemResult
 from .pointt.redaction import resource_path_template
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
 from .poll_slots import plan_poll_slots
+from .program_names import ProgramNameService, is_name_path, name_shows
 from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group, slows_when_unused
 from .rrc import (
     DEVICE_LIST,
     PROGRAM_LIST,
+    flag_state,
     in_device_scope,
-    is_control,
     profile_evidence,
     program_list_expected,
 )
 from .rrc_contract_zone import FOLLOW_UP_DELAY, follow_up_paths
-from .rrc_contracts import contract_for, owns
+from .rrc_contracts import contract_for
+from .rrc_dhw_program import RrcDhwProgramService, week_shows
 from .rrc_events import LIST_PATHS as EVENT_LIST_PATHS
-from .rrc_programs import WEEK, RrcProgramService, edit_shows, selection_shows
+from .rrc_programs import (
+    WEEK,
+    RrcProgramService,
+    day_body,
+    day_shows,
+    edit_shows,
+    parse_schedule,
+    projection,
+    selection_shows,
+)
 from .rrc_write import (
     CORE_CONTRACT,
     RrcStructWrite,
@@ -135,12 +157,16 @@ from .startup_data import (
     is_startup_path,
 )
 from .startup_reader import StartupReader
-from .switch_program_edit import circuit_path
 from .switch_program_edit import contract_of as switch_program_contract
-from .switch_program_service import SwitchProgramService, program_shows
+from .switch_program_edit import program_mode_path
+from .switch_program_service import (
+    SwitchProgramPlan,
+    SwitchProgramService,
+    program_shows,
+)
 from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
-from .write_policies import RRC_HEAT_PUMP_CONTEXT, rrc_kwargs
+from .write_policies import RRC_HEAT_PUMP_CONTEXT, UNCHECKED_CONTEXT, rrc_kwargs
 from .write_window import SendWindow, send_window
 from .writes import (
     GENERIC_CONTEXT,
@@ -156,6 +182,13 @@ from .writes import (
     WriteDeadlineExceeded,
     WriteService,
     confirms_value,
+)
+from .zone_setpoint_recovery import (
+    RecoveryBudget,
+    is_zone_target,
+    required_mode,
+    targets_for_mode,
+    zone_mode_path,
 )
 
 if TYPE_CHECKING:
@@ -415,6 +448,26 @@ def _snapshot_is_fresh(snapshot: ResourceSnapshot | None) -> bool:
     )
 
 
+def _guard_changed(
+    before: Resource, reading: Resource, by_value: frozenset[str]
+) -> bool:
+    """Whether ``reading`` differs from the guard ``before`` of a write.
+
+    The written setting itself and a coupled level (``by_value``) count as
+    changed only when their value or what their ``used`` and ``available``
+    flags say changed: new limits (for example after a confirmed write of
+    the level that bounds them) are checked on the current reading instead.
+    """
+    if before.path not in by_value:
+        return reading != before
+    return (
+        reading.path != before.path
+        or reading.has_value != before.has_value
+        or not confirms_value(None, reading.value, before.value)
+        or flag_state(reading) != flag_state(before)
+    )
+
+
 def _pause_end(seconds: float) -> datetime:
     """End of a pause on a full minute, stable between state writes."""
     end = datetime.now(UTC) + timedelta(seconds=seconds)
@@ -437,7 +490,13 @@ def _slower_rate_applies(interval: timedelta) -> bool:
 
 
 def _manual_setpoint_mode_path(path: str) -> str | None:
-    """Match only direct leaves of an actual heating circuit, not cooling paths."""
+    """Match only direct leaves of an actual heating circuit, not cooling paths.
+
+    A zone side's mode and setpoints belong to it as well (see
+    ``zone_setpoint_recovery``).
+    """
+    if (zone := zone_mode_path(path)) is not None:
+        return zone
     parts = path.split("/")
     if (
         len(parts) == 4
@@ -449,12 +508,30 @@ def _manual_setpoint_mode_path(path: str) -> str | None:
     return None
 
 
-def _manual_mode_active(mode_path: str, snapshots: dict[str, ResourceSnapshot]) -> bool:
+_MODE_WITH_TARGETS = re.compile(
+    r"^(/heatingCircuits/hc[0-9]+|/zones/zone[0-9]+/(?:heating|cooling))/operationMode$"
+)
+
+
+def _mode_target_paths(path: str) -> tuple[str, ...]:
+    """The targets of a heating circuit's or a zone side's mode, whose flags
+    may follow the mode (the manual setpoint not used in the mode auto)."""
+    match = _MODE_WITH_TARGETS.fullmatch(path)
+    if match is None:
+        return ()
+    root = match.group(1)
+    return (f"{root}/manualRoomSetpoint", f"{root}/temporaryRoomSetpoint")
+
+
+def _manual_mode_active(
+    mode_path: str,
+    snapshots: dict[str, ResourceSnapshot],
+    wanted: str = "manual",
+) -> bool:
+    """The mode is current and is the one whose setpoint is looked for."""
     mode = snapshots.get(mode_path)
     return (
-        mode is not None
-        and _snapshot_is_fresh(mode)
-        and mode.resource.value == "manual"
+        mode is not None and _snapshot_is_fresh(mode) and mode.resource.value == wanted
     )
 
 
@@ -588,11 +665,18 @@ class BoschBuderusDataUpdateCoordinator(
         self._fault_reread_due = False
         # #60: failed refreshes are an error only once the outage lasts.
         self._refresh_outage = RefreshOutageLog(_LOGGER, self.name)
+        # H-B3-2: the last values stay shown over a short cloud blip.
+        self.cloud_hold = CloudHold()
+        # True once the entities were told a value is shown over a failure.
+        self._hold_displayed = False
+        # F: which readings failed in the last refresh with failures.
+        self.last_failed_refresh = LastFailedRefresh()
         self._update_lock = asyncio.Lock()
         self._manual_setpoint_tasks: dict[str, asyncio.Task[None]] = {}
         self._manual_setpoint_attempted: set[str] = set()
         self._manual_setpoint_candidates: dict[str, str] = {}
         self._manual_setpoint_recovery_closed = False
+        self.zone_recovery = RecoveryBudget()
         self._polls_total = 0
         self._poll_failures = 0
         self._last_poll_duration_ms: float | None = None
@@ -672,6 +756,12 @@ class BoschBuderusDataUpdateCoordinator(
         self._unknown_enum_value_counts: Counter[str] = Counter()
         self._contract_changes: Counter[str] = Counter()
         self.discovery_diagnostics = DiscoveryDiagnostics()
+        # Set once a finished discovery settled the room controller evidence
+        # (``circuit_controls.room_controller_check_complete``); never unset.
+        self.room_controller_checked = False
+        # The evidence answers of the later searches for missing parts, since
+        # the last full discovery (M1: a failed evidence read is made up).
+        self._room_controller_evidence: dict[str, bool] = {}
         # P46: resources discovered before, and the search for missing ones.
         self.inventory: DiscoveryInventory | None = None
         self.discovery_recovery = DiscoveryRecovery()
@@ -745,17 +835,23 @@ class BoschBuderusDataUpdateCoordinator(
             or cached[1] is not resources
             or cached[2] != len(resources)
             or cached[3] != self.gateway.device_type
+            or cached[4] != self.room_controller_checked
         ):
             from .device import is_rrc_plant
 
             self._control_context = (
-                self._rrc_control_context() if is_rrc_plant(self) else GENERIC_CONTEXT
+                self._rrc_control_context()
+                if is_rrc_plant(self)
+                else GENERIC_CONTEXT
+                if self.room_controller_checked
+                else UNCHECKED_CONTEXT
             )
             self._control_context_key = (
                 data,
                 resources,
                 len(resources),
                 self.gateway.device_type,
+                self.room_controller_checked,
             )
         return self._control_context
 
@@ -872,23 +968,44 @@ class BoschBuderusDataUpdateCoordinator(
             or _manual_setpoint_mode_path(mode_path) != mode_path
         ):
             return
-        setpoint_path = mode_path.removesuffix("/operationMode") + "/manualRoomSetpoint"
         mode = snapshots.get(mode_path)
+        zone = zone_mode_path(mode_path) is not None
+        wanted = "manual"
+        if zone:
+            # A zone offers the setpoint of its current mode only: the one of
+            # the other mode is not looked for, and a later change starts anew.
+            if mode is None or not _snapshot_is_fresh(mode):
+                return
+            setpoint_path, other = targets_for_mode(mode_path, mode.resource.value)
+            if setpoint_path is None or other is None:
+                return
+            self._reset_manual_setpoint_recovery(other)
+            wanted = required_mode(setpoint_path)
+        else:
+            setpoint_path = (
+                mode_path.removesuffix("/operationMode") + "/manualRoomSetpoint"
+            )
         target = snapshots.get(setpoint_path)
         if _snapshot_is_fresh(target) or (
             mode is not None
             and _snapshot_is_fresh(mode)
-            and mode.resource.value != "manual"
+            and mode.resource.value != wanted
         ):
             self._reset_manual_setpoint_recovery(setpoint_path)
             return
-        if not _manual_mode_active(mode_path, snapshots):
+        if not _manual_mode_active(mode_path, snapshots, wanted):
             return
+        if zone and setpoint_path not in self._manual_setpoint_attempted:
+            if not self.zone_recovery.allow(setpoint_path, monotonic()):
+                return
+            # A "not found" from the time of another mode no longer holds.
+            self._negative_until.pop(setpoint_path, None)
         if target is None:
             if not self.startup_data.reserve_discovery((setpoint_path,)):
                 return
-            # This exact path belongs to a reported, currently manual circuit.
-            # Keep it eligible for normal group reads after the short series.
+            # This exact path belongs to a reported circuit in its manual mode
+            # (or a zone in the mode of this setpoint). Keep it eligible for
+            # normal group reads after the short series.
             self._manual_setpoint_candidates[setpoint_path] = mode_path
         if setpoint_path in self._manual_setpoint_attempted:
             return
@@ -921,7 +1038,9 @@ class BoschBuderusDataUpdateCoordinator(
                     target = snapshots.get(setpoint_path)
                     if (
                         self._manual_setpoint_recovery_closed
-                        or not _manual_mode_active(mode_path, snapshots)
+                        or not _manual_mode_active(
+                            mode_path, snapshots, required_mode(setpoint_path)
+                        )
                         or _snapshot_is_fresh(target)
                     ):
                         return
@@ -991,10 +1110,17 @@ class BoschBuderusDataUpdateCoordinator(
                             result.status not in (403, 404, 406) for result in results
                         )
                     ):
+                        if successes and is_zone_target(setpoint_path):
+                            self.zone_recovery.recovered += 1
                         return
         finally:
             if self._manual_setpoint_tasks.get(setpoint_path) is asyncio.current_task():
                 self._manual_setpoint_tasks.pop(setpoint_path, None)
+            if is_zone_target(setpoint_path) and setpoint_path not in self.resources:
+                # Not found in this series: a later poll may start another,
+                # within the budget; until then the setpoint is not polled.
+                self._manual_setpoint_attempted.discard(setpoint_path)
+                self._manual_setpoint_candidates.pop(setpoint_path, None)
 
     def cancel_manual_setpoint_recovery(self) -> None:
         """Cancel outstanding recovery tasks when the integration is unloaded."""
@@ -1058,16 +1184,22 @@ class BoschBuderusDataUpdateCoordinator(
         return max(limit, needed)
 
     async def _async_read_write_guards(
-        self, expected: tuple[Resource, ...]
+        self,
+        expected: tuple[Resource, ...],
+        optional: frozenset[str] = frozenset(),
     ) -> dict[str, Resource]:
         """C35: read every resource a write depends on in one bulk request.
 
         Paths the bulk response does not answer are read individually, as
-        before. Nothing here writes.
+        before. Nothing here writes. An ``optional`` path the gateway refuses
+        or does not have (403/404) is left out of the result instead of
+        ending the write: it only adds a rule, which then keeps its last
+        current reading or, without one, does not apply.
         """
         gateway_id = self.gateway.gateway_id
         paths = tuple(dict.fromkeys(before.path for before in expected))
         read: dict[str, Resource] = {}
+        absent: set[str] = set()
         try:
             results: Iterable[BatchItemResult] = await self.client.get_resources_bulk(
                 gateway_id, paths
@@ -1091,9 +1223,16 @@ class BoschBuderusDataUpdateCoordinator(
                 and resource.path == item.path
             ):
                 read[item.path] = resource
+            elif item.path in optional and item.status in (403, 404):
+                absent.add(item.path)
         for path in paths:
-            if path not in read:
+            if path in read or path in absent:
+                continue
+            try:
                 read[path] = await self.client.get_resource(gateway_id, path)
+            except ResourceForbidden, ResourceNotFound:
+                if path not in optional:
+                    raise
         return read
 
     def _write_failed(self, path: str, err: BaseException) -> str:
@@ -1146,18 +1285,26 @@ class BoschBuderusDataUpdateCoordinator(
         policy: EnumWritePolicy | NumberWritePolicy,
         *,
         expected: tuple[Resource, ...] = (),
+        fresh: tuple[Resource, ...] = (),
     ) -> Resource:
         """Write one allowlisted control and publish its confirmed read-back.
 
         The write context (S11) is this coordinator's own: on an RRC
         controller the RRC contract policies, the RRC read-back schedule and
         the write counters apply.
+
+        ``expected``: the readings the write depends on; a change since they
+        were shown sends nothing (the setting itself and a coupled level only
+        by their value).
+        ``fresh``: readings that are read again in the same request and
+        published, for the limits and rules of the write, without refusing
+        it by a change (for example the setting itself after a mode change).
         """
         context = self.control_context()
         contract = self._rrc_write_contract(path, context)
         try:
             return await self._async_write_control(
-                path, value, policy, expected, context, contract
+                path, value, policy, expected, context, contract, fresh
             )
         except WriteValidationError as err:
             if contract is not None:
@@ -1172,6 +1319,7 @@ class BoschBuderusDataUpdateCoordinator(
         expected: tuple[Resource, ...],
         context: ControlContext,
         contract: str | None,
+        fresh: tuple[Resource, ...] = (),
     ) -> Resource:
         sent = False
 
@@ -1181,6 +1329,7 @@ class BoschBuderusDataUpdateCoordinator(
             if contract is not None:
                 self.rrc_write_stats.sent(contract)
 
+        by_value = frozenset({path, *coupled_paths(path, policy)})
         async with self._write_transaction() as window:
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
@@ -1206,24 +1355,32 @@ class BoschBuderusDataUpdateCoordinator(
                 if (
                     not _snapshot_is_fresh(current)
                     or current is None
-                    or current.resource != before
+                    or _guard_changed(before, current.resource, by_value)
                 ):
                     raise WriteValidationError("Control changed since it was shown")
             # S5: an RRC contract setting is checked against the controller's
             # current flags, limits and value, read in the same request as
             # the guards; a change there does not refuse the write by itself.
-            reads = expected
-            if (
-                context.rrc_plant
-                and owns(policy)
-                and not is_control(path)
-                and all(before.path != path for before in expected)
-            ):
-                reads = (*expected, snapshot.resource)
+            reads = expected + tuple(
+                item
+                for item in fresh
+                if all(before.path != item.path for before in expected)
+            )
+            # A reading read only for a rule of the write (neither the
+            # setting nor a guard) may be missing on the gateway now.
+            optional = frozenset(
+                item.path
+                for item in fresh
+                if item.path != path
+                and all(before.path != item.path for before in expected)
+            )
+            # L16: the written setting is always read live in this request,
+            # so its flags, limits, options and value are the gateway's now.
+            reads = with_live_target(reads, snapshot.resource)
             live: dict[str, Resource] = {}
             if reads:
                 try:
-                    live = await self._async_read_write_guards(reads)
+                    live = await self._async_read_write_guards(reads, optional)
                 except PointTError as err:
                     # C33: nothing was written. Like any failed read, this
                     # leaves the readings as they are until the next poll.
@@ -1238,16 +1395,21 @@ class BoschBuderusDataUpdateCoordinator(
                     raise
                 changed = dict(self.data or {})
                 for before in reads:
-                    refreshed = live[before.path]
+                    refreshed = live.get(before.path)
+                    if refreshed is None:
+                        continue
                     if refreshed != before and refreshed.path == before.path:
                         changed[before.path] = ResourceSnapshot(
                             refreshed, True, datetime.now(UTC)
                         )
                         self.resources[before.path] = refreshed
-                if any(live[before.path] != before for before in expected):
+                if any(
+                    _guard_changed(before, live[before.path], by_value)
+                    for before in expected
+                ):
                     self.async_set_updated_data(changed)
                     raise WriteValidationError("Control changed on the gateway")
-                if any(live[before.path] != before for before in reads):
+                if any(live.get(before.path, before) != before for before in reads):
                     # The setting itself changed: shown at once, checked below.
                     self.async_set_updated_data(changed)
             related: dict[str, Resource] = {}
@@ -1264,6 +1426,11 @@ class BoschBuderusDataUpdateCoordinator(
             extra: dict[str, Any] = {}
             if context.rrc_plant:
                 extra.update(context=context, on_sent=on_sent)
+            elif (
+                not context.room_controller_checked and policy in GENERIC_ONLY_POLICIES
+            ):
+                # The generic heating circuit settings wait for the check.
+                extra["context"] = context
             if related:
                 extra["related"] = related
             try:
@@ -1365,6 +1532,10 @@ class BoschBuderusDataUpdateCoordinator(
             if contract is not None and sent:
                 self.rrc_write_stats.confirmed(contract, path)
                 self._follow_up_zone_write(path)
+            elif confirmed.value != snapshot.resource.value:
+                # A new mode may change whether its targets are used: read
+                # them once soon, instead of locking them until their group.
+                self._follow_up_reads(_mode_target_paths(path))
             self._read_circuit_soon(path)
             if self.local_selection is not None:
                 # Local readings of this circuit from before the confirmation
@@ -1413,7 +1584,12 @@ class BoschBuderusDataUpdateCoordinator(
         of with the next cycle. Each write of a series moves the one timer;
         the read goes through the urgent reads of a regular cycle, so the
         lock, the backoff, the breaker and the pauses apply."""
-        paths = [item for item in follow_up_paths(path) if item in self.resources]
+        self._follow_up_reads(follow_up_paths(path))
+
+    def _follow_up_reads(self, candidates: Iterable[str]) -> None:
+        """Read these discovered paths once about five seconds from now,
+        through the urgent reads of a regular cycle (``_follow_up_zone_write``)."""
+        paths = [item for item in candidates if item in self.resources]
         if not paths or self.hass.is_stopping:
             return
         self._zone_follow_up.update(paths)
@@ -1466,6 +1642,67 @@ class BoschBuderusDataUpdateCoordinator(
                 on_sent=lambda: self.note_rrc_write_sent(expected.path),
             ),
             late_check=edit_shows(expected, index, minute, temperature),
+        )
+
+    async def async_write_rrc_day(
+        self, expected: Resource, day: str, points: list[tuple[int, float]]
+    ) -> None:
+        """TP-17: write one day of an RRC program with a point added or
+        deleted; see ``rrc_programs.RrcProgramService.write_day``."""
+        schedule = parse_schedule(expected)
+        if WEEK.fullmatch(expected.path) is None or schedule is None:
+            raise WriteValidationError("Unsupported RRC schedule path")
+        desired = projection(day_body(schedule, day, points))
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: self._rrc_program_service.write_day(
+                self.gateway.gateway_id,
+                expected,
+                day,
+                points,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=day_shows(expected.path, day, desired),
+        )
+
+    async def async_write_rrc_dhw_program(
+        self, expected: Resource, points: tuple[SwitchPoint, ...]
+    ) -> None:
+        """TP-19: write the hot water week of an RRC controller once."""
+        service = RrcDhwProgramService(
+            self.client,
+            sleep=self._rrc_program_service.sleep,
+            delays=self._rrc_program_service.delays,
+        )
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: service.write(
+                self.gateway.gateway_id,
+                expected,
+                points,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=week_shows(expected.path, points),
+        )
+
+    async def async_write_program_name(self, expected: Resource, text: str) -> None:
+        """TP-05: write the name of a weekly program once, read it back."""
+        if not is_name_path(expected.path):
+            raise WriteValidationError("Unsupported program name path")
+        service = ProgramNameService(
+            self.client,
+            sleep=self._switch_program_service.sleep,
+            delays=self.write_read_back_delays(),
+        )
+        await self.async_run_rrc_operation(
+            expected.path,
+            lambda: service.write(
+                self.gateway.gateway_id,
+                expected,
+                text,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
+            ),
+            late_check=name_shows(expected.path, text),
         )
 
     async def async_run_rrc_operation(
@@ -1824,7 +2061,10 @@ class BoschBuderusDataUpdateCoordinator(
 
     def switch_program_mode(self, path: str) -> Resource | None:
         """Z2: the current program type of a heating circuit program, if read."""
-        snapshot = (self.data or {}).get(f"{circuit_path(path)}/switchProgramMode")
+        mode_path = program_mode_path(path)
+        if mode_path is None:
+            return None
+        snapshot = (self.data or {}).get(mode_path)
         if snapshot is None or not _snapshot_is_fresh(snapshot):
             return None
         return snapshot.resource
@@ -1843,9 +2083,52 @@ class BoschBuderusDataUpdateCoordinator(
             self.switch_program_write_stats.rejected(contract, _rejection_token(err))
             raise
 
+    async def async_plan_switch_program(
+        self, path: str, plan: SwitchProgramPlan
+    ) -> tuple[Resource, Resource | None]:
+        """TP-06: read a program fresh, let ``plan`` build the new week from
+        that reading and write it once; see ``switch_point_action``.
+
+        ``plan`` gets the fresh reading, the gateway's readings and the fresh
+        program type; it returns the week, or ``None`` to send nothing (only
+        checked, or the same week). Returns the fresh reading and the
+        confirmed one (``None`` when nothing was sent). The write compares
+        the program once more right before sending (a second reading).
+        """
+        if not is_switch_program_path(path):
+            raise WriteValidationError("Unsupported switch program path")
+        contract = switch_program_contract(path)
+        try:
+            return await self._async_write_switch_program(
+                Resource(path), (), contract, plan=plan
+            )
+        except WriteValidationError as err:
+            self.switch_program_write_stats.rejected(contract, _rejection_token(err))
+            raise
+
+    @overload
     async def _async_write_switch_program(
         self, expected: Resource, points: tuple[SwitchPoint, ...], contract: str
-    ) -> Resource:
+    ) -> Resource: ...
+
+    @overload
+    async def _async_write_switch_program(
+        self,
+        expected: Resource,
+        points: tuple[SwitchPoint, ...],
+        contract: str,
+        *,
+        plan: SwitchProgramPlan,
+    ) -> tuple[Resource, Resource | None]: ...
+
+    async def _async_write_switch_program(
+        self,
+        expected: Resource,
+        points: tuple[SwitchPoint, ...],
+        contract: str,
+        *,
+        plan: SwitchProgramPlan | None = None,
+    ) -> Resource | tuple[Resource, Resource | None]:
         path = expected.path
         stats = self.switch_program_write_stats
         sent = False
@@ -1863,9 +2146,42 @@ class BoschBuderusDataUpdateCoordinator(
                 # Its own token, so the dialog says writing is paused.
                 raise ContractRejected("circuit_breaker")
             snapshot = (self.data or {}).get(path)
-            if snapshot is None or not _snapshot_is_fresh(snapshot):
+            program_mode = self.switch_program_mode(path)
+            fresh: Resource | None = None
+            if plan is not None:
+                # TP-06: the base of the change is a fresh reading, not the
+                # last snapshot; a failed read sends nothing.
+                try:
+                    fresh = await self.client.get_resource(
+                        self.gateway.gateway_id, path
+                    )
+                    if (mode_path := program_mode_path(path)) is not None and (
+                        program_mode is not None or mode_path in self.resources
+                    ):
+                        program_mode = await self._switch_program_service.read_mode(
+                            self.gateway.gateway_id, mode_path
+                        )
+                except RateLimited as err:
+                    self._activate_rate_limit_backoff(err, monotonic())
+                    raise
+                except AuthenticationError:
+                    self._request_reauthentication()
+                    raise
+                planned = plan(fresh, self.switch_program_readings(), program_mode)
+                if planned is None:
+                    return fresh, None
+                expected, points = fresh, planned
+                if snapshot is None:
+                    snapshot = ResourceSnapshot(
+                        resource=fresh,
+                        available=True,
+                        last_success=datetime.now(UTC),
+                        last_attempt=datetime.now(UTC),
+                        source=SnapshotSource.WRITE,
+                    )
+            elif snapshot is None or not _snapshot_is_fresh(snapshot):
                 raise WriteValidationError("The program has no current reading")
-            if snapshot.resource != expected:
+            elif snapshot.resource != expected:
                 raise WriteValidationError("The program changed since it was shown")
             try:
                 confirmed = await self._switch_program_service.async_write(
@@ -1873,7 +2189,7 @@ class BoschBuderusDataUpdateCoordinator(
                     expected,
                     points,
                     self.switch_program_readings(),
-                    program_mode=self.switch_program_mode(path),
+                    program_mode=program_mode,
                     delays=self.write_read_back_delays(),
                     on_sent=on_sent,
                 )
@@ -1933,6 +2249,8 @@ class BoschBuderusDataUpdateCoordinator(
             if sent:
                 stats.confirmed(contract, path)
             self.async_set_updated_data(updated)
+            if fresh is not None:
+                return fresh, confirmed
             return confirmed
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:
@@ -1991,6 +2309,7 @@ class BoschBuderusDataUpdateCoordinator(
                     # #60: only an answered request ends an outage; a cycle
                     # with nothing due (O41/O45 leave more of them) does not.
                     self._refresh_outage.recovered()
+                    self.cloud_hold.recovered()
                 if self._discovery_cycle_failed:
                     # A discovery that failed or met the brake returned the
                     # previous values: nothing is confirmed, searched or read
@@ -2025,12 +2344,27 @@ class BoschBuderusDataUpdateCoordinator(
             self._fault_reread_due = True
             if isinstance(err, UpdateFailed):
                 self._refresh_outage.failed(err)
+                self.cloud_hold.failed(monotonic())
                 # #60: Home Assistant logs a failed refresh as an error only
                 # while the coordinator still counts as successful; marked
                 # here, the outage log decides when the error is due.
                 self.last_update_success = False
+            else:
+                # An unexpected error is no blip of the cloud: no hold.
+                self.cloud_hold.cancel()
             raise
         finally:
+            if self.cloud_holding():
+                self._hold_displayed = True
+            elif self._hold_displayed:
+                # The outage outlasted the hold, whether the limit passed
+                # during this cycle or between two cycles (idle or slow
+                # ones). Home Assistant skips the listeners after consecutive
+                # failures: the entities learn here that their last values
+                # are no longer shown.
+                self._hold_displayed = False
+                if self.cloud_hold.failures > 0:
+                    self.async_update_listeners()
             duration = (monotonic() - started) * 1000
             self._cycles_running.remove(started)
             self._note_cycle_duration(duration)
@@ -2237,6 +2571,20 @@ class BoschBuderusDataUpdateCoordinator(
         self._update_success = value
 
     _unreachable_since: float | None = None
+
+    def cloud_holding(self) -> bool:
+        """Whether entities show their last values over a failed refresh.
+
+        Only for the display and only for a short blip (``cloud_hold``). Never
+        with a sign-in to repeat or a stopped source, and never for a write:
+        ``control_status`` and the write transaction stay strict.
+        """
+        return (
+            not self.last_update_success
+            and self.cloud_hold.holding(monotonic())
+            and not self._cloud_auth_required()
+            and not self._cloud_source_stopped()
+        )
 
     def _cloud_down(self) -> tuple[str | None, datetime | None]:
         """The reason the cloud cannot be used now, without checking values."""
@@ -2607,6 +2955,8 @@ class BoschBuderusDataUpdateCoordinator(
         )
         return {
             "last_update_success": self.last_update_success,
+            "cloud_hold": self.cloud_hold.diagnostics(monotonic()),
+            "last_failed_refresh": self.last_failed_refresh.diagnostics(),
             "polls_total": self._polls_total,
             "poll_failures": self._poll_failures,
             "average_poll_duration_ms": _rounded_duration(average_duration),
@@ -2758,6 +3108,7 @@ class BoschBuderusDataUpdateCoordinator(
             path
             for path, mode_path in self._manual_setpoint_candidates.items()
             if path not in self.resources
+            and not is_zone_target(path)  # a zone's series reads it itself
             and _manual_mode_active(mode_path, self.data or {})
         )
         paths_by_group[PollGroup.CONTROL] = (
@@ -3100,10 +3451,29 @@ class BoschBuderusDataUpdateCoordinator(
             },
         )
 
+        cycle_failed = successful == 0 and bool(failed_chunks)
+        # F: kept for the diagnostics, so a short outage can be traced.
+        self.last_failed_refresh.observe(
+            (
+                (
+                    result.path,
+                    result.status,
+                    _result_category(result.error, result.status),
+                )
+                for result in cycle_results
+                if not result.ok and result.status not in (403, 404, 406)
+            ),
+            cycle_failed=cycle_failed,
+            category=(
+                (failure_category or _cycle_failure_category(cycle_results))
+                if cycle_failed
+                else None
+            ),
+        )
         # COORD-3: a cycle in which nothing answered fails, also one that read
         # only the batch that failed beside answered ones before; while those
         # wait for their interval, a reading of them is read with it.
-        if successful == 0 and failed_chunks:
+        if cycle_failed:
             # The failing batch stays apart: after the outage, its failure
             # alone again fails no other reading (COORD-3).
             # Retain failures without declaring the coordinator healthy. A later
@@ -3240,6 +3610,8 @@ class BoschBuderusDataUpdateCoordinator(
                 startup_data=self.startup_data,
                 gateway=self.gateway,
                 rrc_evidence=self.rrc_evidence(),
+                # Optional probes may go on outside the shared budget (#131).
+                maximum_extra_probes=MAX_EXTRA_PROBES,
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err
@@ -3294,6 +3666,10 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
         self._merge_start_counter_candidates()
+        self._room_controller_evidence = {}
+        if room_controller_check_complete(self.discovery_diagnostics):
+            # The generic heating circuit settings may appear from now on.
+            self.room_controller_checked = True
         if discovery_fully_answered(self.discovery_diagnostics):
             # FAULT-2: a required fault source this tree no longer has is gone.
             self.faults.reconcile_discovery(successful_resources)
@@ -3744,6 +4120,13 @@ class BoschBuderusDataUpdateCoordinator(
         recovery = self.discovery_recovery
         now_monotonic = monotonic()
         budget = MAX_DISCOVERY_RESOURCES - len(self.resources)
+        if (
+            len(self.resources) > MAX_DISCOVERY_RESOURCES
+            or self.discovery_diagnostics.extra_probes_requested > 0
+        ):
+            # The start read beyond the shared budget with its allowance
+            # (#131): the search for the missing parts has the same bound.
+            budget += MAX_EXTRA_PROBES
         if budget <= 0:
             self._give_up_recovery("resource_limit")
             return
@@ -3824,6 +4207,14 @@ class BoschBuderusDataUpdateCoordinator(
                     self._queue_manual_setpoint_recovery(path, snapshots)
         if self.inventory is not None and found:
             self.inventory.record(self.gateway, found)
+        if not self.room_controller_checked:
+            # An evidence path the start-up discovery could not read may be
+            # answered by this search; the check need not wait for a restart.
+            self._room_controller_evidence.update(evidence_answers(report))
+            if room_controller_check_complete(
+                self.discovery_diagnostics, self._room_controller_evidence
+            ):
+                self.room_controller_checked = True
         recovery.finish(
             found, now_monotonic, result="success" if found else "nothing_found"
         )
@@ -4091,10 +4482,12 @@ class BoschBuderusDataUpdateCoordinator(
 
             result_category = _result_category(result.error, result.status)
             self._record_capability(result.path, result_category, source)
-            if (
-                result.status == 404
-                and result.path.startswith("/heatingCircuits/")
-                and result.path.endswith("/manualRoomSetpoint")
+            if result.status == 404 and (
+                is_zone_target(result.path)
+                or (
+                    result.path.startswith("/heatingCircuits/")
+                    and result.path.endswith("/manualRoomSetpoint")
+                )
             ):
                 missing_manual_setpoints.add(result.path)
             previous = snapshots.get(result.path)
@@ -4136,7 +4529,9 @@ class BoschBuderusDataUpdateCoordinator(
             self._queue_manual_setpoint_recovery(mode_path, snapshots)
         for setpoint_path in missing_manual_setpoints:
             mode_path = self._manual_setpoint_candidates.get(setpoint_path)
-            if mode_path is not None and _manual_mode_active(mode_path, snapshots):
+            if mode_path is not None and _manual_mode_active(
+                mode_path, snapshots, required_mode(setpoint_path)
+            ):
                 # Only an absent manual target on a confirmed manual circuit
                 # gets this exception. Forbidden-resource pauses remain intact.
                 self._negative_until.pop(setpoint_path, None)

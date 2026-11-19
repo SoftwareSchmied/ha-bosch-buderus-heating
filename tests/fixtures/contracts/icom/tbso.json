@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "family": "icom",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Paths and types follow the behaviour of the manufacturer's app (tariff optimisation on/off as stringValue, the tariff number as floatValue). Every value is constructed; no tariff name, price, region or identifier.",
+    "physical_device_verified": false
+  },
+  "contract": "The variable tariff of an iCom gateway, read only. Each variant replaces (set) or removes (remove) resources of the base; unavailable lists answers without a resource.",
+  "base": [
+    {"id": "/application/tbso/enable", "type": "stringValue", "value": "on", "writeable": 1, "allowedValues": ["on", "off"]},
+    {"id": "/application/tbso/electricity/tariffID", "type": "floatValue", "value": 3.0, "writeable": 1}
+  ],
+  "variants": {
+    "on": {"note": "Tariff on, tariff number 3.", "set": [], "remove": []},
+    "off": {
+      "note": "Tariff off, number 5 (the value the app writes when it switches the tariff off).",
+      "set": [
+        {"id": "/application/tbso/enable", "type": "stringValue", "value": "off", "writeable": 1, "allowedValues": ["on", "off"]},
+        {"id": "/application/tbso/electricity/tariffID", "type": "floatValue", "value": 5.0, "writeable": 1}
+      ],
+      "remove": []
+    },
+    "missing": {
+      "note": "Both paths answer 404.",
+      "set": [],
+      "remove": ["/application/tbso/enable", "/application/tbso/electricity/tariffID"],
+      "unavailable": {"404": ["/application/tbso/enable", "/application/tbso/electricity/tariffID"]}
+    },
+    "forbidden": {
+      "note": "Both paths answer 403.",
+      "set": [],
+      "remove": ["/application/tbso/enable", "/application/tbso/electricity/tariffID"],
+      "unavailable": {"403": ["/application/tbso/enable", "/application/tbso/electricity/tariffID"]}
+    }
+  }
+}

@@ -27,6 +27,7 @@ from . import (
     rrc_contract_circuit,
     rrc_contract_devices,
     rrc_contract_dhw,
+    rrc_contract_extras,
     rrc_contract_system,
     rrc_contract_zone,
 )
@@ -48,6 +49,7 @@ CONTRACTS: Final[tuple[RrcContract, ...]] = (
     rrc_contract_circuit.CONTRACT,
     rrc_contract_system.CONTRACT,
     rrc_contract_devices.CONTRACT,
+    rrc_contract_extras.CONTRACT,
 )
 _LEAF = re.compile(r"[A-Za-z0-9_]+(?:/[A-Za-z0-9_]+)*")
 _ROOT = re.compile(r"/[A-Za-z0-9_]+")

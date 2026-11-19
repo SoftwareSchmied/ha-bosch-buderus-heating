@@ -25,6 +25,8 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
 from custom_components.bosch_buderus_heating import (
+    circuit_controls,
+    hc_controls_extra,
     rrc_circuit_entities,
     rrc_contract_circuit,
     rrc_contracts,
@@ -164,10 +166,21 @@ def test_settings_become_controls_only_on_an_rrc_plant(
     assert assessment.enabled_by_default is enabled
     for name, value in extra.items():
         assert getattr(assessment, name) == value
-    # S11: the same path on another gateway keeps today's answer.
+    # S11: the same path on another gateway keeps today's answer; since
+    # 0.9.2 the summer/winter switching and heating limit of a circuit
+    # without a room controller have generic policies of their own
+    # (test_summer_winter_circuit.py), never the contract's.
     generic = assess_control(resource, GENERIC_CONTEXT)
-    assert generic.policy is None
-    assert generic.rejection_reason == "no_scalar_control_policy"
+    if path in (SUWI_MODE, SUWI_THRESHOLD):
+        assert generic.policy in circuit_controls.GENERIC_ONLY_POLICIES
+    elif path == OPTIMIZATION:
+        # Since 0.9.2 a circuit without a room controller has a generic
+        # setpoint optimization switch (``hc_controls_extra``).
+        assert generic.policy is hc_controls_extra.SETPOINT_OPTIMIZATION_POLICY
+        assert not rrc_contracts.owns(generic.policy)
+    else:
+        assert generic.policy is None
+        assert generic.rejection_reason == "no_scalar_control_policy"
     assert rrc_contracts.contract_for(path) == "circuit"
     assert rrc_contracts.category(path) == "config"
     assert rrc_contracts.is_mirror(path)
@@ -1179,6 +1192,10 @@ async def test_other_gateways_get_nothing_of_the_contract(hass: HomeAssistant) -
         assert not coordinator.control_context().rrc_plant
         assert CURVE_MIN in coordinator.data
         for path in rrc_contract_circuit.SETTING_NAMES:
+            if path == "suWiThreshold":
+                # Since 0.9.2 a generic control of a circuit without a room
+                # controller (test_summer_winter_circuit.py).
+                continue
             for domain in ("number", "select", "switch"):
                 assert (
                     registry.async_get_entity_id(domain, DOMAIN, uid(f"{HC1}/{path}"))

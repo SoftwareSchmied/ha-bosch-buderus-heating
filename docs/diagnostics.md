@@ -4,6 +4,158 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 48 (0.9.2) adds, again without readings, names or identifiers:
+
+- `gateways[].calculated_values`: the calculated defrost detection of the
+  gateway. `defrost_capable` says whether the gateway shows evidence of a
+  heat pump that defrosts; `defrost` holds the state of the detection
+  (`capable`, `active`, `running`, `settling`, the path and the origin
+  `local` or `cloud` of the source in use, the number of defrosts counted
+  and the start of the last one), `null` before the detection runs. See
+  [calculated values](calculated-values.md).
+- `gateways[].local_only_healed`: local-only entities given back at a start
+  since Home Assistant started, as counts: `restored` (an entry an earlier
+  version removed), `taken_back` (an entry an earlier version handed over to
+  the cloud's sensor), `continued` (a cloud entity in use that continues as
+  the local-only entity under its entity ID), `cloud_entries_removed` (cloud
+  entries the integration had created disabled) and `cloud_entries_kept`
+  (cloud entities in use left next to a registered local-only entity at the
+  last start). See [entities](entities.md).
+- `bacon` (additional cloud devices; per connection under `connections[].bacon`),
+  new keys without identifiers or readings:
+  `renewal_grace` (`window_s` 90, `active`, `expired`: how often the grace window
+  of a planned token renewal ran out with a device still carried over),
+  `live_report` (`reports_sent`; `errors` by class `4xx`, `5xx`, `network`,
+  `paused`, `other`; `disabled_for_connection`, `disabled_total`;
+  `last_report_age`) for the active-client report, and `availability` per device
+  family (`midea_climate`, `dehumidifier_*`, `air_purifier_*`, `water_heater_*`,
+  `other`): the counts `devices`, `online_true`, `online_false`,
+  `online_unknown` and `available`, and per event (`last_sign_of_life`,
+  `last_information`, `last_sensor_message`, `last_state_read_answer`) the number
+  of devices per age class (`under_5_min`, `under_15_min`, `under_1_h`,
+  `under_6_h`, `6_h_or_more`, `never`). The schema number stays 48. See
+  [the connection foundation](bacon-connection.md).
+- `heat_source_type`, `heat_source_type_evidence` and `unnamed_modules` in
+  `gateways[].heat_generator`: the heat source type (`air`, `brine` or
+  `water`), the paths or signals it comes from (`reported_defrost` for a
+  defrost the plant reported earlier), and the module
+  rows without a product name counted by hardware type (see
+  [heat generator modules](#heat-generator-modules)).
+- `gateways[].recordings`: the reads of the plant's recordings and the
+  optional statistics import, including `time_zone_on_the_hour`,
+  `local_paths_read_by_days_only`, `cloud_paths_left_out` and the state
+  `failed` per recording (see [plant recordings](recordings.md#diagnostics)).
+- `gateways[].performance`: the history behind the performance factors
+  (see [calculated values](calculated-values.md#performance-factors)):
+  `recordings_attached`, the number of counter entities found
+  (`counter_entities`), the number of days and months per mode and quantity
+  from the recordings (`days_recorded`, `months_recorded`) and from the
+  counters' statistics (`days_counted`), how today's start was found
+  (`today_start`: `midnight`, `statistics` or `null`; `today_modes`;
+  `today_start_lookup` for the last search in the statistics), whether the
+  history was read since the start (`history_read`) and the last refresh
+  (`last_refresh`). `{"waiting": "not_started"}` before the first
+  start.
+- The discovery counters of containers read directly
+  (`direct_probe_containers`, `direct_probe_paths`,
+  `direct_probe_paths_discovered`, `direct_probe_paths_over_limit`,
+  `direct_probes`), described under
+  [missing controls](#missing-controls).
+- `gateways[].activity_inputs_missing` (since 0.9.2-beta.3): per heating
+  circuit (`hc1`, `hc2` …) the inputs of the calculated activity that the
+  plant does not offer, today `["pump"]` when the circuit has no pump value.
+  Such a circuit has no **Activity (calculated)** sensor. Circuits with all
+  inputs are not listed; the object is empty for a room-controller plant.
+- `gateways[].zone_climates`, only for a zone controller: per zone
+  (`zone1`, `zone2` …) its current `side` (`heating`, `cooling`, `null`
+  while the season is unknown), whether the climate is `available`, whether
+  the mode and the target can be changed (`mode_writable`,
+  `target_writable`), whether a temporary setpoint exists and takes the
+  clear value (`temporary_setpoint`, `temporary_clearable`), whether the
+  zone has a heating circuit (`heating_circuit_assigned`), whether its
+  calculated action is known (`hvac_action_known`) and a `rejection_reason`
+  (`season_unknown`, `mode_invalid`, `mode_not_writable`,
+  `control_type_read_only` or `null`). Since 0.9.2-beta.3 each zone also has
+  `writes`: the counts of the changes made through its climate and clear
+  button (`writes_rejected`, `writes_sent`, `writes_confirmed`,
+  `writes_unconfirmed`, `writes_failed`), the `last_step` (`kind` mode,
+  target or clear, and its `result`) and `rejected_reasons` (fixed tokens
+  only); no value, name or path. A mode with a temperature counts as two
+  steps. `gateways[].zone_setpoint_recovery` (same condition) counts the
+  series that look for the setpoint of a zone's new mode
+  (`series_started`, `setpoints_found`, `series_refused_by_budget`). See
+  [zone controls](zone-controls.md#zone-climate).
+- `extra_probe_limit`, `extra_probes_requested` and `resource_limit_scope`
+  in `gateways[].discovery`: the allowance outside the 512 shared paths for
+  optional probes and direct reads (400 for the start-up discovery, 0
+  otherwise), how much of it was used, and after a `resource_limit` whether
+  the shared budget (`shared_budget`, only advertised references or catalog
+  paths were left) or the allowance (`extra_allowance`) ended the
+  discovery; `null` otherwise. See
+  [request behavior](request-behavior.md#startup-order-and-time-budgets).
+- `identical_device_refused` in `gateways[].discovery.paths_not_read` and as
+  the `read_policy` of such a path: a leaf of a radio device that was not
+  requested because the cloud refused the same leaf on a device listing
+  exactly the same children (see
+  [zone controls](zone-controls.md#discovery-on-large-zone-controllers)).
+- `gateways[].circuit_controls`: `unknown_temperature_levels`, the number
+  of heating circuit temperature levels with a name that is not operated
+  (no names), `extra_settings`, per function (boost mode, duration and
+  temperature, cooling operation mode, heating and cooling thresholds,
+  setpoint optimization, open window detection) four counts: `present`,
+  `writable`, `with_options` and `with_limits` (no paths, no values; see
+  [heating controls](heating-controls.md#boost-cooling-mode-and-further-circuit-settings)),
+  and `variable_tariff`, for the two tariff paths of an iCom
+  gateway only their type, `missing` or `not_probed` (no values; see
+  [heating controls](heating-controls.md#variable-electricity-tariff-read-only)).
+- `gateways[].system_controls`: per function (silent mode power reduction,
+  start time and stop time, low-noise mode and duration, pool target of the
+  heat source and pool mode) four counts: `present`, `writable`,
+  `with_options` and `with_limits` (no paths, no values; see
+  [heating controls](heating-controls.md#silent-mode-low-noise-operation-and-pool)).
+- In `gateways[].switch_program_writes`: per program also `kind`
+  (`heating`, `dhw`, `cooling`, `zone`, `ventilation`, `wddw2`),
+  `value_type` (`level`, `absolute` or `degrees`), `notes` (form tokens
+  such as `program_limits_missing`, `program_range_missing`,
+  `program_step_missing`, `setpoint_property_missing`, `program_empty`) and
+  `point_shapes` (`reviewed` for the known `{dayOfWeek, setpoint, time}`
+  form, otherwise its key names and value types, never values); further
+  `edit_issue` tokens (`program_limits_missing`, `levels_unknown`,
+  `program_range_missing`, `program_step_missing`, `number_format_unknown`,
+  `point_out_of_range`, `program_mode_not_absolute`, `mixed_setpoints`, and
+  for WDDW2 `unit_switched_off`, `not_schedule_mode`, `time_zone_undefined`); the
+  counters `cooling`, `zone`, `ventilation` and `wddw2` like `heating`; and
+  `program_names` with, per name path, `editable` and `issue`
+  (`name_no_value_config`, `name_coding_unknown`, `name_max_length_zero`,
+  `name_not_decodable`, `name_write_unproven_icom`, `not_writable`). See
+  [heating controls](heating-controls.md#further-program-kinds).
+- In `wallboxes[]`: `write_support` is now `true`; `values` lists the
+  wallbox's single values by their fixed cp0 path (`known`, `writeable`,
+  `refused` with `http_<status>` or `invalid_payload`, `polled` while an
+  enabled entity shows them); `firmware_known` says whether a software
+  version could be read; `write_counts` counts the outcomes of commands and
+  settings (`start_confirmed`, `limit_unchanged`, `boost_not_confirmed`,
+  `locked_refused`, …), never values, labels, names, brands or prices. See
+  [wallboxes](pointt-wallboxes.md). New, schema number unchanged:
+  `sections.<telemetry|conf|info>.unknown_field_names` lists the names (never
+  the values) of keys in the answer that no parser reads, as plain tokens
+  (letters, digits, underscore; at most 64 per section, sorted),
+  `unnamed_field_count` counts keys that were not listed (other characters or
+  beyond the limit); and `history` describes the opt-in history
+  (`enabled`, the number of `requests` since start, `interval_seconds`, and per
+  part `chargelog` and `energyhistory` whether it is `fresh`, its `error`
+  category and whether it `has_data`), without dates or values.
+- `pointt_air_conditioners`: one entry per air conditioner on a PointT
+  gateway (device type `rac`) with the detected family, the detection
+  state, freshness, readable, missing and writable paths, the offered
+  controls, the number of listed functions, whether the active program was
+  read, the count of sent and refused changes, and for the weekly programs
+  `programs_read`, `program_edit_issues` (tokens such as
+  `program_configuration_missing` or `editable`, no program IDs) and
+  `program_writes` (see [air conditioners on a PointT gateway](pointt-air-conditioners.md#diagnostics)).
+
+The anonymized inventory keeps dropping all of these sections.
+
 Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in
 `views_without_cloud[]`: the heat generator modules of the module list with
 their product names and hardware types, never serial numbers (see
@@ -474,6 +626,15 @@ starting requests after 50 seconds); `request_metrics.slot_wait` reports how lon
 requests waited for one of the three shared request slots. See
 [capacity with several systems](request-behavior.md#capacity-with-several-systems).
 
+Without a new schema number, each gateway `runtime` adds `cloud_hold` (the
+limits of the display hold over a short cloud blip, whether values are held now,
+the failed refreshes in a row, and how many holds started and expired) and
+`last_failed_refresh` (when the last refresh with failures ran, whether the
+whole refresh failed and its category, and for each failed reading, at most ten,
+the path template, HTTP status, category and count; no identifiers, no
+values). The report stays until a later refresh fails again. See
+[a short cloud blip](reading-validity.md#a-short-cloud-blip).
+
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or
 identifiers are included. See [air conditioners](bacon-air-conditioners.md).
@@ -634,6 +795,14 @@ schema does not establish a write increment. Reference-device safety-envelope
 fields were removed. Non-finite bounds are exported as `null`. These fields
 never include the current setpoint.
 
+For the hybrid control strategy and the energy prices (`/heatSources/hybrid/controlStrategy`,
+`/system/energyTariff/*`; 0.9.2-beta.3) `control` has a further block `hybrid`,
+without any price or the current strategy. For a price it holds `unit_class`
+(`none`, `empty`, `text` for a plain reported unit or `other`), `step_size` and
+`step_size_valid` as reported, and `minimum` and `maximum`. For the strategy it
+holds `advertised_options` (the reported values that are plain tokens, at most
+16), `advertised_option_count` and `known_strategies`. The schema number stays 48.
+
 | Rejection reason | Meaning |
 | --- | --- |
 | `no_scalar_control_policy` | The function has no implemented scalar write contract. |
@@ -662,6 +831,33 @@ control paths even if the circuit directory is unreadable. These entries have
 source is `reference`. `catalog_paths` and `catalog_paths_discovered` count them
 both across discovery and within each `discovery → groups` entry. A failed
 catalog probe is diagnostic evidence, not an invented resource or control.
+
+Some controllers refuse the directory of a circuit (HTTP 403 or 406) while its
+values stay readable one by one. Discovery then reads the known children of
+that container directly: the children a readable sibling of the same kind
+lists (for example `hc1` for `hc2`, or `hc1/switchPrograms` for
+`hc2/switchPrograms`) and the children known for that kind. A directory that
+answers with an empty or shorter list than a sibling of the same kind gets
+the children only that sibling lists. An empty directory without such a
+sibling, such as the ventilation zone of a heat pump without ventilation, is
+a valid answer and is not probed. This applies to every heating circuit,
+hot-water circuit, heat source, solar circuit, ventilation zone and zone the
+controller advertises, also to refused directories below them, including
+refused program directories (the time programs of each kind, such as
+`switchPrograms/heating` and `switchPrograms/cooling` of a zone). A circuit
+that is not advertised, a heat-source entry whose name is not `hsN`, or a
+container answering 404, is never probed. Children of a refused directory are
+read like catalog paths; children only a sibling lists are read like optional
+probes. At most 256 such reads happen per discovery (at most 128 per kind of
+circuit and 64 per circuit, so containers found early leave reads for the
+others), within its overall budget or, once that is used up, within the
+extra allowance of the start-up discovery; a 403 or 404 answer to one of them is
+kept and paused like any other path. `direct_probe_containers`,
+`direct_probe_paths`, `direct_probe_paths_discovered` and
+`direct_probe_paths_over_limit` count them, and `direct_probes` lists each
+container with its `reason` (`http_403`, `http_406`, `empty_listing` or
+`missing_children`), the `reference_containers` its children came from, and
+how many of its paths were scheduled, requested and discovered.
 
 Each capability includes `polling_paused` and
 `polling_pause_remaining_seconds`. These describe only a local path pause;
@@ -842,7 +1038,9 @@ device identifiers or radio keys. On other gateways it contains only
 deliberately not read: `never_read_private` (keys and personal data),
 `outside_rrc_device_scope` (device parts a room controller does not need)
 and `rrc_5xx_assumed_missing` (probes answered with HTTP 500). The device
-profile is `rrc2` for these controllers.
+profile is `rrc2` for these controllers. On a zone controller with radio
+room devices, `identical_device_refused` counts device leaves left out
+because the cloud refused the same leaf on an identical device.
 
 ## RRC room controller functions
 
@@ -858,7 +1056,8 @@ It was added in 0.9.0-alpha.5 within schema 44. The functions are described in
   `temporary_setpoint`, `away_mode` or `operation_mode`) and
   `confirmed_on` (`tc100_2`) for a group with confirmed functions,
   otherwise `unconfirmed`. A function not named there is expected,
-  untested;
+  untested. The group `extras` (automatic absence, notification light and
+  further readings) is always `unconfirmed`;
 - `read_back_delays`: the read-back after a change, `[1, 2, 4, 8]` seconds;
 - `awaiting_late_confirmation`: changes sent but not confirmed yet that a
   later regular reading may still confirm;
@@ -1051,6 +1250,14 @@ bulk call remains one HTTP attempt regardless of the number of resources in
 it; `bulk_size` and the item-result counters show that logical work separately.
 This distinction is useful when PointT returns HTTP 200 for the bulk envelope
 but an inner gateway reports a 5xx status.
+
+Write requests and single-resource reads carry a `path_category` in
+`recent_requests`: only the first segment of the resource path (for example
+`heatingCircuits` or `dhwCircuits`), never a circuit number, schedule letter,
+gateway or other identifier. `writes_by_path_category` and
+`resource_errors_by_path_category` (single reads answered with 403, 404 or 406)
+count the same categories over the whole observation, so a failed or written
+resource group can be attributed even after `recent_requests` has rolled over.
 
 ### Optional diagnostic entities
 

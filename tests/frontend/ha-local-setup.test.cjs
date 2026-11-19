@@ -30,13 +30,24 @@ const path = require("node:path");
     if (process.env.LOCAL_SETUP_OUTPUT) await page.screenshot({path:path.join(process.env.LOCAL_SETUP_OUTPUT, `discovery-${de ? "de" : "en"}.png`)});
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/integration/bosch_buderus_heating");
     await page.getByRole("button", {name: de ? "Konfigurieren" : "Configure", exact: true}).click();
-    await page.getByText(de ? "Lokalen Zugang einrichten" : "Set up local access", {exact: true}).click();
+    // The local setup is offered in the connections menu, not in the main menu.
+    const localSetup = page.getByText(de ? "Lokalen Zugang einrichten" : "Set up local access", {exact: true});
+    await page.getByText(de ? "Verbindungen" : "Connections", {exact: true}).click();
+    await localSetup.filter({visible: true}).click();
     const next = () => page.getByRole("button", {name: /^(Submit|Next|Absenden|Weiter|OK)$/i}).click();
     const choose = async name => {
       const radio = page.getByRole("radio", {name, exact: true});
       await radio.check();
     };
-    await choose("000123");
+    // The installation is offered by its name, not by its gateway identifier.
+    // The only installation is preselected; the step describes the heating
+    // system and the last choice says what it is for.
+    const only = page.getByRole("radio", {name: "MX400", exact: true});
+    await only.waitFor();
+    assert.equal(await only.isChecked(), true, "the only installation is preselected");
+    await page.getByText(de ? "nicht Wallbox oder Klimagerät" : "not a wallbox or air conditioner", {exact: false}).first().waitFor();
+    await page.getByText(de ? "Neue Anlage (Gateway nicht im Konto)" : "New system (gateway not in your account)", {exact: true}).waitFor();
+    await choose("MX400");
     await next();
     const address = page.getByLabel(de ? "IP-Adresse oder Hostname" : "IP address or hostname", {exact:true});
     await address.click();
@@ -59,13 +70,21 @@ const path = require("node:path");
     await page.locator("ha-switch").click();
     assert.equal(await certificate.isChecked(), true);
     await next();
-    await page.getByText(de ? "Diesen lokalen Zugang speichern" : "Save this local access", {exact:true}).first().waitFor();
-    const save = page.getByRole("switch");
-    await save.waitFor();
-    assert.equal(await save.isChecked(), false);
+    // The data port may ask for its own certificate after the sign-in.
+    const dataTitle = page.getByText(de ? "Zertifikat des Datenports bestätigen" : "Confirm the data port certificate", {exact: true});
+    const resultTitle = page.getByText(de ? "Lokalen Zugang bestätigen" : "Confirm the local access", {exact: true});
+    await dataTitle.or(resultTitle).first().waitFor();
+    // Elements of earlier pages may stay in the page hidden; only visible ones count.
+    const visibleSwitch = page.locator("ha-switch").filter({visible: true});
+    await page.waitForTimeout(500);
+    if (!await resultTitle.filter({visible: true}).count() && await dataTitle.filter({visible: true}).count()) {
+      await visibleSwitch.click();
+      await next();
+    }
+    // The last page saves with OK; it has no confirmation switch any more.
+    await resultTitle.first().waitFor();
+    assert.equal(await visibleSwitch.count(), 0);
     if (process.env.LOCAL_SETUP_OUTPUT) await page.screenshot({path:path.join(process.env.LOCAL_SETUP_OUTPUT, `confirmation-${de ? "de" : "en"}.png`)});
-    await page.locator("ha-switch").click();
-    assert.equal(await save.isChecked(), true);
     await next();
     await page.getByText(de ? "Der lokale Zugang wurde eingerichtet." : "The local access has been set up.", {exact:false}).first().waitFor();
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/dashboard");

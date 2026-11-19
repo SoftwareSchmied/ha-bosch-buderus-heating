@@ -34,6 +34,10 @@ type ValueCheck = Callable[[Resource, JsonScalar, Mapping[str, Resource]], str |
 # value. Returns a token (the translation key) that ends the read-back as
 # not confirmed, or ``None`` to go on.
 type ReadBackCheck = Callable[[Resource, JsonScalar], str | None]
+# A confirmation rule: a read value and the requested wire value. True when
+# the reading shows the request in effect although it is not equal to it
+# (for example any negative reading after writing the clear value -1).
+type ConfirmCheck = Callable[[object, JsonScalar], bool]
 
 
 def _no_equivalents() -> Mapping[str, frozenset[str]]:
@@ -53,8 +57,15 @@ class ControlContext:
     # a hybrid plant (``/heatSources/type``); a policy with
     # ``heat_pump_options`` then always offers them.
     heat_pump: bool = False
+    # False until a finished discovery got a definite answer for the room
+    # controller evidence (``circuit_controls.room_controller_check_complete``):
+    # the generic heating circuit settings wait for it, so a room controller
+    # recognised late never shows them for a moment.
+    room_controller_checked: bool = True
 
 
+# A gateway whose room controller check is still open.
+UNCHECKED_CONTEXT: Final = ControlContext(room_controller_checked=False)
 GENERIC_CONTEXT: Final = ControlContext()
 RRC_CONTEXT: Final = ControlContext(rrc_plant=True)
 RRC_HEAT_PUMP_CONTEXT: Final = ControlContext(rrc_plant=True, heat_pump=True)
@@ -131,6 +142,18 @@ class EnumWritePolicy:
     # (``current_option_not_advertised``), instead of a selection without a
     # current option.
     current_required: bool = False
+    # The same flag rule for a policy outside the contracts: ``available``
+    # false gives no control, ``used`` false refuses every write unsent
+    # (``ControlUnused``), malformed flags give no control; missing flags
+    # change nothing. Off only for controls with flag rules of their own
+    # (the zones of a room controller).
+    honor_flags: bool = True
+    # The flags decide only about a write, on the reading it is checked
+    # against (read again right before the request): ``used`` false refuses
+    # it (``ControlUnused``), ``available`` false or malformed flags refuse
+    # it as well. The control itself stays (the ConnectKey zones, whose
+    # entities follow rules of their own).
+    write_flags: bool = False
 
     @property
     def switch_values(self) -> tuple[str, str] | None:
@@ -172,6 +195,11 @@ class NumberWritePolicy:
     # The metadata units accepted instead of the family of ``unit`` (for
     # example {"", "other"} for a dimensionless setting).
     accepted_units: frozenset[str] | None = None
+    # Any unit the resource reports is accepted (a price in the currency of
+    # the plant); the number shows it as reported, see ``hybrid_controls``.
+    free_unit: bool = False
+    # Both limits must lie within (low, high), whatever the unit.
+    plausible_range: tuple[float, float] | None = None
     # S4: values must lie on the grid of the advertised step (or ``step``
     # without one), counted from ``minValue``; others are refused, not rounded.
     strict_grid: bool = False
@@ -179,6 +207,20 @@ class NumberWritePolicy:
     read_back_check: ReadBackCheck | None = None
     # As ``EnumWritePolicy.unused_writable``.
     unused_writable: bool = False
+    # As ``EnumWritePolicy.honor_flags``.
+    honor_flags: bool = True
+    # As ``EnumWritePolicy.write_flags``.
+    write_flags: bool = False
+    # A command value the gateway takes although it lies outside the
+    # advertised limits (the clear value -1 of a temporary setpoint). Only
+    # this exact value passes without the limit and grid checks, and only
+    # while it lies outside the limits; within them the normal checks apply.
+    sentinel_value: float | None = None
+    # Readings that confirm a write besides the equal one.
+    confirm_if: ConfirmCheck | None = None
+    # The resource types the control accepts. A whole number the gateway
+    # reports as ``integerValue`` needs it named (``system_controls_extra``).
+    resource_types: frozenset[str] = frozenset({"floatValue"})
 
 
 type WritePolicy = EnumWritePolicy | NumberWritePolicy

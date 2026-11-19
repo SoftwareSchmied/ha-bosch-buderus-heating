@@ -118,6 +118,7 @@ from .notifications import (
     notification_includes_notices,
     notification_policy,
 )
+from .options_navigation import BACK, BACK_CHOICE
 from .pointt import (
     AuthenticationError,
     AuthTokens,
@@ -134,11 +135,14 @@ from .pointt import (
     WriteValidationError,
 )
 from .pointt.retry_after import bounded_cloud_pause
+from .recordings.manager import managers_of
+from .recordings_flow import RecordingsOptionsFlow
 from .rrc import GATEWAY_DEVICE_TYPE
 from .rrc_devices import CONTROLLER_TYPE, TYPE_LABELS
 from .rrc_flow import RrcScheduleOptionsFlow
 from .runtime import BoschBuderusRuntimeData
 from .switch_program_flow import SwitchProgramOptionsFlow
+from .wallbox_flow import WallboxOptionsFlow, wallboxes_of
 from .writes import WDDW2_HOLIDAY_POLICY, WriteBusy, assess_control
 
 CONF_HOLIDAY_PERIOD = "holiday_period"
@@ -167,6 +171,19 @@ _LOGGER = logging.getLogger(__name__)
 
 # P49b step 7: the marker that opens an options flow at the local setup.
 LOCAL_FIRST_START = "local_first_start"
+# The address of the discovered gateway that new entry was set up for.
+LOCAL_FOUND_ADDRESS = "local_found_address"
+# Setup forms that always lead to another form ("Next").
+_CONFIG_NEXT_STEPS = frozenset(
+    {
+        "auth_wait",
+        "cloud",
+        "reauth_confirm",
+        "reconfigure_retry",
+        "retry",
+        "selection_expired",
+    }
+)
 
 
 class BoschBuderusConfigFlow(
@@ -205,6 +222,13 @@ class BoschBuderusConfigFlow(
 
     # P49b step 7: continue with the local setup of the new entry.
     _then_local = False
+
+    @override
+    def async_show_form(self, **kwargs: Any) -> ConfigFlowResult:
+        """An intermediate form says "Next" (its own choice stays)."""
+        if kwargs.get("step_id") in _CONFIG_NEXT_STEPS:
+            kwargs.setdefault("last_step", False)
+        return super().async_show_form(**kwargs)
 
     @override
     async def async_step_user(
@@ -272,12 +296,16 @@ class BoschBuderusConfigFlow(
             return result
         from .managed_entry import SETUP_ISSUE_PREFIX
 
+        start: dict[str, Any] = {LOCAL_FIRST_START: True}
+        if (found := self._local_found_address()) is not None:
+            # The gateway the setup started from is preselected there.
+            start[LOCAL_FOUND_ADDRESS] = found
         try:
             local = await self.hass.config_entries.options.async_init(
                 entry.entry_id,
                 # Marks the prepared flow for as long as it exists.
-                context=cast(Any, {LOCAL_FIRST_START: True}),
-                data={LOCAL_FIRST_START: True},
+                context=cast(Any, dict(start)),
+                data=start,
             )
             if local.get("type") in (FlowResultType.FORM, FlowResultType.MENU):
                 result["next_flow"] = (FlowType.OPTIONS_FLOW, local["flow_id"])
@@ -293,17 +321,16 @@ class BoschBuderusConfigFlow(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select the application brand."""
-        if self.VERSION == 4:
-            try:
-                claim_cloud_setup(
-                    self.hass, self.flow_id, cast(dict[str, Any], self.context)
-                )
-            except ConfigurationError as error:
-                return self.async_abort(
-                    reason=str(error)
-                    if str(error) in CLAIM_ABORTS
-                    else "configuration_changed"
-                )
+        try:
+            claim_cloud_setup(
+                self.hass, self.flow_id, cast(dict[str, Any], self.context)
+            )
+        except ConfigurationError as error:
+            return self.async_abort(
+                reason=str(error)
+                if str(error) in CLAIM_ABORTS
+                else "configuration_changed"
+            )
         if user_input is not None:
             self._brand = Brand(user_input[CONF_BRAND])
             return self._start_authorization()
@@ -346,6 +373,11 @@ class BoschBuderusConfigFlow(
         """Update gateway selection, brand, and safe polling cadence."""
         if self._reconfigure_entry is None:
             self._reconfigure_entry = self._get_reconfigure_entry()
+            # An entry is only converted to version 4 when it is set up
+            # (``async_migrate_entry``); one that has not been set up since
+            # the update (disabled, or its setup failed) is still in the
+            # older format, and Home Assistant starts a reconfigure flow for
+            # it without checking that. That path below therefore stays.
             if self._reconfigure_entry.version == 4:
                 return self.async_abort(reason="connection_settings_required")
             configuration = EntryConfiguration(self._reconfigure_entry)
@@ -473,7 +505,7 @@ class BoschBuderusConfigFlow(
             elif self._brand is None or self._tokens is None:
                 return self.async_abort(reason="invalid_flow")
             else:
-                if self.VERSION == 4 and self._reconfigure_entry is None:
+                if self._reconfigure_entry is None:
                     return await self._create_managed_cloud(selected)
                 duplicate = self._find_duplicate_entry(set(selected))
                 if duplicate is not None:
@@ -645,7 +677,7 @@ class BoschBuderusConfigFlow(
             return self.async_abort(reason="invalid_flow")
         if self._managed_edit is not None and self._reauth_entry is not None:
             return await self._async_finish_managed_reauth()
-        if self.VERSION == 4 and monotonic() < self._discovery_retry_at:
+        if monotonic() < self._discovery_retry_at:
             return self.async_show_form(
                 step_id="retry", errors={"base": "cloud_rate_limited"}
             )
@@ -668,15 +700,13 @@ class BoschBuderusConfigFlow(
         except AuthenticationError:
             return self._restart_authorization(error="invalid_auth")
         except RateLimited as error:
-            if self.VERSION == 4:
-                delay = error.retry_after
-                if delay is None or not math.isfinite(delay):
-                    delay = 300.0
-                self._discovery_retry_at = monotonic() + bounded_cloud_pause(delay)
-                return self.async_show_form(
-                    step_id="retry", errors={"base": "cloud_rate_limited"}
-                )
-            return self.async_show_form(step_id="retry", errors={"base": "unknown"})
+            delay = error.retry_after
+            if delay is None or not math.isfinite(delay):
+                delay = 300.0
+            self._discovery_retry_at = monotonic() + bounded_cloud_pause(delay)
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cloud_rate_limited"}
+            )
         except RequestTimeout, ServiceUnavailable:
             return self.async_show_form(
                 step_id="retry", errors={"base": "cannot_connect"}
@@ -712,10 +742,9 @@ class BoschBuderusConfigFlow(
                 data_updates=tokens_to_data(self._tokens),
                 reason="reauth_successful",
             )
-        if self.VERSION == 4:
-            self._new_cloud_listing = CloudDiscovery(
-                self._gateways, self._bacon_ids, self._bacon_account
-            )
+        self._new_cloud_listing = CloudDiscovery(
+            self._gateways, self._bacon_ids, self._bacon_account
+        )
         return await self.async_step_gateways()
 
     async def _async_finish_managed_reauth(self) -> ConfigFlowResult:
@@ -984,6 +1013,8 @@ class BoschBuderusOptionsFlow(
     ControlsOptionsFlow,
     RrcScheduleOptionsFlow,
     SwitchProgramOptionsFlow,
+    RecordingsOptionsFlow,
+    WallboxOptionsFlow,
     CloudOptionsFlow,
 ):
     """Manage holidays and installation-specific notification settings."""
@@ -999,6 +1030,13 @@ class BoschBuderusOptionsFlow(
         self._holiday_mode_source: BoschBuderusDataUpdateCoordinator | None = None
         self._holiday_mode_displayed: Resource | None = None
 
+    def _connections_listed(self) -> bool:
+        """The connections menu lists accesses (and offers the local setup)."""
+        try:
+            return bool(self._management().current().connections)
+        except ConfigurationError:
+            return False
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -1009,6 +1047,7 @@ class BoschBuderusOptionsFlow(
             and self._entry.version == 4
         ):
             # Continued from the setup of this entry (P49b step 7).
+            self._local_preselect(user_input.get(LOCAL_FOUND_ADDRESS))
             return await self.async_step_local_setup()
         prepared = [
             flow
@@ -1025,19 +1064,22 @@ class BoschBuderusOptionsFlow(
             # than a GET of the prepared flow). This one takes over and the
             # prepared one ends quietly: it is handed off, not abandoned.
             for flow in prepared:
+                self._local_preselect(flow["context"].get(LOCAL_FOUND_ADDRESS))
                 cast(dict[str, Any], flow["context"])["handed_off"] = True
                 with suppress(UnknownFlow):
                     self.hass.config_entries.options.async_abort(flow["flow_id"])
             return await self.async_step_local_setup()
         return self.async_show_menu(
             step_id="init",
-            # The note of a finished action, see ``options_navigation``.
-            description_placeholders={"result": self.take_result_note()},
             menu_options=[
                 *(["connections"] if self._entry.version == 4 else []),
                 *(
+                    # Offered in the connections menu; here only while that
+                    # menu has nothing to list (so it is never shown twice).
                     ["local_setup"]
-                    if self._entry.version == 4 and self.local_available()
+                    if self._entry.version == 4
+                    and self.local_available()
+                    and not self._connections_listed()
                     else []
                 ),
                 *(
@@ -1050,7 +1092,17 @@ class BoschBuderusOptionsFlow(
                 "notifications",
                 "holidays",
                 *(["switch_programs"] if self._switch_program_choices() else []),
-                *(["rrc_programs"] if self._rrc_choices() else []),
+                *(
+                    ["rrc_programs"]
+                    if self._rrc_choices() or self._sp_extra_choices()
+                    else []
+                ),
+                *(
+                    ["recordings"]
+                    if managers_of(self.hass, self._entry.entry_id)
+                    else []
+                ),
+                *(["wallbox"] if wallboxes_of(self._entry) else []),
             ],
         )
 
@@ -1188,6 +1240,8 @@ class BoschBuderusOptionsFlow(
             return await self.async_step_holiday_mode()
         if user_input is not None:
             selected = user_input.get(CONF_HOLIDAY_PERIOD)
+            if selected == BACK:
+                return await self.async_step_init()
             if isinstance(selected, str) and selected in mode_choices:
                 self._selected_key = selected
                 return await self.async_step_holiday_mode()
@@ -1719,9 +1773,12 @@ class BoschBuderusOptionsFlow(
                     vol.Required(CONF_HOLIDAY_PERIOD): SelectSelector(
                         SelectSelectorConfig(
                             options=[
-                                SelectOptionDict(value=key, label=choice.label)
-                                for key, choice in choices.items()
-                                if not key.startswith("create:")
+                                BACK_CHOICE,
+                                *(
+                                    SelectOptionDict(value=key, label=choice.label)
+                                    for key, choice in choices.items()
+                                    if not key.startswith("create:")
+                                ),
                             ]
                             + (
                                 [SelectOptionDict(value="create", label="New holiday")]

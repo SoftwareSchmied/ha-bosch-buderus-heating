@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Sínigh isteach le SingleKey ID",
-        "description": "Is é SingleKey ID an síniú isteach céanna a úsáideann d'aip Bosch nó Buderus. Úsáid an seoladh ríomhphoist nó an uimhir ghutháin shoghluaiste agus an focal faire céanna. Níl cuntas nua ag teastáil, agus **ní** chuireann tú do fhocal faire isteach in Home Assistant.\n\n1. Fág an dialóg seo oscailte agus oscail [SingleKey ID]({authorization_url}) i gcluaisín nua Chrome. Úsáid an nasc nua-ghinte seo i gcónaí.\n2. Brúigh `F12` ansin agus oscail **Console** sna huirlisí forbróra.\n3. Sínigh isteach leis na dintiúir SingleKey ID a úsáideann d'aip téimh.\n4. D'fhéadfadh teachtaireacht faoi fhadhb líonra a bheith le feiceáil tar éis an tsínithe isteach. Sa chás sin, ní chiallaíonn sé de ghnáth ach nach raibh Chrome in ann seoladh na haipe `{redirect_scheme}://` a oscailt.\n5. Aimsigh an teachtaireacht dhearg **Failed to launch** nó **Connecting to** sa chonsól. Cliceáil ar dheis ar an seoladh gorm `{redirect_scheme}://` sa teachtaireacht sin agus roghnaigh **Copy link address**.\n6. Fill ar an dialóg seo, greamaigh an seoladh iomlán thíos, agus roghnaigh **Ceart go leor**. D'fhéadfadh an réimse poncanna a thaispeáint ar chúiseanna slándála.\n\nÚsáid an seoladh ón iarracht shínithe isteach seo go díreach agus ná cóipeáil an paraiméadar `code` amháin. Tá cód aon úsáide gearrshaolach sa seoladh iomlán. Ná roinn riamh é i dtuarascáil fhadhbanna, i gcomhrá, i scáileanchlár ná i logchomhad.",
+        "description": "Is é SingleKey ID an síniú isteach céanna a úsáideann d'aip Bosch nó Buderus. Úsáid an seoladh ríomhphoist nó an uimhir ghutháin shoghluaiste agus an focal faire céanna. Níl cuntas nua ag teastáil, agus **ní** chuireann tú do fhocal faire isteach in Home Assistant.\n\n1. Fág an dialóg seo oscailte agus oscail [SingleKey ID]({authorization_url}) i gcluaisín nua Chrome. Úsáid an nasc nua-ghinte seo i gcónaí.\n2. Brúigh `F12` ansin agus oscail **Console** sna huirlisí forbróra.\n3. Sínigh isteach leis na dintiúir SingleKey ID a úsáideann d'aip téimh.\n4. D'fhéadfadh teachtaireacht faoi fhadhb líonra a bheith le feiceáil tar éis an tsínithe isteach. Sa chás sin, ní chiallaíonn sé de ghnáth ach nach raibh Chrome in ann seoladh na haipe `{redirect_scheme}://` a oscailt. Má thaispeánann SingleKey ID leathanach a fhógraíonn atreorú agus nach dtarlaíonn aon rud, roghnaigh an nasc nó an cnaipe ar an leathanach sin.\n5. Aimsigh an teachtaireacht dhearg **Failed to launch** nó **Connecting to** sa chonsól. Cliceáil ar dheis ar an seoladh gorm `{redirect_scheme}://` sa teachtaireacht sin agus roghnaigh **Copy link address**.\n6. Fill ar an dialóg seo, greamaigh an seoladh iomlán thíos, agus roghnaigh **Ceart go leor**. D'fhéadfadh an réimse poncanna a thaispeáint ar chúiseanna slándála.\n\nÚsáid an seoladh ón iarracht shínithe isteach seo go díreach agus ná cóipeáil an paraiméadar `code` amháin. Tá cód aon úsáide gearrshaolach sa seoladh iomlán. Ná roinn riamh é i dtuarascáil fhadhbanna, i gcomhrá, i scáileanchlár ná i logchomhad.",
         "data": {
           "redirect_url": "An seoladh athsheolta iomlán"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Athchumraigh agus aimsigh arís",
-        "description": "Roghnaigh branda na haipe, na geataí agus an phróifíl fiosraithe. Athlódálann an tsábháil an comhtháthú agus déanann sí aimsiú iomlán acmhainní. Úsáid é seo tar éis nuashonraithe dochtearraí nó nuair a athraigh ciorcaid téimh, córais uisce te, foinsí teasa nó geataí. Léann **Caighdeánach** luachanna oibríochta reatha gach nóiméad. Laghdaíonn **Spárálach leis an néal** trácht néil trí iad a léamh gach dhá nóiméad agus gach luach eile atá ag athrú a léamh níos annamh. Má athraítear branda na haipe, teastaíonn síniú isteach nua SingleKey ID.",
+        "description": "Roghnaigh branda na haipe, na geataí agus an phróifíl iarratas. Nuair a shábháiltear, athluchtaítear an comhtháthú agus cuardaítear gach acmhainn arís, mar shampla tar éis nuashonrú dochtearraí nó suiteáil athraithe. Teastaíonn síniú isteach nua SingleKey ID chun branda na haipe a athrú.",
         "data": {
           "brand": "Branda na haipe",
           "gateway_ids": "Geataí",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Roghnaigh an socrú atá ann cheana",
-        "description": "Roghnaigh an socrú a mbaineann an geata áitiúil seo leis. Ní chruthóidh sé seo suiteáil eile.",
+        "description": "Roghnaigh an socrú a mbaineann an geata áitiúil seo leis, nó socraigh é mar shocrú nua le rochtain áitiúil amháin.",
         "data": {
-          "owner": "Socrú atá ann cheana"
+          "owner": "Socrú"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Roghnaigh an tsuiteáil",
-        "description": "Roghnaigh an tsuiteáil atá le nascadh go háitiúil. Seicfear féiniúlacht a gheata sula sábhálfar é.",
+        "description": "Roghnaigh an córas teasa atá le nascadh go háitiúil: an teaspóg nó an coire, ní stáisiún luchtaithe ná aerchóiritheoir. Seicfear féiniúlacht a gheata sula sábhálfar é.",
         "data": {
           "target": "Suiteáil / geata"
         }
@@ -109,6 +109,13 @@
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
+      "local_certificate_data": {
+        "title": "Deimhnigh deimhniú an phoirt sonraí",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.\n\nMura mbaineann an deimhniú le do gheata, dún an dialóg; ní sheoltar aon rud.",
+        "data": {
+          "confirm": "Deimhním an geata seo agus a dheimhniú"
+        }
+      },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
         "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Má thógann sé níos mó ná cúig nóiméad botún clóscríofa a cheartú, brúigh na cnaipí arís. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an Pass.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Deimhnigh an nasc áitiúil",
-        "description": "D'éirigh leis an tseiceáil léamh do **{host}** agus tá geata **{gateway}** ag teacht leis an tsuiteáil roghnaithe. Seiceálann an tsábháil na sonraí reatha arís agus cuireann sí an rochtain seo leis an socrú atá ann cheana nó nuashonraíonn sí í.",
-        "data": {
-          "confirm": "Sábháil an nasc áitiúil seo"
-        }
+        "description": "D'éirigh leis an tseiceáil léamh do **{host}** agus tá geata **{gateway}** ag teacht leis an tsuiteáil roghnaithe. Seiceálann an tsábháil na sonraí reatha arís agus cuireann sí an rochtain seo leis an socrú atá ann cheana nó nuashonraíonn sí í. Chun gan aon rud a shábháil, dún an dialóg ina ionad sin."
       },
       "local_retry": {
         "title": "Níorbh fhéidir an tseiceáil áitiúil a chríochnú",
@@ -151,6 +155,7 @@
       "cannot_connect": "Ní féidir an rochtain néil a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
       "invalid_auth": "Dhiúltaigh SingleKey ID don údarú nó chuir sé in éag é. Úsáid an nasc nua SingleKey ID a thaispeántar thuas agus déan an síniú isteach arís.",
       "invalid_redirect": "Níorbh fhéidir le Home Assistant an seoladh seo a úsáid. Cóipeáil an seoladh iomlán aipe ón teachtaireacht ‘Failed to launch’ i gconsól Chrome. Caithfidh sé tosú leis an scéim a thaispeántar thuas agus baint leis an iarracht reatha shínithe isteach.",
+      "singlekey_page": "Is é seo seoladh leathanach SingleKey ID, ní seoladh na haipe. Má deir an leathanach sin go n-atreorófar thú agus nach dtarlaíonn aon rud, roghnaigh a nasc nó a chnaipe. Ansin cóipeáil i gconsól Chrome an seoladh `{redirect_scheme}://` ón teachtaireacht dhearg **Failed to launch**.",
       "gateway_changed": "Athraíodh liosta na ngeataí cé go raibh an dialóg seo oscailte. Dún an dialóg agus oscail Athchumraigh arís.",
       "select_gateway": "Roghnaigh gléas amháin ar a laghad ón liosta sula leanann tú ar aghaidh.",
       "unknown": "Tharla earráid gan choinne sa rochtain néil. Fan nóiméad agus déan iarracht arís.",
@@ -172,13 +177,14 @@
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
       "local_certificate_changed": "Níorbh fhéidir an deimhniú a dheimhniú nó tá sé athraithe. Scrúdaigh deimhniú an gheata arís sula leanann tú ar aghaidh.",
+      "local_certificate_unconfirmed": "Cuir tic sa bhosca chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
       "local_token_rejected": "Dhiúltaigh an geata don chomhartha seo. Seiceáil é nó caith amach an iarracht seo d'aon turas chun ceann eile a úsáid.",
       "local_resource_forbidden": "Dhiúltaigh an geata rochtain ar acmhainn riachtanach. Ní chruthaíonn comhartha amháin rochtain léite.",
       "local_missing_resource": "Ní chuireann an geata acmhainn socraithe riachtanach ar fáil.",
       "local_unknown_firmware": "Níorbh fhéidir leagan an dochtearraí a fhíorú.",
       "local_old_firmware": "Nuashonraigh dochtearraí an gheata sula socraíonn tú an nasc áitiúil.",
       "local_unsupported_brand": "Ní thacaítear le branda an gheata seo leis an gcomhéadan áitiúil doiciméadaithe.",
-      "local_incomplete_system": "Níl eolas córais an gheata iomlán fós. Déan an tseiceáil léamh arís níos déanaí.",
+      "local_incomplete_system": "Tá an geata fós ag bailiú a eolais córais. D'fhéadfadh sé seo cúpla nóiméad a thógáil. Fan cúpla nóiméad, ansin déan an tseiceáil léamh arís.",
       "local_invalid_response": "Níorbh fhéidir freagra riachtanach ón ngeata a fhíorú.",
       "local_identity_unverified": "Níor meaitseáladh an córas seo go débhríoch go fóill. Teastaíonn rochtain néil atá ar fáil agus aitheantóirí geata agus modúil a thagann le chéile ón dá chomhéadan don chéad socrú. Is féidir naisc fhíoraithe a úsáid ina dhiaidh sin gan an néal.",
       "local_identity_conflict": "Tá féiniúlacht an gheata i gcoimhlint leis an tsuiteáil roghnaithe nó le socrú eile.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "already_in_progress": "Tá socrú don gheata áitiúil seo ar siúl cheana.",
-      "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit."
+      "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
+      "local_entry_not_updated": "Níorbh fhéidir iontráil atá ann cheana den chomhtháthú seo a nuashonrú go dtí an leagan reatha. Deisigh nó bain an iontráil sin ar dtús; ansin is féidir an geata seo a chur leis."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Socruithe",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Fógraí",
           "holidays": "Bainistigh tréimhsí saoire",
@@ -248,7 +254,9 @@
           "connections": "Naisc",
           "connection_add_cloud": "Ceangail rochtain néil",
           "local_setup": "Socraigh rochtain áitiúil",
-          "rescan": "Cuardaigh an córas arís"
+          "rescan": "Cuardaigh an córas arís",
+          "recordings": "Taifeadtaí an chórais",
+          "wallbox": "Luchtaire balla"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Féach ar an sceideal téimh",
         "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nRoghnaigh lá den tseachtain. Athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte don lá sin. Beidh tionchar ag athruithe ar gach crios a úsáideann an sceideal seo.",
         "data": {
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "rrc_readonly": {
         "title": "Féach ar an sceideal téimh",
-        "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nNí féidir an sceideal seo a fheiceáil anseo ach amháin. Níl aon phointí lasctha in-eagraithe aige nó tá socruithe gan tacaíocht ann. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte. Is féidir leat athruithe a dhéanamh in aip an déantóra."
+        "description": "**{program}**\n\n**Dé Luain:** {mo}\n\n**Dé Máirt:** {tu}\n\n**Dé Céadaoin:** {we}\n\n**Déardaoin:** {th}\n\n**Dé hAoine:** {fr}\n\n**Dé Sathairn:** {sa}\n\n**Dé Domhnaigh:** {su}\n\nNí féidir an sceideal seo a fheiceáil anseo ach amháin. Níl aon phointí lasctha in-eagraithe aige nó tá socruithe gan tacaíocht ann. Ciallaíonn ∅ nach bhfuil aon phointe lasctha stóráilte. Is féidir leat athruithe a dhéanamh in aip an déantóra.",
+        "data": {
+          "week_view": "Amharc seachtainiúil"
+        }
       },
       "rrc_point": {
         "title": "Cuir pointe lasctha in eagar",
         "description": "**{program}**\n\nRoghnaigh am i gcéimeanna cúig nóiméad agus teocht ó 5 go 30 °C i gcéimeanna 0.5 °C. Athdhéantar an t-am gach seachtain in am áitiúil an chórais téimh. Beidh tionchar ag athruithe ar na criosanna sannta ar fad.",
         "data": {
           "time": "Am",
-          "temperature": "Teocht"
+          "temperature": "Teocht",
+          "delete": "Scrios an pointe lasctha seo"
         }
+      },
+      "rrc_confirm": {
+        "title": "Sábháil an pointe lasctha",
+        "description": "**{program}**\n\n**Roimhe:** {before}\n\n**Ina dhiaidh:** {after}\n\nSeoltar an t-athrú uair amháin agus léitear ar ais é ansin. Baineann sé le gach crios sannta."
       },
       "rrc_day": {
         "title": "Roghnaigh pointe lasctha",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nRoghnaigh pointe lasctha chun é a athrú nó a scriosadh, nó cuir ceann leis. Tá {per_day} pointe lasctha ar a mhéad ag lá (teorainn aip an déantúsóra, nach dtuairiscíonn an rialaitheoir); fanann an pointe lasctha deireanach de lá.",
         "data": {
           "point": "Pointe lasctha"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí hé an sceideal seo sceideal gníomhach an chiorcaid téimh. Beidh éifeacht ag athruithe nuair a roghnaítear é.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí bhíonn feidhm ag sceideal an uisce te ach fad atá mód oibríochta an uisce te socraithe ar Uathoibríoch.",
         "data": {
           "action": "An chéad chéim eile",
-          "day": "Lá den tseachtain"
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Naisc",
-        "description": "{result}Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
+        "description": "Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Socraigh rochtain áitiúil",
           "back": "← Siar"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Tástáil naisc",
-        "description": "{result}"
+        "description": "OK, freagra tar éis {ms} ms. Fanann na socruithe gan athrú."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Tástáil naisc",
+        "description": "OK, freagra tar éis {ms} ms; {count} geata sa chuntas. Fanann na socruithe gan athrú."
+      },
+      "connection_test_not_running": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: níl an rochtain ag rith faoi láthair (díchumasaithe, ag tosú nó stoptha)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Tástáil naisc",
+        "description": "Síniú isteach ag teastáil: sínigh isteach arís trí “Sínigh isteach arís”."
+      },
+      "connection_test_auth_local": {
+        "title": "Tástáil naisc",
+        "description": "Síniú isteach ag teastáil: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Tástáil naisc",
+        "description": "Tá deimhniú an ghléis athraithe: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”."
+      },
+      "connection_test_paused": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá iarratais ar sos go dtí {until}."
+      },
+      "connection_test_paused_open": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá iarratais ar sos faoi láthair."
+      },
+      "connection_test_busy": {
+        "title": "Tástáil naisc",
+        "description": "Gan tástáil: tá an rochtain gnóthach faoi láthair. Déan iarracht arís i gceann tamaill."
+      },
+      "connection_test_unreachable": {
+        "title": "Tástáil naisc",
+        "description": "Neamh-inrochtana: gan freagra ({ms} ms). Seiceáil an líonra agus an gléas."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Tástáil naisc",
+        "description": "Neamh-inrochtana: gan freagra ({ms} ms). Seiceáil an líonra agus an gléas. Leid: má athraíonn seoladh an gheata, mar shampla tar éis don ródaire atosú, cabhraíonn seoladh seasta: cuir a sheoladh IP in áirithe sa ródaire (áirithint DHCP) nó cuir isteach ainm óstach an gheata. Má fhógraíonn an geata é féin ag seoladh nua, tairgeann nóta deisiúcháin é a úsáid."
+      },
+      "connection_test_other_gateway": {
+        "title": "Tástáil naisc",
+        "description": "Freagraíonn geata eile ag an seoladh seo. Socraigh an rochtain áitiúil arís."
+      },
+      "connection_test_error": {
+        "title": "Tástáil naisc",
+        "description": "Theip ar an tástáil: {kind}."
       },
       "connection": {
         "title": "Bainistigh an nasc",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Tástáil an nasc anois",
           "connection_enabled": "Cas nó múch rochtain",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Minicíocht fiosraithe",
-        "description": "Léann Caighdeánach luachanna oibríochta reatha téimh gach nóiméad, socruithe agus luachanna fuinnimh gach 5 nóiméad agus eolas níos moille gach 15 nóiméad. Dúblaíonn Spárálach leis an néal na heatraimh seo. Seiceáiltear lochtanna gníomhacha gach nóiméad sa dá phróifíl. Baineann an phróifíl le fiosrú téimh agus luchtaire balla an naisc néil roghnaithe; tuairiscíonn gléasanna breise néil athruithe mar theachtaireachtaí. Is féidir le síniú isteach, seiceálacha gléis agus an deimhniú tar éis athraithe iarratais a chur leis lasmuigh den sceideal seo. Má thógann timthriall fiosraithe níos faide ná a eatramh, tosaíonn an chéad cheann eile níos déanaí.",
+        "description": "Léann **Caighdeánach** luachanna oibriúcháin reatha gach nóiméad agus socruithe agus luachanna fuinnimh gach 5 nóiméad. Déanann **Cneasta don néal** na heatraimh seo a dhúbailt. Seiceáltar lochtanna gníomhacha gach nóiméad sa dá phróifíl.",
         "data": {
           "polling_profile": "Próifíl fiosraithe"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Sínigh isteach le SingleKey ID",
-        "description": "Is é SingleKey ID an síniú isteach céanna a úsáideann d'aip Bosch nó Buderus. Úsáid an seoladh ríomhphoist nó an uimhir ghutháin shoghluaiste agus an focal faire céanna. Níl cuntas nua ag teastáil, agus **ní** chuireann tú do fhocal faire isteach in Home Assistant.\n\n1. Fág an dialóg seo oscailte agus oscail [SingleKey ID]({authorization_url}) i gcluaisín nua Chrome. Úsáid an nasc nua-ghinte seo i gcónaí.\n2. Brúigh `F12` ansin agus oscail **Console** sna huirlisí forbróra.\n3. Sínigh isteach leis na dintiúir SingleKey ID a úsáideann d'aip téimh.\n4. D'fhéadfadh teachtaireacht faoi fhadhb líonra a bheith le feiceáil tar éis an tsínithe isteach. Sa chás sin, ní chiallaíonn sé de ghnáth ach nach raibh Chrome in ann seoladh na haipe `{redirect_scheme}://` a oscailt.\n5. Aimsigh an teachtaireacht dhearg **Failed to launch** nó **Connecting to** sa chonsól. Cliceáil ar dheis ar an seoladh gorm `{redirect_scheme}://` sa teachtaireacht sin agus roghnaigh **Copy link address**.\n6. Fill ar an dialóg seo, greamaigh an seoladh iomlán thíos, agus roghnaigh **Ceart go leor**. D'fhéadfadh an réimse poncanna a thaispeáint ar chúiseanna slándála.\n\nÚsáid an seoladh ón iarracht shínithe isteach seo go díreach agus ná cóipeáil an paraiméadar `code` amháin. Tá cód aon úsáide gearrshaolach sa seoladh iomlán. Ná roinn riamh é i dtuarascáil fhadhbanna, i gcomhrá, i scáileanchlár ná i logchomhad.",
+        "description": "Is é SingleKey ID an síniú isteach céanna a úsáideann d'aip Bosch nó Buderus. Úsáid an seoladh ríomhphoist nó an uimhir ghutháin shoghluaiste agus an focal faire céanna. Níl cuntas nua ag teastáil, agus **ní** chuireann tú do fhocal faire isteach in Home Assistant.\n\n1. Fág an dialóg seo oscailte agus oscail [SingleKey ID]({authorization_url}) i gcluaisín nua Chrome. Úsáid an nasc nua-ghinte seo i gcónaí.\n2. Brúigh `F12` ansin agus oscail **Console** sna huirlisí forbróra.\n3. Sínigh isteach leis na dintiúir SingleKey ID a úsáideann d'aip téimh.\n4. D'fhéadfadh teachtaireacht faoi fhadhb líonra a bheith le feiceáil tar éis an tsínithe isteach. Sa chás sin, ní chiallaíonn sé de ghnáth ach nach raibh Chrome in ann seoladh na haipe `{redirect_scheme}://` a oscailt. Má thaispeánann SingleKey ID leathanach a fhógraíonn atreorú agus nach dtarlaíonn aon rud, roghnaigh an nasc nó an cnaipe ar an leathanach sin.\n5. Aimsigh an teachtaireacht dhearg **Failed to launch** nó **Connecting to** sa chonsól. Cliceáil ar dheis ar an seoladh gorm `{redirect_scheme}://` sa teachtaireacht sin agus roghnaigh **Copy link address**.\n6. Fill ar an dialóg seo, greamaigh an seoladh iomlán thíos, agus roghnaigh **Ceart go leor**. D'fhéadfadh an réimse poncanna a thaispeáint ar chúiseanna slándála.\n\nÚsáid an seoladh ón iarracht shínithe isteach seo go díreach agus ná cóipeáil an paraiméadar `code` amháin. Tá cód aon úsáide gearrshaolach sa seoladh iomlán. Ná roinn riamh é i dtuarascáil fhadhbanna, i gcomhrá, i scáileanchlár ná i logchomhad.",
         "data": {
           "redirect_url": "An seoladh athsheolta iomlán"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Roghnaigh an socrú atá ann cheana",
-        "description": "Roghnaigh an socrú a mbaineann an geata áitiúil seo leis. Ní chruthóidh sé seo suiteáil eile.",
+        "description": "Roghnaigh an socrú a mbaineann an geata áitiúil seo leis, nó socraigh é mar shocrú nua le rochtain áitiúil amháin.",
         "data": {
-          "owner": "Socrú atá ann cheana"
+          "owner": "Socrú"
         }
       },
       "local_target": {
         "title": "Roghnaigh an tsuiteáil",
-        "description": "Roghnaigh an tsuiteáil atá le nascadh go háitiúil. Seicfear féiniúlacht a gheata sula sábhálfar é.",
+        "description": "Roghnaigh an córas teasa atá le nascadh go háitiúil: an teaspóg nó an coire, ní stáisiún luchtaithe ná aerchóiritheoir. Seicfear féiniúlacht a gheata sula sábhálfar é.",
         "data": {
           "target": "Suiteáil / geata"
         }
@@ -607,6 +688,13 @@
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
+      "local_certificate_data": {
+        "title": "Deimhnigh deimhniú an phoirt sonraí",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.\n\nMura mbaineann an deimhniú le do gheata, dún an dialóg; ní sheoltar aon rud.",
+        "data": {
+          "confirm": "Deimhním an geata seo agus a dheimhniú"
+        }
+      },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
         "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Má thógann sé níos mó ná cúig nóiméad botún clóscríofa a cheartú, brúigh na cnaipí arís. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an Pass.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "Deimhnigh an nasc áitiúil",
-        "description": "D'éirigh leis an tseiceáil léamh do **{host}** agus tá geata **{gateway}** ag teacht leis an tsuiteáil roghnaithe. Seiceálann an tsábháil na sonraí reatha arís agus cuireann sí an rochtain seo leis an socrú atá ann cheana nó nuashonraíonn sí í.",
-        "data": {
-          "confirm": "Sábháil an nasc áitiúil seo"
-        }
+        "description": "D'éirigh leis an tseiceáil léamh do **{host}** agus tá geata **{gateway}** ag teacht leis an tsuiteáil roghnaithe. Seiceálann an tsábháil na sonraí reatha arís agus cuireann sí an rochtain seo leis an socrú atá ann cheana nó nuashonraíonn sí í. Chun gan aon rud a shábháil, dún an dialóg ina ionad sin."
       },
       "local_retry": {
         "title": "Níorbh fhéidir an tseiceáil áitiúil a chríochnú",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Fiosrú áitiúil",
-        "description": "Acmhainní deimhnithe: {known}. Ar fáil faoi láthair: {available}. Léiríonn na huimhreacha seo an staid nuair a osclaíodh an dialóg seo. Is é an t-eatramh an sprioc do luachanna beo. Léitear socruithe, luachanna fuinnimh agus diagnóisic gach 5 nóiméad agus áireamháin gach 15 nóiméad, nó ag an eatramh seo má tá sé níos faide; léitear sonraí statacha go laethúil. Ní bheidh luach ar fáil tar éis trí eatramh a chailleadh. Féadann tacair mhóra acmhainní níos mó ama a thógáil. Tá fiosrú néil fós neamhspleách. Léitear léamh a chuireann an néal ar fáil freisin go háitiúil chomh minic ar a laghad agus a léitear sa néal iad.",
+        "description": "Acmhainní deimhnithe: {known}, ar fáil anois: {available}. Is é an t-eatramh an sprioc do luachanna beo; léitear luachanna níos moille níos annaimhe. Déanann an doiciméadú cur síos ar na heatraimh bheachta.",
         "data": {
           "interval": "Eatramh sprice do luachanna beo"
         }
       },
       "local_values": {
         "title": "Luachanna áitiúla d'aonáin atá ann cheana",
-        "description": "Fad a bhíonn an néal ag rith, socraíonn an rogha seo an úsáideann braiteoirí atá ann cheana luach áitiúil léamh a chuireann an dá rochtain ar fáil faoin acmhainn dhoiciméadaithe chéanna. Gan an néal (múchta, síniú isteach ag teastáil, ar sos, srianta nó neamh-inrochtana), úsáidtear luachanna áitiúla i gcónaí. Tá an rogha ar siúl de réir réamhshocraithe do shocruithe nua le rochtain néil agus áitiúil.\n\nNuair a bhíonn sí cumasaithe, úsáidtear an luach áitiúil fad atá sé reatha. Má tá an luach áitiúil as dáta nó ar iarraidh, úsáidtear an luach reatha néil; má tá an dá cheann as dáta, ní bheidh an braiteoir ar fáil. Úsáideann áireamháin fuinnimh, tosuithe agus ama oibríochta an luach áitiúil freisin, ach ní athraíonn siad a bhfoinse ach amháin má tá gach áireamh a thaispeántar chomh hard leis an áireamh deireanach a taispeánadh ar a laghad, ionas nach gcuireann athrú foinse áireamh siar riamh. Leanann socruithe inchoigeartaithe ag úsáid an néil. Fanann aitheantóirí aonáin, ainmneacha agus stair gan athrú. Seoltar rialuithe agus athruithe fós tríd an néal.",
+        "description": "Fad a bhíonn an néal ag rith, socraíonn an rogha seo an úsáideann braiteoirí atá ann cheana luach áitiúil tomhais a sholáthraíonn an dá rochtain. Gan an néal, úsáidtear na luachanna áitiúla i gcónaí; téann socruithe agus rialú fós tríd an néal. Ní athraíonn aitheantais aonán, ainmneacha ná stair.",
         "data": {
           "enabled": "Úsáid luachanna áitiúla"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "Cuardaigh an córas arís",
         "description": "Cuardaíonn sé seo an córas uair amháin eile le haghaidh páirteanna agus léamh, tríd an rochtain néil agus an rochtain áitiúil. Úsáid é tar éis comhpháirteanna a chur leis nó a athrú. Ritheann an cuardach leis an gcéad nuashonrú rialta eile agus laistigh de na teorainneacha is gnách d'iarratais; ní bhaineann sé aonán riamh, agus fanann léamh nach bhfaigheann sé arís mar atá siad."
+      },
+      "recordings": {
+        "title": "Taifeadtaí an chórais",
+        "description": "Taifeadann an teaschaidéal an fuinneamh, na tosuithe agus an t-am oibríochta in aghaidh na huaire. Taispeánann an comhtháthú iad mar aonáin agus is féidir leis na luachanna in aghaidh na huaire a iompórtáil isteach sna staitisticí fadtéarmacha (painéal fuinnimh, cártaí staitisticí). Sraitheanna aimsithe: {series}, iompórtáilte: {imported}.",
+        "data": {
+          "recordings_import": "Iompórtáil na luachanna in aghaidh na huaire isteach sna staitisticí fadtéarmacha",
+          "delete_statistics": "Scrios na staitisticí iompórtáilte"
+        },
+        "data_description": {
+          "recordings_import": "Úsáid na staitisticí seo nó aonáin na n-áiritheoirí sa phainéal fuinnimh, ní an dá rud. Nuair a mhúchtar é, fanann an méid a iompórtáladh.",
+          "delete_statistics": "Iarrann an chéad leathanach eile dearbhú."
+        }
+      },
+      "recordings_delete": {
+        "title": "Scrios na staitisticí iompórtáilte",
+        "description": "Scriosann sé gach staitistic a iompórtáladh ó thaifeadtaí an chórais don iontráil seo agus múchann sé an t-iompórtáil. Fanann na haonáin agus taifeadtaí an chórais féin. Ní féidir é seo a chealú.",
+        "data": {
+          "confirm": "Is ea, scrios na staitisticí iompórtáilte"
+        }
       },
       "local_tokens": {
         "title": "Comharthaí ar an ngeata",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Cúlghair an comhartha seo ar an ngeata",
           "confirm_end": "Críochnaíonn rochtain áitiúil a úsáideann an comhartha seo"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Toradh",
+        "description": "Baineadh an rochtain."
+      },
+      "result_connection_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an t-athrú."
+      },
+      "result_holiday_created": {
+        "title": "Toradh",
+        "description": "Cruthaíodh an tsaoire agus deimhníodh í trí í a léamh ar ais."
+      },
+      "result_holiday_deleted": {
+        "title": "Toradh",
+        "description": "Scriosadh an tsaoire agus dheimhnigh an córas téimh a baint."
+      },
+      "result_holiday_unchanged": {
+        "title": "Toradh",
+        "description": "Níor athraíodh aon rud, mar sin níor seoladh aon rud chuig an gcóras téimh."
+      },
+      "result_holiday_updated": {
+        "title": "Toradh",
+        "description": "Sábháladh socruithe na saoire agus dheimhnigh an córas téimh iad."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Toradh",
+        "description": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
+      },
+      "result_local_token_access_ended": {
+        "title": "Toradh",
+        "description": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í."
+      },
+      "result_local_token_not_removed": {
+        "title": "Toradh",
+        "description": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Toradh",
+        "description": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Toradh",
+        "description": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil."
+      },
+      "result_local_token_revoked": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Toradh",
+        "description": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain."
+      },
+      "result_local_tokens_changed": {
+        "title": "Toradh",
+        "description": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís."
+      },
+      "result_notifications_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh na socruithe fógraí."
+      },
+      "result_rescan_partial": {
+        "title": "Toradh",
+        "description": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd."
+      },
+      "result_rescan_paused": {
+        "title": "Toradh",
+        "description": "Níor tosaíodh an cuardach: tá iarratais curtha ar sos faoi láthair (mar shampla tar éis don néal sos a iarraidh). Déan iarracht arís níos déanaí."
+      },
+      "result_rescan_planned": {
+        "title": "Toradh",
+        "description": "Tá an cuardach pleanáilte agus ritheann sé leis an gcéad nuashonrú rialta eile; taispeántar páirteanna nua a luaithe a aimsítear iad."
+      },
+      "result_rescan_running": {
+        "title": "Toradh",
+        "description": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe."
+      },
+      "result_rescan_unavailable": {
+        "title": "Toradh",
+        "description": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair."
+      },
+      "result_rrc_program_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais."
+      },
+      "result_switch_program_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Toradh",
+        "description": "Athnuadh an síniú isteach go rathúil."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Toradh",
+        "description": "Athnuadh an síniú isteach. Ní bhfuarthas {count} córas nó gléas casta air sa chuntas; fanann siad cumraithe. Ainmníonn nóta deisiúcháin iad agus míníonn sé conas dearmad a dhéanamh orthu."
+      },
+      "result_recordings_import_on": {
+        "title": "Toradh",
+        "description": "Tá iompórtáil thaifeadtaí an chórais ar siúl; tagann na chéad luachanna laistigh de chúpla nóiméad."
+      },
+      "result_recordings_import_off": {
+        "title": "Toradh",
+        "description": "Tá iompórtáil thaifeadtaí an chórais múchta; fanann na luachanna iompórtáilte."
+      },
+      "result_recordings_deleted": {
+        "title": "Toradh",
+        "description": "Staitisticí iompórtáilte scriosta: {count}. Tá an t-iompórtáil múchta."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Toradh",
+        "description": "Níor scriosadh aon rud."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Athraigh clár an uisce the",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nIs iad na leibhéil iad siúd de chlár rialaitheoir an tseomra. Bíonn feidhm ag an gclár fad a leanann an t-uisce te a chlár féin. Is é sé phointe lasctha in aghaidh an lae ar a mhéad teorainn aip an déantúsóra, ní teorainn a thuairiscíonn an rialaitheoir.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá na seachtaine",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Cuir pointe lasctha in eagar",
+        "description": "**{program}** – **{day}**\n\nRoghnaigh am i gcéimeanna {raster} nóiméad agus teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C. Bíonn feidhm aici ón am seo go dtí an chéad phointe lasctha eile.",
+        "data": {
+          "time": "Am",
+          "value": "Teocht",
+          "off": "As in ionad teochta",
+          "delete": "Scrios an pointe lasctha seo"
+        }
+      },
+      "rrc_add": {
+        "title": "Cuir pointe lasctha leis",
+        "description": "**{program}**\n\n{points}\n\nRoghnaigh am i gcéimeanna cúig nóiméad agus teocht ó 5 go 30 °C i gcéimeanna 0.5 °C. Athdhéantar an t-am gach seachtain in am áitiúil an chórais téimh. Beidh tionchar ag athruithe ar na criosanna sannta uile.",
+        "data": {
+          "time": "Am",
+          "temperature": "Teocht"
+        }
+      },
+      "wallbox": {
+        "title": "Luchtaire balla",
+        "description": "Ní thosaíonn luchtaire balla a éilíonn fíordheimhniú ag luchtú go dtí go ndéanann an comhtháthú fíordheimhniú. Seoltar ordú breise amháin ansin roimh gach tosú.",
+        "data": {
+          "wallbox_authentication": "Ceadaigh fíordheimhniú roimh thosú",
+          "wallbox_authentication_name": "Ainm fíordheimhnithe (roghnach)",
+          "wallbox_history": "Léigh stair an luchtaithe"
+        },
+        "data_description": {
+          "wallbox_authentication": "As de réir réamhshocraithe. Ó bhogearraí 5.1.0 ar aghaidh, fíordheimhníonn tosú ar dtús; le bogearraí níos sine seoltar an tosú leis féin, mar atá san aip ón monaróir.",
+          "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh.",
+          "wallbox_history": "As de réir réamhshocraithe. Thart ar gach 30 nóiméad (gach 60 nóiméad sa phróifíl chairdiúil don scamall) léitear an luchtú deireanach (tús, deireadh, fad, fuinneamh) agus fuinneamh na míosa seo ón ngréasán agus ón ngrian. Ní léitear ainmneacha cártaí, úsáideoirí ná fíordheimhnithe choíche."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Toradh",
+        "description": "Sábháladh socruithe an luchtaire balla."
+      },
+      "switch_program_week_aircon": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile den lá céanna; roimh an gcéad phointe lasctha de lá, bíonn an t-aerchóiritheoir as. Athdhéantar na hamanna gach seachtain de réir chlog an aerchóiritheora. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile den lá céanna; roimh an gcéad phointe lasctha de lá, bíonn an t-aerchóiritheoir as. Athdhéantar na hamanna gach seachtain de réir chlog an aerchóiritheora. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí hé an sceideal seo sceideal gníomhach an aerchóiritheora. Beidh éifeacht ag athruithe nuair a roghnaítear é.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain",
+          "week_view": "Amharc seachtainiúil"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Cuir pointe lasctha in eagar",
+        "description": "**{program}** – **{day}**\n\nRoghnaigh am i gcéimeanna {raster} nóiméad agus an socrú ón am sin ar aghaidh. Tairgeann an t-aerchóiritheoir:\n\n{settings}\n\nNí chuirtear an teocht ná luas an lucht aeraithe i gcuntas ach amháin i modh a bhfuil siad aige. Cuireann As an t-aerchóiritheoir as go dtí an chéad phointe lasctha eile.",
+        "data": {
+          "time": "Am",
+          "mode": "Modh",
+          "value": "Teocht",
+          "fan": "Luas an lucht aeraithe",
+          "delete": "Scrios an pointe lasctha seo"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Cumasaigh an nasc néil seo sula gcuardaíonn tú gléasanna.",
       "cloud_rate_limited": "D'iarr an néal sos. Fan sula ndéanann tú iarracht arís.",
       "invalid_auth": "Dhiúltaigh SingleKey ID don údarú nó chuir sé in éag é. Úsáid an nasc nua SingleKey ID a thaispeántar thuas agus déan an síniú isteach arís.",
+      "reauth_targets_missing": "Ní bhfuair an síniú isteach seo aon cheann de na córais ná de na gléasanna atá casta air. Coinnítear na dintiúir roimhe seo. Seiceáil gur shínigh tú isteach leis an gcuntas céanna agus a bhí roimhe. Má baineadh na córais den chuntas, oscail Cumraigh → Naisc → an rochtain néil: cas air córas atá fós sa chuntas faoi **Úsáid do chórais agus do ghléasanna**, nó cas as iad siúd a baineadh agus bain iad le **Déan dearmad ar chórais dhíroghnaithe**. Mura bhfuil aon cheann fágtha, bain an rochtain néil agus ceangail arís í.",
       "invalid_redirect": "Níorbh fhéidir le Home Assistant an seoladh seo a úsáid. Cóipeáil an seoladh iomlán aipe ón teachtaireacht ‘Failed to launch’ i gconsól Chrome. Caithfidh sé tosú leis an scéim a thaispeántar thuas agus baint leis an iarracht reatha shínithe isteach.",
+      "singlekey_page": "Is é seo seoladh leathanach SingleKey ID, ní seoladh na haipe. Má deir an leathanach sin go n-atreorófar thú agus nach dtarlaíonn aon rud, roghnaigh a nasc nó a chnaipe. Ansin cóipeáil i gconsól Chrome an seoladh `{redirect_scheme}://` ón teachtaireacht dhearg **Failed to launch**.",
       "cannot_connect": "Ní féidir an rochtain néil a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
       "select_gateway": "Roghnaigh gléas amháin ar a laghad ón liosta sula leanann tú ar aghaidh.",
       "no_gateways": "Ní bhfuarthas aon ghléas. Seiceáil go bhfuil an branda roghnaithe agus an cuntas SingleKey ID ag teacht le d'aip. Ní thaispeántar rialaitheoir seomra a bhfuil dochtearraí níos sine air go dtí go mbeidh a dhochtearraí nuashonraithe agus go mbeidh sé socraithe san aip reatha le do SingleKey ID.",
@@ -774,13 +1070,14 @@
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
       "local_certificate_changed": "Níorbh fhéidir an deimhniú a dheimhniú nó tá sé athraithe. Scrúdaigh deimhniú an gheata arís sula leanann tú ar aghaidh.",
+      "local_certificate_unconfirmed": "Cuir tic sa bhosca chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
       "local_token_rejected": "Dhiúltaigh an geata don chomhartha seo. Seiceáil é nó caith amach an iarracht seo d'aon turas chun ceann eile a úsáid.",
       "local_resource_forbidden": "Dhiúltaigh an geata rochtain ar acmhainn riachtanach. Ní chruthaíonn comhartha amháin rochtain léite.",
       "local_missing_resource": "Ní chuireann an geata acmhainn socraithe riachtanach ar fáil.",
       "local_unknown_firmware": "Níorbh fhéidir leagan an dochtearraí a fhíorú.",
       "local_old_firmware": "Nuashonraigh dochtearraí an gheata sula socraíonn tú an nasc áitiúil.",
       "local_unsupported_brand": "Ní thacaítear le branda an gheata seo leis an gcomhéadan áitiúil doiciméadaithe.",
-      "local_incomplete_system": "Níl eolas córais an gheata iomlán fós. Déan an tseiceáil léamh arís níos déanaí.",
+      "local_incomplete_system": "Tá an geata fós ag bailiú a eolais córais. D'fhéadfadh sé seo cúpla nóiméad a thógáil. Fan cúpla nóiméad, ansin déan an tseiceáil léamh arís.",
       "local_invalid_response": "Níorbh fhéidir freagra riachtanach ón ngeata a fhíorú.",
       "local_identity_unverified": "Níor meaitseáladh an córas seo go débhríoch go fóill. Teastaíonn rochtain néil atá ar fáil agus aitheantóirí geata agus modúil a thagann le chéile ón dá chomhéadan don chéad socrú. Is féidir naisc fhíoraithe a úsáid ina dhiaidh sin gan an néal.",
       "local_identity_conflict": "Tá féiniúlacht an gheata i gcoimhlint leis an tsuiteáil roghnaithe nó le socrú eile.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
       "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
       "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
-      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud."
+      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
+      "switch_program_value": "Cuir isteach teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C.",
+      "switch_program_day_emptied": "Coinníonn lá a bhfuil pointí lasctha aige ceann amháin ar a laghad; ní fios cad is brí le lá folamh don rialaitheoir.",
+      "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaíonn an aip ag an lá seo cheana ({per_day}).",
+      "rrc_point_last": "Ní féidir an pointe lasctha deireanach de lá a scriosadh; ní fios cad is brí le lá folamh don rialaitheoir.",
+      "rrc_point_duplicate": "Tá pointe lasctha ag an lá seo cheana ag an am seo.",
+      "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
+      "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
       "notification_gateways_changed": "Athraíodh rogha na suiteála. Oscail na socruithe arís.",
       "holiday_changed": "Athraíodh an tsaoire roghnaithe nó níl sí ar fáil le cur in eagar a thuilleadh. Oscail an tsaoire arís chun a sonraí reatha a athbhreithniú.",
-      "holiday_updated": "Sábháladh socruithe na saoire agus dheimhnigh an córas téimh iad.",
-      "holiday_unchanged": "Níor athraíodh aon rud, mar sin níor seoladh aon rud chuig an gcóras téimh.",
       "no_writable_holidays": "Níl bainistiú saoire ar fáil faoi láthair. Fan go mbeidh socruithe saoire curtha ar fáil ag an tsuiteáil.",
-      "holiday_deleted": "Scriosadh an tsaoire agus dheimhnigh an córas téimh a baint.",
       "not_loaded": "Caithfear Bosch/Buderus Home Comfort a luchtú sula bhféadfar saoire a chumrú.",
-      "holiday_created": "Cruthaíodh an tsaoire agus deimhníodh í trí í a léamh ar ais.",
       "holiday_previous_request_found": "Tá an t-iarratas gan réiteach roimhe seo deimhnithe anois. Níor seoladh d'ionchuir nua. Seiceáil an tsaoire atá ann cheana faoi Bainistigh tréimhsí saoire ar dtús.",
       "holiday_already_exists": "Tá saoire leis an tosú agus an rogha ciorcad seo ann cheana. Níor cruthaíodh saoire bhreise. Oscail Bainistigh tréimhsí saoire agus cuir an iontráil atá ann cheana in eagar.",
       "holiday_create_unconfirmed": "Níorbh fhéidir an t-iarratas cruthaithe a dheimhniú. B'fhéidir go bhfuil an tsaoire ann cheana. Seiceáil Bainistigh tréimhsí saoire nó aip an déantóra. Ar feadh na 10 nóiméad eile, seiceálann iarracht eile toradh an iarratais seo gan an dara saoire a chruthú.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "Níl aon sceideal seachtainiúil reatha tacaithe de rialaitheoir seomra ar fáil.",
       "no_switch_programs": "Ní féidir aon sceideal reatha de chiorcad téimh nó den uisce te a athrú anseo.",
       "switch_program_changed": "Tá an sceideal athraithe idir an dá linn nó ní féidir é a athrú a thuilleadh. Oscail arís é chun na pointí lasctha reatha a fheiceáil.",
-      "switch_program_saved": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}",
       "controls_not_loaded": "Níl rialuithe ar fáil ach tríd an rochtain néil; ní dhéanann an rochtain áitiúil ach léamh. Ceangail rochtain néil nó fan go mbeidh sí luchtaithe.",
       "controls_auth_required": "Níl rialuithe ar fáil: teastaíonn síniú isteach nua don rochtain néil. Fanann léamh le feiceáil.",
       "controls_cloud_stopped": "Níl rialuithe ar fáil: tá an rochtain néil stoptha nó á hatosú. Fanann léamh le feiceáil.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Níl rialuithe ar fáil go fóill: níor sheachaid an néal luachanna reatha. Déan iarracht arís i gceann tamaill.",
       "controls_none": "Ní thuairiscíonn an trealamh seo aon socruithe is féidir a athrú anseo faoi láthair.",
       "configuration_changed": "Athraíodh na socruithe nasctha cé go raibh an dialóg seo oscailte. Dún í agus déan iarracht arís.",
+      "reauth_wrong_account": "Ní hionann an cuntas roghnaithe agus na gléasanna cumraithe. Sínigh isteach leis an gcuntas bunaidh.",
+      "reauth_no_targets": "Níl aon chóras ná gléas fágtha ag an rochtain néil seo, agus ní féidir an cuntas lena mbaineann sí a dheimhniú. Coinnítear na dintiúir roimhe seo. Chun cuntas néil a úsáid arís, bain an rochtain néil faoi Cumraigh → Naisc agus ceangail arís í.",
       "no_connections": "Níl aon rochtain cumraithe. Coinnítear córais agus aonáin atá ann cheana.",
-      "connection_reauth_started": "Tá an síniú isteach nua réidh. Dún an dialóg seo agus roghnaigh **Athchumraigh** don chomhtháthú seo faoi Socruithe → Feistí & seirbhísí, sa chuid **Aird ag teastáil**.",
       "cloud_already_connected": "Tá nasc néil cumraithe cheana. Úsáid a shocruithe nasctha chun tuilleadh gléasanna a roghnú nó chun síniú isteach arís. Ní thacaítear go fóill le dara síniú isteach néil comhthreomhar.",
       "cloud_setup_in_progress": "Tá socrú néil eile oscailte cheana. Críochnaigh nó dún an dialóg sin ar dtús.",
       "cloud_setup_taken_over": "Tá dialóg socraithe néil níos nuaí tar éis an ceann seo a chur ina háit. Dún an dialóg seo agus lean ar aghaidh sa cheann níos nuaí.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "Coinnítear an iarracht atá ar feitheamh. Is féidir leat í a atosú ón socrú áitiúil.",
       "local_storage_failed": "Níorbh fhéidir an taifead socraithe príobháideach a léamh ná a shábháil. Seiceáil stóras Home Assistant sula leanann tú ar aghaidh.",
       "cloud_local_first_other_entry": "Tá an córas seo socraithe cheana trína rochtain áitiúil in iontráil eile den chomhtháthú seo. Cuir an rochtain néil leis san iontráil sin ina áit.",
-      "rescan_planned": "Tá an cuardach pleanáilte agus ritheann sé leis an gcéad nuashonrú rialta eile; taispeántar páirteanna nua a luaithe a aimsítear iad.",
-      "rescan_paused": "Níor tosaíodh an cuardach: tá iarratais curtha ar sos faoi láthair (mar shampla tar éis don néal sos a iarraidh). Déan iarracht arís níos déanaí.",
-      "rescan_running": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe.",
-      "rescan_partial": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd.",
       "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair.",
-      "connection_saved": "Sábháladh an t-athrú.",
-      "connection_removed": "Baineadh an rochtain.",
-      "notifications_saved": "Sábháladh na socruithe fógraí.",
-      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais.",
-      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús.",
-      "local_tokens_changed": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís.",
-      "local_token_revoked": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh.",
-      "local_token_access_ended": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í.",
-      "local_token_revoke_rejected": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta.",
-      "local_token_revoke_unclear": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil.",
-      "local_token_revoked_removed": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain.",
-      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís.",
-      "local_token_old_revoked_removed": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata.",
-      "local_token_access_end_failed": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
+      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Fanann na taifeadtaí iompórtáilte sna staitisticí",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Scrios na staitisticí iompórtáilte",
+            "description": "D'iompórtáil an iontráil a baineadh {count} staitistic ó thaifeadtaí an chórais; coinníonn Home Assistant iad. Roghnaigh **Cuir isteach** chun iad a scriosadh; ní féidir é seo a chealú. Chun iad a choinneáil, roghnaigh **Neamhaird**. Imíonn an fógra seo tar éis an chéad atosaithe eile."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Níl na staitisticí iompórtáilte ann a thuilleadh. Níor scriosadh aon rud."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Córais gan aimsiú sa chuntas néil",
       "description": "Níor aimsigh an síniú isteach is déanaí den rochtain néil in “{title}” {count} córas nó gléas atá casta air (ag críochnú in {systems}). Fanann siad cumraithe agus gan a bheith ar fáil go dtí go mbeidh siad sa chuntas arís; imíonn an nóta seo ansin.\n\nMá baineadh den chuntas iad, oscail Cumraigh → Naisc → an rochtain néil, cas as iad faoi **Úsáid do chórais agus do ghléasanna** agus bain iad le **Déan dearmad ar chórais dhíroghnaithe**. Fanann a ngléasanna agus a n-aonáin in Home Assistant go scriosfaidh tú iad. Má malartaíodh geata, fág air é: tairgeann nóta deisiúcháin ar leith leanúint leis an gcóras lena stair."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Níl an socrú críochnaithe",
       "description": "Níl aon rochtain ag an iontráil “{title}” go fóill. Roghnaigh **Cumraigh** uirthi agus ansin “Socraigh rochtain áitiúil” (nó ceangail rochtain néil)."
+    },
+    "local_only_entities_continued": {
+      "title": "Léann na heintitis anois tríd an rochtain áitiúil",
+      "description": "Taispeánann {count} eintiteas atá in úsáid a luach anois tríd an rochtain áitiúil, agus luach na scamaill mar an dara foinse: {entities}. Fanann a n-aitheantais eintitis, a socruithe agus a stair, mar sin leanann uathoibrithe, scripteanna agus deaise ag obair. Leanann a n-ainmneacha, a gcatagóirí agus a staideanna an luach áitiúil anois. Is féidir leat neamhaird a dhéanamh den fhógra seo; imíonn sé tar éis an chéad atosú eile."
+    },
+    "local_only_entities_kept": {
+      "title": "Ní sholáthraítear na heintitis a thuilleadh",
+      "description": "Ní sholáthraítear {count} eintiteas scamaill a thuilleadh mar go dtaispeánann eintiteas eile den chomhtháthú seo an luach céanna tríd an rochtain áitiúil (sean → nua): {entities}. Ba cheart d'uathoibrithe, scripteanna agus deaiseanna a úsáideann an sean-eintiteas an ceann nua a úsáid. Bain an sean-eintiteas nuair nach mbíonn sé de dhíth ort a thuilleadh; fanann a stair go dtí sin. Is féidir leat neamhaird a dhéanamh den fhógra seo; feictear arís é ag an gcéad atosú eile fad is atá an sean-eintiteas ann."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Níl aon socphointe sealadach ag an gciorcad téimh seo faoi láthair le glanadh."
     },
+    "zone_climate_command": {
+      "message": "Níl an t-ordú seo don chrios ar fáil faoi láthair. Ní féidir teochtaí a athrú ach i mód láimhe, nó i mód uathoibríoch nuair a thairgeann an crios socrú sealadach. Roghnaigh an mód ar leith agus seiceáil go soláthraíonn an crios luachanna reatha."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Níl aon socrú sealadach le cealú ag an gcrios seo faoi láthair."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Socraíonn an trealamh socphointe reatha an uisce the. Is féidir leat teochtaí tosaithe na modhanna ar leith a choigeartú faoi Oibrigh an trealamh."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "Ní úsáideann an gléas raidió an socrú seo faoi láthair, mar sin níor athraíodh é."
+    },
+    "control_unused": {
+      "message": "Ní úsáideann an trealamh an socrú seo faoi láthair. Níor seoladh an t-athrú seo."
+    },
+    "circuit_room_controller": {
+      "message": "Is rialaitheoir seomra a rialaíonn an ciorcad téimh seo. Ní féidir an socrú a athrú ach ansin. Níor seoladh an t-athrú seo."
+    },
+    "circuit_constant_control": {
+      "message": "Ritheann an ciorcad téimh seo ar luachanna seasmhacha. Ní féidir a shocruithe a athrú faoi láthair. Níor seoladh an t-athrú seo."
+    },
+    "cooling_not_offered": {
+      "message": "Ní thairgeann an ciorcad téimh seo fuarú faoi láthair. Níor seoladh an t-athrú seo."
     },
     "rrc_setting_unused": {
       "message": "Ní úsáideann an rialaitheoir seomra an socrú seo faoi láthair, mar sin níor athraíodh é."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "Ní féidir an sceideal roghnaithe a léamh faoi láthair. Níor seoladh aon rud."
+    },
+    "switch_points_no_target": {
+      "message": "Níor roghnaíodh braiteoir cláir ama cumasaithe den chomhtháthú seo. Cumasaigh an braiteoir cláir ama agus roghnaigh é mar sprioc."
+    },
+    "not_a_program_entity": {
+      "message": "Ní féidir ach braiteoirí cláir ama an chomhtháthaithe seo a roghnú."
+    },
+    "switch_points_empty_week": {
+      "message": "Teastaíonn pointe lasctha amháin ar a laghad ón tseachtain."
+    },
+    "switch_points_invalid_time": {
+      "message": "Caithfidh gach am a bheith i gcéimeanna {raster} nóiméad, gan soicindí."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Tá dhá phointe lasctha ag lá ag an am céanna."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Tá níos mó pointí lasctha ag lá ná mar a cheadaíonn an córas téimh ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Tá níos mó pointí lasctha sa tseachtain ná mar a cheadaíonn an córas téimh ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Ní féidir ach na leibhéil seo a úsáid: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Ní féidir ach teochtaí ó {minimum} go {maximum} i gcéimeanna {step} a úsáid."
+    },
+    "switch_points_not_writable": {
+      "message": "Ní thuairiscíonn an córas téimh go bhfuil an clár ama seo inathraithe."
+    },
+    "switch_points_unused": {
+      "message": "Ní úsáideann an córas téimh an clár ama seo faoi láthair. Níor seoladh aon rud."
+    },
+    "switch_points_not_level_program": {
+      "message": "Níorbh fhéidir cineál an chláir ama seo a léamh nó ní oireann sé dá phointí lasctha. Níor seoladh aon rud."
+    },
+    "switch_points_not_editable": {
+      "message": "Ní féidir an clár ama seo a thaispeáint ach gan é a athrú: ní thuairiscíonn an córas téimh na teorainneacha uile atá ag teastáil le haghaidh athraithe."
+    },
+    "switch_points_program_changed": {
+      "message": "Tá an clár ama athraithe idir an dá linn nó ní hionann é a thuilleadh agus na pointí lasctha ionchasacha. Níor seoladh aon rud."
+    },
+    "switch_points_paused": {
+      "message": "Tá scríobh chuig an gcóras téimh ar sos ar feadh cúpla nóiméad tar éis léamha teipthe arís agus arís eile. Níor seoladh aon rud."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Seoladh an clár ama, ach níorbh fhéidir é a dheimhniú trína léamh ar ais. B'fhéidir go bhfuil sé curtha i bhfeidhm ar aon nós; ní sheoltar arís é."
+    },
+    "switch_points_rejected": {
+      "message": "Dhiúltaigh an córas téimh don chlár ama (HTTP {status}). Níor athraíodh aon rud."
+    },
+    "switch_points_invalid": {
+      "message": "Ní oireann na pointí lasctha do theorainneacha an chláir ama."
+    },
+    "program_name_empty": {
+      "message": "Cuir isteach ainm; ní sheoltar ainm folamh."
+    },
+    "program_name_too_long": {
+      "message": "Ní féidir leis an ainm a bheith níos faide ná {max} carachtar."
+    },
+    "program_name_charset": {
+      "message": "Tá carachtair san ainm nach féidir leis an gcóras téimh a stóráil ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Ní thuairiscíonn an córas téimh go bhfuil an t-ainm seo inathraithe."
+    },
+    "program_name_changed": {
+      "message": "Tá an t-ainm athraithe idir an dá linn. Níor seoladh aon rud."
+    },
+    "program_name_not_confirmed": {
+      "message": "Seoladh an t-ainm, ach níorbh fhéidir é a dheimhniú trína léamh ar ais. B'fhéidir go bhfuil sé curtha i bhfeidhm ar aon nós; ní sheoltar arís é."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Níl an luchtaire balla i staid a cheadaíonn an gníomh seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Tá an sruth luchtaithe faoi 6 A. Socraigh an sruth luchtaithe ar dtús. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_authentication_required": {
+      "message": "Éilíonn an luchtaire balla fíordheimhniú roimh luchtú. Ceadaigh é i roghanna an chomhtháthaithe (Wallbox). Níor seoladh an t-athrú seo."
+    },
+    "wallbox_group_controlled": {
+      "message": "Baineann an luchtaire balla seo le grúpa bainistíochta ualaigh a rialaíonn an fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_energy_manager": {
+      "message": "Rialaíonn bainisteoir fuinnimh an luchtaire balla seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_manual": {
+      "message": "Ní féidir an sruth luchtaithe a shocrú ach sa ghnáthmhód luchtaithe. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_boost_active": {
+      "message": "Tá Boost gníomhach. Cuir deireadh le Boost ar dtús. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Níor thug an luchtaire balla luach reatha don fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_writeable": {
+      "message": "Ní thuairiscíonn an luchtaire balla go bhfuil an socrú seo inathraithe. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_firmware": {
+      "message": "Ní thairgeann bogearraí an luchtaire balla an fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_meter_missing": {
+      "message": "Teastaíonn méadar seachtrach nasctha don fheidhm seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_offered": {
+      "message": "Ní thairgtear an fheidhm seo don luchtaire balla seo. Níor seoladh an t-athrú seo."
+    },
+    "wallbox_not_solar": {
+      "message": "Ní bhaineann an socrú seo ach le luchtú gréine. Athraigh an mód luchtaithe go gréine ar dtús. Níor seoladh an t-athrú seo."
+    },
+    "aircon_switched_off": {
+      "message": "Tá an t-aerchóiritheoir múchta. Las ar dtús é, ansin athraigh an mód. Níor seoladh aon rud."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Tá an t-aerchóiritheoir ag oibriú ar chumhacht gréine, mar sin níl na móid uathoibríoch agus téamh ar fáil. Níor seoladh aon rud."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Ní cheadaítear an luach seo don aerchóiritheoir. Níor seoladh aon rud."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Seoladh an t-athrú, ach níor dheimhnigh an t-aerchóiritheoir é go fóill. D'fhéadfadh sé teacht i bhfeidhm fós. Níor sheol mé arís é; nuashonraítear an luach leis an gcéad léamh eile."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Ní féidir ach na socruithe seo a úsáid: {settings}. Scríobhtar socrú mar mhodh, teocht agus luas an lucht aeraithe, mar shampla “cool 24.0 auto”, nó “off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Ní ghlacann an téitheoir uisce le hathruithe ar an gclár ama seo ach amháin nuair atá sé ar siúl, ag rith i mód cláir agus crios ama aige, mar atá san aip ón monaróir. Níor seoladh aon rud."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Siar",
         "create": "Saoire nua"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Caith amach an iarracht atá ar feitheamh",
         "later": "Lean ar aghaidh níos déanaí"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Córas nua (níl an geata i do chuntas)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Socrú nua (rochtain áitiúil amháin)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Siar"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Athsholáthar an tseachtain ar fad",
+        "replace_days": "Athsholáthar na laethanta a tugadh amháin"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Lá"
+        },
+        "time": {
+          "name": "Am"
+        },
+        "level": {
+          "name": "Leibhéal nó teocht"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "As",
+        "decimal_sign": "."
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Ard",
+        "off": "As",
+        "low": "Íseal",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Cuir pointe lasctha leis"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Teocht sprice an linn snámha"
+      },
+      "filter_maximum_run_time": {
+        "name": "Uasmhéid ama oibre an scagaire"
       },
       "heating_temperature": {
         "name": "Teocht téimh"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Uasteocht an tsreafa"
       },
+      "summer_winter_threshold": {
+        "name": "Stop an téamh ag teocht lasmuigh"
+      },
+      "cooling_room_setpoint": {
+        "name": "Fuarú: socphointe an tseomra"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "season_cooling_threshold": {
+        "name": "Tosú an fhuaraithe ag teocht lasmuigh"
+      },
+      "season_heating_threshold": {
+        "name": "Stop an téamh ag teocht lasmuigh"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Teocht Boost"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Fad Boost"
+      },
+      "away_temperature": {
+        "name": "Teocht as baile"
+      },
+      "cooling_temperature": {
+        "name": "Teocht fuaraithe"
+      },
       "softener_salt_threshold": {
         "name": "Tairseach rabhaidh salainn"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Gile an tsolais thimpeallaigh"
+      },
+      "bacon_rac_timer_on": {
+        "name": "Lasc ama chun lasadh"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Lasc ama chun múchadh"
       },
       "rrc_window_duration": {
         "name": "Fad na fuinneoige oscailte"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Teocht as baile"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Teorainn an tsrutha luchtaithe"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Uasfhorlíonadh ón eangach"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Íosbharrachas gréine"
+      },
+      "wallbox_filter_time": {
+        "name": "Am scagtha an luchtaithe gréine"
+      },
+      "wallbox_power_limit": {
+        "name": "Teorainn chumhachta"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Teorainn srutha céim L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Teorainn srutha céim L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Teorainn srutha céim L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Praghas leictreachais"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Taraif bheathaithe isteach"
+      },
+      "aircon_timer_on": {
+        "name": "Lasc ama chun lasadh"
+      },
+      "aircon_timer_off": {
+        "name": "Lasc ama chun múchadh"
+      },
+      "hybrid_electricity_price": {
+        "name": "Praghas leictreachais"
+      },
+      "hybrid_gas_price": {
+        "name": "Praghas gháis"
+      },
+      "hybrid_oil_price": {
+        "name": "Praghas ola"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Taraif bheathaithe isteach"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Mód ciúin: laghdú cumhachta"
+      },
+      "silent_mode_start_time": {
+        "name": "Mód ciúin: am tosaithe"
+      },
+      "silent_mode_stop_time": {
+        "name": "Mód ciúin: am stoptha"
+      },
+      "low_noise_duration": {
+        "name": "Oibriú ísealtorainn: fad"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Teocht sprice an linn snámha"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Uathoibríoch"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Leibhéal an fhean sceite",
+      "ventilation_operation_mode": {
+        "name": "Mód oibríochta na haeráile",
         "state": {
+          "time": "Clár ama",
           "off": "As",
           "min": "Leibhéal an fhean 1",
           "red": "Leibhéal an fhean 2",
           "nom": "Leibhéal an fhean 3",
           "max": "Leibhéal an fhean 4",
-          "dem": "Éileamh"
+          "dem": "Éileamh",
+          "party": "Cóisir",
+          "power_vent": "Aeráil dhian",
+          "fireplace": "Teallach",
+          "fall_asleep": "Titim ina chodladh",
+          "freefct": "Feidhm saor"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Aistriú samhraidh/geimhridh",
+        "state": {
+          "automatic": "Uathoibríoch",
+          "forced": "Téamh amháin",
+          "cooling": "Fuarú amháin",
+          "off": "As"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Fuarú: mód oibríochta",
+        "state": {
+          "off": "As",
+          "manual": "Láimhe",
+          "auto": "Uathoibríoch"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Clár A",
           "b": "Clár B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Mód luchtaithe",
+        "state": {
+          "manual": "Gnáth",
+          "solar": "Gréine"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Treo aeir spotaithe",
+        "state": {
+          "off": "As",
+          "on": "Ar siúl",
+          "top_left": "Barr ar chlé",
+          "top_center": "Barr sa lár",
+          "top_right": "Barr ar dheis",
+          "bottom_left": "Bun ar chlé",
+          "bottom_center": "Bun sa lár",
+          "bottom_right": "Bun ar dheis"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Sceideal roghnaithe",
+        "state": {
+          "program1": "Clár 1",
+          "program2": "Clár 2",
+          "program3": "Clár 3",
+          "program4": "Clár 4",
+          "program5": "Clár 5",
+          "program6": "Clár 6",
+          "program7": "Clár 7",
+          "program8": "Clár 8",
+          "program9": "Clár 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Straitéis rialaithe hibrideach",
+        "state": {
+          "cost": "Optamaithe do chostas",
+          "max_renewable_share": "Optamaithe don chaidéal teasa",
+          "heat_pump_preferred": "Caidéal teasa mar rogha",
+          "environment": "An rogha is cairdiúla don aeráid",
+          "boiler_only": "Coire amháin",
+          "bivalent_alternative": "Malartach débhalbhach"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Mód oibriúcháin ísealtorainn"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Mód linn snámha"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Mód as baile"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Brath fuinneoige oscailte"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Barrfheabhsú socphointe"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Mód saoire"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Glas leanaí"
       },
+      "rrc_auto_away": {
+        "name": "Neamhláithreacht uathoibríoch"
+      },
+      "rrc_notification_light": {
+        "name": "Solas fógraí"
+      },
       "rrc_extra_dhw": {
         "name": "Uisce te breise"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Feidhm teallaigh"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Forlíonadh ón eangach le linn luchtú gréine"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Tosaíocht don cheallra baile"
+      },
+      "wallbox_current_limiter": {
+        "name": "Teorantóir srutha"
+      },
+      "wallbox_power_limiter": {
+        "name": "Teorantóir cumhachta"
+      },
+      "wallbox_locked": {
+        "name": "Luchtaire balla faoi ghlas"
+      },
+      "aircon_full_power": {
+        "name": "Lánchumhacht"
+      },
+      "aircon_sleep": {
+        "name": "Mód codlata"
+      },
+      "aircon_setback_8": {
+        "name": "Téamh cosanta ar shioc (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Téamh cosanta ar shioc (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Íonú aeir"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Sceideal gníomhach"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Fuinneamh (measta ón gcumhacht reatha)"
+      },
+      "calculated_activity": {
+        "name": "Gníomhaíocht (ríofa)",
+        "state": {
+          "heating": "Téamh",
+          "cooling": "Fuarú",
+          "defrosting": "Díreo",
+          "idle": "Díomhaoin",
+          "off": "As"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "An díreo deireanach (ríofa)"
+      },
+      "calculated_defrost_count": {
+        "name": "Líon na ndíreonna (ríofa)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Am iomlán díreo (ríofa)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Teas a baineadh le díreo (ríofa)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Leictreachas le linn díreo (ríofa)"
+      },
+      "calculated_net_heat": {
+        "name": "Glanteas (ríofa)"
+      },
+      "calculated_last_regeneration": {
+        "name": "An athghiniúint dheireanach (ríofa)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Meán-am rite in aghaidh an tosaithe, téamh (ríofa)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Soláthar os cionn an tacphointe (ríofa)"
+      },
+      "calculated_cop": {
+        "name": "COP reatha (ríofa)"
+      },
+      "calculated_performance_factor": {
+        "name": "Fachtóir feidhmíochta (ríofa)"
+      },
+      "calculated_primary_spread": {
+        "name": "Difríocht teochta an phríomhchiorcaid (ríofa)"
+      },
+      "calculated_brine_spread": {
+        "name": "Difríocht teochta an sháile (ríofa)"
       },
       "heating_switch_program": {
         "name": "Sceideal téimh",
@@ -1962,11 +2744,11 @@
           "none": "Ceann ar bith",
           "ch": "Téamh",
           "dhw": "Uisce te",
-          "frost": "Cosaint ar sioc",
+          "frost": "Raon seaca",
           "ch_dhw": "Téamh agus uisce te",
-          "ch_frost": "Téamh agus cosaint ar sioc",
-          "dhw_frost": "Uisce te agus cosaint ar sioc",
-          "ch_dhw_frost": "Téamh, uisce te agus cosaint ar sioc"
+          "ch_frost": "Téamh agus raon seaca",
+          "dhw_frost": "Uisce te agus raon seaca",
+          "ch_dhw_frost": "Téamh, uisce te agus raon seaca"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Foinse teasa"
       },
+      "outdoor_unit_software_version": {
+        "name": "Leagan bogearraí an aonaid lasmuigh"
+      },
       "pointt_api_requests_total": {
         "name": "Iarratais chuig an néal san iomlán"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Fuinneamh leictreach iomlán (téamh)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Fuinneamh leictreach iomlán (fuaraithe)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Fuinneamh leictreach iomlán (dí-taise)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Fuinneamh leictreach iomlán (gaothrán amháin)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Aschur teasa iomlán (téamh)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Aschur teasa iomlán (fuaraithe)"
       },
       "bacon_purifier_tvoc": {
         "name": "Luach TVOC"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Fuinneamh luchtaithe tuairiscithe"
       },
+      "wallbox_energy_total": {
+        "name": "Fuinneamh luchtaithe iomlán"
+      },
       "wallbox_duration": {
         "name": "Am luchtaithe gníomhach"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Teorainn srutha na crua-earraí"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Tús an luchtaithe deiridh"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Deireadh an luchtaithe dheiridh"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Fad an luchtaithe dheiridh"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Fuinneamh an luchtaithe dheiridh"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Luchtaithe ón ngréasán an mhí seo"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Luchtaithe le fuinneamh gréine an mhí seo"
       },
       "smart_grid_mode": {
         "name": "Mód an ghréasáin chliste",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "Ar siúl"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Mód saoire an uisce te",
+        "state": {
+          "none": "Ceann ar bith",
+          "auto_sat": "Uathoibríoch (AUTO_SAT)",
+          "off": "As",
+          "on_eco": "Ar siúl – eco",
+          "on_low": "Ar siúl – íseal",
+          "on_high": "Ar siúl – ard"
+        }
+      },
       "signal_true_false": {
         "name": "Stádas",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Raon tomhais",
             "state": {
               "below": "Faoi bhun an raoin tomhais"
+            }
+          },
+          "reported_state": {
+            "name": "Staid tuairiscithe",
+            "state": {
+              "low_flow": "Sreabhadh ró-íseal le tomhas"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Oibriú ciúin na comhla"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Réamhaisnéis ar fhilleadh abhaile"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Socrú an braiteora láithreachta"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Aschur gréine iomlán"
+      },
+      "rrc_hot_water_system": {
+        "name": "Córas uisce te"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Toradh an díghalrúcháin theirmigh"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Stádas nuashonraithe dochtearraí"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Teocht an tseomra"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Socphointe téimh gníomhach"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Socphointe téimh láimhe"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Socphointe téimh sealadach"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Mód téimh"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Sceideal téimh roghnaithe"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Socraigh teocht an tseomra"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Socraigh socphointe téimh gníomhach"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Socraigh socphointe téimh láimhe"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Socraigh socphointe téimh sealadach"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Socraigh mód téimh"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Socraigh an sceideal téimh roghnaithe"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Leictreachas an chaidéil teasa – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Leictreachas an chaidéil teasa – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Leictreachas an chaidéil teasa – fuarú (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Leictreachas an choire – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Leictreachas an choire – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Téitheoir leictreach – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Téitheoir leictreach – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Leictreachas gréine a ghintear (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Teas an chaidéil teasa – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Teas an chaidéil teasa – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Fuinneamh fuaraithe an chaidéil teasa (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Teas an choire – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Teas an choire – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gás – téamh (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gás – uisce te (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Meán laethúil na teochta lasmuigh (gan deimhniú)"
+      },
+      "name_part_low_salt": {
+        "name": "Salann íseal"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Cineál gléis an uisce te"
+      },
+      "name_part_mode_heating": {
+        "name": "Téamh"
+      },
+      "name_part_mode_cooling": {
+        "name": "Fuarú"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Socphointe sealadach"
+      },
+      "name_part_heating_temperature": {
+        "name": "Teocht téimh"
+      },
+      "name_part_setback_temperature": {
+        "name": "Teocht laghdaithe"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Tairseach tosaithe Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Tairseach tosaithe Compord"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Tairseach tosaithe Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Socphointe leibhéal As"
+      },
+      "name_part_schedule_name": {
+        "name": "Ainm sceidil {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Nuashonrú bogearraí"
+      },
+      "name_part_heat_source_type": {
+        "name": "Cineál na foinse teasa"
+      },
+      "name_part_consumption_total": {
+        "name": "Iomlán"
+      },
+      "name_part_consumption_heating": {
+        "name": "Téamh"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Uisce te"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Fuarú"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Fuinneamh fuaraithe a ghintear"
+      },
+      "tariff_id": {
+        "name": "ID taraife"
+      },
+      "cooling_switch_program": {
+        "name": "Clár ama fuaraithe",
+        "state": {
+          "on": "Fuarú",
+          "off": "As"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Clár ama aeraithe",
+        "state": {
+          "min": "Íosta",
+          "red": "Laghdaithe",
+          "nom": "Ainmniúil",
+          "max": "Uasta",
+          "dem": "Rialaithe de réir éilimh",
+          "off": "As"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Clár ama (teochtaí)"
+      },
+      "wddw2_switch_program": {
+        "name": "Clár ama an uisce the (teochtaí)"
+      },
+      "name_part_program_cooling": {
+        "name": "Clár ama fuaraithe"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Clár ama téimh"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Clár ama fuaraithe"
+      },
+      "name_part_program_ventilation": {
+        "name": "Clár ama aeraithe"
+      },
+      "name_part_program_hot_water": {
+        "name": "Clár ama an uisce the"
+      },
+      "wallbox_external_meter": {
+        "name": "Méadar seachtrach",
+        "state": {
+          "disconnected": "Gan nasc",
+          "connected": "Nasctha",
+          "error": "Earráid"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Uasshruth an mhéadair sheachtraigh"
+      },
+      "wallbox_currency": {
+        "name": "Siombail airgeadra"
+      },
+      "wallbox_limiter": {
+        "name": "Teoranaithe ag",
+        "state": {
+          "none": "Faic",
+          "no_car": "Gan feithicil",
+          "derating": "Laghdú cumhachta",
+          "key": "Lasc eochrach",
+          "paragraph_14a": "Rialú an oibreora eangaí (§14a)",
+          "app": "Aip",
+          "web": "Comhéadan gréasáin",
+          "energy_manager": "Bainisteoir fuinnimh",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Cothromú ualaigh",
+          "watchdog": "Watchdog",
+          "solar": "Barrachas gréine",
+          "dynamic_load_management": "Bainistíocht dhinimiciúil ualaigh",
+          "static_load_management": "Bainistíocht statach ualaigh",
+          "meter_fail_safe": "Cosaint ar theip méadair",
+          "external_limit": "Teorainn sheachtrach"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Bainisteoir fuinnimh",
+        "state": {
+          "inactive": "Neamhghníomhach",
+          "active_heating": "Gníomhach (téamh)",
+          "active_hot_water": "Gníomhach (uisce te)",
+          "active_energy_manager": "Rialaíonn sé an luchtaire"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Sceideal {number}",
+        "state": {
+          "off": "As",
+          "auto": "Uathoibríoch",
+          "cool": "Fuaraigh",
+          "heat": "Teas",
+          "dry": "Tirim",
+          "fan_only": "Lucht aeraithe amháin"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Sceideal {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Straitéis rialaithe hibrideach",
+        "state": {
+          "cost": "Optamaithe do chostas",
+          "max_renewable_share": "Optamaithe don chaidéal teasa",
+          "heat_pump_preferred": "Caidéal teasa mar rogha",
+          "environment": "An rogha is cairdiúla don aeráid",
+          "boiler_only": "Coire amháin",
+          "bivalent_alternative": "Malartach débhalbhach"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Diall chlog na geata (ríofa)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Locht an chórais"
+      },
+      "calculated_defrost_active": {
+        "name": "Díreo gníomhach (ríofa)"
       },
       "bacon_connectivity": {
         "name": "Nasc an ghléis"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Fadhb comhla"
       },
+      "rrc_coming_home": {
+        "name": "Súil le filleadh abhaile"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Cothromú hiodrálach"
+      },
       "rrc_locking_error": {
         "name": "Locht a éilíonn athshocrú"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Athlíonadh de dhíth"
+      },
+      "primary_flow_below_range": {
+        "name": "Príomhshreabhadh faoi bhun an raoin tomhais"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Sreabhadh an chiorcaid téimh 1 faoi bhun an raoin tomhais (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Taraif athraitheach gníomhach"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost gníomhach"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Ionchur rialaithe eangaí gníomhach"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Luchtú faoi rialú eangaí socraithe"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Luchtú faoi rialú eangaí gníomhach"
+      },
+      "wallbox_relays_available": {
+        "name": "Athsheachadáin ar fáil"
+      },
+      "wallbox_authentication_required": {
+        "name": "Fíordheimhniú riachtanach"
+      },
+      "aircon_solar_operation": {
+        "name": "Oibriú gréine"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Díreo (ríofa)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Díreo críochnaithe"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Tabhair an chéad phointe lasctha eile chun tosaigh"
+      },
+      "wallbox_start_charging": {
+        "name": "Tosaigh an luchtú"
+      },
+      "wallbox_pause_charging": {
+        "name": "Cuir an luchtú ar sos"
+      },
+      "aircon_end_temporary": {
+        "name": "Cuir deireadh leis an athrú sealadach"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Aerchóiritheoir",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Uathoibríoch",
+              "quiet": "Ciúin",
+              "low": "Íseal",
+              "medium": "Meánach",
+              "high": "Ard",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "As",
+              "on": "Ar siúl",
+              "auto": "Uathoibríoch",
+              "swing": "Luascadh",
+              "angle1": "Suíomh 1",
+              "angle2": "Suíomh 2",
+              "angle3": "Suíomh 3",
+              "angle4": "Suíomh 4",
+              "angle5": "Suíomh 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "As",
+              "on": "Ar siúl",
+              "auto": "Uathoibríoch",
+              "swing": "Luascadh",
+              "left": "Clé",
+              "center": "Lár",
+              "right": "Deas",
+              "wide": "Leathan",
+              "ultra_wide": "An-leathan",
+              "fixed": "Seasta"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ceann ar bith",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Anaithnid"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Ainm an chláir ama"
+      },
+      "wallbox_label": {
+        "name": "Ainm taispeána"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Socraigh pointí lasctha clár ama",
+      "description": "Socraíonn sé pointí lasctha clár ama seachtainiúil amháin nó níos mó den chóras téimh, léite as an nua agus seiceáilte i gcomparáid leis na teorainneacha a thuairiscíonn an córas. Seoltar gach clár uair amháin agus léitear ar ais é; ní athdhéantar tada go huathoibríoch.",
+      "fields": {
+        "mode": {
+          "name": "Modh",
+          "description": "Athsholáthar an tseachtain ar fad, nó na laethanta amháin a bhfuil sna pointí lasctha (fanann na laethanta eile mar a léadh iad)."
+        },
+        "switch_points": {
+          "name": "Pointí lasctha",
+          "description": "Lá (mo go su), am (HH:MM, de réir chlog an chórais téimh) agus leibhéal gach pointe lasctha. I gclár le teochtaí, is uimhir ar nós 21.5 an leibhéal. I gcás aerchóiritheora, is é an leibhéal a shocrú: modh, teocht agus luas an lucht aeraithe, mar shampla cool 24.0 auto, nó off."
+        },
+        "expected": {
+          "name": "Pointí lasctha ionchasacha",
+          "description": "Roghnach: na pointí lasctha a chaithfidh a bheith sa chlár faoi láthair. Má tá cinn eile ann (mar shampla athraithe san aip), ní sheoltar aon rud."
+        },
+        "validate_only": {
+          "name": "Seiceáil amháin",
+          "description": "Seiceálann sé na pointí lasctha agus freagraíonn sé gan aon rud a sheoladh."
         }
       }
     }

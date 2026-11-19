@@ -170,6 +170,9 @@ def _scalar(raw: dict[str, Any]) -> ScalarValue:
         raise LocalResourceError(Problem.INVALID_METADATA)
     state = raw.get("state", []) if numeric else []
     states = _named([state] if isinstance(state, dict) else state, single=False)
+    # The gateway's key order of a state map changes between answers; the
+    # states' values do not: in their order, the options stay the same.
+    states = tuple(sorted(states, key=lambda item: (item.value, item.name)))
     decoded, issues = _decoded_text(raw) if raw["type"] == "stringValue" else (None, ())
     value = raw["value"]
     unit = raw.get("unitOfMeasure") if numeric else None
@@ -240,9 +243,11 @@ def _decode(raw: dict[str, Any]) -> ResourceData:
                 SystemModule(
                     row["Tok"],
                     row["Id"],
-                    row["Ver"],
-                    _identifier(row["ModuleSerialNumber"]),
-                    row["ModuleHwIdentStr"],
+                    row.get("Ver"),
+                    _identifier(row["ModuleSerialNumber"])
+                    if "ModuleSerialNumber" in row
+                    else None,
+                    row.get("ModuleHwIdentStr"),
                     row.get("ProductSerialNumber"),
                     row.get("ProductName"),
                 )

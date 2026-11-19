@@ -13,15 +13,24 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
+from . import (
+    BoschBuderusConfigEntry,
+    hybrid_controls,
+    rrc,
+    rrc_contracts,
+    rrc_platforms,
+)
+from .aircon_entities import track_aircon_selects
 from .bacon.purifier_entities import (
     BaconPurifierColor,
 )
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
+from .circuit_control_writes import async_set_guarded
+from .circuit_controls import SUMMER_WINTER_MODE_POLICY, SUMMER_WINTER_VALUES
 from .const import DOMAIN
-from .control import HeldCapabilities, async_set_control, track_control_entities
+from .control import HeldCapabilities, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -30,7 +39,10 @@ from .coordinator import (
 )
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
+from .hc_controls_extra import COOLING_MODE_POLICY, COOLING_MODES
+from .held_readings import cloud_usable, held_snapshot
 from .i18n import localize
+from .icon_translations import TRANSLATED_SELECT_ICONS
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -40,6 +52,9 @@ from .sensor import _semantic_key
 from .switch_program_select import SwitchProgramSelect
 from .switch_program_select import descriptions as switch_program_descriptions
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
+from .system_controls_extra import selection_key as system_selection_key
+from .ventilation_controls import VENTILATION_OPERATION_MODES
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     DHW_OPERATION_MODE_POLICY,
@@ -48,8 +63,7 @@ from .writes import (
     SEASON_SWITCHING_POLICY,
     SILENT_MODE_POLICY,
     STRING_SWITCH_POLICIES,
-    VENTILATION_FAN_LEVEL_POLICY,
-    VENTILATION_FAN_LEVELS,
+    VENTILATION_OPERATION_MODE_POLICY,
     ZONE_OPERATION_MODE_POLICY,
     ControlContext,
     EnumWritePolicy,
@@ -82,6 +96,8 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create controls only for verified enum capabilities."""
+    track_wallbox_entities(Platform.SELECT, entry, async_add_entities)
+    track_aircon_selects(entry, async_add_entities)
     if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry,
@@ -156,8 +172,16 @@ def build_select_descriptions(
             translation_key = "season_switching"
         elif policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
             translation_key = "auxiliary_heater_operation_mode"
-        elif policy is VENTILATION_FAN_LEVEL_POLICY:
-            translation_key = "ventilation_exhaust_fan_level"
+        elif policy is VENTILATION_OPERATION_MODE_POLICY:
+            translation_key = "ventilation_operation_mode"
+        elif policy is SUMMER_WINTER_MODE_POLICY:
+            translation_key = "summer_winter_switching"
+        elif policy is COOLING_MODE_POLICY:
+            translation_key = "cooling_operation_mode"
+        elif policy is hybrid_controls.STRATEGY_POLICY:
+            translation_key = hybrid_controls.TRANSLATION_KEY
+        elif (system_key := system_selection_key(policy)) is not None:
+            translation_key = system_key
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key, policy, context))
@@ -176,7 +200,10 @@ def build_select_descriptions(
                 write_policy=policy,
                 options=list(options),
                 translation_key=translation_key or None,
-                icon=control_icon(resource.path, contract=contract),
+                # Icons of the generic selects come from icons.json.
+                icon=control_icon(resource.path, contract=contract)
+                if contract or translation_key not in TRANSLATED_SELECT_ICONS
+                else None,
                 entity_category=control_category(resource.path, contract=contract),
                 entity_registry_enabled_default=policy.enabled_by_default,
             )
@@ -203,7 +230,10 @@ def _option_map(
         "silent_mode": ("off", "auto", "on"),
         "season_switching": ("off", "automatic", "forcedHeat", "forcedCool"),
         "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
-        "ventilation_exhaust_fan_level": VENTILATION_FAN_LEVELS,
+        "ventilation_operation_mode": VENTILATION_OPERATION_MODES,
+        "summer_winter_switching": SUMMER_WINTER_VALUES,
+        "cooling_operation_mode": COOLING_MODES,
+        hybrid_controls.TRANSLATION_KEY: hybrid_controls.STRATEGIES,
     }.get(translation_key, ())
     ordered = tuple(value for value in preferred if value in advertised)
     ordered += tuple(value for value in advertised if value not in ordered)
@@ -275,7 +305,7 @@ class BoschBuderusSelect(
     def available(self) -> bool:
         snapshot = self._snapshot
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
@@ -332,7 +362,8 @@ class BoschBuderusSelect(
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="select_option_unavailable"
             )
-        await async_set_control(
+        # The settings of a heating circuit read their guards again.
+        await async_set_guarded(
             self.coordinator,
             self.entity_description.resource_path,
             raw,
@@ -347,7 +378,8 @@ class BoschBuderusSelect(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        # H-B3-2: over a short cloud blip the last good reading stays shown.
+        return held_snapshot(self.coordinator, self.entity_description.resource_path)
 
 
 BoschBuderusOperationModeSelect = BoschBuderusSelect

@@ -6,59 +6,46 @@
 | --- | --- | --- | --- |
 | English | `en` | Source language, maintained with the code | – |
 | German | `de` | Maintained with the code | – |
-| Swedish | `sv` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
-| Norwegian Bokmål | `nb` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
-| Finnish | `fi` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
-| Danish | `da` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
-| French | `fr` | Draft, awaiting review by a native speaker | [`glossary/fr.md`](glossary/fr.md) |
-| Spanish (Spain) | `es` | Draft, awaiting review by a native speaker | [`glossary/es.md`](glossary/es.md) |
-| Italian | `it` | Draft, awaiting review by a native speaker | [`glossary/it.md`](glossary/it.md) |
-| Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
-| Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
-| Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
-| Czech | `cs` | Reviewed (2026-11-10); the texts added in 0.9.0-alpha.5, 0.9.0-alpha.6, 0.9.0 and 0.9.1 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
-| Slovak | `sk` | Reviewed (2026-11-10); the texts added in 0.9.0-alpha.5, 0.9.0-alpha.6, 0.9.0 and 0.9.1 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
-| Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
-| Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
-| Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
-| Slovenian | `sl` | Draft, awaiting review by a native speaker | [`glossary/sl.md`](glossary/sl.md) |
-| Irish | `ga` | Draft, awaiting review by a native speaker | [`glossary/ga.md`](glossary/ga.md) |
+| Swedish | `sv` | Translated; corrections welcome | [Glossary](#glossary) |
+| Norwegian Bokmål | `nb` | Translated; corrections welcome | [Glossary](#glossary) |
+| Finnish | `fi` | Translated; corrections welcome | [Glossary](#glossary) |
+| Danish | `da` | Translated; corrections welcome | [Glossary](#glossary) |
+| French | `fr` | Translated; corrections welcome | [`glossary/fr.md`](glossary/fr.md) |
+| Spanish (Spain) | `es` | Translated; corrections welcome | [`glossary/es.md`](glossary/es.md) |
+| Italian | `it` | Translated; corrections welcome | [`glossary/it.md`](glossary/it.md) |
+| Portuguese (Portugal) | `pt` | Translated; corrections welcome | [`glossary/pt.md`](glossary/pt.md) |
+| Dutch | `nl` | Translated; corrections welcome | [`glossary/nl.md`](glossary/nl.md) |
+| Polish | `pl` | Translated; corrections welcome | [`glossary/pl.md`](glossary/pl.md) |
+| Czech | `cs` | Translated; corrections welcome | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Translated; corrections welcome | [`glossary/sk.md`](glossary/sk.md) |
+| Greek | `el` | Translated; corrections welcome | [`glossary/el.md`](glossary/el.md) |
+| Bulgarian | `bg` | Translated; corrections welcome | [`glossary/bg.md`](glossary/bg.md) |
+| Croatian | `hr` | Translated; corrections welcome | [`glossary/hr.md`](glossary/hr.md) |
+| Slovenian | `sl` | Translated; corrections welcome | [`glossary/sl.md`](glossary/sl.md) |
+| Irish | `ga` | Translated; corrections welcome | [`glossary/ga.md`](glossary/ga.md) |
 
-Czech and Slovak were reviewed on 2026-11-10. That review
-covers the texts up to then; the room controller texts added in
-0.9.0-alpha.5 (zones, programs, absences, hot water, heating circuit,
-system, faults, energy history and radio devices) are drafts in Czech and
-Slovak too and still await that review. The texts added in
-0.9.0-alpha.6 (the weekly program editor and the active program select,
-the button that advances the next switch point, the firmware entity and the
-dialog status messages) are drafts in every language except English and
-German, Czech and Slovak included. The same holds for the texts added in
-0.9.0 after alpha.6 (messages about the cloud state, the temporary setpoint
-of heating circuits, the setup from a found gateway and the renamed
-entities) and for the texts added in 0.9.1 (the token list and token
-revocation of a local access, the new gateway address, the texts of gateway
-states, the heat generator entity and the corrected names of the system
-supply temperature and the liquid line temperatures TR3 and TR4). All other
-languages except English and German are a careful first draft. They follow
-the glossary of their language, but nobody who speaks them as a mother
-tongue has checked them yet. Corrections are very welcome (see
+All languages except English and German are translations of the English
+texts. They follow the glossary of their language. If a term or a sentence
+sounds wrong in your language, corrections are very welcome (see
 [Contributing corrections](#contributing-corrections)).
 
-Some texts in the options dialog are composed by the integration itself: the
-list and the status of the connections, their hints and the back entries. They
-follow the language of the Home Assistant server, not the profile language of
-the person who opens the dialog, because Home Assistant does not tell an
-options dialog which language its user has chosen. Texts from the translation
-files, such as titles, fields and error messages, follow the profile language.
+Some texts in the options dialog are built from current data: the list of
+accesses with their state, the status line of an access and the weekly
+overview of a schedule. They follow the language of the Home Assistant
+server, not the profile language of the person who opens the dialog, because
+Home Assistant does not tell an options dialog which language its user has
+chosen. Texts from the translation files, such as titles, fields, outcome
+pages, **Back** entries and error messages, follow the profile language (see
+[the settings dialog](dialogs.md#language-of-the-texts)).
 
 The
 glossary below
-covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has
+covers Swedish, Norwegian Bokmål, Finnish and Danish; every other language has
 its own glossary in `docs/glossary/<code>.md` with the terms and the form of
 address it uses.
 
 Regional variants use the base language: Brazilian Portuguese (`pt-BR`)
-shows the European Portuguese draft, and Latin American Spanish the Spanish
+shows the European Portuguese texts, and Latin American Spanish the Spanish
 one, until a file for the variant exists. Any other language shows the
 English texts.
 
@@ -73,6 +60,12 @@ Every language has two data files in
    options dialogs, repairs, error messages, entity names with a
    translation key and state names. They follow the language of the user
    profile.
+   Since 0.9.2 they also hold parts of composed names as keys
+   `entity.sensor.name_part_…` (for example the names of the room controller
+   zone readings and their controls, of the energy history statistics and of
+   some cloud readings). The integration reads these keys itself and
+   composes the names in the Home Assistant system language, like the
+   generated names below.
 2. **`i18n/<code>.json`: texts the integration builds itself.**
    - `texts`: entity and device names composed at runtime (for example
      "Heating circuit 1 – Supply temperature"), notification texts,
@@ -125,7 +118,7 @@ dialog texts have the same keys in every language.
 
 ## Glossary
 
-The drafts use these terms consistently. A correction to one term usually
+The translations use these terms consistently. A correction to one term usually
 applies to every text that uses it.
 
 | English | German | Swedish | Norwegian Bokmål | Finnish | Danish |

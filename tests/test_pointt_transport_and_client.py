@@ -604,7 +604,7 @@ async def test_client_marks_individual_bulk_fallback_without_exposing_path() -> 
     ):
         client = PointTClient(session, "token", base_url=url)
         await client.get_resource(
-            "private-gateway", "/private/resource", fallback_reason="gateway_5xx"
+            "private-gateway", "/private-id/resource", fallback_reason="gateway_5xx"
         )
 
     metrics = client.metrics.snapshot()
@@ -1063,3 +1063,32 @@ async def test_another_circuit_cannot_confirm_a_write_over_http():
             )
     assert isinstance(error.value.__cause__, InvalidPayload)
     assert calls == ["PUT", "GET"]
+
+
+async def test_write_and_single_404_are_attributed_to_a_path_category() -> None:
+    async def missing(_request: web.Request) -> web.Response:
+        return web.Response(status=404)
+
+    async def put(_request: web.Request) -> web.Response:
+        return web.Response(status=204)
+
+    async with (
+        serve(
+            [
+                ("GET", "/gateways/{id}/resource/{tail:.*}", missing),
+                ("PUT", "/gateways/{id}/resource/{tail:.*}", put),
+            ]
+        ) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url)
+        await client.put_resource_value("gw one", "/heatingCircuits/hc1/mode", "auto")
+        with pytest.raises(ResourceNotFound):
+            await client.get_resource("gw one", "/dhwCircuits/dhw1/missing")
+
+    metrics = client.metrics.snapshot()
+    assert metrics["writes_by_path_category"] == {"heatingCircuits": 1}
+    assert metrics["resource_errors_by_path_category"] == {"dhwCircuits": 1}
+    categories = [event.get("path_category") for event in metrics["recent_requests"]]
+    assert categories == ["heatingCircuits", "dhwCircuits"]
+    assert "gw one" not in repr(metrics)

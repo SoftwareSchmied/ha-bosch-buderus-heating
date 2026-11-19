@@ -11,6 +11,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
+from .aircon_entities import track_aircon_buttons
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
@@ -18,6 +19,7 @@ from .heating_climate import track_temporary_clear_buttons
 from .i18n import localize
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
+from .wallbox_entities import track_wallbox_entities
 from .writes import (
     SOFTENER_REGENERATION_POLICY,
     ControlContext,
@@ -25,6 +27,7 @@ from .writes import (
     assess_control,
     context_of,
 )
+from .zone_climate import track_zone_clear_buttons
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -50,6 +53,8 @@ def _setup_entities(
     """Expose only the reviewed regeneration start command, initially
     disabled, and the clear button of a heating circuit's temporary
     setpoint."""
+    track_wallbox_entities(Platform.BUTTON, entry, async_add_entities)
+    track_aircon_buttons(entry, async_add_entities)
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,
@@ -59,6 +64,7 @@ def _setup_entities(
             BoschBuderusRegenerationButton,
         )
         track_temporary_clear_buttons(entry, coordinator, async_add_entities)
+        track_zone_clear_buttons(entry, coordinator, async_add_entities)
         rrc_platforms.track(Platform.BUTTON, entry, coordinator, async_add_entities)
 
 
@@ -79,7 +85,6 @@ def build_button_descriptions(
                 ButtonEntityDescription(
                     key=resource.path,
                     translation_key="softener_start_regeneration",
-                    icon="mdi:water-sync",
                     entity_registry_enabled_default=False,
                 )
             )

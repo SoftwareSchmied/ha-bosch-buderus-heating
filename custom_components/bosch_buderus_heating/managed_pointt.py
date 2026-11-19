@@ -15,6 +15,7 @@ from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .aircon import is_aircon_gateway
 from .configuration import ConfigurationError, JsonObject, StoredBinding
 from .connection_runtime import (
     ConnectionPhase,
@@ -35,6 +36,7 @@ from .discovery_inventory import DiscoveryInventory, discovery_inventory
 from .icom_profile import is_icom_gateway
 from .local_selection import LocalSelection
 from .log_helpers import log_failure
+from .managed_aircon import ManagedAirconCoordinator
 from .managed_updates import SourceUpdates
 from .managed_wallbox import ManagedWallboxCoordinator
 from .pointt import Gateway, PointTClient
@@ -76,7 +78,10 @@ class PointTSource:
         self.connection, self.binding_id, self.binding = connection, binding_id, binding
         self.context: SourceContext | None = None
         self.coordinator: (
-            ManagedPointTCoordinator | ManagedWallboxCoordinator | None
+            ManagedPointTCoordinator
+            | ManagedWallboxCoordinator
+            | ManagedAirconCoordinator
+            | None
         ) = None
         self._auth_failed = asyncio.Event()
         self._closed = False
@@ -198,8 +203,18 @@ class PointTSource:
                 request_guard=self.ensure_current,
                 gateway_id=gateway_id,
             )
-            coordinator: ManagedPointTCoordinator | ManagedWallboxCoordinator
-            if is_wallbox(gateway):
+            coordinator: (
+                ManagedPointTCoordinator
+                | ManagedWallboxCoordinator
+                | ManagedAirconCoordinator
+            )
+            if is_aircon_gateway(gateway):
+                # An air conditioner has its own fixed read list, no heating
+                # discovery and no supplementary-read queue.
+                connection.startup_finished(self.binding_id)
+                coordinator = ManagedAirconCoordinator(self, client, gateway)
+                self.coordinator = coordinator
+            elif is_wallbox(gateway):
                 # Wallboxes have no heating discovery or supplementary-read queue.
                 connection.startup_finished(self.binding_id)
                 coordinator = ManagedWallboxCoordinator(self, client, gateway)
@@ -262,7 +277,10 @@ class PointTSource:
                     connection.backoff.raise_if_active()
                     # An identified wallbox has a fixed read-only sensor set.
                     # Keep those sensors unavailable and let polling recover.
-                    if not isinstance(coordinator, ManagedWallboxCoordinator):
+                    if not isinstance(
+                        coordinator,
+                        ManagedWallboxCoordinator | ManagedAirconCoordinator,
+                    ):
                         raise SourceFailure()
         finally:
             connection.startup_finished(self.binding_id)
@@ -386,7 +404,7 @@ class PointTSource:
             # age limit: the local readings show the plant until it is renewed.
             await self._retain_local_plant(context, gateway_id, inventory, startup=True)
             return
-        if gateway is None or is_wallbox(gateway):
+        if gateway is None or is_wallbox(gateway) or is_aircon_gateway(gateway):
             return
         connection = self.connection
         client = PointTClient(

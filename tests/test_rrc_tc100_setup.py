@@ -350,6 +350,7 @@ async def test_failing_program_list_is_read_again_and_the_selects_appear(
         assert path["bulk_result"] == "http_503"
         assert path["fallback_result"] == "http_503"
         assert gateway["discovery_recovery"]["state"] == "pending"
+        assert gateway["activity_inputs_missing"] == {}  # a room-controller plant
 
         del cloud.down[PROGRAMS]
         clock.now += RECOVERY_SCHEDULE[0]

@@ -18,12 +18,14 @@ from custom_components.bosch_buderus_heating.local_probe import (
     MAX_BODY_BYTES,
     MAX_DISCOVERY_ADDRESSES,
     MAX_JSON_VALUES,
+    MINIMUM_FIRMWARE,
     SERVICE_TYPE,
     FirmwareVersion,
     GatewayBrand,
     LocalEndpoint,
     LocalProbeError,
     ProbeContext,
+    ProbeIssue,
     ProbePath,
     ProbeProblem,
     ProbeResponse,
@@ -282,11 +284,54 @@ def test_all_documented_brands_use_the_same_probe(brand):
     assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
 
 
-def test_unknown_brand_is_not_retained_in_public_result():
-    result = assess_changed(response(ProbePath.BRAND, value="private product name"))
-    assert result.issues[0].problem == ProbeProblem.UNKNOWN_BRAND
+@pytest.mark.parametrize(
+    "value", ["unknown", "UNKNOWN", "", "   ", "private product name", "nefit"]
+)
+def test_a_brand_the_gateway_does_not_report_never_stops_the_setup(value):
+    # A K40 of a heat pump of another brand answers "unknown".
+    result = assess_changed(response(ProbePath.BRAND, value=value))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.issues == ()
+    assert result.brand is None
+    assert result.identity is not None and result.firmware == MINIMUM_FIRMWARE
+    assert value.strip() == "" or value not in repr(result)
+
+
+def test_a_known_brand_with_spaces_is_still_recognized():
+    result = assess_changed(response(ProbePath.BRAND, value=" Buderus "))
+    assert result.brand == GatewayBrand.BUDERUS
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"value": None},
+        {"value": 1},
+        {"value": ["unknown"]},
+        {"type": "floatValue"},
+        {"writeable": 1},
+    ],
+)
+def test_a_malformed_brand_answer_stays_an_error(changes):
+    result = assess_changed(response(ProbePath.BRAND, **changes))
+    assert result.status == ProbeStatus.FAILED
+    assert result.issues == (
+        ProbeIssue(ProbePath.BRAND, ProbeProblem.INVALID_RESPONSE),
+    )
+    assert result.identity is None
+
+
+def test_an_unknown_brand_does_not_hide_the_firmware_check():
+    result = assess_local_probe(
+        [
+            response(ProbePath.BRAND, value="unknown"),
+            response(ProbePath.FIRMWARE, value="14.00.01"),
+            response(ProbePath.SYSTEM),
+        ],
+        current_context=CONTEXT,
+    )
+    assert result.issues == (ProbeIssue(ProbePath.FIRMWARE, ProbeProblem.OLD_FIRMWARE),)
     assert result.brand is None and result.identity is None
-    assert "private product name" not in repr(result)
 
 
 def test_successful_probe_still_needs_the_source_contract_and_target_comparison():

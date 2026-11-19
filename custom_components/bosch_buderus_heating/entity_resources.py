@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .held_readings import cloud_usable, held_snapshot
 from .pointt import Resource
 from .unit_contracts import TEMPERATURE_UNITS
 
@@ -17,24 +19,36 @@ def fresh_resource(
     path: str,
     *,
     displayed: bool = False,
+    flags: bool = True,
+    held: bool = False,
 ) -> Resource | None:
     """A current, usable reading; ``displayed`` prefers a paired local value.
 
     The same checks apply to both sources, and a failed cloud cycle still hides
     the value, so a combined entity never looks current without the cloud.
+
+    Without ``flags`` the ``used`` and ``available`` flags of a valid reading
+    are left to a later check: the reading comes back without them, for a
+    write that reads the setting again and checks its current flags there.
+
+    ``held`` is for the display of an entity only (H-B3-2): over a short cloud
+    blip the last good reading stays current (see ``cloud_hold``). Writes and
+    their checks never pass it; they read again and stay strict.
     """
     assumed = getattr(coordinator, "assumed_fresh", None)
     stored: Resource | None = assumed(path) if assumed is not None else None
     snapshot = (
         coordinator.display_snapshot(path)
         if displayed
+        else held_snapshot(coordinator, path)
+        if held
         else (coordinator.data or {}).get(path)
     )
     if stored is not None:
         # Only while deciding entity creation from the stored inventory.
         resource = stored
     elif (
-        not coordinator.last_update_success
+        not (cloud_usable(coordinator) if held else coordinator.last_update_success)
         or snapshot is None
         or not snapshot.available
         or snapshot.freshness is not Freshness.FRESH
@@ -48,9 +62,11 @@ def fresh_resource(
         or not resource.has_value
         or resource.has_values
         or not metadata.availability_flags_valid
-        or metadata.available is False
-        or metadata.used is False
     ):
+        return None
+    if not flags:
+        return replace(resource, metadata=replace(metadata, used=None, available=None))
+    if metadata.available is False or metadata.used is False:
         return None
     return resource
 

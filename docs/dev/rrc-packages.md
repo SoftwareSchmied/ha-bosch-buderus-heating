@@ -16,6 +16,7 @@ shared file. This page lists the hooks and the rules they follow.
 | W4 | `rrc_contract_circuit.py` | `rrc_circuit_entities.py` | – |
 | W5 | `rrc_contract_system.py` | `rrc_system_entities.py` | `rrc_energy.py`, `rrc_energy_statistics.py`, `faults.py` |
 | W6 | `rrc_contract_devices.py` | `rrc_device_setting_entities.py` | `rrc_devices.py`, `rrc_device_entities.py`, `rrc_device_settings.py` |
+| Extras | `rrc_contract_extras.py` | `rrc_extras_entities.py` | – |
 
 Every package also owns its tests (`tests/test_rrc_<topic>*.py`), fixtures
 (`tests/fixtures/contracts/rrc/<topic>*.json`) and its pending translations

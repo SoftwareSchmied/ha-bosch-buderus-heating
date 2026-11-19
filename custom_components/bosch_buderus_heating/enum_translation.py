@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from . import hybrid_controls
+
 _POINTT_TO_HA: dict[str, dict[str, str]] = {
     "holiday_mode": {
         value: value.lower()
@@ -27,6 +29,7 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         )
     },
     "compressor_status": {"poolHeat": "pool_heat"},
+    "hybrid_control_strategy": dict(hybrid_controls.STRATEGY_KEYS),
     "data_processing_status": {
         "IN_PROGRESS": "in_progress",
         "inProgress": "in_progress",
@@ -70,6 +73,10 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         "notSupportedIncompatibleController": ("not_supported_incompatible_controller"),
         "notSupportedPairingEnabled": "not_supported_pairing_enabled",
         "inEvaluation": "in_evaluation",
+    },
+    "ventilation_operation_mode": {
+        "powerVent": "power_vent",
+        "fallAsleep": "fall_asleep",
     },
     "season_optimizer_mode": {
         "forcedHeat": "forced_heat",

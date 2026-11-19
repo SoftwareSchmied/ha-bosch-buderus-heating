@@ -23,6 +23,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
 from . import rrc_platforms
+from .aircon import AirconCoordinator, is_aircon_gateway
 from .auth_diagnostics import async_load_auth_histories
 from .auth_lifecycle import (
     async_wait_for_entry_refresh,
@@ -60,7 +61,11 @@ from .discovery_inventory import (
     is_transient_result,
 )
 from .ha_compat import device_by_identifier, identifier_owned_elsewhere
-from .holiday_ui import async_setup_controls_ui, async_setup_holiday_ui
+from .holiday_ui import (
+    async_setup_controls_ui,
+    async_setup_holiday_ui,
+    async_setup_schedule_ui,
+)
 from .local_budget import LocalBudgetError, local_budget_manager
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .log_helpers import log_failure
@@ -86,6 +91,7 @@ from .start_counters import is_start_counter_path, registered_start_counter_path
 from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession, is_startup_entity_path
 from .storage_migration import migrate_entry_storage
 from .switch_programs import is_switch_program_path
+from .ventilation_controls import is_retired_fan_level_select
 from .wallbox import WallboxCoordinator, is_wallbox
 from .write_policies import context_of, rrc_kwargs
 
@@ -116,6 +122,11 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             raise result
     await async_setup_holiday_ui(hass)
     await async_setup_controls_ui(hass)
+    await async_setup_schedule_ui(hass)
+    from .switch_point_action import async_setup_actions
+
+    # TP-06: the integration's action, registered once for all entries.
+    async_setup_actions(hass)
     from .local_identity import install_local_support
     from .update_load import install_update_load
 
@@ -280,12 +291,17 @@ async def _async_setup_legacy_entry(
             startup_session=startup,
         )
         for gateway in selected_gateways
-        if not is_wallbox(gateway)
+        if not is_wallbox(gateway) and not is_aircon_gateway(gateway)
     )
     wallboxes = tuple(
         WallboxCoordinator(hass, client, gateway, entry)
         for gateway in selected_gateways
         if is_wallbox(gateway)
+    )
+    aircons = tuple(
+        AirconCoordinator(hass, client, gateway, entry)
+        for gateway in selected_gateways
+        if is_aircon_gateway(gateway)
     )
     # Publish the safe, partially initialized runtime before the first refresh.
     # Home Assistant can then produce diagnostics when discovery itself keeps
@@ -296,6 +312,7 @@ async def _async_setup_legacy_entry(
         gateways=selected_gateways,
         coordinators=coordinators,
         wallboxes=wallboxes,
+        aircons=aircons,
         startup=startup,
     )
     _restore_registered_startup_paths(hass, entry)
@@ -328,6 +345,9 @@ async def _async_setup_legacy_entry(
     for wallbox in wallboxes:
         with suppress(ConfigEntryNotReady):
             await wallbox.async_config_entry_first_refresh()
+    for aircon in aircons:
+        with suppress(ConfigEntryNotReady):
+            await aircon.async_config_entry_first_refresh()
         # Keep mixed accounts usable. Entities retry on their normal cadence.
 
     if bacon_ids:
@@ -1012,12 +1032,15 @@ def _remove_retired_entities(
                 semantic_path = resource.path.strip("/").replace("/", ":")
                 retired_unique_ids.add(f"{gateway_id}:{semantic_path}")
 
+    gateway_ids = {coordinator.gateway.gateway_id for coordinator in coordinators}
     entity_registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
         if keep_customised and _user_customised(entity):
             continue
         if (
             entity.unique_id in retired_unique_ids
+            # The exhaust fan level select of earlier versions (a sensor now).
+            or is_retired_fan_level_select(entity.domain, entity.unique_id, gateway_ids)
             or entity.unique_id in observed_resource_paths
             or _former_field_entity(entity.unique_id, field_structures, present)
         ):
@@ -1097,6 +1120,10 @@ def _enable_new_default_entities(
                 if rrc_plant and rrc_contracts.is_mirror(description.resource_path):
                     # A read-only setting without a control is enabled only
                     # when it is first registered; an existing entry stays.
+                    continue
+                if is_switch_program_path(description.resource_path):
+                    # D9: a writable program is enabled when it is first
+                    # registered; an existing entry keeps its state.
                     continue
                 if description.resource_path in _PLANT_DUPLICATE_CANDIDATES:
                     # Whether these repeat another entity depends on the

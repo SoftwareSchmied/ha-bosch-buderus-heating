@@ -306,7 +306,7 @@ async def test_selecting_the_plant_on_an_existing_cloud_merges_it(
         sensors = entity_ids(owner)
         with evidence() as reads:
             result = await rediscover(hass, entry, cloud, [GATEWAY, "gateway-b"])
-        assert result["type"] is FlowResultType.MENU, result
+        assert result["step_id"] == "result_connection_saved", result
         reads.cloud.assert_awaited_once_with(GATEWAY)
         snapshot = owner.connections.management.current()
         assert_merged(snapshot, target)
@@ -745,7 +745,8 @@ VENTILATION_RUN_TIME = "/ventilation/zone1/applianceRunTime"
 
 @pytest.mark.parametrize("unit", ["mins", "h"])
 def test_a_local_ventilation_run_time_continues_with_its_statistics(hass, unit) -> None:
-    """The local run time is a growing total; the cloud's reading is one too."""
+    """A reviewed local reading the cloud offers as well keeps its entry, so
+    its entity, settings and statistics continue unchanged."""
     entry = MockConfigEntry(domain=DOMAIN, entry_id="sensor-entry")
     entry.add_to_hass(hass)
     resource = parse_resource(
@@ -779,10 +780,12 @@ def test_a_local_ventilation_run_time_continues_with_its_statistics(hass, unit) 
         entity_id, DOMAIN, {"native_unit": native_unit}
     )
     local_only_sensor._remove_registered(coordinator)
-    # Entity ID and history stay: the entry continues as the cloud sensor.
-    assert registry.async_get_entity_id("sensor", DOMAIN, cloud.unique_id) == (
-        entity_id
-    )
+    # Neither handed over nor removed: the reviewed entry stays as it is.
+    assert registry.async_get_entity_id("sensor", DOMAIN, cloud.unique_id) is None
+    record = registry.async_get(entity_id)
+    assert record.unique_id == local_only_unique_id(GATEWAY, VENTILATION_RUN_TIME)
+    assert record.capabilities == {"state_class": "total_increasing"}
+    assert record.options[DOMAIN] == {"native_unit": native_unit}
 
 
 def _sensor_platform(hass, entry):
@@ -1063,15 +1066,27 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         registry.async_get_or_create("sensor", DOMAIN, cloud_id, config_entry=entry)
 
     scope = SimpleNamespace(
-        bacon=None, wallboxes=(), metrics=None, coordinators=(coordinator,)
+        bacon=None,
+        wallboxes=(),
+        aircons=(),
+        metrics=None,
+        coordinators=(coordinator,),
     )
     with (
         patch.object(sensor, "_track_resource_sensors", eager),
         patch.object(sensor, "_track_source_sensors", Mock()),
         patch.object(sensor, "track_local_only_sensors", Mock()),
         patch.object(sensor, "track_estimated_energy_sensors", Mock()),
+        patch.object(sensor, "track_calculated_sensors", Mock()),
+        patch.object(sensor, "track_recording_sensors", Mock()),
+        patch.object(sensor, "track_performance_sensors", Mock()),
         patch.object(sensor, "track_heat_generator_sensor", Mock()),
+        patch.object(sensor, "track_outdoor_unit_software_sensor", Mock()),
+        patch.object(sensor, "track_tariff_sensor", Mock()),
+        patch.object(sensor, "track_clock_deviation_sensor", Mock()),
+        patch.object(sensor, "track_softener_history_sensors", Mock()),
         patch.object(sensor, "track_radio_devices", Mock()),
+        patch.object(sensor, "track_zone_radio_devices", Mock()),
         # The RRC package trackers need a real coordinator.
         patch.object(sensor.rrc_platforms, "track", Mock()),
         patch.object(sensor, "track_entity_once", Mock()),
@@ -1108,7 +1123,7 @@ async def test_a_plain_selection_is_saved_during_a_cloud_pause(hass, backend) ->
         result = await hass.config_entries.options.async_configure(
             result["flow_id"], {"gateway_ids": [GATEWAY], "bacon_device_ids": []}
         )
-    assert result["type"] is FlowResultType.MENU, result
+    assert result["step_id"] == "result_connection_saved", result
     assert backend.gateways.await_count == listings
     reads.cloud.assert_not_awaited()
 

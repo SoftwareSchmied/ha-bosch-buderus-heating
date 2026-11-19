@@ -5,7 +5,7 @@
 <h1 align="center">Bosch/Buderus Home Comfort</h1>
 
 <p align="center">
-  Connect compatible Bosch and Buderus heating, cooling, hot-water, air-treatment and water-softening devices to Home Assistant, with read-only wallbox monitoring.
+  Connect compatible Bosch and Buderus heating, cooling, hot-water, air-treatment and water-softening devices to Home Assistant, including wallboxes.
 </p>
 
 <p align="center">
@@ -29,20 +29,26 @@ cloud is unavailable, readings and current faults continue from the local
 access; when it is back, the same entities carry on with their history.
 
 > [!IMPORTANT]
-> **0.9.1 is the current version** and needs Home Assistant 2026.5.0 or newer.
+> **0.9.2 is the current version** and needs Home Assistant 2026.5.0 or newer.
 > Updating from 0.8.x? Make a full backup first, see [Updating](#updating).
+
+> [!NOTE]
+> **Coming next: local access for iCom gateways.** A coming beta will add a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, first for gateways that are also connected to the Bosch or Buderus app. If you have one and would like to help test it, please install the beta versions when it is out (HACS → "Show beta versions") and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 ## Features
 
 - Readings of heating circuits, hot water, heat sources, system pressure, starts and operating hours
 - Cumulative energy counters, including a calculated environmental energy
+- Calculated values: what a heating circuit is doing, defrosts, current COP and performance factors ([calculated values](docs/calculated-values.md))
+- The heat pump's own recordings per day, month and year, optionally as long-term statistics ([plant recordings](docs/recordings.md))
 - Controls for operating modes, setpoints, hot water, extra hot water, Silent Mode and away mode, where the system offers them
 - **Operate appliance** dialog with heating-circuit climates and a native hot-water entity
-- Heating and hot water schedules and holiday periods with calendar
+- Heating, hot water, cooling, zone and ventilation schedules with a weekly view and the action `set_switch_points` (beyond hot water program A expected, untested), and holiday periods with calendar
 - Faults, warnings and maintenance messages with bell notifications and events for automations
 - Room controllers of the RRC 2.0 platform: zones, programs, absences, radio devices
+- A climate entity per zone of a zone controller such as an MX400 with radio room thermostats (expected, untested; [zone controls](docs/zone-controls.md#zone-climate))
 - Optional read-only **local access** that updates many readings more often and keeps them available without the cloud
-- Additional device families: water heaters, air conditioners, air purifiers, dehumidifiers, the WE800i water softener and read-only wallboxes
+- Additional device families: water heaters, air conditioners, air purifiers, dehumidifiers, the WE800i water softener and wallboxes (controls expected, untested)
 - Redacted diagnostics and texts in 19 languages
 
 What changed in each version is in the [changelog](CHANGELOG.md) and the
@@ -53,18 +59,19 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 
 ## Supported systems
 
-| System | Cloud | Local | Both |
-|---|:---:|:---:|:---:|
-| K40/K40RF gateways (for example MX400 internet module, K40 RF Connect-Key) on heat pumps and boilers | ✓ | read only | ✓ |
-| K30/K30RF gateways (for example MX300 internet module, K30 RF Connect-Key) | ✓ | – | – |
-| iCom gateways (for example KM200, KM100, KM50, MB LAN 2) | ✓ | – | – |
-| RRC 2.0 room controllers (TC100.2; CT200 expected) | ✓ | – | – |
-| Other device families: water heaters, air conditioners, air purifiers, dehumidifiers, WE800i water softener, wallboxes (read only) | expected | – | – |
+| System | Cloud | Local (home network) |
+|---|:---:|:---:|
+| K40/K40RF gateways (MX400 internet module, K40 RF Connect-Key) on heat pumps and boilers | ✓ | ✓ readings, firmware 15.00.01 or newer; alone or together with the cloud |
+| K30/K30RF gateways (MX300 internet module, K30 RF Connect-Key) | ✓ | – |
+| iCom gateways (KM200, KM100, KM50, IP inside, MB LAN 2/LANi, IVT/Bosch IP module) | ✓ when connected to the Bosch or Buderus app | planned for a coming beta |
+| RRC 2.0 room controllers (TC100.2, CT200) | ✓ | – |
+| Wallboxes | ✓ | – |
+| Air conditioners, dehumidifiers, water heaters, air purifiers, WE800i water softener | ✓ (controls disabled by default, can be enabled) | – |
 
 Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
 
-- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i and WLW186i, confirmed.
-- **K30/K30RF:** split heat pump Logatherm WLW196i AR and gas boiler Logamax plus GBH192i.2, confirmed (readings, partly holidays read-only).
+- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i, WLW186i and Bosch Compress 5800i AW and the brine-to-water heat pump Bosch Compress 7800i LW, confirmed.
+- **K30/K30RF:** split heat pump Logatherm WLW196i AR, gas boiler Logamax plus GBH192i.2 and hybrid system Logamax plus GB172i.2, confirmed (readings, partly holidays read-only).
 - **iCom:** gas boiler Logamax plus GB172 with KM200, confirmed (readings only).
 - **RRC 2.0:** gas boiler Logano plus GB212 with TC100.2, confirmed; CT200 expected, untested.
 
@@ -76,7 +83,7 @@ Access and brands:
 - iCom gateways, room controllers and the other device families are cloud
   only. The other device families still need checks on real devices.
 - **Brands:** sign-in with the Bosch or Buderus app; the confirmed
-  installations are Buderus systems. IVT, Junkers, Nefit, Worcester and
+  installations are Buderus systems and two Bosch heat pumps. IVT, Junkers, Nefit, Worcester and
   Vulcano use the same cloud and are expected to work, not confirmed yet.
 - **Not covered:** Matter devices, arbitrary MQTT devices and gateway network
   administration.
@@ -129,10 +136,16 @@ Everyday readings and controls are enabled; technical and identifying values
 stay disabled. The [entity catalog](docs/entities.md) lists every entity with
 its source, default state and polling interval.
 
-For a hydraulic view of the heat pump on a dashboard, the
-[Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card)
-has a preset for this integration (`preset: bosch_buderus_heating`). See
-[using the hydraulic card](docs/entities.md#using-the-heat-pump-hydraulic-card).
+### Works with
+
+- [Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card):
+  a dashboard card that draws the heat pump's hydraulics with live values;
+  it has a preset for this integration (`preset: bosch_buderus_heating`,
+  see [using the hydraulic card](docs/entities.md#using-the-heat-pump-hydraulic-card)).
+- [Wärmewacht](https://github.com/waermewacht/integration): a health check
+  of the heat pump built on this integration's energy counters, compressor
+  status and temperatures, with performance factors per mode, cycling and
+  defrosts. Its template finds the system during setup.
 
 <a id="unreleased-development-work"></a>
 <a id="new-pointt-controls-in-beta7"></a>
@@ -172,11 +185,11 @@ what the report contains.
 
 ## Documentation
 
-- **Getting started:** [setup guide](docs/setup.md), [reconfiguration](docs/reconfiguration.md), [cloud and local access](docs/operation-without-cloud.md), [source selection](docs/source-selection.md)
+- **Getting started:** [setup guide](docs/setup.md), [reconfiguration](docs/reconfiguration.md), [settings dialog](docs/dialogs.md), [cloud and local access](docs/operation-without-cloud.md), [source selection](docs/source-selection.md)
 - **Operating:** [heating controls](docs/heating-controls.md), [PointT hot water](docs/pointt-hot-water.md), [holiday periods](docs/holiday-periods.md), [older holiday formats](docs/legacy-holidays.md), [season switching](docs/season-switching.md)
 - **Room controllers:** [overview](docs/room-controllers.md), [zones and schedules](docs/rrc-zones-and-schedules.md), [zone controls](docs/zone-controls.md), [zone and DHW additions](docs/zone-and-dhw-fields.md)
-- **Readings:** [entities and polling](docs/entities.md), [faults and notifications](docs/faults.md), [validity of readings](docs/reading-validity.md), [device presentation](docs/device-presentation.md), [names and languages](docs/resource-names-and-languages.md), [translations](docs/translations.md)
-- **Other devices:** [device families](docs/device-support-plan.md), [water heaters](docs/bacon-water-heaters.md), [air conditioners](docs/bacon-air-conditioners.md), [air purifiers](docs/bacon-air-purifiers.md), [dehumidifiers](docs/bacon-dehumidifiers.md), [connection](docs/bacon-connection.md), [wallboxes](docs/pointt-wallboxes.md), [water softener](docs/water-softener.md), [WE800i validation](docs/water-softener-validation.md), [WDDW2 types](docs/wddw2-types.md)
+- **Readings:** [entities and polling](docs/entities.md), [calculated values](docs/calculated-values.md), [plant recordings](docs/recordings.md), [faults and notifications](docs/faults.md), [validity of readings](docs/reading-validity.md), [device presentation](docs/device-presentation.md), [names and languages](docs/resource-names-and-languages.md), [translations](docs/translations.md)
+- **Other devices:** [device families](docs/device-support-plan.md), [water heaters](docs/bacon-water-heaters.md), [air conditioners](docs/bacon-air-conditioners.md), [air conditioners on a PointT gateway](docs/pointt-air-conditioners.md), [air purifiers](docs/bacon-air-purifiers.md), [dehumidifiers](docs/bacon-dehumidifiers.md), [connection](docs/bacon-connection.md), [wallboxes](docs/pointt-wallboxes.md), [water softener](docs/water-softener.md), [WE800i validation](docs/water-softener-validation.md), [WDDW2 types](docs/wddw2-types.md)
 - **Reliability:** [request behavior](docs/request-behavior.md), [connection recovery](docs/connection-recovery.md), [diagnostics](docs/diagnostics.md)
 - **Status:** [compatibility](docs/compatibility.md), [confirmed installations](docs/confirmed-installations.md), [project status](docs/specification-status.md), [roadmap](docs/roadmap.md)
 - **Maintainers:** [architecture](docs/architecture.md), [resource catalog](docs/resource-catalog.md), [resource inventory](docs/resource-inventory.md), [anonymized inventory](docs/anonymized-inventory.md), [privacy and test data](docs/privacy-and-fixtures.md), [release checks](docs/release.md)

@@ -32,7 +32,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Home Comfort"
-    assert manifest["version"] == "0.9.1"
+    assert manifest["version"] == "0.9.2"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == ["aiomqtt==2.5.1"]
     assert set(manifest["requirements"]).issubset(project["project"]["dependencies"])
@@ -241,7 +241,7 @@ def test_holiday_options_are_translated_and_structurally_aligned() -> None:
         for selector in translations["selector"].values():
             assert all(
                 re.fullmatch(r"[a-z0-9]+(?:[-_][a-z0-9]+)*", option)
-                for option in selector["options"]
+                for option in selector.get("options", selector.get("fields", {}))
             )
 
 

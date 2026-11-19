@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "reference": "Constructed heating circuit whose program type is absolute: programs A (with an off point) and B hold temperatures as text",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-15",
+    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "physical_device_verified": false,
+    "contract": "TP-13: absolute programs are read as numbers, written as text in the reading's form within switchPointMin/Max/Resolution, only while the program type reads absolute.",
+    "source": "behaviour of the manufacturer's app: absolute setpoints as text, off as 0.0; program types absolute and level"
+  },
+  "resources": [
+    {
+      "id": "/heatingCircuits/hc1/switchProgramMode",
+      "type": "stringValue",
+      "value": "absolute",
+      "writeable": 1,
+      "allowedValues": [
+        "levels",
+        "absolute"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchPrograms/A",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "0.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 360,
+          "setpoint": "21.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "0.0"
+        }
+      ],
+      "setpointProperty": {
+        "id": "/heatingCircuits/hc1/temperatureLevels"
+      },
+      "switchPointMin": 5.0,
+      "switchPointMax": 30.0,
+      "switchPointResolution": 0.5
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchPrograms/B",
+      "type": "switchProgram",
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1290,
+          "setpoint": "18.0"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 420,
+          "setpoint": "20.5"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1290,
+          "setpoint": "18.0"
+        }
+      ],
+      "switchPointMin": 5.0,
+      "switchPointMax": 30.0,
+      "switchPointResolution": 0.5
+    }
+  ]
+}

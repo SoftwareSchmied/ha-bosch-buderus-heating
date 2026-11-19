@@ -56,6 +56,15 @@ this is not a claim of complete compatibility with an unreleased HA version.
   without contacting the sign-in service. They count as "no connection", not
   as a failure of the gateway or of single readings, so no single-reading
   fallback starts and the remaining batches of the cycle are skipped.
+- The access token is renewed ten minutes before it ends (0.9.2; before: two
+  minutes). A request that finds the renewal due goes on with the current
+  token, and the renewal runs once in the background. If it fails or is slow,
+  the requests are not affected; the next attempt follows after the wait above,
+  but at the latest halfway to the end of the current token. In the last 30
+  seconds of the token a request waits for the renewal as before. A token the
+  cloud refused is never reused, and the 90-second limit of the token request,
+  the rotation of the refresh token and the rule that it is presented once per
+  attempt stay as they were.
 - A sign-in that was rejected is not submitted again by the same token
   manager. A reload of the entry, a new start of the access or a check in its
   dialog tries the stored token once more.
@@ -198,6 +207,16 @@ Home-Assistant-Version.
   zu kontaktieren. Sie zählen als „keine Verbindung“, nicht als Fehler des
   Gateways oder einzelner Werte: Es starten keine Einzelabfragen, und die
   übrigen Abfragen des Zyklus entfallen.
+- Der Zugriffstoken wird zehn Minuten vor seinem Ende erneuert (0.9.2; vorher
+  zwei Minuten). Eine Anfrage, die die Erneuerung fällig findet, läuft mit dem
+  aktuellen Token weiter, die Erneuerung läuft einmalig im Hintergrund.
+  Scheitert sie oder ist sie langsam, bleiben die Anfragen unberührt; der
+  nächste Versuch folgt nach der oben genannten Wartezeit, spätestens aber zur
+  Hälfte der Restlaufzeit des aktuellen Tokens. In den letzten 30 Sekunden des
+  Tokens wartet eine Anfrage wie bisher auf die Erneuerung. Ein vom Cloud-Dienst
+  abgewiesener Token wird nie weiterverwendet; das 90-Sekunden-Limit der
+  Token-Anfrage, der Wechsel des Refresh-Tokens und die Regel, ihn je Versuch
+  nur einmal vorzulegen, bleiben unverändert.
 - Eine abgewiesene Anmeldung sendet dieselbe Tokenverwaltung nicht erneut. Ein
   Neuladen des Eintrags, ein Neustart des Zugangs oder ein Test im Dialog
   versucht den gespeicherten Token noch einmal.

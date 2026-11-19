@@ -225,7 +225,7 @@
      "disabled_by": "integration",
      "domain": "binary_sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:remote",
+     "original_icon": null,
      "original_name": "Cloud control available",
      "translation_key": "cloud_control",
      "unique_id": "gateway-one:cloud_control",
@@ -453,7 +453,7 @@
      "disabled_by": null,
      "domain": "binary_sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle",
+     "original_icon": null,
      "original_name": "System fault",
      "translation_key": "system_fault",
      "unique_id": "gateway-one:system_fault",
@@ -465,7 +465,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 10 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn10:clockOverride:temperatureHeating:advance",
@@ -477,7 +477,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 10 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn10:clockOverride:temperatureHeating:clear",
@@ -489,7 +489,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 11 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn11:clockOverride:temperatureHeating:advance",
@@ -501,7 +501,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 11 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn11:clockOverride:temperatureHeating:clear",
@@ -513,7 +513,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 1 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:advance",
@@ -525,7 +525,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 1 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:clear",
@@ -537,7 +537,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 2 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:advance",
@@ -549,7 +549,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 2 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:clear",
@@ -561,7 +561,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 3 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:advance",
@@ -573,7 +573,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 3 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:clear",
@@ -585,7 +585,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 4 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating:advance",
@@ -597,7 +597,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 4 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating:clear",
@@ -609,7 +609,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 5 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn5:clockOverride:temperatureHeating:advance",
@@ -621,7 +621,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 5 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn5:clockOverride:temperatureHeating:clear",
@@ -633,7 +633,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 6 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating:advance",
@@ -645,7 +645,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 6 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating:clear",
@@ -657,7 +657,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 7 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn7:clockOverride:temperatureHeating:advance",
@@ -669,7 +669,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 7 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn7:clockOverride:temperatureHeating:clear",
@@ -681,7 +681,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 8 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn8:clockOverride:temperatureHeating:advance",
@@ -693,7 +693,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 8 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn8:clockOverride:temperatureHeating:clear",
@@ -705,7 +705,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:skip-next-outline",
+     "original_icon": null,
      "original_name": "Raum 9 \u2013 Advance next switch point",
      "translation_key": "rrc_override_advance",
      "unique_id": "gateway-one:zones:zn9:clockOverride:temperatureHeating:advance",
@@ -717,7 +717,7 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
-     "original_icon": "mdi:timer-off-outline",
+     "original_icon": null,
      "original_name": "Raum 9 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn9:clockOverride:temperatureHeating:clear",
@@ -954,7 +954,7 @@
      "disabled_by": null,
      "domain": "event",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "System notifications",
      "translation_key": "system_notifications",
      "unique_id": "gateway-one:system_notifications",
@@ -967,7 +967,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -984,7 +984,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1001,7 +1001,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1018,7 +1018,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1035,7 +1035,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1052,7 +1052,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1069,7 +1069,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature_delta",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -1086,7 +1086,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1103,7 +1103,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1120,7 +1120,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1137,7 +1137,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1154,7 +1154,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1171,7 +1171,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1188,7 +1188,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1205,7 +1205,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1222,7 +1222,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1239,7 +1239,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1256,7 +1256,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -1273,7 +1273,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -2050,7 +2050,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:cloud-sync-outline",
+     "original_icon": null,
      "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
@@ -2064,7 +2064,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:counter",
+     "original_icon": null,
      "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
@@ -2078,7 +2078,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:timer-outline",
+     "original_icon": null,
      "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
@@ -2090,7 +2090,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active faults",
      "translation_key": "active_faults",
      "unique_id": "gateway-one:active_faults",
@@ -2102,7 +2102,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active notifications",
      "translation_key": "active_notifications",
      "unique_id": "gateway-one:active_notifications",
@@ -3266,8 +3266,8 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
-     "original_name": "System \u2013 Enabled",
+     "original_icon": "mdi:map-marker-radius-outline",
+     "original_name": "System \u2013 Automatic absence",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:system:autoAway:enabled",
      "unit": null
@@ -4705,6 +4705,18 @@
     {
      "capabilities": null,
      "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:map-marker-radius-outline",
+     "original_name": "System \u2013 Automatic absence",
+     "translation_key": "rrc_auto_away",
+     "unique_id": "gateway-one:system:autoAway:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
      "disabled_by": null,
      "domain": "switch",
      "entity_category": null,
@@ -4857,7 +4869,7 @@
      "disabled_by": null,
      "domain": "water_heater",
      "entity_category": null,
-     "original_icon": "mdi:water-boiler",
+     "original_icon": null,
      "original_name": "Hot water 1",
      "translation_key": "pointt_dhw",
      "unique_id": "gateway-one:dhwCircuits:dhw1:water_heater",
@@ -4989,6 +5001,7 @@
     "/gateway/dataProcessing/status",
     "/gateway/hmip",
     "/gateway/hmip/versionApplication",
+    "/gateway/leds/inactivityTimeout",
     "/gateway/productType",
     "/gateway/update",
     "/gateway/update/state",
@@ -5485,10 +5498,22 @@
      "disabled_by": "integration",
      "domain": "binary_sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:remote",
+     "original_icon": null,
      "original_name": "Cloud control available",
      "translation_key": "cloud_control",
      "unique_id": "gateway-one:cloud_control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": "running",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Defrost active (calculated)",
+     "translation_key": "calculated_defrost_active",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_active",
      "unit": null
     },
     {
@@ -5497,7 +5522,7 @@
      "disabled_by": null,
      "domain": "binary_sensor",
      "entity_category": null,
-     "original_icon": "mdi:palm-tree",
+     "original_icon": null,
      "original_name": "Holiday mode active",
      "translation_key": "holiday_active",
      "unique_id": "gateway-one:holiday_active",
@@ -5509,7 +5534,7 @@
      "disabled_by": null,
      "domain": "binary_sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle",
+     "original_icon": null,
      "original_name": "System fault",
      "translation_key": "system_fault",
      "unique_id": "gateway-one:system_fault",
@@ -5521,7 +5546,7 @@
      "disabled_by": null,
      "domain": "calendar",
      "entity_category": null,
-     "original_icon": "mdi:calendar-account",
+     "original_icon": null,
      "original_name": "Holiday periods",
      "translation_key": "holiday_periods",
      "unique_id": "gateway-one:holiday_periods",
@@ -5551,6 +5576,22 @@
     {
      "capabilities": {
       "event_types": [
+       "defrost_finished"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "event",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Defrost (calculated)",
+     "translation_key": "calculated_defrost",
+     "unique_id": "gateway-one:heatSources:calculated_defrost",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "event_types": [
        "appeared",
        "resolved"
       ]
@@ -5559,7 +5600,7 @@
      "disabled_by": null,
      "domain": "event",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "System notifications",
      "translation_key": "system_notifications",
      "unique_id": "gateway-one:system_notifications",
@@ -5589,7 +5630,7 @@
       "mode": "box",
       "step": 1.0
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5606,7 +5647,7 @@
       "mode": "box",
       "step": 1.0
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5623,7 +5664,7 @@
       "mode": "box",
       "step": 1.0
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5640,7 +5681,7 @@
       "mode": "box",
       "step": 1.0
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5652,12 +5693,29 @@
     },
     {
      "capabilities": {
+      "max": 8.0,
+      "min": 1.0,
+      "mode": "box",
+      "step": 1.0
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": null,
+     "original_name": "HC 1: Boost duration",
+     "translation_key": "heating_circuit_boost_duration",
+     "unique_id": "gateway-one:heatingCircuits:hc1:boostDuration:control",
+     "unit": "h"
+    },
+    {
+     "capabilities": {
       "max": 30.0,
       "min": 5.0,
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5674,7 +5732,7 @@
       "mode": "box",
       "step": 1.0
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": "integration",
      "domain": "number",
      "entity_category": "config",
@@ -5691,7 +5749,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5708,7 +5766,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -5732,7 +5790,7 @@
      "disabled_by": null,
      "domain": "select",
      "entity_category": "config",
-     "original_icon": "mdi:water-boiler",
+     "original_icon": null,
      "original_name": "DHW 1: Operating mode",
      "translation_key": "hot_water_operation_mode",
      "unique_id": "gateway-one:dhwCircuits:dhw1:operationMode:control",
@@ -5750,7 +5808,7 @@
      "disabled_by": null,
      "domain": "select",
      "entity_category": "config",
-     "original_icon": "mdi:radiator",
+     "original_icon": null,
      "original_name": "Heat pump: Auxiliary heater",
      "translation_key": "auxiliary_heater_operation_mode",
      "unique_id": "gateway-one:heatSources:additionalHeater:operationMode:control",
@@ -5768,7 +5826,7 @@
      "disabled_by": null,
      "domain": "select",
      "entity_category": "config",
-     "original_icon": "mdi:radiator",
+     "original_icon": null,
      "original_name": "HC 1: Operating mode",
      "translation_key": "heating_circuit_operation_mode",
      "unique_id": "gateway-one:heatingCircuits:hc1:operationMode:control",
@@ -5786,7 +5844,7 @@
      "disabled_by": null,
      "domain": "select",
      "entity_category": "config",
-     "original_icon": "mdi:sun-snowflake",
+     "original_icon": null,
      "original_name": "System: Season switching",
      "translation_key": "season_switching",
      "unique_id": "gateway-one:system:seasonOptimizer:mode:control",
@@ -5804,7 +5862,7 @@
      "disabled_by": null,
      "domain": "select",
      "entity_category": null,
-     "original_icon": "mdi:volume-low",
+     "original_icon": null,
      "original_name": "System: Silent mode",
      "translation_key": "silent_mode",
      "unique_id": "gateway-one:system:silentMode:enabled:control",
@@ -5818,7 +5876,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:cloud-sync-outline",
+     "original_icon": null,
      "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
@@ -5832,7 +5890,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:counter",
+     "original_icon": null,
      "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
@@ -5846,7 +5904,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:timer-outline",
+     "original_icon": null,
      "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
@@ -5858,7 +5916,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active faults",
      "translation_key": "active_faults",
      "unique_id": "gateway-one:active_faults",
@@ -5870,7 +5928,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active notifications",
      "translation_key": "active_notifications",
      "unique_id": "gateway-one:active_notifications",
@@ -6020,10 +6078,10 @@
       ]
      },
      "device_class": "enum",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:calendar-clock",
+     "original_icon": null,
      "original_name": "Hot water 1 \u2013 Time program A",
      "translation_key": "dhw_switch_program",
      "unique_id": "gateway-one:dhwCircuits:dhw1:switchPrograms:A",
@@ -6103,6 +6161,20 @@
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:off",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Gateway clock deviation (calculated)",
+     "translation_key": "gateway_clock_deviation",
+     "unique_id": "gateway-one:gateway:DateTime:clock_deviation",
+     "unit": "s"
     },
     {
      "capabilities": null,
@@ -6587,6 +6659,74 @@
     },
     {
      "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Number of defrosts (calculated)",
+     "translation_key": "calculated_defrost_count",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_count",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "duration",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total defrost time (calculated)",
+     "translation_key": "calculated_defrost_duration",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_duration",
+     "unit": "min"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Electricity during defrosting (calculated)",
+     "translation_key": "calculated_defrost_electricity",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_electricity",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heat withdrawn by defrosting (calculated)",
+     "translation_key": "calculated_defrost_heat_withdrawn",
+     "unique_id": "gateway-one:heatSources:calculated_defrost_heat_withdrawn",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": null,
+     "device_class": "timestamp",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Last defrost (calculated)",
+     "translation_key": "calculated_last_defrost",
+     "unique_id": "gateway-one:heatSources:calculated_last_defrost",
+     "unit": null
+    },
+    {
+     "capabilities": {
       "options": [
        "off",
        "heating",
@@ -6636,6 +6776,118 @@
       "state_class": "total_increasing"
      },
      "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat heating (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_net_heat",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:calculated_performance_factor_yesterday",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
@@ -6657,6 +6909,20 @@
      "original_name": "Heat pump \u2013 Heating \u2013 Electric auxiliary heater consumption",
      "translation_key": null,
      "unique_id": "gateway-one:heatSources:emon:chConsumption:eheater",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Heating \u2013 Environmental energy (calculated)",
+     "translation_key": null,
+     "unique_id": "gateway-one:heatSources:emon:chConsumption:environmental_energy",
      "unit": "kWh"
     },
     {
@@ -6692,6 +6958,118 @@
       "state_class": "total_increasing"
      },
      "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat hot water (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_net_heat",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:calculated_performance_factor_yesterday",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
@@ -6714,6 +7092,132 @@
      "translation_key": null,
      "unique_id": "gateway-one:heatSources:emon:dhwConsumption:eheater",
      "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Hot water \u2013 Environmental energy (calculated)",
+     "translation_key": null,
+     "unique_id": "gateway-one:heatSources:emon:dhwConsumption:environmental_energy",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "total_increasing"
+     },
+     "device_class": "energy",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Net heat total (calculated)",
+     "translation_key": "calculated_net_heat",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_net_heat",
+     "unit": "kWh"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor this month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor this year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor previous month (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_month",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor previous year (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_year",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor since commissioning (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_since_commissioning",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor today (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_today",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Total \u2013 Performance factor yesterday (calculated)",
+     "translation_key": "calculated_performance_factor",
+     "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_yesterday",
+     "unit": null
     },
     {
      "capabilities": {
@@ -6761,6 +7265,20 @@
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:heatSources:flameStatus",
      "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "duration",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Heat pump \u2013 Average run time per start, heating (calculated)",
+     "translation_key": "calculated_run_time_per_start_heating",
+     "unique_id": "gateway-one:heatSources:hs1:calculated_run_time_per_start_heating",
+     "unit": "min"
     },
     {
      "capabilities": {
@@ -7061,7 +7579,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:heat-pump-outline",
+     "original_icon": null,
      "original_name": "Heat generator",
      "translation_key": "heat_generator",
      "unique_id": "gateway-one:heat_generator",
@@ -7277,10 +7795,10 @@
       ]
      },
      "device_class": "enum",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:calendar-clock",
+     "original_icon": null,
      "original_name": "Heating circuit 1 \u2013 Time program A",
      "translation_key": "heating_switch_program",
      "unique_id": "gateway-one:heatingCircuits:hc1:switchPrograms:A",
@@ -7332,7 +7850,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:calendar-clock",
+     "original_icon": null,
      "original_name": "Next holiday",
      "translation_key": "next_holiday",
      "unique_id": "gateway-one:next_holiday",
@@ -7631,6 +8149,18 @@
     {
      "capabilities": null,
      "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": null,
+     "original_name": "HC 1: Boost",
+     "translation_key": "heating_circuit_boost",
+     "unique_id": "gateway-one:heatingCircuits:hc1:boostMode:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
      "disabled_by": null,
      "domain": "switch",
      "entity_category": null,
@@ -7654,7 +8184,7 @@
      "disabled_by": null,
      "domain": "water_heater",
      "entity_category": null,
-     "original_icon": "mdi:water-boiler",
+     "original_icon": null,
      "original_name": "Hot water 1",
      "translation_key": "pointt_dhw",
      "unique_id": "gateway-one:dhwCircuits:dhw1:water_heater",
@@ -7757,6 +8287,7 @@
     "/gateway/dataProcessing/status",
     "/gateway/dateTime",
     "/gateway/eth",
+    "/gateway/leds/inactivityTimeout",
     "/gateway/logging",
     "/gateway/query",
     "/gateway/serialId",
@@ -8022,7 +8553,7 @@
      "disabled_by": "integration",
      "domain": "binary_sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:remote",
+     "original_icon": null,
      "original_name": "Cloud control available",
      "translation_key": "cloud_control",
      "unique_id": "gateway-one:cloud_control",
@@ -8034,7 +8565,7 @@
      "disabled_by": null,
      "domain": "binary_sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle",
+     "original_icon": null,
      "original_name": "System fault",
      "translation_key": "system_fault",
      "unique_id": "gateway-one:system_fault",
@@ -8089,7 +8620,7 @@
      "disabled_by": null,
      "domain": "event",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "System notifications",
      "translation_key": "system_notifications",
      "unique_id": "gateway-one:system_notifications",
@@ -8102,7 +8633,7 @@
       "mode": "box",
       "step": 0.5
      },
-     "device_class": null,
+     "device_class": "temperature",
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
@@ -8192,7 +8723,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:cloud-sync-outline",
+     "original_icon": null,
      "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
@@ -8206,7 +8737,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:counter",
+     "original_icon": null,
      "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
@@ -8220,7 +8751,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": "mdi:timer-outline",
+     "original_icon": null,
      "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
@@ -8232,7 +8763,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active faults",
      "translation_key": "active_faults",
      "unique_id": "gateway-one:active_faults",
@@ -8244,7 +8775,7 @@
      "disabled_by": null,
      "domain": "sensor",
      "entity_category": null,
-     "original_icon": "mdi:alert-circle-outline",
+     "original_icon": null,
      "original_name": "Active notifications",
      "translation_key": "active_notifications",
      "unique_id": "gateway-one:active_notifications",

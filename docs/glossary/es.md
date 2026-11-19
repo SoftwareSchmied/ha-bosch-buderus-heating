@@ -1,10 +1,10 @@
 # Glossary: Spanish (Spain) (`es`)
 
-The Spanish (Spain) texts are a draft awaiting review by a native speaker. They
+Corrections to the Spanish (Spain) texts are welcome. They
 use these terms consistently; a correction to one term usually applies to
 every text that uses it. The base glossary is in
 [`docs/translations.md`](../translations.md#glossary). Where Home Assistant
-core already has a term, the draft uses it.
+core already has a term, the translation uses it.
 
 | English | Spanish (Spain) |
 | --- | --- |

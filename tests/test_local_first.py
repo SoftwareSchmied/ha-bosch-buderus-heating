@@ -67,6 +67,9 @@ def empty_entry(hass, entry_id="local-first"):
 async def local_setup(hass, entry, *, target=None):
     manager = hass.config_entries.options
     result = await manager.async_init(entry.entry_id)
+    if "local_setup" not in result["menu_options"]:
+        # With accesses listed the connections menu offers it (never both).
+        result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     if target is not None:
         assert result["step_id"] == "local_target"
@@ -75,7 +78,7 @@ async def local_setup(hass, entry, *, target=None):
     result = await submit(hass, manager, result, {"address": "gateway.example.invalid"})
     result = await submit(hass, manager, result, {"method": "token"})
     result = await submit(hass, manager, result, {"token": TOKEN})
-    if result.get("step_id") == "local_certificate":
+    if result.get("step_id") == "local_certificate_data":
         # A saved certificate of the same access needs no new confirmation.
         result = await submit(hass, manager, result, {"confirm": True})
     return manager, result
@@ -108,6 +111,53 @@ async def test_an_entry_without_a_plant_sets_up_a_new_one(
     (binding,) = snapshot.bindings.values()
     assert binding.adapter == "k40_local" and binding.target_id == target_id
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+
+
+async def test_a_gateway_that_reports_no_known_brand_still_sets_up_a_plant(
+    hass, supported, journal, monkeypatch
+) -> None:
+    from custom_components.bosch_buderus_heating import local_setup as setup
+    from custom_components.bosch_buderus_heating.diagnostics import _local_brand
+    from custom_components.bosch_buderus_heating.local_probe import ProbePath
+    from custom_components.bosch_buderus_heating.local_transport import (
+        LocalProbeExchange,
+    )
+    from tests.test_local_probe import response
+
+    async def read(context, token, binding, *, is_current, budget):
+        return LocalProbeExchange(
+            tuple(
+                response(path, context=context, value="unknown")
+                if path is ProbePath.BRAND
+                else response(path, context=context, gatewayId=GATEWAY)
+                for path in ProbePath
+            )
+        )
+
+    monkeypatch.setattr(setup, "read_local_probe", read)
+    entry, management = empty_entry(hass)
+    manager, result = await local_setup(hass, entry)
+    assert result.get("step_id") == "local_result", result
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["reason"] == "local_setup_complete"
+    (target,) = management.current().targets.values()
+    assert "brand" not in target.to_data()["local_details"]
+    # The diagnostics say so, without the reported text.
+    assert _local_brand(target) == "not_reported"
+
+
+def test_the_diagnostics_name_only_a_known_brand() -> None:
+    from types import SimpleNamespace
+
+    from custom_components.bosch_buderus_heating.diagnostics import _local_brand
+
+    def target(details):
+        return SimpleNamespace(to_data=lambda: {"local_details": details})
+
+    assert _local_brand(target({"brand": "ivt", "model": "MX400"})) == "ivt"
+    assert _local_brand(target({"brand": "private text"})) == "not_reported"
+    assert _local_brand(target({})) == "not_reported"
+    assert _local_brand(target(None)) == "not_reported"
 
 
 async def test_a_gateway_of_a_known_plant_is_never_a_second_plant(
@@ -568,7 +618,7 @@ async def test_an_interrupted_new_system_attempt_is_resumed(
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     assert result["step_id"] == "local_pending"
     result = await submit(hass, manager, result, {"action": "continue"})
-    if result.get("step_id") == "local_certificate":
+    if result.get("step_id") == "local_certificate_data":
         result = await submit(hass, manager, result, {"confirm": True})
     assert result["step_id"] == "local_result", result
     result = await submit(hass, manager, result, {"confirm": True})

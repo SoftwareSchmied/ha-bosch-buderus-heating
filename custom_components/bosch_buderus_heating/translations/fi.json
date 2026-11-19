@@ -20,7 +20,7 @@
       },
       "auth": {
         "title": "Kirjaudu SingleKey ID:llä",
-        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
+        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`. Jos SingleKey ID näyttää sivun, joka ilmoittaa uudelleenohjauksesta, eikä mitään tapahdu, valitse sivun linkki tai painike.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
         "data": {
           "redirect_url": "Koko uudelleenohjausosoite"
         }
@@ -51,7 +51,7 @@
       },
       "reconfigure": {
         "title": "Määritä uudelleen ja etsi uudelleen",
-        "description": "Valitse sovelluksen merkki, yhdyskäytävät ja kyselyprofiili. Tallennus lataa integraation uudelleen ja suorittaa kaikkien resurssien täydellisen etsinnän. Käytä tätä laiteohjelmistopäivityksen jälkeen tai kun piirit, lämpimän käyttöveden järjestelmät, lämmönlähteet tai yhdyskäytävät ovat muuttuneet. **Vakio** lukee nykyiset käyttöarvot kerran minuutissa. **Pilviystävällinen** vähentää pilviliikennettä lukemalla ne kahden minuutin välein ja kaikki muut muuttuvat arvot harvemmin. Sovelluksen merkin vaihtaminen vaatii uuden SingleKey ID -kirjautumisen.",
+        "description": "Valitse sovelluksen merkki, yhdyskäytävät ja kyselyprofiili. Tallennus lataa integraation uudelleen ja hakee kaikki resurssit uudelleen, esimerkiksi laiteohjelmistopäivityksen tai muuttuneen asennuksen jälkeen. Sovelluksen merkin vaihto vaatii uuden SingleKey ID -kirjautumisen.",
         "data": {
           "brand": "Sovelluksen merkki",
           "gateway_ids": "Yhdyskäytävät",
@@ -65,9 +65,9 @@
       },
       "local_owner": {
         "title": "Valitse olemassa oleva asennus",
-        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu. Tämä ei luo uutta asennusta.",
+        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu, tai ota se käyttöön uutena asennuksena pelkällä paikallisella yhteydellä.",
         "data": {
-          "owner": "Olemassa oleva asennus"
+          "owner": "Asennus"
         }
       },
       "local_discovered": {
@@ -76,7 +76,7 @@
       },
       "local_target": {
         "title": "Valitse asennus",
-        "description": "Valitse asennus, johon yhdistetään paikallisesti. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
+        "description": "Valitse lämmitysjärjestelmä, jonka haluat yhdistää paikallisesti: lämpöpumppu tai kattila, ei latausasema eikä ilmastointilaite. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
         "data": {
           "target": "Asennus / yhdyskäytävä"
         }
@@ -109,6 +109,13 @@
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
+      "local_certificate_data": {
+        "title": "Vahvista dataportin varmenne",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
         "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
@@ -135,10 +142,7 @@
       },
       "local_result": {
         "title": "Vahvista paikallinen yhteys",
-        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen.",
-        "data": {
-          "confirm": "Tallenna tämä paikallinen yhteys"
-        }
+        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen. Jos et halua tallentaa mitään, sulje sen sijaan valintaikkuna."
       },
       "local_retry": {
         "title": "Paikallinen tarkistus ei valmistunut",
@@ -151,6 +155,7 @@
       "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ”Failed to launch” -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
+      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Jos sivu ilmoittaa uudelleenohjauksesta eikä mitään tapahdu, valitse sen linkki tai painike. Kopioi sitten Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
       "gateway_changed": "Yhdyskäytäväluettelo muuttui tämän ikkunan ollessa auki. Sulje ikkuna ja avaa Määritä uudelleen uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
       "unknown": "Pilviyhteydessä tapahtui odottamaton virhe. Odota hetki ja yritä uudelleen.",
@@ -172,13 +177,14 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
+      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
       "local_unknown_firmware": "Laiteohjelmistoversiota ei voitu varmistaa.",
       "local_old_firmware": "Päivitä yhdyskäytävän laiteohjelmisto ennen paikallisen yhteyden määrittämistä.",
       "local_unsupported_brand": "Dokumentoitu paikallinen rajapinta ei tue tämän merkkistä yhdyskäytävää.",
-      "local_incomplete_system": "Yhdyskäytävän järjestelmätiedot eivät ole vielä täydelliset. Yritä lukutarkistusta myöhemmin uudelleen.",
+      "local_incomplete_system": "Yhdyskäytävä kerää vielä järjestelmätietojaan. Siihen voi mennä muutama minuutti. Odota muutama minuutti ja yritä sitten lukutarkistusta uudelleen.",
       "local_invalid_response": "Tarvittavaa yhdyskäytävän vastausta ei voitu varmistaa.",
       "local_identity_unverified": "Tätä järjestelmää ei ole vielä yhdistetty yksiselitteisesti. Ensimmäinen asennus vaatii käytettävissä olevan pilviyhteyden sekä yhteensopivat yhdyskäytävän ja moduulin tunnukset molemmista rajapinnoista. Varmennettuja linkkejä voi sen jälkeen käyttää ilman pilveä.",
       "local_identity_conflict": "Yhdyskäytävän tunnus on ristiriidassa valitun asennuksen tai toisen määrityksen kanssa.",
@@ -227,7 +233,8 @@
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "already_in_progress": "Tämän paikallisen yhdyskäytävän asennus on jo käynnissä.",
-      "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään."
+      "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
+      "local_entry_not_updated": "Tämän integraation olemassa olevaa merkintää ei voitu päivittää nykyiseen versioon. Korjaa tai poista se merkintä ensin; sen jälkeen tämän yhdyskäytävän voi lisätä."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
@@ -238,7 +245,6 @@
     "step": {
       "init": {
         "title": "Asetukset",
-        "description": "{result}",
         "menu_options": {
           "notifications": "Ilmoitukset",
           "holidays": "Hallitse lomajaksoja",
@@ -248,7 +254,9 @@
           "connections": "Yhteydet",
           "connection_add_cloud": "Yhdistä pilviyhteys",
           "local_setup": "Määritä paikallinen yhteys",
-          "rescan": "Etsi järjestelmä uudelleen"
+          "rescan": "Etsi järjestelmä uudelleen",
+          "recordings": "Järjestelmän tallenteet",
+          "wallbox": "Latausasema"
         }
       },
       "notifications": {
@@ -360,24 +368,33 @@
         "title": "Näytä lämmitysaikaohjelma",
         "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nValitse viikonpäivä. Ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. ∅ tarkoittaa, ettei kyseiselle päivälle ole tallennettu kytkentäpistettä. Muutokset vaikuttavat kaikkiin tätä aikaohjelmaa käyttäviin vyöhykkeisiin.",
         "data": {
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "rrc_readonly": {
         "title": "Näytä lämmitysaikaohjelma",
-        "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nTätä aikaohjelmaa voi vain katsella täällä. Siinä ei ole muokattavia kytkentäpisteitä tai se sisältää tukemattomia asetuksia. ∅ tarkoittaa, ettei kytkentäpistettä ole tallennettu. Voit tehdä muutokset valmistajan sovelluksessa."
+        "description": "**{program}**\n\n**Maanantai:** {mo}\n\n**Tiistai:** {tu}\n\n**Keskiviikko:** {we}\n\n**Torstai:** {th}\n\n**Perjantai:** {fr}\n\n**Lauantai:** {sa}\n\n**Sunnuntai:** {su}\n\nTätä aikaohjelmaa voi vain katsella täällä. Siinä ei ole muokattavia kytkentäpisteitä tai se sisältää tukemattomia asetuksia. ∅ tarkoittaa, ettei kytkentäpistettä ole tallennettu. Voit tehdä muutokset valmistajan sovelluksessa.",
+        "data": {
+          "week_view": "Viikkonäkymä"
+        }
       },
       "rrc_point": {
         "title": "Muokkaa kytkentäpistettä",
         "description": "**{program}**\n\nValitse aika viiden minuutin portain ja lämpötila 5–30 °C 0,5 °C:n portain. Aika toistuu viikoittain lämmitysjärjestelmän paikallisessa ajassa. Muutokset vaikuttavat kaikkiin liitettyihin vyöhykkeisiin.",
         "data": {
           "time": "Aika",
-          "temperature": "Lämpötila"
+          "temperature": "Lämpötila",
+          "delete": "Poista tämä kytkentäpiste"
         }
+      },
+      "rrc_confirm": {
+        "title": "Tallenna kytkentäpiste",
+        "description": "**{program}**\n\n**Ennen:** {before}\n\n**Jälkeen:** {after}\n\nMuutos lähetetään kerran ja luetaan sitten takaisin. Se koskee kaikkia määritettyjä vyöhykkeitä."
       },
       "rrc_day": {
         "title": "Valitse kytkentäpiste",
-        "description": "**{program}**",
+        "description": "**{program}**\n\n{points}\n\nValitse kytkentäpiste muuttaaksesi tai poistaaksesi sen, tai lisää uusi. Päivällä on enintään {per_day} kytkentäpistettä (valmistajan sovelluksen raja, jota säädin ei ilmoita); päivän viimeinen kytkentäpiste säilyy.",
         "data": {
           "point": "Kytkentäpiste"
         }
@@ -394,7 +411,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_week_inactive": {
@@ -402,7 +420,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTämä ohjelma ei ole lämmityspiirin aktiivinen ohjelma. Muutokset tulevat voimaan, kun se valitaan.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_week_dhw": {
@@ -410,7 +429,8 @@
         "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nLämpimän käyttöveden aikaohjelma on voimassa vain, kun lämpimän käyttöveden käyttötila on Automaattinen.",
         "data": {
           "action": "Seuraava vaihe",
-          "day": "Viikonpäivä"
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
         }
       },
       "switch_program_day": {
@@ -456,18 +476,79 @@
       },
       "connections": {
         "title": "Yhteydet",
-        "description": "{result}Valitse yhteys, jota haluat hallita.",
+        "description": "Valitse yhteys, jota haluat hallita.",
         "menu_options": {
+          "connection_open_1": "{connection_open_1}",
+          "connection_open_2": "{connection_open_2}",
+          "connection_open_3": "{connection_open_3}",
+          "connection_open_4": "{connection_open_4}",
+          "connection_open_5": "{connection_open_5}",
+          "connection_open_6": "{connection_open_6}",
+          "connection_open_7": "{connection_open_7}",
+          "connection_open_8": "{connection_open_8}",
+          "connection_open_9": "{connection_open_9}",
+          "connection_open_10": "{connection_open_10}",
+          "connection_open_11": "{connection_open_11}",
+          "connection_open_12": "{connection_open_12}",
+          "local_setup": "Määritä paikallinen yhteys",
           "back": "← Takaisin"
         }
       },
-      "connection_test": {
+      "connection_test_ok": {
         "title": "Yhteystesti",
-        "description": "{result}"
+        "description": "OK, vastaus {ms} ms:n kuluttua. Asetukset pysyvät ennallaan."
+      },
+      "connection_test_ok_cloud": {
+        "title": "Yhteystesti",
+        "description": "OK, vastaus {ms} ms:n kuluttua; yhdyskäytäviä tilillä: {count}. Asetukset pysyvät ennallaan."
+      },
+      "connection_test_not_running": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: yhteys ei ole tällä hetkellä käynnissä (ei käytössä, käynnistyy tai pysäytetty)."
+      },
+      "connection_test_auth_cloud": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen vaaditaan: kirjaudu uudelleen valinnalla “Kirjaudu uudelleen”."
+      },
+      "connection_test_auth_local": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen vaaditaan: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
+      },
+      "connection_test_certificate_changed": {
+        "title": "Yhteystesti",
+        "description": "Laitteen varmenne on muuttunut: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”."
+      },
+      "connection_test_paused": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: pyynnöt ovat tauolla ajankohtaan {until} asti."
+      },
+      "connection_test_paused_open": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: pyynnöt ovat tällä hetkellä tauolla."
+      },
+      "connection_test_busy": {
+        "title": "Yhteystesti",
+        "description": "Ei testattu: yhteys on tällä hetkellä varattu. Yritä hetken kuluttua uudelleen."
+      },
+      "connection_test_unreachable": {
+        "title": "Yhteystesti",
+        "description": "Ei tavoitettavissa: ei vastausta ({ms} ms). Tarkista verkko ja laite."
+      },
+      "connection_test_unreachable_local": {
+        "title": "Yhteystesti",
+        "description": "Ei tavoitettavissa: ei vastausta ({ms} ms). Tarkista verkko ja laite. Vinkki: jos yhdyskäytävän osoite vaihtuu esimerkiksi reitittimen uudelleenkäynnistyksen jälkeen, kiinteä osoite auttaa: varaa sen IP-osoite reitittimessä (DHCP-varaus) tai anna yhdyskäytävän isäntänimi. Jos yhdyskäytävä ilmoittautuu uudessa osoitteessa, korjausilmoitus tarjoaa sen käyttöä."
+      },
+      "connection_test_other_gateway": {
+        "title": "Yhteystesti",
+        "description": "Tässä osoitteessa vastaa eri yhdyskäytävä. Määritä paikallinen yhteys uudelleen."
+      },
+      "connection_test_error": {
+        "title": "Yhteystesti",
+        "description": "Testi epäonnistui: {kind}."
       },
       "connection": {
         "title": "Hallitse yhteyttä",
-        "description": "{result}{status}",
+        "description": "{status}",
         "menu_options": {
           "connection_test": "Testaa yhteys nyt",
           "connection_enabled": "Ota yhteys käyttöön tai poista käytöstä",
@@ -522,7 +603,7 @@
       },
       "connection_polling": {
         "title": "Kyselytiheys",
-        "description": "Vakio lukee lämmityksen nykyiset käyttöarvot kerran minuutissa, asetukset ja energia-arvot 5 minuutin välein ja hitaammin muuttuvat tiedot 15 minuutin välein. Pilviystävällinen kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan minuutin välein molemmissa profiileissa. Profiili koskee valitun pilviyhteyden lämmityksen ja latausaseman kyselyä; muut pilvilaitteet ilmoittavat muutokset viesteinä. Kirjautuminen, laitetarkistukset ja muutoksen jälkeinen vahvistus voivat lisätä pyyntöjä tämän aikataulun ulkopuolella. Jos kyselykierros kestää pidempään kuin sen väli, seuraava alkaa myöhemmin.",
+        "description": "**Vakio** lukee nykyiset käyttöarvot minuutin välein sekä asetukset ja energia-arvot 5 minuutin välein. **Pilveä säästävä** kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan molemmissa profiileissa minuutin välein.",
         "data": {
           "polling_profile": "Kyselyprofiili"
         }
@@ -536,7 +617,7 @@
       },
       "cloud_auth": {
         "title": "Kirjaudu SingleKey ID:llä",
-        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
+        "description": "SingleKey ID on sama kirjautuminen, jota Bosch- tai Buderus-sovelluksesi käyttää. Käytä samaa sähköpostiosoitetta tai matkapuhelinnumeroa ja salasanaa. Et tarvitse uutta tiliä, etkä syötä salasanaasi Home Assistantiin.\n\n1. Pidä tämä ikkuna auki ja avaa [SingleKey ID]({authorization_url}) uudessa Chrome-välilehdessä. Käytä aina tätä uutta linkkiä.\n2. Paina siellä `F12` ja avaa kehittäjätyökalujen **Console**-välilehti.\n3. Kirjaudu sisään lämmityssovelluksesi SingleKey ID -tunnuksilla.\n4. Kirjautumisen jälkeen voi tulla verkko-ongelmaa koskeva ilmoitus. Tässä tapauksessa se tarkoittaa yleensä vain sitä, ettei Chrome voinut avata sovellusosoitetta `{redirect_scheme}://`. Jos SingleKey ID näyttää sivun, joka ilmoittaa uudelleenohjauksesta, eikä mitään tapahdu, valitse sivun linkki tai painike.\n5. Etsi konsolista punainen **Failed to launch** - tai **Connecting to** -viesti. Napsauta hiiren kakkospainikkeella viestin sinistä osoitetta `{redirect_scheme}://` ja valitse **Copy link address**.\n6. Palaa tähän ikkunaan, liitä koko osoite alle ja valitse **OK**. Kenttä voi näyttää turvallisuussyistä pisteitä.\n\nKäytä juuri tämän kirjautumisyrityksen osoitetta äläkä kopioi pelkkää `code`-parametria. Koko osoite sisältää lyhytikäisen kertakäyttökoodin. Älä koskaan jaa sitä ongelmailmoituksessa, keskustelussa, kuvakaappauksessa tai lokissa.",
         "data": {
           "redirect_url": "Koko uudelleenohjausosoite"
         }
@@ -567,14 +648,14 @@
       },
       "local_owner": {
         "title": "Valitse olemassa oleva asennus",
-        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu. Tämä ei luo uutta asennusta.",
+        "description": "Valitse asennus, johon tämä paikallinen yhdyskäytävä kuuluu, tai ota se käyttöön uutena asennuksena pelkällä paikallisella yhteydellä.",
         "data": {
-          "owner": "Olemassa oleva asennus"
+          "owner": "Asennus"
         }
       },
       "local_target": {
         "title": "Valitse asennus",
-        "description": "Valitse asennus, johon yhdistetään paikallisesti. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
+        "description": "Valitse lämmitysjärjestelmä, jonka haluat yhdistää paikallisesti: lämpöpumppu tai kattila, ei latausasema eikä ilmastointilaite. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
         "data": {
           "target": "Asennus / yhdyskäytävä"
         }
@@ -607,6 +688,13 @@
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
+      "local_certificate_data": {
+        "title": "Vahvista dataportin varmenne",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.\n\nJos varmenne ei kuulu yhdyskäytävällesi, sulje ikkuna; mitään ei lähetetä.",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
         "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos kirjoitusvirheen korjaaminen kestää yli viisi minuuttia, paina painikkeita uudelleen. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja Passia ei tallenneta.",
@@ -633,10 +721,7 @@
       },
       "local_result": {
         "title": "Vahvista paikallinen yhteys",
-        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen.",
-        "data": {
-          "confirm": "Tallenna tämä paikallinen yhteys"
-        }
+        "description": "Lukutarkistus kohteelle **{host}** onnistui ja yhdyskäytävä **{gateway}** vastaa valittua asennusta. Tallennus tarkistaa nykyiset tiedot uudelleen ja lisää tai päivittää tämän yhteyden olemassa olevaan asennukseen. Jos et halua tallentaa mitään, sulje sen sijaan valintaikkuna."
       },
       "local_retry": {
         "title": "Paikallinen tarkistus ei valmistunut",
@@ -644,14 +729,14 @@
       },
       "local_polling": {
         "title": "Paikallinen kysely",
-        "description": "Vahvistetut resurssit: {known}. Tällä hetkellä saatavilla: {available}. Nämä määrät kuvaavat tilannetta tämän ikkunan avaamishetkellä. Väli on reaaliaikaisten arvojen tavoite. Asetukset, energia-arvot ja diagnostiikka luetaan 5 minuutin välein ja laskurit 15 minuutin välein tai tällä välillä, jos se on pidempi; staattiset tiedot luetaan päivittäin. Arvo muuttuu saamattomaksi kolmen ohitetun välin jälkeen. Suuret resurssijoukot voivat kestää pidempään. Pilvikysely pysyy erillisenä. Mittausarvot, jotka myös pilvi tarjoaa, luetaan paikallisesti vähintään yhtä usein kuin pilvessä.",
+        "description": "Vahvistetut resurssit: {known}, nyt saatavilla: {available}. Väli on reaaliaikaisten arvojen tavoite; hitaammat arvot luetaan harvemmin. Tarkat välit kuvataan dokumentaatiossa.",
         "data": {
           "interval": "Reaaliaikaisten arvojen tavoiteväli"
         }
       },
       "local_values": {
         "title": "Paikalliset arvot olemassa oleville entiteeteille",
-        "description": "Kun pilvi on käynnissä, tämä asetus ratkaisee, käyttävätkö olemassa olevat anturit sellaisen mittausarvon paikallista arvoa, jonka molemmat yhteydet tarjoavat saman dokumentoidun resurssin alla. Ilman pilveä (kytketty pois, kirjautuminen vaaditaan, tauolla, rajoitettu tai tavoittamattomissa) paikallisia arvoja käytetään aina. Asetus on oletuksena päällä uusissa asennuksissa, joissa on pilvi- ja paikallinen yhteys.\n\nKun asetus on käytössä, paikallista arvoa käytetään niin kauan kuin se on ajantasainen. Jos paikallinen arvo on vanhentunut tai puuttuu, käytetään nykyistä pilviarvoa; jos molemmat ovat vanhentuneita, anturi muuttuu saamattomaksi. Energia-, käynnistys- ja käyntiaikalaskurit käyttävät myös paikallista arvoa, mutta vaihtavat lähdettään vain, kun jokainen näytetty lukema on vähintään yhtä suuri kuin viimeksi näytetty, joten lähteen vaihto ei koskaan saa niitä laskemaan taaksepäin. Säädettävät asetukset käyttävät edelleen pilveä. Entiteettitunnukset, nimet ja historia pysyvät ennallaan. Ohjaukset ja muutokset lähetetään edelleen pilven kautta.",
+        "description": "Kun pilvi on käytössä, tämä valinta ratkaisee, käyttävätkö nykyiset anturit sellaisen mittauksen paikallista arvoa, jonka molemmat yhteydet tarjoavat. Ilman pilveä käytetään aina paikallisia arvoja; asetukset ja ohjaus kulkevat edelleen pilven kautta. Entiteettien tunnukset, nimet ja historia pysyvät ennallaan.",
         "data": {
           "enabled": "Käytä paikallisia arvoja"
         }
@@ -659,6 +744,25 @@
       "rescan": {
         "title": "Etsi järjestelmä uudelleen",
         "description": "Etsii järjestelmästä osat ja mittausarvot vielä kerran pilviyhteyden ja paikallisen yhteyden kautta. Käytä tätä komponenttien lisäämisen tai muuttamisen jälkeen. Etsintä suoritetaan seuraavan säännöllisen päivityksen yhteydessä ja pyyntöjen tavanomaisissa rajoissa; se ei koskaan poista entiteettiä, ja mittausarvot, joita se ei löydä uudelleen, pysyvät ennallaan."
+      },
+      "recordings": {
+        "title": "Järjestelmän tallenteet",
+        "description": "Lämpöpumppu tallentaa energian, käynnistykset ja käyntiajan tunneittain. Integraatio näyttää ne entiteetteinä ja voi siirtää tuntiarvot pitkän aikavälin tilastoihin (energianäkymä, tilastokortit). Löydetyt sarjat: {series}, siirretyt: {imported}.",
+        "data": {
+          "recordings_import": "Siirrä tuntiarvot pitkän aikavälin tilastoihin",
+          "delete_statistics": "Poista siirretyt tilastot"
+        },
+        "data_description": {
+          "recordings_import": "Käytä energianäkymässä joko näitä tilastoja tai laskurientiteettejä, ei molempia. Kun siirto kytketään pois, siirretyt arvot säilyvät.",
+          "delete_statistics": "Seuraava sivu pyytää vahvistusta."
+        }
+      },
+      "recordings_delete": {
+        "title": "Poista siirretyt tilastot",
+        "description": "Poistaa kaikki tämän merkinnän järjestelmän tallenteista siirretyt tilastot ja kytkee siirron pois. Entiteetit ja järjestelmän omat tallenteet säilyvät. Toimintoa ei voi perua.",
+        "data": {
+          "confirm": "Kyllä, poista siirretyt tilastot"
+        }
       },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
@@ -695,6 +799,196 @@
         "data": {
           "confirm": "Peru tämä tunnus yhdyskäytävästä",
           "confirm_end": "Tätä tunnusta käyttävä paikallinen yhteys päättyy"
+        }
+      },
+      "result_connection_removed": {
+        "title": "Tulos",
+        "description": "Yhteys poistettiin."
+      },
+      "result_connection_saved": {
+        "title": "Tulos",
+        "description": "Muutos tallennettiin."
+      },
+      "result_holiday_created": {
+        "title": "Tulos",
+        "description": "Loma luotiin ja vahvistettiin lukemalla se takaisin."
+      },
+      "result_holiday_deleted": {
+        "title": "Tulos",
+        "description": "Loma poistettiin, ja lämmitysjärjestelmä vahvisti sen poiston."
+      },
+      "result_holiday_unchanged": {
+        "title": "Tulos",
+        "description": "Mitään ei muutettu, joten lämmitysjärjestelmälle ei lähetetty mitään."
+      },
+      "result_holiday_updated": {
+        "title": "Tulos",
+        "description": "Lomaasetukset tallennettiin, ja lämmitysjärjestelmä vahvisti ne."
+      },
+      "result_local_token_access_end_failed": {
+        "title": "Tulos",
+        "description": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
+      },
+      "result_local_token_access_ended": {
+        "title": "Tulos",
+        "description": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se."
+      },
+      "result_local_token_not_removed": {
+        "title": "Tulos",
+        "description": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen."
+      },
+      "result_local_token_old_revoked_removed": {
+        "title": "Tulos",
+        "description": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä."
+      },
+      "result_local_token_revoke_rejected": {
+        "title": "Tulos",
+        "description": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa."
+      },
+      "result_local_token_revoke_unclear": {
+        "title": "Tulos",
+        "description": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi."
+      },
+      "result_local_token_revoked": {
+        "title": "Tulos",
+        "description": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä."
+      },
+      "result_local_token_revoked_removed": {
+        "title": "Tulos",
+        "description": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin."
+      },
+      "result_local_tokens_changed": {
+        "title": "Tulos",
+        "description": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen."
+      },
+      "result_notifications_saved": {
+        "title": "Tulos",
+        "description": "Ilmoitusasetukset tallennettiin."
+      },
+      "result_rescan_partial": {
+        "title": "Tulos",
+        "description": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen."
+      },
+      "result_rescan_paused": {
+        "title": "Tulos",
+        "description": "Etsintää ei aloitettu: pyynnöt ovat tällä hetkellä tauolla (esimerkiksi kun pilvi on pyytänyt taukoa). Yritä myöhemmin uudelleen."
+      },
+      "result_rescan_planned": {
+        "title": "Tulos",
+        "description": "Etsintä on ajoitettu ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä; uudet osat ilmestyvät heti, kun ne löytyvät."
+      },
+      "result_rescan_running": {
+        "title": "Tulos",
+        "description": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis."
+      },
+      "result_rescan_unavailable": {
+        "title": "Tulos",
+        "description": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis."
+      },
+      "result_rrc_program_saved": {
+        "title": "Tulos",
+        "description": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin."
+      },
+      "result_switch_program_saved": {
+        "title": "Tulos",
+        "description": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Tulos",
+        "description": "Kirjautuminen uusittiin onnistuneesti."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Tulos",
+        "description": "Kirjautuminen uusittiin. {count} käytössä olevaa järjestelmää tai laitetta ei löytynyt tililtä. Ne pysyvät määritettyinä. Korjausilmoitus nimeää ne ja kertoo, miten ne unohdetaan."
+      },
+      "result_recordings_import_on": {
+        "title": "Tulos",
+        "description": "Järjestelmän tallenteiden siirto on kytketty päälle; ensimmäiset arvot tulevat muutamassa minuutissa."
+      },
+      "result_recordings_import_off": {
+        "title": "Tulos",
+        "description": "Järjestelmän tallenteiden siirto on kytketty pois; siirretyt arvot säilyvät."
+      },
+      "result_recordings_deleted": {
+        "title": "Tulos",
+        "description": "Poistetut siirretyt tilastot: {count}. Siirto on kytketty pois."
+      },
+      "result_recordings_delete_kept": {
+        "title": "Tulos",
+        "description": "Mitään ei poistettu."
+      },
+      "switch_program_week_rrc_dhw": {
+        "title": "Muuta käyttöveden aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTasot ovat huonesäätimen ohjelman tasoja. Aikaohjelma on voimassa, kun käyttövesi noudattaa omaa ohjelmaansa. Enintään kuusi kytkentäpistettä päivässä on valmistajan sovelluksen raja, ei säätimen ilmoittama.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_point_value": {
+        "title": "Muokkaa kytkentäpistettä",
+        "description": "**{program}** – **{day}**\n\nValitse aika {raster} minuutin portain ja lämpötila {minimum}–{maximum} °C {step} °C:n portain. Se on voimassa tästä ajasta seuraavaan kytkentäpisteeseen asti.",
+        "data": {
+          "time": "Aika",
+          "value": "Lämpötila",
+          "off": "Pois lämpötilan sijaan",
+          "delete": "Poista tämä kytkentäpiste"
+        }
+      },
+      "rrc_add": {
+        "title": "Lisää kytkentäpiste",
+        "description": "**{program}**\n\n{points}\n\nValitse aika viiden minuutin portain ja lämpötila 5–30 °C 0,5 °C:n portain. Aika toistuu viikoittain lämmitysjärjestelmän paikallisessa ajassa. Muutokset vaikuttavat kaikkiin liitettyihin vyöhykkeisiin.",
+        "data": {
+          "time": "Aika",
+          "temperature": "Lämpötila"
+        }
+      },
+      "wallbox": {
+        "title": "Latausasema",
+        "description": "Tunnistautumista vaativa latausasema aloittaa latauksen vasta integraation tunnistautumisen jälkeen. Silloin ennen jokaista käynnistystä lähetetään yksi lisäkomento.",
+        "data": {
+          "wallbox_authentication": "Salli tunnistautuminen ennen käynnistystä",
+          "wallbox_authentication_name": "Tunnistautumisnimi (valinnainen)",
+          "wallbox_history": "Lue latushistoria"
+        },
+        "data_description": {
+          "wallbox_authentication": "Oletuksena pois. Ohjelmistosta 5.1.0 alkaen käynnistys tunnistautuu ensin; vanhemmalla ohjelmistolla käynnistys lähetetään yksin, kuten valmistajan sovelluksessa.",
+          "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi.",
+          "wallbox_history": "Oletuksena pois päältä. Noin 30 minuutin välein (60 minuutin välein pilviystävällisessä profiilissa) luetaan viimeinen lataus (alku, loppu, kesto, energia) sekä tämän kuun verkosta ja aurinkoenergialla ladattu energia. Korttien, käyttäjien tai tunnistautumisen nimiä ei lueta koskaan."
+        }
+      },
+      "result_wallbox_saved": {
+        "title": "Tulos",
+        "description": "Latausaseman asetukset on tallennettu."
+      },
+      "switch_program_week_aircon": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan samana päivänä olevaan asti; päivän ensimmäistä kytkentäpistettä ennen ilmastointilaite on pois päältä. Ajat toistuvat viikoittain ilmastointilaitteen kellon mukaan. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_week_aircon_inactive": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan samana päivänä olevaan asti; päivän ensimmäistä kytkentäpistettä ennen ilmastointilaite on pois päältä. Ajat toistuvat viikoittain ilmastointilaitteen kellon mukaan. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTämä ohjelma ei ole ilmastointilaitteen aktiivinen ohjelma. Muutokset tulevat voimaan, kun se valitaan.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä",
+          "week_view": "Viikkonäkymä"
+        }
+      },
+      "switch_program_point_aircon": {
+        "title": "Muokkaa kytkentäpistettä",
+        "description": "**{program}** – **{day}**\n\nValitse aika {raster} minuutin portain ja asetus tästä ajasta alkaen. Ilmastointilaite tarjoaa:\n\n{settings}\n\nLämpötila ja puhaltimen nopeus otetaan huomioon vain toimintatilassa, jossa ne on. Pois kytkee ilmastointilaitteen pois päältä seuraavaan kytkentäpisteeseen asti.",
+        "data": {
+          "time": "Aika",
+          "mode": "Toimintatila",
+          "value": "Lämpötila",
+          "fan": "Puhaltimen nopeus",
+          "delete": "Poista tämä kytkentäpiste"
         }
       }
     },
@@ -756,7 +1050,9 @@
       "cloud_connection_disabled": "Ota tämä pilviyhteys käyttöön ennen laitteiden etsimistä.",
       "cloud_rate_limited": "Pilvi on pyytänyt taukoa. Odota ennen uutta yritystä.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
+      "reauth_targets_missing": "Tämä kirjautuminen ei löytänyt yhtään käytössä olevaa järjestelmää tai laitetta. Aiemmat tunnistetiedot säilyvät. Tarkista, että kirjauduit samalla tilillä kuin aiemmin. Jos järjestelmät poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys: ota käyttöön järjestelmä, joka on edelleen tilillä, kohdassa **Käytä järjestelmille ja laitteille**, tai poista poistetut käytöstä ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Jos mitään ei ole jäljellä, poista pilviyhteys ja yhdistä se uudelleen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ‘Failed to launch’ -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
+      "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Jos sivu ilmoittaa uudelleenohjauksesta eikä mitään tapahdu, valitse sen linkki tai painike. Kopioi sitten Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
       "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
       "no_gateways": "Laitteita ei löytynyt. Tarkista, että valittu merkki ja SingleKey ID -tili vastaavat sovellustasi. Vanhemmalla laiteohjelmistolla varustettu huonesäädin näkyy vasta, kun sen laiteohjelmisto on päivitetty ja se on otettu käyttöön nykyisessä sovelluksessa SingleKey ID:lläsi.",
@@ -774,13 +1070,14 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
+      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
       "local_unknown_firmware": "Laiteohjelmistoversiota ei voitu varmistaa.",
       "local_old_firmware": "Päivitä yhdyskäytävän laiteohjelmisto ennen paikallisen yhteyden määrittämistä.",
       "local_unsupported_brand": "Dokumentoitu paikallinen rajapinta ei tue tämän merkkistä yhdyskäytävää.",
-      "local_incomplete_system": "Yhdyskäytävän järjestelmätiedot eivät ole vielä täydelliset. Yritä lukutarkistusta myöhemmin uudelleen.",
+      "local_incomplete_system": "Yhdyskäytävä kerää vielä järjestelmätietojaan. Siihen voi mennä muutama minuutti. Odota muutama minuutti ja yritä sitten lukutarkistusta uudelleen.",
       "local_invalid_response": "Tarvittavaa yhdyskäytävän vastausta ei voitu varmistaa.",
       "local_identity_unverified": "Tätä järjestelmää ei ole vielä yhdistetty yksiselitteisesti. Ensimmäinen asennus vaatii käytettävissä olevan pilviyhteyden sekä yhteensopivat yhdyskäytävän ja moduulin tunnukset molemmista rajapinnoista. Varmennettuja linkkejä voi sen jälkeen käyttää ilman pilveä.",
       "local_identity_conflict": "Yhdyskäytävän tunnus on ristiriidassa valitun asennuksen tai toisen määrityksen kanssa.",
@@ -811,18 +1108,21 @@
       "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
       "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
       "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Valitse myös toinen valintaruutu tai jätä ensimmäinen tyhjäksi palataksesi. Mitään ei lähetetty.",
-      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu."
+      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu.",
+      "switch_program_value": "Anna lämpötila {minimum}–{maximum} °C {step} °C:n portain.",
+      "switch_program_day_emptied": "Päivä, jolla on kytkentäpisteitä, säilyttää vähintään yhden; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
+      "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
+      "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
+      "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
+      "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
+      "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
       "notification_gateways_changed": "Asennusvalinta muuttui. Avaa asetukset uudelleen.",
       "holiday_changed": "Valittu loma on muuttunut tai sitä ei voi enää muokata. Avaa loma uudelleen nähdäksesi sen nykyiset tiedot.",
-      "holiday_updated": "Lomaasetukset tallennettiin, ja lämmitysjärjestelmä vahvisti ne.",
-      "holiday_unchanged": "Mitään ei muutettu, joten lämmitysjärjestelmälle ei lähetetty mitään.",
       "no_writable_holidays": "Lomien hallinta ei ole tällä hetkellä käytettävissä. Odota, kunnes asennus on antanut lomaasetuksensa.",
-      "holiday_deleted": "Loma poistettiin, ja lämmitysjärjestelmä vahvisti sen poiston.",
       "not_loaded": "Bosch/Buderus Home Comfort on oltava ladattuna, ennen kuin lomaa voi määrittää.",
-      "holiday_created": "Loma luotiin ja vahvistettiin lukemalla se takaisin.",
       "holiday_previous_request_found": "Aiempi ratkaisematon pyyntö on nyt vahvistettu. Uusia syötteitäsi ei lähetetty. Tarkista ensin olemassa oleva loma kohdassa Hallitse lomajaksoja.",
       "holiday_already_exists": "Loma tällä alkamisajalla ja piirivalinnalla on jo olemassa. Lisälomaa ei luotu. Avaa Hallitse lomajaksoja ja muokkaa olemassa olevaa merkintää.",
       "holiday_create_unconfirmed": "Luontipyyntöä ei voitu vahvistaa. Loma voi olla jo olemassa. Tarkista Hallitse lomajaksoja tai valmistajan sovellus. Seuraavien 10 minuutin ajan uusi yritys tarkistaa tämän pyynnön tuloksen luomatta toista lomaa.",
@@ -831,7 +1131,6 @@
       "no_rrc_schedules": "Huonesäätimen ajantasaista, tuettua viikkoaikaohjelmaa ei ole saatavilla.",
       "no_switch_programs": "Täällä ei voi muuttaa yhtään lämmityspiirin tai lämpimän käyttöveden ajantasaista aikaohjelmaa.",
       "switch_program_changed": "Aikaohjelma on muuttunut sillä välin tai sitä ei voi enää muuttaa. Avaa se uudelleen nähdäksesi nykyiset kytkentäpisteet.",
-      "switch_program_saved": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}",
       "controls_not_loaded": "Ohjaukset ovat käytettävissä vain pilviyhteyden kautta; paikallinen yhteys vain lukee. Yhdistä pilviyhteys tai odota, kunnes se on latautunut.",
       "controls_auth_required": "Ohjaukset eivät ole käytettävissä: pilviyhteys tarvitsee uuden kirjautumisen. Mittausarvot pysyvät näkyvissä.",
       "controls_cloud_stopped": "Ohjaukset eivät ole käytettävissä: pilviyhteys on pysäytetty tai käynnistyy uudelleen. Mittausarvot pysyvät näkyvissä.",
@@ -841,8 +1140,9 @@
       "controls_not_current": "Ohjaukset eivät ole vielä käytettävissä: pilvi ei ole toimittanut ajantasaisia arvoja. Yritä hetken kuluttua uudelleen.",
       "controls_none": "Tämä laite ei tällä hetkellä ilmoita asetuksia, joita voisi muuttaa täällä.",
       "configuration_changed": "Yhteysasetukset muuttuivat tämän ikkunan ollessa auki. Sulje se ja yritä uudelleen.",
+      "reauth_wrong_account": "Valittu tili ei vastaa määritettyjä laitteita. Kirjaudu alkuperäisellä tilillä.",
+      "reauth_no_targets": "Tällä pilviyhteydellä ei ole enää järjestelmiä tai laitteita, eikä tiliä, johon se kuuluu, voida vahvistaa. Aiemmat tunnistetiedot säilyvät. Jos haluat käyttää pilvitiliä uudelleen, poista pilviyhteys kohdassa Määritä → Yhteydet ja yhdistä se uudelleen.",
       "no_connections": "Yhtään yhteyttä ei ole määritetty. Olemassa olevat järjestelmät ja entiteetit säilyvät.",
-      "connection_reauth_started": "Uusi kirjautuminen on valmisteltu. Sulje tämä ikkuna ja valitse tälle integraatiolle **Määritä uudelleen** kohdassa Asetukset → Laitteet ja palvelut, osiossa **Vaatii huomiota**.",
       "cloud_already_connected": "Pilviyhteys on jo määritetty. Käytä sen yhteysasetuksia valitaksesi lisää laitteita tai kirjautuaksesi uudelleen. Toista rinnakkaista pilvikirjautumista ei vielä tueta.",
       "cloud_setup_in_progress": "Toinen pilviasennus on jo auki. Viimeistele tai sulje se ikkuna ensin.",
       "cloud_setup_taken_over": "Uudempi pilviasennusikkuna on korvannut tämän. Sulje tämä ikkuna ja jatka uudemmassa.",
@@ -860,25 +1160,8 @@
       "local_pending_saved": "Keskeneräinen yritys säilytetään. Voit jatkaa sitä paikallisesta asennuksesta.",
       "local_storage_failed": "Yksityistä asennustietuetta ei voitu lukea tai tallentaa. Tarkista Home Assistantin tallennustila ennen jatkamista.",
       "cloud_local_first_other_entry": "Tämä järjestelmä on jo määritetty paikallisen yhteyden kautta tämän integraation toisessa merkinnässä. Lisää pilviyhteys kyseiseen merkintään.",
-      "rescan_planned": "Etsintä on ajoitettu ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä; uudet osat ilmestyvät heti, kun ne löytyvät.",
-      "rescan_paused": "Etsintää ei aloitettu: pyynnöt ovat tällä hetkellä tauolla (esimerkiksi kun pilvi on pyytänyt taukoa). Yritä myöhemmin uudelleen.",
-      "rescan_running": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis.",
-      "rescan_partial": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen.",
       "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis.",
-      "connection_saved": "Muutos tallennettiin.",
-      "connection_removed": "Yhteys poistettiin.",
-      "notifications_saved": "Ilmoitusasetukset tallennettiin.",
-      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin.",
-      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen.",
-      "local_tokens_changed": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen.",
-      "local_token_revoked": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä.",
-      "local_token_access_ended": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se.",
-      "local_token_revoke_rejected": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa.",
-      "local_token_revoke_unclear": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi.",
-      "local_token_revoked_removed": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin.",
-      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen.",
-      "local_token_old_revoked_removed": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä.",
-      "local_token_access_end_failed": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
+      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
@@ -1035,6 +1318,20 @@
         }
       }
     },
+    "recordings_statistics_left": {
+      "title": "Siirretyt tallenteet jäävät tilastoihin",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Poista siirretyt tilastot",
+            "description": "Poistettu merkintä siirsi {count} tilastoa järjestelmän tallenteista; Home Assistant säilyttää ne. Valitse **Lähetä** poistaaksesi ne; toimintoa ei voi perua. Jos haluat säilyttää ne, valitse **Ohita**. Ilmoitus poistuu seuraavan uudelleenkäynnistyksen jälkeen."
+          }
+        },
+        "abort": {
+          "recordings_statistics_gone": "Siirrettyjä tilastoja ei enää ole. Mitään ei poistettu."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Järjestelmiä ei löytynyt pilvitililtä",
       "description": "Merkinnän ”{title}” pilviyhteyden viimeisin kirjautuminen ei löytänyt {count} käytössä olevaa järjestelmää tai laitetta (päätteenä {systems}). Ne pysyvät määritettyinä ja saamattomina, kunnes ne ilmestyvät tilille uudelleen; tämä ilmoitus poistuu silloin.\n\nJos ne poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys, poista ne käytöstä kohdassa **Käytä järjestelmille ja laitteille** ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Niiden laitteet ja entiteetit pysyvät Home Assistantissa, kunnes poistat ne. Jos yhdyskäytävä vaihdettiin, pidä se käytössä: erillinen korjausilmoitus tarjoaa mahdollisuuden jatkaa järjestelmää sen historian kanssa."
@@ -1109,6 +1406,14 @@
     "setup_unfinished": {
       "title": "Asennus ei ole valmis",
       "description": "Merkinnällä ”{title}” ei ole vielä yhteyttä. Valitse sen kohdalla **Määritä** ja sen jälkeen ”Määritä paikallinen yhteys” (tai yhdistä pilviyhteys)."
+    },
+    "local_only_entities_continued": {
+      "title": "Entiteetit lukevat nyt paikallisen yhteyden kautta",
+      "description": "{count} käytössä olevaa entiteettiä näyttää nyt arvonsa paikallisen yhteyden kautta, ja pilven arvo on toinen lähde: {entities}. Niiden entiteettitunnukset, asetukset ja historia säilyvät, joten automaatiot, skriptit ja kojelaudat toimivat edelleen. Niiden nimet, luokat ja tilat seuraavat nyt paikallista arvoa. Voit ohittaa tämän ilmoituksen; se katoaa seuraavan uudelleenkäynnistyksen jälkeen."
+    },
+    "local_only_entities_kept": {
+      "title": "Entiteettejä ei enää tarjota",
+      "description": "{count} pilven entiteettiä ei enää tarjota, koska tämän integraation toinen entiteetti näyttää saman arvon paikallisen yhteyden kautta (vanha → uusi): {entities}. Vanhaa entiteettiä käyttävien automaatioiden, skriptien ja kojelautojen pitäisi käyttää uutta. Poista vanha entiteetti, kun et enää tarvitse sitä; sen historia säilyy siihen asti. Voit ohittaa tämän ilmoituksen; se näkyy uudelleen seuraavassa uudelleenkäynnistyksessä niin kauan kuin vanha entiteetti on olemassa."
     }
   },
   "exceptions": {
@@ -1238,6 +1543,12 @@
     "heating_temporary_setpoint_not_active": {
       "message": "Tällä lämmityspiirillä ei tällä hetkellä ole poistettavaa väliaikaista asetusarvoa."
     },
+    "zone_climate_command": {
+      "message": "Tämä vyöhykkeen komento ei ole juuri nyt käytettävissä. Lämpötiloja voi muuttaa vain manuaalitilassa tai automaattitilassa, kun vyöhyke tarjoaa tilapäisen asetusarvon. Valitse tila erikseen ja tarkista, että vyöhyke antaa ajantasaiset arvot."
+    },
+    "zone_temporary_setpoint_not_active": {
+      "message": "Tällä vyöhykkeellä ei ole juuri nyt peruttavaa tilapäistä asetusarvoa."
+    },
     "pointt_dhw_temperature_read_only": {
       "message": "Laite määrittää lämpimän käyttöveden nykyisen asetusarvon. Voit säätää erillisiä tilojen käynnistyslämpötiloja kohdassa Käytä laitetta."
     },
@@ -1273,6 +1584,18 @@
     },
     "rrc_device_setting_unused": {
       "message": "Radiolaite ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
+    },
+    "control_unused": {
+      "message": "Laite ei käytä tätä asetusta tällä hetkellä. Tätä muutosta ei lähetetty."
+    },
+    "circuit_room_controller": {
+      "message": "Tätä lämmityspiiriä ohjaa huonesäädin. Asetusta voi muuttaa vain siellä. Tätä muutosta ei lähetetty."
+    },
+    "circuit_constant_control": {
+      "message": "Tämä lämmityspiiri toimii vakioarvoilla. Sen asetuksia ei voi muuttaa tällä hetkellä. Tätä muutosta ei lähetetty."
+    },
+    "cooling_not_offered": {
+      "message": "Tämä lämmityspiiri ei tarjoa jäähdytystä tällä hetkellä. Tätä muutosta ei lähetetty."
     },
     "rrc_setting_unused": {
       "message": "Huonesäädin ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
@@ -1345,11 +1668,141 @@
     },
     "switch_program_not_readable": {
       "message": "Valittua aikaohjelmaa ei voi lukea juuri nyt. Mitään ei lähetetty."
+    },
+    "switch_points_no_target": {
+      "message": "Tämän integraation käyttöön otettua aikaohjelma-anturia ei valittu. Ota aikaohjelma-anturi käyttöön ja valitse se kohteeksi."
+    },
+    "not_a_program_entity": {
+      "message": "Valittavissa ovat vain tämän integraation aikaohjelma-anturit."
+    },
+    "switch_points_empty_week": {
+      "message": "Viikolla on oltava vähintään yksi kytkentäpiste."
+    },
+    "switch_points_invalid_time": {
+      "message": "Kunkin ajan on oltava {raster} minuutin portain, ilman sekunteja."
+    },
+    "switch_points_duplicate_time": {
+      "message": "Päivällä on kaksi kytkentäpistettä samaan aikaan."
+    },
+    "switch_points_too_many_per_day": {
+      "message": "Päivällä on enemmän kytkentäpisteitä kuin lämmitysjärjestelmä sallii ({per_day})."
+    },
+    "switch_points_too_many_in_all": {
+      "message": "Viikolla on enemmän kytkentäpisteitä kuin lämmitysjärjestelmä sallii ({total})."
+    },
+    "switch_points_level_not_allowed": {
+      "message": "Käytettävissä ovat vain nämä tasot: {levels}."
+    },
+    "switch_points_value_not_allowed": {
+      "message": "Käytettävissä ovat vain lämpötilat {minimum}–{maximum} {step} portain."
+    },
+    "switch_points_not_writable": {
+      "message": "Lämmitysjärjestelmä ei ilmoita tätä aikaohjelmaa muutettavaksi."
+    },
+    "switch_points_unused": {
+      "message": "Lämmitysjärjestelmä ei käytä tätä aikaohjelmaa tällä hetkellä. Mitään ei lähetetty."
+    },
+    "switch_points_not_level_program": {
+      "message": "Tämän aikaohjelman tyyppiä ei voitu lukea tai se ei vastaa sen kytkentäpisteitä. Mitään ei lähetetty."
+    },
+    "switch_points_not_editable": {
+      "message": "Tämä aikaohjelma voidaan vain näyttää, ei muuttaa: lämmitysjärjestelmä ei ilmoita kaikkia muutokseen tarvittavia rajoja."
+    },
+    "switch_points_program_changed": {
+      "message": "Aikaohjelma on muuttunut välissä tai se ei enää vastaa odotettuja kytkentäpisteitä. Mitään ei lähetetty."
+    },
+    "switch_points_paused": {
+      "message": "Kirjoittaminen lämmitysjärjestelmään on tauolla muutaman minuutin toistuneiden epäonnistuneiden lukujen jälkeen. Mitään ei lähetetty."
+    },
+    "switch_points_not_confirmed": {
+      "message": "Aikaohjelma lähetettiin, mutta sitä ei voitu vahvistaa lukemalla se takaisin. Se on voitu silti ottaa käyttöön; sitä ei lähetetä uudelleen."
+    },
+    "switch_points_rejected": {
+      "message": "Lämmitysjärjestelmä hylkäsi aikaohjelman (HTTP {status}). Mitään ei muutettu."
+    },
+    "switch_points_invalid": {
+      "message": "Kytkentäpisteet eivät vastaa aikaohjelman rajoja."
+    },
+    "program_name_empty": {
+      "message": "Anna nimi; tyhjää nimeä ei lähetetä."
+    },
+    "program_name_too_long": {
+      "message": "Nimessä saa olla enintään {max} merkkiä."
+    },
+    "program_name_charset": {
+      "message": "Nimi sisältää merkkejä, joita lämmitysjärjestelmä ei voi tallentaa ({charset})."
+    },
+    "program_name_unsupported": {
+      "message": "Lämmitysjärjestelmä ei ilmoita tätä nimeä muutettavaksi."
+    },
+    "program_name_changed": {
+      "message": "Nimi on muuttunut välissä. Mitään ei lähetetty."
+    },
+    "program_name_not_confirmed": {
+      "message": "Nimi lähetettiin, mutta sitä ei voitu vahvistaa lukemalla se takaisin. Se on voitu silti ottaa käyttöön; sitä ei lähetetä uudelleen."
+    },
+    "wallbox_state_not_allowed": {
+      "message": "Latausasema ei ole tilassa, joka sallii tämän toiminnon. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_current_below_minimum": {
+      "message": "Latausvirta on alle 6 A. Aseta ensin latausvirta. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_authentication_required": {
+      "message": "Latausasema vaatii tunnistautumisen ennen latausta. Salli se integraation asetuksissa (Wallbox). Tätä muutosta ei lähetetty."
+    },
+    "wallbox_group_controlled": {
+      "message": "Tämä latausasema kuuluu kuormanhallintaryhmään, joka ohjaa tätä toimintoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_energy_manager": {
+      "message": "Energianhallinta ohjaa tätä latausasemaa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_manual": {
+      "message": "Latausvirran voi asettaa vain normaalissa lataustilassa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_boost_active": {
+      "message": "Boost on käytössä. Lopeta ensin Boost. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_value_unavailable": {
+      "message": "Latausasema ei antanut tälle toiminnolle ajantasaista arvoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_writeable": {
+      "message": "Latausasema ei ilmoita tätä asetusta muutettavaksi. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_firmware": {
+      "message": "Latausaseman ohjelmisto ei tarjoa tätä toimintoa. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_meter_missing": {
+      "message": "Tämä toiminto tarvitsee yhdistetyn ulkoisen mittarin. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_offered": {
+      "message": "Tätä toimintoa ei tarjota tälle latausasemalle. Tätä muutosta ei lähetetty."
+    },
+    "wallbox_not_solar": {
+      "message": "Tämä asetus koskee vain aurinkolatausta. Vaihda ensin lataustilaksi aurinko. Tätä muutosta ei lähetetty."
+    },
+    "aircon_switched_off": {
+      "message": "Ilmalämpöpumppu on pois päältä. Kytke se ensin päälle ja vaihda sitten tila. Mitään ei lähetetty."
+    },
+    "aircon_pv_mode_blocked": {
+      "message": "Ilmalämpöpumppu toimii aurinkokäytöllä, joten automaatti- ja lämmitystila eivät ole käytettävissä. Mitään ei lähetetty."
+    },
+    "aircon_value_not_allowed": {
+      "message": "Tätä arvoa ei sallita ilmalämpöpumpulle. Mitään ei lähetetty."
+    },
+    "aircon_write_not_confirmed": {
+      "message": "Muutos lähetettiin, mutta ilmalämpöpumppu ei ole vielä vahvistanut sitä. Se voi vielä tulla voimaan. En lähettänyt sitä uudelleen; arvo päivittyy seuraavassa luvussa."
+    },
+    "switch_points_aircon_setting_not_allowed": {
+      "message": "Vain nämä asetukset ovat käytettävissä: {settings}. Asetus kirjoitetaan toimintatilana, lämpötilana ja puhaltimen nopeutena, esimerkiksi ”cool 24.0 auto”, tai ”off”."
+    },
+    "switch_points_unit_not_ready": {
+      "message": "Vedenlämmitin hyväksyy tämän aikaohjelman muutokset vain, kun se on päällä, toimii aikaohjelmatilassa ja sillä on aikavyöhyke, kuten valmistajan sovelluksessa. Mitään ei lähetetty."
     }
   },
   "selector": {
     "holiday_period": {
       "options": {
+        "back": "← Takaisin",
         "create": "Uusi loma"
       }
     },
@@ -1441,6 +1894,59 @@
         "discard": "Hylkää keskeneräinen yritys",
         "later": "Jatka myöhemmin"
       }
+    },
+    "local_target": {
+      "options": {
+        "new_plant": "Uusi järjestelmä (yhdyskäytävä ei ole tililläsi)"
+      }
+    },
+    "local_owner": {
+      "options": {
+        "new_entry": "Uusi asennus (vain paikallinen yhteys)"
+      }
+    },
+    "navigation": {
+      "options": {
+        "back": "← Takaisin"
+      }
+    },
+    "switch_points_mode": {
+      "options": {
+        "replace_week": "Korvaa koko viikko",
+        "replace_days": "Korvaa vain annetut päivät"
+      }
+    },
+    "switch_point": {
+      "fields": {
+        "day": {
+          "name": "Päivä"
+        },
+        "time": {
+          "name": "Aika"
+        },
+        "level": {
+          "name": "Taso tai lämpötila"
+        }
+      }
+    },
+    "switch_program_value": {
+      "options": {
+        "off": "Pois",
+        "decimal_sign": ","
+      }
+    },
+    "rrc_dhw_level": {
+      "options": {
+        "high": "Korkea",
+        "off": "Pois",
+        "low": "Matala",
+        "eco": "Eco"
+      }
+    },
+    "rrc_point_choice": {
+      "options": {
+        "add": "Lisää kytkentäpiste"
+      }
     }
   },
   "entity": {
@@ -1450,6 +1956,9 @@
       },
       "pool_setpoint_temperature": {
         "name": "Altaan tavoitelämpötila"
+      },
+      "filter_maximum_run_time": {
+        "name": "Suodattimen enimmäiskäyttöaika"
       },
       "heating_temperature": {
         "name": "Lämmityslämpötila"
@@ -1475,6 +1984,36 @@
       "maximum_supply_temperature": {
         "name": "Suurin menolämpötila"
       },
+      "summer_winter_threshold": {
+        "name": "Lopeta lämmitys ulkolämpötilassa"
+      },
+      "cooling_room_setpoint": {
+        "name": "Jäähdytys: huoneen asetusarvo"
+      },
+      "cooling_outdoor_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "circuit_cooling_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "season_cooling_threshold": {
+        "name": "Aloita jäähdytys ulkolämpötilassa"
+      },
+      "season_heating_threshold": {
+        "name": "Lopeta lämmitys ulkolämpötilassa"
+      },
+      "heating_circuit_boost_temperature": {
+        "name": "Boost-lämpötila"
+      },
+      "heating_circuit_boost_duration": {
+        "name": "Boost-kesto"
+      },
+      "away_temperature": {
+        "name": "Poissaolon lämpötila"
+      },
+      "cooling_temperature": {
+        "name": "Jäähdytyslämpötila"
+      },
       "softener_salt_threshold": {
         "name": "Suolahälytysraja"
       },
@@ -1486,6 +2025,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Tunnelmavalon kirkkaus"
+      },
+      "bacon_rac_timer_on": {
+        "name": "Päällekytkentäajastin"
+      },
+      "bacon_rac_timer_off": {
+        "name": "Poiskytkentäajastin"
       },
       "rrc_window_duration": {
         "name": "Avoimen ikkunan kesto"
@@ -1531,6 +2076,69 @@
       },
       "rrc_away_temperature": {
         "name": "Poissaolon lämpötila"
+      },
+      "wallbox_charging_current_limit": {
+        "name": "Latausvirran raja"
+      },
+      "wallbox_supplement_limit": {
+        "name": "Verkosta lisättävä enimmäisteho"
+      },
+      "wallbox_supplement_threshold": {
+        "name": "Aurinkoylijäämän vähimmäismäärä"
+      },
+      "wallbox_filter_time": {
+        "name": "Aurinkolatauksen suodatusaika"
+      },
+      "wallbox_power_limit": {
+        "name": "Tehoraja"
+      },
+      "wallbox_current_limit_l1": {
+        "name": "Virtaraja vaihe L1"
+      },
+      "wallbox_current_limit_l2": {
+        "name": "Virtaraja vaihe L2"
+      },
+      "wallbox_current_limit_l3": {
+        "name": "Virtaraja vaihe L3"
+      },
+      "wallbox_electricity_price": {
+        "name": "Sähkön hinta"
+      },
+      "wallbox_feed_in_price": {
+        "name": "Verkkoon syötön hinta"
+      },
+      "aircon_timer_on": {
+        "name": "Päällekytkentäajastin"
+      },
+      "aircon_timer_off": {
+        "name": "Poiskytkentäajastin"
+      },
+      "hybrid_electricity_price": {
+        "name": "Sähkön hinta"
+      },
+      "hybrid_gas_price": {
+        "name": "Kaasun hinta"
+      },
+      "hybrid_oil_price": {
+        "name": "Öljyn hinta"
+      },
+      "hybrid_feed_in_price": {
+        "name": "Verkkoon syötön hinta"
+      },
+      "silent_mode_power_reduction": {
+        "name": "Hiljainen tila: tehon alennus"
+      },
+      "silent_mode_start_time": {
+        "name": "Hiljainen tila: alkamisaika"
+      },
+      "silent_mode_stop_time": {
+        "name": "Hiljainen tila: päättymisaika"
+      },
+      "low_noise_duration": {
+        "name": "Hiljainen käyttö: kesto"
+      },
+      "pool_heat_source_setpoint": {
+        "name": "Altaan tavoitelämpötila"
       }
     },
     "select": {
@@ -1585,15 +2193,38 @@
           "auto": "Automaattinen"
         }
       },
-      "ventilation_exhaust_fan_level": {
-        "name": "Poistopuhaltimen taso",
+      "ventilation_operation_mode": {
+        "name": "Ilmanvaihdon käyttötila",
         "state": {
+          "time": "Aikaohjelma",
           "off": "Pois",
           "min": "Puhallintaso 1",
           "red": "Puhallintaso 2",
           "nom": "Puhallintaso 3",
           "max": "Puhallintaso 4",
-          "dem": "Tarvepohjainen"
+          "dem": "Tarvepohjainen",
+          "party": "Juhlat",
+          "power_vent": "Tehotuuletus",
+          "fireplace": "Takka",
+          "fall_asleep": "Nukahtaminen",
+          "freefct": "Vapaa toiminto"
+        }
+      },
+      "summer_winter_switching": {
+        "name": "Kesä-/talvivaihto",
+        "state": {
+          "automatic": "Automaattinen",
+          "forced": "Vain lämmitys",
+          "cooling": "Vain jäähdytys",
+          "off": "Pois"
+        }
+      },
+      "cooling_operation_mode": {
+        "name": "Jäähdytys: käyttötila",
+        "state": {
+          "off": "Pois",
+          "manual": "Manuaalinen",
+          "auto": "Automaattinen"
         }
       },
       "rrc_user_mode": {
@@ -1663,6 +2294,57 @@
           "a": "Ohjelma A",
           "b": "Ohjelma B"
         }
+      },
+      "wallbox_charging_strategy": {
+        "name": "Lataustila",
+        "state": {
+          "manual": "Normaali",
+          "solar": "Aurinko"
+        }
+      },
+      "aircon_quick_air_flow": {
+        "name": "Kohdistettu ilmavirta",
+        "state": {
+          "off": "Pois",
+          "on": "Päällä",
+          "top_left": "Ylhäällä vasemmalla",
+          "top_center": "Ylhäällä keskellä",
+          "top_right": "Ylhäällä oikealla",
+          "bottom_left": "Alhaalla vasemmalla",
+          "bottom_center": "Alhaalla keskellä",
+          "bottom_right": "Alhaalla oikealla"
+        }
+      },
+      "aircon_active_schedule": {
+        "name": "Aktiivinen aikaohjelma",
+        "state": {
+          "program1": "Ohjelma 1",
+          "program2": "Ohjelma 2",
+          "program3": "Ohjelma 3",
+          "program4": "Ohjelma 4",
+          "program5": "Ohjelma 5",
+          "program6": "Ohjelma 6",
+          "program7": "Ohjelma 7",
+          "program8": "Ohjelma 8",
+          "program9": "Ohjelma 9"
+        }
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridisäätöstrategia",
+        "state": {
+          "cost": "Kustannusoptimoitu",
+          "max_renewable_share": "Lämpöpumppuoptimoitu",
+          "heat_pump_preferred": "Lämpöpumppu ensisijainen",
+          "environment": "Ilmastoystävällisin",
+          "boiler_only": "Vain kattila",
+          "bivalent_alternative": "Bivalentti vaihtoehtoinen"
+        }
+      },
+      "low_noise_mode": {
+        "name": "Hiljaisen käytön tila"
+      },
+      "pool_additional_heater_mode": {
+        "name": "Altaan käyttötila"
       }
     },
     "switch": {
@@ -1674,6 +2356,15 @@
       },
       "away_mode": {
         "name": "Poissa-tila"
+      },
+      "heating_circuit_window_detection": {
+        "name": "Avoimen ikkunan tunnistus"
+      },
+      "heating_circuit_setpoint_optimization": {
+        "name": "Asetusarvon optimointi"
+      },
+      "heating_circuit_boost": {
+        "name": "Boost"
       },
       "softener_holiday_mode": {
         "name": "Lomatila"
@@ -1714,6 +2405,12 @@
       "rrc_child_lock": {
         "name": "Lapsilukko"
       },
+      "rrc_auto_away": {
+        "name": "Automaattinen poissaolo"
+      },
+      "rrc_notification_light": {
+        "name": "Ilmoitusvalo"
+      },
       "rrc_extra_dhw": {
         "name": "Lisälämmin käyttövesi"
       },
@@ -1728,6 +2425,42 @@
       },
       "rrc_fireplace": {
         "name": "Takkatoiminto"
+      },
+      "wallbox_boost": {
+        "name": "Boost"
+      },
+      "wallbox_solar_supplement": {
+        "name": "Verkosta lisäys aurinkolatauksessa"
+      },
+      "wallbox_home_battery_priority": {
+        "name": "Suosi kotiakkua"
+      },
+      "wallbox_current_limiter": {
+        "name": "Virranrajoitin"
+      },
+      "wallbox_power_limiter": {
+        "name": "Tehonrajoitin"
+      },
+      "wallbox_locked": {
+        "name": "Latausasema lukittu"
+      },
+      "aircon_full_power": {
+        "name": "Täysi teho"
+      },
+      "aircon_sleep": {
+        "name": "Yötila"
+      },
+      "aircon_setback_8": {
+        "name": "Jäätymisenestolämmitys (8 °C)"
+      },
+      "aircon_setback_10": {
+        "name": "Jäätymisenestolämmitys (10 °C)"
+      },
+      "aircon_air_purification": {
+        "name": "Ilmanpuhdistus"
+      },
+      "aircon_schedule_enabled": {
+        "name": "Aikaohjelma käytössä"
       }
     },
     "sensor": {
@@ -1781,6 +2514,55 @@
       },
       "estimated_energy": {
         "name": "Energia (arvioitu nykyisestä tehosta)"
+      },
+      "calculated_activity": {
+        "name": "Toiminta (laskettu)",
+        "state": {
+          "heating": "Lämmitys",
+          "cooling": "Jäähdytys",
+          "defrosting": "Sulatus",
+          "idle": "Joutokäynti",
+          "off": "Pois"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Viimeisin sulatus (laskettu)"
+      },
+      "calculated_defrost_count": {
+        "name": "Sulatusten määrä (laskettu)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Sulatusaika yhteensä (laskettu)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Sulatuksessa otettu lämpö (laskettu)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Sähkö sulatuksen aikana (laskettu)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettolämpö (laskettu)"
+      },
+      "calculated_last_regeneration": {
+        "name": "Viimeisin regenerointi (laskettu)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Keskimääräinen käyntiaika käynnistystä kohden, lämmitys (laskettu)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Meno yli asetusarvon (laskettu)"
+      },
+      "calculated_cop": {
+        "name": "Nykyinen COP (laskettu)"
+      },
+      "calculated_performance_factor": {
+        "name": "Lämpökerroin (laskettu)"
+      },
+      "calculated_primary_spread": {
+        "name": "Ensiöpiirin lämpötilaero (laskettu)"
+      },
+      "calculated_brine_spread": {
+        "name": "Liuoksen lämpötilaero (laskettu)"
       },
       "heating_switch_program": {
         "name": "Lämmityksen aikaohjelma",
@@ -1962,11 +2744,11 @@
           "none": "Ei mitään",
           "ch": "Lämmitys",
           "dhw": "Lämmin käyttövesi",
-          "frost": "Pakkassuojaus",
+          "frost": "Pakkasalue",
           "ch_dhw": "Lämmitys ja lämmin käyttövesi",
-          "ch_frost": "Lämmitys ja pakkassuojaus",
-          "dhw_frost": "Lämmin käyttövesi ja pakkassuojaus",
-          "ch_dhw_frost": "Lämmitys, lämmin käyttövesi ja pakkassuojaus"
+          "ch_frost": "Lämmitys ja pakkasalue",
+          "dhw_frost": "Lämmin käyttövesi ja pakkasalue",
+          "ch_dhw_frost": "Lämmitys, lämmin käyttövesi ja pakkasalue"
         }
       },
       "compressor_status": {
@@ -2160,6 +2942,9 @@
       "heat_generator": {
         "name": "Lämmönlähde"
       },
+      "outdoor_unit_software_version": {
+        "name": "Ulkoyksikön ohjelmistoversio"
+      },
       "pointt_api_requests_total": {
         "name": "Pilvipyynnöt yhteensä"
       },
@@ -2197,6 +2982,24 @@
       },
       "bacon_purifier_pm2_5": {
         "name": "PM2.5"
+      },
+      "bacon_rac_energy_heating": {
+        "name": "Sähköenergia yhteensä (lämmitys)"
+      },
+      "bacon_rac_energy_cooling": {
+        "name": "Sähköenergia yhteensä (jäähdytys)"
+      },
+      "bacon_rac_energy_dry": {
+        "name": "Sähköenergia yhteensä (kuivaus)"
+      },
+      "bacon_rac_energy_fan": {
+        "name": "Sähköenergia yhteensä (vain puhallin)"
+      },
+      "bacon_rac_energy_heat_output_heating": {
+        "name": "Tuotettu lämpöenergia yhteensä (lämmitys)"
+      },
+      "bacon_rac_energy_heat_output_cooling": {
+        "name": "Tuotettu lämpöenergia yhteensä (jäähdytys)"
       },
       "bacon_purifier_tvoc": {
         "name": "TVOC-arvo"
@@ -2257,6 +3060,9 @@
       "wallbox_energy": {
         "name": "Ilmoitettu ladattu energia"
       },
+      "wallbox_energy_total": {
+        "name": "Ladattu energia yhteensä"
+      },
       "wallbox_duration": {
         "name": "Aktiivinen latausaika"
       },
@@ -2276,6 +3082,24 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Laitteiston virtaraja"
+      },
+      "wallbox_history_last_session_start": {
+        "name": "Viimeisen latauksen alku"
+      },
+      "wallbox_history_last_session_end": {
+        "name": "Viimeisen latauksen loppu"
+      },
+      "wallbox_history_last_session_duration": {
+        "name": "Viimeisen latauksen kesto"
+      },
+      "wallbox_history_last_session_energy": {
+        "name": "Viimeisen latauksen energia"
+      },
+      "wallbox_history_month_grid_energy": {
+        "name": "Ladattu verkosta tässä kuussa"
+      },
+      "wallbox_history_month_solar_energy": {
+        "name": "Ladattu aurinkoenergialla tässä kuussa"
       },
       "smart_grid_mode": {
         "name": "Älyverkkotila",
@@ -2341,6 +3165,17 @@
           "startup_inprogress": "Käynnissä"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Lämpimän käyttöveden lomatila",
+        "state": {
+          "none": "Ei mitään",
+          "auto_sat": "Automaattinen (AUTO_SAT)",
+          "off": "Pois",
+          "on_eco": "Päällä – eco",
+          "on_low": "Päällä – matala",
+          "on_high": "Päällä – korkea"
+        }
+      },
       "signal_true_false": {
         "name": "Tila",
         "state": {
@@ -2354,6 +3189,12 @@
             "name": "Mittausalue",
             "state": {
               "below": "Mittausalueen alapuolella"
+            }
+          },
+          "reported_state": {
+            "name": "Ilmoitettu tila",
+            "state": {
+              "low_flow": "Virtaama liian pieni mitattavaksi"
             }
           }
         }
@@ -2398,6 +3239,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Venttiilin hiljainen käyttö"
+      },
+      "rrc_coming_home_prediction": {
+        "name": "Kotiinpaluun ennuste"
+      },
+      "rrc_presence_sensitivity": {
+        "name": "Läsnäolotunnistimen asetus"
+      },
+      "rrc_solar_total_yield": {
+        "name": "Aurinkotuotto yhteensä"
+      },
+      "rrc_hot_water_system": {
+        "name": "Käyttövesijärjestelmä"
       },
       "rrc_thermal_disinfection_result": {
         "name": "Lämpödesinfioinnin tulos"
@@ -2445,6 +3298,262 @@
       },
       "rrc_update_state": {
         "name": "Laiteohjelmistopäivityksen tila"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Huonelämpötila"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktiivinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Manuaalinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Väliaikainen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Lämmityksen käyttötila"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Valittu lämmitysaikaohjelma"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Aseta huonelämpötila"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Aseta aktiivinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Aseta manuaalinen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Aseta väliaikainen lämmityksen asetusarvo"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Aseta lämmityksen käyttötila"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Aseta valittu lämmitysaikaohjelma"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Lämpöpumppu: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Lämpöpumppu: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Lämpöpumppu: sähkö jäähdytykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Kattila: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Kattila: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Sähkövastus: sähkö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Sähkövastus: sähkö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Tuotettu aurinkosähkö (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Lämpöpumppu: lämpö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Lämpöpumppu: lämpö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Lämpöpumppu: jäähdytysenergia (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Kattila: lämpö lämmitykseen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Kattila: lämpö lämpimään käyttöveteen (kWh, ei vahvistettu)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Kaasu: lämmitykseen (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Kaasu: lämpimään käyttöveteen (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Ulkolämpötilan vuorokausikeskiarvo (ei vahvistettu)"
+      },
+      "name_part_low_salt": {
+        "name": "Vähän suolaa"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Lämpimän käyttöveden laitteen tyyppi"
+      },
+      "name_part_mode_heating": {
+        "name": "Lämmitys"
+      },
+      "name_part_mode_cooling": {
+        "name": "Jäähdytys"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Väliaikainen asetusarvo"
+      },
+      "name_part_heating_temperature": {
+        "name": "Lämmityslämpötila"
+      },
+      "name_part_setback_temperature": {
+        "name": "Alennuslämpötila"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Eco+-käynnistysraja"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Mukavuuden käynnistysraja"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Eco-käynnistysraja"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Pois-tason asetusarvo"
+      },
+      "name_part_schedule_name": {
+        "name": "Aikaohjelman {suffix} nimi"
+      },
+      "name_part_software_update": {
+        "name": "Ohjelmistopäivitys"
+      },
+      "name_part_heat_source_type": {
+        "name": "Lämmönlähteen tyyppi"
+      },
+      "name_part_consumption_total": {
+        "name": "Yhteensä"
+      },
+      "name_part_consumption_heating": {
+        "name": "Lämmitys"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Lämmin käyttövesi"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Jäähdytys"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Tuotettu jäähdytysenergia"
+      },
+      "tariff_id": {
+        "name": "Tariffitunnus"
+      },
+      "cooling_switch_program": {
+        "name": "Jäähdytyksen aikaohjelma",
+        "state": {
+          "on": "Jäähdytys",
+          "off": "Pois"
+        }
+      },
+      "ventilation_switch_program": {
+        "name": "Ilmanvaihdon aikaohjelma",
+        "state": {
+          "min": "Minimi",
+          "red": "Alennettu",
+          "nom": "Nimellinen",
+          "max": "Maksimi",
+          "dem": "Tarveohjattu",
+          "off": "Pois"
+        }
+      },
+      "absolute_switch_program": {
+        "name": "Aikaohjelma (lämpötilat)"
+      },
+      "wddw2_switch_program": {
+        "name": "Lämpimän käyttöveden aikaohjelma (lämpötilat)"
+      },
+      "name_part_program_cooling": {
+        "name": "Jäähdytyksen aikaohjelma"
+      },
+      "name_part_program_zone_heating": {
+        "name": "Lämmityksen aikaohjelma"
+      },
+      "name_part_program_zone_cooling": {
+        "name": "Jäähdytyksen aikaohjelma"
+      },
+      "name_part_program_ventilation": {
+        "name": "Ilmanvaihdon aikaohjelma"
+      },
+      "name_part_program_hot_water": {
+        "name": "Lämpimän käyttöveden aikaohjelma"
+      },
+      "wallbox_external_meter": {
+        "name": "Ulkoinen mittari",
+        "state": {
+          "disconnected": "Ei yhdistetty",
+          "connected": "Yhdistetty",
+          "error": "Virhe"
+        }
+      },
+      "wallbox_external_meter_maximum_current": {
+        "name": "Ulkoisen mittarin enimmäisvirta"
+      },
+      "wallbox_currency": {
+        "name": "Valuuttasymboli"
+      },
+      "wallbox_limiter": {
+        "name": "Rajoittaja",
+        "state": {
+          "none": "Ei mikään",
+          "no_car": "Ei ajoneuvoa",
+          "derating": "Tehon alennus",
+          "key": "Avainkytkin",
+          "paragraph_14a": "Verkkoyhtiön ohjaus (§14a)",
+          "app": "Sovellus",
+          "web": "Verkkokäyttöliittymä",
+          "energy_manager": "Energianhallinta",
+          "modbus_tcp": "Modbus TCP",
+          "ocpp": "OCPP",
+          "load_balancer": "Kuormantasaus",
+          "watchdog": "Watchdog",
+          "solar": "Aurinkoylijäämä",
+          "dynamic_load_management": "Dynaaminen kuormanhallinta",
+          "static_load_management": "Staattinen kuormanhallinta",
+          "meter_fail_safe": "Mittarivian varmistus",
+          "external_limit": "Ulkoinen rajoitus"
+        }
+      },
+      "wallbox_energy_manager": {
+        "name": "Energianhallinta",
+        "state": {
+          "inactive": "Ei käytössä",
+          "active_heating": "Käytössä (lämmitys)",
+          "active_hot_water": "Käytössä (lämmin vesi)",
+          "active_energy_manager": "Ohjaa latausasemaa"
+        }
+      },
+      "aircon_switch_program": {
+        "name": "Aikaohjelma {number}",
+        "state": {
+          "off": "Pois",
+          "auto": "Automaattinen",
+          "cool": "Jäähdytys",
+          "heat": "Lämmitys",
+          "dry": "Kuivaus",
+          "fan_only": "Vain puhallin"
+        }
+      },
+      "name_part_program_aircon": {
+        "name": "Aikaohjelma {number}"
+      },
+      "hybrid_control_strategy": {
+        "name": "Hybridisäätöstrategia",
+        "state": {
+          "cost": "Kustannusoptimoitu",
+          "max_renewable_share": "Lämpöpumppuoptimoitu",
+          "heat_pump_preferred": "Lämpöpumppu ensisijainen",
+          "environment": "Ilmastoystävällisin",
+          "boiler_only": "Vain kattila",
+          "bivalent_alternative": "Bivalentti vaihtoehtoinen"
+        }
+      },
+      "gateway_clock_deviation": {
+        "name": "Yhdyskäytävän kellon poikkeama (laskettu)"
       }
     },
     "binary_sensor": {
@@ -2472,6 +3581,9 @@
       },
       "system_fault": {
         "name": "Järjestelmävika"
+      },
+      "calculated_defrost_active": {
+        "name": "Sulatus käynnissä (laskettu)"
       },
       "bacon_connectivity": {
         "name": "Laiteyhteys"
@@ -2515,6 +3627,12 @@
       "rrc_valve_problem": {
         "name": "Venttiilin ongelma"
       },
+      "rrc_coming_home": {
+        "name": "Kotiinpaluu odotettavissa"
+      },
+      "rrc_hydraulic_balancing": {
+        "name": "Hydraulinen tasapainotus"
+      },
       "rrc_locking_error": {
         "name": "Kuittausta vaativa vika"
       },
@@ -2526,6 +3644,36 @@
       },
       "rrc_refill_needed": {
         "name": "Täyttö tarpeen"
+      },
+      "primary_flow_below_range": {
+        "name": "Ensiövirtaama mittausalueen alapuolella"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Lämmityspiirin 1 virtaama mittausalueen alapuolella (PC1)"
+      },
+      "variable_tariff_active": {
+        "name": "Vaihtuva tariffi käytössä"
+      },
+      "wallbox_boost_active": {
+        "name": "Boost käytössä"
+      },
+      "wallbox_grid_friendly_input": {
+        "name": "Verkko-ohjattu tulo käytössä"
+      },
+      "wallbox_grid_friendly_configured": {
+        "name": "Verkko-ohjattu lataus määritetty"
+      },
+      "wallbox_grid_friendly_active": {
+        "name": "Verkko-ohjattu lataus käytössä"
+      },
+      "wallbox_relays_available": {
+        "name": "Releet käytettävissä"
+      },
+      "wallbox_authentication_required": {
+        "name": "Tunnistautuminen vaaditaan"
+      },
+      "aircon_solar_operation": {
+        "name": "Aurinkokäyttö"
       }
     },
     "calendar": {
@@ -2552,6 +3700,16 @@
             }
           }
         }
+      },
+      "calculated_defrost": {
+        "name": "Sulatus (laskettu)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Sulatus päättynyt"
+            }
+          }
+        }
       }
     },
     "button": {
@@ -2566,6 +3724,15 @@
       },
       "rrc_override_advance": {
         "name": "Aikaista seuraavaa kytkentäpistettä"
+      },
+      "wallbox_start_charging": {
+        "name": "Aloita lataus"
+      },
+      "wallbox_pause_charging": {
+        "name": "Keskeytä lataus"
+      },
+      "aircon_end_temporary": {
+        "name": "Lopeta tilapäinen muutos"
       }
     },
     "water_heater": {
@@ -2675,6 +3842,54 @@
             }
           }
         }
+      },
+      "pointt_air_conditioner": {
+        "name": "Ilmastointilaite",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automaattinen",
+              "quiet": "Hiljainen",
+              "low": "Matala",
+              "medium": "Keskitaso",
+              "high": "Korkea",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Pois",
+              "on": "Päällä",
+              "auto": "Automaattinen",
+              "swing": "Heilunta",
+              "angle1": "Asento 1",
+              "angle2": "Asento 2",
+              "angle3": "Asento 3",
+              "angle4": "Asento 4",
+              "angle5": "Asento 5"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Pois",
+              "on": "Päällä",
+              "auto": "Automaattinen",
+              "swing": "Heilunta",
+              "left": "Vasen",
+              "center": "Keski",
+              "right": "Oikea",
+              "wide": "Leveä",
+              "ultra_wide": "Erittäin leveä",
+              "fixed": "Kiinteä"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Ei mitään",
+              "eco": "Eco"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2730,6 +3945,38 @@
               "unknown": "Tuntematon"
             }
           }
+        }
+      }
+    },
+    "text": {
+      "switch_program_name": {
+        "name": "Aikaohjelman nimi"
+      },
+      "wallbox_label": {
+        "name": "Näyttönimi"
+      }
+    }
+  },
+  "services": {
+    "set_switch_points": {
+      "name": "Aseta aikaohjelman kytkentäpisteet",
+      "description": "Asettaa lämmitysjärjestelmän yhden tai useamman viikoittaisen aikaohjelman kytkentäpisteet. Ohjelmat luetaan tuoreina ja tarkistetaan järjestelmän ilmoittamia rajoja vasten. Kukin ohjelma lähetetään kerran ja luetaan takaisin; mitään ei toisteta automaattisesti.",
+      "fields": {
+        "mode": {
+          "name": "Tapa",
+          "description": "Korvaa koko viikko tai vain ne päivät, jotka esiintyvät kytkentäpisteissä (muut päivät jäävät sellaisiksi kuin ne luettiin)."
+        },
+        "switch_points": {
+          "name": "Kytkentäpisteet",
+          "description": "Päivä (mo–su), kellonaika (HH:MM, lämmitysjärjestelmän kellon mukaan) ja kunkin kytkentäpisteen taso. Lämpötiloja käyttävässä ohjelmassa taso on luku, esimerkiksi 21.5. Ilmastointilaitteella taso on sen asetus: toimintatila, lämpötila ja puhaltimen nopeus, esimerkiksi cool 24.0 auto, tai off."
+        },
+        "expected": {
+          "name": "Odotetut kytkentäpisteet",
+          "description": "Valinnainen: kytkentäpisteet, jotka ohjelmassa on oltava juuri nyt. Jos siinä on muita (esimerkiksi sovelluksessa muutettuja), mitään ei lähetetä."
+        },
+        "validate_only": {
+          "name": "Vain tarkistus",
+          "description": "Tarkistaa kytkentäpisteet ja vastaa lähettämättä mitään."
         }
       }
     }

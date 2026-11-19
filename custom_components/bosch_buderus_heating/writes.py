@@ -9,7 +9,16 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from functools import lru_cache
 
-from . import rrc, rrc_contract_zone, rrc_contracts
+from . import (
+    circuit_controls,
+    hc_controls_extra,
+    hybrid_controls,
+    rrc,
+    rrc_contract_zone,
+    rrc_contracts,
+    system_controls_extra,
+)
+from .aircon_policies import AIRCON_ENUM_POLICIES, AIRCON_NUMBER_POLICIES
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
     InvalidPayload,
@@ -31,12 +40,17 @@ from .pointt.models import JsonScalar
 from .rrc_contracts import ContractConflict
 from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
+from .ventilation_controls import FILTER_RUN_TIME_POLICY as FILTER_RUN_TIME_POLICY
+from .ventilation_controls import (
+    VENTILATION_OPERATION_MODE_POLICY as VENTILATION_OPERATION_MODE_POLICY,
+)
 from .water_softener import softener_capability, softener_schema_issue, softener_unit
 from .write_policies import DEFAULT_READ_BACK_ATTEMPTS as DEFAULT_READ_BACK_ATTEMPTS
 from .write_policies import DEFAULT_READ_BACK_DELAY as DEFAULT_READ_BACK_DELAY
 from .write_policies import GENERIC_CONTEXT as GENERIC_CONTEXT
 from .write_policies import RRC_CONTEXT as RRC_CONTEXT
 from .write_policies import RRC_READ_BACK_DELAYS as RRC_READ_BACK_DELAYS
+from .write_policies import UNCHECKED_CONTEXT as UNCHECKED_CONTEXT
 from .write_policies import ContractRejected as ContractRejected
 from .write_policies import ControlContext as ControlContext
 from .write_policies import EnumWritePolicy as EnumWritePolicy
@@ -48,8 +62,8 @@ from .zone_controls import (
     ZONE_MANUAL_PATTERN,
     ZONE_MODE_PATTERN,
     ZONE_MODES,
+    ZONE_TEMPORARY_PATTERN,
     is_zone_control,
-    is_zone_temporary,
     zone_control_issue,
 )
 
@@ -79,14 +93,26 @@ class ControlLocked(WriteValidationError):
 
 class ControlUnused(ControlLocked):
     """The controller offers the setting but does not use it now (``used``
-    false); it stays shown and is not written."""
+    false); it stays shown and is not written.
+
+    ``contract``: a room controller's contract setting, whose message names
+    the controller; any other setting gets a general one.
+    """
+
+    def __init__(self, message: str, *, contract: bool = True) -> None:
+        super().__init__(message)
+        self.contract = contract
 
 
+# The zone controls keep entity rules of their own (``zone_control_issue``);
+# their flags decide about each write, on the reading of its own request.
 ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
     ZONE_MODE_PATTERN,
     frozenset({"stringValue"}),
     ZONE_MODES,
     known_only=True,
+    honor_flags=False,
+    write_flags=True,
 )
 # #113: the TC100.2 advertises no allowedValues for userMode; the controller
 # has exactly the two fallback modes.
@@ -98,12 +124,11 @@ RRC_OPERATION_MODE_POLICY = EnumWritePolicy(
     fallback_options=tuple(str(mode) for mode in rrc.FALLBACK_MODES),
     # ZONE-05: no change while the zone is unreachable or in standby.
     value_check=rrc_contract_zone.mode_value_check,
+    # #113: a used but unavailable mode is shown and locked (``mode_locked``).
+    honor_flags=False,
 )
-HEATING_CIRCUIT_OPERATION_MODE_POLICY = EnumWritePolicy(
-    r"^/heatingCircuits/[^/]+/operationMode$",
-    frozenset({"stringValue"}),
-    frozenset({"off", "manual", "auto"}),
-)
+# With the control type rule of the circuit (``circuit_controls``).
+HEATING_CIRCUIT_OPERATION_MODE_POLICY = circuit_controls.OPERATION_MODE_POLICY
 DHW_OPERATION_MODE_POLICY = EnumWritePolicy(
     r"^/dhwCircuits/[^/]+/operationMode$",
     frozenset({"stringValue"}),
@@ -145,18 +170,6 @@ WDDW2_HOLIDAY_POLICY = EnumWritePolicy(
     frozenset({"on", "off"}),
     known_only=True,
 )
-# The exhaust fan levels documented for the local interface; any other
-# advertised level makes the whole control unavailable. Not tested on a
-# ventilation unit yet, so the select is created disabled.
-VENTILATION_FAN_LEVELS = ("off", "min", "red", "nom", "max", "dem")
-VENTILATION_FAN_LEVEL_POLICY = EnumWritePolicy(
-    r"^/ventilation/zone[^/]+/exhaustFanLevel$",
-    frozenset({"stringValue"}),
-    frozenset(VENTILATION_FAN_LEVELS),
-    known_only=True,
-    options_rule="subset",
-    enabled_by_default=False,
-)
 POOL_ENABLED_POLICY = EnumWritePolicy(
     r"^/pool/enabled$",
     frozenset({"stringValue"}),
@@ -188,11 +201,58 @@ STRING_SWITCH_POLICIES = (
 POOL_SETPOINT_POLICY = NumberWritePolicy(
     r"^/pool/setpointTemp$", "C", 1.0, live_step=True
 )
+# The value that ends a temporary setpoint of a heating circuit.
+TEMPORARY_SETPOINT_CLEAR_VALUE = -1.0
+
+
+def _temporary_setpoint_cleared(read: object, requested: JsonScalar) -> bool:
+    """After writing -1, any negative reading shows no temporary setpoint."""
+    return (
+        _values_equal(requested, TEMPORARY_SETPOINT_CLEAR_VALUE)
+        and not isinstance(read, bool)
+        and isinstance(read, int | float)
+        and math.isfinite(read)
+        and read < 0
+    )
+
+
+def _temporary_floor_check(
+    resource: Resource, value: JsonScalar, readings: Mapping[str, Resource]
+) -> str | None:
+    """With an advertised minimum of 0 or below (-1 and 0 end or switch off
+    a temporary setpoint), the manual setpoint's positive minimum in the same
+    unit is the lowest target. The write reads the manual setpoint again in
+    its request (``fresh``), so its current minimum decides."""
+    minimum = resource.metadata.minimum
+    if (
+        minimum is None
+        or minimum > 0
+        or isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or _values_equal(value, TEMPORARY_SETPOINT_CLEAR_VALUE)
+    ):
+        return None
+    manual = readings.get(f"{resource.path.rsplit('/', 1)[0]}/manualRoomSetpoint")
+    if manual is None:
+        return None
+    floor = manual.metadata.minimum
+    if (
+        floor is None
+        or not math.isfinite(floor)
+        or floor <= 0
+        or manual.metadata.unit != resource.metadata.unit
+    ):
+        return None
+    return "write_validation_failed" if value < floor - 1e-7 else None
+
+
 # The temporary target of a heating circuit in the mode auto. Only the
 # circuit's climate entity and its
 # clear button write it, so it has no number of its own and no row in the
 # controls dialog. A value lies within the advertised limits and on the
-# advertised step (0.5 without one), counted from the minimum. Expected,
+# advertised step (0.5 without one), counted from the minimum. The clear
+# value -1 is also written when the limits leave it out, as the
+# manufacturer's app does; any negative reading confirms it. Expected,
 # untested on a real device.
 HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     r"^/heatingCircuits/[^/]+/temporaryRoomSetpoint$",
@@ -200,6 +260,23 @@ HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     0.5,
     strict_grid=True,
     create_entity=False,
+    sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
+    confirm_if=_temporary_setpoint_cleared,
+    value_check=_temporary_floor_check,
+)
+# The temporary target of a ConnectKey zone in the mode auto, by the same
+# rules: only the zone's climate entity and its clear button write it (the
+# value -1 ends it, as the manufacturer's app writes it). Its used and
+# available flags apply. Expected, untested on a real device.
+ZONE_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
+    ZONE_TEMPORARY_PATTERN,
+    "C",
+    0.5,
+    strict_grid=True,
+    create_entity=False,
+    sentinel_value=TEMPORARY_SETPOINT_CLEAR_VALUE,
+    confirm_if=_temporary_setpoint_cleared,
+    value_check=_temporary_floor_check,
 )
 NUMBER_WRITE_POLICIES = (
     # ZONE-02, ZONE-05: no change while away or while the zone is locked.
@@ -208,8 +285,20 @@ NUMBER_WRITE_POLICIES = (
         "C",
         0.5,
         value_check=rrc_contract_zone.manual_value_check,
+        honor_flags=False,
     ),
-    NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5),
+    # The advertised step, else 0.5 as in the manufacturer's app, counted
+    # from the minimum; the flags decide about each write.
+    NumberWritePolicy(
+        ZONE_MANUAL_PATTERN,
+        "C",
+        0.5,
+        live_step=True,
+        strict_grid=True,
+        honor_flags=False,
+        write_flags=True,
+    ),
+    ZONE_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False
     ),
@@ -219,9 +308,7 @@ NUMBER_WRITE_POLICIES = (
         1.0,
         enabled_by_default=False,
     ),
-    NumberWritePolicy(
-        r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 0.5, write_grid=True
-    ),
+    circuit_controls.MANUAL_SETPOINT_POLICY,
     HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/maxFlowTemp$",
@@ -229,12 +316,8 @@ NUMBER_WRITE_POLICIES = (
         1.0,
         enabled_by_default=False,
     ),
-    NumberWritePolicy(
-        r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
-        "C",
-        0.5,
-        write_grid=True,
-    ),
+    # The heating and setback levels, with the level rules of the circuit.
+    circuit_controls.HEATING_LEVEL_POLICY,
     NumberWritePolicy(r"^/dhwCircuits/[^/]+/chargeDuration$", "mins", 15),
     NumberWritePolicy(
         r"^/dhwCircuits/[^/]+/(?:singleChargeSetpoint|temperatureLevels/(?:eco|high|low))$",
@@ -243,6 +326,18 @@ NUMBER_WRITE_POLICIES = (
         write_grid=True,
     ),
     POOL_SETPOINT_POLICY,
+    FILTER_RUN_TIME_POLICY,
+    # Hybrid plants: the energy prices.
+    hybrid_controls.PRICE_POLICY,
+    # Heating circuit settings besides the climate entity (0.9.2).
+    *circuit_controls.NUMBER_POLICIES,
+    # Boost, season thresholds and further circuit settings (0.9.2).
+    *hc_controls_extra.NUMBER_POLICIES,
+    # Silent mode window and power, low-noise duration, pool target of the
+    # heat source (0.9.2).
+    *system_controls_extra.NUMBER_POLICIES,
+    # Air conditioners on a PointT gateway (``/airConditioning``).
+    *AIRCON_NUMBER_POLICIES,
 )
 
 
@@ -430,11 +525,11 @@ class WriteService:
         elif _reads_fresh(resource.path, policy, context):
             resource = await self._client.get_resource(gateway_id, resource.path)
         _validate_number(resource, request, policy, context, related)
-        if _values_equal(resource.value, wire):
+        if _confirms(policy, resource.value, wire):
             if not live:
                 resource = await self._client.get_resource(gateway_id, resource.path)
                 _validate_number(resource, request, policy, context, related)
-            if _values_equal(resource.value, wire):
+            if _confirms(policy, resource.value, wire):
                 return WriteResult(request, resource)
         return await self._async_write(request, resource, policy, context, on_sent)
 
@@ -529,10 +624,12 @@ def _reads_fresh(
 ) -> bool:
     """S5: whether the transaction reads the resource itself before a PUT.
 
-    A zone control always; on an RRC controller every contract setting, so
-    that its flags, limits and value are checked against the controller's
-    current state, not against the reading of the last poll. A caller may
-    pass that current reading as ``current`` instead (the coordinator does).
+    A room controller's zone control always; on an RRC controller every
+    contract setting, so that its flags, limits and value are checked
+    against the controller's current state, not against the reading of the
+    last poll. A caller may pass that current reading as ``current`` instead
+    (the coordinator does; it reads a ConnectKey zone control in the request
+    of its guards).
     """
     return rrc.is_control(path) or (
         _context(context).rrc_plant and rrc_contracts.owns(policy)
@@ -590,7 +687,12 @@ def _validate_enum(
     if rrc.mode_locked(resource) or _locked(resource, policy):
         raise ControlLocked("The controller currently locks this mode")
     if _unused(resource, policy):
-        raise ControlUnused("The controller does not use this setting now")
+        raise ControlUnused(
+            "The controller does not use this setting now",
+            contract=rrc_contracts.owns(policy),
+        )
+    if _not_offered(resource, policy):
+        raise WriteValidationError("The gateway does not offer this setting now")
     if not isinstance(request.value, str) or request.value not in assessment.options:
         raise WriteValidationError("Requested enum value is not currently advertised")
     _run_value_check(policy, resource, request.value, related)
@@ -610,9 +712,17 @@ def _contract_availability_issue(
     rule: no control only when unavailable and not used, a used but
     unavailable setting is shown and locked (``_locked``). The flags come
     from ``rrc.flag_state``; readings are not affected.
+
+    Every other policy follows the same rule unless it has flag rules of
+    its own (``honor_flags``); missing flags change nothing.
     """
     if not rrc_contracts.owns(policy):
-        return None
+        if not policy.honor_flags:
+            return None
+        generic = rrc.flag_state(resource)
+        if generic == "invalid":
+            return "invalid_flags"
+        return "not_available" if generic == "unavailable" else None
     state = rrc.flag_state(resource)
     if state == "invalid":
         return "rrc_unavailable"
@@ -637,12 +747,24 @@ def _locked(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> 
 
 
 def _unused(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> bool:
-    """An available contract setting the controller does not use now: shown,
-    never written (``ControlUnused``)."""
+    """An available setting the gateway does not use now: shown, never
+    written (``ControlUnused``). Every contract setting and every policy
+    with ``honor_flags`` or ``write_flags``."""
     return (
-        rrc_contracts.owns(policy)
+        (rrc_contracts.owns(policy) or policy.honor_flags or policy.write_flags)
         and not policy.unused_writable
         and rrc.flag_state(resource) == "unused"
+    )
+
+
+def _not_offered(
+    resource: Resource, policy: EnumWritePolicy | NumberWritePolicy
+) -> bool:
+    """A policy with ``write_flags``: a setting the gateway does not offer
+    now (``available`` false) or with malformed flags is not written."""
+    return policy.write_flags and rrc.flag_state(resource) in (
+        "unavailable",
+        "invalid",
     )
 
 
@@ -665,7 +787,17 @@ def _validate_number(
     if _locked(resource, policy):
         raise ControlLocked("The controller currently locks this setting")
     if _unused(resource, policy):
-        raise ControlUnused("The controller does not use this setting now")
+        raise ControlUnused(
+            "The controller does not use this setting now",
+            contract=rrc_contracts.owns(policy),
+        )
+    if _not_offered(resource, policy):
+        raise WriteValidationError("The gateway does not offer this setting now")
+    if _sentinel_outside_limits(resource, policy, request.value):
+        # The policy's command value outside the limits: no limit or grid
+        # check applies to it, the contract rule still does.
+        _run_value_check(policy, resource, request.value, related)
+        return
     reason = _number_value_rejection_reason(resource, request.value)
     if reason is not None:
         raise WriteValidationError(f"Numeric control validation failed: {reason}")
@@ -712,6 +844,29 @@ def _validate_number(
     _run_value_check(policy, resource, request.value, related)
 
 
+def _sentinel_outside_limits(
+    resource: Resource, policy: NumberWritePolicy, value: object
+) -> bool:
+    """Whether ``value`` is the policy's command value and lies outside the
+    advertised limits (both limits present)."""
+    sentinel = policy.sentinel_value
+    minimum, maximum = resource.metadata.minimum, resource.metadata.maximum
+    return (
+        sentinel is not None
+        and minimum is not None
+        and maximum is not None
+        and _values_equal(value, sentinel)
+        and not minimum <= sentinel <= maximum
+    )
+
+
+def sentinel_outside_limits(resource: Resource, policy: NumberWritePolicy) -> bool:
+    """Whether the policy's command value lies outside the resource's limits."""
+    return policy.sentinel_value is not None and _sentinel_outside_limits(
+        resource, policy, policy.sentinel_value
+    )
+
+
 def _zone_readback_valid(resource: Resource) -> bool:
     """Confirm a valid zone sample, even if its write permission was removed."""
     return zone_control_issue(resource) is None and (
@@ -727,9 +882,11 @@ def _number_rejection_reason(
     metadata = resource.metadata
     if not metadata.writable:
         return "not_writable"
-    if metadata.resource_type != "floatValue":
+    if metadata.resource_type not in policy.resource_types:
         return "unsupported_resource_type"
-    if policy.accepted_units is not None:
+    if policy.free_unit:
+        pass
+    elif policy.accepted_units is not None:
         if (metadata.unit or "") not in policy.accepted_units:
             return "unsupported_unit"
     elif policy.unit in {"%", "d"}:
@@ -752,6 +909,10 @@ def _number_rejection_reason(
     if minimum > maximum:
         return "inverted_bounds"
     if not _plausible_bounds(minimum, maximum, metadata.unit, policy.unit):
+        return "implausible_bounds"
+    if policy.plausible_range is not None and not (
+        policy.plausible_range[0] <= minimum and maximum <= policy.plausible_range[1]
+    ):
         return "implausible_bounds"
     if (policy.live_step or policy.strict_grid) and (
         not metadata.step_size_valid
@@ -944,8 +1105,6 @@ def assess_control(
         if softener_capability(resource.path) is not None
         else None
     )
-    if is_zone_temporary(resource.path):
-        return ControlAssessment(None, "zone_override_lifecycle_unverified")
     if (blocked := rrc_contracts.blocked_reason(resource.path)) is not None:
         return ControlAssessment(None, blocked)
     if rrc.is_control(resource.path):
@@ -965,6 +1124,13 @@ def assess_control(
         )
     except ContractConflict:
         return ControlAssessment(None, "rrc_contract_conflict")
+    if policy in circuit_controls.GENERIC_ONLY_POLICIES:
+        if _context(context).rrc_plant:
+            # A room controller's circuit settings follow its contracts only.
+            return ControlAssessment(None, "room_controller_contract_only")
+        if not _context(context).room_controller_checked:
+            # Not before the gateway is known not to be a room controller.
+            return ControlAssessment(None, "room_controller_check_pending")
     if policy is not None:
         schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):
@@ -1030,11 +1196,21 @@ _ENUM_POLICIES = (
     SILENT_MODE_POLICY,
     SEASON_SWITCHING_POLICY,
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
-    VENTILATION_FAN_LEVEL_POLICY,
+    VENTILATION_OPERATION_MODE_POLICY,
     SOFTENER_REGENERATION_POLICY,
     # Z1: the active weekly program of a heating circuit (A/B).
     ACTIVE_SWITCH_PROGRAM_POLICY,
+    # Hybrid plants: the control strategy.
+    hybrid_controls.STRATEGY_POLICY,
     *STRING_SWITCH_POLICIES,
+    # The summer/winter switching of a heating circuit (0.9.2).
+    *circuit_controls.ENUM_POLICIES,
+    # Cooling mode, boost and further switches of a heating circuit (0.9.2).
+    *hc_controls_extra.ENUM_POLICIES,
+    # Low-noise operation mode and the pool mode of the auxiliary heater.
+    *system_controls_extra.ENUM_POLICIES,
+    # Air conditioners on a PointT gateway (``/airConditioning``).
+    *AIRCON_ENUM_POLICIES,
 )
 
 
@@ -1094,9 +1270,17 @@ def _validate_write_response(
 def confirms_value(
     policy: EnumWritePolicy | NumberWritePolicy | None, read: object, requested: object
 ) -> bool:
-    """Whether a reading shows the requested value (or an equivalent read)."""
-    return _values_equal(read, requested) or (
-        isinstance(policy, EnumWritePolicy) and policy.confirms(read, requested)
+    """Whether a reading shows the requested value (or an equivalent read,
+    or one the policy's ``confirm_if`` accepts)."""
+    return (
+        _values_equal(read, requested)
+        or (isinstance(policy, EnumWritePolicy) and policy.confirms(read, requested))
+        or (
+            isinstance(policy, NumberWritePolicy)
+            and policy.confirm_if is not None
+            and isinstance(requested, str | int | float | bool)
+            and policy.confirm_if(read, requested)
+        )
     )
 
 
