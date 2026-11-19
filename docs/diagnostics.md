@@ -23,8 +23,11 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   last start). See [entities](entities.md).
 - `bacon` (additional cloud devices; per connection under `connections[].bacon`),
   new keys without identifiers or readings:
-  `renewal_grace` (`window_s` 90, `active`, `expired`: how often the grace window
-  of a planned token renewal ran out with a device still carried over),
+  `cloud_hold` (the limits `grace_cycles` 3 and `grace_max_seconds` 300,
+  `holding`, `failed_cycles_in_a_row`, `holds_started`, `holds_expired` and
+  `carried_over_expired`: how often the hold ran out with a device still carried
+  over; it replaces `renewal_grace` of 0.9.2, whose 90-second window of a planned
+  token renewal is part of the same hold now),
   `live_report` (`reports_sent`; `errors` by class `4xx`, `5xx`, `network`,
   `paused`, `other`; `disabled_for_connection`, `disabled_total`;
   `last_report_age`) for the active-client report, and `availability` per device
@@ -632,7 +635,13 @@ the failed refreshes in a row, and how many holds started and expired) and
 `last_failed_refresh` (when the last refresh with failures ran, whether the
 whole refresh failed and its category, and for each failed reading, at most ten,
 the path template, HTTP status, category and count; no identifiers, no
-values). The report stays until a later refresh fails again. See
+values). The report stays until a later refresh fails again. The air
+conditioner (`pointt_air_conditioners[]`) and wallbox (`wallboxes[]`) reports
+of a PointT gateway and each additional cloud connection (`bacon`) add their own
+`cloud_hold` with the same keys (`grace_cycles`, `grace_max_seconds`,
+`holding`, `failed_cycles_in_a_row`, `holds_started`, `holds_expired`); the
+room controller entities (zones, radio devices, boost, hot water, program
+selection) use the `cloud_hold` of the gateway `runtime`. See
 [a short cloud blip](reading-validity.md#a-short-cloud-blip).
 
 Schema 23 adds aggregate Midea Climate Series identification and stream

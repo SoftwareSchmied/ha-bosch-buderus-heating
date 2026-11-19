@@ -52,7 +52,14 @@ rate-limit brake. Diagnostics create no extra requests.
 
 A local 403, 404, 406 or malformed object withdraws only that section. It is
 retried at its regular interval. Authentication, connection, service and
-rate-limit failures stop the wallbox cycle and withdraw its readings.
+rate-limit failures stop the wallbox cycle. Over a short blip (no connection,
+timeout, server error, request limit) the entities keep showing their last
+objects and single values while at most three cycles in a row failed and the
+outage began less than five minutes ago; a change is refused during that time
+and nothing is sent. After that, and at once after a rejected sign-in, a
+stopped source, an unexpected error or a 403/404/406 answer, the readings are
+withdrawn (see [a short cloud blip](reading-validity.md#a-short-cloud-blip);
+expected, untested on a real installation).
 Authentication requests reauthentication. A temporarily unavailable wallbox
 does not prevent a mixed heating account from loading. Readings expire after
 twice their section interval; this measures response freshness, not a
@@ -273,8 +280,16 @@ zusätzlich ab.
 
 403, 404, 406 und fehlerhafte Objekte betreffen nur ihren Abschnitt. Beim
 nächsten regulären Termin wird dieser erneut geprüft. Anmelde-, Verbindungs-,
-Dienst- und Anfragelimitfehler beenden den Wallbox-Durchlauf und machen seine
-Anzeigen unverfügbar. Anmeldefehler lösen eine erneute Anmeldung aus. Eine
+Dienst- und Anfragelimitfehler beenden den Wallbox-Durchlauf. Bei einer kurzen
+Störung (keine Verbindung, Zeitüberschreitung, Serverfehler, Anfragelimit)
+zeigen die Entitäten ihre letzten Objekte und Einzelwerte weiter, solange
+höchstens drei Durchläufe in Folge scheiterten und der Ausfall weniger als
+fünf Minuten zurückliegt; eine Änderung wird in dieser Zeit abgelehnt und
+nichts gesendet. Danach, und sofort bei abgelehnter Anmeldung, gestoppter
+Quelle, unerwartetem Fehler oder einer 403/404/406-Antwort, sind die Anzeigen
+unverfügbar (siehe [kurze Cloud-Störung](reading-validity.md#a-short-cloud-blip);
+erwartet, ungetestet an einer echten Anlage).
+Anmeldefehler lösen eine erneute Anmeldung aus. Eine
 vorübergehend nicht erreichbare Wallbox verhindert nicht das Laden eines
 gemischten Kontos mit Heizung. Nach zweimal dem jeweiligen Abfrageintervall
 gelten Antworten als veraltet. Das beschreibt den Empfang der Antwort und

@@ -6,7 +6,10 @@ calculated value into ``unavailable`` for a minute, with a gap in the long-term
 statistics and an "unavailable" trigger for automations, although nothing
 changed at the plant (H-B3-2).
 
-The coordinator therefore keeps this state: while at most ``GRACE_CYCLES``
+The same rules hold for every cloud family: the heating coordinator (generic
+controls, room controllers, zones), the air conditioner and wallbox
+coordinators of a PointT gateway and the separately connected cloud devices.
+Each keeps this state: while at most ``GRACE_CYCLES``
 refreshes in a row failed, and the outage began less than ``GRACE_MAX_SECONDS``
 ago, entities that need a current cloud cycle show their last values instead.
 Afterwards they are ``unavailable`` as before. The hold only concerns the
@@ -41,6 +44,7 @@ class CloudHold:
     __slots__ = (
         "_cancelled",
         "_counted_expiry",
+        "_planned",
         "expired",
         "failures",
         "since",
@@ -52,6 +56,7 @@ class CloudHold:
         self.since: float | None = None
         self._cancelled = False
         self._counted_expiry = False
+        self._planned = False
         # Holds begun, and holds that ended by their limit without recovery.
         self.started = 0
         self.expired = 0
@@ -64,9 +69,26 @@ class CloudHold:
         self.failures += 1
         self._count_expiry(now)
 
+    def begin(self, now: float) -> None:
+        """Start the outage without a failure (a planned reconnect).
+
+        The time limit counts from here; the failed attempts that follow are
+        counted as usual.
+        """
+        if self.since is None:
+            self.since = now
+            self.started += 1
+        self._planned = True
+
     def cancel(self) -> None:
         """No hold for the rest of this outage (an unexpected error)."""
         self._cancelled = True
+
+    def expire(self) -> None:
+        """The time limit ran out between two cycles (a timer): count it."""
+        if self.since is not None and not self._counted_expiry:
+            self._counted_expiry = True
+            self.expired += 1
 
     def recovered(self) -> None:
         """A refresh answered: the next failure starts a new outage."""
@@ -74,10 +96,15 @@ class CloudHold:
         self.since = None
         self._cancelled = False
         self._counted_expiry = False
+        self._planned = False
 
     def holding(self, now: float) -> bool:
         """Whether the last values are shown for the current failed refresh."""
-        if self.since is None or self._cancelled or self.failures < 1:
+        if (
+            self.since is None
+            or self._cancelled
+            or (self.failures < 1 and not self._planned)
+        ):
             return False
         if self.failures > GRACE_CYCLES or now - self.since > GRACE_MAX_SECONDS:
             self._count_expiry(now)

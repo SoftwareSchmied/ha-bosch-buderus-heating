@@ -15,6 +15,7 @@ from uuid import uuid4
 
 import aiomqtt
 
+from ..cloud_hold import GRACE_MAX_SECONDS, CloudHold
 from . import availability_report, dhw, dry, purifier, rac
 from .client import BaconClient
 from .live_report import DISABLING, LiveReport
@@ -40,9 +41,14 @@ SENSOR_STALE_AFTER = 3600
 RESYNC_INTERVAL = 300
 # Like the HomeCom Easy app in the foreground, report as an active client.
 LIVE_REPORT_INTERVAL = 300
-# After a planned token renewal the devices stay shown for this long; a failed
-# reconnect ends it at once.
-RENEWAL_GRACE = 90.0
+# Over a planned token renewal or a short loss of the connection the devices
+# stay shown by the rules of every cloud family (``cloud_hold``): at most
+# three failed connections in a row and five minutes since the connection was
+# lost, never after a rejected sign-in, a changed account, a stopped source or
+# an unexpected error.
+HOLD_FAILURES = frozenset(
+    {"connection", "service_unavailable", "rate_limited", "paused"}
+)
 MAINTENANCE_INTERVAL = 60
 # A planned token renewal reconnects at once, but never more often than this.
 RENEWAL_MIN_INTERVAL = 300
@@ -89,10 +95,11 @@ class BaconAccount:
         self._synced_at: float | None = None
         self._logged_failures: set[str] = set()
         self._live = LiveReport()
-        # Renewal grace window: the generation whose readings stay shown.
-        self._grace_until: float | None = None
+        # Hold over a short blip: the generation whose readings stay shown.
+        self.cloud_hold = CloudHold()
         self._grace_generation = 0
         self._grace_timer: asyncio.TimerHandle | None = None
+        # Holds that ran out with a device still carried over.
         self.grace_expired = 0
 
     def add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
@@ -145,26 +152,27 @@ class BaconAccount:
                     await task
         self._disconnected()
 
-    def _disconnected(self, *, renewal: bool = False) -> None:
-        """Drop the connection; a planned renewal keeps the devices for a while.
+    def _disconnected(
+        self, *, renewal: bool = False, failure: str | None = None
+    ) -> None:
+        """Drop the connection; a short blip keeps the devices for a while.
 
-        A renewal is our own reconnect, no sign of device trouble: for the grace
-        window entities keep their availability and nobody is notified. Writing
-        stays blocked, see write_state. Every other disconnect ends the window.
+        A planned renewal is our own reconnect and a lost connection or a
+        server error a short blip of the cloud, no sign of device trouble: for
+        the hold (``cloud_hold``, the rules of every cloud family) entities keep
+        their availability. Writing stays blocked, see write_state. Every
+        other disconnect ends the hold.
         """
         self.connected = False
         self._mqtt = None
         for future in tuple(self._readers.values()):
             if not future.done():
                 future.set_exception(BaconError("connection"))
-        if renewal and self.generation and self._claimed:
-            self._grace_generation = self.generation
-            self._grace_until = monotonic() + RENEWAL_GRACE
-            self._cancel_grace_timer()
-            self._grace_timer = asyncio.get_running_loop().call_later(
-                RENEWAL_GRACE, self._grace_ended
-            )
+        if self._hold_disconnect(renewal=renewal, failure=failure):
             return
+        self._hard_disconnect()
+
+    def _hard_disconnect(self) -> None:
         self._end_grace()
         for device in self.devices.values():
             # Readings keep their stream generations: a reconnect is our own
@@ -173,6 +181,61 @@ class BaconAccount:
             device.generation = 0
         self._notify()
 
+    def _hold_disconnect(self, *, renewal: bool, failure: str | None) -> bool:
+        """Count this disconnect for the hold; whether the devices stay shown.
+
+        A planned renewal begins the hold without a failure; every failed
+        connection counts one. A rejected sign-in, a changed account, a
+        stopped source or an unexpected error is no blip.
+        """
+        if not (self.generation and self._claimed):
+            return False
+        if not renewal and failure not in HOLD_FAILURES:
+            return False
+        now = monotonic()
+        if self._grace_generation == 0 or (
+            self.generation != self._grace_generation and self._confirmed()
+        ):
+            # The last connection delivered readings: a new outage begins.
+            self.cloud_hold.recovered()
+            self._grace_generation = self.generation
+        if renewal:
+            self.cloud_hold.begin(now)
+        else:
+            self.cloud_hold.failed(now)
+        if not self.cloud_hold.holding(now):
+            return False
+        self._cancel_grace_timer()
+        since = self.cloud_hold.since if self.cloud_hold.since is not None else now
+        self._grace_timer = asyncio.get_running_loop().call_later(
+            max(0.0, GRACE_MAX_SECONDS - (now - since)), self._grace_ended
+        )
+        return True
+
+    def _confirmed(self) -> bool:
+        """Whether a message of the current connection reached a device."""
+        return any(
+            serial in self._claimed and device.generation == self.generation
+            for serial, device in self.devices.items()
+        )
+
+    def _carried_over(self) -> bool:
+        """Whether a device is shown only from before the outage."""
+        return self._grace_generation > 0 and any(
+            serial in self._claimed and device.generation == self._grace_generation
+            for serial, device in self.devices.items()
+        )
+
+    def _device_confirmed(self) -> None:
+        """A message of the new connection reached a device: the outage ends
+        once no device is carried over any more."""
+        if (
+            self._grace_generation
+            and self._grace_generation != self.generation
+            and not self._carried_over()
+        ):
+            self._end_grace()
+
     def _cancel_grace_timer(self) -> None:
         if self._grace_timer is not None:
             self._grace_timer.cancel()
@@ -180,23 +243,20 @@ class BaconAccount:
 
     def _end_grace(self) -> None:
         self._cancel_grace_timer()
-        self._grace_until = None
         self._grace_generation = 0
+        self.cloud_hold.recovered()
 
     def _grace_active(self) -> bool:
-        return self._grace_until is not None and monotonic() < self._grace_until
+        return self._grace_generation > 0 and self.cloud_hold.holding(monotonic())
 
     def _grace_ended(self) -> None:
-        """The window ran out without a message of the new connection."""
+        """The hold ran out without a message of the new connection."""
         self._grace_timer = None
-        if self._grace_until is None:
+        if self._grace_generation == 0:
             return
-        carried = any(
-            serial in self._claimed and device.generation == self._grace_generation
-            for serial, device in self.devices.items()
-        )
-        if carried:
+        if self._carried_over():
             self.grace_expired += 1
+        self.cloud_hold.expire()
         self._end_grace()
         self._notify()
 
@@ -206,6 +266,7 @@ class BaconAccount:
         try:
             while True:
                 self._renewing, renewed = renewed, False
+                failure: str | None = None
                 try:
                     try:
                         await self.run_connection()
@@ -213,6 +274,7 @@ class BaconAccount:
                         renewed = self._renewal_allowed()
                         delay = 5
                     except BaconError as err:
+                        failure = err.category
                         self._failed(err.category)
                         self.on_error(err)
                         delay = max(delay, err.retry_after)
@@ -220,6 +282,7 @@ class BaconAccount:
                             return
                     except aiomqtt.MqttError as err:
                         category = _mqtt_error(err)
+                        failure = category
                         self._failed(category)
                         self.on_error(BaconError(category))
                         if category == "authentication":
@@ -227,13 +290,17 @@ class BaconAccount:
                         if category == "rate_limited":
                             delay = max(60, delay)
                     finally:
-                        # Only a planned renewal keeps the devices for a while.
-                        self._disconnected(renewal=renewed)
+                        # Only a planned renewal or a short blip of the cloud
+                        # keeps the devices for a while.
+                        self._disconnected(renewal=renewed, failure=failure)
                 except Exception as err:
                     # C59: an unexpected failure, also one of a listener, must
                     # not end the session for good; it retries with the backoff.
                     renewed = False
                     self._failed("internal", err)
+                    if self._grace_generation:
+                        # An unexpected error is no blip: no hold.
+                        self._hard_disconnect()
                 if renewed:
                     # C52: a planned token renewal reconnects without a pause.
                     self.renewals += 1
@@ -541,6 +608,7 @@ class BaconAccount:
             # redelivered information returns the device to this connection.
             # Its online state is all the availability needs, as in the app.
             device.generation = self.generation
+            self._device_confirmed()
             # A re-added device or regained membership starts without an online
             # state; the redelivered information with the same timestamp may set
             # it once. It never counts as a sign of life.
@@ -627,6 +695,7 @@ class BaconAccount:
         """Record a device-originated, non-retained message on any channel."""
         device.alive_at = monotonic()
         device.generation = self.generation
+        self._device_confirmed()
 
     def available(self, serial: str) -> bool:
         """Online state comes from the newest information message (as the app).
@@ -783,10 +852,9 @@ class BaconAccount:
             "error": self.error,
             "reconnects": self.reconnects,
             "renewals": self.renewals,
-            "renewal_grace": {
-                "window_s": RENEWAL_GRACE,
-                "active": self._grace_active(),
-                "expired": self.grace_expired,
+            "cloud_hold": {
+                **self.cloud_hold.diagnostics(monotonic()),
+                "carried_over_expired": self.grace_expired,
             },
             "live_report": self._live.diagnostics(monotonic()),
             "availability": availability_report.report(

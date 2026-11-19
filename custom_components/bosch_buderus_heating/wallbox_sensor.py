@@ -23,6 +23,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DEFAULT_MANUFACTURER, DOMAIN
 from .device import registered_device
+from .held_readings import cloud_usable
 from .wallbox import STATES, Section, WallboxCoordinator
 
 
@@ -137,7 +138,7 @@ class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.section_fresh(
+        return cloud_usable(self.coordinator) and self.coordinator.section_fresh(
             self.entity_description.section
         )
 

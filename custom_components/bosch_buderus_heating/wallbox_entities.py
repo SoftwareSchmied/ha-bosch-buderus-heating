@@ -39,6 +39,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .control import cloud_down_error
+from .held_readings import cloud_usable
 from .platform_scope import PlatformScope
 from .pointt.exceptions import (
     AuthenticationError,
@@ -101,7 +102,7 @@ def cached_view(coordinator: WallboxCoordinator) -> WallboxView:
     single values however old."""
 
     def section(name: Literal["telemetry", "conf", "info"]) -> dict[str, Any]:
-        snapshot = coordinator.data.get(name)
+        snapshot = coordinator.shown_section(name)
         if snapshot is None or not coordinator.section_fresh(name):
             return {}
         return dict(snapshot.values)
@@ -487,8 +488,9 @@ class WallboxEntity(CoordinatorEntity[WallboxCoordinator], Entity):
 
     @property
     def available(self) -> bool:
+        # The last values stay shown over a short cloud blip (cloud_hold).
         return (
-            super().available
+            cloud_usable(self.coordinator)
             and self.coordinator.section_fresh("telemetry")
             and self._usable(self.view)
         )

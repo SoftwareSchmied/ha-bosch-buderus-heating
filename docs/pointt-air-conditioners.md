@@ -43,7 +43,15 @@ schedule settings and the program configuration, the two function lists and
 the solar operation state, and from the second cycle on every program the
 unit offers as active program (at most nine, in the same request). A
 path the unit does not answer leaves its function out. When the unit answers
-no path at all (offline), every entity becomes unavailable.
+no path at all (offline), every entity becomes unavailable. A request that fails
+without an answer (no connection, timeout, server error, request limit) is held
+over a short blip like every other cloud family: the entities keep their last
+readings while at most three cycles in a row failed and the outage began less
+than five minutes ago; a change is refused during that time and nothing is sent. A
+refusal of the cloud (403, 404), a rejected sign-in, a stopped source and an
+unexpected error are never held. See
+[a short cloud blip](reading-validity.md#a-short-cloud-blip). Expected,
+untested on a real installation.
 
 ## Entities
 
@@ -167,6 +175,15 @@ erscheinen, sind ein **eigenes Backend**, getrennt von den
 liest einmal je Start `/system/bus` und `/system/appliance/model` (Midea,
 Midea mit Gateway-Connector, Sharp über Echonet; alles andere ist kein
 Klimagerät). Ein Bündelabruf je Minute liest eine feste Pfadliste.
+Scheitert ein Abruf ohne Antwort (keine Verbindung, Zeitüberschreitung,
+Serverfehler, Anfragelimit), zeigen die Entitäten wie bei jeder Cloud-Familie
+ihre letzten Werte, solange höchstens drei Zyklen in Folge scheiterten und der
+Ausfall weniger als fünf Minuten zurückliegt; eine Änderung wird in dieser Zeit
+abgelehnt und nichts gesendet. Eine Ablehnung der Cloud (403, 404), eine
+abgelehnte Anmeldung, eine gestoppte Quelle und ein unerwarteter Fehler werden
+nie gehalten, siehe
+[kurze Cloud-Störung](reading-validity.md#a-short-cloud-blip). Erwartet,
+ungetestet an einer echten Anlage.
 
 Die Climate-Entität (aktiv, Name des Geräts) schaltet ein und aus,
 wählt Betriebsart, Solltemperatur, Lüfterstufe, Lamellen und das Preset

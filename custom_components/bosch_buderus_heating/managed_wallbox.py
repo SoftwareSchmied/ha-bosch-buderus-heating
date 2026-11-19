@@ -39,6 +39,9 @@ class ManagedWallboxCoordinator(
             connection_id=connection.connection_id,
         )
 
+    def _hold_blocked(self) -> bool:
+        return not self.source.current()
+
     def section_fresh(self, section: Section) -> bool:
         return self.source.current() and super().section_fresh(section)
 

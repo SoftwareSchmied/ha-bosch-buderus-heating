@@ -102,24 +102,53 @@ nothing is requested for them in addition.
 
 A single failed refresh (a slow or unavailable sign-in service, a gateway
 timeout, a server error) no longer turns the following entities `unavailable`
-for a minute: the generic controls (numbers, selects, switches, program names),
-the hot-water entity, the current COP, the primary-circuit spread and the
-calculated performance factors. They keep showing their last values while
-at most **three refreshes in a row failed** (about three minutes with the
-one-minute refresh) and the outage began less than **five minutes** ago.
-A fourth failed refresh, or the five minutes, ends this; the entities are then
-`unavailable` as before and return with the first refresh that answers. A reading
-that failed alone while the refresh as a whole worked is shown with its last
-good value as long as it failed at most three times in a row and is within its
-validity limit above.
+for a minute. The same rules hold for every cloud family:
+
+- the generic controls (numbers, selects, switches, program names), the
+  hot-water entity, the current COP, the primary-circuit spread and the
+  calculated performance factors (since 0.9.2);
+- the room controllers (TC100.2, CT200): the boost switch and its numbers, the
+  operating season, the hot-water sensors and the disinfection time, the window
+  sensitivity and valve problems of the radio devices, the heating program
+  selection and the event calendar. The zone, radio device, system and
+  heating circuit entities already stayed shown by the validity limit above and
+  keep doing so;
+- the air conditioners and wallboxes of a PointT gateway: all their sensors,
+  controls and the wallbox history;
+- the additional cloud devices of the second cloud (air conditioners, water
+  heaters, dehumidifiers, air purifiers). The 90-second grace window of a planned
+  token renewal is part of this rule now (see below).
+
+They keep showing their last values while at most **three refreshes in a row
+failed** (about three minutes with the one-minute refresh) and the outage began
+less than **five minutes** ago. A fourth failed refresh, or the five minutes, ends
+this; the entities are then `unavailable` as before and return with the first
+refresh that answers. A reading that failed alone while the refresh as a whole
+worked is shown with its last good value as long as it failed at most three
+times in a row and is within its validity limit above.
+
+For the additional cloud devices the refresh is the connection: a planned token
+renewal starts the outage without counting a failure, a lost connection or a
+failed reconnect (no connection, server error, request limit, pause) counts one.
+The devices keep their availability and their last readings under the same
+limits; the first message of the new connection ends the outage. A rejected
+sign-in, a changed account, a stopped source, a rejected subscription or an
+unexpected error ends it at once.
 
 This only concerns what is shown. A change is never sent from a held value: it
 needs a successful current cloud cycle and a current reading, and the setting is
 read from the gateway again right before the write. While values are held, a
 change is refused with the usual message that the cloud is not reachable, and
-nothing is sent. Nothing is held after a rejected sign-in, a sign-in that has to
-be repeated, a stopped cloud connection or an unexpected error, and an
-explicit answer for a reading (for example 403 or 404) is never held.
+nothing is sent. This holds for every family above, including the structured
+changes of the room controllers (boost, events, program selection) and the
+commands of the wallbox and the air conditioners. Nothing is held after a
+rejected sign-in, a sign-in that has to be repeated, a stopped cloud connection or
+an unexpected error, and an explicit answer for a reading or for the whole request
+(for example 403 or 404) is never held.
+
+Expected, not yet observed on a real installation for the room controllers, air
+conditioners, wallboxes and the additional cloud devices; it is covered by tests
+that run real cycles with a simulated clock and by tests of each family.
 
 The access token is renewed ten minutes before it ends (it was two). A request
 that finds the renewal due goes on with the current token, and the renewal runs
@@ -132,7 +161,10 @@ Only the last 30 seconds of the token wait for the renewal as before.
 Diagnostics show `cloud_hold` (limits, whether values are held now, failed
 refreshes in a row, holds started and expired) and `last_failed_refresh` (time,
 category, and per failed reading the path template, HTTP status, category and
-count; at most ten entries, no identifiers) in each gateway `runtime`.
+count; at most ten entries, no identifiers) in each gateway `runtime`. The room
+controller entities share the `cloud_hold` of the gateway `runtime`; the air
+conditioners, the wallboxes and the additional cloud devices each have their own
+`cloud_hold` in their report (see [diagnostics](diagnostics.md)).
 
 ## What keeps the strict rule
 

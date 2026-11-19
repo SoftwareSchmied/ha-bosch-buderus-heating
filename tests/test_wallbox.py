@@ -15,6 +15,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
 
+from custom_components.bosch_buderus_heating.cloud_hold import GRACE_CYCLES
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.data import tokens_to_data
 from custom_components.bosch_buderus_heating.diagnostics import (
@@ -332,26 +333,33 @@ async def test_intervals_partial_failure_and_regular_recovery(hass, friendly):
 )
 async def test_global_failure_stops_reads_and_clears_old_data(hass, failure, category):
     coord, client, _ = coordinator(hass)
+    shown = (("telemetry", "power"), ("conf", "role"), ("info", "product"))
     with patch(ROOT + ".wallbox.monotonic", return_value=100) as now:
         await coord.async_refresh()
-        now.return_value = 1000
+        # Only the telemetry is due; the last objects are still current.
+        now.return_value = 170
         client.get_wallbox_section.reset_mock(side_effect=True)
         client.get_wallbox_section.side_effect = failure
         with patch.object(coord.config_entry, REAUTH_METHOD) as reauth:
             await coord.async_refresh()
             assert reauth.call_count == int(category == "authentication")
         assert client.get_wallbox_section.await_count == 1
-        assert all(
-            coord.reading(section, key) is None
-            for section, key in (
-                ("telemetry", "power"),
-                ("conf", "role"),
-                ("info", "product"),
-            )
-        )
+        # The stored objects are cleared and the reads stop at once ...
         assert all(
             item["error"] == category
             for item in coord.diagnostics()["sections"].values()
+        )
+        if category != "authentication":
+            # ... but a short blip of the cloud keeps the last values shown
+            # (cloud_hold) for three failed cycles; the fourth ends it.
+            assert all(coord.reading(*item) is not None for item in shown)
+            for _ in range(GRACE_CYCLES - 1):
+                await coord.async_refresh()
+                assert all(coord.reading(*item) is not None for item in shown)
+            await coord.async_refresh()
+        assert all(coord.reading(*item) is None for item in shown)
+        assert client.get_wallbox_section.await_count == (
+            1 if category == "authentication" else GRACE_CYCLES + 1
         )
 
 

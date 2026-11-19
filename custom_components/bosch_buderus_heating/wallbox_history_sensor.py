@@ -21,6 +21,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .held_readings import cloud_usable
 from .wallbox import WallboxCoordinator
 from .wallbox_history import Kind, history_enabled
 from .wallbox_sensor import wallbox_device_info
@@ -127,7 +128,7 @@ class WallboxHistorySensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
     @property
     def available(self) -> bool:
         # With the option off the coordinator has dropped the history.
-        return super().available and self.coordinator.history.fresh(
+        return cloud_usable(self.coordinator) and self.coordinator.history.fresh(
             self.entity_description.kind
         )
 

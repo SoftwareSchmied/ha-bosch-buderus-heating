@@ -44,6 +44,7 @@ from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource
+from .held_readings import cloud_usable, held_snapshot
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_dhw import DISINFECTION_TIME_POLICY
@@ -127,7 +128,7 @@ class RrcDhwTime(CoordinatorEntity[BoschBuderusDataUpdateCoordinator], TimeEntit
     @property
     def _current(self) -> Resource | None:
         """A fresh reading the time policy still accepts (S1, S3, S11)."""
-        snapshot = (self.coordinator.data or {}).get(self.resource_path)
+        snapshot = held_snapshot(self.coordinator, self.resource_path)
         if (
             snapshot is None
             or not snapshot.available
@@ -142,7 +143,7 @@ class RrcDhwTime(CoordinatorEntity[BoschBuderusDataUpdateCoordinator], TimeEntit
 
     @property
     def available(self) -> bool:
-        return super().available and self._current is not None
+        return cloud_usable(self.coordinator) and self._current is not None
 
     @property
     def native_value(self) -> time | None:
@@ -256,12 +257,12 @@ class RrcDhwSensor(CoordinatorEntity[BoschBuderusDataUpdateCoordinator], SensorE
 
     @property
     def _resource(self) -> Resource | None:
-        return fresh_resource(self.coordinator, self.resource_path)
+        return fresh_resource(self.coordinator, self.resource_path, held=True)
 
     @property
     def available(self) -> bool:
         resource = self._resource
-        if not super().available or resource is None:
+        if not cloud_usable(self.coordinator) or resource is None:
             return False
         if self.entity_description.role == "level":
             return rrc_dhw.parse_program(resource) is not None
@@ -275,7 +276,7 @@ class RrcDhwSensor(CoordinatorEntity[BoschBuderusDataUpdateCoordinator], SensorE
         if self.entity_description.role == "result":
             return rrc_dhw.result_token(resource)
         program = rrc_dhw.parse_program(resource)
-        clock = (self.coordinator.data or {}).get(rrc_dhw.CLOCK_PATH)
+        clock = held_snapshot(self.coordinator, rrc_dhw.CLOCK_PATH)
         if (
             program is None
             or clock is None

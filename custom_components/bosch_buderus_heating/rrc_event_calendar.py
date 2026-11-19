@@ -46,6 +46,7 @@ from . import rrc_events
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
+from .held_readings import cloud_usable, refuse_in_hold
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holidays import HOLIDAY_TIMEZONE_PATH
 from .i18n import localize
@@ -88,7 +89,10 @@ async def async_run_rrc_write(
     late_check: Callable[[Resource], bool] | None = None,
 ) -> None:
     """Run one structured RRC write and raise only translated, value-free
-    Home Assistant errors (like ``control.async_set_control``)."""
+    Home Assistant errors (like ``control.async_set_control``).
+
+    During the hold over a short cloud blip nothing is sent (cloud_hold)."""
+    refuse_in_hold(coordinator)
     try:
         await coordinator.async_run_rrc_operation(
             path, operation, require_snapshot=require_snapshot, late_check=late_check
@@ -221,7 +225,7 @@ class RrcEventCalendar(
 
     @property
     def available(self) -> bool:
-        return super().available and bool(self._state.lists)
+        return cloud_usable(self.coordinator) and bool(self._state.lists)
 
     @property
     def supported_features(self) -> CalendarEntityFeature:

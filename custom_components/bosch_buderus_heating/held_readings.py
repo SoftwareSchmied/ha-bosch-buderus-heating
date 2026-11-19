@@ -6,26 +6,46 @@ reads the setting again from the gateway and refuses without a current reading.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .cloud_hold import GRACE_CYCLES
+from .const import DOMAIN
+from .control import cloud_down_error
 from .coordinator import Freshness, ResourceSnapshot
 
 if TYPE_CHECKING:
     from .coordinator import BoschBuderusDataUpdateCoordinator
 
 
-def cloud_usable(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+def cloud_usable(coordinator: DataUpdateCoordinator[Any]) -> bool:
     """The last refresh succeeded, or its failure is still held.
 
     The replacement of ``CoordinatorEntity.available`` for entities that need a
-    current cloud cycle. Without the hold (another kind of coordinator) it is
-    exactly that.
+    current cloud cycle, for every family (heating, air conditioner, wallbox).
+    Without the hold (another kind of coordinator) it is exactly that.
     """
     if coordinator.last_update_success:
         return True
     holding = getattr(coordinator, "cloud_holding", None)
     return bool(holding()) if callable(holding) else False
+
+
+def refuse_in_hold(coordinator: DataUpdateCoordinator[Any]) -> None:
+    """A change during the hold is refused with the usual "cloud not reachable".
+
+    The entities of a held cloud blip are shown as available, so Home
+    Assistant passes their service calls on; nothing is sent for them. Writes
+    that go through ``control.async_set_control`` or the climate entities are
+    refused there already; the structured writes of room controllers call this.
+    """
+    holding = getattr(coordinator, "cloud_holding", None)
+    if callable(holding) and holding():
+        raise cloud_down_error(coordinator) or HomeAssistantError(
+            translation_domain=DOMAIN, translation_key="write_failed"
+        )
 
 
 def held_snapshot(
