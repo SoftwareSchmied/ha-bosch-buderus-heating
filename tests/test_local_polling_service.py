@@ -564,6 +564,12 @@ async def test_failed_budget_store_write_keeps_the_pause_and_the_reads(
         with caplog.at_level(logging.WARNING):
             await service.start()
             await settle()
+            # The failing save runs in the executor, which `settle` does not
+            # wait for: wait for its outcome (the warning is logged then).
+            async with asyncio.timeout(5):
+                while not manager._unsaved or manager._saving:  # noqa: ASYNC110
+                    await asyncio.sleep(0.005)
+            await settle()
         # The pause holds in memory although it could not be saved.
         assert service.condition is LocalCondition.PAUSED
         assert budget.pause_seconds == 60 and len(client.calls) == 1
