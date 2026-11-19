@@ -32,11 +32,17 @@ def test_key_is_two_digests_of_the_passwords_with_the_constant():
     assert len(expected) == 32
 
 
-def test_key_vector_stays_fixed():
-    # A made-up pair of passwords; the value guards against accidental changes
-    # of the derivation (the order of the two parts, the dashes).
-    assert derive_key(GATEWAY, PRIVATE).hex() == ("{}").format(
-        derive_key("abcdefghijklmnop", PRIVATE).hex()
+def test_key_and_cipher_vectors_stay_fixed():
+    # Made-up passwords with values produced once by this implementation; they
+    # guard against accidental changes (the order of the two parts, the dashes,
+    # the fill) that a round trip alone would not notice.
+    assert (
+        derive_key(GATEWAY, PRIVATE).hex()
+        == "40596c742c0fce83f4f07cc444e0db7d18d6bcaf425fa7aacae45b5f44d7e770"
+    )
+    assert (
+        encrypt(derive_key(GATEWAY, PRIVATE), b'{"id":"/gateway/uuid","value":"1"}')
+        == b"GLKf3p087nWE1n2lp2sJ7LMXk8Vamr3VmPsCRuOAa2zTH2IAa9+Ucd8iVvX3JFXT"
     )
     assert derive_key("abcd-efgh-ijkl-mnop", "x") != derive_key(
         "abcd-efgh-ijkl-mnoq", "x"
