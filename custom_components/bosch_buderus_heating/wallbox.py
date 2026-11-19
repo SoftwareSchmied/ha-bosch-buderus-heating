@@ -138,14 +138,28 @@ def _number(value: object) -> float | None:
     return number if isfinite(number) and number >= 0 else None
 
 
+# No wallbox counts a billion kWh; anything larger is a faulty answer.
+_MAX_LIFETIME_KWH: Final = 1e9
+
+
 def _amount(value: object) -> float | None:
-    """A reported JSON number (or numeric text), finite and not negative."""
+    """A reported lifetime counter in kWh: finite, above 0 and plausible.
+
+    Exactly 0 is unknown: a counter that falls to 0 for one reading and then
+    returns would be added by Home Assistant as a jump of its whole value.
+    """
     if isinstance(value, str):
-        return _number(value)
-    if isinstance(value, bool) or not isinstance(value, int | float):
+        number = _number(value)
+    elif isinstance(value, bool) or not isinstance(value, int | float):
         return None
-    number = float(value)
-    return number if isfinite(number) and number >= 0 else None
+    elif isinstance(value, int) and abs(value) > _MAX_LIFETIME_KWH:
+        # float() of a huge integer would raise OverflowError.
+        return None
+    else:
+        number = float(value)
+    if number is None or not isfinite(number):
+        return None
+    return number if 0 < number <= _MAX_LIFETIME_KWH else None
 
 
 def _text(value: object) -> str | None:

@@ -170,8 +170,16 @@ def test_meter_wh_and_kw_are_independent(meter, energy, power):
     "value,expected",
     [
         (4586.197, 4586.197),
-        (0, 0),
+        (0, None),
+        (0.0, None),
+        ("0", None),
         ("4586.197", 4586.197),
+        (1e9, 1e9),
+        (1e9 + 1, None),
+        (10**400, None),
+        (-(10**400), None),
+        (1e308, None),
+        ("1e308", None),
         (-1, None),
         (float("nan"), None),
         (float("inf"), None),
@@ -185,6 +193,14 @@ def test_energy_total_is_a_reported_lifetime_number(value, expected):
     parsed = parse_section("telemetry", {"values": {"energyTotal": value}})
     assert parsed.values["energy_total"] == expected
     assert "energyTotal" not in parsed.unknown_names
+
+
+def test_a_huge_energy_total_does_not_cost_the_other_telemetry_values():
+    parsed = parse_section(
+        "telemetry", {"values": {"energyTotal": 10**400, "wbState": next(iter(STATES))}}
+    )
+    assert parsed.values["energy_total"] is None
+    assert parsed.values["state"] == next(iter(STATES.values()))
 
 
 @pytest.mark.parametrize("value", [None, True, -1, 1.5, "35", 2**63])
@@ -493,6 +509,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         total = hass.states.get(entity_id("energy_total"))
         assert total.state == "4321.5"
         assert total.attributes["state_class"] == "total_increasing"
+        assert total.attributes["device_class"] == "energy"
         assert total.attributes["unit_of_measurement"] == "kWh"
         assert (
             hass.states.get(entity_id("power")).attributes["unit_of_measurement"]

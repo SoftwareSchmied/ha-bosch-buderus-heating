@@ -31,6 +31,15 @@ total. Its exact session/reset scope still needs device confirmation, so it
 is not offered as a lifetime energy meter for the Energy dashboard; that is
 **Total charged energy**.
 
+A **Total charged energy** value of exactly 0, a value above one billion kWh
+and a value too large to convert are read as unknown, not as a counter value:
+a counter that dropped to 0 for one reading and came back would be added by
+Home Assistant as a jump of its whole value. Only **Total charged energy** is
+meant for the Energy dashboard; the reported charged energy and the optional
+charging history values are single sessions and monthly sums and have no
+statistics class. It is confirmed on one wallbox only; how the counter
+behaves after a software update or a device replacement is not known.
+
 I read three object endpoints under `rest/v1/cp0`: `telemetry`, `conf` and
 `info`. Telemetry follows the 60-second standard or 120-second cloud-friendly
 interval. Configuration is read every 5 or 10 minutes; information every 15
@@ -211,7 +220,7 @@ aggregation of the energy samples, the time zone of the times and the units are 
 
 ## Deutsch
 
-Ich habe in v0.8.2-beta.6 eine Anbindung mit acht Anzeigen für
+Ich habe in v0.8.2-beta.6 eine Anbindung mit Anzeigen für
 die gemeldeten Gatewaytypen `commodule` und `commodule2` ergänzt. Sie nutzt den
 vorhandenen PointT-Zugang mit einem eigenen Parser für Wallbox-Antworten.
 Das Gerät muss im Konto gemeldet und in der Integration ausgewählt sein.
@@ -228,6 +237,7 @@ Heizungsentitäten und Benutzereinstellungen bleiben bestehen.
 | Ladezustand | Elf bekannte Zustände bleiben getrennt. Eine Pause durch das Fahrzeug bedeutet nicht automatisch einen vollen Akku. Unbekannte Codes bleiben unbekannt. |
 | Ladeleistung | Letzter Bestandteil von `telemetry.meter`, bereits in kW. |
 | Gemeldete geladene Energie | Erster Bestandteil von `telemetry.meter`, einmal von Wh nach kWh umgerechnet. Keine Aufsummierung und keine Statistikklasse für Langzeitwerte. |
+| Insgesamt geladene Energie | `telemetry.energyTotal`, der eigene Gesamtzähler der Wallbox in kWh, mit der Statistikklasse *total increasing* für das Energie-Dashboard. Bei einer Power Charge 7000i S (Software 5.3.0) stimmte er mit der Summe in der Wallbox-App überein (4.601,98 kWh gegenüber 4.602 kWh) und stieg elf Wochen ohne Rückgang. |
 | Aktive Ladezeit | Gemeldete Minuten aus `activeChargingTime`, ohne eigene Hochrechnung. |
 | Gemeldete Stromgrenze | `telemetry.limit` in A. Eine Grenze, kein gemessener Strom; geändert wird sie über die eigene Entität **Ladestrom-Grenze**. |
 | Ladebeginn | `chargingStart`, nur mit eindeutigem UTC-Versatz angenommen. |
@@ -237,8 +247,18 @@ Heizungsentitäten und Benutzereinstellungen bleiben bestehen.
 Fehlende, ungültige, negative oder nicht endliche Zahlen werden nicht als
 null dargestellt. Ein sinkender Energiewert wird nicht zu einem eigenen
 Gesamtzähler addiert. Wann genau der Wert zurückgesetzt wird, muss noch am
-Gerät geprüft werden. Deshalb ist er kein Gesamtverbrauchszähler für das
-Energie-Dashboard.
+Gerät geprüft werden. Deshalb ist er kein Gesamtzähler für das
+Energie-Dashboard; das ist **Insgesamt geladene Energie**.
+
+Ein Wert von **Insgesamt geladene Energie** von genau 0, ein Wert über einer
+Milliarde kWh und ein Wert, der zu groß zum Umrechnen ist, gelten als
+unbekannt und nicht als Zählerstand: Fiele der Zähler für eine Meldung auf 0
+und käme dann zurück, würde Home Assistant das als Sprung um den ganzen Wert
+addieren. Nur **Insgesamt geladene Energie** ist für das Energie-Dashboard
+gedacht; die gemeldete geladene Energie und die optionalen Werte des
+Ladeverlaufs sind einzelne Ladevorgänge und Monatssummen und haben keine
+Statistikklasse. Belegt ist der Zähler nur auf einer Wallbox; wie er sich nach
+einem Software-Update oder einem Gerätetausch verhält, ist nicht bekannt.
 
 Die drei Objektabfragen unter `rest/v1/cp0` betreffen `telemetry`, `conf` und
 `info`. Telemetrie wird je nach Abfrageprofil alle 60 oder 120 Sekunden
