@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Glas leanaí"
+      },
       "softener_holiday_mode": {
         "name": "Mód saoire"
       },
@@ -2721,7 +2724,9 @@
           "off": "As",
           "on": "Ar siúl",
           "stop": "As",
-          "start": "Ar siúl"
+          "start": "Ar siúl",
+          "active": "Gníomhach",
+          "inactive": "Neamhghníomhach"
         }
       },
       "four_way_valve_position": {

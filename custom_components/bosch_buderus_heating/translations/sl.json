@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Otroška ključavnica"
+      },
       "softener_holiday_mode": {
         "name": "Način počitnic"
       },
@@ -2721,7 +2724,9 @@
           "off": "Izklopljeno",
           "on": "Vklopljeno",
           "stop": "Izklopljeno",
-          "start": "Vklopljeno"
+          "start": "Vklopljeno",
+          "active": "Aktivno",
+          "inactive": "Neaktivno"
         }
       },
       "four_way_valve_position": {

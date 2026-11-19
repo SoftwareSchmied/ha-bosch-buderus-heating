@@ -583,6 +583,9 @@
       "heating_circuit_boost": {
         "default": "mdi:rocket-launch-outline"
       },
+      "zone_child_lock": {
+        "default": "mdi:lock-outline"
+      },
       "heating_circuit_setpoint_optimization": {
         "default": "mdi:tune-vertical"
       },

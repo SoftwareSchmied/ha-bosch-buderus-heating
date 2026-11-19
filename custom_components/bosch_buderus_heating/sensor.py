@@ -101,6 +101,7 @@ from .holidays import (
     is_holiday_resource_path,
     parse_holiday_state,
 )
+from .humidity_reading import is_humidity_path, is_placeholder, plausible_humidity
 from .i18n import localize
 from .local_only import (
     MAX_STATES,
@@ -1462,7 +1463,11 @@ def _description(
         translation_key=enum_translation_key,
         entity_category=category,
         entity_registry_enabled_default=(
-            entity_enabled_by_default(path) and not is_opt_in_diagnostic_resource(path)
+            entity_enabled_by_default(path)
+            and not is_opt_in_diagnostic_resource(path)
+            # A humidity placeholder: no sensor behind it. A sensor that
+            # exists keeps its settings; only a new one starts disabled.
+            and not is_placeholder(resource)
         ),
         suggested_display_precision=2 if unit == UnitOfEnergy.KILO_WATT_HOUR else None,
     )
@@ -1871,6 +1876,13 @@ class BoschBuderusSensor(
             and scalar in resource.metadata.numeric_error_values
         ):
             return None  # the device's declared error marker, not a reading
+        if (
+            isinstance(scalar, int | float)
+            and not isinstance(scalar, bool)
+            and is_humidity_path(resource.path)
+            and not plausible_humidity(scalar)
+        ):
+            return None  # a humidity placeholder (0, -1, 255 ...), not a reading
         if isinstance(scalar, str) and description.translation_key is not None:
             scalar = _enum_state(description.translation_key, scalar)
             return self._validated_enum_state(scalar)

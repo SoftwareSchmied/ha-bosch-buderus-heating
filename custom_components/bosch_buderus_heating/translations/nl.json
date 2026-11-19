@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Kinderslot"
+      },
       "softener_holiday_mode": {
         "name": "Vakantiemodus"
       },
@@ -2721,7 +2724,9 @@
           "off": "Uit",
           "on": "Aan",
           "stop": "Uit",
-          "start": "Aan"
+          "start": "Aan",
+          "active": "Actief",
+          "inactive": "Inactief"
         }
       },
       "four_way_valve_position": {

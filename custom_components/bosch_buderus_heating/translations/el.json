@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Κλείδωμα για παιδιά"
+      },
       "softener_holiday_mode": {
         "name": "Λειτουργία διακοπών"
       },
@@ -2721,7 +2724,9 @@
           "off": "Ανενεργό",
           "on": "Ενεργό",
           "stop": "Ανενεργό",
-          "start": "Ενεργό"
+          "start": "Ενεργό",
+          "active": "Ενεργή",
+          "inactive": "Ανενεργή"
         }
       },
       "four_way_valve_position": {

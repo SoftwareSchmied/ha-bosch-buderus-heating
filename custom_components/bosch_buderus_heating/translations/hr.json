@@ -2366,6 +2366,9 @@
       "heating_circuit_boost": {
         "name": "Boost"
       },
+      "zone_child_lock": {
+        "name": "Dječja brava"
+      },
       "softener_holiday_mode": {
         "name": "Način odmora"
       },
@@ -2721,7 +2724,9 @@
           "off": "Isključeno",
           "on": "Uključeno",
           "stop": "Isključeno",
-          "start": "Uključeno"
+          "start": "Uključeno",
+          "active": "Aktivno",
+          "inactive": "Neaktivno"
         }
       },
       "four_way_valve_position": {

@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
+from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms, zone_child_lock
 from .aircon_entities import track_aircon_switches
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
@@ -110,7 +110,8 @@ def build_switch_descriptions(
             continue
         if (
             policy is not None
-            and (key := switch_key(policy)) is not None
+            and (key := switch_key(policy) or zone_child_lock.switch_key(policy))
+            is not None
             and assess_control(resource, context).supports_switch
         ):
             descriptions.append(_circuit_switch(resource, policy, key))

@@ -304,6 +304,8 @@ async def _refused_after_mode(entity, cloud):
         ({"value": 55.5}, 55.5),
         ({"value": 101}, None),
         ({"value": -1}, None),
+        ({"value": 0}, None),
+        ({"value": 100}, 100.0),
         ({"value": float("nan")}, None),
         ({"value": True}, None),
         ({"value": "wet"}, None),
