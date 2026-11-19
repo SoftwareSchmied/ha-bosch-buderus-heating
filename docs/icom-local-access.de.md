@@ -20,7 +20,9 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
   ignoriert) und das **private Passwort**, das du in der alten Geräte-App des
   Gateways festgelegt hast (zum Beispiel MyDevice). Die App der Cloud speichert
   es nicht. Wurde nie eines festgelegt, lässt sich der lokale Zugang nicht
-  einrichten.
+  einrichten. Die häufigste Ursache für „ließ sich nicht entschlüsseln“ ist ein
+  privates Passwort, das nie auf dem Gateway gespeichert wurde: Es liegt nur dort,
+  wenn es einmal in der alten Geräte-App festgelegt wurde.
 - Die Adresse des Gateways im Heimnetz (IP-Adresse oder Hostname). Eine feste
   Adresse (Reservierung im Router) erspart dir eine erneute Einrichtung.
 
@@ -34,7 +36,23 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
 Die Einrichtung liest einmal die eigene Kennung des Gateways. Sie muss die
 Gateway-Kennung sein, die die Cloud für diese Anlage kennt; sonst wird nichts
 gespeichert und der Dialog sagt es (anderes Gateway unter dieser Adresse oder
-falsche Adresse). Ein falsches Passwort wird gesondert genannt. Adresse oder
+falsche Adresse). Ein falsches Passwort wird gesondert genannt.
+
+Meldet das Gateway keine brauchbare Kennung (gar keine, eine leere oder einen
+Platzhalter wie -1), vergleicht die Einrichtung, was das Gateway antwortet, mit
+dem, was die Cloud gerade für dieselben Pfade gelesen hat: Firmware- und
+Hardware-Version, Typ, Marke, Außentemperatur (innerhalb von 2 K, Cloud-Wert
+höchstens 15 Minuten alt), Systemdruck und Anzahl der Starts. Mindestens zwei
+Werte müssen übereinstimmen, mindestens einer davon ein Livewert (Temperatur,
+Druck oder Starts), und keiner darf eindeutig widersprechen. Das braucht eine
+laufende Cloud-Verbindung mit aktuellen Werten; ist sie noch nicht so weit,
+warte ein paar Minuten und versuche es erneut. Ein Gateway, das eine brauchbare,
+aber andere Kennung meldet, wird auf diesem Weg nie angenommen. Der verwendete
+Weg steht in der Diagnose (`identity_method`); spätere Prüfungen lesen dann einen
+gespeicherten Versionswert statt der Kennung. Ändert sich dieser Wert später (getauschtes Gateway oder
+Firmware-Update, wenn das Gateway keine Hardware-Version meldet), hält der Zugang
+an wie bei einem anderen Gateway; richte dann **iCom-Zugangsdaten ändern** noch
+einmal durch. Adresse oder
 Passwörter änderst du später, indem du den Zugang unter **Verbindungen** öffnest
 und **iCom-Zugangsdaten ändern** wählst.
 
@@ -71,7 +89,7 @@ wird. Der lokale Zugang
   verlangsamen; Werte unter zwei Minuten gelten als zwei Minuten);
 - fragt einen Pfad, der mit 404 oder 403 antwortet, eine Woche lang nicht mehr ab;
 - pausiert alles Lesen nach zwei fehlgeschlagenen Anfragen in Folge (keine
-  Antwort innerhalb von 15 Sekunden, keine Verbindung, ein Serverfehler): zuerst
+  Antwort innerhalb von 10 Sekunden, keine Verbindung, ein Serverfehler): zuerst
   eine Minute, dann zwei, fünf, zehn, zwanzig und zuletzt dreißig Minuten, solange
   die Fehler andauern. Eine Überlastungsantwort (429, 503) pausiert mindestens so
   lange wie ihr Retry-After. Ein wieder funktionierender Wert beendet die Folge;
@@ -107,9 +125,9 @@ wieder ein.
 | Text | Bedeutung |
 |---|---|
 | Das Gateway hat nicht geantwortet | Keine Verbindung in der Zeit; Adresse und Port 80 prüfen. |
-| Die Antwort ließ sich nicht entschlüsseln | Eines der beiden Passwörter ist falsch oder wurde in der Geräte-App geändert. |
+| Die Antwort ließ sich nicht entschlüsseln | Eines der beiden Passwörter ist falsch oder wurde in der Geräte-App geändert. Meist wurde das private Passwort nie auf dem Gateway gespeichert. |
 | Das Gateway ist ausgelastet | Es hat mit einer Überlastungsmeldung geantwortet; später erneut versuchen. |
-| Es meldet seine Kennung nicht | Das Gateway bietet das Lesen, das die Prüfung braucht, nicht an. |
+| Es ließ sich der Anlage nicht zuordnen | Das Gateway meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein (oder die Cloud hat noch keine aktuellen Werte). In ein paar Minuten erneut versuchen. |
 | Nicht das Gateway der gewählten Anlage | Die lokal gelesene Kennung ist nicht die Gateway-Kennung der Cloud. |
 
 ## Rückmeldung
@@ -120,7 +138,8 @@ bitte aus und schreib mir in einem
 [Issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues)
 oder bei [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81),
 was passiert ist, mit der Diagnose der Integration im Anhang. Besonders
-interessant: ob die Kennungsprüfung der Einrichtung besteht, welche Werte
+interessant: ob die Kennungsprüfung der Einrichtung besteht (und auf welchem Weg, siehe
+`identity_method` in der Diagnose), welche Werte
 erscheinen und wie lange das Gateway ohne Hänger läuft.
 
 ## Nicht enthalten
