@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 from datetime import timedelta
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -328,7 +329,7 @@ async def test_calculated_and_guarded_sensors_always_look_again(hass):
         {"value_kind": "dew_point"},
         {"value_kind": "total_electricity"},
         {"value_kind": "switch_program"},
-        {"value_kind": "heat_demand"},
+        {"value_kind": "pressure_status"},
         {"secondary_resource_path": RETURN},
         {"resource_path": "/heatSources/systemPressure"},
     ):
@@ -375,3 +376,168 @@ def test_a_mock_coordinator_never_narrows_a_pass():
 
     assert not untouched(MagicMock(), ("a",))
     assert not untouched(object(), ("a",))
+
+
+def _fake_coordinator(selection, faults_changed=False, down=False):
+    seen = []
+    fake = SimpleNamespace(
+        source=SimpleNamespace(current=lambda: True),
+        local_retained=False,
+        local_selection=selection,
+        _local_faults_updated=lambda _selection: faults_changed,
+        _local_fault_failure=MagicMock(),
+        cloud_unavailable=lambda: down,
+        counter_cloud_unavailable=lambda: False,
+        _local_pass_context=None,
+        local_changed_paths=None,
+    )
+    fake.async_update_listeners = MagicMock(
+        side_effect=lambda: seen.append(fake.local_changed_paths)
+    )
+    return fake, seen
+
+
+def test_a_pass_names_the_changed_paths_only_while_it_runs():
+    from custom_components.bosch_buderus_heating.managed_pointt import (
+        ManagedPointTCoordinator,
+    )
+
+    runtime = FakeRuntime([local(RETURN, 31.5, monotonic=10.0)])
+    fake, seen = _fake_coordinator(LocalSelection(runtime, TARGET))
+    update = ManagedPointTCoordinator._local_updated
+    update(fake)  # the first pass: everything
+    runtime.observations = [local(RETURN, 31.6, monotonic=70.0)]
+    update(fake)
+    assert seen == [None, frozenset({RETURN})]
+    assert fake.local_changed_paths is None
+    # The same answer again is no pass at all.
+    runtime.observations = [local(RETURN, 31.6, monotonic=130.0)]
+    update(fake)
+    assert len(seen) == 2
+
+
+def test_a_pass_with_a_fault_change_or_a_new_cloud_state_is_not_narrowed():
+    from custom_components.bosch_buderus_heating.managed_pointt import (
+        ManagedPointTCoordinator,
+    )
+
+    runtime = FakeRuntime([local(RETURN, 31.5, monotonic=10.0)])
+    fake, seen = _fake_coordinator(LocalSelection(runtime, TARGET))
+    update = ManagedPointTCoordinator._local_updated
+    update(fake)
+    runtime.observations = [local(RETURN, 31.6, monotonic=70.0)]
+    fake._local_faults_updated = lambda _selection: True
+    update(fake)
+    assert seen[-1] is None  # the fault entities look again with everything
+    fake._local_faults_updated = lambda _selection: False
+    runtime.observations = [local(RETURN, 31.7, monotonic=130.0)]
+    fake.cloud_unavailable = lambda: True  # the cloud became unavailable
+    update(fake)
+    assert seen[-1] is None
+    runtime.observations = [local(RETURN, 31.8, monotonic=190.0)]
+    update(fake)  # nothing else changed any more
+    assert seen[-1] == frozenset({RETURN})
+    fake.counter_cloud_unavailable = lambda: True  # a durable outage began
+    runtime.observations = [local(RETURN, 31.9, monotonic=250.0)]
+    update(fake)
+    assert seen[-1] is None
+
+
+async def test_only_the_views_of_changed_records_are_worked_out_again(running):
+    service, clock, _, published = running
+    inventory = service.inventory
+    signals(inventory, [f"s{n}" for n in range(30)], clock())
+    for record in tuple(inventory.records.values()):
+        if record.observation is None:
+            inventory.accept(success(record.request, clock()), clock())
+    service._publish()
+    before = published[-1].resources
+    sent = len(published)
+    worked = counted(service)
+    target = list(inventory.records)[7]
+    clock.advance(1)
+    inventory.accept(
+        success(inventory.records[target].request, clock(), value=9), clock()
+    )
+    service._publish()
+    assert len(worked) == 1 and len(published) == sent + 1
+    after = published[-1].resources
+    assert len(after) == len(before)
+    # Only that view is new, at the same place.
+    assert [
+        i for i, (a, b) in enumerate(zip(before, after, strict=True)) if a is not b
+    ] == [7]
+    assert after[7].observation.data.value == 9
+    # Nothing more to work out afterwards.
+    service._publish()
+    assert len(worked) == 1
+    # Two changes before one publication: exactly these two.
+    for number in (3, 11):
+        clock.advance(1)
+        request = list(inventory.records.values())[number].request
+        inventory.accept(success(request, clock(), value=number), clock())
+    service._publish()
+    assert len(worked) == 3
+    assert [
+        v.observation.data.value
+        for v in published[-1].resources
+        if hasattr(v.observation.data, "value") and v.observation.data.value in (3, 11)
+    ] == [3, 11]
+
+
+async def test_a_new_signal_list_works_out_every_view_again(running):
+    service, clock, _, published = running
+    inventory = service.inventory
+    names = [f"s{n}" for n in range(10)]
+    signals(inventory, names, clock())
+    for record in tuple(inventory.records.values()):
+        if record.observation is None:
+            inventory.accept(success(record.request, clock()), clock())
+    service._publish()
+    worked = counted(service)
+    sent = len(published)
+    for _ in range(2):  # a signal the gateway no longer lists is dropped
+        signals(inventory, names[1:], clock())
+    service._publish()
+    assert worked  # the dropped signal; the others stay as published
+    assert not inventory.touched_all and not inventory.touched
+    assert len(published) == sent + 1
+    gone = [v for v in published[-1].resources if v.request.path == "/signals/s0"]
+    assert gone and not gone[0].available
+
+
+async def test_a_swapped_record_with_the_same_count_is_found_by_the_full_check(
+    running,
+):
+    service, clock, _, published = running
+    inventory = service.inventory
+    signals(inventory, ["a", "b"], clock())
+    service._publish()
+    key = next(
+        k for k, r in inventory.records.items() if r.request.path == "/signals/b"
+    )
+    inventory._drop_observation(inventory.records[key])  # as ``prune`` does
+    del inventory.records[key]
+    new = inventory.add(request_for_path("/gateway/brand"), clock())
+    assert len(inventory.records) == len(service._shown)
+    sent = len(published)
+    service._publish()
+    shown = {v.request.path for v in published[-1].resources}
+    assert "/gateway/brand" in shown and "/signals/b" not in shown
+    assert len(published) == sent + 1 and new.request.path in shown
+    assert not inventory.touched
+
+
+async def test_a_new_reading_after_an_expired_one_ages_again(running):
+    service, clock, _, published = running
+    await service.budget.pause(7200)  # no read starts; the age alone moves
+    await advance(service, clock, 200)
+    assert published[-1].resources[0].freshness is Freshness.EXPIRED
+    assert service._next_change == float("inf")
+    clock.advance(1)
+    service.inventory.accept(success(REQUEST, clock(), value=30), clock())
+    service._publish()
+    assert published[-1].resources[0].freshness is Freshness.FRESH
+    assert service._next_change < float("inf")
+    await advance(service, clock, 70)
+    assert published[-1].resources[0].freshness is Freshness.LATE

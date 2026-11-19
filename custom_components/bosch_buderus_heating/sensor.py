@@ -1544,7 +1544,19 @@ def _unknown_description(
 # Sensors that combine several readings keep following the last cloud cycle.
 _COMBINED_VALUE_KINDS = frozenset({"dew_point", "pressure_status"})
 # X16: kinds that show one resource alone (see ``_local_pass_untouched``).
-_LOCAL_GATED_KINDS = frozenset({"value", "nested", "enum_values", "values"})
+_LOCAL_GATED_KINDS = frozenset(
+    {
+        "value",
+        "nested",
+        "enum_values",
+        "values",
+        "system_info",
+        "unknown_number",
+        "unknown_enum",
+        "unknown_flag",
+        "heat_demand",
+    }
+)
 
 # Optional per-source entities (P18): only single, paired readings.
 SOURCES = ("local", "cloud")
