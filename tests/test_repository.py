@@ -34,7 +34,7 @@ def test_stable_project_identity() -> None:
     assert manifest["name"] == "Bosch/Buderus Home Comfort"
     assert manifest["version"] == "0.9.2"
     assert project["project"]["version"] == manifest["version"]
-    assert manifest["requirements"] == ["aiomqtt==2.5.1"]
+    assert manifest["requirements"] == ["aiomqtt>=2.5.1,<3"]
     assert set(manifest["requirements"]).issubset(project["project"]["dependencies"])
     assert manifest["config_flow"] is True
     assert hacs["name"] == manifest["name"]
@@ -277,3 +277,38 @@ def test_every_test_has_a_time_limit(request: pytest.FixtureRequest) -> None:
     # Where the plugin is installed (every CI job), the option is applied.
     if request.config.pluginmanager.hasplugin("timeout"):
         assert request.config.getini("timeout") == "120"
+
+
+def test_the_mqtt_requirement_is_a_range_that_fits_home_assistant() -> None:
+    """An exact pin would break the whole installation when Home Assistant
+    raises its minimum of the library; a range must overlap its constraint."""
+    from importlib.metadata import version
+    from pathlib import Path
+
+    import homeassistant
+    from packaging.requirements import Requirement
+
+    manifest = load_json(INTEGRATION / "manifest.json")
+    ours = Requirement(manifest["requirements"][0])
+    assert ours.name == "aiomqtt"
+    assert "==" not in str(ours.specifier)
+    constraints = (
+        Path(homeassistant.__file__).parent / "package_constraints.txt"
+    ).read_text(encoding="utf-8")
+    theirs = [
+        Requirement(line.strip())
+        for line in constraints.splitlines()
+        if line.strip().lower().startswith("aiomqtt")
+    ]
+    assert theirs, "Home Assistant no longer constrains aiomqtt: check this test"
+    candidates = ("2.5.0", "2.5.1", "2.6.0", "2.9.0")
+    both = [
+        item
+        for item in candidates
+        if ours.specifier.contains(item)
+        and all(rule.specifier.contains(item) for rule in theirs)
+    ]
+    assert "2.5.1" in both
+    installed = version("aiomqtt")
+    assert ours.specifier.contains(installed)
+    assert all(rule.specifier.contains(installed) for rule in theirs)

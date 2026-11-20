@@ -605,13 +605,15 @@ async def test_failed_discovery_names_its_own_category_not_an_older_one(
         await _cycle(coordinator, clock)
         assert coordinator.last_update_success
         # Now a discovery (rescan, firmware change) fails first.
-        with patch.object(
-            coordinator_module,
-            "async_discover_resources",
-            AsyncMock(side_effect=ServiceUnavailable(503)),
+        with (
+            patch.object(
+                coordinator_module,
+                "async_discover_resources",
+                AsyncMock(side_effect=ServiceUnavailable(503)),
+            ),
+            pytest.raises(UpdateFailed),
         ):
-            with pytest.raises(UpdateFailed):
-                await coordinator._async_discover_data()
+            await coordinator._async_discover_data()
         coordinator.last_update_success = False
         sensor._evaluate()
         assert sensor.is_on is False
@@ -650,7 +652,9 @@ def test_cloud_failure_categories_cover_everything_a_cycle_can_report() -> None:
             SignInUnavailable("x"),
             ServiceUnavailable(503),
             RequestTimeout("x"),
-            RefreshTokenRejected(rejection=TokenEndpointRejection(400, "x", "y", "json")),
+            RefreshTokenRejected(
+                rejection=TokenEndpointRejection(400, "x", "y", "json")
+            ),
         )
         for status in (None, 200, 403, 404, 429, 500, 502, 503, 504)
     }
