@@ -440,6 +440,9 @@ values are imported only when the controller confirms the unit kWh.
 
 - Choose the statistics yourself in the **Energy** dashboard; nothing is
   added there automatically.
+- Home Assistant offers a fixed price in the **Energy** dashboard only for
+  counters that are entities. An external statistic like these has no such
+  choice, so no cost can be assigned to it there.
 - Only completed days are imported. A first filling reaches back at most
   400 days; changed days are recalculated up to 31 days back.
 - Every run reads again from the last day already read, so a day that was
@@ -702,7 +705,9 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   zuletzt gelesenen Tag erneut; ein neu begonnener Import setzt vorhandene
   Statistiken fort; Auswahl im Energie-Dashboard selbst, Löschen unter
   **Entwicklerwerkzeuge → Statistiken**; alle drei Stunden höchstens acht
-  Anfragen.
+  Anfragen. Einen festen Preis bietet das Energie-Dashboard nur für Zähler an,
+  die Entitäten sind; einer externen Statistik wie dieser lässt sich dort
+  kein Preis zuordnen.
 - **Funkgeräte:** Batterie, Funksignal, Firmware, Ventilwerte und
   Flüstermodus (nur lesen), Ventilproblem (auch bei wartender
   Ventiladaption); Kindersicherung, Temperatur-Offset und Empfindlichkeit der

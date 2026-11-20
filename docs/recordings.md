@@ -201,6 +201,17 @@ of the month.
 
 - Use **either** these statistics **or** the counter entities in the energy
   dashboard, not both: both count the same energy.
+- **No fixed price for these statistics.** Home Assistant offers a fixed price
+  (or a price entity) in the **Energy** dashboard only for counters that are
+  entities. An imported external statistic has no such choice, so no cost can
+  be assigned to it there. If you want costs, use the counter entities of the
+  integration in the dashboard instead of the statistics (not both, see
+  above).
+  *Deutsch:* Im **Energie**-Dashboard bietet Home Assistant einen festen Preis
+  (oder eine Preis-Entität) nur für Zähler an, die Entitäten sind. Einer
+  importierten externen Statistik lässt sich dort kein Preis zuordnen. Wer
+  Kosten sehen möchte, nimmt im Dashboard die Zähler-Entitäten der Integration
+  statt der Statistiken (nicht beides, siehe oben).
 - An hour is imported once it ended at least 15 minutes ago and two reads
   gave the same value; the hour still running is never imported. Every run
   reads the last 48 hours again; a changed hour is imported again from
