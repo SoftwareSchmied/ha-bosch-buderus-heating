@@ -96,16 +96,27 @@ def test_a_real_reading_on_an_instantaneous_heater_stays(hass: HomeAssistant) ->
 
 
 @pytest.mark.parametrize("system", ["storage", None])
-def test_other_systems_keep_the_value_they_report(
+def test_a_zero_is_unknown_on_every_system(
     hass: HomeAssistant, system: str | None
 ) -> None:
+    """Issue 83: a tank behind a CT200 reports 0.0 as well, flagged available;
+    a tank is never at 0 degrees, so no system keeps the 0."""
     sensor, heater = _plant(hass, system, 0.0)
-    assert sensor.native_value == 0.0
-    assert heater.native_current_temperature == 0.0
+    assert sensor.native_value is None
+    assert heater.native_current_temperature is None
+
+
+@pytest.mark.parametrize("system", ["storage", None])
+def test_a_real_reading_on_other_systems_stays(
+    hass: HomeAssistant, system: str | None
+) -> None:
+    sensor, heater = _plant(hass, system, 0.5)
+    assert sensor.native_value == 0.5
+    assert heater.native_current_temperature == 0.5
 
 
 @pytest.mark.usefixtures("enable_custom_integrations")
-@pytest.mark.parametrize(("system", "expected"), [("instant", None), ("storage", 0.0)])
+@pytest.mark.parametrize(("system", "expected"), [("instant", None), ("storage", None)])
 async def test_the_entities_of_a_room_controller_plant(
     hass: HomeAssistant, system: str, expected: float | None
 ) -> None:
