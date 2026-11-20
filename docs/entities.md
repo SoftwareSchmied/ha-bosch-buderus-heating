@@ -752,11 +752,21 @@ These 16 core entities are created for every available domestic-hot-water
 circuit. Optional fresh-water-station and service values are added only when
 reported.
 
-A circuit that reports its `hotWaterSystem` as `instant` (an instantaneous
-water heater without a tank) often reports 0 as the actual hot-water
-temperature although it flags the value available. That 0 is the missing
-sensor, so the sensor and the water heater show the temperature as unknown
-then. A real reading above 0 on such a circuit is shown as it is.
+A circuit often reports exactly 0 as the actual hot-water temperature
+although it flags the value available: an instantaneous water heater without
+a tank (`hotWaterSystem` `instant`) and, as reported for a storage system
+behind a room controller, a tank whose sensor is not connected. A tank is
+never at 0 °C, so that 0 is the missing sensor: the sensor and the water
+heater show the temperature as unknown, whatever the hot-water system says. A
+real reading above 0 is shown as it is.
+
+The extra hot-water duration of a KM200 with an RC300 has been reported with
+the unit `mins` and limits such as 225 to 960, which looks like units of a
+fifteenth of a minute (15 minutes = 225, one hour = 900). The scale is
+unclear and I do not convert anything. When the lower limit is 120 or more in
+`mins`, the number control is created disabled, so nothing is written by
+accident; the sensor shows the value as reported. I am looking for someone
+with such a device who can check what a written value does.
 
 | Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|

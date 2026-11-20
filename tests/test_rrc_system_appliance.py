@@ -367,3 +367,57 @@ def test_the_pressure_status_needs_valid_limits() -> None:
         }
     )
     assert "pressure_status" in {item.key for item in build_sensors(tree, RRC_CONTEXT)}
+
+
+def _pressure_without_sensor():
+    """The shape of issue 100: a boiler without a pressure sensor answers the
+    EMS "no value" byte, 25.5, with used "false" and 25.0 as the maximum."""
+    return parse_resource(
+        {
+            "id": f"{APPLIANCE}/systemPressure",
+            "type": "floatValue",
+            "value": 25.5,
+            "unitOfMeasure": "bar",
+            "minValue": 0.0,
+            "maxValue": 25.0,
+            "used": "false",
+            "available": "true",
+        }
+    )
+
+
+def test_a_pressure_placeholder_gives_no_entity_and_no_state() -> None:
+    placeholder = _pressure_without_sensor()
+    assert placeholder.metadata.used is False
+    tree = system_tree()
+    tree[f"{APPLIANCE}/systemPressure"] = placeholder
+    assert "rrc_system_pressure" not in {
+        item.key for item in build_sensors(tree, RRC_CONTEXT)
+    }
+    # A reading beyond the reported limits is the placeholder as well, also
+    # when the controller still calls the leaf used.
+    in_use = replace(placeholder, metadata=replace(placeholder.metadata, used=True))
+    assert sensor_value(PRESSURE, in_use) is None
+    assert sensor_value(PRESSURE, replace(in_use, value=1.6)) == 1.6
+    assert sensor_value(PRESSURE, replace(placeholder, value=1.6)) is None
+    tree[f"{APPLIANCE}/systemPressure"] = replace(in_use, value=1.6)
+    assert "rrc_system_pressure" in {
+        item.key for item in build_sensors(tree, RRC_CONTEXT)
+    }
+
+
+async def test_a_running_pressure_sensor_turns_unknown_on_the_placeholder(
+    hass: HomeAssistant,
+) -> None:
+    cloud = RrcCloud(system_tree())
+    entry, clock, stack = await setup(hass, cloud)
+    unique_id = f"{GW}:system:appliance:systemPressure:value"
+    try:
+        assert float(state_of(hass, entry, unique_id).state) == 1.6
+        cloud.tree[f"{APPLIANCE}/systemPressure"] = _pressure_without_sensor()
+        clock.now += 3600
+        await entry.runtime_data.coordinators[0].async_refresh()
+        await hass.async_block_till_done()
+        assert state_of(hass, entry, unique_id).state == STATE_UNAVAILABLE
+    finally:
+        await teardown(hass, entry, stack)

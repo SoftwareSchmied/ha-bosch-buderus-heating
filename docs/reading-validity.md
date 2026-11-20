@@ -34,7 +34,10 @@ beyond those 15 minutes plus the limit.
   displayed until its limit: timeouts and connection errors, rate limits (429),
   server errors (5xx), a rejected authorization (401), an unusable or truncated
   response, a reading missing from the response and readings not reached in an
-  interrupted cycle.
+  interrupted cycle. An HTTP 200 whose text, float or integer value is null
+  counts as a reading missing from the response while a good value is stored:
+  it does not replace that value, so the hot water water heater, for example,
+  does not turn unavailable at once.
 - An explicit answer for the reading ends it immediately: forbidden (403), not
   found (404), not acceptable (406), other client errors, invalid or unreadable
   data for the reading (also from the follow-up single read) or an unconfirmed

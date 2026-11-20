@@ -602,6 +602,9 @@ def test_device_ids_come_only_from_the_list() -> None:
         "/gateway/installer/phone",
         "/system/location/coordinates",
         "/system/autoAway/users/list",
+        "/system/autoAway/users/us1",
+        "/system/autoAway/users/us1/name",
+        "/system/autoAway/users/us12/name",
     ],
 )
 def test_keys_and_personal_data_are_never_read(path: str) -> None:

@@ -181,6 +181,13 @@ path and day while they do not answer. The recordings take part in the
 import into the statistics like the others (water in litres, energy in kWh);
 no counter is calculated for them, so there is no *(calculated)* companion.
 
+The energy monitoring (*Total – Energy consumed*) has been reported to answer
+the sum of minute values: a count of about 60 per hour and about 1,440 per day,
+where the app shows the sum divided by 60 (a day of 420 as 7 kWh). I take that
+form as reported and divide such a slot by 60; I could not test it on a plant
+myself. Any other count that does not fit is not taken (see the next
+paragraph).
+
 Expected, untested on a real installation: no answer of a softener or a boiler
 has been seen yet. The paths and the meaning of the values (energy summed per
 hour, day and month, as for the heat pump) follow the recordings the
@@ -201,6 +208,17 @@ of the month.
 
 - Use **either** these statistics **or** the counter entities in the energy
   dashboard, not both: both count the same energy.
+- **No fixed price for these statistics.** Home Assistant offers a fixed price
+  (or a price entity) in the **Energy** dashboard only for counters that are
+  entities. An imported external statistic has no such choice, so no cost can
+  be assigned to it there. If you want costs, use the counter entities of the
+  integration in the dashboard instead of the statistics (not both, see
+  above).
+  *Deutsch:* Im **Energie**-Dashboard bietet Home Assistant einen festen Preis
+  (oder eine Preis-Entität) nur für Zähler an, die Entitäten sind. Einer
+  importierten externen Statistik lässt sich dort kein Preis zuordnen. Wer
+  Kosten sehen möchte, nimmt im Dashboard die Zähler-Entitäten der Integration
+  statt der Statistiken (nicht beides, siehe oben).
 - An hour is imported once it ended at least 15 minutes ago and two reads
   gave the same value; the hour still running is never imported. Every run
   reads the last 48 hours again; a changed hour is imported again from
@@ -242,6 +260,20 @@ of the month.
   Newfoundland, central Australia) nothing is imported: the recorder takes
   rows on full UTC hours only. The diagnostics show
   `time_zone_on_the_hour: false`; the period entities work as usual.
+
+## Counts that do not fit
+
+Energy, starts and working time are sums with one value per hour: the count
+`c` is 1 for an hour and the hours of the day (24, or 23 and 25 on a change
+of summer time) for a day. A gateway that answers minute values instead
+(`c` 60 per hour, `y` the sum of the minutes) would show about 60 times too
+much, so a slot whose count does not fit is not taken. Nothing is
+interpolated; the slot stays a gap, and the diagnostics count it as
+`answer_count_form` under the events of the recording. Temperatures are means and
+volumes are not judged. A day with a count below the hours of the day (the plant
+was off for some hours) is not taken either; the hours of that day, when the
+plant still has them, are imported as usual. Please report a plant that shows
+`answer_count_form` on GitHub with its diagnostics.
 
 ## Diagnostics
 

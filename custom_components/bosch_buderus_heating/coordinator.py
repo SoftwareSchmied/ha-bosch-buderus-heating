@@ -88,6 +88,8 @@ from .icom_profile import (
 from .legacy_holiday_writes import IcomHolidayWriteService
 from .legacy_holidays import SYSTEM_INFO_PATH, is_icom_slot
 from .live_target import with_live_target
+from .null_reading import holds_value, is_null_reading
+from .null_reading import without_answer as null_without_answer
 from .plant_model import PlantModel
 from .pointt import (
     AuthenticationError,
@@ -151,6 +153,7 @@ from .rrc_write import (
     RrcWritePending,
     RrcWriteStats,
 )
+from .season_paths import is_season_dependent
 from .start_counters import is_start_counter_path
 from .startup_data import (
     LICENSE_PATH,
@@ -4542,6 +4545,15 @@ class BoschBuderusDataUpdateCoordinator(
         for result in results:
             if (mode_path := _manual_setpoint_mode_path(result.path)) is not None:
                 affected_modes.add(mode_path)
+            if (
+                result.resource is not None
+                and is_null_reading(result.resource)
+                and (known := snapshots.get(result.path)) is not None
+                and holds_value(known.resource)
+            ):
+                # HTTP 200 with a null value: no new reading, the last good
+                # value stays (as for a path the answer did not contain).
+                result = null_without_answer(result)
             if result.resource is not None:
                 previous = snapshots.get(result.path)
                 if previous is not None:
@@ -4614,10 +4626,12 @@ class BoschBuderusDataUpdateCoordinator(
                 if result.status == 404 and (
                     result.path in self._manual_setpoint_candidates
                     or result.path in self.registered_start_counter_paths
+                    or is_season_dependent(result.path)
                 ):
                     # Registered counters and pending manual targets recover
                     # through their regular groups. A 404 must not introduce
                     # a day-long pause for either established recovery path.
+                    # So does a leaf that only some season mode offers.
                     self._negative_until.pop(result.path, None)
                 else:
                     pause = FORBIDDEN_PAUSE if result.status == 403 else NOT_FOUND_PAUSE

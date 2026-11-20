@@ -391,7 +391,7 @@ def test_c_zero_is_a_gap_and_future_placeholders_are_skipped() -> None:
     payload = {
         "type": "yRecording",
         "unitOfMeasure": "kWh",
-        "recording": [{"y": 2.0, "c": 1}] * 14 + [{"y": 1.0, "c": 0}] * 16,
+        "recording": [{"y": 2.0, "c": 24}] * 14 + [{"y": 1.0, "c": 0}] * 16,
     }
     cloud = Ledger(HEAT)
     parsed = parse_cloud(payload, HEAT, "2026-11", Z)

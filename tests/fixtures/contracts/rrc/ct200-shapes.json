@@ -299,8 +299,28 @@
    "references": [
     {
      "id": "/system/autoAway/users/list"
+    },
+    {
+     "id": "/system/autoAway/users/us1"
     }
    ]
+  },
+  {
+   "id": "/system/autoAway/users/us1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/autoAway/users/us1/name"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway/users/us1/name",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "UFJJVkFURS1NQVJLRVItTkFNRQ==",
+   "used": "true"
   },
   {
    "id": "/system/autoAway/users/list",

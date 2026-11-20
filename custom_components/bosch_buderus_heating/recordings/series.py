@@ -85,6 +85,9 @@ class Series:
     # for a plant that shows ``requires`` (see ``gating``).
     cloud_only: bool = False
     requires: str | None = None
+    # The cloud answers this series with the sum of minute values (``c`` about
+    # 60 per hour, about 1440 per day): kWh is the sum divided by 60.
+    minute_sums: bool = False
 
     @property
     def mean(self) -> bool:
@@ -174,6 +177,7 @@ CLOUD_ONLY: Final = (
         Quantity.ENERGY,
         cloud_only=True,
         requires=REQUIRES_BOILER,
+        minute_sums=True,
     ),
 )
 ALL_SERIES: Final = (*SERIES, *CLOUD_ONLY)
