@@ -23,6 +23,7 @@ from custom_components.bosch_buderus_heating.event import (
 from custom_components.bosch_buderus_heating.faults import (
     FaultSeverity,
     FaultTracker,
+    fault_code_search_url,
     fault_summary,
     parse_fault_resource,
 )
@@ -590,3 +591,31 @@ def _current_notification(hass: HomeAssistant, entry) -> dict[str, str] | None:
         notification_id(entry.entry_id, GW)
     )
     return None if notification is None else dict(notification)
+
+
+# ------------------------------------------------------------- code 3161
+
+
+@pytest.mark.parametrize("extra", [{}, {"dcd": "H07"}, {"dcd": "A84"}])
+def test_fault_3161_reads_as_a_low_radio_battery(extra: dict[str, object]) -> None:
+    """Seen on a CR 20 RF; the batteries were replaced and the code left."""
+    fault = only(ccd="3161", fc="12", dlv="8", **extra)
+    assert fault_summary(fault, "en") == (
+        "Battery of a radio device low (seen on a CR 20 RF)"
+    )
+    assert fault_summary(fault, "de") == (
+        "Batterie eines Funkgeräts schwach (beobachtet an einem CR 20 RF)"
+    )
+    assert "Unknown" not in fault_summary(fault, "en")
+    # A known code needs no link to the code search.
+    assert fault_code_search_url(fault) is None
+    assert fault_code_search_url(only(ccd="3162", fc="12")) is not None
+
+
+@pytest.mark.parametrize("language", OTHER_LANGUAGES)
+def test_fault_3161_is_translated(language: str) -> None:
+    fault = only(ccd="3161", fc="12", dlv="8")
+    text = fault_summary(fault, language)
+    assert text != fault_summary(fault, "en")
+    assert "CR 20 RF" in text
+    assert "Unknown" not in text

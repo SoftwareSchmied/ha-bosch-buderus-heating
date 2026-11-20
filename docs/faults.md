@@ -34,6 +34,10 @@ Maintenance due and Refill needed; see
 [room controllers](room-controllers.md#system-faults-and-maintenance). The
 texts are expected, untested on a real controller.
 
+Fault code 3161 reads "Battery of a radio device low (seen on a CR 20 RF)".
+It is documented on a CR 20 RF: a user replaced its batteries and the code
+left the active faults.
+
 A maintenance message, warning or information without a text of its own is
 named by its kind, for example "Maintenance message (code 1234)" or
 "Warning (code 5000)", never "Unknown fault". Only a fault or a notification

@@ -109,6 +109,12 @@ _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
         "en": "Battery of a radio device low",
         "de": "Batterie eines Funkgeräts schwach",
     },
+    # A user replaced the batteries of a CR 20 RF room controller and the
+    # code left the active faults (observed 2026-11-19).
+    ("3161", None): {
+        "en": "Battery of a radio device low (seen on a CR 20 RF)",
+        "de": "Batterie eines Funkgeräts schwach (beobachtet an einem CR 20 RF)",
+    },
     ("1871", "A84"): {
         "en": "Valve adaptation of a radiator thermostat pending",
         "de": "Ventiladaption eines Heizkörperthermostats steht aus",
