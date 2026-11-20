@@ -90,10 +90,16 @@ therefore:
   time. A reading that works again ends the series;
 - keeps the values of a confirmed access during the first pause, but withdraws
   them after three missed periods or from the second pause on;
-- stops completely, without further requests, when the answers cannot be
-  decrypted any more (wrong or changed password) or when the gateway reports an
-  ID other than the one it was set up with. The access then shows "sign-in
-  required" or "not reachable" until you enter the data again;
+- stops completely, without further requests, when two answers in a row cannot
+  be decrypted (wrong or changed password; a single one, also right after a
+  restart, is only looked at again after a minute) or when the gateway reports
+  a usable ID other than the one it was set up with. The access then shows
+  "sign-in required" or "not reachable" until you enter the data again;
+- treats an ID that says nothing (none, empty or a placeholder such as -1) as
+  no answer for the check: the access pauses and looks again, it does not stop;
+- makes no request while no cloud connection supplies the system any more (for
+  example after the cloud connection was removed), and goes on by itself when
+  one does again;
 - checks the gateway ID again every hour and after every pause.
 
 If the gateway stops answering altogether, switch the access off under

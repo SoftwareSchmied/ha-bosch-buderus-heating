@@ -334,7 +334,8 @@ async def test_a_wrong_password_stops_the_access_without_further_requests(
         assert state(p).problem == "auth_required"
         assert p.runtime.connection_phase("local") is ConnectionPhase.READY
         await asyncio.sleep(1.2)
-        assert gateway.requests == [UUID_PATH]
+        # The second undecryptable answer ends it: no value is ever read.
+        assert gateway.requests == [UUID_PATH, UUID_PATH]
         assert not state(p).current_observations
     finally:
         await p.runtime.close()
@@ -602,3 +603,117 @@ def test_every_reading_keeps_the_period_of_its_class_at_least_the_interval():
     }
     slower = bare_source({"local": {"local_interval": 600}})
     assert slower.period(request_for_path("/heatSources/flameStatus")) == 600
+
+
+async def test_removing_the_cloud_connection_ends_the_polling_probe(
+    hass, gateway, running
+):
+    p = running
+    management = p.runtime.management
+    management.remove(management.edit(p.cloud))
+    await settle(hass)
+    await asyncio.sleep(0.3)
+    count = len(gateway.requests)
+    await asyncio.sleep(2.0)
+    assert len(gateway.requests) == count
+
+
+# ------------------------------------------------ unusable ID, restart, session
+
+
+@pytest.mark.parametrize("unusable", ["-1", "", None])
+async def test_an_unusable_id_after_a_pause_is_no_other_gateway(
+    hass, gateway, running, unusable
+):
+    p = running
+    gateway.value(UUID_PATH, unusable)
+    gateway.hang_next = 2  # two lost requests pause the access
+    await until(hass, lambda: source(p).pause_reason == "identity_unavailable")
+    assert state(p).problem != "local_identity_conflict"
+    # The access keeps looking again, with growing pauses.
+    first = gateway.count(UUID_PATH)
+    await until(hass, lambda: gateway.count(UUID_PATH) >= first + 2, seconds=15)
+    assert "local_identity_conflict" not in [
+        item["reason"] for item in source(p).diagnostics()["condition_changes"]
+    ]
+    assert state(p).problem != "local_identity_conflict"
+    gateway.value(UUID_PATH, "000123")
+    await until(hass, lambda: state(p).condition is LocalCondition.READY, seconds=20)
+    assert state(p).identity_confirmed and state(p).problem is None
+
+
+@pytest.mark.parametrize("unusable", ["-1", ""])
+async def test_an_unusable_id_at_the_start_waits_and_never_stops(
+    hass, gateway, fast, unusable
+):
+    gateway.value(UUID_PATH, unusable)
+    p = build(hass, gateway)
+    p.runtime.start()
+    try:
+        await until(
+            hass,
+            lambda: (
+                p.runtime.connection_driver("local") is not None
+                and source(p).pause_reason == "identity_unavailable"
+            ),
+        )
+        await until(hass, lambda: gateway.count(UUID_PATH) >= 3, seconds=15)
+        assert state(p).problem != "local_identity_conflict"
+        assert not state(p).current_observations
+        assert (await source(p).test_connection())[0] != "ok"
+        gateway.value(UUID_PATH, "000123")
+        await until(
+            hass, lambda: state(p).condition is LocalCondition.READY, seconds=20
+        )
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_usable_different_id_still_stops_after_a_pause(hass, gateway, running):
+    p = running
+    gateway.value(UUID_PATH, "-1")
+    gateway.hang_next = 2
+    await until(hass, lambda: source(p).pause_reason == "identity_unavailable")
+    gateway.value(UUID_PATH, "424242")
+    await until(
+        hass,
+        lambda: state(p).problem == "local_identity_conflict",
+        seconds=15,
+    )
+
+
+async def test_one_undecryptable_answer_at_the_start_is_looked_at_again(
+    hass, gateway, fast
+):
+    # The stored access was verified before (after a restart): one noisy
+    # first answer is no reason to ask for the passwords again.
+    gateway.noise_next = 1
+    p = build(hass, gateway)
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert "auth_required" not in conditions(p)
+        assert state(p).condition is LocalCondition.READY
+        assert source(p).diagnostics()["pauses"]["total"] >= 1
+    finally:
+        await p.runtime.close()
+
+
+async def test_the_session_is_closed_without_a_session_warning(
+    hass, gateway, fast, caplog, monkeypatch
+):
+    created = []
+    real = icom_source.async_create_clientsession
+
+    def spy(*args, **kwargs):
+        created.append(kwargs)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(icom_source, "async_create_clientsession", spy)
+    p = build(hass, gateway)
+    p.runtime.start()
+    await until(hass, lambda: state(p) and state(p).current_observations)
+    await p.runtime.close()
+    assert "closes the Home Assistant aiohttp session" not in caplog.text
+    # Our own session, ended by us (detached), never by the entry's cleanup.
+    assert created == [{"auto_cleanup": False}]
