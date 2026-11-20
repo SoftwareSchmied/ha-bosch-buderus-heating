@@ -139,8 +139,52 @@ def _changes_on(day: date, zone: tzinfo) -> bool:
     return day_hours(day, zone) != 24
 
 
+def count_fits(quantity: Quantity, rate: Rate, c: float, day: date, zone: tzinfo) -> bool:
+    """Whether the count ``c`` of a slot has the form this reading knows.
+
+    A sum of energy, starts or working time carries one value per hour
+    (``c`` 1 for an hour, the hours of the day for a day). A gateway that
+    answers minute values (``c`` 60 per hour, ``y`` the sum of the
+    minutes) would be read 60 times too high, so such an answer is not
+    taken; it is counted as ``count_form`` in the diagnostics. A slot
+    without data (``c`` 0), a mean (temperature), a volume and a month are
+    not judged.
+    """
+    if c == 0 or quantity in (Quantity.TEMPERATURE, Quantity.VOLUME):
+        return True
+    if rate is Rate.HOUR:
+        return c == 1
+    if rate is Rate.DAY:
+        return c in (24, day_hours(day, zone))
+    return True
+
+
+def minute_form(
+    series: Series, rate: Rate, y: float, c: float, day: date, zone: tzinfo
+) -> tuple[float, float]:
+    """A sum of minute values read as hours and days (``minute_sums`` series).
+
+    A count above the usual one and up to the minutes of the slot is the
+    minute form: the energy is the sum divided by 60, and the slot counts as
+    one hour (or the hours of the day). Any other count stays as it is, so
+    ``count_fits`` judges it.
+    """
+    if not series.minute_sums or c <= 0:
+        return y, c
+    if rate is Rate.HOUR and 1 < c <= 60:
+        return y / 60, 1.0
+    hours = day_hours(day, zone)
+    if rate is Rate.DAY and max(24, hours) < c <= 60 * hours:
+        return y / 60, float(hours)
+    return y, c
+
+
 def _hour_group(
-    group: RecordingGroup, factor: float, zone: tzinfo, parsed: Parsed
+    group: RecordingGroup,
+    factor: float,
+    zone: tzinfo,
+    parsed: Parsed,
+    quantity: Quantity,
 ) -> None:
     start, end = group.start, group.end
     count = len(group.samples)
@@ -188,6 +232,9 @@ def _hour_group(
         if y is None or c is None or c < 0:
             parsed.issues["invalid_value"] += 1
             continue
+        if not count_fits(quantity, Rate.HOUR, c, day, zone):
+            parsed.issues["count_form"] += 1
+            continue
         parsed.samples.append(Sample(Rate.HOUR, day, hour, y * factor, c))
     # A day is complete in this answer when its first and last hour on the
     # plant's clock are part of the group.
@@ -201,7 +248,13 @@ def _hour_group(
         day += timedelta(days=1)
 
 
-def _calendar_group(group: RecordingGroup, factor: float, parsed: Parsed) -> None:
+def _calendar_group(
+    group: RecordingGroup,
+    factor: float,
+    parsed: Parsed,
+    quantity: Quantity,
+    zone: tzinfo,
+) -> None:
     rate = Rate.DAY if group.sample_rate == "P1D" else Rate.MONTH
     first, last = group.start.date(), group.end.date()
     if rate is Rate.DAY:
@@ -219,6 +272,9 @@ def _calendar_group(group: RecordingGroup, factor: float, parsed: Parsed) -> Non
         if y is None or c is None or c < 0:
             parsed.issues["invalid_value"] += 1
             continue
+        if not count_fits(quantity, rate, c, day, zone):
+            parsed.issues["count_form"] += 1
+            continue
         parsed.samples.append(Sample(rate, day, None, y * factor, c))
 
 
@@ -231,9 +287,9 @@ def parse_local(recording: Recording, series: Series, zone: tzinfo) -> Parsed | 
     newest: datetime | None = None
     for group in recording.groups:
         if group.sample_rate == "PT1H":
-            _hour_group(group, factor, zone, parsed)
+            _hour_group(group, factor, zone, parsed, series.quantity)
         elif group.sample_rate in ("P1D", "P1M"):
-            _calendar_group(group, factor, parsed)
+            _calendar_group(group, factor, parsed, series.quantity, zone)
         else:
             parsed.issues["unknown_rate"] += 1
             continue
@@ -287,6 +343,10 @@ def parse_cloud(
             if item is None:
                 parsed.issues["invalid_value"] += 1
                 continue
+            item = minute_form(series, Rate.HOUR, *item, day, zone)
+            if not count_fits(series.quantity, Rate.HOUR, item[1], day, zone):
+                parsed.issues["count_form"] += 1
+                continue
             hour = (
                 int((start + timedelta(hours=index)).timestamp()) if placeable else None
             )
@@ -303,9 +363,12 @@ def parse_cloud(
             if item is None:
                 parsed.issues["invalid_value"] += 1
                 continue
-            parsed.samples.append(
-                Sample(Rate.DAY, first + timedelta(days=index), None, *item)
-            )
+            sample_day = first + timedelta(days=index)
+            item = minute_form(series, Rate.DAY, *item, sample_day, zone)
+            if not count_fits(series.quantity, Rate.DAY, item[1], sample_day, zone):
+                parsed.issues["count_form"] += 1
+                continue
+            parsed.samples.append(Sample(Rate.DAY, sample_day, None, *item))
         return parsed
     first = date(int(interval), 1, 1)
     if len(values) != 12:

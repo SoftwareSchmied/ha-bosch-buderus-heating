@@ -183,7 +183,8 @@ def test_cloud_rows_that_are_not_usable_are_skipped_in_every_interval() -> None:
     assert day is not None
     assert len(day.samples) == 6 and day.issues["invalid_value"] == 18
     assert day.complete_days == {date(2026, 11, 13)}
-    month = parse_cloud(_cloud(rows * 7 + rows[:2]), HEAT, "2026-11", Z)
+    day_rows = [{"y": 1.0, "c": 24}, *rows[1:]]  # a day of the month holds 24 hours
+    month = parse_cloud(_cloud(day_rows * 7 + day_rows[:2]), HEAT, "2026-11", Z)
     assert month is not None
     assert all(s.rate is Rate.DAY for s in month.samples)
     assert len(month.samples) == 8 and month.issues["invalid_value"] == 22
