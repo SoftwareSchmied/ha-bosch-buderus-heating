@@ -510,10 +510,14 @@ async def test_a_stopped_source_shows_no_partial_result(hass, monkeypatch):
             before = report.partial_publications
             shown = []
             with patch.object(
-                ManagedPointTCoordinator, "_publish_partial", lambda self: shown.append(1)
+                ManagedPointTCoordinator,
+                "_publish_partial",
+                lambda self: shown.append(1),
             ):
                 coordinator._partial_started = 0.0
-                with patch.object(type(coordinator.source), "current", lambda self: False):
+                with patch.object(
+                    type(coordinator.source), "current", lambda self: False
+                ):
                     coordinator._discovery_progress(found)
                 assert not shown
                 assert report.partial_publications == before
