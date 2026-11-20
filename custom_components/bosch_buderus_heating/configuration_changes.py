@@ -5,6 +5,7 @@ This is the pure version 4 dispatch contract used by managed runtime consumers.
 
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import cast
 
@@ -136,6 +137,9 @@ class RequestGeneration:
     binding_generation: int
 
 
+_MAX_ACCEPTED = 256
+
+
 class ConfigurationRuns:
     """Track connection and target-specific invalidations independently of auth."""
 
@@ -145,6 +149,9 @@ class ConfigurationRuns:
         self._connections: dict[str, int] = {}
         self._bindings: dict[str, int] = {}
         self._options_cache: tuple[ConfigurationSnapshot, JsonObject] | None = None
+        # The answer of ``accepts`` per generation. It depends on the snapshot
+        # and the two counters only, so every change of those starts it anew.
+        self._accepted: dict[RequestGeneration, bool] = {}
 
     def _options(self) -> JsonObject:
         """The current snapshot's options, decoded once per snapshot (O5).
@@ -159,6 +166,7 @@ class ConfigurationRuns:
 
     def update(self, snapshot: ConfigurationSnapshot) -> ConfigurationChanges:
         changes = configuration_changes(self._snapshot, snapshot)
+        self._accepted.clear()
         for key in changes.connections:
             self._connections[key] = self._connections.get(key, 0) + 1
         for key in changes.bindings:
@@ -209,14 +217,26 @@ class ConfigurationRuns:
     def accepts(self, generation: RequestGeneration) -> bool:
         """Check immediately before publishing a result or scheduling more work."""
         try:
-            return generation == self.capture(
+            known = self._accepted.get(generation)
+        except TypeError:  # a generation of an unhashable runtime: never kept
+            known = None
+        if known is not None:
+            return known
+        try:
+            accepted = generation == self.capture(
                 generation.connection_id, generation.binding_id
             )
         except ConfigurationError:
-            return False
+            accepted = False
+        if len(self._accepted) >= _MAX_ACCEPTED:
+            self._accepted.clear()
+        with suppress(TypeError):
+            self._accepted[generation] = accepted
+        return accepted
 
     def invalidate_binding(self, binding_id: str) -> None:
         """Retire one runtime attempt without changing stored settings."""
         if binding_id not in self._snapshot.bindings:
             raise ConfigurationError("binding_unavailable")
+        self._accepted.clear()
         self._bindings[binding_id] = self._bindings.get(binding_id, 0) + 1

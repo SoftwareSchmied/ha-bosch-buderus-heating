@@ -24,12 +24,14 @@ import logging
 import math
 import re
 from collections import Counter
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
+from itertools import compress
+from operator import is_not
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from .configuration import CLOUD_KIND, LOCAL_KIND
@@ -230,9 +232,6 @@ class LocalSelection:
         return self._cached("local_only", self._compute_local_only)
 
     def _compute_local_only(self) -> dict[str, LocalObservation]:
-        from .local_only import definition_for
-        from .local_plant_view import private_path
-
         states = tuple(
             (binding_id, self._runtime.local_state(binding_id))
             for binding_id in self._local_bindings()
@@ -257,11 +256,7 @@ class LocalSelection:
                 path = observation.request.path
                 # C7: every reading the cloud pair catalog does not cover;
                 # the entity rules decide (identifiers and structures never).
-                if (
-                    definition_for(path) is not None
-                    or path in self._registered_local_only
-                    or (pair_for_path(path) is None and not private_path(path))
-                ):
+                if _local_only_path(path) or path in self._registered_local_only:
                     result[path] = observation
         self._local_only_cache = (states, result)
         return result
@@ -305,7 +300,7 @@ class LocalSelection:
             if state is None:
                 continue
             ready = ready or getattr(state, "condition", None) is LocalCondition.READY
-            for view in getattr(state, "resources", ()) or ():
+            for view in _fault_views(state):
                 if (
                     view.request.path == "/notifications"
                     and view.available
@@ -329,7 +324,7 @@ class LocalSelection:
             state = self._runtime.local_state(binding_id)
             if getattr(state, "condition", None) is not LocalCondition.READY:
                 continue
-            for view in getattr(state, "resources", ()) or ():
+            for view in _fault_views(state):
                 path = view.request.path
                 if (
                     path.startswith("/devices/")
@@ -625,6 +620,9 @@ class LocalSelection:
         the local source and counts as a change.
         """
         enabled = self.enabled
+        previous = self._last_marker
+        earlier = previous[1] if previous is not None else {}
+        earlier_local = previous[2] if previous is not None else {}
         readings: dict[str, _Reading] = {}
         # Readable local-only paths count, so new entities can be added;
         # their answers only for paths with an enabled entity (P45).
@@ -639,14 +637,17 @@ class LocalSelection:
                 for observation in state.current_observations:
                     path = observation.request.path
                     if pair_for_path(path) is not None:
-                        readings[path] = (binding_id, observation)
+                        readings[path] = _carry(
+                            earlier.get(path), binding_id, observation
+                        )
                     if path in readable:
                         local_only[path] = (
-                            (binding_id, observation) if path in tracked else None
+                            _carry(earlier_local.get(path), binding_id, observation)
+                            if path in tracked
+                            else None
                         )
         writes = self._write_marker(readings)
         access = self.has_local_access
-        previous = self._last_marker
         self._last_marker = (enabled, readings, local_only, writes, access)
         self.changed_paths = (
             None
@@ -769,13 +770,62 @@ def _same_reading(then: _Reading | None, now: _Reading | None) -> bool:
     )
 
 
+@lru_cache(maxsize=8192)
+def _local_only_path(path: str) -> bool:
+    """A reading the cloud pair catalog does not cover and the entity rules
+    may use (C7): it only depends on the path."""
+    from .local_only import definition_for
+    from .local_plant_view import private_path
+
+    return definition_for(path) is not None or (
+        pair_for_path(path) is None and not private_path(path)
+    )
+
+
+def _carry(
+    earlier: _Reading | None, binding_id: str, observation: LocalObservation
+) -> _Reading:
+    """The reading of the last check when it is the very same one, so that the
+    comparison finds it unchanged at once."""
+    if earlier is not None and earlier[1] is observation and earlier[0] == binding_id:
+        return earlier
+    return (binding_id, observation)
+
+
+def _fault_views(state: object) -> Iterable[Any]:
+    """The views that can hold a fault list: a published state knows them,
+    any other object is looked through as a whole."""
+    from .local_state import LocalSourceState
+
+    if isinstance(state, LocalSourceState):
+        return state.fault_views
+    return getattr(state, "resources", ()) or ()
+
+
+def _moved(
+    before: Mapping[str, _Reading | None], after: Mapping[str, _Reading | None]
+) -> list[tuple[str, _Reading | None]]:
+    """The entries of ``after`` that are not the very object ``before`` holds
+    for the path. Most are: the same keys in the same order are compared one
+    by one without a loop of their own."""
+    if list(before) == list(after):
+        return list(
+            compress(
+                after.items(), map(is_not, before.values(), after.values(), strict=True)
+            )
+        )
+    return [(path, now) for path, now in after.items() if before.get(path) is not now]
+
+
 def _same_readings(
     before: Mapping[str, _Reading | None], after: Mapping[str, _Reading | None]
 ) -> bool:
     """The same paths, each from the same access with the same answer."""
     if before.keys() != after.keys():
         return False
-    return all(_same_reading(before[path], now) for path, now in after.items())
+    # An entry that is the very object of before is the same: only the others
+    # are compared.
+    return all(_same_reading(before[path], now) for path, now in _moved(before, after))
 
 
 def _differing_paths(
@@ -785,7 +835,7 @@ def _differing_paths(
     changed = set(before.keys() ^ after.keys())
     changed.update(
         path
-        for path, now in after.items()
+        for path, now in _moved(before, after)
         if path in before and not _same_reading(before[path], now)
     )
     return changed

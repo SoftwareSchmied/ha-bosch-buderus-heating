@@ -20,7 +20,11 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Final
 
 from .derived_inputs import energy_part, local_only_paths, read
-from .local_only import hybrid_evidence
+from .local_only import (
+    hybrid_evidence,
+    hybrid_path_counts,
+    hybrid_path_needs_value,
+)
 
 if TYPE_CHECKING:
     from .coordinator import BoschBuderusDataUpdateCoordinator
@@ -36,13 +40,41 @@ def burner_reported(values: Mapping[str, float]) -> bool:
 
 
 def hybrid_detected(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
-    """A hybrid manager or a hybrid system type is reported."""
+    """A hybrid manager or a hybrid system type is reported.
+
+    Within one update pass worked out once: every performance factor asks,
+    and neither the cloud nor the local readings change during the pass.
+    """
+    from .local_selection import LocalSelection
+
+    selection = getattr(coordinator, "local_selection", None)
+    if isinstance(selection, LocalSelection):
+        return selection._cached(
+            ("hybrid_detected", id(coordinator)),
+            lambda: _hybrid_detected(coordinator),
+        )
+    return _hybrid_detected(coordinator)
+
+
+def _hybrid_detected(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    # Only the paths that can show a hybrid system are looked at, and only
+    # the types need their value (the rest of the paths count by their name).
     readings: list[tuple[str, object]] = []
     data = getattr(coordinator, "data", None) or {}
     for path, resource in (getattr(coordinator, "resources", None) or {}).items():
+        if not hybrid_path_counts(path):
+            continue
+        if not hybrid_path_needs_value(path):
+            readings.append((path, None))
+            continue
         current = data[path].resource if path in data else resource
         readings.append((path, current.value if current.has_value else None))
     for path in local_only_paths(coordinator):
+        if not hybrid_path_counts(path):
+            continue
+        if not hybrid_path_needs_value(path):
+            readings.append((path, None))
+            continue
         reading = read(coordinator, path)
         readings.append((path, reading.value if reading is not None else None))
     return bool(hybrid_evidence(readings))

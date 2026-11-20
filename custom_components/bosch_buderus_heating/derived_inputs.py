@@ -104,12 +104,25 @@ def local_only_paths(coordinator: BoschBuderusDataUpdateCoordinator) -> frozense
     return frozenset(selection.local_only_observations())
 
 
+# The last answer per pattern, for the same set of paths: the calculated
+# sensors ask on every update, and the paths hardly ever change.
+_KNOWN: dict[re.Pattern[str], tuple[frozenset[str], tuple[str, ...]]] = {}
+_MAX_KNOWN = 64
+
+
 def known_paths(
     coordinator: BoschBuderusDataUpdateCoordinator, pattern: re.Pattern[str]
 ) -> tuple[str, ...]:
     """Every known path of a pattern, cloud and local-only, sorted."""
-    paths = {*_data(coordinator), *local_only_paths(coordinator)}
-    return tuple(sorted(path for path in paths if pattern.fullmatch(path)))
+    paths = frozenset((*_data(coordinator), *local_only_paths(coordinator)))
+    kept = _KNOWN.get(pattern)
+    if kept is not None and kept[0] == paths:
+        return kept[1]
+    found = tuple(sorted(path for path in paths if pattern.fullmatch(path)))
+    if pattern not in _KNOWN and len(_KNOWN) >= _MAX_KNOWN:
+        _KNOWN.clear()
+    _KNOWN[pattern] = (paths, found)
+    return found
 
 
 def read(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> Input | None:

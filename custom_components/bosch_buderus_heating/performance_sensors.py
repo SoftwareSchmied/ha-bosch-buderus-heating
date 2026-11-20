@@ -421,8 +421,20 @@ class PerformanceFactorSensor(
         return dict(sorted(found.items()))
 
     def _refresh(self) -> None:
-        self._engine.sync()
+        self._sync_once()
         self._result = self._engine.value(self._period, self._mode)
+
+    def _sync_once(self) -> None:
+        """Take the counters' readings once per update pass: all factor
+        sensors of a gateway share one engine, and the readings cannot change
+        while a synchronous pass runs."""
+        from .local_selection import LocalSelection
+
+        selection = getattr(self.coordinator, "local_selection", None)
+        if isinstance(selection, LocalSelection):
+            selection._cached(("performance_sync", id(self._engine)), self._engine.sync)
+        else:
+            self._engine.sync()
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()

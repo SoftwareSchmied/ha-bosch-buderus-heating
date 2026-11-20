@@ -47,8 +47,25 @@ def _reading(value: object, resource: Resource, scale: float) -> EnergyReading:
     return EnergyReading(value * scale)
 
 
+# The last assessment per path, valid for that very resource object: a
+# resource never changes, and the same readings are assessed again and again.
+_ASSESSED: dict[str, tuple[Resource, EnergyAssessment]] = {}
+_MAX_ASSESSED = 256
+
+
 def assess_energy(resource: Resource) -> EnergyAssessment:
     """Respect the collection unit; retain only the established unitless contract."""
+    cached = _ASSESSED.get(resource.path)
+    if cached is not None and cached[0] is resource:
+        return cached[1]
+    assessment = _assess_energy(resource)
+    if resource.path not in _ASSESSED and len(_ASSESSED) >= _MAX_ASSESSED:
+        _ASSESSED.clear()
+    _ASSESSED[resource.path] = (resource, assessment)
+    return assessment
+
+
+def _assess_energy(resource: Resource) -> EnergyAssessment:
     unit = resource.metadata.unit
     source = "legacy_unitless_kwh" if unit is None else "metadata"
     scale = 1.0 if unit is None else energy_kwh_scale(unit)

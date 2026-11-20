@@ -1698,6 +1698,28 @@ def hybrid_evidence(readings: Iterable[tuple[str, object]]) -> tuple[str, ...]:
     return tuple(sorted(found))
 
 
+def hybrid_path_counts(path: str) -> bool:
+    """Whether the hybrid evidence can find anything for this path.
+
+    Only the paths of a hybrid manager, the hybrid control and the system or
+    heat source type count; every other path is without effect.
+    """
+    return (
+        path.startswith(HYBRID_MANAGER_SIGNALS)
+        or path.startswith(_HYBRID_RESOURCES)
+        or path == _SYSTEM_TYPE_PATH
+        or _HEAT_SOURCE_TYPE.fullmatch(path) is not None
+    )
+
+
+def hybrid_path_needs_value(path: str) -> bool:
+    """Whether the hybrid evidence looks at the value of this path (the
+    types do; the other paths count by their name alone)."""
+    return not (
+        path.startswith(HYBRID_MANAGER_SIGNALS) or path.startswith(_HYBRID_RESOURCES)
+    )
+
+
 def _hybrid_type(value: object) -> bool:
     if not isinstance(value, str):
         return False

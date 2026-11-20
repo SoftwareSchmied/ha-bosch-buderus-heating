@@ -99,8 +99,13 @@ _LABEL = re.compile(r"[A-Za-z0-9%./°_ -]{1,32}")
 _PER_SOURCE_SUFFIXES = (":source_local", ":source_cloud")
 
 
+@lru_cache(maxsize=4096)
 def private_path(path: str) -> bool:
-    """Identifiers, addresses, names, network and update data of the plant."""
+    """Identifiers, addresses, names, network and update data of the plant.
+
+    Worked out once per path: it only depends on the path, and every new
+    local state asks for all of them again.
+    """
     segments = path.strip("/").split("/")
     return (
         is_private_resource(path)
