@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from functools import partial
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -554,9 +555,18 @@ async def test_the_start_up_discovery_passes_the_allowance(hass):
         gateway=Gateway("gateway"),
         registered_start_counter_paths=(),
         discovery_diagnostics=DiscoveryDiagnostics(),
+        resources={},
+        data={},
         startup_data=None,
         rrc_evidence=lambda: (),
         _shared_pause_remaining=lambda: 0,
+        _partial_started=None,
+        _partial_shown=False,
+        _discovery_progress=lambda found: None,
+        last_failed_refresh=SimpleNamespace(cycle_failure=lambda *_: None),
+    )
+    coordinator._async_discover_data_once = partial(
+        BoschBuderusDataUpdateCoordinator._async_discover_data_once, coordinator
     )
     with (
         patch(

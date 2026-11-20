@@ -351,8 +351,11 @@ _OPEN_ANSWERS: Final = frozenset({"http_401", "http_408", "http_429"})
 def _evidence_settled(item: object) -> bool:
     """Whether one requested evidence path was found or got a definite
     client answer (such as 404)."""
-    if getattr(item, "discovered", False) or getattr(item, "read_policy", "") != (
-        "normal"
+    policy = getattr(item, "read_policy", "")
+    # A 5xx taken as "missing" so that the discovery can go on is no answer.
+    if getattr(item, "discovered", False) or policy not in (
+        "normal",
+        "optional_5xx_assumed_missing",
     ):
         return True
     answer = getattr(item, "fallback_result", None) or getattr(item, "bulk_result", "")
