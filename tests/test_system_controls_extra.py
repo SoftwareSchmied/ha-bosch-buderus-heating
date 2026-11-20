@@ -842,3 +842,20 @@ async def test_a_reported_step_still_wins(hass):
     cloud = Cloud(coordinator)
     await number_entity(hass, coordinator, START).async_set_native_value(1325)
     assert cloud.puts == [(START, 1325)]
+
+
+@pytest.mark.parametrize("day", ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"])
+def test_a_room_controller_weekday_suffix_does_not_hide_the_time(day):
+    # The controller reports "2030-01-01T12:03:20+01:00 Tu"; the suffix once
+    # made the whole reading unreadable.
+    assert (
+        gateway_clock.deviation_seconds(
+            f"2030-01-01T12:03:20+01:00 {day}", RECEIVED, BERLIN
+        )
+        == 200
+    )
+
+
+def test_an_unknown_suffix_still_gives_no_value():
+    for text in ("2030-01-01T12:00:00 Xx", "2030-01-01T12:00:00 Tuesday"):
+        assert gateway_clock.deviation_seconds(text, RECEIVED, BERLIN) is None

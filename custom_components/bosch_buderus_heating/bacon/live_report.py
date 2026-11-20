@@ -9,6 +9,7 @@ _CLASSES = {
     "rate_limited": "4xx",
     "live_rejected": "4xx",
     "live_unsupported": "4xx",
+    "live_media_type": "4xx",
     "service_unavailable": "5xx",
     "connection": "network",
     "paused": "paused",

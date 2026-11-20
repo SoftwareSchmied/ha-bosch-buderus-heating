@@ -32,10 +32,13 @@ def test_live_url_is_derived_next_to_the_device_list():
     assert explicit.live_url == "http://example.invalid/x"
 
 
-async def test_report_is_an_empty_post_with_bearer_and_user_agent():
+async def test_report_is_a_json_post_with_an_empty_object_bearer_and_user_agent():
     seen = []
 
     async def live(request):
+        if request.headers.get("Content-Type") != "application/json":
+            # The service answers 415 without the JSON content type.
+            return web.Response(status=415)
         seen.append(
             (
                 request.method,
@@ -52,7 +55,24 @@ async def test_report_is_an_empty_post_with_bearer_and_user_agent():
     ):
         client = BaconClient(http, provider(), url=url + "/devices")
         await client.report_live()
-    assert seen == [("POST", "Bearer " + token(), "DashApp/3.7.0 (iOS-Release)", b"")]
+    assert seen == [("POST", "Bearer " + token(), "DashApp/3.7.0 (iOS-Release)", b"{}")]
+
+
+async def test_a_415_is_its_own_category_and_does_not_disable_the_report():
+    async def live(request):
+        return web.Response(status=415)
+
+    async with (
+        serve([("POST", "/live", live)]) as url,
+        aiohttp.ClientSession() as http,
+    ):
+        client = BaconClient(http, provider(), url=url + "/devices")
+        with pytest.raises(BaconError) as caught:
+            await client.report_live()
+    assert caught.value.category == "live_media_type"
+    report = LiveReport()
+    report.failed("live_media_type")
+    assert report.errors["4xx"] == 1 and not report.disabled
 
 
 async def test_a_401_is_a_rejected_report_without_a_token_refresh():
@@ -199,6 +219,17 @@ async def test_a_rejected_report_stops_and_logs_once(category, caplog):
     await account._report_live()
     assert report.await_count == (2 if category == "live_unsupported" else 1)
     assert sum("active-client report" in item.message for item in caplog.records) == 1
+
+
+async def test_a_415_is_logged_once_and_the_report_is_tried_again(caplog):
+    account = environment()
+    report = logged(account)
+    report.side_effect = BaconError("live_media_type")
+    caplog.set_level("WARNING", logger=session_module.__name__)
+    await account._report_live()
+    await account._report_live()
+    assert report.await_count == 2 and not account._live.disabled
+    assert sum("415" in item.message for item in caplog.records) == 1
 
 
 @pytest.mark.parametrize(

@@ -16,8 +16,8 @@ stable IDs. Existing heating entities and user settings are preserved.
 | Reading | Interpretation |
 | --- | --- |
 | Charging state | Eleven known reported states, kept distinct. A vehicle pause does not prove a full battery. Unknown codes stay unknown. |
-| Charging power | Last component of `telemetry.meter`, already in kW. |
-| Reported charged energy | First component of `telemetry.meter`, converted from Wh to kWh once. No accumulation or long-term statistics state class. |
+| Charging power | First component of `telemetry.meter` (reported in W), converted to kW. |
+| Reported charged energy | Last component of `telemetry.meter`, reported in kWh. No accumulation or long-term statistics state class. |
 | Total charged energy | `telemetry.energyTotal`, the wallbox's own lifetime counter in kWh, with the state class *total increasing* for the Energy dashboard. On a Power Charge 7000i S (software 5.3.0) it matched the total in the wallbox app (4,601.98 kWh against 4,602 kWh) and rose for eleven weeks without a drop. |
 | Active charging time | Reported `activeChargingTime` in minutes, without local extrapolation. |
 | Reported current limit | `telemetry.limit` in A. This is a limit, not measured current; the separate control **Charging current limit** changes it. |
@@ -241,8 +241,8 @@ Heizungsentitäten und Benutzereinstellungen bleiben bestehen.
 | Anzeige | Bedeutung |
 | --- | --- |
 | Ladezustand | Elf bekannte Zustände bleiben getrennt. Eine Pause durch das Fahrzeug bedeutet nicht automatisch einen vollen Akku. Unbekannte Codes bleiben unbekannt. |
-| Ladeleistung | Letzter Bestandteil von `telemetry.meter`, bereits in kW. |
-| Gemeldete geladene Energie | Erster Bestandteil von `telemetry.meter`, einmal von Wh nach kWh umgerechnet. Keine Aufsummierung und keine Statistikklasse für Langzeitwerte. |
+| Ladeleistung | Erster Bestandteil von `telemetry.meter` (in W gemeldet), nach kW umgerechnet. |
+| Gemeldete geladene Energie | Letzter Bestandteil von `telemetry.meter`, in kWh gemeldet. Keine Aufsummierung und keine Statistikklasse für Langzeitwerte. |
 | Insgesamt geladene Energie | `telemetry.energyTotal`, der eigene Gesamtzähler der Wallbox in kWh, mit der Statistikklasse *total increasing* für das Energie-Dashboard. Bei einer Power Charge 7000i S (Software 5.3.0) stimmte er mit der Summe in der Wallbox-App überein (4.601,98 kWh gegenüber 4.602 kWh) und stieg elf Wochen ohne Rückgang. |
 | Aktive Ladezeit | Gemeldete Minuten aus `activeChargingTime`, ohne eigene Hochrechnung. |
 | Gemeldete Stromgrenze | `telemetry.limit` in A. Eine Grenze, kein gemessener Strom; geändert wird sie über die eigene Entität **Ladestrom-Grenze**. |

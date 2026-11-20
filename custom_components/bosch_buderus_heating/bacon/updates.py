@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Any
+from typing import Any, Final
 
 from .models import BaconError, Device, Shadow, shadow
 
@@ -48,12 +48,34 @@ def expire_values(
         device.state = replace(device.state, reported=reported)
 
 
+# The sample time is seconds since 1970; a smaller number carries no age.
+_MIN_EPOCH: Final = 10**9
+
+
+def sample_is_stale(timestamp: int, wall_now: float, max_age: float) -> bool:
+    """Whether a sample's own time lies further back than ``max_age``."""
+    return timestamp >= _MIN_EPOCH and wall_now - timestamp > max_age
+
+
 def ingest_sensor(
-    device: Device, payload: dict[str, Any], generation: int, now: float
+    device: Device,
+    payload: dict[str, Any],
+    generation: int,
+    now: float,
+    *,
+    wall_now: float | None = None,
+    max_age: float = 3600,
 ) -> bool:
-    """Return whether the envelope carried a new, previously unseen sample."""
+    """Return whether the envelope carried a new, previously unseen sample.
+
+    With ``wall_now`` a sample older than ``max_age`` is dropped: after a
+    restart the cloud may still deliver a sample from days ago, and it must not
+    show as a current measurement.
+    """
     sample = sensor_sample(payload)
     if sample is None or sample["timestamp"] <= device.sensor_timestamp:
+        return False
+    if wall_now is not None and sample_is_stale(sample["timestamp"], wall_now, max_age):
         return False
     if device.sensor_generation != generation:
         device.sensor = {}

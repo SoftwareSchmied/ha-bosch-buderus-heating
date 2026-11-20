@@ -691,6 +691,19 @@ async def test_without_hardware_limit_no_current_control_exists(hass):
     assert not _spec("boost").creatable(view)
 
 
+async def test_limits_sent_as_json_numbers_still_create_the_controls(hass):
+    # A real wallbox reports "limit": 6.3 and "hwCurrentLimit": 16 as numbers.
+    data = fixture()
+    data["telemetry"]["values"]["limit"] = 6.3
+    data["info"]["values"]["hwCurrentLimit"] = 16
+    coordinator, _ = await wallbox(hass, data)
+    view = cached_view(coordinator)
+    assert coordinator.reading("telemetry", "current_limit") == 6.3
+    assert coordinator.reading("info", "hardware_current_limit") == 16
+    assert _spec("charging_current_limit").creatable(view)
+    assert _spec("boost").creatable(view)
+
+
 # Boost -------------------------------------------------------------------------
 
 

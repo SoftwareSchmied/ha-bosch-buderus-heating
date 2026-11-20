@@ -13,7 +13,7 @@
   "telemetry": {
     "values": {
       "wbState": "Charging",
-      "meter": "1250;7.2",
+      "meter": "7200;1.25",
       "energyTotal": 4321.5,
       "limit": "16",
       "activeChargingTime": 35,

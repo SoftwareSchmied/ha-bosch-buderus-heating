@@ -411,7 +411,7 @@ async def test_late_wallbox_response_cannot_refresh_tokens_or_revive_old_source(
             await settle(hass)
             backend.object_status.clear()
             backend.objects["telemetry"] = {
-                "values": {"meter": "500;3.1", "wbState": "Available"}
+                "values": {"meter": "3100;0.5", "wbState": "Available"}
             }
             manager.set_binding_enabled(
                 manager.edit(cloud), binding_for(owner, WB), True
@@ -513,7 +513,7 @@ async def test_two_wallboxes_keep_distinct_values_and_source_lifetimes(hass):
     backend = WallboxBackend()
     backend.families[HEAT] = "commodule"
     backend.gateway_objects[HEAT] = fixture()
-    backend.gateway_objects[HEAT]["telemetry"]["values"]["meter"] = "250;1.1"
+    backend.gateway_objects[HEAT]["telemetry"]["values"]["meter"] = "1100;0.25"
     async with running(hass, backend) as (_, cloud, owner, _):
         await eventually(lambda: source_for(owner, WB) and source_for(owner, HEAT))
         first, second = source_for(owner, HEAT), source_for(owner, WB)
