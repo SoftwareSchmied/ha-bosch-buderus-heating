@@ -635,7 +635,9 @@ the failed refreshes in a row, and how many holds started and expired) and
 `last_failed_refresh` (when the last refresh with failures ran, whether the
 whole refresh failed and its category, and for each failed reading, at most ten,
 the path template, HTTP status, category and count; no identifiers, no
-values). The report stays until a later refresh fails again. The air
+values). A discovery that fails before any reading (for example a rescan)
+writes a report of its own with the category and no paths. The report stays
+until a later refresh fails again. The air
 conditioner (`pointt_air_conditioners[]`) and wallbox (`wallboxes[]`) reports
 of a PointT gateway and each additional cloud connection (`bacon`) add their own
 `cloud_hold` with the same keys (`grace_cycles`, `grace_max_seconds`,
