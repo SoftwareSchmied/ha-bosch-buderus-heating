@@ -78,7 +78,7 @@ request all of it. History windows and discovery have separate limits.
 | Valid HTTP 200 response | Immutable observation with its original source context and observation times |
 | Busy gate or active pause | Deferred, without a network request |
 | Kept connection closed or reset before any answer | Deferred (`reused_connection_closed`) without a pause; the next read opens a new connection |
-| HTTP 400, 403, 404 or 406 | Path error; no permanent unsupported-device decision |
+| HTTP 400, 403, 404, 406 or 409 | Path error; no permanent unsupported-device decision. 409 (function switched off) is reported as `conflict` and handled as unavailable |
 | Redirect or other non-success status below 500 | Path error; no redirect is followed |
 | Invalid body, wrong resource or timeout after request headers start | Path error; earlier successful observations remain intact. A timeout after the response headers arrived (a slow body, or a complete answer just after the deadline on a busy host) does not count against kept connections |
 | An answer the schema accepts but the decoder cannot handle | Path error `local_decode_failed` of that path only; logged once per path template and error type as a warning |

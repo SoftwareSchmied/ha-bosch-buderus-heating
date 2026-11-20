@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
       "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
       "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
-      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah.",
+      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah. Ista napaka se pojavi tudi, če Home Assistant ni v istem omrežju (podomrežju) kot prehod. V tem primeru žeton pridobite na računalniku v omrežju prehoda in ga vnesite pod »Uporaba obstoječega žetona«.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
       "local_rate_limited_wait": "Prehod je zahteval premor. Poskusite znova čez {seconds} s.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Preizkus povezave",
-        "description": "Prijava ni uspela: gesli ne ustrezata prehodu. Preveri ju prek »Spremeni podatke za dostop iCom«. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu; tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave."
+        "description": "Prijava ni uspela: gesli ne ustrezata prehodu. Preveri ju prek »Spremeni podatke za dostop iCom«. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu; tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave. Aplikacija v oblaku ga nikoli ne nastavi, obstoja pa ne dokazujeta niti seznanitev prehoda v njej niti geslo na zaslonu ogrevalne naprave; nastavi ga samo starejša aplikacija naprave z možnostjo povezovanja samo lokalno."
       },
       "connection_test_certificate_changed": {
         "title": "Preizkus povezave",
@@ -608,7 +608,7 @@
         "description": "Poverilnice se odstranijo iz Home Assistanta. Žeton ostane na prehodu, razen če ga prekličete s poljem spodaj. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop; brez razpoložljivega dostopa ne prikazujejo trenutnih vrednosti. Zgornje polje pustite neoznačeno, če se želite vrniti brez sprememb.",
         "data": {
           "confirm": "Odstrani ta dostop",
-          "revoke": "Najprej prekliči žeton te integracije na prehodu"
+          "revoke": "Najprej prekliči žeton tega dostopa na prehodu"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Žetoni na prehodu",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.{note}",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Prehod prekliče samo žeton, s katerim je prijavljena sama zahteva, zato je tukaj mogoče izbrati le ta žeton. Starejših žetonov te integracije in žetonov drugih dostopov ali aplikacij ni mogoče preklicati iz Home Assistanta in ostanejo na prehodu. Brez izbire se nič ne spremeni.{note}",
         "data": {
           "token": "Žeton za preklic"
         }
       },
       "local_tokens_remove": {
         "title": "Preklic žetona pred odstranitvijo",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.{note}",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Prehod prekliče samo žeton, s katerim je prijavljena sama zahteva, zato je tukaj mogoče izbrati le ta žeton. Starejših žetonov te integracije in žetonov drugih dostopov ali aplikacij ni mogoče preklicati iz Home Assistanta in ostanejo na prehodu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.{note}",
         "data": {
           "token": "Žeton za preklic"
         }
       },
       "local_tokens_remove_none": {
         "title": "Ni žetona za preklic",
-        "description": "Prehod ne navaja nobenega žetona te integracije, ki bi ga bilo mogoče tu preklicati, ali pa seznama ni bilo mogoče prebrati. Dostop še ni odstranjen. Izberite, ali ga odstranite brez preklica ali obdržite.",
+        "description": "Tukaj ni mogoče preklicati nobenega žetona: prehod prekliče samo žeton, s katerim se ta dostop prijavlja, seznam pa ne prikazuje, kateri je to (ali ga ni bilo mogoče prebrati). Dostop še ni odstranjen. Izberite, ali ga odstranite brez preklica ali obdržite.",
         "menu_options": {
           "local_tokens_remove_without": "Odstrani brez preklica",
           "local_tokens_remove_cancel": "Ne odstrani, obdrži dostop"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
       "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
       "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
-      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah.",
+      "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah. Ista napaka se pojavi tudi, če Home Assistant ni v istem omrežju (podomrežju) kot prehod. V tem primeru žeton pridobite na računalniku v omrežju prehoda in ga vnesite pod »Uporaba obstoječega žetona«.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
       "local_rate_limited_wait": "Prehod je zahteval premor. Poskusite znova čez {seconds} s.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
       "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja.",
       "icom_cannot_connect": "Prehod ni odgovoril. Preveri naslov in ali je prehod dosegljiv na vratih 80.",
-      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu. Tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave.",
+      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu. Tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave. Aplikacija v oblaku ga nikoli ne nastavi, obstoja pa ne dokazujeta niti seznanitev prehoda v njej niti geslo na zaslonu ogrevalne naprave; nastavi ga samo starejša aplikacija naprave z možnostjo povezovanja samo lokalno.",
       "icom_busy": "Prehod je zaseden. Poskusi znova čez nekaj minut.",
       "icom_no_identity": "Prehoda ni mogoče povezati s sistemom: ne sporoča uporabnega ID, njegove vrednosti pa se ne ujemajo dovolj natančno z vrednostmi iz oblaka. Poskusi znova čez nekaj minut.",
       "icom_other_gateway": "To ni prehod izbranega sistema. Preveri naslov.",

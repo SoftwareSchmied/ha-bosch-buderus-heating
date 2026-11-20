@@ -233,6 +233,7 @@ async def test_three_clients_share_two_inflight_requests_without_queuing(
         (403, ReadState.PATH_ERROR, ReadProblem.FORBIDDEN),
         (404, ReadState.PATH_ERROR, ReadProblem.NOT_FOUND),
         (406, ReadState.PATH_ERROR, ReadProblem.NOT_ACCEPTABLE),
+        (409, ReadState.PATH_ERROR, ReadProblem.CONFLICT),
         (429, ReadState.ACCESS_ERROR, ReadProblem.RATE_LIMITED),
         (500, ReadState.ACCESS_ERROR, ReadProblem.SERVICE_UNAVAILABLE),
         (503, ReadState.ACCESS_ERROR, ReadProblem.SERVICE_UNAVAILABLE),
@@ -609,6 +610,13 @@ async def test_chunked_body_uses_same_limit_as_decoder(gateways, clock, oversize
     "body,problem",
     [
         (b'{"id":', "invalid_json"),
+        # Raw bytes that are no UTF-8 inside a JSON string (a device answer
+        # seen on a signal): this one path is invalid, nothing is raised.
+        (
+            b'{"id":"/heatingCircuits/hc1/currentRoomSetpoint","value":"\x96"}',
+            "invalid_json",
+        ),
+        (b"\x96\xff\x00 not json at all", "invalid_json"),
         (payload(value=True), "invalid_schema"),
         (payload(path="/heatingCircuits/hc1/currentRoomSetpoint"), "wrong_resource"),
     ],
@@ -1159,6 +1167,7 @@ async def test_health_counts_failure_classes_times_and_deferrals(gateways, clock
         (None, TransportFailure.TLS_CHANGED, "tls"),
         (404, ReadProblem.NOT_FOUND, "not_found"),
         (403, ReadProblem.FORBIDDEN, "http_4xx"),
+        (409, ReadProblem.CONFLICT, "http_4xx"),
         (429, ReadProblem.RATE_LIMITED, "http_4xx"),
         (503, ReadProblem.SERVICE_UNAVAILABLE, "http_5xx"),
         (None, TransportFailure.CONNECT, "connection"),

@@ -169,7 +169,7 @@
       "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
       "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
       "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
-      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos. El mismo error aparece también si Home Assistant no está en la misma red (subred) que la pasarela. En ese caso, obtén el token en un ordenador de la red de la pasarela e introdúcelo en «Usar un token existente».",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
       "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Prueba de conexión",
-        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada nunca se guardó en la pasarela; solo está allí si se definió una vez en la antigua aplicación del aparato."
+        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada nunca se guardó en la pasarela; solo está allí si se definió una vez en la antigua aplicación del aparato. La aplicación de la nube nunca la establece, y ni el emparejamiento de la pasarela allí ni una contraseña en la pantalla del aparato de calefacción demuestran que exista; solo la establece la aplicación antigua del dispositivo, con la opción de conectar solo en local."
       },
       "connection_test_certificate_changed": {
         "title": "Prueba de conexión",
@@ -608,7 +608,7 @@
         "description": "Las credenciales se eliminan de Home Assistant. El token permanece en la pasarela, salvo que lo revoques con la casilla de abajo. Se conservan las instalaciones y las entidades, incluso si este es el último acceso; sin un acceso disponible no muestran valores actuales. Deja la casilla superior sin marcar para volver sin cambios.",
         "data": {
           "confirm": "Eliminar este acceso",
-          "revoke": "Revocar antes un token de esta integración en la pasarela"
+          "revoke": "Revocar antes el token de este acceso en la pasarela"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokens en la pasarela",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. Los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Sin elección no cambia nada.{note}",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. La pasarela solo revoca el token con el que la propia solicitud está autenticada, por lo que aquí solo se puede elegir ese token. Los tokens más antiguos de esta integración y los de otros accesos o aplicaciones no se pueden revocar desde Home Assistant y permanecen en la pasarela. Sin elección no cambia nada.{note}",
         "data": {
           "token": "Token que se revocará"
         }
       },
       "local_tokens_remove": {
         "title": "Revocar un token antes de eliminar",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.{note}",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. La pasarela solo revoca el token con el que la propia solicitud está autenticada, por lo que aquí solo se puede elegir ese token. Los tokens más antiguos de esta integración y los de otros accesos o aplicaciones no se pueden revocar desde Home Assistant y permanecen en la pasarela. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.{note}",
         "data": {
           "token": "Token que se revocará"
         }
       },
       "local_tokens_remove_none": {
         "title": "Ningún token que revocar",
-        "description": "La pasarela no lista ningún token de esta integración que se pueda revocar aquí, o no se pudo leer la lista. El acceso todavía no se ha eliminado. Elige si lo eliminas sin revocar o si lo conservas.",
+        "description": "Aquí no se puede revocar ningún token: la pasarela solo revoca el token con el que se autentica este acceso, y la lista no muestra cuál es (o no se pudo leer). El acceso aún no se ha eliminado. Elige si lo eliminas sin revocar nada o lo conservas.",
         "menu_options": {
           "local_tokens_remove_without": "Eliminar sin revocar",
           "local_tokens_remove_cancel": "Cancelar y conservar el acceso"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
       "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
       "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
-      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos. El mismo error aparece también si Home Assistant no está en la misma red (subred) que la pasarela. En ese caso, obtén el token en un ordenador de la red de la pasarela e introdúcelo en «Usar un token existente».",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
       "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
       "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador.",
       "icom_cannot_connect": "La pasarela no respondió. Compruebe la dirección y que se pueda acceder a la pasarela por el puerto 80.",
-      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada nunca se guardó en la pasarela. Solo está allí si se definió una vez en la antigua aplicación del aparato.",
+      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada nunca se guardó en la pasarela. Solo está allí si se definió una vez en la antigua aplicación del aparato. La aplicación de la nube nunca la establece, y ni el emparejamiento de la pasarela allí ni una contraseña en la pantalla del aparato de calefacción demuestran que exista; solo la establece la aplicación antigua del dispositivo, con la opción de conectar solo en local.",
       "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
       "icom_no_identity": "No se pudo asignar la pasarela a la instalación: no informa de un ID utilizable y sus valores no coinciden lo bastante con los de la nube. Inténtelo de nuevo en unos minutos.",
       "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",

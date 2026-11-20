@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
       "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
       "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
-      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter.",
+      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter. Den samme fejl vises også, hvis Home Assistant ikke er i samme netværk (undernet) som gatewayen. Hent i så fald tokenet på en computer i gatewayens netværk, og indtast det under “Brug et eksisterende token”.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
       "local_rate_limited_wait": "Gatewayen bad om en pause. Prøv igen om {seconds} sekunder.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Forbindelsestest",
-        "description": "Login mislykkedes: adgangskoderne passer ikke til gatewayen. Kontrollér dem via “Skift iCom-adgangsdata”. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen; den ligger kun der, hvis den én gang er sat i den gamle enheds-app."
+        "description": "Login mislykkedes: adgangskoderne passer ikke til gatewayen. Kontrollér dem via “Skift iCom-adgangsdata”. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen; den ligger kun der, hvis den én gang er sat i den gamle enheds-app. Cloud-appen angiver det aldrig, og hverken parring af gatewayen dér eller en adgangskode på varmeenhedens display viser, at det findes; kun den ældre enhedsapp angiver det, med indstillingen om kun at forbinde lokalt."
       },
       "connection_test_certificate_changed": {
         "title": "Forbindelsestest",
@@ -608,7 +608,7 @@
         "description": "Loginoplysningerne fjernes fra Home Assistant. Tokenet bliver på gatewayen, medmindre du tilbagekalder det med feltet nedenfor. Anlæg og entiteter bevares, også selvom dette er den sidste adgang; uden en tilgængelig adgang viser de ingen aktuelle værdier. Lad det øverste felt være uafkrydset for at gå tilbage uden ændringer.",
         "data": {
           "confirm": "Fjern denne adgang",
-          "revoke": "Tilbagekald først et token fra denne integration på gatewayen"
+          "revoke": "Tilbagekald først denne adgangs token på gatewayen"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen, og tilbagekalder du det, ophører den lokale adgang. Ældre tokens fra denne integration stammer som regel fra tidligere opsætninger. Uden et valg ændres intet.{note}",
+        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen, og tilbagekalder du det, ophører den lokale adgang. Gatewayen tilbagekalder kun det token, som selve anmodningen er logget ind med, så kun det token kan vælges her. Ældre tokens fra denne integration og tokens fra andre adgange eller apps kan ikke tilbagekaldes fra Home Assistant og bliver på gatewayen. Uden et valg ændres intet.{note}",
         "data": {
           "token": "Token, der skal tilbagekaldes"
         }
       },
       "local_tokens_remove": {
         "title": "Tilbagekald et token før fjernelse",
-        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen. Vælg det token, der skal tilbagekaldes, før adgangen fjernes. Uden et valg fjerner **Send** adgangen uden at tilbagekalde noget. Luk denne dialog for at beholde adgangen.{note}",
+        "description": "Gatewayen har **{count}** tokens. Tokenværdier vises aldrig.\n\n**Denne integration** (efter oprettelsestidspunkt):\n{own}\n\n**Andre apps** (tilbydes aldrig til tilbagekaldelse):\n{others}\n\nDenne adgang blev senest sat op {confirmed}. Det token, der blev oprettet lidt før, er som regel det, denne adgang bruger nu; det er markeret på listen. Gatewayen tilbagekalder kun det token, som selve anmodningen er logget ind med, så kun det token kan vælges her. Ældre tokens fra denne integration og tokens fra andre adgange eller apps kan ikke tilbagekaldes fra Home Assistant og bliver på gatewayen. Vælg det token, der skal tilbagekaldes, før adgangen fjernes. Uden et valg fjerner **Send** adgangen uden at tilbagekalde noget. Luk denne dialog for at beholde adgangen.{note}",
         "data": {
           "token": "Token, der skal tilbagekaldes"
         }
       },
       "local_tokens_remove_none": {
         "title": "Intet token at tilbagekalde",
-        "description": "Gatewayen viser intet token fra denne integration, som kan tilbagekaldes her, eller listen kunne ikke læses. Adgangen er endnu ikke fjernet. Vælg, om den skal fjernes uden tilbagekaldelse eller beholdes.",
+        "description": "Her kan intet token tilbagekaldes: Gatewayen tilbagekalder kun det token, som denne adgang logger ind med, og listen viser ikke, hvilket det er (eller den kunne ikke læses). Adgangen er endnu ikke fjernet. Vælg, om du vil fjerne den uden tilbagekald eller beholde den.",
         "menu_options": {
           "local_tokens_remove_without": "Fjern uden tilbagekaldelse",
           "local_tokens_remove_cancel": "Annuller og behold adgangen"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
       "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
       "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
-      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter.",
+      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter. Den samme fejl vises også, hvis Home Assistant ikke er i samme netværk (undernet) som gatewayen. Hent i så fald tokenet på en computer i gatewayens netværk, og indtast det under “Brug et eksisterende token”.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
       "local_rate_limited_wait": "Gatewayen bad om en pause. Prøv igen om {seconds} sekunder.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives.",
       "switch_program_aircon_setting": "Vælg en tilstand, som klimaanlægget tilbyder, og dertil en temperatur inden for dets område og trin samt en af dets blæserhastigheder.",
       "icom_cannot_connect": "Gatewayen svarede ikke. Kontrollér adressen, og at gatewayen kan nås på port 80.",
-      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen. Den ligger kun der, hvis den én gang er sat i den gamle enheds-app.",
+      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen. Den ligger kun der, hvis den én gang er sat i den gamle enheds-app. Cloud-appen angiver det aldrig, og hverken parring af gatewayen dér eller en adgangskode på varmeenhedens display viser, at det findes; kun den ældre enhedsapp angiver det, med indstillingen om kun at forbinde lokalt.",
       "icom_busy": "Gatewayen er optaget. Prøv igen om nogle minutter.",
       "icom_no_identity": "Gatewayen kunne ikke knyttes til anlægget: den rapporterer intet brugbart ID, og dens værdier stemmer ikke tilstrækkeligt præcist med skyens værdier. Prøv igen om nogle minutter.",
       "icom_other_gateway": "Det er ikke gatewayen til det valgte anlæg. Kontrollér adressen.",

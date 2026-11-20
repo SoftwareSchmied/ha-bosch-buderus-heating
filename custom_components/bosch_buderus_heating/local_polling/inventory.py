@@ -27,6 +27,11 @@ from .policy import (
 
 NOT_FOUND_STATUSES = frozenset({403, 404, 406})
 NOT_FOUND_RETRY = 7 * 86400
+# 409 means "not available now" (for example a tariff function switched off in
+# the app), which the owner can change at any time: it is no error, but asked
+# again sooner than a path the gateway does not have.
+UNAVAILABLE_STATUSES = frozenset({409})
+UNAVAILABLE_RETRY = (900, 3600, 21600)
 # O13: a view is worked out again this long before its freshness changes.
 RENEW_MARGIN = 0.001
 # A reading becomes late only this long after its interval: at least 10 s,
@@ -311,6 +316,8 @@ class ResourceInventory:
                 else (
                     (3600, 21600, NOT_FOUND_RETRY)
                     if result.status in NOT_FOUND_STATUSES
+                    else UNAVAILABLE_RETRY
+                    if result.status in UNAVAILABLE_STATUSES
                     else (900, 3600, 86400)
                 )
             )

@@ -185,7 +185,7 @@ def test_invalid_live_interval_rejected(value):
         validate_interval(value)
 
 
-@pytest.mark.parametrize("status", [403, 404, 406, 200])
+@pytest.mark.parametrize("status", [403, 404, 406, 409, 200])
 def test_known_path_error_immediate_unavailable_then_same_record_recovers(status):
     inventory = ResourceInventory(CONTEXT.identity)
     record = inventory.add(REQUEST, 0)
@@ -217,6 +217,9 @@ def test_timeout_does_not_refresh_or_prematurely_invalidate_known_value():
     [
         (403, "forbidden", [3600, 21600, 604800, 604800]),
         (404, "not_found", [3600, 21600, 604800, 604800]),
+        # Not available now (a function switched off): no error, and asked
+        # again sooner than a path the gateway does not have.
+        (409, "conflict", [900, 3600, 21600, 21600]),
         (200, "invalid_response", [900, 3600, 86400, 86400]),
         (None, TransportFailure.TIMEOUT, [300, 900, 3600, 86400]),
     ],
@@ -229,6 +232,19 @@ def test_unconfirmed_path_backoff(status, problem, delays):
         inventory.accept(missing(REQUEST, status=status, problem=problem), now)
         assert record.due == now + delay and not record.confirmed
         now = record.due
+
+
+def test_an_unreadable_answer_marks_only_its_path_and_is_not_asked_again_at_once():
+    other = request_for_path("/gateway/brand")
+    inventory = ResourceInventory(CONTEXT.identity)
+    record = inventory.add(REQUEST, 0)
+    healthy = inventory.add(other, 0)
+    inventory.accept(missing(REQUEST, status=200, problem="invalid_json"), 0)
+    inventory.accept(success(other, 0), 0)
+    # An answer that is no JSON (for example raw bytes in a string) is this
+    # path's problem only; it is not asked again within 15 minutes.
+    assert not record.confirmed and record.due == 900
+    assert healthy.confirmed and inventory.view(healthy, 0, source_ready=True).available
 
 
 def test_signal_inventory_is_atomic_bounded_and_requires_two_missing_lists():
@@ -849,6 +865,19 @@ def test_restored_negatives_keep_reason_failures_and_pause(schema_changed):
     )
     view = restored.inventory.view(record, 1000, source_ready=True)
     assert view.problem == "not_found" and not view.available
+
+
+def test_a_stored_409_keeps_its_reason_and_pause_also_after_a_schema_change():
+    planner, _, _ = stored_negative("conflict", 409)
+    saved = checkpoint(planner, 900 + 3600)
+    row = saved["records"][0]
+    assert row["problem"] == "conflict" and row["remaining"] == 21600
+    saved["revision"] = "f" * 64
+    row["schema"] = "0" * 64
+    restored = PollPlanner(ResourceInventory(CONTEXT.identity), 1000)
+    restore(restored, saved, 1000)
+    record = restored.inventory.records[REQUEST.target]
+    assert (record.problem, record.failures, record.due) == ("conflict", 3, 22600)
 
 
 def test_a_changed_schema_still_asks_soon_after_other_failures():

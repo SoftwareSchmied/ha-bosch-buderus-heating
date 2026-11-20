@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Bramka odrzuciła Login i Pass. Sprawdź oba na etykiecie bramki i wprowadź je ponownie.",
       "local_invalid_label_format": "Login lub Pass zawiera znaki, których nie ma na etykiecie urządzenia, na przykład spację wewnątrz wartości. Do bramki nic nie wysłano. Sprawdź wpis i wprowadź go ponownie.",
       "local_unlock_confirm_required": "Zaznacz to pole, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
-      "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut.",
+      "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut. Ten sam błąd pojawia się także wtedy, gdy Home Assistant nie znajduje się w tej samej sieci (podsieci) co brama. W takim przypadku pobierz token na komputerze w sieci bramy i wpisz go w „Użyj istniejącego tokenu”.",
       "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
       "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
       "local_rate_limited_wait": "Bramka poprosiła o przerwę. Spróbuj ponownie za {seconds} s.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test połączenia",
-        "description": "Logowanie nie powiodło się: hasła nie pasują do bramy. Sprawdź je przez „Zmień dane dostępu iCom”. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie; jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia."
+        "description": "Logowanie nie powiodło się: hasła nie pasują do bramy. Sprawdź je przez „Zmień dane dostępu iCom”. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie; jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia. Aplikacja chmurowa nigdy go nie ustawia, a istnienia hasła nie dowodzi ani sparowanie bramy w niej, ani hasło na wyświetlaczu urządzenia grzewczego; ustawia je tylko starsza aplikacja urządzenia z opcją łączenia wyłącznie lokalnie."
       },
       "connection_test_certificate_changed": {
         "title": "Test połączenia",
@@ -608,7 +608,7 @@
         "description": "Dane logowania zostaną usunięte z Home Assistanta. Token pozostanie na bramce, chyba że unieważnisz go polem poniżej. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp; bez działającego dostępu nie pokazują wartości bieżących. Pozostaw górne pole niezaznaczone, aby wrócić bez zmian.",
         "data": {
           "confirm": "Usuń ten dostęp",
-          "revoke": "Najpierw unieważnij token tej integracji na bramce"
+          "revoke": "Najpierw unieważnij token tego dostępu w bramie"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokeny na bramce",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Bez wyboru nic się nie zmienia.{note}",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Brama unieważnia tylko token, którym zalogowane jest samo żądanie, dlatego tutaj można wybrać tylko ten token. Starszych tokenów tej integracji ani tokenów innych dostępów lub aplikacji nie można unieważnić z Home Assistanta i pozostają one w bramie. Bez wyboru nic się nie zmienia.{note}",
         "data": {
           "token": "Token do unieważnienia"
         }
       },
       "local_tokens_remove": {
         "title": "Unieważnij token przed usunięciem",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru **Prześlij** usunie dostęp bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.{note}",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście. Brama unieważnia tylko token, którym zalogowane jest samo żądanie, dlatego tutaj można wybrać tylko ten token. Starszych tokenów tej integracji ani tokenów innych dostępów lub aplikacji nie można unieważnić z Home Assistanta i pozostają one w bramie. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru **Prześlij** usunie dostęp bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.{note}",
         "data": {
           "token": "Token do unieważnienia"
         }
       },
       "local_tokens_remove_none": {
         "title": "Brak tokenu do unieważnienia",
-        "description": "Bramka nie wymienia żadnego tokenu tej integracji, który można tu unieważnić, albo nie udało się odczytać listy. Dostęp nie został jeszcze usunięty. Wybierz, czy usunąć go bez unieważniania, czy zachować.",
+        "description": "Tutaj nie można unieważnić żadnego tokenu: brama unieważnia tylko token, którym loguje się ten dostęp, a lista nie pokazuje, który to jest (albo nie udało się jej odczytać). Dostęp nie został jeszcze usunięty. Wybierz, czy usunąć go bez unieważniania, czy zachować.",
         "menu_options": {
           "local_tokens_remove_without": "Usuń bez unieważniania",
           "local_tokens_remove_cancel": "Anuluj i zachowaj dostęp"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Bramka odrzuciła Login i Pass. Sprawdź oba na etykiecie bramki i wprowadź je ponownie.",
       "local_invalid_label_format": "Login lub Pass zawiera znaki, których nie ma na etykiecie urządzenia, na przykład spację wewnątrz wartości. Do bramki nic nie wysłano. Sprawdź wpis i wprowadź go ponownie.",
       "local_unlock_confirm_required": "Zaznacz to pole, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
-      "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut.",
+      "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut. Ten sam błąd pojawia się także wtedy, gdy Home Assistant nie znajduje się w tej samej sieci (podsieci) co brama. W takim przypadku pobierz token na komputerze w sieci bramy i wpisz go w „Użyj istniejącego tokenu”.",
       "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
       "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
       "local_rate_limited_wait": "Bramka poprosiła o przerwę. Spróbuj ponownie za {seconds} s.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
       "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora.",
       "icom_cannot_connect": "Brama nie odpowiedziała. Sprawdź adres i czy brama jest osiągalna na porcie 80.",
-      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie. Jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia.",
+      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie. Jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia. Aplikacja chmurowa nigdy go nie ustawia, a istnienia hasła nie dowodzi ani sparowanie bramy w niej, ani hasło na wyświetlaczu urządzenia grzewczego; ustawia je tylko starsza aplikacja urządzenia z opcją łączenia wyłącznie lokalnie.",
       "icom_busy": "Brama jest zajęta. Spróbuj ponownie za kilka minut.",
       "icom_no_identity": "Nie można przypisać bramy do instalacji: nie podaje użytecznego identyfikatora, a jej wartości nie zgadzają się dostatecznie dokładnie z wartościami z chmury. Spróbuj ponownie za kilka minut.",
       "icom_other_gateway": "To nie jest brama wybranej instalacji. Sprawdź adres.",

@@ -137,13 +137,17 @@ revision and never become arbitrary network targets.
 
 ## Errors, storage and limits
 
-A known path returning 403, 404, 406 or invalid data becomes unavailable
+A known path returning 403, 404, 406, 409 or invalid data becomes unavailable
 immediately, retaining its last observation and timestamps. Its next regular
 request can restore the same record. A timeout after HTTP starts leaves the last
 value usable only within its original validity period.
 
 New forbidden or missing paths retry after one, six and then 168 hours (a
-week); a changed answer schema keeps that pause. Invalid
+week); a changed answer schema keeps that pause. A path answering 409 (its
+function is switched off, for example the tariff function in the app) is no
+error: it counts as unavailable and is asked again after 15 minutes, one hour
+and then every six hours. An answer that is no valid JSON (for example raw
+bytes inside a text) affects only that path. Invalid
 responses use 15 minutes, one hour and 24 hours. Timeouts use five, 15, 60 minutes
 and then a day. These retries still need a discovery slot. Access failures use
 60, 120, 300 and then 600 seconds through the shared persistent budget, also

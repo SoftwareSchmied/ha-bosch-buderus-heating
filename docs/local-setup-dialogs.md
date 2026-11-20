@@ -72,7 +72,9 @@ user action, not proof that the gateway has accepted the physical release.
 Each case has its own message: input the label cannot have (nothing sent), the
 unticked checkbox (nothing sent), Login and Pass rejected by the gateway (400),
 sign-in not released or the five minutes after the release passed (412, with
-the button instruction of 1 second), a pause the gateway asked for (429, with
+the button instruction of 1 second and the second possible cause, Home
+Assistant outside the gateway's network, with the way out of entering an
+existing token), a pause the gateway asked for (429, with
 the remaining seconds when the gateway names them) and no answer in time. A
 certificate that changed during the dialog leads back to its check instead of
 repeating the sign-in. The second certificate page is the data port (9443);
@@ -140,8 +142,8 @@ and port when its fingerprint is identical, for example after Continue. Received
 tokens can be rechecked; unknown creation outcomes allow only deliberate discard
 or continuing later. Discard requires its own confirmation and removes only the local pending
 copy. Gateway tokens are never automatically revoked. The options of an existing
-local access show the gateway's token list and can revoke an old token of this
-integration after a confirmation; see
+local access show the gateway's token list and can revoke the token this
+access uses after a confirmation (the gateway revokes no other token); see
 [tokens on the gateway](local-enrollment.md#tokens-on-the-gateway).
 
 Resource and authentication `Retry-After` share the persistent

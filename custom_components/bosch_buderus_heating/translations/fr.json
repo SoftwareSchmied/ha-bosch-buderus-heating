@@ -169,7 +169,7 @@
       "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
       "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
       "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
-      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes.",
+      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes. La même erreur apparaît aussi si Home Assistant ne se trouve pas dans le même réseau (sous-réseau) que la passerelle. Dans ce cas, récupérez le jeton sur un ordinateur du réseau de la passerelle et saisissez-le sous « Utiliser un jeton existant ».",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
       "local_rate_limited_wait": "La passerelle a demandé une pause. Réessayez dans {seconds} secondes.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test de connexion",
-        "description": "Échec de la connexion : les mots de passe ne correspondent pas à la passerelle. Vérifiez-les via « Modifier les données d'accès iCom ». Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle ; il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil."
+        "description": "Échec de la connexion : les mots de passe ne correspondent pas à la passerelle. Vérifiez-les via « Modifier les données d'accès iCom ». Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle ; il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil. L'application cloud ne le définit jamais, et ni l'appairage de la passerelle dans celle-ci ni un mot de passe sur l'écran de l'appareil de chauffage ne prouvent qu'il existe ; seule l'ancienne application de l'appareil le définit, avec l'option de connexion locale uniquement."
       },
       "connection_test_certificate_changed": {
         "title": "Test de connexion",
@@ -608,7 +608,7 @@
         "description": "Les identifiants sont supprimés de Home Assistant. Le jeton reste sur la passerelle, sauf si vous le révoquez avec la case ci-dessous. Les installations et les entités sont conservées, même s'il s'agit du dernier accès ; sans accès disponible, elles n'affichent pas de valeurs actuelles. Laissez la case du haut décochée pour revenir sans modification.",
         "data": {
           "confirm": "Supprimer cet accès",
-          "revoke": "Révoquer d'abord un jeton de cette intégration sur la passerelle"
+          "revoke": "Révoquer d'abord le jeton de cet accès sur la passerelle"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Jetons sur la passerelle",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. Les jetons plus anciens de cette intégration proviennent généralement de configurations antérieures. Sans choix, rien ne change.{note}",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. La passerelle ne révoque que le jeton avec lequel la requête elle-même est authentifiée ; seul ce jeton peut donc être choisi ici. Les jetons plus anciens de cette intégration et les jetons d'autres accès ou applications ne peuvent pas être révoqués depuis Home Assistant et restent sur la passerelle. Sans choix, rien ne change.{note}",
         "data": {
           "token": "Jeton à révoquer"
         }
       },
       "local_tokens_remove": {
         "title": "Révoquer un jeton avant la suppression",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, **Valider** supprime l'accès sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.{note}",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste. La passerelle ne révoque que le jeton avec lequel la requête elle-même est authentifiée ; seul ce jeton peut donc être choisi ici. Les jetons plus anciens de cette intégration et les jetons d'autres accès ou applications ne peuvent pas être révoqués depuis Home Assistant et restent sur la passerelle. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, **Valider** supprime l'accès sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.{note}",
         "data": {
           "token": "Jeton à révoquer"
         }
       },
       "local_tokens_remove_none": {
         "title": "Aucun jeton à révoquer",
-        "description": "La passerelle ne liste aucun jeton de cette intégration que l'on puisse révoquer ici, ou la liste n'a pas pu être lue. L'accès n'a pas encore été supprimé. Choisissez de le supprimer sans révoquer ou de le conserver.",
+        "description": "Aucun jeton ne peut être révoqué ici : la passerelle ne révoque que le jeton avec lequel cet accès s'authentifie, et la liste n'indique pas lequel c'est (ou elle n'a pas pu être lue). L'accès n'a pas encore été supprimé. Choisissez de le supprimer sans rien révoquer ou de le conserver.",
         "menu_options": {
           "local_tokens_remove_without": "Supprimer sans révoquer",
           "local_tokens_remove_cancel": "Annuler et conserver l'accès"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
       "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
       "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
-      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes.",
+      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes. La même erreur apparaît aussi si Home Assistant ne se trouve pas dans le même réseau (sous-réseau) que la passerelle. Dans ce cas, récupérez le jeton sur un ordinateur du réseau de la passerelle et saisissez-le sous « Utiliser un jeton existant ».",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
       "local_rate_limited_wait": "La passerelle a demandé une pause. Réessayez dans {seconds} secondes.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Le nom peut contenir jusqu'à 64 caractères imprimables.",
       "switch_program_aircon_setting": "Choisissez un mode proposé par le climatiseur et, pour ce mode, une température dans sa plage et ses pas ainsi qu'une de ses vitesses de ventilateur.",
       "icom_cannot_connect": "La passerelle n'a pas répondu. Vérifiez l'adresse et que la passerelle est joignable sur le port 80.",
-      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe. Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle. Il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil.",
+      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe. Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle. Il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil. L'application cloud ne le définit jamais, et ni l'appairage de la passerelle dans celle-ci ni un mot de passe sur l'écran de l'appareil de chauffage ne prouvent qu'il existe ; seule l'ancienne application de l'appareil le définit, avec l'option de connexion locale uniquement.",
       "icom_busy": "La passerelle est occupée. Réessayez dans quelques minutes.",
       "icom_no_identity": "La passerelle n'a pas pu être associée à l'installation : elle ne communique pas d'identifiant utilisable, et ses valeurs ne concordent pas assez avec celles du cloud. Réessayez dans quelques minutes.",
       "icom_other_gateway": "Ce n'est pas la passerelle de l'installation sélectionnée. Vérifiez l'adresse.",

@@ -460,11 +460,6 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             key=lambda token: (not token.readable, token.created_at or 0.0),
         )
         unreadable = localize(self.hass.config.language, "nicht lesbar", "not readable")
-        if self._token_removal and not own:
-            # Nothing of this integration can be revoked, or the list could
-            # not be read: the access is removed only after an explicit
-            # choice, never silently.
-            return self._tokens_remove_none_menu()
         use = (
             token_use(
                 own,
@@ -476,6 +471,14 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             else TokenUse()
         )
         self._token_use = use
+        # The gateway revokes only the token an access signs in with. Nothing
+        # else is offered: a token of an older setup or of another access
+        # would be refused (401) and could only mislead.
+        offered = [token for token in own if token in use.this]
+        if self._token_removal and not offered:
+            # Nothing can be revoked here, or the list could not be read: the
+            # access is removed only after an explicit choice, never silently.
+            return self._tokens_remove_none_menu()
         language = self.hass.config.language
         markers = {
             **{
@@ -496,7 +499,7 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         choices: dict[str, GatewayToken] = {}
         options: list[SelectOptionDict] = []
         labels: dict[str, int] = {}
-        for number, token in enumerate(own, 1):
+        for number, token in enumerate(offered, 1):
             label = _created(token.created_at)
             labels[label] = labels.get(label, 0) + 1
             if labels[label] > 1:
@@ -618,38 +621,19 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             description_placeholders={
                 "created": _created(selected.created_at),
                 "host": markdown_literal(access.context.endpoint.host),
-                "use": self._token_use_text(selected),
+                "use": self._token_use_text(),
             },
         )
 
-    def _token_use_text(self, selected: GatewayToken) -> str:
-        language = self.hass.config.language
-        if selected in self._token_use.this:
-            return localize(
-                language,
-                "Es ist sehr wahrscheinlich der Token, den dieser Zugang nutzt: "
-                "Widerrufst du ihn, endet dieser lokale Zugang.",
-                "It is most likely the token this access uses: revoking it ends "
-                "this local access.",
-            )
-        if selected in self._token_use.others:
-            return localize(
-                language,
-                "Es ist sehr wahrscheinlich der Token eines anderen lokalen "
-                "Zugangs zu diesem Gateway: Widerrufst du ihn, endet jener "
-                "Zugang.",
-                "It is most likely the token of another local access to this "
-                "gateway: revoking it ends that access.",
-            )
+    def _token_use_text(self) -> str:
+        # Only the token an access signs in with is offered, and the gateway
+        # revokes nothing else; the mark itself remains an assumption.
         return localize(
-            language,
-            "Welchen Token ein Zugang nutzt, lässt sich nicht sicher erkennen, "
-            "etwa wenn ein anderes Home Assistant dieses Gateway nutzt. "
-            "Widerrufst du einen genutzten Token, endet der lokale Zugang, der "
-            "ihn nutzt.",
-            "Which token an access uses cannot be told for certain, for example "
-            "when another Home Assistant uses this gateway. Revoking a token in "
-            "use ends the local access that uses it.",
+            self.hass.config.language,
+            "Es ist sehr wahrscheinlich der Token, den dieser Zugang nutzt: "
+            "Widerrufst du ihn, endet dieser lokale Zugang.",
+            "It is most likely the token this access uses: revoking it ends "
+            "this local access.",
         )
 
     async def async_step_local_token_revoke(

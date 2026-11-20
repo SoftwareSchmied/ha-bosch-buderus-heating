@@ -169,7 +169,7 @@
       "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
       "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
       "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
-      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos.",
+      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos. O mesmo erro também aparece se o Home Assistant não estiver na mesma rede (sub-rede) que o gateway. Nesse caso, obtenha o token num computador na rede do gateway e introduza-o em «Utilizar um token existente».",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
       "local_rate_limited_wait": "O gateway solicitou uma pausa. Tente novamente dentro de {seconds} segundos.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Teste de ligação",
-        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway; só lá está se tiver sido definida uma vez na antiga aplicação do aparelho."
+        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway; só lá está se tiver sido definida uma vez na antiga aplicação do aparelho. A aplicação na nuvem nunca a define, e nem o emparelhamento do gateway nela nem uma palavra-passe no ecrã do aparelho de aquecimento provam que existe; só a aplicação antiga do dispositivo a define, com a opção de ligar apenas localmente."
       },
       "connection_test_certificate_changed": {
         "title": "Teste de ligação",
@@ -608,7 +608,7 @@
         "description": "As credenciais são removidas do Home Assistant. O token permanece no gateway, a menos que o revogue com a caixa abaixo. As instalações e as entidades são mantidas, mesmo que este seja o último acesso; sem um acesso disponível, não mostram valores atuais. Deixe a caixa de cima desmarcada para voltar sem alterações.",
         "data": {
           "confirm": "Remover este acesso",
-          "revoke": "Revogar primeiro um token desta integração no gateway"
+          "revoke": "Primeiro revogar o token deste acesso no gateway"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokens no gateway",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. Os tokens mais antigos desta integração costumam ficar de configurações anteriores. Sem escolha nada muda.{note}",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. O gateway só revoga o token com o qual o próprio pedido está autenticado, por isso aqui só se pode escolher esse token. Os tokens mais antigos desta integração e os tokens de outros acessos ou aplicações não podem ser revogados a partir do Home Assistant e permanecem no gateway. Sem escolha nada muda.{note}",
         "data": {
           "token": "Token a revogar"
         }
       },
       "local_tokens_remove": {
         "title": "Revogar um token antes de remover",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, **Submeter** remove o acesso sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.{note}",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista. O gateway só revoga o token com o qual o próprio pedido está autenticado, por isso aqui só se pode escolher esse token. Os tokens mais antigos desta integração e os tokens de outros acessos ou aplicações não podem ser revogados a partir do Home Assistant e permanecem no gateway. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, **Submeter** remove o acesso sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.{note}",
         "data": {
           "token": "Token a revogar"
         }
       },
       "local_tokens_remove_none": {
         "title": "Nenhum token para revogar",
-        "description": "O gateway não lista nenhum token desta integração que possa ser revogado aqui, ou não foi possível ler a lista. O acesso ainda não foi removido. Escolha se o remove sem revogar ou se o mantém.",
+        "description": "Aqui não é possível revogar nenhum token: o gateway só revoga o token com o qual este acesso se autentica, e a lista não mostra qual é (ou não pôde ser lida). O acesso ainda não foi removido. Escolha se o remove sem revogar nada ou se o mantém.",
         "menu_options": {
           "local_tokens_remove_without": "Remover sem revogar",
           "local_tokens_remove_cancel": "Cancelar e manter o acesso"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
       "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
       "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
-      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos.",
+      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos. O mesmo erro também aparece se o Home Assistant não estiver na mesma rede (sub-rede) que o gateway. Nesse caso, obtenha o token num computador na rede do gateway e introduza-o em «Utilizar um token existente».",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
       "local_rate_limited_wait": "O gateway solicitou uma pausa. Tente novamente dentro de {seconds} segundos.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
       "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador.",
       "icom_cannot_connect": "O gateway não respondeu. Verifique o endereço e se o gateway está acessível na porta 80.",
-      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway. Só lá está se tiver sido definida uma vez na antiga aplicação do aparelho.",
+      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway. Só lá está se tiver sido definida uma vez na antiga aplicação do aparelho. A aplicação na nuvem nunca a define, e nem o emparelhamento do gateway nela nem uma palavra-passe no ecrã do aparelho de aquecimento provam que existe; só a aplicação antiga do dispositivo a define, com a opção de ligar apenas localmente.",
       "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
       "icom_no_identity": "Não foi possível associar o gateway à instalação: não indica um ID utilizável e os seus valores não coincidem o suficiente com os da cloud. Tente novamente dentro de alguns minutos.",
       "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",

@@ -90,6 +90,9 @@ change:
   hour, six hours and then weekly instead of daily. A firmware change, a new
   sign-in or changed connection settings and **Search the system again** still
   ask such paths again at once; a changed answer schema alone keeps the pause.
+- a path the gateway answers with 409 (its function is switched off, for
+  example the tariff function in the app) is unavailable, not an error, and is
+  asked again after 15 minutes, one hour and then every six hours.
 
 Because the polling classes changed, the local search starts once from the
 beginning after updating to 0.9.0-alpha.2. Known readings stay and are read

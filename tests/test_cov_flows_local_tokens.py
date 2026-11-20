@@ -185,11 +185,7 @@ async def test_a_token_that_is_not_ours_is_never_offered_for_revocation(hass, di
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     flow = _flow(hass, result)
-    foreign = next(
-        token
-        for token in flow._token_choices.values()
-        if token.token_id == "tid-own-old"
-    )
+    foreign = next(iter(flow._token_choices.values()))
     flow._token_choices = {
         "token_9": SimpleNamespace(**{**vars_of(foreign), "own": False})
     }
