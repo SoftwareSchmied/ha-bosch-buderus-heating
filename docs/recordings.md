@@ -264,15 +264,15 @@ of the month.
 ## Counts that do not fit
 
 Energy, starts and working time are sums with one value per hour: the count
-`c` is 1 for an hour and the hours of the day (24, or 23 and 25 on a change
-of summer time) for a day. A gateway that answers minute values instead
+`c` is 1 for an hour and, for a day, the number of hours with a value, at most
+the hours of the day (24, or 23 and 25 on a change of summer time). A gateway that answers minute values instead
 (`c` 60 per hour, `y` the sum of the minutes) would show about 60 times too
 much, so a slot whose count does not fit is not taken. Nothing is
 interpolated; the slot stays a gap, and the diagnostics count it as
 `answer_count_form` under the events of the recording. Temperatures are means and
 volumes are not judged. A day with a count below the hours of the day (the plant
-was off for some hours) is not taken either; the hours of that day, when the
-plant still has them, are imported as usual. Please report a plant that shows
+was off for some hours) is taken as it is; only a count above the hours of
+the day is discarded. Please report a plant that shows
 `answer_count_form` on GitHub with its diagnostics.
 
 ## Diagnostics
