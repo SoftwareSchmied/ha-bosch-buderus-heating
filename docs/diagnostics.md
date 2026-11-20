@@ -1245,6 +1245,12 @@ increase these discovery counters. Actual HTTP attempts and retries remain in
 the account-wide `request_metrics`; a batch shared by two circuits must not be
 counted twice as cloud traffic.
 
+`partial_publications` counts how often a first discovery (a gateway without a
+stored inventory) showed what it had found so far while it was still running:
+after about 60 seconds, once the kind of plant is decided and a block of reads
+has been answered. It is 0 for a start with a stored inventory, for later
+discoveries and for a cloud that answers quickly.
+
 `completed` is false when discovery stops for a resource or depth limit,
 authentication failure, rate limit, or request-wide transport error.
 `stop_reason` names the cause, including `resource_limit`, `depth_limit`,

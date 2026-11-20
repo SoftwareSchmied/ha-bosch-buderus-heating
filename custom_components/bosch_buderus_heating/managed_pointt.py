@@ -107,6 +107,12 @@ class PointTSource:
         if not self.current():
             raise SourceStopped()
 
+    def publish_partial(self, coordinator: ManagedPointTCoordinator) -> None:
+        """A first discovery shows what it found so far: its entities appear
+        now, the rest follows through the coordinator's listeners."""
+        if self.context is not None and self.context.publish(coordinator):
+            self._published = True
+
     def authentication_failed(self) -> None:
         if self.current():
             self._auth_failed.set()
@@ -229,6 +235,9 @@ class PointTSource:
                     connection.hass, connection.entry, coordinators=(coordinator,)
                 )
                 coordinator.inventory = inventory
+                # A first start (nothing stored for the gateway) shows its
+                # entities step by step; with an inventory it does as before.
+                coordinator.progressive_discovery = not inventory.resources(gateway_id)
                 # A retained view of this binding saves its fault baseline
                 # first, so the cloud continues from it (review P49b).
                 self._faults_from = await connection.runtime.async_settle_faults(
@@ -652,6 +661,12 @@ class ManagedPointTCoordinator(
         # (every entity looks again) in every other update pass.
         self.local_changed_paths: frozenset[str] | None = None
         self._local_pass_context: tuple[bool, bool] | None = None
+
+    def _partial_allowed(self) -> bool:
+        return self.source.current()
+
+    def _publish_partial(self) -> None:
+        self.source.publish_partial(self)
 
     def schedule_inventory_expiry(self, *, recheck: bool = False) -> None:
         """P49b (S1): when the stored inventory of this dormant view passes
