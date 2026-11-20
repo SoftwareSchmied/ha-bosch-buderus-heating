@@ -151,6 +151,8 @@ from .rrc_write import (
     RrcWriteStats,
 )
 from .start_counters import is_start_counter_path
+from .null_reading import holds_value, is_null_reading
+from .null_reading import without_answer as null_without_answer
 from .season_paths import is_season_dependent
 from .startup_data import (
     LICENSE_PATH,
@@ -4477,6 +4479,15 @@ class BoschBuderusDataUpdateCoordinator(
         for result in results:
             if (mode_path := _manual_setpoint_mode_path(result.path)) is not None:
                 affected_modes.add(mode_path)
+            if (
+                result.resource is not None
+                and is_null_reading(result.resource)
+                and (known := snapshots.get(result.path)) is not None
+                and holds_value(known.resource)
+            ):
+                # HTTP 200 with a null value: no new reading, the last good
+                # value stays (as for a path the answer did not contain).
+                result = null_without_answer(result)
             if result.resource is not None:
                 previous = snapshots.get(result.path)
                 if previous is not None:
