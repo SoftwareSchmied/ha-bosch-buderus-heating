@@ -70,6 +70,7 @@ from .derived import (
 )
 from .derived_sensors import track_calculated_sensors
 from .device import device_info_for_resource, grouped_entity_name
+from .dhw_instant import is_instant_zero
 from .dhw_safety import is_dhw_safety_path
 from .energy_contracts import assess_energy, is_energy_collection
 from .enum_translation import enum_value_to_ha
@@ -527,6 +528,10 @@ _UNSAFE_SUBKEY_TOKENS = (
     "recipeid",
     "updateid",
 )
+
+
+# Read-only platform fed by coordinators: no limit on parallel updates.
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
@@ -1778,6 +1783,8 @@ class BoschBuderusSensor(
             return None
         resource = snapshot.resource
         description = self.entity_description
+        if is_instant_zero(self.coordinator, resource.path, resource.value):
+            return None
         if description.value_kind == "switch_program":
             return self._switch_program_level()
         if rrc.scalar_field(resource.path):

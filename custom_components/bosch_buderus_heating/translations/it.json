@@ -4047,6 +4047,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Accessi cloud",
+      "local_accesses": "Accessi locali",
+      "last_successful_update": "Ultimo aggiornamento riuscito"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Imposta i punti di commutazione di un programma orario",

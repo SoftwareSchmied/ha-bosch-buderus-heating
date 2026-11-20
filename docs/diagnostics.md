@@ -738,6 +738,28 @@ Always review the file before publishing it. Automatic redaction is an
 additional layer of protection, not a replacement for reviewing a file before
 attaching it to a public issue.
 
+### Diagnostics of one device
+
+Each device page also offers **Download diagnostics** (0.9.3). The report of a
+device holds the same `diagnostics_schema` and `privacy` block as the report
+of the integration and, for this one device only: whether it has a parent
+device and is disabled, the number of its entities and of those disabled, the
+entity counts by domain and by state (`value`, `unknown`, `unavailable`,
+`disabled`, `not_loaded`), and one row per entity (at most 500; then
+`entities_truncated` is true) with its domain, its translation key, its
+entity category, why it is disabled and the kind of its state. It contains no
+reading, name, entity ID, unique ID, serial number or firmware text. The
+schema number stays 48.
+
+### System health
+
+Home Assistant's **System health** (**Settings → System → Repairs → ⋮ →
+System information**) shows three lines for this integration, taken from what
+the connections already know and without a request: `cloud_accesses` and
+`local_accesses` count the accesses by state (for example `connected: 1` or
+`paused: 1`) and `last_successful_update` is the time of the last successful
+reading over any access, or `none yet`. It names no identifier or address.
+
 ## Included information
 
 - selected brand and number of configured gateways;

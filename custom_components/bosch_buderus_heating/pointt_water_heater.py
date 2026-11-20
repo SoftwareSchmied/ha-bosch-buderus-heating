@@ -19,6 +19,7 @@ from .const import DOMAIN
 from .control import HeldCapabilities, async_set_control
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, SnapshotSource
 from .device import device_info_for_resource, grouped_entity_name
+from .dhw_instant import is_instant_zero
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members
 from .held_readings import cloud_usable, held_snapshot
@@ -186,6 +187,10 @@ class PointTWaterHeater(
         resource = fresh_resource(
             self.coordinator, self.root + "/actualTemp", displayed=True, held=True
         )
+        if resource is not None and is_instant_zero(
+            self.coordinator, resource.path, resource.value
+        ):
+            return None
         return temperature(resource if resource and not resource.references else None)
 
     @property

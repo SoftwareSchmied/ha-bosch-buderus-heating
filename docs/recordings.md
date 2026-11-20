@@ -148,7 +148,9 @@ placeholder values for such slots are dropped.
 A period entity without a value (a previous year the plant has no data for yet,
 cooling without cooling operation, a day not confirmed by a second read) shows
 the state `unknown`. It shows `unavailable` only when it has no value and no
-source of the recordings is attached, that is, the source cannot be reached.
+source of the recordings is attached (for example while the integration unloads). A
+source that is attached but does not answer, such as during a cloud outage, leaves
+the state `unknown`; a value already read stays available.
 
 ## Series without a local path: water softener and boilers
 

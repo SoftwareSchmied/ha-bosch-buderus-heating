@@ -29,6 +29,13 @@ else:
     from homeassistant.components.water_heater import WaterHeaterEntityFeature
 
 
+# Writes already run one at a time per gateway under the write lock, and an
+# overlapping change is refused as busy instead of queued. Home Assistant's
+# per-platform limit would queue it behind the first change instead, so no
+# limit is set here.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,

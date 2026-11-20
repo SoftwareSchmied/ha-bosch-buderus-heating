@@ -4047,6 +4047,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Přístupy do cloudu",
+      "local_accesses": "Místní přístupy",
+      "last_successful_update": "Poslední úspěšná aktualizace"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Nastavit spínací body časového programu",

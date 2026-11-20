@@ -121,6 +121,8 @@ DIAGNOSTICS_SCHEMA_VERSION = 48
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from homeassistant.helpers.device_registry import DeviceEntry
+
     from .managed_entry import ManagedEntry
 
 
@@ -205,6 +207,24 @@ async def async_get_config_entry_diagnostics(
         "bacon": runtime.bacon.diagnostics()
         if runtime.bacon
         else {"configured": False},
+    }
+
+
+async def async_get_device_diagnostics(
+    hass: HomeAssistant, entry: BoschBuderusConfigEntry, device: DeviceEntry
+) -> dict[str, Any]:
+    """Return the entity kinds and states of one device, without readings."""
+    from .device_diagnostics import device_report
+
+    return {
+        "diagnostics_schema": DIAGNOSTICS_SCHEMA_VERSION,
+        "privacy": {
+            "contains_raw_resource_values": False,
+            "contains_credentials": False,
+            "contains_stable_identifiers": False,
+            "contains_user_defined_names": False,
+        },
+        **device_report(hass, entry, device),
     }
 
 

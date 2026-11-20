@@ -4047,6 +4047,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Pilviyhteydet",
+      "local_accesses": "Paikalliset yhteydet",
+      "last_successful_update": "Viimeisin onnistunut päivitys"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Aseta aikaohjelman kytkentäpisteet",

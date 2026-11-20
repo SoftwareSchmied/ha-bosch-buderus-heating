@@ -4047,6 +4047,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Πρόσβαση στο cloud",
+      "local_accesses": "Τοπικές προσβάσεις",
+      "last_successful_update": "Τελευταία επιτυχής ενημέρωση"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Ορισμός των σημείων μεταγωγής ενός χρονοπρογράμματος",

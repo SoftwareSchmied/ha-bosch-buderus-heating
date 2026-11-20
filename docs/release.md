@@ -569,7 +569,7 @@ updates through #100 and closed #97, #98 and #99 as superseded.
 The published archive and checksum match the local Linux build byte for byte.
 
 I corrected an outdated note in the release text after checking ReuDa's
-2026-11-01 field report in #95. He confirmed the displayed programs and timely
+2026-11-01 field report in #95. ReuDa confirmed the displayed programs and timely
 heating and hot-water transitions against MyBuderus on a WLW186i with MX400.
 Issue #95 was already closed. The published release notes follow this
 corrected CHANGELOG section; the release tag and installation archive stay

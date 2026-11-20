@@ -4047,6 +4047,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Molnåtkomster",
+      "local_accesses": "Lokala åtkomster",
+      "last_successful_update": "Senaste lyckade uppdatering"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Ange växlingspunkterna för ett tidsprogram",

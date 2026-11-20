@@ -280,9 +280,9 @@ turning `unavailable`.
 
 With both accesses the sensor is on when either one answers, otherwise off when
 either one does not answer, otherwise unknown. The attributes `cloud` and
-`local` show the state of each access (`reachable`, `not_answering`,
-`sign_in_unavailable`, `sign_in_required`, `paused`, `not_in_use`; `ready`,
-`not_ready`, `starting`, `certificate_changed`), and `cloud_failure` the category of
+`local` show the state of each access (cloud: `reachable`, `not_answering`,
+`sign_in_unavailable`, `sign_in_required`, `paused`, `not_in_use`; local: `ready`,
+`not_ready`, `starting`, `certificate_changed`, `paused`, `sign_in_required`), and `cloud_failure` the category of
 the last failed cloud refresh while the cloud does not answer. The sensor never
 turns `unavailable` itself.
 
@@ -729,6 +729,12 @@ cooling-flow setpoint and does not apply an unknown installer safety offset.
 These 16 core entities are created for every available domestic-hot-water
 circuit. Optional fresh-water-station and service values are added only when
 reported.
+
+A circuit that reports its `hotWaterSystem` as `instant` (an instantaneous
+water heater without a tank) often reports 0 as the actual hot-water
+temperature although it flags the value available. That 0 is the missing
+sensor, so the sensor and the water heater show the temperature as unknown
+then. A real reading above 0 on such a circuit is shown as it is.
 
 | Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|
@@ -1338,7 +1344,7 @@ heating, hot water and pool are disabled by default; cooling has no
 environmental energy. A negative or incomplete result is not exposed as a
 measurement and does not start a new meter cycle. A user with a heating and
 cooling heat pump confirmed on 0.9.2-beta.3 (discussion #111) that the heating
-and hot water values equal his own calculation to the last digit and that the
+and hot water values equal the user's own calculation to the last digit and that the
 total equals both plus the cooling energy.
 
 The total-electricity entity reports `value_source: direct` when PointT
@@ -1378,6 +1384,114 @@ enabled; earlier periods cannot be filled in. To use it in the energy
 dashboard, enable it, wait for the first statistics (up to one hour), and add
 it, for example, under gas consumption, which accepts kWh. I have not yet
 confirmed this entity on a real device.
+
+## Energy dashboard
+
+Which entities to use in the Home Assistant energy dashboard (**Settings →
+Dashboards → Energy**):
+
+| Purpose | Entity | State class |
+|---|---|---|
+| Electricity of the heat pump (**Individual devices**) | **Total – Electricity consumption**; for the split, **Heating – Electricity consumption** and **Hot water – Electricity consumption** | `total_increasing` |
+| Electric auxiliary heater alone | **… – Electric auxiliary heater consumption** | `total_increasing` |
+| Gas, where the appliance reports only current power | **Energy (estimated from current power)** (see above) | `total_increasing` |
+| Wallbox | **Total charged energy** (see [wallboxes](pointt-wallboxes.md)) | `total_increasing` |
+| Heat produced | **… – Heat produced** | `total` |
+| Heat produced without the defrost dips | **Net heat heating/hot water/pool (calculated)**, disabled by default (see [calculated values](calculated-values.md#net-heat-counters)) | `total_increasing` |
+
+Notes:
+
+- The heat counters have the state class `total` and not
+  `total_increasing` because the produced heat falls briefly while the heat
+  pump defrosts. With `total_increasing` such a dip would count as a new
+  meter cycle. Home Assistant records the dip as a small negative amount, so
+  the dashboard can show small negative hourly values of the heat. Heat is
+  not electricity: the dashboard's grid and gas fields are not the place for
+  it, and the net heat counters give the same figures without the dips.
+- If the source counter of a `total_increasing` entity falls to a lower value
+  after a reset or a device replacement, Home Assistant starts a new meter
+  cycle and records no negative consumption. For a `total` entity such a
+  reset appears as one large negative amount; correct it in **Developer tools
+  → Statistics** (adjust the sum of that statistic). A single low or zero
+  reading is not taken for a reset (see above).
+- A new or newly enabled entity appears in the dashboard's selection after its
+  first statistics, which can take up to an hour. Earlier periods cannot be
+  filled in.
+- Use your grid meter as the grid consumption of the dashboard. The
+  heat pump's electricity is part of it; add it only as an individual device,
+  not as a second grid source.
+
+### Starts per day and CO2 with Home Assistant's own tools
+
+I add no entity for these; Home Assistant can work them out from the entities above.
+
+- **Starts per day:** create a **Utility Meter** helper (**Settings → Devices &
+  services → Helpers → Create helper → Utility Meter**) with the
+  **Number of starts** counter of the heat source as input sensor and a daily
+  reset cycle. Its state is the number of starts since midnight, and the
+  value of the last cycle is kept as an attribute. Many starts per day with
+  short run times point to cycling.
+- **CO2:** the energy dashboard shows the CO2 share of the grid electricity
+  when you add a CO2 signal source (for example the *Electricity Maps*
+  integration of Home Assistant) in the dashboard's grid settings. This
+  integration calls no external service for that and has no account or key
+  for it. The heat pump's electricity is part of the grid consumption you
+  entered there.
+
+### Deutsch: Energie-Dashboard
+
+Welche Entitäten sich für das Energie-Dashboard von Home Assistant eignen
+(**Einstellungen → Dashboards → Energie**):
+
+| Zweck | Entität | Statusklasse |
+|---|---|---|
+| Strom der Wärmepumpe (**Einzelne Geräte**) | **Gesamt – Stromverbrauch**; getrennt nach Heizen und Warmwasser: **Heizung – Stromverbrauch** und **Warmwasser – Stromverbrauch** | `total_increasing` |
+| Elektrischer Zuheizer allein | **… – Stromverbrauch elektrischer Zuheizer** | `total_increasing` |
+| Gas, wenn das Gerät nur die aktuelle Leistung meldet | **Energie (geschätzt aus aktueller Leistung)** (siehe oben) | `total_increasing` |
+| Wallbox | **Insgesamt geladene Energie** (siehe [Wallboxen](pointt-wallboxes.md)) | `total_increasing` |
+| Erzeugte Wärme | **… – Erzeugte Wärme** | `total` |
+| Erzeugte Wärme ohne Abtau-Einbrüche | **Netto-Wärme Heizen/Warmwasser/Pool (berechnet)**, standardmäßig deaktiviert (siehe [berechnete Werte](calculated-values.md#net-heat-counters)) | `total_increasing` |
+
+Hinweise:
+
+- Die Wärmezähler haben die Statusklasse `total`, nicht `total_increasing`,
+  weil die erzeugte Wärme beim Abtauen kurz fällt. Mit `total_increasing`
+  würde dieser Einbruch als neuer Zählerzyklus gelten. Home Assistant
+  zeichnet ihn als kleinen negativen Betrag auf, daher kann das Dashboard
+  kleine negative Stundenwerte der Wärme zeigen. Wärme ist kein Strom: Die
+  Netz- und Gasfelder des Dashboards sind dafür nicht gedacht; die
+  Netto-Wärmezähler liefern dieselben Werte ohne die Einbrüche.
+- Fällt der Quellzähler einer `total_increasing`-Entität nach einem Rücksetzen
+  oder Gerätetausch auf einen niedrigeren Wert, beginnt Home Assistant einen
+  neuen Zählerzyklus und zeichnet keinen negativen Verbrauch auf. Bei einer
+  `total`-Entität erscheint ein solches Rücksetzen als ein großer negativer
+  Betrag; korrigiere ihn unter **Entwicklerwerkzeuge → Statistiken** (Summe
+  der Statistik anpassen). Ein einzelner niedriger oder Null-Wert gilt nicht
+  als Rücksetzen (siehe oben).
+- Eine neue oder neu aktivierte Entität erscheint erst nach ihrer ersten
+  Statistik in der Auswahl des Dashboards, das kann bis zu einer Stunde
+  dauern. Frühere Zeiträume lassen sich nicht nachfüllen.
+- Verwende deinen Netzzähler als Netzbezug des Dashboards. Der Strom der
+  Wärmepumpe ist darin enthalten; füge ihn nur als einzelnes Gerät hinzu,
+  nicht als zweite Netzquelle.
+
+#### Starts pro Tag und CO2 mit den Bordmitteln von Home Assistant
+
+Ich lege dafür keine Entität an; Home Assistant kann beides aus den
+Entitäten oben ableiten.
+
+- **Starts pro Tag:** Lege einen **Utility Meter**-Helfer an
+  (**Einstellungen → Geräte & Dienste → Helfer → Helfer erstellen → Utility
+  Meter**) mit dem Zähler **Anzahl der Starts** des Wärmeerzeugers als
+  Eingangssensor und täglichem Zurücksetzen. Sein Zustand ist die Zahl der
+  Starts seit Mitternacht, der Wert des letzten Zyklus bleibt als Attribut
+  erhalten. Viele Starts pro Tag mit kurzen Laufzeiten deuten auf Takten hin.
+- **CO2:** Das Energie-Dashboard zeigt den CO2-Anteil des Netzstroms, wenn du
+  in den Netzeinstellungen des Dashboards eine CO2-Signalquelle hinzufügst
+  (zum Beispiel die Integration *Electricity Maps* von Home Assistant). Diese
+  Integration ruft dafür keinen externen Dienst auf und braucht dafür kein
+  Konto und keinen Schlüssel. Der Strom der Wärmepumpe ist im dort
+  eingetragenen Netzbezug enthalten.
 
 ## Calculated values
 
