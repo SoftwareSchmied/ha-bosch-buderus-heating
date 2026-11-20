@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Brána odmietla Login a Pass. Skontrolujte oba údaje na štítku brány a zadajte ich znova.",
       "local_invalid_label_format": "Login alebo Pass obsahuje znaky, ktoré štítok zariadenia nemá, napríklad medzeru vo vnútri hodnoty. Bráne sa nič neodoslalo. Skontrolujte zadanie a zadajte ho znova.",
       "local_unlock_confirm_required": "Označte toto políčko, keď ste na bráne uvoľnili lokálne prihlásenie a videli modrý signál.",
-      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút.",
+      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút. Rovnaká chyba sa zobrazí aj vtedy, keď Home Assistant nie je v rovnakej sieti (podsieti) ako brána. V takom prípade získajte token na počítači v sieti brány a zadajte ho v časti „Použitie existujúceho tokenu“.",
       "local_token_database_full": "Databáza tokenov brány je plná. Pred vytvorením ďalšieho si skontrolujte jej existujúce tokeny. Žiadne tokeny neboli odstránené.",
       "local_rate_limited": "Brána požiadala o pauzu. Počkajte, kým uplynie zobrazený čas.",
       "local_rate_limited_wait": "Brána požiadala o pauzu. Skúste to znova o {seconds} s.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test pripojenia",
-        "description": "Prihlásenie zlyhalo: heslá k bráne nesedia. Skontrolujte ich cez „Zmeniť prístupové údaje iCom“. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne; je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia."
+        "description": "Prihlásenie zlyhalo: heslá k bráne nesedia. Skontrolujte ich cez „Zmeniť prístupové údaje iCom“. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne; je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia. Cloudová aplikácia ho nikdy nenastavuje a jeho existenciu nedokazuje ani spárovanie brány v nej, ani heslo na displeji vykurovacieho zariadenia; nastavuje ho len staršia aplikácia zariadenia s voľbou pripojiť sa iba lokálne."
       },
       "connection_test_certificate_changed": {
         "title": "Test pripojenia",
@@ -608,7 +608,7 @@
         "description": "Prihlasovacie údaje sa odstránia z Home Assistantu. Token zostane na bráne, ak ho neodvoláte políčkom nižšie. Systémy a entity zostanú zachované, aj keď ide o posledný prístup; bez dostupného prístupu nezobrazujú aktuálne hodnoty. Nechajte horné políčko nezaškrtnuté, ak sa chcete vrátiť bez zmien.",
         "data": {
           "confirm": "Odstrániť tento prístup",
-          "revoke": "Najprv odvolať token tejto integrácie na bráne"
+          "revoke": "Najprv odvolať token tohto prístupu v bráne"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokeny na bráne",
-        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený a jeho odvolaním sa lokálny prístup skončí. Staršie tokeny tejto integrácie zvyčajne zostávajú z predchádzajúcich nastavení. Bez výberu sa nič nezmení.{note}",
+        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený a jeho odvolaním sa lokálny prístup skončí. Brána odvolá iba token, ktorým je prihlásená samotná požiadavka, preto sa tu dá vybrať len tento token. Staršie tokeny tejto integrácie a tokeny iných prístupov alebo aplikácií sa z Home Assistanta nedajú odvolať a zostávajú v bráne. Bez výberu sa nič nezmení.{note}",
         "data": {
           "token": "Token na odvolanie"
         }
       },
       "local_tokens_remove": {
         "title": "Odvolanie tokenu pred odstránením",
-        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený. Vyberte token, ktorý sa odvolá pred odstránením prístupu. Bez výberu **Odoslať** odstráni prístup bez toho, aby sa čokoľvek odvolalo. Ak chcete prístup zachovať, zatvorte tento dialóg.{note}",
+        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený. Brána odvolá iba token, ktorým je prihlásená samotná požiadavka, preto sa tu dá vybrať len tento token. Staršie tokeny tejto integrácie a tokeny iných prístupov alebo aplikácií sa z Home Assistanta nedajú odvolať a zostávajú v bráne. Vyberte token, ktorý sa odvolá pred odstránením prístupu. Bez výberu **Odoslať** odstráni prístup bez toho, aby sa čokoľvek odvolalo. Ak chcete prístup zachovať, zatvorte tento dialóg.{note}",
         "data": {
           "token": "Token na odvolanie"
         }
       },
       "local_tokens_remove_none": {
         "title": "Žiadny token na odvolanie",
-        "description": "Brána nevypisuje žiadny token tejto integrácie, ktorý by sa tu dal odvolať, alebo sa zoznam nepodarilo načítať. Prístup ešte nebol odstránený. Vyberte, či ho odstrániť bez odvolania, alebo ponechať.",
+        "description": "Tu sa nedá odvolať žiadny token: brána odvolá iba token, ktorým sa tento prístup prihlasuje, a zoznam neukazuje, ktorý to je (alebo sa ho nepodarilo prečítať). Prístup ešte nebol odstránený. Vyberte, či ho odstránite bez odvolania, alebo ponecháte.",
         "menu_options": {
           "local_tokens_remove_without": "Odstrániť bez odvolania",
           "local_tokens_remove_cancel": "Zrušiť a ponechať prístup"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Brána odmietla Login a Pass. Skontrolujte oba údaje na štítku brány a zadajte ich znova.",
       "local_invalid_label_format": "Login alebo Pass obsahuje znaky, ktoré štítok zariadenia nemá, napríklad medzeru vo vnútri hodnoty. Bráne sa nič neodoslalo. Skontrolujte zadanie a zadajte ho znova.",
       "local_unlock_confirm_required": "Označte toto políčko, keď ste na bráne uvoľnili lokálne prihlásenie a videli modrý signál.",
-      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút.",
+      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút. Rovnaká chyba sa zobrazí aj vtedy, keď Home Assistant nie je v rovnakej sieti (podsieti) ako brána. V takom prípade získajte token na počítači v sieti brány a zadajte ho v časti „Použitie existujúceho tokenu“.",
       "local_token_database_full": "Databáza tokenov brány je plná. Pred vytvorením ďalšieho si skontrolujte jej existujúce tokeny. Žiadne tokeny neboli odstránené.",
       "local_rate_limited": "Brána požiadala o pauzu. Počkajte, kým uplynie zobrazený čas.",
       "local_rate_limited_wait": "Brána požiadala o pauzu. Skúste to znova o {seconds} s.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Názov môže obsahovať najviac 64 tlačiteľných znakov.",
       "switch_program_aircon_setting": "Vyberte režim, ktorý klimatizácia ponúka, a k nemu teplotu v jej rozsahu a krokoch a jednu z jej rýchlostí ventilátora.",
       "icom_cannot_connect": "Brána neodpovedala. Skontrolujte adresu a či je brána dostupná na porte 80.",
-      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne. Je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia.",
+      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá. Najčastejšia príčina: súkromné heslo nebolo nikdy uložené v bráne. Je tam len vtedy, ak bolo raz nastavené v starej aplikácii zariadenia. Cloudová aplikácia ho nikdy nenastavuje a jeho existenciu nedokazuje ani spárovanie brány v nej, ani heslo na displeji vykurovacieho zariadenia; nastavuje ho len staršia aplikácia zariadenia s voľbou pripojiť sa iba lokálne.",
       "icom_busy": "Brána je zaneprázdnená. Skúste to znova o niekoľko minút.",
       "icom_no_identity": "Bránu nemožno priradiť k sústave: nehlási použiteľné ID a jej hodnoty sa dostatočne presne nezhodujú s hodnotami z cloudu. Skúste to znova o pár minút.",
       "icom_other_gateway": "Toto nie je brána vybranej sústavy. Skontrolujte adresu.",

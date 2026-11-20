@@ -84,9 +84,16 @@ def _token(entry):
 class Gateway:
     """A synthetic sign-in service with a token list and the revocation."""
 
-    def __init__(self, tokens=(OWN, OLD, FOREIGN), *, current="tid-own-current"):
+    def __init__(
+        self, tokens=(OWN, OLD, FOREIGN), *, current="tid-own-current", strict=True
+    ):
         self.tokens = [dict(token) for token in tokens]
         self.current = current
+        # A real gateway revokes only the token ID of the token in the
+        # Authorization header and answers 401 for any other ID. strict=False
+        # is a gateway that honors other IDs, to test the guards around the
+        # request independently of that.
+        self.strict = strict
         self.revoked_current = False
         self.revoke_status = 200
         self.apply_revoke = True
@@ -122,6 +129,10 @@ class Gateway:
         elif method == "POST" and path == "/auth/revoke":
             form = parse_qs(body.decode())
             self.posts.append((headers, form))
+            if self.strict and form["token_id"][0] != self.current:
+                writer.write(wire_reply(b"{}", status=401))
+                await writer.drain()
+                return
             if self.apply_revoke and self.revoke_status == 200:
                 token_id = form["token_id"][0]
                 self.tokens = [t for t in self.tokens if t["token_id"] != token_id]
@@ -342,8 +353,34 @@ async def test_a_closed_dialog_sends_nothing(auth_gateway):
 # --- the revocation ---------------------------------------------------------
 
 
-async def test_an_old_token_of_ours_is_revoked_once_and_read_back(auth_gateway):
+async def test_an_old_token_is_refused_by_the_gateway_and_stays_listed(auth_gateway):
+    # The gateway revokes only the token of the Authorization header; the
+    # request for another ID is answered with 401. That is a refusal of this
+    # request, not an invalid access: the list is read back with the same token.
     gateway = Gateway()
+    requests, binding = await _start(auth_gateway, gateway)
+    result = await revoke_gateway_token(
+        CONTEXT, TOKEN, binding, _token(OLD), is_current=lambda: True
+    )
+    assert result.state == RevokeState.REJECTED
+    assert result.problem is None
+    assert _paths(requests) == [
+        [b"GET", b"/auth/token"],
+        [b"POST", b"/auth/revoke"],
+        [b"GET", b"/auth/token"],
+    ]
+    assert len(gateway.posts) == 1
+    assert [t["token_id"] for t in gateway.tokens] == [
+        "tid-own-current",
+        "tid-own-old",
+        "tid-foreign",
+    ]
+
+
+async def test_a_token_that_the_gateway_honors_is_revoked_once_and_read_back(
+    auth_gateway,
+):
+    gateway = Gateway(strict=False)
     requests, binding = await _start(auth_gateway, gateway)
     result = await revoke_gateway_token(
         CONTEXT, TOKEN, binding, _token(OLD), is_current=lambda: True
@@ -397,7 +434,7 @@ async def test_a_list_changed_since_it_was_shown_sends_nothing(auth_gateway, cha
 
 @pytest.mark.parametrize("applied", [True, False])
 async def test_a_lost_answer_is_never_repeated(auth_gateway, applied):
-    gateway = Gateway()
+    gateway = Gateway(strict=False)
     gateway.drop_revoke = True
     gateway.apply_revoke = applied
     requests, binding = await _start(auth_gateway, gateway)
@@ -440,7 +477,7 @@ async def test_a_refused_revocation_stays_listed(auth_gateway):
 
 
 async def test_a_pause_request_ends_without_a_read_back(auth_gateway):
-    gateway = Gateway()
+    gateway = Gateway(strict=False)
     gateway.revoke_status = 429
     requests, binding = await _start(auth_gateway, gateway)
     result = await revoke_gateway_token(
@@ -559,8 +596,10 @@ async def test_the_list_shows_only_our_tokens_as_choices(hass, dialog):
     assert placeholders["own"].count("\n- ") == 1
     assert "[other](" not in placeholders["others"]
     assert "\\[other\\]" in placeholders["others"]
+    # Only the token this access most likely uses is offered: the gateway
+    # revokes no other one.
     choices = _choices(result)
-    assert len(choices) == 2 and set(choices.values()) == {"token_1", "token_2"}
+    assert len(choices) == 1 and set(choices.values()) == {"token_1"}
     shown = json.dumps(
         {k: v for k, v in result.items() if k != "data_schema"}, default=str
     )
@@ -580,7 +619,7 @@ async def test_the_list_shows_only_our_tokens_as_choices(hass, dialog):
     assert len(requests) == 1 and gateway.posts == []
 
 
-async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog):
+async def test_the_token_is_revoked_only_after_the_confirmation(hass, dialog):
     gateway = Gateway()
     entry, requests = await dialog(gateway)
     result = await _open_list(hass, entry)
@@ -596,10 +635,10 @@ async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog)
     )
     result = await hass.config_entries.options.async_configure(flow, {"token": oldest})
     result = await hass.config_entries.options.async_configure(flow, BOTH)
-    assert await outcome(hass, result) == "local_token_revoked"
+    assert await outcome(hass, result) == "local_token_access_ended"
     assert (await leave_page(hass, result))["step_id"] == "connection"
     ((_, form),) = gateway.posts
-    assert form["token_id"] == ["tid-own-old"]
+    assert form["token_id"] == ["tid-own-current"]
     assert [path[0] for path in _paths(requests)] == [
         b"GET",
         b"GET",
@@ -607,7 +646,22 @@ async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog)
         b"POST",
         b"GET",
     ]
-    assert entry.options["connections"]["local"]["enabled"] is True
+    assert entry.options["connections"]["local"]["enabled"] is False
+
+
+async def test_older_tokens_are_listed_but_never_offered(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    # Both own tokens are listed, only the one in use is a choice.
+    assert result["description_placeholders"]["own"].count("\n- ") == 1
+    (label,) = _choices(result)
+    assert MARKER in label
+    with pytest.raises(InvalidData):
+        await hass.config_entries.options.async_configure(
+            result["flow_id"], {"token": "token_2"}
+        )
+    assert gateway.posts == []
 
 
 async def test_a_value_that_was_not_offered_is_refused(hass, dialog):
@@ -629,7 +683,7 @@ async def test_a_list_changed_before_the_confirmation_revokes_nothing(hass, dial
     result = await hass.config_entries.options.async_configure(
         flow, {"token": next(iter(_choices(result).values()))}
     )
-    gateway.tokens = [t for t in gateway.tokens if t["token_id"] != "tid-own-old"]
+    gateway.tokens = [t for t in gateway.tokens if t["token_id"] != "tid-own-current"]
     result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_tokens_changed"
     assert gateway.posts == []
@@ -641,6 +695,7 @@ async def test_revoking_the_used_token_switches_the_access_off(hass, dialog):
     result = await _open_list(hass, entry)
     flow = result["flow_id"]
     newest = list(_choices(result).values())[-1]
+    assert len(_choices(result)) == 1
     result = await hass.config_entries.options.async_configure(flow, {"token": newest})
     result = await hass.config_entries.options.async_configure(
         flow, {"confirm": True, "confirm_end": True}
@@ -672,7 +727,10 @@ async def test_removing_the_access_without_the_choice_sends_nothing(hass, dialog
 
 
 async def test_removing_with_the_choice_revokes_first(hass, dialog):
-    gateway = Gateway()
+    # A gateway that honors the ID although it is not the access's own token
+    # (the mark was wrong): the access stays able to read, and the note says
+    # that its own token is still on the gateway.
+    gateway = Gateway(current="tid-unrelated", strict=False)
     entry, _ = await dialog(gateway)
     result = await _open_menu(hass, entry)
     flow = result["flow_id"]
@@ -699,7 +757,7 @@ async def test_removing_with_the_used_token_revoked_says_it_is_gone(hass, dialog
     gateway = Gateway()
     entry, _ = await dialog(gateway)
     flow, result = await _remove_with_revoke(hass, entry)
-    result = await _select(hass, result, 1)
+    result = await _select(hass, result, 0)
     result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_token_revoked_removed"
     assert "local" not in entry.data["connections"] and len(gateway.posts) == 1
@@ -928,13 +986,14 @@ async def test_a_silent_gateway_times_out(auth_gateway, monkeypatch):
 
 
 async def test_tokens_with_the_same_time_get_distinct_labels(hass, dialog):
-    twin = {**OLD, "token_id": "tid-own-twin"}
+    twin = {**OWN, "token_id": "tid-own-twin"}
     gateway = Gateway((OWN, OLD, twin))
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     (selector,) = result["data_schema"].schema.values()
     labels = [option["label"] for option in selector.config["options"]][1:]
-    assert len(set(labels)) == 3 and labels[1] == labels[0] + " (2)"
+    # Equally old tokens are both marked, and the choices stay distinct.
+    assert len(set(labels)) == 2 and "(2)" in labels[1] and "(2)" not in labels[0]
 
 
 @pytest.mark.parametrize(
@@ -1044,9 +1103,8 @@ async def test_the_likely_used_token_is_marked_without_values(hass, dialog):
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     labels = list(_choices(result))
-    # Sorted by creation time: the older token is plain, the newest is marked.
-    assert len(labels) == 2
-    assert MARKER not in labels[0] and labels[1].endswith(f"({MARKER})")
+    # Only the marked token is offered; the older one is listed, not offered.
+    assert len(labels) == 1 and labels[0].endswith(f"({MARKER})")
     lines = result["description_placeholders"]["own"].split("\n")
     assert [MARKER in line for line in lines] == [False, True]
     shown = json.dumps(
@@ -1059,7 +1117,7 @@ async def test_the_marker_follows_the_language(hass, dialog):
     hass.config.language = "de"
     entry, _ = await dialog(Gateway())
     result = await _open_list(hass, entry)
-    assert list(_choices(result))[1].endswith("(von diesem Zugang genutzt)")
+    assert next(iter(_choices(result))).endswith("(von diesem Zugang genutzt)")
 
 
 async def test_an_entered_token_marks_nothing(hass, dialog):
@@ -1092,8 +1150,8 @@ async def test_the_entered_token_note_follows_the_language(hass, dialog):
 async def test_the_entered_token_note_also_before_removing(hass, dialog):
     entry, _ = await dialog(Gateway(), imported=True, auth_pin=False)
     _, result = await _remove_with_revoke(hass, entry)
-    assert result["step_id"] == "local_tokens_remove"
-    assert "entered by hand" in result["description_placeholders"]["note"]
+    # No token of this access can be identified, so nothing is offered.
+    assert result["step_id"] == "local_tokens_remove_none"
 
 
 async def test_a_created_token_has_no_note(hass, dialog):
@@ -1169,7 +1227,7 @@ async def test_revoking_the_used_token_needs_the_second_confirmation(hass, dialo
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     flow = result["flow_id"]
-    result = await _select(hass, result, 1)
+    result = await _select(hass, result, 0)
     assert result["step_id"] == "local_token_revoke"
     assert {str(key) for key in result["data_schema"].schema} == {
         "confirm",
@@ -1189,7 +1247,7 @@ async def test_revoking_the_used_token_needs_the_second_confirmation(hass, dialo
     result = await hass.config_entries.options.async_configure(
         flow, {"next_step_id": "local_tokens"}
     )
-    result = await _select(hass, result, 1)
+    result = await _select(hass, result, 0)
     result = await hass.config_entries.options.async_configure(
         flow, {"confirm": True, "confirm_end": True}
     )
@@ -1197,31 +1255,27 @@ async def test_revoking_the_used_token_needs_the_second_confirmation(hass, dialo
     assert len(gateway.posts) == 1
 
 
-async def test_an_older_token_also_needs_the_second_confirmation(hass, dialog):
-    # The mark is an assumption (clocks, another Home Assistant): any own token
-    # may be in use, so the second box is always asked for.
-    gateway = Gateway()
+async def test_a_wrong_mark_is_answered_by_the_gateway_not_by_a_wrong_token(
+    hass, dialog
+):
+    # The mark is an assumption. If the offered token is not the one in the
+    # Authorization header, the gateway refuses (401), the access keeps
+    # working and the token stays listed; nothing is reported as ended.
+    gateway = Gateway(current="tid-own-old")
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     flow = result["flow_id"]
     result = await _select(hass, result, 0)
-    assert {str(key) for key in result["data_schema"].schema} == {
-        "confirm",
-        "confirm_end",
-    }
-    assert "cannot be told for certain" in result["description_placeholders"]["use"]
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
-    assert result["errors"] == {"base": "local_token_end_unconfirmed"}
-    assert gateway.posts == []
     result = await hass.config_entries.options.async_configure(flow, BOTH)
-    assert await outcome(hass, result) == "local_token_revoked"
-    assert len(gateway.posts) == 1
+    assert await outcome(hass, result) == "local_token_revoke_rejected"
+    assert len(gateway.posts) == 1 and not gateway.revoked_current
+    assert entry.options["connections"]["local"]["enabled"] is True
 
 
 async def test_the_revoke_dialog_says_whose_token_it_most_likely_is(hass, dialog):
     entry, _ = await dialog(Gateway())
     result = await _open_list(hass, entry)
-    used = await _select(hass, result, 1)
+    used = await _select(hass, result, 0)
     assert "token this access uses" in used["description_placeholders"]["use"]
     hass.config.language = "de"
     result = await hass.config_entries.options.async_configure(
@@ -1230,7 +1284,7 @@ async def test_the_revoke_dialog_says_whose_token_it_most_likely_is(hass, dialog
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"next_step_id": "local_tokens"}
     )
-    used = await _select(hass, result, 1)
+    used = await _select(hass, result, 0)
     assert "den dieser Zugang nutzt" in used["description_placeholders"]["use"]
 
 
@@ -1268,16 +1322,12 @@ async def test_the_token_of_another_access_is_marked_and_confirmed(
     gateway = Gateway()
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
+    # The token of another access is shown, but never offered: this access's
+    # token is the only one the gateway would revoke for it.
     labels = list(_choices(result))
-    assert labels[0].endswith("(used by another access)")
-    assert labels[1].endswith(f"({MARKER})")
+    assert len(labels) == 1 and labels[0].endswith(f"({MARKER})")
     lines = result["description_placeholders"]["own"].split("\n")
     assert lines[0].endswith("(used by another access)")
-    flow = result["flow_id"]
-    result = await _select(hass, result, 0)
-    assert "another local access" in result["description_placeholders"]["use"]
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
-    assert result["errors"] == {"base": "local_token_end_unconfirmed"}
     assert gateway.posts == []
 
 
@@ -1313,8 +1363,9 @@ async def test_a_gateway_clock_ahead_marks_no_older_token(hass, dialog, monkeypa
         result["flow_id"], {"next_step_id": "local_tokens"}
     )
     labels = list(_choices(result))
-    assert labels[0].endswith(f"({MARKER})")
-    assert labels[1].endswith("(used by another access)")
+    assert len(labels) == 1 and labels[0].endswith(f"({MARKER})")
+    lines = result["description_placeholders"]["own"].split("\n")
+    assert lines[1].endswith("(used by another access)")
 
 
 @pytest.mark.parametrize(
@@ -1357,7 +1408,7 @@ async def test_a_failed_switch_off_after_the_end_is_reported(hass, dialog, monke
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     flow = result["flow_id"]
-    result = await _select(hass, result, 1)
+    result = await _select(hass, result, 0)
     result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_token_access_end_failed"
     assert entry.options["connections"]["local"]["enabled"] is True
@@ -1375,7 +1426,7 @@ async def test_removing_with_the_used_token_needs_the_second_confirmation(hass, 
     result = await hass.config_entries.options.async_configure(
         flow, {"confirm": True, "revoke": True}
     )
-    result = await _select(hass, result, 1)
+    result = await _select(hass, result, 0)
     result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
     assert result["errors"] == {"base": "local_token_end_unconfirmed"}
     assert gateway.posts == [] and "local" in entry.data["connections"]

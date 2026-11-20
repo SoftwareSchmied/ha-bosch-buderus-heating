@@ -169,7 +169,7 @@
       "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
       "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
       "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
-      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes.",
+      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes. The same error also appears if Home Assistant is not in the same network (subnet) as the gateway. In that case get the token on a computer in the gateway's network and enter it under “Use an existing token”.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
       "local_rate_limited_wait": "The gateway asked for a pause. Try again in {seconds} seconds.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Connection test",
-        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password was never saved on the gateway; it is only stored there if it was set once in the old device app."
+        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password was never saved on the gateway; it is only stored there if it was set once in the old device app. The cloud app never sets it, and neither pairing the gateway there nor a password on the heater display shows that it exists; only the older device app sets it, with the option to connect locally only."
       },
       "connection_test_certificate_changed": {
         "title": "Connection test",
@@ -608,7 +608,7 @@
         "description": "The credentials are removed from Home Assistant. The token stays on the gateway unless you revoke it with the box below. Systems and entities are kept, even if this is the last access; without an available access they show no current values. Leave the top box unticked to go back without changes.",
         "data": {
           "confirm": "Remove this access",
-          "revoke": "First revoke a token of this integration on the gateway"
+          "revoke": "First revoke this access's token on the gateway"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Tokens on the gateway",
-        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. Older tokens of this integration usually remain from earlier setups. Without a choice nothing changes.{note}",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. The gateway revokes only the token that the request itself is signed in with, so only that token can be chosen here. Older tokens of this integration and tokens of other accesses or apps cannot be revoked from Home Assistant and stay on the gateway. Without a choice nothing changes.{note}",
         "data": {
           "token": "Token to revoke"
         }
       },
       "local_tokens_remove": {
         "title": "Revoke a token before removing",
-        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list. Choose the token to revoke before the access is removed. Without a choice, **Submit** removes the access without revoking anything. To keep the access, close this dialog.{note}",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list. The gateway revokes only the token that the request itself is signed in with, so only that token can be chosen here. Older tokens of this integration and tokens of other accesses or apps cannot be revoked from Home Assistant and stay on the gateway. Choose the token to revoke before the access is removed. Without a choice, **Submit** removes the access without revoking anything. To keep the access, close this dialog.{note}",
         "data": {
           "token": "Token to revoke"
         }
       },
       "local_tokens_remove_none": {
         "title": "No token to revoke",
-        "description": "The gateway lists no token of this integration that can be revoked here, or its list could not be read. The access has not been removed yet. Choose whether to remove it without revoking anything or to keep it.",
+        "description": "No token can be revoked here: the gateway revokes only the token this access signs in with, and the list does not show which one that is (or it could not be read). The access has not been removed yet. Choose whether to remove it without revoking anything or to keep it.",
         "menu_options": {
           "local_tokens_remove_without": "Remove without revoking",
           "local_tokens_remove_cancel": "Cancel and keep the access"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
       "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
       "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
-      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes.",
+      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes. The same error also appears if Home Assistant is not in the same network (subnet) as the gateway. In that case get the token on a computer in the gateway's network and enter it under “Use an existing token”.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
       "local_rate_limited_wait": "The gateway asked for a pause. Try again in {seconds} seconds.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
       "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds.",
       "icom_cannot_connect": "The gateway did not answer. Check the address and that the gateway can be reached on port 80.",
-      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password was never saved on the gateway. It is only stored there if it was set once in the old device app.",
+      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password was never saved on the gateway. It is only stored there if it was set once in the old device app. The cloud app never sets it, and neither pairing the gateway there nor a password on the heater display shows that it exists; only the older device app sets it, with the option to connect locally only.",
       "icom_busy": "The gateway is busy. Try again in a few minutes.",
       "icom_no_identity": "The gateway could not be matched with the system: it reports no usable ID, and its values do not agree closely enough with the cloud values. Try again in a few minutes.",
       "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",

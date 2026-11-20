@@ -661,8 +661,6 @@
     "Return to the heat source": "Spiatočka do zdroja tepla",
     "used by another access": "používa iný prístup",
     "It is most likely the token this access uses: revoking it ends this local access.": "Pravdepodobne ide o token, ktorý tento prístup používa: jeho odvolaním tento lokálny prístup skončí.",
-    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Pravdepodobne ide o token iného lokálneho prístupu k tejto bráne: jeho odvolaním ten prístup skončí.",
-    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ktorý token prístup používa, sa nedá s istotou zistiť, napríklad keď túto bránu používa iný Home Assistant. Odvolaním používaného tokenu skončí lokálny prístup, ktorý ho používa.",
     "Cooling temperature": "Teplota chladenia",
     "Air quality demand": "Požiadavka podľa kvality vzduchu",
     "Humidity demand": "Požiadavka podľa vlhkosti",

@@ -189,6 +189,42 @@ async def test_transient_failure_backoff_does_not_shorten_gateway_pause(setup):
     assert service._failures == 0 and service.budget.pause_seconds == 7200
 
 
+async def test_a_409_is_unavailable_not_an_error_and_does_not_stop_the_cycle(setup):
+    service, clock, client, _ = setup
+    other = request_for_path("/gateway/brand")
+    service.planner.hints((other,), clock())
+    original = client.read
+
+    async def read(request):
+        if request == REQUEST:
+            client.calls.append(request)
+            return ReadResult(
+                request,
+                ReadState.PATH_ERROR,
+                409,
+                ReadProblem.CONFLICT,
+                http_requests=1,
+            )
+        return await original(request)
+
+    client.read = read
+    service.confirm_identity(CONTEXT.identity)
+    await service.start()
+    await settle()
+    # The 409 path is unavailable; the access stays ready and reads go on.
+    assert service.condition is LocalCondition.READY
+    assert service.budget.pause_seconds == 0
+    views = {view.request: view for view in service.snapshot().resources}
+    assert not views[REQUEST].available and views[other].available
+    # Not asked again before 15 minutes.
+    first = sum(call == REQUEST for call in client.calls)
+    await advance(service, clock, 840)
+    assert sum(call == REQUEST for call in client.calls) == first
+    await advance(service, clock, 60)
+    assert sum(call == REQUEST for call in client.calls) == first + 1
+    assert service.condition is LocalCondition.READY
+
+
 async def test_explicit_deadline_expires_during_long_pause_without_any_request(setup):
     service, clock, client, _ = setup
     service.confirm_identity(CONTEXT.identity)

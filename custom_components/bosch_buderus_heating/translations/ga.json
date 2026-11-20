@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
       "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
       "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
-      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad. Tagann an earráid chéanna chun cinn freisin mura bhfuil Home Assistant sa líonra (fo-líonra) céanna leis an tairseach. Sa chás sin faigh an comhartha ar ríomhaire i líonra an tairseaigh agus cuir isteach faoi “Úsáid comhartha atá ann cheana” é.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
       "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Tástáil naisc",
-        "description": "Theip ar an síniú isteach: ní oireann na pasfhocail don gheata. Seiceáil iad trí “Athraigh sonraí rochtana iCom”. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh; ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis."
+        "description": "Theip ar an síniú isteach: ní oireann na pasfhocail don gheata. Seiceáil iad trí “Athraigh sonraí rochtana iCom”. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh; ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis. Ní shocraíonn an aip scamall choíche é, agus ní chruthaíonn ceangal an tairseaigh ansin ná focal faire ar scáileán an ghaireas téimh go bhfuil sé ann; ní shocraíonn é ach an aip ghaireas níos sine leis an rogha nasc a dhéanamh go háitiúil amháin."
       },
       "connection_test_certificate_changed": {
         "title": "Tástáil naisc",
@@ -608,7 +608,7 @@
         "description": "Bainfear na dintiúir de Home Assistant. Fanann an comhartha ar an ngeata mura gcúlghairmeann tú é leis an ticbhosca thíos. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach; gan rochtain atá ar fáil, ní thaispeánann siad luachanna reatha. Fág an ticbhosca uachtarach gan tic chun filleadh gan athruithe.",
         "data": {
           "confirm": "Bain an rochtain seo",
-          "revoke": "Cúlghair comhartha den chomhtháthú seo ar an ngeata ar dtús"
+          "revoke": "Cúlghair comhartha na rochtana seo ar an tairseach ar dtús"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Comharthaí ar an ngeata",
-        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Gan rogha ní athraíonn aon rud.{note}",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Ní chúlghairmeann an tairseach ach an comhartha lena bhfuil an t-iarratas féin sínithe isteach, mar sin ní féidir ach an comhartha sin a roghnú anseo. Ní féidir comharthaí níos sine den chomhtháthú seo ná comharthaí rochtana nó aipeanna eile a chúlghairm ó Home Assistant agus fanann siad ar an tairseach. Gan rogha ní athraíonn aon rud.{note}",
         "data": {
           "token": "Comhartha le cúlghairm"
         }
       },
       "local_tokens_remove": {
         "title": "Cúlghair comhartha sula mbaintear é",
-        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, bainfidh **Cuir isteach** an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.{note}",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta. Ní chúlghairmeann an tairseach ach an comhartha lena bhfuil an t-iarratas féin sínithe isteach, mar sin ní féidir ach an comhartha sin a roghnú anseo. Ní féidir comharthaí níos sine den chomhtháthú seo ná comharthaí rochtana nó aipeanna eile a chúlghairm ó Home Assistant agus fanann siad ar an tairseach. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, bainfidh **Cuir isteach** an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.{note}",
         "data": {
           "token": "Comhartha le cúlghairm"
         }
       },
       "local_tokens_remove_none": {
         "title": "Gan comhartha le cúlghairm",
-        "description": "Ní liostálann an geata aon chomhartha den chomhtháthú seo is féidir a chúlghairm anseo, nó níorbh fhéidir an liosta a léamh. Níor baineadh an rochtain fós. Roghnaigh ar cheart í a bhaint gan cúlghairm nó í a choinneáil.",
+        "description": "Ní féidir aon chomhartha a chúlghairm anseo: ní chúlghairmeann an tairseach ach an comhartha lena síníonn an rochtain seo isteach, agus ní thaispeánann an liosta cé acu é (nó níorbh fhéidir é a léamh). Níor baineadh an rochtain fós. Roghnaigh an mbainfidh tú í gan aon rud a chúlghairm nó an gcoinneoidh tú í.",
         "menu_options": {
           "local_tokens_remove_without": "Bain gan cúlghairm",
           "local_tokens_remove_cancel": "Cealaigh agus coinnigh an rochtain"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
       "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
       "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
-      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad. Tagann an earráid chéanna chun cinn freisin mura bhfuil Home Assistant sa líonra (fo-líonra) céanna leis an tairseach. Sa chás sin faigh an comhartha ar ríomhaire i líonra an tairseaigh agus cuir isteach faoi “Úsáid comhartha atá ann cheana” é.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
       "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
       "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe.",
       "icom_cannot_connect": "Níor fhreagair an geata. Seiceáil an seoladh agus an féidir teacht ar an ngeata ar chalafort 80.",
-      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh. Ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis.",
+      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh. Ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis. Ní shocraíonn an aip scamall choíche é, agus ní chruthaíonn ceangal an tairseaigh ansin ná focal faire ar scáileán an ghaireas téimh go bhfuil sé ann; ní shocraíonn é ach an aip ghaireas níos sine leis an rogha nasc a dhéanamh go háitiúil amháin.",
       "icom_busy": "Tá an geata gnóthach. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_no_identity": "Níorbh fhéidir an geata a mheaitseáil leis an gcóras: ní thuairiscíonn sé aitheantas úsáidte, agus ní réitíonn a luachanna go leor le luachanna na scamall. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_other_gateway": "Ní hé seo geata an chórais roghnaithe. Seiceáil an seoladh.",

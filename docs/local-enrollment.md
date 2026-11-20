@@ -126,6 +126,13 @@ missing confirmation on the device (412), a full token list on the gateway
 unclear creation result and an incomplete completion. Only unexpected faults
 show the generic message.
 
+The 412 answer has two causes, and the message names both: the buttons were
+not pressed (in time), or Home Assistant is not in the same network (subnet)
+as the gateway. In the second case get the token on a computer in the
+gateway's network and enter it under **Use an existing token**. Reading
+works from other networks too, a token does not expire, and several tokens
+can be valid at the same time.
+
 A changed gateway certificate is never accepted on its own. The local access
 pauses, its status says that the certificate changed, and a repair note
 explains the way out: in the options of the integration, choose the local
@@ -157,53 +164,59 @@ access the message stays as before.
   missing or repeated token ID still makes the whole list unusable. The list is
   not saved and does not appear in the log or in diagnostics. Client names come
   from the gateway and are shown as literal text.
-- **Revoking a token** is offered only for entries with this integration's
-  client name (`Home Assistant Home Comfort`); tokens of other clients are
-  never offered. The list has no token values, so the gateway does not say
-  which of these entries the access itself uses. The dialog marks the likely
-  one: the token of this integration created last at or before the time the
-  access was last set up (a tolerance of two minutes covers a small clock
-  difference between the gateway and Home Assistant; tokens that are equally
-  old are all marked). The setup time is taken after the token was created,
-  so this is normally the token in use, but it remains an assumption. If a
-  token of this integration is newer than that setup time and no other access
-  explains it (another Home Assistant, or the clocks differ), nothing is
-  marked for this access, because the mark would point at an older token.
-  Tokens that other local accesses of this integration to the same gateway
-  most likely use (in any entry, also switched off ones; worked out the same
-  way from their setup times) are marked "used by another access". For an
-  access that uses a token entered by hand, nothing is marked, because that
-  token is not one of this integration's own; a short note below the list
-  says so. Such a token usually appears among the other apps, which are never
-  offered for revocation. The marks appear in the list and in the selection;
-  no token value or ID is shown. The user chooses by creation time. The
-  revocation needs its own confirmation. Because the marks remain an
-  assumption, revoking any token of this integration also needs a second,
-  separate box ("A local access using this token ends"); without it nothing
-  is sent. The dialog says whether the token is most likely this access's,
-  another access's, or one whose use cannot be told.
-  Right before the request, the list is read again, and
-  nothing is sent unless the chosen entry is still listed unchanged. Then
-  exactly one `POST /auth/revoke` (`token_id`, `usage_type=private`) is sent,
-  without any retry, and the list is read once more to confirm it. If the
-  gateway confirms neither way, the dialog says so and repeats nothing.
+- **Revoking a token** works only for the token the access itself signs in
+  with. The gateway accepts `POST /auth/revoke` only for the token ID of the
+  token in the request's `Authorization` header; for any other ID it answers
+  401 (reported for the K40RF; the API description published earlier says otherwise). So the
+  token of an older setup, of another access or of another app cannot be
+  revoked from Home Assistant, and the dialog says so. The list shows every
+  token, but only a token with this integration's client name
+  (`Home Assistant Home Comfort`) that is marked as most likely used by this
+  access can be chosen; tokens of other clients are never offered. The list has
+  no token values, so the gateway does not say which entry the access uses. The
+  dialog marks the likely one: the token of this integration created last at or
+  before the time the access was last set up (a tolerance of two minutes covers
+  a small clock difference between the gateway and Home Assistant; tokens that
+  are equally old are all marked). The setup time is taken after the token was
+  created, so this is normally the token in use, but it remains an assumption.
+  If a token of this integration is newer than that setup time and no other
+  access explains it (another Home Assistant, or the clocks differ), nothing is
+  marked for this access and nothing can be chosen. Tokens that other local
+  accesses of this integration to the same gateway most likely use (worked out
+  the same way from their setup times) are marked "used by another access" and
+  are not offered, because the gateway would refuse them from this access. For
+  an access that uses a token entered by hand, nothing is marked, because that
+  token is not one of this integration's own; a short note below the list says
+  so. The marks appear in the list and in the selection; no token value or ID
+  is shown. The revocation needs its own confirmation. Because revoking the
+  token of the access ends that access, it also needs a second, separate box
+  ("A local access using this token ends"); without it nothing is sent.
+  Right before the request, the list is read again, and nothing is sent unless
+  the chosen entry is still listed unchanged. Then exactly one
+  `POST /auth/revoke` (`token_id`, `usage_type=private`) is sent, without any
+  retry, and the list is read once more to confirm it. If the mark was wrong,
+  the gateway refuses the request (401): the dialog reports the refusal, the
+  token stays listed, the access keeps working, and a refusal is never taken
+  for an invalid access. If the gateway confirms neither way, the dialog says
+  so and repeats nothing.
 - If the revoked token was the one the access uses, the gateway refuses the
   read-back. The dialog then reports that local access has ended and switches
   the access off, instead of leaving it failing; a new sign-in with the device
   label sets it up again. If the access cannot be switched off (it was changed
   meanwhile), the dialog says so instead. An access that was set up again
-  with a new token meanwhile is left as it is.
-- **Remove access** for a local access has an extra choice to revoke a token
-  of this integration first. Only with that choice is anything sent; the access
-  is removed only after the revocation was confirmed (or when no token is
-  chosen in the list). Ticking only that choice without "Remove this access"
-  shows a message and changes nothing. If an older token was revoked while
-  the access still worked, the message says that the access's own token stays
-  on the gateway. If that choice is ticked but there is no token of this
-  integration to offer (the gateway lists none, or its list could not be
-  read), the access is not removed silently: a step says so and offers
-  "Remove without revoking" or "Cancel and keep the access". Nothing is
-  removed or sent before that choice.
+  with a new token meanwhile is left as it is. Older tokens of earlier setups
+  stay on the gateway; if its token list is full (507), they cannot be removed
+  from Home Assistant.
+- **Remove access** for a local access has an extra choice to revoke the
+  token of this access first. Only with that choice is anything sent; the
+  access is removed only after the revocation was confirmed (or when no token
+  is chosen in the list). Ticking only that choice without "Remove this
+  access" shows a message and changes nothing. If that choice is ticked but
+  there is no token to offer (the gateway lists none of this integration, the
+  token of this access cannot be identified, or its list could not be read),
+  the access is not removed silently: a step says so and offers "Remove without
+  revoking" or "Cancel and keep the access". Nothing is removed or sent before
+  that choice.
 
 All three requests use the confirmed certificate of the sign-in port and the
 shared [gateway budget](local-budget.md): they wait for an exclusive turn,

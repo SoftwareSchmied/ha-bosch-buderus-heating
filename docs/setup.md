@@ -249,7 +249,12 @@ pauses the local access (see [compatibility](compatibility.md#checked-systems)).
 6. Release the local sign-in on the gateway: press the Wi-Fi and wireless
    buttons together for 1 second, wait for the blue signal and continue within
    five minutes. After a typo, press the buttons again, because the gateway
-   accepts a sign-in only within five minutes after the release.
+   accepts a sign-in only within five minutes after the release. If the
+   gateway keeps refusing the sign-in although the buttons were pressed, Home
+   Assistant may not be in the same network (subnet) as the gateway, for
+   example in another VLAN. Then get the token on a computer in the gateway's
+   network and enter it with **Use an existing token**; reading works from
+   any network, and the token does not expire.
 7. Confirm the certificate once more. The gateway has its own certificate for
    the sign-in port 9442 and for the data port 9443, so this page can appear
    twice.

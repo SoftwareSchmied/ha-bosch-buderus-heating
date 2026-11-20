@@ -90,6 +90,9 @@ class ReadProblem(StrEnum):
     FORBIDDEN = "forbidden"
     NOT_FOUND = "not_found"
     NOT_ACCEPTABLE = "not_acceptable"
+    # 409: the gateway knows the path but its function is switched off (for
+    # example the tariff feature); not an error of the access.
+    CONFLICT = "conflict"
     RATE_LIMITED = "rate_limited"
     SERVICE_UNAVAILABLE = "service_unavailable"
     HTTP_ERROR = "http_error"
@@ -445,6 +448,7 @@ class LocalReadClient:
             403: ReadProblem.FORBIDDEN,
             404: ReadProblem.NOT_FOUND,
             406: ReadProblem.NOT_ACCEPTABLE,
+            409: ReadProblem.CONFLICT,
         }.get(status, ReadProblem.HTTP_ERROR)
         if 300 <= status < 400:
             return ReadResult(

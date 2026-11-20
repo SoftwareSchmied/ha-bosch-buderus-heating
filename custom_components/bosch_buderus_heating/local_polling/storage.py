@@ -53,7 +53,9 @@ class ScheduleCorrupt(ScheduleStorageError):
 
 # Problems of paths never read that "not found/denied" answers set; restored
 # with their pause also when the paths' schema changed (O42).
-_NOT_FOUND_PROBLEMS = frozenset({"forbidden", "not_found", "not_acceptable"})
+_NOT_FOUND_PROBLEMS = frozenset(
+    {"forbidden", "not_found", "not_acceptable", "conflict"}
+)
 _PROBLEM = re.compile(r"[a-z0-9_]{1,64}")
 # The longest pause a stored record may carry: the weekly "not found" retry.
 _MAX_REMAINING = float(NOT_FOUND_RETRY)

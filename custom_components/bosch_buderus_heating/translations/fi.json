@@ -169,7 +169,7 @@
       "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
       "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
       "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
-      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa. Sama virhe tulee myös silloin, kun Home Assistant ei ole samassa verkossa (aliverkossa) kuin yhdyskäytävä. Hae tunnus silloin tietokoneelta, joka on yhdyskäytävän verkossa, ja anna se kohdassa ”Käytä olemassa olevaa tunnusta”.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
       "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Yhteystesti",
-        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään; se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa."
+        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään; se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa. Pilvisovellus ei koskaan aseta sitä, eikä sen olemassaoloa osoita yhdyskäytävän pariliitos siellä eikä lämmityslaitteen näytöllä oleva salasana; sen asettaa vain vanhempi laitesovellus asetuksella, jolla yhdistetään vain paikallisesti."
       },
       "connection_test_certificate_changed": {
         "title": "Yhteystesti",
@@ -608,7 +608,7 @@
         "description": "Tunnistetiedot poistetaan Home Assistantista. Tunnus jää yhdyskäytävään, ellet peru sitä alla olevalla valintaruudulla. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys; ilman käytettävissä olevaa yhteyttä ne eivät näytä ajantasaisia arvoja. Jätä ylin valintaruutu tyhjäksi palataksesi ilman muutoksia.",
         "data": {
           "confirm": "Poista tämä yhteys",
-          "revoke": "Peru ensin tämän integraation tunnus yhdyskäytävästä"
+          "revoke": "Peruuta ensin tämän käyttöoikeuden tunnus yhdyskäytävässä"
         }
       },
       "connection_polling": {
@@ -776,21 +776,21 @@
       },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.{note}",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Yhdyskäytävä peruuttaa vain tunnuksen, jolla itse pyyntö on kirjattu sisään, joten tässä voi valita vain sen tunnuksen. Tämän integraation vanhempia tunnuksia sekä muiden käyttöoikeuksien tai sovellusten tunnuksia ei voi peruuttaa Home Assistantista, ja ne jäävät yhdyskäytävään. Ilman valintaa mikään ei muutu.{note}",
         "data": {
           "token": "Peruttava tunnus"
         }
       },
       "local_tokens_remove": {
         "title": "Peru tunnus ennen poistamista",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.{note}",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Yhdyskäytävä peruuttaa vain tunnuksen, jolla itse pyyntö on kirjattu sisään, joten tässä voi valita vain sen tunnuksen. Tämän integraation vanhempia tunnuksia sekä muiden käyttöoikeuksien tai sovellusten tunnuksia ei voi peruuttaa Home Assistantista, ja ne jäävät yhdyskäytävään. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.{note}",
         "data": {
           "token": "Peruttava tunnus"
         }
       },
       "local_tokens_remove_none": {
         "title": "Ei peruttavaa tunnusta",
-        "description": "Yhdyskäytävä ei luettele tämän integraation tunnusta, jonka voisi perua täällä, tai luetteloa ei voitu lukea. Yhteyttä ei ole vielä poistettu. Valitse, poistetaanko se perumatta vai säilytetäänkö se.",
+        "description": "Tässä ei voi peruuttaa mitään tunnusta: yhdyskäytävä peruuttaa vain tunnuksen, jolla tämä käyttöoikeus kirjautuu sisään, eikä luettelo näytä, mikä se on (tai luetteloa ei voitu lukea). Käyttöoikeutta ei ole vielä poistettu. Valitse, poistatko sen ilman peruutusta vai säilytätkö sen.",
         "menu_options": {
           "local_tokens_remove_without": "Poista perumatta",
           "local_tokens_remove_cancel": "Keskeytä ja säilytä yhteys"
@@ -1096,7 +1096,7 @@
       "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
       "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
       "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
-      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa. Sama virhe tulee myös silloin, kun Home Assistant ei ole samassa verkossa (aliverkossa) kuin yhdyskäytävä. Hae tunnus silloin tietokoneelta, joka on yhdyskäytävän verkossa, ja anna se kohdassa ”Käytä olemassa olevaa tunnusta”.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
       "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
       "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista.",
       "icom_cannot_connect": "Yhdyskäytävä ei vastannut. Tarkista osoite ja että yhdyskäytävä on tavoitettavissa portissa 80.",
-      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään. Se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa.",
+      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään. Se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa. Pilvisovellus ei koskaan aseta sitä, eikä sen olemassaoloa osoita yhdyskäytävän pariliitos siellä eikä lämmityslaitteen näytöllä oleva salasana; sen asettaa vain vanhempi laitesovellus asetuksella, jolla yhdistetään vain paikallisesti.",
       "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_no_identity": "Yhdyskäytävää ei voitu yhdistää järjestelmään: se ei ilmoita käyttökelpoista tunnusta, eivätkä sen arvot täsmää riittävän tarkasti pilven arvoihin. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",

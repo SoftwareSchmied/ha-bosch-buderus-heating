@@ -18,10 +18,13 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
   for iCom gateways.
 - The **gateway password** from the sticker on the device (the dashes are
   ignored) and the **private password** you set in the old device app of the
-  gateway (for example MyDevice). The app of the cloud does not store it. If you
+  gateway (for example MyDevice). The app of the cloud never sets it. If you
   never set one, the local access cannot be set up. The most common cause of
   "could not be decrypted" is a private password that was never saved on the
-  gateway: it is only there if it was set once in the old device app.
+  gateway: it is only there if it was set once in the older device app, with
+  its option to connect locally only. Pairing the gateway in the cloud app, or
+  a password entered on the display of the heating appliance, proves nothing
+  about it.
 - The address of the gateway in your home network (an IP address or host
   name). A fixed address (a reservation in the router) saves you from setting
   it up again.
@@ -119,7 +122,7 @@ access on again.
 | Text | Meaning |
 |---|---|
 | The gateway did not answer | No connection within the time limit; check the address and port 80. |
-| The answer could not be decrypted | One of the two passwords is wrong, or one was changed in the device app. Most often the private password was never saved on the gateway. |
+| The answer could not be decrypted | One of the two passwords is wrong, or one was changed in the device app. Most often the private password was never saved on the gateway; the cloud app never sets it, and only the older device app (option to connect locally only) does. |
 | The gateway is busy | It answered with an overload message; try again later. |
 | It could not be matched with the system | The gateway reports no usable ID, and its values do not agree closely enough with the cloud values (or the cloud has no current values yet). Try again in a few minutes. |
 | Not the gateway of the selected system | The ID read locally is not the cloud's gateway ID. |
