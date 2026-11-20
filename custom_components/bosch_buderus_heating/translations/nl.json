@@ -3664,6 +3664,10 @@
               "service_unavailable": "Service niet beschikbaar",
               "request_failed": "Verzoek mislukt",
               "sign_in_unavailable": "De aanmeldservice reageert niet",
+              "forbidden": "Toegang geweigerd",
+              "not_found": "Niet gevonden",
+              "rate_limited": "Aanvraaglimiet bereikt",
+              "authentication_error": "Authenticatie mislukt",
               "unknown": "Onbekend"
             }
           }

@@ -3664,6 +3664,10 @@
               "service_unavailable": "Níl an tseirbhís ar fáil",
               "request_failed": "Theip ar an iarratas",
               "sign_in_unavailable": "Níl an tseirbhís síniú isteach ag freagairt",
+              "forbidden": "Diúltaíodh rochtain",
+              "not_found": "Gan aimsiú",
+              "rate_limited": "Sroicheadh teorainn na n-iarratas",
+              "authentication_error": "Theip ar fhíordheimhniú",
               "unknown": "Anaithnid"
             }
           }

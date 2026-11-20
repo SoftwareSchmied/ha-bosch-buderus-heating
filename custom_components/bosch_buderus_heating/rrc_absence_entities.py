@@ -40,7 +40,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import rrc, rrc_boost, rrc_events
 from .const import DOMAIN
-from .control import track_rrc_entities
+from .control import refuse_in_hold, track_rrc_entities
 from .control_presentation import control_name
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
@@ -429,6 +429,8 @@ class RrcBoostNumber(_BoostEntity, RestoreEntity, TemperatureNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         """Keep the value for the next start; nothing is sent (AWAY-06)."""
+        # A held cloud blip shows the entity as available: the usual message.
+        refuse_in_hold(self.coordinator)
         setting = self.entity_description.setting
         limits = self._limits_of(setting)
         resource = self._fresh(BOOST_PATH)

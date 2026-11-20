@@ -2338,8 +2338,12 @@ class BoschBuderusDataUpdateCoordinator(
                 return snapshots
         except Exception as err:
             self.startup_data.record_main_cycle(successful=False)
-            if isinstance(err, ConfigEntryAuthFailed):
+            if isinstance(err, ConfigEntryAuthFailed) and not self.sign_in_rejected:
                 self.sign_in_rejected = True
+                # Home Assistant skips the listeners after consecutive
+                # failures and plans no further refresh after an
+                # authentication error: the entities learn it here.
+                self.async_update_listeners()
             if isinstance(err, IdleAfterFailure):
                 # B03: the earlier failure goes on; this cycle sent nothing,
                 # so it is no further failure and no answer either.
@@ -3644,12 +3648,17 @@ class BoschBuderusDataUpdateCoordinator(
             raise ConfigEntryAuthFailed from err
         except RateLimited as err:
             self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
+            self.last_failed_refresh.cycle_failure("rate_limited")
             raise UpdateFailed(
                 "The cloud rate limit was reached during discovery"
             ) from err
         except PointTError as err:
+            # No reading of this cycle explains the failure: an older report
+            # would name the category of an earlier outage.
+            self.last_failed_refresh.cycle_failure(_pointt_result(err))
             raise UpdateFailed("The cloud resources could not be discovered") from err
         if not resources:
+            self.last_failed_refresh.cycle_failure("unknown")
             raise UpdateFailed("The cloud discovery returned no resources")
 
         successful_resources = dict(resources)

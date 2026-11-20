@@ -3664,6 +3664,10 @@
               "service_unavailable": "Tjänsten är inte tillgänglig",
               "request_failed": "Begäran misslyckades",
               "sign_in_unavailable": "Inloggningstjänsten svarar inte",
+              "forbidden": "Åtkomst nekad",
+              "not_found": "Hittades inte",
+              "rate_limited": "Begränsningen för förfrågningar är nådd",
+              "authentication_error": "Autentiseringen misslyckades",
               "unknown": "Okänd"
             }
           }

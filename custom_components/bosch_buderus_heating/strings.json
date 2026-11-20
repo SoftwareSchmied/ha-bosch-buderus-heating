@@ -3664,6 +3664,10 @@
               "service_unavailable": "Service unavailable",
               "request_failed": "Request failed",
               "sign_in_unavailable": "Sign-in service not answering",
+              "forbidden": "Access denied",
+              "not_found": "Not found",
+              "rate_limited": "Rate limit reached",
+              "authentication_error": "Authentication failed",
               "unknown": "Unknown"
             }
           }

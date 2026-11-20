@@ -144,6 +144,21 @@ class LastFailedRefresh:
     def __init__(self) -> None:
         self._report: dict[str, object] | None = None
 
+    def cycle_failure(self, category: str, now: datetime | None = None) -> None:
+        """A cycle failed before any reading (a discovery that did not answer).
+
+        The report of an earlier failed cycle would name an outdated category;
+        this one has no readings, only the category.
+        """
+        self._report = {
+            "at": (now or datetime.now(UTC)).replace(microsecond=0).isoformat(),
+            "cycle_failed": True,
+            "category": category,
+            "failed_readings": 0,
+            "paths": [],
+            "paths_omitted": 0,
+        }
+
     def observe(
         self,
         failures: Iterable[tuple[str, int | None, str]],

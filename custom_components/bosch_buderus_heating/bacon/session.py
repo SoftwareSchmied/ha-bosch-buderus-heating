@@ -98,6 +98,9 @@ class BaconAccount:
         # Hold over a short blip: the generation whose readings stay shown.
         self.cloud_hold = CloudHold()
         self._grace_generation = 0
+        # The hold of this outage ran out: no new hold until a message of a
+        # connection reached a device again.
+        self._hold_spent = False
         self._grace_timer: asyncio.TimerHandle | None = None
         # Holds that ran out with a device still carried over.
         self.grace_expired = 0
@@ -188,7 +191,7 @@ class BaconAccount:
         connection counts one. A rejected sign-in, a changed account, a
         stopped source or an unexpected error is no blip.
         """
-        if not (self.generation and self._claimed):
+        if not (self.generation and self._claimed) or self._hold_spent:
             return False
         if not renewal and failure not in HOLD_FAILURES:
             return False
@@ -204,6 +207,7 @@ class BaconAccount:
         else:
             self.cloud_hold.failed(now)
         if not self.cloud_hold.holding(now):
+            self._hold_spent = True
             return False
         self._cancel_grace_timer()
         since = self.cloud_hold.since if self.cloud_hold.since is not None else now
@@ -229,6 +233,7 @@ class BaconAccount:
     def _device_confirmed(self) -> None:
         """A message of the new connection reached a device: the outage ends
         once no device is carried over any more."""
+        self._hold_spent = False
         if (
             self._grace_generation
             and self._grace_generation != self.generation
@@ -257,8 +262,10 @@ class BaconAccount:
         if self._carried_over():
             self.grace_expired += 1
         self.cloud_hold.expire()
-        self._end_grace()
-        self._notify()
+        self._hold_spent = True
+        # The carried readings are dropped for good: a failed attempt after
+        # this must not show them again (no new hold without a connection).
+        self._hard_disconnect()
 
     async def run(self) -> None:
         delay = 5.0

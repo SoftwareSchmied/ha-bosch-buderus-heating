@@ -3664,6 +3664,10 @@
               "service_unavailable": "Servizio non disponibile",
               "request_failed": "Richiesta non riuscita",
               "sign_in_unavailable": "Il servizio di accesso non risponde",
+              "forbidden": "Accesso negato",
+              "not_found": "Non trovato",
+              "rate_limited": "Limite di richieste raggiunto",
+              "authentication_error": "Autenticazione non riuscita",
               "unknown": "Sconosciuto"
             }
           }
