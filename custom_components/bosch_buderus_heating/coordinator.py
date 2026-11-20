@@ -151,6 +151,7 @@ from .rrc_write import (
     RrcWriteStats,
 )
 from .start_counters import is_start_counter_path
+from .season_paths import is_season_dependent
 from .startup_data import (
     LICENSE_PATH,
     STARTUP_BUDGET_SECONDS,
@@ -4548,10 +4549,12 @@ class BoschBuderusDataUpdateCoordinator(
                 if result.status == 404 and (
                     result.path in self._manual_setpoint_candidates
                     or result.path in self.registered_start_counter_paths
+                    or is_season_dependent(result.path)
                 ):
                     # Registered counters and pending manual targets recover
                     # through their regular groups. A 404 must not introduce
                     # a day-long pause for either established recovery path.
+                    # So does a leaf that only some season mode offers.
                     self._negative_until.pop(result.path, None)
                 else:
                     pause = FORBIDDEN_PAUSE if result.status == 403 else NOT_FOUND_PAUSE

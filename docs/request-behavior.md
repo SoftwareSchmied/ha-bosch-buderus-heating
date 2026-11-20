@@ -189,7 +189,13 @@ the next start; its entities stay in the registry. Without stored resources, a
 root that ended with a temporary error is searched again on the same schedule. Other static resources outside the reviewed
 list retain their previous behavior. Previously discovered dynamic values
 returning 404 already recover on the next regular group read, with their
-existing entities. Fault probes, other path pauses and the gateway circuit
+existing entities. This holds from the first read after a start as well for the
+summer/winter heating limit (`suWiThreshold`, `suWiCoolingThreshold`): a
+room controller answers 404 for it while the circuit's switching is `off`,
+so such a 404 neither pauses the read for a day nor counts towards giving the
+path up, and the value returns with the regular reading once the mode
+changes. A discovery that runs while the switching is `off` cannot find the
+leaf; it appears after the next rediscovery. Fault probes, other path pauses and the gateway circuit
 breaker retain their existing policies.
 
 Supplementary success does not refresh an unrelated measurement's timestamp,
