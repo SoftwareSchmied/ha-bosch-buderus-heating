@@ -5,6 +5,26 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.3-beta.2] - 2026-11-21
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - This is a pre-release for testing; 0.9.2 stays the stable release.
+> - Nothing changes in what Home Assistant shows: no new entities, no changed entity IDs, names or states. The change is inside the integration (less computing), see Improved.
+
+### Improved
+
+- **Lower CPU load in continuous operation with local access.** With the local access, every answer of the gateway made the integration check all of its roughly 1250 readings again, and each performance factor sensor looked at all local readings to find out whether a hybrid system is present. Now work that would give the same result again is done once: the hybrid check once per update, the comparison of the readings only for those that were read again, the check of a published state only for the views that were replaced, the fault lists only where one was read, and a few results that cannot change meanwhile (the assessment of an energy counter, the paths a calculated sensor looks at, the check whether a request is still current) are kept until their input changes. Values, attributes, timestamps and availability stay exactly the same. In a simulated day with about 1250 local signals, 162 entities and 150 local updates per minute (including pauses, an outage, a local sign-in that is required again, a fault, expired readings, a cloud outage and a hybrid system), the computing time of the update path fell by about two thirds: from 34 s to 11 s for one simulated hour, from 1036 s to 298 s for the whole day. I ran the simulated day with the state of 0.9.3-beta.1 and with this one, for a heat pump only plant and for a hybrid plant, and compared every state change of every entity (state, attributes, timestamps): they are identical. Tested with simulation and automated tests; I have not yet measured it on a real plant.
+
+### Documentation
+
+- Marked as confirmed: the **Child lock** switch of the zones and the handling of the humidity placeholders (on an MX400 with RT10RF zones, reported by petergoris-netizen in #131 with 0.9.3-beta.1), and writing the electricity price on a hybrid system with a Logamax plus GB172i.2, a WLW MB 5 AR heat pump and the HYC25 hybrid module on an MX300 (reported by markoox in #138; the read-back and the app show the written price, and the strategy "cost" is read correctly; the feed-in tariff was not tested). Thank you both for testing and for the details.
+
+### Notes
+
+- Everything marked as simulated above has been tested in automated tests and in the simulated day only (the full suite on Home Assistant 2026.11.2 and 2026.5.4).
+
 ## [0.9.3-beta.1] - 2026-11-20
 
 > [!IMPORTANT]
