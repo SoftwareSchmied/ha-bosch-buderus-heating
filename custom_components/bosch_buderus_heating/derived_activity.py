@@ -329,6 +329,13 @@ def _cooling(
     return False
 
 
+def cooling_signalled(
+    coordinator: BoschBuderusDataUpdateCoordinator, trace: Trace
+) -> bool:
+    """The heat pump's own signals say that it cools (not the season)."""
+    return _cooling(coordinator, None, trace)
+
+
 def circuit_pump_paths(root: str) -> tuple[str, ...]:
     """The circuit pump's readings in their order."""
     match = _CIRCUIT_NUMBER.fullmatch(root)

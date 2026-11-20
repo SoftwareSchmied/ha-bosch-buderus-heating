@@ -6,7 +6,9 @@
   heat output reading covers the refrigerant circuit). Only while the
   compressor runs; unknown while the heat pump defrosts, in the start-up
   phase of the compressor (``cop_start``), without a heat output (never a
-  zero), below ``MIN_POWER_KW`` and above ``MAX_RATIO``.
+  zero), while the heat pump cools, below ``MIN_POWER_KW``, above
+  ``MAX_COP`` and when it stays below 1 for ten minutes (``cop_plausibility``).
+  The period ratios keep ``MAX_RATIO``.
 * Primary circuit spread: supply (TC1) minus return (TC0) of the heat pump,
   only while the primary pump runs. TC0 is the return of the heating
   circuit only while the circuit pump moves at least as much water as the
@@ -26,6 +28,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Final
 
+from .cop_plausibility import (
+    COOLING_REASON,
+    IMPLAUSIBLE_LOW,
+    MAX_COP,
+    LowCopWatch,
+    cooling_operation,
+)
 from .cop_start import STARTING, StartPhase
 from .derived import power_kilowatts
 from .derived_activity import (
@@ -173,9 +182,13 @@ def _heater_kw(
 def live_cop(
     coordinator: BoschBuderusDataUpdateCoordinator,
     phase: StartPhase | None = None,
+    low: LowCopWatch | None = None,
 ) -> LiveResult:
     """The current COP of the heat pump; ``phase`` holds it back while the
-    compressor starts."""
+    compressor starts, ``low`` follows how long it stays implausibly low.
+
+    Not a heating COP while the heat pump cools (``cooling``), and not shown
+    when implausible (see ``cop_plausibility``)."""
     trace = Trace()
     output = _kilowatts(trace.note(read(coordinator, HEAT_OUTPUT)))
     compressor = first(coordinator, COMPRESSOR_POWER, _kilowatts, trace)
@@ -189,6 +202,8 @@ def live_cop(
         attributes["brine_pump_included"] = False
 
     def unknown(reason: str) -> LiveResult:
+        if low is not None:
+            low.reset()
         attributes["reason"] = reason
         attributes["derived_from"] = trace.attribute()
         return LiveResult(None, attributes)
@@ -200,6 +215,8 @@ def live_cop(
     starting = phase.observe(running) if phase is not None else False
     if running is False:
         return unknown(COMPRESSOR_OFF)
+    if running is not None and cooling_operation(coordinator, trace):
+        return unknown(COOLING_REASON)
     if (
         running is None
         or output is None
@@ -222,8 +239,10 @@ def live_cop(
         # run): no COP of zero.
         return unknown(NO_HEAT_OUTPUT)
     cop = (output + heater_kw) / electrical
-    if cop > MAX_RATIO:
+    if cop > MAX_COP:
         return unknown(IMPLAUSIBLE)
+    if low is not None and low.observe(cop):
+        return unknown(IMPLAUSIBLE_LOW)
     attributes["derived_from"] = trace.attribute()
     return LiveResult(round(cop, 2), attributes)
 

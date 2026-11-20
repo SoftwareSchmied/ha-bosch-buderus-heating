@@ -429,6 +429,28 @@ counters—not holiday dates, names, or raw configuration data.
 | Variable tariff active (iCom, disabled, since 0.9.2) | Diagnostic binary sensor | `/application/tbso/enable` | Yes | No | startup only |
 | Tariff ID (iCom, disabled, since 0.9.2) | Diagnostic sensor, attribute `tariff_selected` | `/application/tbso/electricity/tariffID` | Yes | No | startup only |
 
+**Switches and area actions:** Home Assistant takes every entity without a
+category along when you call an action on an area, a floor or a device (for
+example a scene "everything off"). To keep such calls from starting the away
+or holiday mode, the switches **Away mode**, the hot water **Holiday mode**
+(`/system/holidayMode`), the water softener **Holiday mode** and **Reduce
+temperature on alarm** are configuration entities since 0.9.3. Their unique
+ID, entity ID, name and enabled state do not change; an existing entity takes
+the category when the integration loads. **Extra hot water** and **Pool**
+stay as they were, so an area action can still start an extra charge or the
+pool heating; a scene should list the entities it means, or exclude these two.
+
+*Deutsch:* Home Assistant nimmt bei Aktionen auf einen Bereich, eine Etage
+oder ein Gerät alle Entitäten ohne Kategorie mit (etwa eine Szene „alles
+aus“). Damit solche Aufrufe nicht Abwesenheit oder Urlaub starten, sind die
+Schalter **Abwesenheitsmodus**, **Urlaubsmodus** (Warmwasser und
+Wasserenthärter) und **Temperaturabsenkung bei Störung** seit 0.9.3
+Konfigurationsentitäten. Unique-ID, Entity-ID, Name und Aktivierung bleiben;
+eine vorhandene Entität übernimmt die Kategorie beim Laden. **Extra-Warmwasser**
+und **Pool** bleiben unverändert: Eine Bereichsaktion kann also weiterhin eine
+Zusatzladung oder die Poolheizung starten; eine Szene sollte die gemeinten
+Entitäten nennen oder diese beiden ausnehmen.
+
 The system-pressure sensor also receives the six validated limits as numeric
 attributes with the unit in each attribute name:
 `technical_minimum_bar`, `shutdown_pressure_bar`, `normal_minimum_bar`,
@@ -1342,7 +1364,11 @@ values are present and valid, for the total, heating, hot water and pool (the
 same formula in each area, as in the manufacturer's app). The entities of
 heating, hot water and pool are disabled by default; cooling has no
 environmental energy. A negative or incomplete result is not exposed as a
-measurement and does not start a new meter cycle. A user with a heating and
+measurement and does not start a new meter cycle. If the collection reports
+burner energy above zero, or a hybrid manager is detected, the heat of the
+boiler is not separated from the heat pump's, so the value is unknown with the
+attribute `reason: burner_share` (in German: Umweltenergie und Arbeitszahlen
+sind dann unbekannt, weil der Kesselanteil nicht bekannt ist). A user with a heating and
 cooling heat pump confirmed on 0.9.2-beta.3 (discussion #111) that the heating
 and hot water values equal the user's own calculation to the last digit and that the
 total equals both plus the cooling energy.

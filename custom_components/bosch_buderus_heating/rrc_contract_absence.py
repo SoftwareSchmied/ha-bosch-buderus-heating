@@ -154,7 +154,11 @@ CONTRACT = RrcContract(
     diagnostics=_diagnostics,
     # Its switch and numbers are entities of their own (``…:switch``).
     understood=(BOOST,),
-    categories=MappingProxyType({AWAY_TEMPERATURE: "config", FIREPLACE: "config"}),
+    # The away switch is a configuration entity as well, so that an area or
+    # device action (a scene "everything off") does not start it.
+    categories=MappingProxyType(
+        {AWAY: "config", AWAY_TEMPERATURE: "config", FIREPLACE: "config"}
+    ),
     icons=MappingProxyType(
         {
             AWAY: "mdi:home-export-outline",
