@@ -54,6 +54,7 @@ from .discovery_inventory import (
     DiscoveryRecovery,
     is_transient_result,
 )
+from .discovery_partial import partial_time_passed, profile_settled
 from .energy_contracts import assess_energy, is_energy_collection
 from .faults import (
     FaultTracker,
@@ -590,6 +591,8 @@ class BoschBuderusDataUpdateCoordinator(
     startup_age_seconds: int | None = None
     # P49b: a view from local readings alone: never writes, never requests.
     read_only_view: bool = False
+    # A first discovery may show its partial result (set by managed sources).
+    progressive_discovery: bool = False
     # P49b step 7: the brand a local setup read, for a plant without a cloud.
     brand_hint: str | None = None
 
@@ -773,6 +776,10 @@ class BoschBuderusDataUpdateCoordinator(
         # P22: firmware versions seen and the discovery a change triggers.
         self.firmware = FirmwareWatch()
         self._discovery_cycle_failed = False
+        # A first discovery shows its partial result after a time limit; the
+        # start of the period since the last partial result (None: not now).
+        self._partial_started: float | None = None
+        self._partial_shown = False
         # P47: started with the stored inventory while the cloud did not answer.
         self.startup_mode = "live"
         self._startup_reason: str | None = None
@@ -3105,7 +3112,9 @@ class BoschBuderusDataUpdateCoordinator(
     async def _async_update_data_locked(self) -> dict[str, ResourceSnapshot]:
         """Refresh due groups while preventing overlapping gateway polls."""
         if not self.resources:
-            return await self._async_discover_data()
+            return await self._async_discover_data(
+                progressive=self.progressive_discovery
+            )
 
         now_monotonic = monotonic()
         if (shared := self._shared_pause_remaining()) > 0:
@@ -3621,13 +3630,69 @@ class BoschBuderusDataUpdateCoordinator(
         }
 
     async def _async_discover_data(
-        self, *, announce: bool = True
+        self, *, announce: bool = True, progressive: bool = False
     ) -> dict[str, ResourceSnapshot]:
         """Discover the bounded tree and use its values as the first snapshot.
 
         ``announce`` false: the caller reports missing parts itself once it
-        kept the earlier ones (START-5).
+        kept the earlier ones (START-5). ``progressive``: a first discovery
+        that shows what it has found after a time limit (discovery_partial).
         """
+        previous = (self.resources, self.data)
+        self._partial_started = monotonic() if progressive else None
+        self._partial_shown = False
+        try:
+            return await self._async_discover_data_once(announce=announce)
+        except BaseException:
+            if self._partial_shown:
+                # Nothing of it is a result: a new discovery starts from zero.
+                self.resources, self.data = previous
+                self._rebuild_poll_groups()
+            raise
+        finally:
+            self._partial_started = None
+
+    def _partial_allowed(self) -> bool:
+        return False
+
+    def _publish_partial(self) -> None:
+        """Hook: the partial result is set; whoever shows it may do so now."""
+
+    def _discovery_progress(self, found: dict[str, Resource]) -> None:
+        """A block of the first discovery was answered: after the time limit,
+        and once the kind of plant is decided, show what was found so far."""
+        started = self._partial_started
+        if (
+            started is None
+            or not partial_time_passed(started, monotonic())
+            or not self._partial_allowed()
+            or not profile_settled(
+                self.discovery_diagnostics, found, self.gateway.device_type
+            )
+        ):
+            return
+        self._partial_started = monotonic()
+        self._partial_shown = True
+        self.discovery_diagnostics.partial_publications += 1
+        updated_at = datetime.now(UTC)
+        self.resources = dict(found)
+        self.data = {
+            path: ResourceSnapshot(
+                resource=resource,
+                available=True,
+                last_success=updated_at,
+                last_attempt=updated_at,
+                source=SnapshotSource.DISCOVERY,
+            )
+            for path, resource in found.items()
+        }
+        self._rebuild_poll_groups()
+        self._publish_partial()
+        DataUpdateCoordinator.async_update_listeners(self)
+
+    async def _async_discover_data_once(
+        self, *, announce: bool
+    ) -> dict[str, ResourceSnapshot]:
         held_back = self._shared_pause_remaining() > 0
         try:
             resources = await async_discover_resources(
@@ -3643,6 +3708,7 @@ class BoschBuderusDataUpdateCoordinator(
                 rrc_evidence=self.rrc_evidence(),
                 # Optional probes may go on outside the shared budget (#131).
                 maximum_extra_probes=MAX_EXTRA_PROBES,
+                on_progress=self._discovery_progress,
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err

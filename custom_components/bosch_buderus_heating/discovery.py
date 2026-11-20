@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import re
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -169,6 +170,8 @@ class DiscoveryDiagnostics:
     extra_probe_limit: int = 0
     extra_probes_requested: int = 0
     resource_limit_scope: str | None = None
+    # A first discovery that showed its partial result while it ran.
+    partial_publications: int = 0
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
@@ -178,6 +181,7 @@ class DiscoveryDiagnostics:
         self.extra_probe_limit = 0
         self.extra_probes_requested = 0
         self.resource_limit_scope = None
+        self.partial_publications = 0
         self.completed = False
         self.stop_reason = "running"
         self.depth_limit_reached = False
@@ -245,6 +249,7 @@ class DiscoveryDiagnostics:
             "depth_limit_reached": self.depth_limit_reached,
             "attempts_scope": "logical_resource_reads",
             "bulk_calls": self.bulk_calls,
+            "partial_publications": self.partial_publications,
             "paths_scheduled": len(items),
             "paths_requested": sum(
                 item.bulk_result != "not_attempted" for item in items
@@ -647,6 +652,7 @@ async def async_discover_resources(
     rediscovery: bool = False,
     rrc_evidence: tuple[str, ...] = (),
     maximum_extra_probes: int = 0,
+    on_progress: Callable[[dict[str, Resource]], None] | None = None,
 ) -> dict[str, Resource]:
     """Follow PointT references without escaping configured safety bounds.
 
@@ -658,6 +664,8 @@ async def async_discover_resources(
     ``maximum_extra_probes``: the allowance outside ``maximum_resources``
     for optional probes and direct reads below refused containers, used
     only once ``maximum_resources`` is used up.
+    ``on_progress`` is called with the resources found so far after each
+    answered block of reads; it must not change them.
     """
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
@@ -1131,6 +1139,8 @@ async def async_discover_resources(
                 schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
                 schedule_children(child, depth + 1)
             schedule_direct(containers.listed(result.path, resource, depth))
+        if on_progress is not None:
+            on_progress(discovered)
     else:
         report.completed = not report.depth_limit_reached
         report.stop_reason = "complete" if report.completed else "depth_limit"
