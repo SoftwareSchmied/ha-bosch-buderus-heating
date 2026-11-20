@@ -107,6 +107,8 @@ _MODES: Final = {
     COOL_SIDE: {"off": HVACMode.OFF, "manual": HVACMode.COOL, "auto": HVACMode.AUTO},
 }
 _READ_ONLY_CONTROL_TYPES: Final = frozenset({"constants"})
+_SEASON = re.compile(r"^/heatingCircuits/hc[0-9]+/currentSuWiMode$")
+GLOBAL_SEASON: Final = "/system/globalSeasonOptimizer/currentMode"
 _ZONE_ID = re.compile(r"^(/devices/[^/]+)/zoneId$")
 _CIRCUIT_VALUE = re.compile(r"^(?:hc)?([0-9]+)$", re.IGNORECASE)
 _CIRCUIT_MODE = re.compile(r"^(/heatingCircuits/hc[0-9]+)/operationMode$")
@@ -125,6 +127,18 @@ ACTIVE_SETPOINT: Final = "currentRoomSetpoint"
 ROOM_TEMPERATURE: Final = "averageCurrentTemperature"
 ROOM_HUMIDITY: Final = "averageActualHumidity"
 CHILD_LOCK: Final = "childLock"
+
+
+def _season_paths(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[str, ...]:
+    """The season readings of every circuit, for a zone without a circuit."""
+    circuits = sorted(
+        {
+            match.group(1)
+            for path in coordinator.data or {}
+            if (match := _CIRCUIT_MODE.fullmatch(path)) is not None
+        }
+    )
+    return tuple(f"{circuit}/currentSuWiMode" for circuit in circuits)
 
 
 def zone_number(root: str) -> int | None:
@@ -257,6 +271,7 @@ class ZoneClimate(
             f"{root}/{ROOM_HUMIDITY}",
             *(circuit_input_paths(coordinator, circuit) if circuit else ()),
             *((f"{circuit}/controlType",) if circuit else ()),
+            *(() if circuit else _season_paths(coordinator)),
         )
 
     # Readings -----------------------------------------------------------
@@ -279,7 +294,7 @@ class ZoneClimate(
         """
         circuit = self._circuit()
         if circuit is None:
-            return HEAT_SIDE
+            return None if self._cooling_possible(strict=strict) else HEAT_SIDE
         path = f"{circuit}/currentSuWiMode"
         if path not in (self.coordinator.data or {}):
             return HEAT_SIDE
@@ -287,6 +302,32 @@ class ZoneClimate(
         if season is None or not isinstance(season.value, str):
             return None
         return COOL_SIDE if season.value == "cooling" else HEAT_SIDE
+
+    def _cooling_possible(self, *, strict: bool) -> bool:
+        """Whether the plant may be cooling while the zone has no circuit.
+
+        Without a circuit the season of the zone is unknown. A circuit (or
+        the global season) that reports cooling, or a season reading that is
+        not valid now, could be the zone's: its heating setpoint would not
+        be the one in use, so the side stays unknown and nothing is sent.
+        """
+        data = self.coordinator.data or {}
+        paths = [path for path in data if _SEASON.fullmatch(path)]
+        for path in paths:
+            season = self._reading(path, strict=strict)
+            if (
+                season is None
+                or not isinstance(season.value, str)
+                or season.value == COOL_SIDE
+            ):
+                return True
+        if GLOBAL_SEASON in data:
+            season = self._reading(GLOBAL_SEASON, strict=strict)
+            if season is None or (
+                isinstance(season.value, str) and "cool" in season.value.lower()
+            ):
+                return True
+        return False
 
     def _mode(self, side: str, *, strict: bool = False) -> Resource | None:
         """A valid mode reading of the side, writable or not."""
@@ -959,7 +1000,9 @@ def zone_climate_diagnostics(
         read_only = climate._read_only_control()
         temporary = climate._temporary(side) if side is not None else None
         reason = (
-            "season_unknown"
+            "circuit_unknown_cooling"
+            if side is None and climate._circuit() is None
+            else "season_unknown"
             if side is None
             else "mode_invalid"
             if mode is None
