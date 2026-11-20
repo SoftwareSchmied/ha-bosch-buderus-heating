@@ -35,6 +35,7 @@ from .bacon.purifier_entities import (
 )
 from .bacon.rac_entities import track_entities as track_rac_entities
 from .circuit_control_writes import async_set_guarded, offered_on
+from .charge_duration import scale_is_unclear
 from .circuit_controls import display_minimum, offered
 from .control import HeldCapabilities, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
@@ -181,7 +182,8 @@ def build_number_descriptions(
                     resource.path, numeric=True, contract=contract
                 ),
                 translation_key=key,
-                entity_registry_enabled_default=policy.enabled_by_default,
+                entity_registry_enabled_default=policy.enabled_by_default
+                and not scale_is_unclear(resource.path, resource.metadata),
             )
         )
     return tuple(descriptions)
