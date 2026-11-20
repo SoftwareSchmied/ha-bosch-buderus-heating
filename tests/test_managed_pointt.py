@@ -228,6 +228,13 @@ async def running(
                 for event in backend.gates.values():
                     event.set()
                 await owner.close()
+                # The entry is never unloaded here: its unload callbacks, which
+                # stop the performance histories, do not run (Home Assistant
+                # 2026.5 fails a test that ends with their timer scheduled).
+                for engine in list(
+                    hass.data.get("bosch_buderus_heating_performance", {}).values()
+                ):
+                    engine.stop()
 
 
 def binding_for(owner, gateway):

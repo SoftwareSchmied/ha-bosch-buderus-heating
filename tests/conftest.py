@@ -60,24 +60,6 @@ def legacy_platform_runtime():
         yield
 
 
-@pytest.fixture(autouse=True)
-def stop_performance_engines(request):
-    """Stop the performance histories a test left running.
-
-    A test that sets up the platforms without unloading the entry never runs
-    the entry's unload callbacks; the history's start timer would then still
-    be scheduled when the test ends (Home Assistant 2026.5 fails such a test,
-    later versions tolerate it).
-    """
-    # Asking for hass here (not after the yield) makes this fixture end before it.
-    hass = request.getfixturevalue("hass") if "hass" in request.fixturenames else None
-    yield
-    if hass is None:
-        return
-    for engine in list(hass.data.get("bosch_buderus_heating_performance", {}).values()):
-        engine.stop()
-
-
 def _restore_client() -> list[str]:
     """Put back what a test left patched on the PointT client."""
     now = dict(vars(PointTClient))
