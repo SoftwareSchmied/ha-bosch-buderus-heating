@@ -126,7 +126,9 @@ when the controller reports the path as writable, advertises exactly the
 two values `active` and `inactive` and reads one of them; without that path
 nothing is created. Turning it on or off follows the write contract of the
 other controls: a fresh read, exactly one PUT, a read-back, no retry. This is
-a new write function, expected, not yet confirmed on a real installation.
+a new write function. Confirmed on an MX400 with RT10RF zones (reported by
+petergoris-netizen in #131 with 0.9.3-beta.1): the child lock switch and the
+handling of the humidity placeholders.
 
 A zone, a radio device or a heating circuit without a humidity sensor can
 still report the humidity path, with a value that is no humidity: the error
@@ -318,7 +320,9 @@ aktiviert**). Er entsteht nur, wenn der Regler den Pfad schreibbar meldet,
 genau die beiden Werte `active` und `inactive` anbietet und einen davon liest;
 ohne diesen Pfad entsteht nichts. Das Schalten folgt dem Schreibvertrag der
 anderen Bedienelemente (frisch lesen, genau ein PUT, Rücklesen, keine
-Wiederholung). Neue Schreibfunktion, erwartet, am Gerät noch nicht bestätigt.
+Wiederholung). Neue Schreibfunktion. Bestätigt auf einem MX400 mit RT10RF-Zonen (gemeldet von
+petergoris-netizen in #131 mit 0.9.3-beta.1): der Schalter und die
+Behandlung der Feuchte-Platzhalter.
 
 Eine Zone, ein Funkgerät oder ein Heizkreis ohne Feuchtefühler kann den
 Feuchtepfad trotzdem melden, mit einem Wert, der keine Feuchte ist: der

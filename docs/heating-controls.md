@@ -460,8 +460,14 @@ available as disabled diagnostic sensors. Expected, untested on a real plant.
 
 On a hybrid system (a heat pump with a gas or oil boiler) that reports the
 control strategy and the energy prices as writable, three kinds of controls
-appear. They are **expected, untested on a real installation**, and like
-the other new controls they are created **disabled**. Enable them in the
+appear. Writing the electricity price is confirmed on a hybrid system with a
+Logamax plus GB172i.2, a WLW MB 5 AR heat pump and the HYC25 hybrid module
+on an MX300 (reported by markoox in #138): the read-back and the
+manufacturer's app show the written price, and the strategy *Cost optimized*
+is read correctly. The feed-in tariff was not tested; the other controls
+(strategy selection, gas price or oil price) are **expected, untested on a
+real installation**. Like the other new controls, all of them are created
+**disabled**. Enable them in the
 entity settings; they are in the *Configuration* category and also in the
 **Hybrid** tab of **Operate appliance**.
 
@@ -1154,9 +1160,14 @@ ungetestet.
 
 Meldet eine Hybridanlage (Wärmepumpe mit Gas- oder Ölkessel) die
 Regelungsstrategie und die Energiepreise als schreibbar, erscheinen drei Arten
-von Bedienelementen. Sie sind **erwartet, an einer echten Anlage
-ungetestet** und wie die anderen neuen Bedienelemente **standardmäßig
-deaktiviert**. Aktiviere sie in den Entitäts-Einstellungen; sie stehen in
+von Bedienelementen. Das Schreiben des Strompreises ist auf einer Hybridanlage
+mit Logamax plus GB172i.2, Wärmepumpe WLW MB 5 AR und Hybridmodul HYC25 an
+einem MX300 bestätigt (gemeldet von markoox in #138): Rücklesen und
+Hersteller-App zeigen den geschriebenen Preis, und die Strategie
+*Kostenoptimiert* wird richtig gelesen. Die Einspeisevergütung wurde nicht
+getestet; die übrigen Bedienelemente (Strategie-Auswahl, Gaspreis oder
+Ölpreis) sind **erwartet, an einer echten Anlage ungetestet**. Wie die
+anderen neuen Bedienelemente sind alle **standardmäßig deaktiviert**. Aktiviere sie in den Entitäts-Einstellungen; sie stehen in
 der Kategorie *Konfiguration* und im Reiter **Hybrid** von **Anlage
 bedienen**.
 
