@@ -242,6 +242,8 @@ def sensor_value(
 ) -> str | float | int | None:
     """The state of a sensor for one reading; None for an unexpected shape."""
     value = resource.value
+    if not _usable(resource):
+        return None
     if description.kind == "text":
         if not isinstance(value, str) or (
             description.flags_elsewhere and flag(value) is not None
@@ -257,12 +259,29 @@ def sensor_value(
     number = _number(value)
     if number is None or not _unit_fits(description, resource):
         return None
+    if not _inside_limits(number, resource):
+        return None
     return number
 
 
+def _inside_limits(number: float, resource: Resource) -> bool:
+    """A value beyond the limits the controller reports is its placeholder.
+
+    A boiler without a pressure sensor answers 25.5 (the "no value" byte)
+    although it reports 25.0 as the maximum, the same rule as the generic
+    sensors.
+    """
+    metadata = resource.metadata
+    return (metadata.minimum is None or number >= metadata.minimum) and (
+        metadata.maximum is None or number <= metadata.maximum
+    )
+
+
 def _usable(resource: Resource) -> bool:
-    """P41: a resource the controller reports unavailable gets no entity."""
-    return resource.metadata.available is not False
+    """P41: a resource the controller reports unavailable or unused (the
+    controller keeps a placeholder there) gets no entity and no state."""
+    metadata = resource.metadata
+    return metadata.available is not False and metadata.used is not False
 
 
 def _pressure_limits(resources: Mapping[str, Resource]) -> object | None:
