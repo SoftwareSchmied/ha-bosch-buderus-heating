@@ -1392,7 +1392,8 @@ schema unchanged. Counts, ages and fixed codes only:
   `http_error`;
 - `pauses`: `in_a_row` (the current series), `total`, `remaining_seconds` and
   the `reason` (`connection`, `rate_limited`, `identity_unavailable` or
-  `undecryptable`);
+  `undecryptable`); a `condition_changes` reason `no_cloud_system` means that no
+  cloud connection supplies the system and nothing is requested;
 - `circuits`: how many heating circuits (`hc`), hot water circuits (`dhw`) and
   heat sources (`hs`) the gateway lists, `discovery_complete` and
   `identity_check_age_seconds`;

@@ -85,8 +85,8 @@ IDLE_MAX = 30.0
 PAUSES = (60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0)
 # Failed requests in a row (nothing usable came back) that pause the access.
 FAILURES_BEFORE_PAUSE = 2
-# Answers that cannot be decrypted in a row that stop the access for good.
-# The first check of an access never confirmed stops at once.
+# Answers that cannot be decrypted in a row that stop the access for good;
+# a single one (after a restart too) is looked at again after RETRY_SECONDS.
 UNDECRYPTABLE_BEFORE_STOP = 2
 IDENTITY_PERIOD = 3600.0
 DISCOVERY_PERIOD = 86400.0
@@ -291,6 +291,8 @@ class IcomSource:
                 raise
             return "not_running", 0
         millis = round((monotonic() - started) * 1000)
+        if not access.usable(reply.document.get("value")):
+            return "unreachable", millis
         if not access.confirms(reply.document.get("value")):
             return "other_gateway", millis
         return "ok", millis
@@ -513,12 +515,17 @@ class IcomSource:
             self._publish(LocalCondition.AUTH_REQUIRED, "icom_revalidation_required")
             return
         self._access = access
-        self._session = async_create_clientsession(self.connection.factory.hass)
+        self._session = async_create_clientsession(
+            self.connection.factory.hass, auto_cleanup=False
+        )
         self.client = IcomClient(
             self._session, access.host, access.key, port=access.port
         )
         self._discovery_due = monotonic()
         while self.current():
+            if not self._has_cloud_system():
+                await self._wait_for_cloud_system()
+                continue
             verdict = await self._check_identity()
             if verdict is _OK:
                 verdict = await self._poll()
@@ -526,6 +533,33 @@ class IcomSource:
                 return
             if verdict.delay is not None:
                 await self._pause(verdict)
+
+    def _has_cloud_system(self) -> bool:
+        """Whether a cloud connection still supplies the system of this access.
+
+        The readings only complete the cloud's; without it nothing uses them,
+        so the gateway is not asked (it is slow and easily overloaded).
+        """
+        context = self.context
+        if context is None:
+            return True
+        return any(
+            binding.target_id == self.binding.target_id
+            and binding.adapter != LOCAL_KIND
+            for binding in context.runtime.snapshot.bindings.values()
+        )
+
+    async def _wait_for_cloud_system(self) -> None:
+        """Make no request until a cloud connection supplies the system again."""
+        if self._condition is not LocalCondition.UNAVAILABLE or self._pause_until:
+            self._publish(LocalCondition.UNAVAILABLE, reason="no_cloud_system")
+        self._identity_at = None
+        self._wake.clear()
+        try:
+            async with asyncio.timeout(IDLE_MAX):
+                await self._wake.wait()
+        except TimeoutError:
+            pass
 
     async def _pause(self, verdict: _Verdict) -> None:
         """Publish the pause and wait it out; every pause in a row is longer."""
@@ -554,23 +588,22 @@ class IcomSource:
 
     def _pause_for(self, error: IcomError, reason: str | None = None) -> _Verdict:
         """The pause after a failure: growing, or the gateway's own request."""
-        grown = PAUSES[min(self._pauses, len(PAUSES) - 1)]
-        delay = max(grown, error.retry_after or 0.0)
+        delay = max(self._grown_pause(), error.retry_after or 0.0)
         if reason is None:
             reason = (
                 "rate_limited" if error.problem is IcomProblem.BUSY else "connection"
             )
         return _Verdict(delay=delay, reason=reason)
 
+    def _grown_pause(self) -> float:
+        return PAUSES[min(self._pauses, len(PAUSES) - 1)]
+
     def _failed(self, error: IcomError, *, first_check: bool = False) -> _Verdict:
         """Judge a failed request: a verdict, or _OK to go on with the next."""
         problem = error.problem
         if problem is IcomProblem.UNDECRYPTABLE:
             self._undecryptable += 1
-            limit = (
-                1 if first_check and not self._confirmed else UNDECRYPTABLE_BEFORE_STOP
-            )
-            if self._undecryptable >= limit:
+            if self._undecryptable >= UNDECRYPTABLE_BEFORE_STOP:
                 self._publish(LocalCondition.AUTH_REQUIRED, "auth_required")
                 return _STOP
             return _OK
@@ -602,6 +635,10 @@ class IcomSource:
             return self._after_identity_failure(error)
         if not self.current():
             return _STOP
+        if not access.usable(reply.document.get("value")):
+            # An ID that says nothing (such as "-1") is no other gateway: the
+            # access pauses and looks again; only a usable, different ID stops.
+            return _Verdict(delay=self._grown_pause(), reason="identity_unavailable")
         if not access.confirms(reply.document.get("value")):
             self._confirmed = False
             self._publish(LocalCondition.UNAVAILABLE, "local_identity_conflict")
@@ -626,6 +663,8 @@ class IcomSource:
     async def _poll(self) -> _Verdict:
         while self.current():
             now = monotonic()
+            if not self._has_cloud_system():
+                return _OK
             if self._identity_at is None or now - self._identity_at >= IDENTITY_PERIOD:
                 return _OK
             if now >= self._discovery_due:
@@ -770,7 +809,9 @@ class IcomSource:
         session, self._session = self._session, None
         if session is not None:
             try:
-                await session.close()
+                # Created without auto_cleanup: detached, never closed (the
+                # connector belongs to Home Assistant).
+                session.detach()
             except Exception as error:
                 log_failure(
                     _LOGGER,

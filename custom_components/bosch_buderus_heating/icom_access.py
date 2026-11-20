@@ -96,6 +96,16 @@ class IcomAccess:
             return self.fingerprint_path
         return IDENTITY_UUID_PATH
 
+    def usable(self, reported: object) -> bool:
+        """Whether a reading of the identity resource can tell gateways apart.
+
+        An ID such as "-1" or an empty one says nothing about the gateway; it
+        neither confirms nor contradicts the stored one.
+        """
+        if self.identity_method == IDENTITY_VALUES:
+            return text_of(reported) is not None
+        return comparable_id(reported) is not None
+
     def confirms(self, reported: object) -> bool:
         """Whether a reading of the identity resource is still this gateway."""
         if self.identity_method == IDENTITY_VALUES:

@@ -95,10 +95,18 @@ wird. Der lokale Zugang
   lange wie ihr Retry-After. Ein wieder funktionierender Wert beendet die Folge;
 - behält die Werte eines bestätigten Zugangs während der ersten Pause, nimmt sie
   aber nach drei verpassten Zeiträumen oder ab der zweiten Pause zurück;
-- hält ganz an, ohne weitere Anfragen, wenn sich die Antworten nicht mehr
-  entschlüsseln lassen (falsches oder geändertes Passwort) oder das Gateway eine
-  andere Kennung meldet als bei der Einrichtung. Der Zugang zeigt dann
-  „Anmeldung nötig“ oder „nicht erreichbar“, bis du die Daten neu eingibst;
+- hält ganz an, ohne weitere Anfragen, wenn sich zwei Antworten hintereinander
+  nicht entschlüsseln lassen (falsches oder geändertes Passwort; eine einzelne,
+  auch direkt nach einem Neustart, wird erst nach einer Minute noch einmal
+  angesehen) oder das Gateway eine brauchbare, aber andere Kennung meldet als bei
+  der Einrichtung. Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
+  erreichbar“, bis du die Daten neu eingibst;
+- behandelt eine Kennung ohne Aussage (keine, leer oder ein Platzhalter wie -1)
+  bei der Prüfung wie eine fehlende Antwort: Der Zugang pausiert und fragt
+  erneut, er hält nicht an;
+- stellt keine Anfragen, solange keine Cloud-Verbindung das System mehr versorgt
+  (zum Beispiel nach dem Entfernen der Cloud-Verbindung), und macht von selbst
+  weiter, sobald wieder eine besteht;
 - prüft die Kennung des Gateways jede Stunde und nach jeder Pause erneut.
 
 Antwortet das Gateway gar nicht mehr, schalte den Zugang unter **Verbindungen**
