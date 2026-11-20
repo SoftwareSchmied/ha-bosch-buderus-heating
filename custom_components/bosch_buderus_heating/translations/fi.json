@@ -3664,6 +3664,10 @@
               "service_unavailable": "Palvelu ei ole käytettävissä",
               "request_failed": "Pyyntö epäonnistui",
               "sign_in_unavailable": "Kirjautumispalvelu ei vastaa",
+              "forbidden": "Pääsy estetty",
+              "not_found": "Ei löytynyt",
+              "rate_limited": "Pyyntöraja saavutettu",
+              "authentication_error": "Todennus epäonnistui",
               "unknown": "Tuntematon"
             }
           }

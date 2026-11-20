@@ -241,6 +241,34 @@ async def test_boost_hold_and_no_change_during_the_window(
         await absence_teardown(hass, entry, stack)
 
 
+async def test_boost_value_change_during_the_window_says_cloud_not_reachable(
+    hass: HomeAssistant,
+) -> None:
+    cloud = RrcCloud(absence_tree())
+    entry, coordinator, clock, _sleeps, stack = await absence_setup(hass, cloud)
+    try:
+
+        async def change_value() -> None:
+            number = _entity(hass, "RrcBoostNumber")
+            await hass.services.async_call(
+                "number",
+                "set_value",
+                {"entity_id": number.entity_id, "value": number.native_value},
+                blocking=True,
+            )
+
+        await _hold_window(
+            hass,
+            coordinator,
+            cloud,
+            clock,
+            {"RrcBoostSwitch", "RrcBoostNumber"},
+            change_value,
+        )
+    finally:
+        await absence_teardown(hass, entry, stack)
+
+
 async def test_hot_water_sensors_and_disinfection_time_hold(
     hass: HomeAssistant,
 ) -> None:

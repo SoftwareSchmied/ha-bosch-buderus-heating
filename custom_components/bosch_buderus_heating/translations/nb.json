@@ -3664,6 +3664,10 @@
               "service_unavailable": "Tjenesten er ikke tilgjengelig",
               "request_failed": "Forespørselen mislyktes",
               "sign_in_unavailable": "Påloggingstjenesten svarer ikke",
+              "forbidden": "Tilgang nektet",
+              "not_found": "Ikke funnet",
+              "rate_limited": "Grensen for forespørsler er nådd",
+              "authentication_error": "Autentisering mislyktes",
               "unknown": "Ukjent"
             }
           }

@@ -3664,6 +3664,10 @@
               "service_unavailable": "Dienst nicht verfügbar",
               "request_failed": "Anfrage fehlgeschlagen",
               "sign_in_unavailable": "Anmeldedienst antwortet nicht",
+              "forbidden": "Zugriff verweigert",
+              "not_found": "Nicht gefunden",
+              "rate_limited": "Anfragelimit erreicht",
+              "authentication_error": "Authentifizierung fehlgeschlagen",
               "unknown": "Unbekannt"
             }
           }

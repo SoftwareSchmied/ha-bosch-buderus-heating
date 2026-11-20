@@ -3664,6 +3664,10 @@
               "service_unavailable": "Η υπηρεσία δεν είναι διαθέσιμη",
               "request_failed": "Το αίτημα απέτυχε",
               "sign_in_unavailable": "Η υπηρεσία εισόδου δεν ανταποκρίνεται",
+              "forbidden": "Η πρόσβαση απορρίφθηκε",
+              "not_found": "Δεν βρέθηκε",
+              "rate_limited": "Συμπληρώθηκε το όριο αιτημάτων",
+              "authentication_error": "Η ταυτοποίηση απέτυχε",
               "unknown": "Άγνωστο"
             }
           }

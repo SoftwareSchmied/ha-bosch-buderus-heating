@@ -3664,6 +3664,10 @@
               "service_unavailable": "Storitev ni na voljo",
               "request_failed": "Zahteva ni uspela",
               "sign_in_unavailable": "Storitev za prijavo ne odgovarja",
+              "forbidden": "Dostop zavrnjen",
+              "not_found": "Ni najdeno",
+              "rate_limited": "Dosežena omejitev zahtev",
+              "authentication_error": "Preverjanje pristnosti ni uspelo",
               "unknown": "Neznano"
             }
           }

@@ -10,10 +10,11 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.bosch_buderus_heating import coordinator as coordinator_module
 from custom_components.bosch_buderus_heating import managed_local as local_module
@@ -557,3 +558,115 @@ async def test_another_token_does_not_inherit_the_failed_attempts(
     recorder.refresh_finished(_attempt("refresh-1", _rejected(), outcome="rejected"))
     event = recorder.diagnostics(None)["events"][-1]
     assert "failed_before_rejection" not in event
+
+
+# --------------------------------------------- cloud status after long outages
+
+
+async def test_rejected_sign_in_after_a_long_outage_reaches_the_sensor_by_listener(
+    hass: HomeAssistant,
+) -> None:
+    """Home Assistant skips the listeners after consecutive failures and plans
+    no refresh after an authentication error: the coordinator announces the
+    rejection itself, the sensor needs no manual evaluation."""
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, _cloud):
+        sensor = GatewayReachableBinarySensor(coordinator)
+        remove = coordinator.async_add_listener(sensor._evaluate)
+        _gateway_fails(coordinator)
+        for _ in range(8):
+            await _cycle(coordinator, clock)
+        assert sensor.is_on is False
+        assert sensor.extra_state_attributes["cloud"] == "not_answering"
+
+        async def rejected(*_args: object, **_kwargs: object) -> None:
+            raise _rejected()
+
+        coordinator.client.get_resources_bulk.side_effect = rejected
+        coordinator._circuit_open_until = 0.0
+        await _cycle(coordinator, clock)
+        assert coordinator.sign_in_rejected is True
+        assert sensor.is_on is None
+        assert sensor.extra_state_attributes["cloud"] == "sign_in_required"
+        remove()
+
+
+async def test_failed_discovery_names_its_own_category_not_an_older_one(
+    hass: HomeAssistant,
+) -> None:
+    """The report of an earlier outage must not explain a failed discovery."""
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, _cloud):
+        sensor = GatewayReachableBinarySensor(coordinator)
+        original = coordinator.client.get_resources_bulk.side_effect
+        _sign_in_fails(coordinator)
+        await _cycle(coordinator, clock)
+        coordinator.client.get_resources_bulk.side_effect = original
+        await _cycle(coordinator, clock)
+        assert coordinator.last_update_success
+        # Now a discovery (rescan, firmware change) fails first.
+        with patch.object(
+            coordinator_module,
+            "async_discover_resources",
+            AsyncMock(side_effect=ServiceUnavailable(503)),
+        ):
+            with pytest.raises(UpdateFailed):
+                await coordinator._async_discover_data()
+        coordinator.last_update_success = False
+        sensor._evaluate()
+        assert sensor.is_on is False
+        assert sensor.extra_state_attributes["cloud"] == "not_answering"
+        assert sensor.extra_state_attributes["cloud_failure"] == "service_unavailable"
+
+
+def test_every_cloud_failure_category_is_translated_in_all_languages() -> None:
+    import json
+    from pathlib import Path
+
+    from custom_components.bosch_buderus_heating.gateway_reachable import (
+        CLOUD_FAILURE_CATEGORIES,
+    )
+
+    folder = Path(coordinator_module.__file__).parent
+    files = [folder / "strings.json", *sorted((folder / "translations").glob("*.json"))]
+    assert len(files) == 20
+    for path in files:
+        state = json.loads(path.read_text(encoding="utf-8"))["entity"]["binary_sensor"][
+            "gateway_reachable"
+        ]["state_attributes"]["cloud_failure"]["state"]
+        assert set(state) == set(CLOUD_FAILURE_CATEGORIES), path.name
+        assert all(isinstance(text, str) and text for text in state.values())
+
+
+def test_cloud_failure_categories_cover_everything_a_cycle_can_report() -> None:
+    from custom_components.bosch_buderus_heating.gateway_reachable import (
+        CLOUD_FAILURE_CATEGORIES,
+    )
+
+    reported = {
+        coordinator_module._result_category(error, status)
+        for error in (
+            None,
+            SignInUnavailable("x"),
+            ServiceUnavailable(503),
+            RequestTimeout("x"),
+            RefreshTokenRejected(rejection=TokenEndpointRejection(400, "x", "y", "json")),
+        )
+        for status in (None, 200, 403, 404, 429, 500, 502, 503, 504)
+    }
+    reported -= {"success", "http_500"}
+    assert reported <= set(CLOUD_FAILURE_CATEGORIES)
+    assert coordinator_module._pointt_result(None) in CLOUD_FAILURE_CATEGORIES
+    assert {"rate_limited", "forbidden", "not_found"} <= set(CLOUD_FAILURE_CATEGORIES)
+
+
+async def test_an_unknown_failure_category_shows_as_unknown(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, _cloud):
+        sensor = GatewayReachableBinarySensor(coordinator)
+        coordinator.last_failed_refresh.cycle_failure("something_new")
+        coordinator.last_update_success = False
+        sensor._evaluate()
+        assert sensor.extra_state_attributes["cloud_failure"] == "unknown"

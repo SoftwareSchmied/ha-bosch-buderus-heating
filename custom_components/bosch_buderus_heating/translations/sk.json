@@ -3664,6 +3664,10 @@
               "service_unavailable": "Služba nie je dostupná",
               "request_failed": "Požiadavka zlyhala",
               "sign_in_unavailable": "Prihlasovacia služba neodpovedá",
+              "forbidden": "Prístup odmietnutý",
+              "not_found": "Nenájdené",
+              "rate_limited": "Dosiahnutý limit požiadaviek",
+              "authentication_error": "Overenie zlyhalo",
               "unknown": "Neznáme"
             }
           }

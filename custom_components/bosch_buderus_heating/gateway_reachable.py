@@ -72,6 +72,20 @@ _LOCAL_CODES: Final = {
     LocalCondition.AUTH_REQUIRED: SIGN_IN_REQUIRED,
     LocalCondition.CERTIFICATE_CHANGED: CERTIFICATE_CHANGED,
 }
+# Every category a failed cycle can report (``_pointt_result``,
+# ``_result_category`` and the rate limit of the coordinator); each has a
+# translated state, anything else shows as unknown.
+CLOUD_FAILURE_CATEGORIES: Final = (
+    "timeout",
+    "service_unavailable",
+    "request_failed",
+    "sign_in_unavailable",
+    "forbidden",
+    "not_found",
+    "rate_limited",
+    "authentication_error",
+    "unknown",
+)
 # The category of a failed refresh that is no fault of the gateway.
 _NOT_THE_GATEWAY: Final = frozenset({SIGN_IN_UNAVAILABLE})
 
@@ -217,5 +231,7 @@ class GatewayReachableBinarySensor(
         if cloud_code in (NOT_ANSWERING, SIGN_IN_UNAVAILABLE) and isinstance(
             failure, str
         ):
-            attributes["cloud_failure"] = failure
+            attributes["cloud_failure"] = (
+                failure if failure in CLOUD_FAILURE_CATEGORIES else "unknown"
+            )
         self._state = (combine(cloud, local), attributes)

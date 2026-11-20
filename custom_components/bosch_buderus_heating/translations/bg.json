@@ -3664,6 +3664,10 @@
               "service_unavailable": "Услугата не е налична",
               "request_failed": "Заявката е неуспешна",
               "sign_in_unavailable": "Услугата за вход не отговаря",
+              "forbidden": "Достъпът е отказан",
+              "not_found": "Не е намерено",
+              "rate_limited": "Достигнат е лимитът на заявките",
+              "authentication_error": "Удостоверяването е неуспешно",
               "unknown": "Неизвестно"
             }
           }
