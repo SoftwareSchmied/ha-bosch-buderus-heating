@@ -110,11 +110,7 @@ class PointTSource:
     def publish_partial(self, coordinator: ManagedPointTCoordinator) -> None:
         """A first discovery shows what it found so far: its entities appear
         now, the rest follows through the coordinator's listeners."""
-        if (
-            self.current()
-            and self.context is not None
-            and self.context.publish(coordinator)
-        ):
+        if self.context is not None and self.context.publish(coordinator):
             self._published = True
 
     def authentication_failed(self) -> None:

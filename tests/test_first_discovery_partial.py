@@ -192,7 +192,7 @@ async def test_entities_appear_before_a_slow_discovery_ends(hass, name):
             report = coordinator.discovery_diagnostics
             # The discovery is still under way ...
             assert not report.completed
-            assert report.partial_publications >= 1
+            assert 1 <= report.partial_publications <= 5  # the limit spaces them
             # ... and the entities of what was found already exist and have values.
             await eventually(
                 lambda: any(
