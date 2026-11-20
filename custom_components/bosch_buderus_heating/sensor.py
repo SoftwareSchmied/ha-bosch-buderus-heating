@@ -44,6 +44,7 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 
 from . import (
     BoschBuderusConfigEntry,
+    counter_monotonic,
     exchange_counters,
     hybrid_controls,
     rrc,
@@ -1654,6 +1655,7 @@ class BoschBuderusSensor(
     _switch_timer: CALLBACK_TYPE | None = None
     _last_switch_level: str | float | None = None
     _exchange_guard: ExchangeCounterGuard | None = None
+    _monotonic: counter_monotonic.MonotonicCounter | None = None
     # O30: the unit of the last reading, kept while there is none.
     _held_unit: str | None = None
 
@@ -1764,14 +1766,13 @@ class BoschBuderusSensor(
     @property
     def native_value(self) -> str | int | float | None:
         value = self._native_reading()
-        guard = self._exchange_guard
-        if (
-            guard is None
-            or isinstance(value, bool)
-            or not isinstance(value, int | float)
-        ):
+        if isinstance(value, bool) or not isinstance(value, int | float):
             return value
-        return guard.value(value)
+        if (guard := self._exchange_guard) is not None:
+            value = guard.value(value)
+        if value is not None and (monotonic := self._monotonic) is not None:
+            return monotonic.value(value)
+        return value
 
     @property
     def last_reset(self) -> datetime | None:
@@ -2076,10 +2077,24 @@ class BoschBuderusSensor(
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
+        await self._async_start_monotonic_counter()
         await self._async_start_exchange_guard()
         if self.entity_description.value_kind == "switch_program":
             self.async_on_remove(self._cancel_switch_timer)
             self._update_switch_timer()
+
+    async def _async_start_monotonic_counter(self) -> None:
+        """An energy total never shows a tiny step below its last number."""
+        tolerance = counter_monotonic.tolerance_for(
+            self.state_class, self.device_class, self.native_unit_of_measurement
+        )
+        if tolerance is None or self.unique_id is None:
+            return
+        store = counter_monotonic.published_counter_store(self.hass)
+        await store.async_initialize()
+        self._monotonic = counter_monotonic.MonotonicCounter(
+            store, self.unique_id, tolerance
+        )
 
     async def _async_start_exchange_guard(self) -> None:
         """P50 (4B): guard a managed counter after a recorded gateway exchange."""
