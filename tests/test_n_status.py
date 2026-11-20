@@ -564,7 +564,7 @@ async def test_another_token_does_not_inherit_the_failed_attempts(
 
 
 async def test_rejected_sign_in_after_a_long_outage_reaches_the_sensor_by_listener(
-    hass: HomeAssistant,
+    hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
     """Home Assistant skips the listeners after consecutive failures and plans
     no refresh after an authentication error: the coordinator announces the

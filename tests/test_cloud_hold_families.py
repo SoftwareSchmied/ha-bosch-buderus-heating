@@ -584,7 +584,7 @@ async def test_wallbox_entities_hold_three_failed_cycles(
     assert None not in values and sensor.available and switch.available
     assert coordinator.leaf_fresh(leaf)
     heard: list[bool] = []
-    coordinator.async_add_listener(lambda: heard.append(sensor.available))
+    remove = coordinator.async_add_listener(lambda: heard.append(sensor.available))
 
     for failed in range(1, GRACE_CYCLES + 1):
         await _failing(coordinator, fake)
@@ -609,6 +609,7 @@ async def test_wallbox_entities_hold_three_failed_cycles(
     hold = coordinator.diagnostics()["cloud_hold"]
     assert (hold["holds_started"], hold["holds_expired"]) == (1, 1)
     assert hold["failed_cycles_in_a_row"] == 0 and not hold["holding"]
+    remove()
 
 
 async def test_wallbox_sends_no_change_during_the_window(hass: HomeAssistant) -> None:
