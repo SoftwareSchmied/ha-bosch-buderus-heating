@@ -47,9 +47,9 @@ DEVICE_LIST = "/devices/list"
 PRIVATE = re.compile(
     r"^/devices/dev[0-9]+(?:/|$)|/homematicip(?:/|$)|^/gateway/(?:user|installer)"
     r"(?:/|$)|^/gateway/userPassword$|^/system/location(?:/|$)"
-    r"|^/system/autoAway/users/list$"
+    r"|^/system/autoAway/users(?:/|$)"
 )
-MARKERS = ("MARKER", "private-marker")
+MARKERS = ("MARKER", "private-marker", "UFJJVkFURS1NQVJLRVItTkFNRQ")
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 

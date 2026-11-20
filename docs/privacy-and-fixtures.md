@@ -77,7 +77,8 @@ Some resources are never requested at all, on any gateway: the radio device
 arrays `/devices/devN` of room controllers (they carry the radio key `dlk` and
 the radio identifier `sgtin`), `/devices/productLookup`, every `homematicip`
 subtree, `/gateway/userPassword`, `/gateway/user/*`, `/gateway/installer/*`,
-`/system/location/*` and `/system/autoAway/users/list`. They are not stored in
+`/system/location/*` and `/system/autoAway/users/*` (the list and the
+user entries, whose `name` holds a first name). They are not stored in
 the discovery inventory either; an inventory of an earlier release drops them
 when it is loaded. `dlk` counts as an identifier word like `sgtin`. The
 synthetic fixture `ct200-shapes.json` fills these resources with marker

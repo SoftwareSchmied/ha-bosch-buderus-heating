@@ -194,7 +194,7 @@ On such a controller the discovery behaves as follows:
   identifier `sgtin` of each device), `/devices/productLookup`, every
   `homematicip` subtree, `/gateway/userPassword`, `/gateway/user/*`,
   `/gateway/installer/*`, `/system/location/*` and
-  `/system/autoAway/users/list` are never requested, stored, polled or
+  `/system/autoAway/users/*` (list and user names) are never requested, stored, polled or
   exported, on any gateway. A stored inventory of an earlier release that
   still holds them drops them when it is loaded.
 

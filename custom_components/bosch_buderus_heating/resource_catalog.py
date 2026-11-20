@@ -136,6 +136,9 @@ _PRIVATE_PATTERNS = (
 # identifier as its query, and the user and installer resources hold names,
 # addresses, phone numbers and e-mail addresses.
 _NEVER_READ_PATHS = frozenset({"/gateway/userPassword", "/system/autoAway/users/list"})
+# The user entries of the automatic absence (``users/us1/name`` holds a first
+# name, base64 coded) are personal data like the list.
+_NEVER_READ_USERS = r"^/system/autoAway/users(?:/.*)?$"
 _NEVER_READ_PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
@@ -144,6 +147,7 @@ _NEVER_READ_PATTERNS = tuple(
         r"^/devices/[^/]+/homematicip(?:/.*)?$",
         r"^/gateway/(?:user|installer)(?:/.*)?$",
         r"^/system/location(?:/.*)?$",
+        _NEVER_READ_USERS,
     )
 )
 

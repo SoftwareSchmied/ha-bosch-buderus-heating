@@ -8,7 +8,7 @@ entities. Each exists only when its resource is in the expected shape and
 not reported unavailable (P41), and only for a recognised room controller
 (S11). Units are taken from the metadata, never guessed (P10). All of them
 are expected, untested on a CT200; the paths and types were seen on a
-TC100.2. ``/system/autoAway/users/list`` is never read.
+TC100.2. ``/system/autoAway/users/*`` is never read.
 """
 
 from __future__ import annotations
