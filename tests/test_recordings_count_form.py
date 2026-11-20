@@ -66,6 +66,15 @@ def test_the_days_of_a_change_of_summer_time_fit() -> None:
         assert parsed is not None and len(parsed.samples) == 31
 
 
+def test_a_day_with_fewer_hours_than_usual_is_taken() -> None:
+    # The plant was off for some hours: c below 24 is a real value.
+    rows = [{"y": 8.0, "c": 17}] * 29 + [{"y": 30.0, "c": 24}]
+    parsed = parse_cloud(_cloud(rows), HEAT, MONTH, Z)
+    assert parsed is not None and len(parsed.samples) == 30
+    assert not parsed.issues["count_form"]
+    assert parsed.samples[0].y == 8.0
+
+
 def test_a_temperature_mean_keeps_any_count() -> None:
     payload = {**_cloud([{"y": 600.0, "c": 60}] * 24), "unitOfMeasure": "C"}
     parsed = parse_cloud(payload, OUTDOOR, DAY, Z)
@@ -82,7 +91,10 @@ def test_a_temperature_mean_keeps_any_count() -> None:
         (Rate.HOUR, 2, False),
         (Rate.DAY, 24, True),
         (Rate.DAY, 1440, False),
-        (Rate.DAY, 1, False),
+        (Rate.DAY, 1, True),
+        (Rate.DAY, 17, True),
+        (Rate.DAY, 25, False),
+        (Rate.DAY, 24.5, False),
         (Rate.MONTH, 720, True),
     ],
 )

@@ -145,10 +145,12 @@ def count_fits(
     """Whether the count ``c`` of a slot has the form this reading knows.
 
     A sum of energy, starts or working time carries one value per hour
-    (``c`` 1 for an hour, the hours of the day for a day). A gateway that
+    (``c`` 1 for an hour, up to the hours of the day for a day). A gateway that
     answers minute values (``c`` 60 per hour, ``y`` the sum of the
     minutes) would be read 60 times too high, so such an answer is not
-    taken; it is counted as ``count_form`` in the diagnostics. A slot
+    taken; it is counted as ``count_form`` in the diagnostics. A day with
+    fewer values than hours (the plant was off for some hours) is taken;
+    only a count above the hours of the day is the minute form. A slot
     without data (``c`` 0), a mean (temperature), a volume and a month are
     not judged.
     """
@@ -157,7 +159,7 @@ def count_fits(
     if rate is Rate.HOUR:
         return c == 1
     if rate is Rate.DAY:
-        return c in (24, day_hours(day, zone))
+        return 0 < c <= max(24, day_hours(day, zone))
     return True
 
 
