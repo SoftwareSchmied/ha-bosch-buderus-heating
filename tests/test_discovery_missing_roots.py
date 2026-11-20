@@ -28,9 +28,7 @@ def _client(absent: set[str], status: int = 504) -> AsyncMock:
 
     def bulk(gateway, chunk):
         return tuple(
-            BatchItemResult(
-                gateway, path, status, error=ResourceError(path, status)
-            )
+            BatchItemResult(gateway, path, status, error=ResourceError(path, status))
             if path in absent
             else BatchItemResult(gateway, path, 200, Resource(path))
             for path in chunk

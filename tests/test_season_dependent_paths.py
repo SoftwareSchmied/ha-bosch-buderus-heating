@@ -42,7 +42,9 @@ def _mode(value: str) -> Resource:
         value=value,
         has_value=True,
         metadata=ResourceMetadata(
-            resource_type="stringValue", allowed_values=("automatic", "off"), writable=True
+            resource_type="stringValue",
+            allowed_values=("automatic", "off"),
+            writable=True,
         ),
     )
 
@@ -70,7 +72,9 @@ class _Cloud:
         results = []
         for path in paths:
             if path == MODE:
-                results.append(BatchItemResult(gateway, path, 200, resource=_mode(self.mode)))
+                results.append(
+                    BatchItemResult(gateway, path, 200, resource=_mode(self.mode))
+                )
             elif self.mode == "off":
                 results.append(BatchItemResult(gateway, path, 404))
             else:
@@ -137,11 +141,10 @@ async def test_a_season_of_404_answers_does_not_end_the_leaf(plant, known) -> No
 
 async def test_other_leaves_keep_the_day_long_pause(plant) -> None:
     """The exception is narrow: a 404 of an ordinary leaf still pauses it."""
-    coordinator, cloud = plant
+    coordinator, _cloud = plant
     other = CIRCUIT + "/boostTemperature"
     coordinator.resources[other] = Resource(other)
     coordinator._paths_by_group[PollGroup.CONTROL] += (other,)
     await _cycles(coordinator, 1)
     assert coordinator._resource_is_paused(other, monotonic())
     assert not coordinator._resource_is_paused(THRESHOLD, monotonic())
-

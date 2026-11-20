@@ -139,7 +139,9 @@ def _changes_on(day: date, zone: tzinfo) -> bool:
     return day_hours(day, zone) != 24
 
 
-def count_fits(quantity: Quantity, rate: Rate, c: float, day: date, zone: tzinfo) -> bool:
+def count_fits(
+    quantity: Quantity, rate: Rate, c: float, day: date, zone: tzinfo
+) -> bool:
     """Whether the count ``c`` of a slot has the form this reading knows.
 
     A sum of energy, starts or working time carries one value per hour

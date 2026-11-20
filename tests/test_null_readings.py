@@ -4,7 +4,6 @@ operation mode with null for 88 minutes): the last good value stays."""
 from __future__ import annotations
 
 from dataclasses import replace
-
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -19,8 +18,8 @@ from custom_components.bosch_buderus_heating.pointt import Resource, ResourceMet
 from tests.helpers.rrc_cloud import Clock, RrcCloud
 from tests.test_rrc_dhw import (
     DHW1,
-    PACKAGE,
     MODE,
+    PACKAGE,
     _entity_id,
     _setup,
     _teardown,
@@ -39,7 +38,10 @@ def legacy_setup_path():
 
 def _scalar(resource_type: str, value: object) -> Resource:
     return Resource(
-        "/x", value=value, has_value=True, metadata=ResourceMetadata(resource_type=resource_type)
+        "/x",
+        value=value,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type=resource_type),
     )
 
 

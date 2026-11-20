@@ -1259,9 +1259,9 @@ async def _recover_invalid_bulk_results(
                     # cloud answers, so a few such paths are taken as
                     # missing, as on a room controller. A root is searched
                     # again after the start.
-                    diagnostics.paths[result.path].read_policy = (
-                        "optional_5xx_assumed_missing"
-                    )
+                    diagnostics.paths[
+                        result.path
+                    ].read_policy = "optional_5xx_assumed_missing"
                     limit = MAX_CONSECUTIVE_MISSING_5XX
                 if consecutive_5xx >= limit:
                     _LOGGER.debug(

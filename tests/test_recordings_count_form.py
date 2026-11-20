@@ -59,9 +59,9 @@ def test_the_usual_form_is_taken_and_gaps_stay_gaps() -> None:
 
 def test_the_days_of_a_change_of_summer_time_fit() -> None:
     # 2026-10-25 has 25 hours in Europe/Berlin; a plant may report 24 or 25.
-    for hours in (24, 25):
+    for reported in (24, 25):
         rows = [{"y": 1.0, "c": 24}] * 31
-        rows[24] = {"y": 1.0, "c": hours}
+        rows[24] = {"y": 1.0, "c": reported}
         parsed = parse_cloud(_cloud(rows), HEAT, "2026-10", Z)
         assert parsed is not None and len(parsed.samples) == 31
 
