@@ -110,6 +110,14 @@ async def running(hass, gateway, fast):
     p.runtime.start()
     await until(hass, lambda: state(p) and state(p).current_observations)
     await until(hass, lambda: first_pass_done(p))
+    # Under load the first pass can end before every pair path was answered.
+    await until(
+        hass,
+        lambda: (
+            {"/heatSources/flameStatus", "/dhwCircuits/dhw1/actualTemp"}
+            <= {item.request.path for item in state(p).current_observations}
+        ),
+    )
     yield p
     await p.runtime.close()
 
