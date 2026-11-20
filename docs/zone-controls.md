@@ -27,7 +27,13 @@ heating mode, also when the mode is read-only; then it only shows the zone.
   (`zoneId` and `assignedHC`). Devices naming different circuits, or a
   circuit the installation does not have, leave the zone without one; when
   no device names the zone, an installation with exactly one heating circuit
-  uses that one. Without a circuit the zone stays on the heating side.
+  uses that one. Without a circuit the zone stays on the heating side only
+  while no circuit (and not the global season) reports cooling and every
+  season reading is valid. If one reports cooling, or a season reading is
+  not valid, the side is unknown: the climate is unavailable and sends
+  nothing, so a target never lands in the unused heating settings. The
+  zone's own select and number controls of the cooling side still work. The
+  diagnostics show this as `circuit_unknown_cooling`.
 - **Changes:** right before its one request each change reads the zone's
   mode, the target, and the circuit's `currentSuWiMode` and `controlType`
   again on the gateway; if one of them changed since it was shown, nothing
@@ -264,7 +270,12 @@ außerdem eine Klimaentität (Betriebsart, Zieltemperatur, Raumtemperatur,
 Feuchte). Im Automatikbetrieb schreibt sie den vorübergehenden Sollwert bis
 zum nächsten Schaltpunkt; die Taste „Vorübergehenden Sollwert aufheben“
 schreibt -1. Die Kühlseite gilt, solange der Heizkreis
-der Zone die Kühlsaison meldet. Vor jeder Änderung lese ich Betriebsart,
+der Zone die Kühlsaison meldet. Lässt sich der Heizkreis einer Zone nicht
+bestimmen und meldet ein Heizkreis (oder die globale Jahreszeit) Kühlen oder
+ist eine Jahreszeit nicht gültig lesbar, ist die Seite unbekannt: die
+Klimaentität ist dann nicht verfügbar und sendet nichts, damit ein Sollwert
+nie in die ungenutzten Heizeinstellungen geschrieben wird (Diagnose:
+`circuit_unknown_cooling`). Vor jeder Änderung lese ich Betriebsart,
 Ziel, Jahreszeit und Regelungsart des Heizkreises frisch; danach genau ein
 PUT und Rücklesen. Die Kennzeichen `used`/`available` entscheiden an dieser
 frischen Lesung. Ein Ziel, dessen Kennzeichen mit der Betriebsart wechseln,

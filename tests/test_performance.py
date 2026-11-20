@@ -163,8 +163,11 @@ def test_current_cop_needs_every_input_and_a_plausible_ratio(
     assert live_cop(coordinator).attributes["reason"] == "inputs_missing"
     running(plant, power=200.0)  # 3.4 / 0.2 = 17
     assert live_cop(coordinator).attributes["reason"] == "implausible"
-    running(plant, output=2.9, power=200.0)  # 14.5 is still shown
-    assert live_cop(coordinator).value == pytest.approx(14.5)
+    running(plant, output=2.9, power=200.0)  # 14.5: above 10 as well
+    assert live_cop(coordinator).attributes["reason"] == "implausible"
+    running(plant, output=1.9, power=200.0)  # 9.5 is still shown
+    assert live_cop(coordinator).value == pytest.approx(9.5)
+    # The period ratios keep their limit.
     assert MAX_RATIO == 15.0
 
 

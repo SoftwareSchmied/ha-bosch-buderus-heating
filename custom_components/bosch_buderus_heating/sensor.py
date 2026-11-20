@@ -60,6 +60,7 @@ from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
 from .bacon.rac_entities import track_entities as track_rac_entities
+from .burner_share import BURNER_SHARE, burner_reported, hybrid_detected
 from .control import HeldCapabilities, track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
 from .derived import (
@@ -1842,6 +1843,8 @@ class BoschBuderusSensor(
                 return None
             return fsum((compressor, auxiliary))
         if description.value_kind == "environmental_energy":
+            if self._burner_share(resource):
+                return None
             return environmental_energy(_energy_values(resource))
         if description.value_kind == "unknown_number":
             value = resource.value
@@ -1978,8 +1981,19 @@ class BoschBuderusSensor(
             return self._held_unit
         return self.entity_description.native_unit_of_measurement
 
+    def _burner_share(self, resource: Resource) -> bool:
+        """The environmental energy of a plant with a burner share is unknown."""
+        return burner_reported(_energy_values(resource)) or hybrid_detected(
+            self.coordinator
+        )
+
     def _base_attributes(self) -> Mapping[str, object] | None:
         description = self.entity_description
+        if description.value_kind == "environmental_energy":
+            snapshot = self._snapshot
+            if snapshot is not None and self._burner_share(snapshot.resource):
+                return {"reason": BURNER_SHARE}
+            return None
         if description.value_kind == "switch_program":
             return self._switch_program_attributes()
         if description.value_kind == "dew_point":

@@ -241,8 +241,24 @@ the activity above). It is unknown, with the attribute `reason`:
 - `inputs_missing` without a current heat output, compressor or heater
   reading (a plant without any heater reading adds nothing for the
   heater), or below 0.1 kW electrical power (start and stop);
-- `implausible` above 15, when readings taken at different moments do not
-  fit together.
+- `cooling` while the heat pump cools (its own cooling signals, or the
+  cooling season while it serves the heating circuits; hot water in the
+  cooling season is still a heating COP). A cooling run is not a heating
+  COP: its heat output is zero or the cooling capacity, so the quotient would
+  be an EER and mix into the statistics of the heating COP;
+- `implausible` above 10, when readings taken at different moments do not
+  fit together (a heat pump does not reach that);
+- `implausible_low` when the COP stays below 1 for ten minutes without a
+  break while the compressor runs. No heat pump delivers less heat than it
+  takes in electricity for that long; the heat output reading is then more
+  likely an electrical power, whose meaning differs between models and
+  firmware versions. A shorter dip below 1 is shown as it is. The ten
+  minutes start over after every value at or above 1 and after every
+  unknown value.
+
+An unknown COP is not recorded in the long-term statistics. The limits (1
+for ten minutes, 10) are conservative for a heat pump; the period ratios
+below keep their own limit of 15.
 
 The attributes show the heat output, the compressor, heater and total
 electrical power in kW, `side` (`circuit` or `dhw`) and `derived_from`. On a
@@ -296,6 +312,17 @@ defrosts, so the heat taken back from the water is netted.
   recordings the counters' long-term statistics are used where Home
   Assistant has them.
 - Below 0.1 kWh electricity or above 15 a factor is unknown.
+- **Burner share:** a factor divides heat by the electricity of the heat
+  pump. If the plant reports burner energy above zero in the counter
+  collection, or a hybrid manager is detected (its signals, the hybrid
+  control resources, or a system or heat source type that names a hybrid
+  system), it is not known which share of the produced heat comes from the
+  boiler, so the factor is unknown with the attribute `reason:
+  burner_share` instead of a value that may be too high. The counters stay
+  in the attributes. The rule looks at the burner counter of the collection
+  (since commissioning), not at a single period: once a plant has reported
+  burner energy, its factors stay unknown. A heat pump without a burner
+  share is not affected.
 - A factor stays shown when its period holds very little heat, but its
   attribute `note` is then `little_heat` and `little_heat_below_kwh` names
   the limit: 5 kWh of heat for today and yesterday, 30 kWh for a month, a
@@ -335,3 +362,23 @@ their ratio.
   brine outlet (`brineCircuit/collectorInflowTemp`), while the brine pump
   runs, without a brine pump reading while the compressor runs. Disabled by
   default.
+
+### Deutsch: Leistungszahl und Arbeitszahlen
+
+Die aktuelle Leistungszahl wird nicht berechnet, solange die Wärmepumpe kühlt
+(`reason: cooling`): Ein Kühllauf wäre sonst keine Heiz-Leistungszahl (die
+Wärmeleistung ist null oder die Kälteleistung) und würde die Statistik
+vermischen. Warmwasser in der Kühlsaison bleibt eine Heiz-Leistungszahl. Über 10
+ist der Wert unplausibel (`reason: implausible`, bisher 15); bleibt sie bei
+laufendem Verdichter zehn Minuten ohne Unterbrechung unter 1, ist sie ebenfalls
+unbekannt (`reason: implausible_low`): Dann entspricht der Wert der Wärmeleistung
+vermutlich einer elektrischen Leistung (die Bedeutung unterscheidet sich je
+Modell und Firmware). Kürzere Einbrüche unter 1 werden unverändert angezeigt.
+Ein unbekannter Wert kommt nicht in die Langzeitstatistik. Die Arbeitszahlen der
+Zeiträume behalten ihre Grenze von 15.
+
+Meldet die Anlage Brennerenergie über null in der Zähler-Sammlung oder wird
+ein Hybrid-Manager erkannt, sind Arbeitszahlen und Umweltenergie unbekannt
+(`reason: burner_share`), weil nicht bekannt ist, welcher Wärmeanteil vom Kessel
+stammt. Die Regel betrachtet den Brennerzähler seit der Inbetriebnahme, nicht
+den einzelnen Zeitraum. Eine reine Wärmepumpe ist nicht betroffen.

@@ -502,10 +502,71 @@ async def test_without_a_circuit_the_zone_stays_on_the_heating_side(hass, plant)
     changed(coordinator, cloud, "/devices/device1/assignedHC", value="hc2")
     entity = climate(hass, coordinator)
     assert assigned_circuit(coordinator, Z1) is None
-    changed(coordinator, cloud, SEASON, value="cooling")
+    # No circuit reports cooling: the heating setpoint is the one in use.
     assert entity.hvac_mode == HVACMode.AUTO
     assert entity.extra_state_attributes["zone_side"] == "heating"
     assert "heating_circuit" not in entity.extra_state_attributes
+
+
+async def test_without_a_circuit_cooling_leaves_the_side_unknown(hass, plant):
+    coordinator, cloud = plant
+    changed(coordinator, cloud, "/devices/device1/assignedHC", value="hc2")
+    cooling(coordinator, cloud)
+    entity = climate(hass, coordinator)
+    assert assigned_circuit(coordinator, Z1) is None
+    assert entity._side() is None
+    assert not entity.available
+    assert entity.extra_state_attributes == {}
+    report = next(
+        item
+        for item in zone_climate_diagnostics(coordinator)
+        if item["zone"] == "zone1"
+    )
+    assert report["rejection_reason"] == "circuit_unknown_cooling"
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=24)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_hvac_mode(HVACMode.OFF)
+    # Neither the heating nor the cooling set is written.
+    assert cloud.puts == []
+
+
+async def test_without_a_circuit_an_unreadable_season_leaves_the_side_unknown(
+    hass, plant
+):
+    coordinator, cloud = plant
+    changed(coordinator, cloud, "/devices/device1/assignedHC", value="hc2")
+    entity = climate(hass, coordinator)
+    assert entity._side() == "heating"
+    changed(coordinator, cloud, "/heatingCircuits/hc2/currentSuWiMode", value=5)
+    assert entity._side() is None
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=24)
+    assert cloud.puts == []
+
+
+async def test_without_a_circuit_the_global_season_cooling_blocks_the_write(
+    hass, plant
+):
+    coordinator, cloud = plant
+    changed(coordinator, cloud, "/devices/device1/assignedHC", value="hc2")
+    entity = climate(hass, coordinator)
+    assert entity._side() == "heating"
+    put(
+        coordinator,
+        cloud,
+        parse_resource(
+            {
+                "id": "/system/globalSeasonOptimizer/currentMode",
+                "type": "stringValue",
+                "value": "cooling",
+            }
+        ),
+    )
+    assert entity._side() is None
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=24)
+    assert cloud.puts == []
 
 
 # The zone's heating circuit ----------------------------------------------

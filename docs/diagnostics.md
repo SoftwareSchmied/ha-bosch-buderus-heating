@@ -77,7 +77,7 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   clear value (`temporary_setpoint`, `temporary_clearable`), whether the
   zone has a heating circuit (`heating_circuit_assigned`), whether its
   calculated action is known (`hvac_action_known`) and a `rejection_reason`
-  (`season_unknown`, `mode_invalid`, `mode_not_writable`,
+  (`season_unknown`, `circuit_unknown_cooling`, `mode_invalid`, `mode_not_writable`,
   `control_type_read_only` or `null`). Since 0.9.2-beta.3 each zone also has
   `writes`: the counts of the changes made through its climate and clear
   button (`writes_rejected`, `writes_sent`, `writes_confirmed`,

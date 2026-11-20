@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import EntityCategory, Platform
@@ -98,6 +98,20 @@ def _setup_entities(
         rrc_platforms.track(Platform.SWITCH, entry, coordinator, async_add_entities)
 
 
+# Switches that no area, floor or device call should flip together with the
+# rest: a scene that switches everything off or on must not start the away or
+# holiday mode. They keep unique ID, entity ID, name and enabled state; only
+# the category changes. Extra hot water and the pool stay without a category.
+CONFIG_SWITCH_KEYS: Final = frozenset(
+    {
+        "reduce_temperature_on_alarm",
+        "wddw2_holiday_mode",
+        "softener_holiday_mode",
+        "away_mode",
+    }
+)
+
+
 def build_switch_descriptions(
     resources: Mapping[str, Resource],
     context: ControlContext | None = None,
@@ -156,7 +170,7 @@ def build_switch_descriptions(
                 icon=control_icon(resource.path),
                 entity_registry_enabled_default=policy.enabled_by_default,
                 entity_category=(
-                    EntityCategory.CONFIG if tail == "reduceTempOnAlarm" else None
+                    EntityCategory.CONFIG if key in CONFIG_SWITCH_KEYS else None
                 ),
             )
         )

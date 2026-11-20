@@ -28,6 +28,8 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .burner_share import BURNER_SHARE, burner_share
+from .cop_plausibility import LowCopWatch
 from .cop_start import StartPhase
 from .device import device_info_for_resource, grouped_entity_name
 from .held_readings import cloud_usable
@@ -159,6 +161,7 @@ class CurrentCopSensor(_LiveSensor):
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         self._phase = StartPhase()
+        self._low = LowCopWatch()
         super().__init__(
             coordinator,
             HEAT_SOURCES,
@@ -172,7 +175,7 @@ class CurrentCopSensor(_LiveSensor):
         )
 
     def _derive(self) -> LiveResult:
-        return live_cop(self.coordinator, self._phase)
+        return live_cop(self.coordinator, self._phase, self._low)
 
 
 class PrimarySpreadSensor(_LiveSensor):
@@ -355,12 +358,20 @@ class PerformanceFactorSensor(
 
     @property
     def native_value(self) -> float | None:
+        if self._burner_share():
+            return None
         return self._result.ratio if self._result is not None else None
+
+    def _burner_share(self) -> bool:
+        """Heat of a burner is not covered by the heat pump's electricity."""
+        return burner_share(self.coordinator, self.resource_path)
 
     @property
     def extra_state_attributes(self) -> dict[str, object] | None:
         result = self._result
         if result is None:
+            if self._burner_share():
+                return {"reason": BURNER_SHARE}
             if self._period not in (Period.TODAY, Period.SINCE_COMMISSIONING) and (
                 not self._engine.history_read
             ):
@@ -386,7 +397,9 @@ class PerformanceFactorSensor(
         if result.first_day is not None:
             attributes["first_day"] = result.first_day.isoformat()
         attributes["derived_from"] = self._derived_from(result)
-        if result.ratio is None:
+        if self._burner_share():
+            attributes["reason"] = BURNER_SHARE
+        elif result.ratio is None:
             attributes["reason"] = unknown_reason(result.electricity)
         else:
             attributes.update(little_heat_attributes(self._period, result.heat))
