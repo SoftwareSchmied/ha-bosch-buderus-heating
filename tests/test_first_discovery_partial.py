@@ -194,11 +194,14 @@ async def test_entities_appear_before_a_slow_discovery_ends(hass, name):
             assert not report.completed
             assert 1 <= report.partial_publications <= 5  # the limit spaces them
             # ... and the entities of what was found already exist and have values.
+            assert coordinator.data
+            assert set(coordinator.data) == set(coordinator.resources)
             await eventually(
                 lambda: any(
                     state.state not in ("unavailable", "unknown")
-                    for item in entries(hass, entry).values()
-                    if (state := hass.states.get(item.entity_id)) is not None
+                    for (_, unique_id), item in entries(hass, entry).items()
+                    if unique_id.startswith(f"{GATEWAY}:")
+                    and (state := hass.states.get(item.entity_id)) is not None
                 ),
                 timeout=30,
             )
@@ -487,3 +490,34 @@ def test_the_kind_of_plant_is_settled_by_evidence_or_by_definite_answers() -> No
     # Positive evidence needs nothing else.
     zone = Resource(path="/zones/zn1", value=1, has_value=True)
     assert settle(SimpleNamespace(paths={}), {"/zones/zn1": zone}, None)
+
+
+async def test_a_stopped_source_shows_no_partial_result(hass, monkeypatch):
+    monkeypatch.setattr(discovery_partial, "PARTIAL_AFTER", 0.0)
+    cloud, gateway = plant("k40", delay=0)
+    with cloud_patches(cloud, RealClock(), gateway):
+        async with running(hass, Backend(), configure=only_first) as (
+            entry,
+            _,
+            owner,
+            _,
+        ):
+            await owner.start_platforms()
+            await settled(hass, entry, owner, cloud)
+            coordinator = source_for(owner, GATEWAY)
+            found = dict(coordinator.resources)
+            report = coordinator.discovery_diagnostics
+            before = report.partial_publications
+            shown = []
+            with patch.object(
+                ManagedPointTCoordinator, "_publish_partial", lambda self: shown.append(1)
+            ):
+                coordinator._partial_started = 0.0
+                with patch.object(type(coordinator.source), "current", lambda self: False):
+                    coordinator._discovery_progress(found)
+                assert not shown
+                assert report.partial_publications == before
+                # The same call with a running source shows the result.
+                coordinator._discovery_progress(found)
+                assert shown == [1]
+                assert report.partial_publications == before + 1
