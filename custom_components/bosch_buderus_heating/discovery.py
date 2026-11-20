@@ -99,6 +99,10 @@ MAX_DISCOVERY_RESOURCES = 512
 # This many in a row, without any working answer in between, are treated as an
 # outage of the cloud itself and end the discovery like a request-wide error.
 MAX_CONSECUTIVE_FALLBACK_5XX = 3
+# The same for roots and optional paths of a gateway that answers 5xx for
+# the ones it does not have, while the cloud demonstrably answers (a resource
+# in the same bulk answer): that many in a row end the discovery.
+MAX_CONSECUTIVE_MISSING_5XX = 10
 # #113 (RRC-01): the RRC lists come first, before every other pending path.
 # The zone list shows RRC zones early, and the program list is the only source
 # of the program selection. On a large tree the budget would otherwise end
@@ -1242,7 +1246,24 @@ async def _recover_invalid_bulk_results(
                 continue
             if status >= 500:
                 consecutive_5xx += 1
-                if consecutive_5xx >= MAX_CONSECUTIVE_FALLBACK_5XX:
+                limit = MAX_CONSECUTIVE_FALLBACK_5XX
+                if (
+                    not rrc_profile
+                    and answering is True
+                    and diagnostics.paths[result.path].source
+                    in (DiscoveryPathSource.ROOT, DiscoveryPathSource.OPTIONAL)
+                ):
+                    # A gateway that answers 5xx for a root or an optional
+                    # path it does not have (504 for /ventilation, 500 for
+                    # /pool) while the bulk answer brought resources: the
+                    # cloud answers, so a few such paths are taken as
+                    # missing, as on a room controller. A root is searched
+                    # again after the start.
+                    diagnostics.paths[result.path].read_policy = (
+                        "optional_5xx_assumed_missing"
+                    )
+                    limit = MAX_CONSECUTIVE_MISSING_5XX
+                if consecutive_5xx >= limit:
                     _LOGGER.debug(
                         "Ending PointT discovery after %d individual reads in a "
                         "row answered HTTP 5xx",

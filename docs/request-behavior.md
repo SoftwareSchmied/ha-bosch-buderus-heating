@@ -164,6 +164,14 @@ sign-in failure or a rate limit still ends the discovery at once. Three
 fallback reads in a row that answer HTTP 5xx end it as well, so a failing
 cloud does not receive up to 30 individual reads per batch.
 
+Some gateways answer HTTP 5xx instead of 404 for a root or an optional path
+they do not have (504 for `/ventilation` or `/zones`, 500 for `/pool`). When
+the bulk answer of the same batch brought resources, the cloud is answering,
+and on a gateway that is not a room controller up to nine such answers in a
+row no longer end the discovery; the paths count as missing, and a root is
+searched again as described below. Ten in a row, or three when the batch
+brought no resource, still end it.
+
 ## Entity continuity and limits
 
 An already registered product-name or refrigerant-count sensor is created with
