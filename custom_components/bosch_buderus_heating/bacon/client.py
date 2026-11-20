@@ -207,7 +207,12 @@ class BaconClient:
                 headers={
                     "Authorization": f"Bearer {token}",
                     "User-Agent": USER_AGENT,
+                    # Without a JSON body and content type the service answers
+                    # 415 and the device sends no measurements.
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
                 },
+                data=b"{}",
                 timeout=aiohttp.ClientTimeout(total=20),
                 allow_redirects=False,
             ) as response:
@@ -219,6 +224,8 @@ class BaconClient:
                     raise self._rate_limited(response)
                 if status in (404, 405):
                     raise BaconError("live_unsupported")
+                if status == 415:
+                    raise BaconError("live_media_type")
                 if not 200 <= status < 300:
                     raise BaconError("service_unavailable")
                 return

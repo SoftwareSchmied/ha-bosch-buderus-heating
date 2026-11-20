@@ -15,6 +15,7 @@ gives no value. Diagnostic, disabled by default.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from datetime import datetime, timedelta, tzinfo
 from functools import partial
@@ -47,6 +48,8 @@ CLOCK_PATH: Final = "/gateway/DateTime"
 CLOCK_PATHS: Final = (CLOCK_PATH, "/gateway/dateTime")
 _MAX_TEXT: Final = 64
 MAX_DEVIATION: Final = timedelta(days=366)
+# A room controller appends the weekday: "2026-11-10T06:30:00+01:00 Tu".
+_DAY_SUFFIX: Final = re.compile(r" (?:Mo|Tu|We|Th|Fr|Sa|Su)\Z")
 
 
 def clock_path(paths: Iterable[str]) -> str | None:
@@ -63,7 +66,7 @@ def parse_clock(value: object, zone: tzinfo | None) -> datetime | None:
     if not isinstance(value, str) or not value or len(value) > _MAX_TEXT:
         return None
     try:
-        parsed = datetime.fromisoformat(value.strip())
+        parsed = datetime.fromisoformat(_DAY_SUFFIX.sub("", value.strip()))
     except ValueError:
         return None
     if parsed.tzinfo is None:

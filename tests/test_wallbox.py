@@ -148,11 +148,13 @@ def test_unknown_states_are_not_online_or_finished(value):
 @pytest.mark.parametrize(
     "meter,energy,power",
     [
-        ("1250;7.2", 1.25, 7.2),
+        ("7200;1.25", 1.25, 7.2),
+        # A real sample: 4.4 kW while charging, 34.93 kWh charged so far.
+        ("4371;34.93", 34.93, 4.371),
         ("0;0", 0, 0),
-        ("5;middle;0.1", 0.005, 0.1),
-        ("120;bad", 0.12, None),
-        ("bad;2", None, 2),
+        ("100;middle;0.1", 0.1, 0.1),
+        ("120;bad", None, 0.12),
+        ("bad;2", 2, None),
         ("-1;NaN", None, None),
         ("1e309;inf", None, None),
         ("4", None, None),
@@ -223,7 +225,12 @@ def test_duration_requires_reported_nonnegative_long_minutes(value):
         ("", None),
         (None, None),
         (True, None),
-        (16, None),
+        (16, 16),
+        (6.3, 6.3),
+        (0, 0),
+        (-1, None),
+        (float("nan"), None),
+        (float("inf"), None),
         ("-1", None),
         ("nan", None),
         ("Inf", None),
@@ -307,7 +314,7 @@ async def test_intervals_partial_failure_and_regular_recovery(hass, friendly):
             assert not coord.section_fresh("telemetry")
         now.return_value += fast
         client.get_wallbox_section.side_effect = lambda gateway, section: data[section]
-        data["telemetry"]["values"].update(meter="1;0.0", activeChargingTime=0)
+        data["telemetry"]["values"].update(meter="0;0.001", activeChargingTime=0)
         await coord.async_refresh()
         assert coord.reading("telemetry", "energy") == 0.001
         assert coord.reading("telemetry", "duration") == 0
@@ -455,7 +462,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
     data = fixture()
     # A power value whose digits appear nowhere else in the diagnostics, so the
     # leak check below cannot match an unrelated number such as a token lifetime.
-    data["telemetry"]["values"]["meter"] = "1250;7.2468"
+    data["telemetry"]["values"]["meter"] = "7246.8;1.25"
     gateways = (Gateway("wallbox-A", device_type="commodule2"),) + (
         (Gateway("heating", device_type="K40"),) if mixed else ()
     )

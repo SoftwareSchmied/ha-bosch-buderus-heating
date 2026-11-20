@@ -1172,3 +1172,26 @@ async def test_close_tolerates_a_task_that_already_failed():
     account.attach_task(task)
     await account.close()
     assert not account.connected
+
+
+def test_first_sensor_sample_after_a_restart_is_not_shown_when_old():
+    account, device = reconnected()
+    device.sensor.clear()
+    device.sensor_fields_received_at.clear()
+    device.sensor_timestamp = -1
+    # The cloud still delivers the last sample of 20 hours ago.
+    with patch(MODULE + ".time", return_value=1_800_000_000):
+        emit(
+            account,
+            "topics/sensor",
+            {"items": [{"timestamp": 1_800_000_000 - 20 * 3600, "t": 1}]},
+        )
+        assert device.sensor == {}
+        assert device.sensor_timestamp == -1
+        # A sample of the last minutes is current.
+        emit(
+            account,
+            "topics/sensor",
+            {"items": [{"timestamp": 1_800_000_000 - 60, "t": 2}]},
+        )
+    assert device.sensor["t"] == 2

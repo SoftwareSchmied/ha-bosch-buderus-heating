@@ -9,7 +9,7 @@ import json
 import logging
 import ssl
 from collections.abc import Callable
-from time import monotonic
+from time import monotonic, time
 from typing import Any
 from uuid import uuid4
 
@@ -509,6 +509,16 @@ class BaconAccount:
                         "it is not sent again",
                         err.category,
                     )
+            elif (
+                err.category == "live_media_type"
+                and "live_report_live_media_type" not in self._logged_failures
+            ):
+                self._logged_failures.add("live_report_live_media_type")
+                _LOGGER.warning(
+                    "The cloud refuses the active-client report as an "
+                    "unsupported media type (415); the device may send no "
+                    "measurements until it is accepted"
+                )
             _LOGGER.debug("Active-client report failed (%s)", err.category)
             return
         except Exception as err:
@@ -667,7 +677,14 @@ class BaconAccount:
             if retained:
                 return
             self.expire_values(device)
-            if ingest_sensor(device, data, self.generation, monotonic()):
+            if ingest_sensor(
+                device,
+                data,
+                self.generation,
+                monotonic(),
+                wall_now=time(),
+                max_age=SENSOR_STALE_AFTER,
+            ):
                 self._alive(device)
         else:
             if retained:

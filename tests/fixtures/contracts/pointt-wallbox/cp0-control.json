@@ -14,7 +14,7 @@
   "telemetry": {
     "values": {
       "wbState": "Preparing",
-      "meter": "1250;0.0",
+      "meter": "0;1.25",
       "limit": "16",
       "limiter": "none",
       "activeChargingTime": 0,

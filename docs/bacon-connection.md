@@ -125,14 +125,15 @@ unavailable at once. Expected, not yet observed on a real installation beyond
 the planned renewal.
 
 While the connection stands and a device is selected, I report the account as
-an active client with an empty `POST
-https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, right after
+an active client with a `POST` (JSON content type, body `{}`) to
+`https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, right after
 subscribing and then every 300 seconds, as HomeCom Easy does while it is open.
 It uses the same token, the shared request slot and the shared cloud pause. A
 429 starts the shared pause without ending the connection; a 404 or 405 stops
 the report for the rest of that connection, a 401 or 403 for the rest of the
 session (a 401 of the report does not renew the token); each is logged once;
-other failures never end the connection.
+a 415 (unsupported media type) is logged once as a warning and the report is
+tried again; other failures never end the connection.
 This report is expected to make the devices send measurements more often. It is
 untested on a real unit; the effect has to be confirmed with a real device.
 
@@ -142,7 +143,12 @@ non-null fields in the current sample. Empty, retained and old messages do
 not refresh readings. Each field retains its own observation time and
 expires one hour after it was last reported. Reported state fields expire
 after 15 minutes; the periodic state read every five minutes keeps them
-current.
+current. After a restart, the first sample is dropped when its own time (seconds
+since 1970) lies more than an hour back, so an old sample is never shown as a
+current measurement.
+
+Only the European region of the cloud service is used (the addresses above end
+in `euc1`). Air conditioners registered in another region are not supported.
 
 Shadows require integer version and timestamp fields and an object state.
 A full get response replaces the reported snapshot; update responses merge
@@ -303,16 +309,23 @@ sie sofort nicht verfügbar. Erwartet, an einer echten Anlage außer der geplant
 Erneuerung noch nicht beobachtet.
 
 Solange die Verbindung steht und ein Gerät ausgewählt ist, melde ich das Konto
-als aktiven Client mit einem leeren `POST` an
+als aktiven Client mit einem `POST` (JSON-Inhaltstyp, Körper `{}`) an
 `https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, direkt nach dem
 Abonnement und dann alle 300 Sekunden, wie HomeCom Easy bei geöffneter App. Dabei
 gelten dasselbe Token, der gemeinsame Anfrageplatz und die gemeinsame Cloud-Pause.
 Ein 401 erneuert das Token einmal, ein 429 startet die gemeinsame Pause ohne die
 Verbindung zu beenden, ein 404, 405, 403 oder ein zweites 401 stoppt die Meldung
 für den Rest dieser Verbindung (einmal im Protokoll vermerkt); andere Fehler
-beenden die Verbindung nie. Erwartet wird, dass die Geräte dadurch Messwerte
+beenden die Verbindung nie; ein 415 (nicht unterstützter Medientyp) wird einmal als
+Warnung vermerkt und die Meldung später erneut versucht. Erwartet wird, dass die Geräte dadurch Messwerte
 häufiger senden. Das ist auf einem echten Gerät ungetestet und muss dort
 bestätigt werden.
+
+Nach einem Neustart verwerfe ich die erste Messprobe, wenn ihre eigene Zeit
+(Sekunden seit 1970) mehr als eine Stunde zurückliegt; eine alte Probe erscheint
+so nie als aktuelle Messung. Genutzt wird nur die europäische Region des
+Cloud-Dienstes (die Adressen oben enden auf `euc1`); in einer anderen Region
+registrierte Klimageräte werden nicht unterstützt.
 
 Die interne Schreibgrundlage prüft Zustand, offene Änderungen und eine
 verpflichtende Prüfung durch den jeweiligen Geräteadapter. Erst ein neuerer

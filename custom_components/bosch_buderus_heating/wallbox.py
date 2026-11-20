@@ -131,11 +131,15 @@ def is_wallbox(gateway: Gateway) -> bool:
 
 
 def _number(value: object) -> float | None:
-    if not isinstance(value, str) or not 0 < len(value) <= 64:
-        return None
-    try:
-        number = float(value)
-    except ValueError:
+    """A number the wallbox sends as text or as a JSON number."""
+    if type(value) in (int, float):
+        number = float(value)  # type: ignore[arg-type]
+    elif isinstance(value, str) and 0 < len(value) <= 64:
+        try:
+            number = float(value)
+        except ValueError:
+            return None
+    else:
         return None
     return number if isfinite(number) and number >= 0 else None
 
@@ -247,17 +251,18 @@ def parse_section(section: Section, payload: object) -> SectionSnapshot:
         parts = (
             meter.split(";") if isinstance(meter, str) and len(meter) <= 1024 else []
         )
-        energy = _number(parts[0]) if len(parts) >= 2 else None
-        power = _number(parts[-1]) if len(parts) >= 2 else None
+        # The meter reads "<power in W>;<energy of the charge in kWh>".
+        power = _number(parts[0]) if len(parts) >= 2 else None
+        energy = _number(parts[-1]) if len(parts) >= 2 else None
         state = raw.get("wbState")
         duration = raw.get("activeChargingTime")
         values = {
             "state": STATES.get(state) if isinstance(state, str) else None,
-            "energy": energy / 1000 if energy is not None else None,
+            "energy": energy,
             # Lifetime counter in kWh: the wallbox app shows the same total
             # (Power Charge 7000i S, software 5.3.0).
             "energy_total": _amount(raw.get("energyTotal")),
-            "power": power,
+            "power": power / 1000 if power is not None else None,
             "duration": duration
             if type(duration) is int and 0 <= duration <= 2**63 - 1
             else None,
