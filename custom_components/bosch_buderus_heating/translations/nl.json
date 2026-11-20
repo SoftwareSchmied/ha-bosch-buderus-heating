@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Cloudtoegangen",
+      "local_accesses": "Lokale toegangen",
+      "last_successful_update": "Laatste geslaagde update"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Schakelpunten van een tijdprogramma instellen",

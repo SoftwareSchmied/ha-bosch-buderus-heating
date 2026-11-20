@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Облачни достъпи",
+      "local_accesses": "Локални достъпи",
+      "last_successful_update": "Последна успешна актуализация"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Задаване на точките на превключване на времева програма",

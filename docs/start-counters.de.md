@@ -135,10 +135,10 @@ bestehen. Die Tests prüfen außerdem den reproduzierbaren Paketbau und den
 Import aus einer isolierten Installation des erzeugten ZIPs.
 
 CHLINDE hat die Sichtbarkeit des Zählers mit der ursprünglichen Umsetzung
-bestätigt. Die in beta.2 ergänzte Prüfung wies später die Einheit seiner Anlage
+bestätigt. Die in beta.2 ergänzte Prüfung wies später die Einheit der Anlage von CHLINDE
 zurück, weil sie aus einem einzelnen Leerzeichen bestand. In
 [PR #75](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/pull/75)
-hat CHLINDE die Prüfung korrigiert und bestätigt, dass der Zähler seiner
+hat CHLINDE die Prüfung korrigiert und bestätigt, dass der Zähler der
 Buderus G125 BE ECO-21 wieder einen Wert anzeigt. Vielen Dank, CHLINDE, für
 die genaue Fehlerbeschreibung, die Korrektur, die Regressionstests und den
 Test an deiner Anlage.

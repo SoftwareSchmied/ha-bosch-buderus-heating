@@ -103,7 +103,7 @@ integration's own state reads never count as a sign of life. Before this
 change a sign of life at most one hour old was required; real units that send
 nothing on their own for hours then turned unavailable although the cloud
 reported them online. A membership loss or an offline message still makes the device
-unavailable; a lost connection only after the short hold described below. A membership loss or a re-added device starts without earlier
+unavailable; a lost connection only after the short hold described below. A re-added device starts without earlier
 readings. A re-added device, or one that returns to the account, takes its
 online status from the redelivered information even if its timestamp is
 unchanged.
@@ -178,7 +178,7 @@ Assistant write service is exposed.
 
 Schema 21 adds aggregate connection, availability, received-state and metadata
 counts (0.9.2 adds `live_report` and `availability` and the 90-second `renewal_grace`,
-which is the `cloud_hold` of every cloud family since the next release, see
+which is the `cloud_hold` of every cloud family since 0.9.3, see
 [diagnostics](diagnostics.md)), error categories and unconfirmed-command counts. Planned token renewals
 are counted as `renewals`, apart from `reconnects`. It exports no token,
 subject, identifier, model, sensor contents, network information or device name.

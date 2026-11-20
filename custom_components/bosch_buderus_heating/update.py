@@ -43,6 +43,9 @@ from .pointt.firmware_updates import (
 )
 from .resource_catalog import FIRMWARE_PATHS
 
+# Read-only platform fed by coordinators: no limit on parallel updates.
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(
     hass: HomeAssistant,

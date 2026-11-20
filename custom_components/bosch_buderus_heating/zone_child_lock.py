@@ -4,7 +4,7 @@
 ``active`` and ``inactive``; the manufacturer's app offers it as a switch.
 The switch exists only when the gateway reports the path as writable, with
 exactly these two advertised values and one of them as the current value;
-without that path nothing is created. It is created disabled. Pure data
+without that path nothing is created. It is enabled by default. Pure data
 without Home Assistant imports. Expected, untested on a real installation.
 """
 

@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Skytilganger",
+      "local_accesses": "Lokale tilganger",
+      "last_successful_update": "Siste vellykkede oppdatering"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Sett koblingspunktene i et tidsprogram",

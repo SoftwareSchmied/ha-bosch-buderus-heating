@@ -28,7 +28,7 @@ by default and show the scheduled level, not the controller's actual operating
 mode. The new feature makes no appliance writes.
 
 ReuDa confirmed the structure, displayed levels and switch points against
-MyBuderus on a WLW186i with MX400. His 2026-11-01 report also confirms timely
+MyBuderus on a WLW186i with MX400. ReuDa's 2026-11-01 report also confirms timely
 transitions at several heating and hot-water switch points. Issue #95 is
 closed. This field report covers that installation; the clock-change behavior
 remains covered by automated tests. See the

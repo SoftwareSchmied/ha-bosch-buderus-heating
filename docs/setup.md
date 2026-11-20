@@ -372,6 +372,101 @@ Home Assistant if HACS requests it. Reload the browser after an update that
 changes the dialogs. Reinstalling the integration or deleting existing entities
 is not necessary.
 
+## Removing the integration
+
+1. Open **Settings → Devices & services** and select **Bosch/Buderus Home
+   Comfort**.
+2. Open the three-dot menu of the entry and select **Delete**. For a local
+   access alone, **Remove access** in the options of the entry removes just
+   that access.
+3. If you installed the integration with HACS, remove it there as well, then
+   restart Home Assistant.
+
+What removal does and does not do:
+
+- The entities, devices and the integration's own stored files of that entry
+  (the inventory of known entities, faults, plant recordings, setup history)
+  are deleted.
+- The long-term statistics that Home Assistant has recorded for the entities
+  stay in the database until you delete them under **Developer tools →
+  Statistics**.
+- The sign-in tokens saved in the entry are deleted with it. The integration
+  sends nothing to the cloud for that; it does not sign you out of SingleKey ID.
+- Tokens on the gateway are never revoked automatically. To revoke the token
+  of a local access, tick that choice in **Remove access** before you remove
+  it (see [local enrollment](local-enrollment.md#tokens-on-the-gateway)).
+
+### Deutsch: Integration entfernen
+
+1. Öffne **Einstellungen → Geräte & Dienste** und wähle **Bosch/Buderus Home
+   Comfort**.
+2. Öffne das Drei-Punkte-Menü des Eintrags und wähle **Löschen**. Nur einen
+   lokalen Zugang entfernst du mit **Zugang entfernen** in den Optionen des
+   Eintrags.
+3. Hast du die Integration mit HACS installiert, entferne sie auch dort und
+   starte Home Assistant neu.
+
+Was das Entfernen bewirkt und was nicht:
+
+- Die Entitäten, Geräte und die eigenen gespeicherten Dateien dieses
+  Eintrags (Bestand bekannter Entitäten, Störungen, Anlagenaufzeichnungen,
+  Einrichtungsverlauf) werden gelöscht.
+- Die Langzeitstatistiken, die Home Assistant für die Entitäten aufgezeichnet
+  hat, bleiben in der Datenbank, bis du sie unter **Entwicklerwerkzeuge →
+  Statistiken** löschst.
+- Die im Eintrag gespeicherten Anmelde-Token werden mit ihm gelöscht. Die
+  Integration sendet dafür nichts an die Cloud; sie meldet dich nicht bei
+  SingleKey ID ab.
+- Token auf dem Gateway werden nie automatisch widerrufen. Um das Token eines
+  lokalen Zugangs zu widerrufen, hake diese Auswahl bei **Zugang entfernen**
+  an, bevor du ihn entfernst (siehe [lokale Einrichtung](local-enrollment.md#tokens-on-the-gateway)).
+
+## Known limitations
+
+- **Controls need the cloud.** The local access only reads: it offers no
+  controls and no settings. A change is sent only while the cloud answers, and
+  it is read back; if that fails Home Assistant reports the change as failed
+  and nothing is sent again by itself.
+- **Fixed polling.** The cloud is read at fixed intervals per group of values
+  (a cloud-friendly profile slows them down) so that the cloud's request limit
+  is not reached. After repeated errors or a limit the integration pauses on
+  its own (see [request behavior](request-behavior.md)). The local access has
+  its own interval in the options.
+- **Only what the gateway reports.** Entities exist for the resources the
+  gateway reports, with the limits and values it reports. A resource that is
+  missing, not writable or answers with an error gives no entity, and new
+  functions are marked as expected but not tested where I could not test them
+  on a real installation.
+- **Heat counters dip while defrosting.** The produced heat of a heat pump falls
+  briefly during a defrost; see [energy dashboard](entities.md#energy-dashboard).
+- **Requirements.** Home Assistant 2026.5.0 or newer, and a gateway that is
+  connected to the account of the manufacturer's app for the cloud access.
+
+### Deutsch: Bekannte Einschränkungen
+
+- **Bedienen braucht die Cloud.** Der lokale Zugang liest nur: Er bietet keine
+  Bedienung und keine Einstellungen. Eine Änderung wird nur gesendet, solange
+  die Cloud antwortet, und anschließend zurückgelesen; schlägt das fehl,
+  meldet Home Assistant die Änderung als fehlgeschlagen und es wird nichts von
+  selbst erneut gesendet.
+- **Feste Abfrageintervalle.** Die Cloud wird je Wertegruppe in festen
+  Intervallen gelesen (ein Cloud-schonendes Profil verlangsamt sie), damit das
+  Anfragelimit der Cloud nicht erreicht wird. Nach wiederholten Fehlern oder
+  einem Limit pausiert die Integration von selbst (siehe
+  [Anfrageverhalten](request-behavior.md)). Der lokale Zugang hat sein eigenes
+  Intervall in den Optionen.
+- **Nur, was das Gateway meldet.** Entitäten gibt es für die Ressourcen, die
+  das Gateway meldet, mit den Grenzen und Werten, die es meldet. Eine Ressource,
+  die fehlt, nicht schreibbar ist oder mit einem Fehler antwortet, ergibt keine
+  Entität; neue Funktionen sind als erwartet, aber nicht getestet gekennzeichnet,
+  wo ich sie an keiner echten Anlage testen konnte.
+- **Wärmezähler fallen beim Abtauen kurz.** Die erzeugte Wärme einer
+  Wärmepumpe sinkt beim Abtauen kurz; siehe
+  [Energie-Dashboard](entities.md#energy-dashboard).
+- **Voraussetzungen.** Home Assistant 2026.5.0 oder neuer und für den
+  Cloud-Zugang ein Gateway, das mit dem Konto der Hersteller-App verbunden
+  ist.
+
 ## Troubleshooting
 
 ### The new controls are missing or look different

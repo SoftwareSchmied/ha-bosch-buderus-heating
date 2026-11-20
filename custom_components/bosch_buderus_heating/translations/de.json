@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Cloud-Zugänge",
+      "local_accesses": "Lokale Zugänge",
+      "last_successful_update": "Letzte erfolgreiche Aktualisierung"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Schaltpunkte eines Zeitprogramms setzen",

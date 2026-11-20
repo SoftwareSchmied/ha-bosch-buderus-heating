@@ -56,6 +56,7 @@ from .performance_history import (
     engine_for,
     source_text,
 )
+from .performance_note import little_heat_attributes
 from .writes import context_of
 
 if TYPE_CHECKING:
@@ -314,6 +315,8 @@ class PerformanceFactorSensor(
             "first_day",
             "derived_from",
             "reason",
+            "note",
+            "little_heat_below_kwh",
         }
     )
 
@@ -385,6 +388,8 @@ class PerformanceFactorSensor(
         attributes["derived_from"] = self._derived_from(result)
         if result.ratio is None:
             attributes["reason"] = unknown_reason(result.electricity)
+        else:
+            attributes.update(little_heat_attributes(self._period, result.heat))
         return attributes
 
     def _derived_from(self, result: PeriodResult) -> dict[str, str]:

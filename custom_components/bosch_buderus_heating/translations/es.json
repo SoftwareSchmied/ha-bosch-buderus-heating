@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Accesos a la nube",
+      "local_accesses": "Accesos locales",
+      "last_successful_update": "Última actualización correcta"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Establecer los puntos de conmutación de un programa horario",

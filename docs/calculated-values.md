@@ -296,6 +296,12 @@ defrosts, so the heat taken back from the water is netted.
   recordings the counters' long-term statistics are used where Home
   Assistant has them.
 - Below 0.1 kWh electricity or above 15 a factor is unknown.
+- A factor stays shown when its period holds very little heat, but its
+  attribute `note` is then `little_heat` and `little_heat_below_kwh` names
+  the limit: 5 kWh of heat for today and yesterday, 30 kWh for a month, a
+  year and since commissioning. Such a ratio rests on little data and says
+  little; nothing else changes, no entity is
+  added and the value is not hidden. The attributes are not recorded.
 
 Attributes: `period_start`, `period_end` (the last day), `heat_kwh`,
 `electricity_kwh`, `heat_source` and `electricity_source` (`counters`,

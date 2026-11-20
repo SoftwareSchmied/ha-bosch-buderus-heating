@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Dostępy do chmury",
+      "local_accesses": "Dostępy lokalne",
+      "last_successful_update": "Ostatnia udana aktualizacja"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Ustaw punkty przełączenia programu czasowego",

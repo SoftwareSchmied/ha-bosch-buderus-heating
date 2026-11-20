@@ -53,6 +53,12 @@ from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import PointTError, Resource, WriteNotConfirmed
 from .writes import WriteBusy
 
+# Writes already run one at a time per gateway under the write lock, and an
+# overlapping change is refused as busy instead of queued. Home Assistant's
+# per-platform limit would queue it behind the first change instead, so no
+# limit is set here.
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(
     hass: HomeAssistant,

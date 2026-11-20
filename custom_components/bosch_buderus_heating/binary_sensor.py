@@ -91,6 +91,10 @@ class BoschBuderusBinarySensorEntityDescription(BinarySensorEntityDescription):
     value_key: str | None = None
 
 
+# Read-only platform fed by coordinators: no limit on parallel updates.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,

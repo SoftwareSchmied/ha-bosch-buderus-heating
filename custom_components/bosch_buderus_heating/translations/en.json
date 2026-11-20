@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Cloud accesses",
+      "local_accesses": "Local accesses",
+      "last_successful_update": "Last successful update"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Set the switch points of a time program",

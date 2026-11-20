@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Rochtain scamall",
+      "local_accesses": "Rochtain áitiúil",
+      "last_successful_update": "An nuashonrú rathúil is déanaí"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Socraigh pointí lasctha clár ama",

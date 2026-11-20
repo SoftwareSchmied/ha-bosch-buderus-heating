@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Pristupi oblaku",
+      "local_accesses": "Lokalni pristupi",
+      "last_successful_update": "Posljednje uspješno ažuriranje"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Postavi točke uklapanja vremenskog programa",

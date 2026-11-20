@@ -34,6 +34,10 @@ class _NotificationEventData(EventExtraStoredData):
     last_event_timestamp: str | None = None
 
 
+# Read-only platform fed by coordinators: no limit on parallel updates.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,

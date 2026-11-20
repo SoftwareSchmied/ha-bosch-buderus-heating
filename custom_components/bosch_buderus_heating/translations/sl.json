@@ -4051,6 +4051,13 @@
       }
     }
   },
+  "system_health": {
+    "info": {
+      "cloud_accesses": "Dostopi do oblaka",
+      "local_accesses": "Lokalni dostopi",
+      "last_successful_update": "Zadnja uspešna posodobitev"
+    }
+  },
   "services": {
     "set_switch_points": {
       "name": "Nastavi preklopne točke časovnega programa",
