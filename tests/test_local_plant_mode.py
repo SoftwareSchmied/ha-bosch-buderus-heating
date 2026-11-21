@@ -239,9 +239,15 @@ async def test_the_same_entity_from_dormant_to_local_to_cloud(hass) -> None:
             await eventually(lambda: source_for(owner, GATEWAY) is not None)
             await eventually(lambda: not plant.local_retained)
             assert not runtime._retained
-            await eventually(lambda: native(owner, "sensor", SENSOR) is not None)
+            # The cloud's entity replaces the plant's one after the release; under
+            # load the plant's entity can still be the one found for a moment.
+            await eventually(
+                lambda: (
+                    (sensor := native(owner, "sensor", SENSOR)) is not None
+                    and sensor.coordinator is not plant
+                )
+            )
             assert native(owner, "sensor", SENSOR).entity_id == entity_id
-            assert native(owner, "sensor", SENSOR).coordinator is not plant
             unique_ids = [
                 item.unique_id
                 for item in er.async_entries_for_config_entry(
