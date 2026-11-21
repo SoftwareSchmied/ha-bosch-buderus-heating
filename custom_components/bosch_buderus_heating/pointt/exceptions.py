@@ -175,6 +175,15 @@ class ResourceNotAcceptable(ResourceError):
     """The resource or request form was not accepted."""
 
 
+class ResourcePreconditionRequired(ResourceError):
+    """The cloud refused the data of a path with HTTP 428 (precondition required).
+
+    The cloud answers this way when a condition on the account or gateway side
+    is not met, for example an incomplete cloud pairing. It is no property of
+    one path: the same answer comes for every path that has content.
+    """
+
+
 class ProtocolError(PointTError):
     """Base class for malformed server responses."""
 

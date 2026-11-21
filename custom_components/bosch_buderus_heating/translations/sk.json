@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Cloud neposkytuje dáta tejto brány",
+      "description": "Cloud odpovedá na požiadavky na dáta tejto brány chybou „Precondition Required“ (HTTP 428), preto neprichádzajú žiadne hodnoty. Spárovanie brány s cloudom sa zdá byť neúplné. Otvorte bránu v aplikácii MyBuderus alebo HomeCom, nastavte alebo potvrďte jej osobné heslo a ak to aplikácia ponúka, bránu odstráňte a pridajte znova. Integrácia sa pýta znova po stále dlhších pauzách (5, 15 a 30 minút, potom každú hodinu) a toto upozornenie sama odstráni, len čo začnú prichádzať dáta. Ak sa chcete opýtať hneď, načítajte integráciu znova."
+    },
     "setup_unfinished": {
       "title": "Nastavenie nie je dokončené",
       "description": "Záznam „{title}“ zatiaľ nemá žiadny prístup. Vyberte pri ňom **Konfigurovať** a potom „Nastaviť lokálny prístup“ (alebo pripojte cloudový prístup)."

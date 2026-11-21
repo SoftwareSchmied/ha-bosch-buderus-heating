@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Pilvi ei luovuta tämän yhdyskäytävän tietoja",
+      "description": "Pilvi vastaa tämän yhdyskäytävän tietopyyntöihin vastauksella ”Precondition Required” (HTTP 428), joten arvoja ei saada. Yhdyskäytävän pilviparitus näyttää olevan vaillinainen. Avaa yhdyskäytävä MyBuderus- tai HomeCom-sovelluksessa, aseta tai vahvista sen henkilökohtainen salasana ja poista yhdyskäytävä ja lisää se uudelleen, jos sovellus sen tarjoaa. Integraatio kysyy uudelleen kasvavien taukojen jälkeen (5, 15 ja 30 minuuttia, sen jälkeen tunnin välein) ja poistaa tämän ilmoituksen itse heti, kun tietoja saapuu. Voit kysyä heti uudelleen lataamalla integraation uudelleen."
+    },
     "setup_unfinished": {
       "title": "Asennus ei ole valmis",
       "description": "Merkinnällä ”{title}” ei ole vielä yhteyttä. Valitse sen kohdalla **Määritä** ja sen jälkeen ”Määritä paikallinen yhteys” (tai yhdistä pilviyhteys)."

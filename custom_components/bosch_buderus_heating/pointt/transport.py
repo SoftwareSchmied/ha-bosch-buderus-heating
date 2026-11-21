@@ -34,6 +34,7 @@ from .exceptions import (
     ResourceForbidden,
     ResourceNotAcceptable,
     ResourceNotFound,
+    ResourcePreconditionRequired,
     ServiceUnavailable,
     TransportError,
     UnexpectedHttpStatus,
@@ -366,7 +367,12 @@ class PointTTransport:
         except ServiceUnavailable:
             outcome = "service_unavailable"
             raise
-        except ResourceForbidden, ResourceNotFound, ResourceNotAcceptable:
+        except (
+            ResourceForbidden,
+            ResourceNotFound,
+            ResourceNotAcceptable,
+            ResourcePreconditionRequired,
+        ):
             outcome = "resource_error"
             raise
         except InvalidPayload:
@@ -411,6 +417,8 @@ class PointTTransport:
             raise ResourceNotFound(path, status)
         if status == 406:
             raise ResourceNotAcceptable(path, status)
+        if status == 428:
+            raise ResourcePreconditionRequired(path, status)
         if status == 429:
             raise RateLimited(parse_retry_after(headers.get("Retry-After"), now=time()))
         if status >= 500:

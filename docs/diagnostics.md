@@ -6,6 +6,10 @@ cloud requests.
 
 Schema 48 (0.9.2) adds, again without readings, names or identifiers:
 
+- `cloud_data_access`: for each gateway whose cloud data were refused or
+  partly refused, how the cloud answered and what the gateway list reports
+  about its passwords, as flags only. The schema number stays 48. See
+  [Cloud data access](#cloud-data-access).
 - `gateways[].calculated_values`: the calculated defrost detection of the
   gateway. `defrost_capable` says whether the gateway shows evidence of a
   heat pump that defrosts; `defrost` holds the state of the detection
@@ -1087,7 +1091,9 @@ device identifiers or radio keys. On other gateways it contains only
   paths as a matter of course (a TC100.2 about 35); that is
   `some_paths_forbidden`. `scope_or_permission_denied` means that the
   request as a whole, the zones or every read was refused: the sign-in may
-  lack the rights for this controller.
+  lack the rights for this controller. `precondition_required` means that
+  nothing was discovered and the cloud answered the data with HTTP 428 (see
+  [Cloud data access](#cloud-data-access)).
 
 `gateways[].discovery` also reports `rrc_evidence`, `forbidden_paths`,
 `access_reason` and `paths_not_read`, the number of scheduled paths that were
@@ -1406,6 +1412,39 @@ after an entity had been created and were not part of its declared options.
 The entity reports `unknown` instead of passing an invalid state to Home
 Assistant. The actual manufacturer value is deliberately excluded from logs
 and diagnostics.
+
+## Cloud data access
+
+`cloud_data_access` is a list at the top level of the report with one entry
+per gateway that has something to report: a refusal of its data with HTTP 428
+("precondition required"), failed bulk items, or password flags. Gateways of
+other kinds and gateways without anything to report are left out. The entries
+are numbered (`gateway`) by their order in the report, without the gateway ID.
+
+- `precondition`: `active` (the last answered request ended in a refusal),
+  `refusals_in_a_row` and `next_request_in_seconds`. After a refusal the
+  integration asks again after 5, 15 and 30 minutes and then once an hour;
+  an answer with data ends it, as does reloading the integration. A
+  repair notice stays as long as it is active. See
+  [the cloud returns no data for a gateway](setup.md#the-cloud-returns-no-data-for-a-gateway-http-428).
+- `bulk_item_errors`: `status_counts` (how many items of each HTTP status
+  failed, since the integration was loaded; routine refusals with 403, 404
+  and 406 are counted too) and `recent`, the latest ten failures, oldest
+  first. Each entry has `status`, `path` (a path template without
+  identifiers), `error` (the error class), `count` (how often the same
+  failure came again), `last_seen` and `details`. `details` holds only the
+  fields `code`, `description`, `details`, `errorId` and `message` of the
+  failed item, if it carried any. `code` and `errorId` are kept only as short
+  plain tokens; the text fields lose e-mail addresses, network addresses,
+  identifiers with digits and long opaque runs and are cut at 120
+  characters. Items with a routine refusal (403, 404, 406) appear in
+  `recent` only if they carried such fields. The same fields are written to
+  the debug log.
+- `gateway_list`: `user_password_set` and `gateway_password_set`, whether the
+  gateway list of the cloud reports the fields `userPassword` and
+  `gatewayPassword` as set (`true`, `false`, or `null` if the list does not
+  report the field or the gateway was not read from the list). Only this
+  flag is kept, never a value.
 
 ## iCom local access (beta)
 

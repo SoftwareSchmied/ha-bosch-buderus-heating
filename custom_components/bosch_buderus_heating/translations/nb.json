@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Skyen holder tilbake dataene fra denne gatewayen",
+      "description": "Skyen svarer på forespørslene om data fra denne gatewayen med «Precondition Required» (HTTP 428), så det kommer ingen verdier. Gatewayens skykobling ser ut til å være ufullstendig. Åpne gatewayen i appen MyBuderus eller HomeCom, angi eller bekreft det personlige passordet, og fjern gatewayen og legg den til på nytt hvis appen tilbyr det. Integrasjonen spør på nytt etter økende pauser (5, 15 og 30 minutter, deretter hver time) og fjerner dette varselet selv så snart det kommer data. Last integrasjonen på nytt for å spørre med en gang."
+    },
     "setup_unfinished": {
       "title": "Oppsettet er ikke fullført",
       "description": "Oppføringen «{title}» har ingen tilgang ennå. Velg **Konfigurer** på den og deretter «Sett opp lokal tilgang» (eller koble til en skytilgang)."

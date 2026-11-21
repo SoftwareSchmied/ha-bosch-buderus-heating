@@ -24,6 +24,7 @@ from .discovery_zones import (
 )
 from .holidays import HOLIDAY_RESOURCE_PATHS
 from .icom_profile import is_icom_gateway
+from .item_errors import ItemErrorLog
 from .legacy_holidays import (
     ICOM_FIELDS,
     ICOM_HOLIDAY_ROOT,
@@ -176,6 +177,9 @@ class DiscoveryDiagnostics:
     resource_limit_scope: str | None = None
     # A first discovery that showed its partial result while it ran.
     partial_publications: int = 0
+    # The failed bulk items; kept over a rediscovery (see reset), because a
+    # gateway that refuses every discovery is seen only through repeats.
+    item_errors: ItemErrorLog = field(default_factory=ItemErrorLog)
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
@@ -218,6 +222,29 @@ class DiscoveryDiagnostics:
         item = self.paths[result.path]
         item.bulk_result = _result_category(result)
         item.discovered = result.resource is not None
+        self.item_errors.record((result,))
+
+    def precondition_required(self) -> bool:
+        """Whether the cloud refused the data itself with 428 (#146).
+
+        True when no path was discovered, at least one answered 428 and the
+        other failures that are no routine refusal (403, 404, 406) are fewer
+        than the 428 ones: then a missing precondition explains the outcome,
+        not an outage.
+        """
+        if any(item.discovered for item in self.paths.values()):
+            return False
+        refused = other = 0
+        for item in self.paths.values():
+            if item.bulk_result == "http_428":
+                refused += 1
+            elif item.failed and (item.fallback_result or item.bulk_result) not in (
+                "http_403",
+                "http_404",
+                "http_406",
+            ):
+                other += 1
+        return refused > other
 
     def fallback_started(self, path: str, reason: str) -> None:
         """Record one logical individual read, excluding transport retries."""
@@ -339,6 +366,8 @@ class DiscoveryDiagnostics:
         nothing but refusals, or refused zones point to the scope or the
         rights of the account.
         """
+        if self.precondition_required():
+            return "precondition_required"
         if self.stop_reason == "http_403" or (
             forbidden
             and (
@@ -1089,11 +1118,14 @@ async def async_discover_resources(
             if resource is None:
                 schedule_direct(containers.refused(result.path, result.status, depth))
                 _LOGGER.debug(
-                    "Ignoring PointT discovery item %s: status=%s, error=%s (%s)",
+                    "Ignoring PointT discovery item %s: status=%s, error=%s (%s)%s",
                     resource_path_template(result.path),
                     result.status,
                     type(result.error).__name__ if result.error else "none",
                     result.error or "no parsed resource",
+                    f", details={dict(result.error_details)}"
+                    if result.error_details
+                    else "",
                 )
                 continue
             discovered[result.path] = resource

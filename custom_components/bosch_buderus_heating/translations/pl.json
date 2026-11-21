@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Chmura nie udostępnia danych tej bramy",
+      "description": "Chmura odpowiada na żądania danych tej bramy komunikatem „Precondition Required” (HTTP 428), dlatego nie napływają żadne wartości. Parowanie bramy z chmurą wygląda na niekompletne. Otwórz bramę w aplikacji MyBuderus lub HomeCom, ustaw lub potwierdź jej hasło osobiste i, jeśli aplikacja to oferuje, usuń bramę i dodaj ją ponownie. Integracja pyta ponownie po coraz dłuższych przerwach (5, 15 i 30 minut, potem co godzinę) i sama usuwa to powiadomienie, gdy tylko napłyną dane. Aby zapytać od razu, załaduj integrację ponownie."
+    },
     "setup_unfinished": {
       "title": "Konfiguracja nie została zakończona",
       "description": "Wpis „{title}” nie ma jeszcze żadnego dostępu. Wybierz przy nim **Konfiguruj**, a następnie „Skonfiguruj dostęp lokalny” (albo połącz dostęp przez chmurę)."

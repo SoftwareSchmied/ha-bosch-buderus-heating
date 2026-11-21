@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Le cloud ne fournit pas les données de cette passerelle",
+      "description": "Le cloud répond aux demandes de données de cette passerelle par « Precondition Required » (HTTP 428), si bien qu'aucune valeur n'arrive. L'appairage de la passerelle avec le cloud semble incomplet. Ouvrez la passerelle dans l'application MyBuderus ou HomeCom, définissez ou confirmez son mot de passe personnel et, si l'application le propose, supprimez la passerelle puis ajoutez-la de nouveau. L'intégration redemande après des pauses croissantes (5, 15 et 30 minutes, puis toutes les heures) et supprime cet avis d'elle-même dès que des données arrivent. Pour redemander tout de suite, rechargez l'intégration."
+    },
     "setup_unfinished": {
       "title": "Configuration non terminée",
       "description": "L'entrée « {title} » n'a pas encore d'accès. Sélectionnez **Configurer** sur celle-ci, puis « Configurer l'accès local » (ou connectez un accès cloud)."

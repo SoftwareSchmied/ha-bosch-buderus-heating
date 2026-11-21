@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "La nube no entrega los datos de esta pasarela",
+      "description": "La nube responde a las solicitudes de datos de esta pasarela con «Precondition Required» (HTTP 428), por lo que no llegan valores. El emparejamiento de la pasarela con la nube parece incompleto. Abre la pasarela en la aplicación MyBuderus o HomeCom, establece o confirma su contraseña personal y, si la aplicación lo ofrece, elimina la pasarela y vuelve a añadirla. La integración vuelve a preguntar tras pausas crecientes (5, 15 y 30 minutos, después cada hora) y elimina este aviso por sí sola en cuanto lleguen datos. Para preguntar de inmediato, recarga la integración."
+    },
     "setup_unfinished": {
       "title": "Configuración sin terminar",
       "description": "La entrada «{title}» aún no tiene ningún acceso. Selecciona **Configurar** en ella y después «Configurar el acceso local» (o conecta un acceso a la nube)."

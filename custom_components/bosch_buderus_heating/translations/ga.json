@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Ní thugann an scamall sonraí an gheata seo",
+      "description": "Freagraíonn an scamall ar iarratais ar shonraí an gheata seo le „Precondition Required“ (HTTP 428), mar sin ní thagann aon luachanna. Is cosúil go bhfuil péireáil scamall an gheata neamhiomlán. Oscail an geata san aip MyBuderus nó HomeCom, socraigh nó deimhnigh a phasfhocal pearsanta agus, má thairgeann an aip é, bain an geata agus cuir arís é. Fiafraíonn an comhtháthú arís tar éis sosanna atá ag fás (5, 15 agus 30 nóiméad, ansin gach uair an chloig) agus bainfidh sé an fógra seo de féin chomh luath agus a thagann sonraí. Chun fiafraí arís láithreach, athluchtaigh an comhtháthú."
+    },
     "setup_unfinished": {
       "title": "Níl an socrú críochnaithe",
       "description": "Níl aon rochtain ag an iontráil “{title}” go fóill. Roghnaigh **Cumraigh** uirthi agus ansin “Socraigh rochtain áitiúil” (nó ceangail rochtain néil)."
