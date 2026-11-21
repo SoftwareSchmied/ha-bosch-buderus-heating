@@ -168,7 +168,7 @@
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
       "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
       "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
-      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_confirm_required": "Kytke tämä kytkin päälle, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
       "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa. Sama virhe tulee myös silloin, kun Home Assistant ei ole samassa verkossa (aliverkossa) kuin yhdyskäytävä. Hae tunnus silloin tietokoneelta, joka on yhdyskäytävän verkossa, ja anna se kohdassa ”Käytä olemassa olevaa tunnusta”.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
@@ -177,7 +177,7 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
-      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
+      "local_certificate_unconfirmed": "Vahvista varmenne kytkemällä kytkin päälle. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Poista loma",
-        "description": "**{holiday}**\n\nPoistetaanko tämä loma kokonaan? Se poistetaan myös lämmitysjärjestelmästä ja kalenterista. Jätä vahvistus valitsematta palataksesi poistamatta.",
+        "description": "**{holiday}**\n\nPoistetaanko tämä loma kokonaan? Se poistetaan myös lämmitysjärjestelmästä ja kalenterista. Jätä vahvistuskytkin pois päältä palataksesi poistamatta.",
         "data": {
           "confirm_delete": "Poista tämä loma kokonaan"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Poista yhteys",
-        "description": "Tunnistetiedot poistetaan Home Assistantista. Tunnus jää yhdyskäytävään, ellet peru sitä alla olevalla valintaruudulla. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys; ilman käytettävissä olevaa yhteyttä ne eivät näytä ajantasaisia arvoja. Jätä ylin valintaruutu tyhjäksi palataksesi ilman muutoksia.",
+        "description": "Tunnistetiedot poistetaan Home Assistantista. Tunnus jää yhdyskäytävään, ellet peru sitä alla olevalla kytkimellä. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys; ilman käytettävissä olevaa yhteyttä ne eivät näytä ajantasaisia arvoja. Jätä ylin kytkin pois päältä palataksesi ilman muutoksia.",
         "data": {
           "confirm": "Poista tämä yhteys",
           "revoke": "Peruuta ensin tämän käyttöoikeuden tunnus yhdyskäytävässä"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Peru tunnus",
-        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä valintaruutu tyhjäksi palataksesi perumatta. {use} Valitse myös toinen valintaruutu vahvistaaksesi tämän.",
+        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä kytkin pois päältä palataksesi perumatta. {use} Kytke myös toinen kytkin päälle vahvistaaksesi tämän.",
         "data": {
           "confirm": "Peru tämä tunnus yhdyskäytävästä",
           "confirm_end": "Tätä tunnusta käyttävä paikallinen yhteys päättyy"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
       "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
       "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
-      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_confirm_required": "Kytke tämä kytkin päälle, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
       "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa. Sama virhe tulee myös silloin, kun Home Assistant ei ole samassa verkossa (aliverkossa) kuin yhdyskäytävä. Hae tunnus silloin tietokoneelta, joka on yhdyskäytävän verkossa, ja anna se kohdassa ”Käytä olemassa olevaa tunnusta”.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
       "local_certificate_changed": "Varmennetta ei voitu vahvistaa tai se on muuttunut. Tarkista yhdyskäytävän varmenne uudelleen ennen jatkamista.",
-      "local_certificate_unconfirmed": "Vahvista varmenne valitsemalla ruutu. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
+      "local_certificate_unconfirmed": "Vahvista varmenne kytkemällä kytkin päälle. Jos se ei kuulu yhdyskäytävääsi, sulje valintaikkuna; mitään ei lähetetä.",
       "local_token_rejected": "Yhdyskäytävä hylkäsi tämän tunnuksen. Tarkista se tai hylkää tämä yritys tarkoituksella käyttääksesi toista.",
       "local_resource_forbidden": "Yhdyskäytävä esti pääsyn tarvittavaan resurssiin. Pelkkä tunnus ei todista lukuoikeutta.",
       "local_missing_resource": "Yhdyskäytävä ei tarjoa tarvittavaa asennusresurssia.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Yhdyskäytävän kirjautumispalvelu hylkäsi pyynnön. Mitään ei muutettu.",
       "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
       "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
-      "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Valitse myös toinen valintaruutu tai jätä ensimmäinen tyhjäksi palataksesi. Mitään ei lähetetty.",
-      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu.",
+      "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Kytke myös toinen kytkin päälle tai jätä ensimmäinen pois päältä palataksesi. Mitään ei lähetetty.",
+      "connection_remove_unconfirmed": "Kytke myös kytkin ”Poista tämä yhteys” päälle: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu.",
       "switch_program_value": "Anna lämpötila {minimum}–{maximum} °C {step} °C:n portain.",
       "switch_program_day_emptied": "Päivä, jolla on kytkentäpisteitä, säilyttää vähintään yhden; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
       "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Ulkolämpötila"
       },
       "supply_temperature": {
-        "name": "Järjestelmän menolämpötila"
+        "name": "Järjestelmän menolämpötila (T0)"
       },
       "return_temperature": {
         "name": "Paluulämpötila"

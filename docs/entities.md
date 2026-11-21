@@ -394,7 +394,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Auxiliary-heater operation mode | Diagnostic sensor (disabled) and select | `/heatSources/additionalHeater/operationMode` | Yes | Yes | 5 min; staggered read-back after change |
 | Primary auxiliary-heater type (disabled) | Diagnostic sensor | `/heatSources/additionalHeater/primary/type` | No | No | startup only |
 | Emergency mode | Sensor | `/heatSources/currentEmergencyMode` | No | No | 60 s |
-| System supply temperature (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
+| System supply temperature (T0) (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
 | Heat source active (before 0.9.1 *Burner status*; also exists on boilers) | Sensor; on a heat pump created disabled from 0.9.0 (see [default activation](#maturity-and-default-activation)) | `/heatSources/flameStatus` | No | No | 60 s |
 | Return temperature | Sensor | `/heatSources/returnTemperature` | No | No | 60 s |
@@ -478,7 +478,7 @@ about 52 °C, and in heating it reads a few tenths of a kelvin below TC1. The
 controller's Info menu shows it as *Vorlauftemperatur*. Up to 0.9.0 the
 entity was called *Supply temperature* and, under the heat pump device, read
 like the heat pump's flow; since 0.9.1 it is *System supply temperature*
-(*Vorlauftemperatur Anlage*). Its entity ID, unique ID and history stay; a
+(*Vorlauftemperatur Anlage*), with its sensor code *(T0)* added in 0.9.3. Its entity ID, unique ID and history stay; a
 name you set yourself stays as well. The supply temperature of a heating
 circuit (`/heatingCircuits/{hc}/actualSupplyTemperature`) keeps its name.
 
@@ -1007,7 +1007,7 @@ the statistics start with the update, earlier values stay in the history
 only. The compressor start delay is disabled. Eleven signals that are a
 second source of a reading another entity already shows are named after it
 with "(signal)", for example *Compressor speed (signal)*, *Return temperature
-(TC0, signal)* or, from 0.9.0, *Cylinder temperature (signal)* and *Outdoor
+(TC0, signal)* or, from 0.9.0, *Cylinder temperature (TW1, signal)* and *Outdoor
 temperature (signal)*; they are disabled diagnostic entities with long-term
 statistics where their unit is one of a measurement. The relay of the hot
 water 3-way valve shows the valve position like VW1 (*Heating* or *Hot
@@ -1090,10 +1090,10 @@ entity without a name of your own shows the new name:
   controller (for example *Kompressorlaufzeit Heizen*), and *HK1* for heating
   circuit 1 in the names of signals (*Volumenstrom HK1 (PC1)*).
 - English: *Drip pan temperature (TA4)* (before *Drain pan temperature*),
-  like the *Drip pan heater*; *Flow rate HC1 (PC1)* and *Heating circuit pump
+  like the *Drip pan heater (EA0)*; *Flow rate HC1 (PC1)* and *Heating circuit pump
   HC1 (PC1)* (before *Heating circuit 1 …*); the hybrid manager's *4-way
   valve* (before *Four-way valve*).
-- *Primary flow rate* / *Volumenstrom primär* (before *Volume flow* /
+- *Primary flow rate (PC0)* / *Volumenstrom primär (PC0)* (before *Volume flow* /
   *Volumenstrom*) for the flow of the heat source (`…/pumpVolumeFlow`), which
   its second source *Primary flow rate (PC0, signal)* repeats.
 - The season signal `SC.SeasonOpt.Mode` is *Current heating/cooling status
@@ -1218,7 +1218,7 @@ manufacturer means by it is not documented.
 Checked against the recorded history of one heat pump (11 days with 14
 defrosts, 5 hot water charges and one controller restart): the *Electric
 auxiliary heater active (display)* signal was on exactly once, for one minute
-at the end of a defrost, at the same time as *Electric heater stage 3* and
+at the end of a defrost, at the same time as *Auxiliary heater stage 3* and
 followed within two minutes by the electric auxiliary heater energy counter
 rising from 0 to 0.07 kWh; that confirms its name. The *Hot water electric heater* signal
 stayed off during that minute and during every hot water charge. The
@@ -1283,6 +1283,39 @@ the values their gateway declares.
 Compare a few values with the heat pump display before relying on them; the
 meaning of the technical readings follows the official local API
 documentation.
+
+### Sensor codes in entity names
+
+From 0.9.3 the names of the readings that have a sensor code on the controller
+display end with that code in brackets, in every language: *Description
+(Code)*. The German names stay close to the wording of the display (*Zuheizer
+Stufe 1*, *Leistung Zuheizer*, *Kompressor-Istdrehzahl*). Only the names
+changed; entity IDs and unique IDs are the same as before, and a name you set
+yourself stays.
+
+| Code | Reading | Name (English) |
+| --- | --- | --- |
+| T0 | System supply, behind a buffer cylinder the heating side's flow (`/heatSources/actualSupplyTemperature`) | System supply temperature (T0) |
+| TC1 | Flow of the heat pump itself | Primary supply temperature (TC1) |
+| TC3 | Condenser outlet | Condenser outlet temperature (TC3) |
+| TL2 | Air intake | Air intake temperature (TL2) |
+| TW1 | Hot water cylinder sensor (local reading and its signal) | Cylinder temperature (TW1), Cylinder temperature (TW1, signal) |
+| PC0 | Primary heating pump and its flow | Primary flow rate (PC0), Primary heating pump (PC0) |
+| EA0 | Drip pan heater | Drip pan heater (EA0) |
+
+The entity ID of the primary supply temperature still ends in
+`…additional_heater_flow_temperature` although the reading is TC1, the flow of
+the heat pump; the entity ID of the air intake temperature ends in
+`…evaporator_temperature` although the reading is TL2. The IDs stay for
+compatibility. The liquid line temperatures keep the codes TR3 and TR4.
+
+Not every plant measures the same with the same path, so a few names have no
+code: the return of the heat source (`/heatSources/returnTemperature`, TC0 on
+a heat pump but another sensor on a boiler) and the hot water temperature of
+the cloud (the cylinder on most plants, but the outlet of a fresh water
+station on others). The auxiliary heater stages are named *Auxiliary heater
+stage 1* to *4* (*Zuheizer Stufe 1* to *4*) and the electric power
+*Auxiliary heater power* (*Leistung Zuheizer*), as on the display.
 
 ## Using the heat pump hydraulic card
 

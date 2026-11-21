@@ -168,7 +168,7 @@
       "local_invalid_token": "Tokenets format er ugyldigt. Kopiér det komplette token uden mellemrum.",
       "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
       "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
-      "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
+      "local_unlock_confirm_required": "Slå kontakten til, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
       "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter. Den samme fejl vises også, hvis Home Assistant ikke er i samme netværk (undernet) som gatewayen. Hent i så fald tokenet på en computer i gatewayens netværk, og indtast det under “Brug et eksisterende token”.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
@@ -177,7 +177,7 @@
       "local_timeout": "Den lokale gateway svarede ikke i tide. Kontrollér forbindelsen, og prøv igen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gateway. Kontrollér dens adresse og netværksforbindelsen.",
       "local_certificate_changed": "Certifikatet kunne ikke bekræftes eller er ændret. Kontrollér gatewayens certifikat igen, før du fortsætter.",
-      "local_certificate_unconfirmed": "Sæt flueben for at bekræfte certifikatet. Hvis det ikke hører til din gateway, så luk dialogen; der sendes intet.",
+      "local_certificate_unconfirmed": "Slå kontakten til for at bekræfte certifikatet. Hvis det ikke hører til din gateway, så luk dialogen; der sendes intet.",
       "local_token_rejected": "Gatewayen afviste dette token. Kontrollér det, eller kassér bevidst dette forsøg for at bruge et andet.",
       "local_resource_forbidden": "Gatewayen nægtede adgang til en nødvendig ressource. Et token alene beviser ikke læseadgang.",
       "local_missing_resource": "Gatewayen leverer ikke en ressource, der er nødvendig for opsætningen.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Slet ferie",
-        "description": "**{holiday}**\n\nSkal denne ferie slettes helt? Den fjernes også fra varmeanlægget og kalenderen. Lad bekræftelsen være umarkeret for at gå tilbage uden at slette.",
+        "description": "**{holiday}**\n\nSkal denne ferie slettes helt? Den fjernes også fra varmeanlægget og kalenderen. Lad bekræftelseskontakten være slået fra for at gå tilbage uden at slette.",
         "data": {
           "confirm_delete": "Slet denne ferie helt"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Fjern adgang",
-        "description": "Loginoplysningerne fjernes fra Home Assistant. Tokenet bliver på gatewayen, medmindre du tilbagekalder det med feltet nedenfor. Anlæg og entiteter bevares, også selvom dette er den sidste adgang; uden en tilgængelig adgang viser de ingen aktuelle værdier. Lad det øverste felt være uafkrydset for at gå tilbage uden ændringer.",
+        "description": "Loginoplysningerne fjernes fra Home Assistant. Tokenet bliver på gatewayen, medmindre du tilbagekalder det med kontakten nedenfor. Anlæg og entiteter bevares, også selvom dette er den sidste adgang; uden en tilgængelig adgang viser de ingen aktuelle værdier. Lad den øverste kontakt være slået fra for at gå tilbage uden ændringer.",
         "data": {
           "confirm": "Fjern denne adgang",
           "revoke": "Tilbagekald først denne adgangs token på gatewayen"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Tilbagekald token",
-        "description": "Tilbagekald tokenet fra denne integration, oprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter det permanent. Hvis det er det token, denne adgang bruger, ophører den lokale adgang: adgangen slås fra og kræver et nyt login med enhedsmærkaten. Listen læses igen lige før, og anmodningen sendes kun én gang. Lad feltet være uafkrydset for at gå tilbage uden tilbagekaldelse. {use} Sæt også kryds i det andet felt for at bekræfte det.",
+        "description": "Tilbagekald tokenet fra denne integration, oprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter det permanent. Hvis det er det token, denne adgang bruger, ophører den lokale adgang: adgangen slås fra og kræver et nyt login med enhedsmærkaten. Listen læses igen lige før, og anmodningen sendes kun én gang. Lad kontakten være slået fra for at gå tilbage uden tilbagekaldelse. {use} Slå også den anden kontakt til for at bekræfte det.",
         "data": {
           "confirm": "Tilbagekald dette token på gatewayen",
           "confirm_end": "En lokal adgang, der bruger dette token, ophører"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Tokenets format er ugyldigt. Kopiér det komplette token uden mellemrum.",
       "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
       "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
-      "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
+      "local_unlock_confirm_required": "Slå kontakten til, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
       "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter. Den samme fejl vises også, hvis Home Assistant ikke er i samme netværk (undernet) som gatewayen. Hent i så fald tokenet på en computer i gatewayens netværk, og indtast det under “Brug et eksisterende token”.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Den lokale gateway svarede ikke i tide. Kontrollér forbindelsen, og prøv igen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gateway. Kontrollér dens adresse og netværksforbindelsen.",
       "local_certificate_changed": "Certifikatet kunne ikke bekræftes eller er ændret. Kontrollér gatewayens certifikat igen, før du fortsætter.",
-      "local_certificate_unconfirmed": "Sæt flueben for at bekræfte certifikatet. Hvis det ikke hører til din gateway, så luk dialogen; der sendes intet.",
+      "local_certificate_unconfirmed": "Slå kontakten til for at bekræfte certifikatet. Hvis det ikke hører til din gateway, så luk dialogen; der sendes intet.",
       "local_token_rejected": "Gatewayen afviste dette token. Kontrollér det, eller kassér bevidst dette forsøg for at bruge et andet.",
       "local_resource_forbidden": "Gatewayen nægtede adgang til en nødvendig ressource. Et token alene beviser ikke læseadgang.",
       "local_missing_resource": "Gatewayen leverer ikke en ressource, der er nødvendig for opsætningen.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Gatewayens login-tjeneste afviste anmodningen. Intet blev ændret.",
       "local_tokens_unsupported": "Denne gateway tilbyder ingen tokenliste. Intet blev ændret.",
       "local_tokens_invalid": "Gatewayens tokenliste kunne ikke kontrolleres (uventet eller for stort svar). Intet blev ændret.",
-      "local_token_end_unconfirmed": "Tilbagekaldelse af dette token kan afslutte en lokal adgang. Sæt også kryds i det andet felt, eller lad det første være uafkrydset for at gå tilbage. Intet blev sendt.",
-      "connection_remove_unconfirmed": "Sæt også kryds i „Fjern denne adgang“: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet.",
+      "local_token_end_unconfirmed": "Tilbagekaldelse af dette token kan afslutte en lokal adgang. Slå også den anden kontakt til, eller lad den første være slået fra for at gå tilbage. Intet blev sendt.",
+      "connection_remove_unconfirmed": "Slå også kontakten „Fjern denne adgang“ til: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet.",
       "switch_program_value": "Indtast en temperatur fra {minimum} til {maximum} °C i trin på {step} °C.",
       "switch_program_day_emptied": "En dag med koblingspunkter beholder mindst ét; hvad en tom dag betyder for regulatoren, er ikke kendt.",
       "rrc_point_limit": "Denne dag har allerede det højeste antal koblingspunkter, appen tillader ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Udetemperatur"
       },
       "supply_temperature": {
-        "name": "Anlæggets fremløbstemperatur"
+        "name": "Anlæggets fremløbstemperatur (T0)"
       },
       "return_temperature": {
         "name": "Returtemperatur"

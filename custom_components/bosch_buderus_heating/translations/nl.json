@@ -168,7 +168,7 @@
       "local_invalid_token": "Het tokenformaat is ongeldig. Kopieer het volledige token zonder spaties.",
       "local_invalid_credentials": "De gateway heeft Login en Pass geweigerd. Controleer beide op het label van de gateway en voer ze opnieuw in.",
       "local_invalid_label_format": "Login of Pass bevat tekens die een apparaatlabel niet heeft, bijvoorbeeld een spatie in de waarde. Er is niets naar de gateway gestuurd. Controleer de invoer en voer die opnieuw in.",
-      "local_unlock_confirm_required": "Vink dit vakje aan zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
+      "local_unlock_confirm_required": "Schakel deze schakelaar in zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
       "local_unlock_required": "De gateway heeft de lokale aanmelding niet vrijgegeven, of de vijf minuten na de vrijgave zijn verstreken. Druk de Wi-Fi- en de draadloosknop samen 1 seconde in, wacht op het blauwe signaal en probeer het binnen vijf minuten opnieuw. Dezelfde fout verschijnt ook als Home Assistant niet in hetzelfde netwerk (subnet) staat als de gateway. Haal het token dan op via een computer in het netwerk van de gateway en voer het in onder “Een bestaand token gebruiken”.",
       "local_token_database_full": "De tokendatabase van de gateway is vol. Bekijk de bestaande tokens voordat je een nieuw token aanmaakt. Er zijn geen tokens verwijderd.",
       "local_rate_limited": "De gateway heeft om een pauze gevraagd. Wacht tot de getoonde tijd is verstreken.",
@@ -177,7 +177,7 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
-      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+      "local_certificate_unconfirmed": "Schakel de schakelaar in om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Vakantie verwijderen",
-        "description": "**{holiday}**\n\nDeze vakantie volledig verwijderen? Ze wordt ook uit de verwarmingsinstallatie en de agenda verwijderd. Laat de bevestiging uitgeschakeld om terug te keren zonder te verwijderen.",
+        "description": "**{holiday}**\n\nDeze vakantie volledig verwijderen? Ze wordt ook uit de verwarmingsinstallatie en de agenda verwijderd. Laat de bevestigingsschakelaar uitgeschakeld om terug te keren zonder te verwijderen.",
         "data": {
           "confirm_delete": "Deze vakantie volledig verwijderen"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Toegang verwijderen",
-        "description": "De inloggegevens worden uit Home Assistant verwijderd. Het token blijft op de gateway staan, tenzij je het intrekt met het vakje hieronder. Installaties en entiteiten blijven behouden, ook als dit de laatste toegang is; zonder beschikbare toegang tonen ze geen actuele waarden. Laat het bovenste vakje uitgevinkt om zonder wijzigingen terug te gaan.",
+        "description": "De inloggegevens worden uit Home Assistant verwijderd. Het token blijft op de gateway staan, tenzij je het intrekt met de schakelaar hieronder. Installaties en entiteiten blijven behouden, ook als dit de laatste toegang is; zonder beschikbare toegang tonen ze geen actuele waarden. Laat de bovenste schakelaar uitgeschakeld om zonder wijzigingen terug te gaan.",
         "data": {
           "confirm": "Deze toegang verwijderen",
           "revoke": "Eerst het token van deze toegang op de gateway intrekken"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Token intrekken",
-        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd. Laat het vakje uitgevinkt om terug te gaan zonder in te trekken. {use} Vink ook het tweede vakje aan om dit te bevestigen.",
+        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd. Laat de schakelaar uitgeschakeld om terug te gaan zonder in te trekken. {use} Schakel ook de tweede schakelaar in om dit te bevestigen.",
         "data": {
           "confirm": "Dit token op de gateway intrekken",
           "confirm_end": "Een lokale toegang die dit token gebruikt, eindigt"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Het tokenformaat is ongeldig. Kopieer het volledige token zonder spaties.",
       "local_invalid_credentials": "De gateway heeft Login en Pass geweigerd. Controleer beide op het label van de gateway en voer ze opnieuw in.",
       "local_invalid_label_format": "Login of Pass bevat tekens die een apparaatlabel niet heeft, bijvoorbeeld een spatie in de waarde. Er is niets naar de gateway gestuurd. Controleer de invoer en voer die opnieuw in.",
-      "local_unlock_confirm_required": "Vink dit vakje aan zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
+      "local_unlock_confirm_required": "Schakel deze schakelaar in zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
       "local_unlock_required": "De gateway heeft de lokale aanmelding niet vrijgegeven, of de vijf minuten na de vrijgave zijn verstreken. Druk de Wi-Fi- en de draadloosknop samen 1 seconde in, wacht op het blauwe signaal en probeer het binnen vijf minuten opnieuw. Dezelfde fout verschijnt ook als Home Assistant niet in hetzelfde netwerk (subnet) staat als de gateway. Haal het token dan op via een computer in het netwerk van de gateway en voer het in onder “Een bestaand token gebruiken”.",
       "local_token_database_full": "De tokendatabase van de gateway is vol. Bekijk de bestaande tokens voordat je een nieuw token aanmaakt. Er zijn geen tokens verwijderd.",
       "local_rate_limited": "De gateway heeft om een pauze gevraagd. Wacht tot de getoonde tijd is verstreken.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
       "local_certificate_changed": "Het certificaat kon niet worden bevestigd of is gewijzigd. Controleer het certificaat van de gateway opnieuw voordat je verdergaat.",
-      "local_certificate_unconfirmed": "Vink het vakje aan om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
+      "local_certificate_unconfirmed": "Schakel de schakelaar in om het certificaat te bevestigen. Hoort het niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
       "local_token_rejected": "De gateway heeft dit token geweigerd. Controleer het token of verwerp deze poging bewust om een ander token te gebruiken.",
       "local_resource_forbidden": "De gateway heeft de toegang tot een vereiste bron geweigerd. Een token alleen bewijst geen leestoegang.",
       "local_missing_resource": "De gateway biedt een vereiste configuratiebron niet aan.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "De aanmeldservice van de gateway heeft het verzoek geweigerd. Er is niets gewijzigd.",
       "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
       "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd.",
-      "local_token_end_unconfirmed": "Het intrekken van dit token kan een lokale toegang beëindigen. Vink ook het tweede vakje aan, of laat het eerste uitgevinkt om terug te gaan. Er is niets verstuurd.",
-      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd.",
+      "local_token_end_unconfirmed": "Het intrekken van dit token kan een lokale toegang beëindigen. Schakel ook de tweede schakelaar in, of laat de eerste uitgeschakeld om terug te gaan. Er is niets verstuurd.",
+      "connection_remove_unconfirmed": "Schakel ook de schakelaar „Deze toegang verwijderen” in: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd.",
       "switch_program_value": "Voer een temperatuur in van {minimum} tot {maximum} °C in stappen van {step} °C.",
       "switch_program_day_emptied": "Een dag met schakelpunten behoudt er minstens één; wat een lege dag voor de regelaar betekent, is niet bekend.",
       "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Buitentemperatuur"
       },
       "supply_temperature": {
-        "name": "Aanvoertemperatuur installatie"
+        "name": "Aanvoertemperatuur installatie (T0)"
       },
       "return_temperature": {
         "name": "Retourtemperatuur"

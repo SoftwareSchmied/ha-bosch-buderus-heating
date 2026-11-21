@@ -16,7 +16,7 @@ The form saves directly without an additional action menu.
 For an existing holiday, the red **Delete holiday period completely** button
 at the bottom of the form
 opens a confirmation with its saved name and dates. Opening the confirmation
-does not save the current draft. Leaving the confirmation unchecked returns
+does not save the current draft. Leaving the confirmation switch off returns
 to editing with unsaved inputs intact. Deletion requires explicit confirmation.
 
 Selecting an existing holiday opens the edit form directly. It shows the
@@ -182,7 +182,7 @@ Check the manufacturer app before retrying a request whose result is unknown.
 3. Check the saved name and dates in the confirmation. With multiple gateways,
    the installation is shown too.
 4. Select **Delete this holiday completely** and submit. Leaving the
-   confirmation unchecked returns directly to editing, preserving unsaved
+   confirmation switch off returns directly to editing, preserving unsaved
    inputs.
 
 Deletion removes the period from the heating system and the calendar. The

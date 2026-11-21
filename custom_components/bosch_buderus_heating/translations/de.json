@@ -168,7 +168,7 @@
       "local_invalid_token": "Das Tokenformat ist ungültig. Kopiere den vollständigen Token ohne Leerzeichen.",
       "local_invalid_credentials": "Das Gateway hat Login und Pass abgelehnt. Prüfe beide auf dem Gateway-Aufkleber und gib sie erneut ein.",
       "local_invalid_label_format": "Login oder Pass enthält Zeichen, die ein Geräteaufkleber nicht hat, zum Beispiel ein Leerzeichen im Wert. An das Gateway wurde nichts gesendet. Prüfe die Eingabe und gib sie erneut ein.",
-      "local_unlock_confirm_required": "Setze dieses Häkchen, sobald du die lokale Anmeldung am Gateway freigegeben und das blaue Signal gesehen hast.",
+      "local_unlock_confirm_required": "Schalte diesen Schalter ein, sobald du die lokale Anmeldung am Gateway freigegeben und das blaue Signal gesehen hast.",
       "local_unlock_required": "Das Gateway hat die lokale Anmeldung nicht freigegeben, oder die fünf Minuten nach der Freigabe sind abgelaufen. Drücke die WLAN- und die Wireless-Taste gleichzeitig 1 Sekunde lang, warte auf das blaue Signal und versuche es innerhalb von fünf Minuten erneut. Derselbe Fehler erscheint auch, wenn Home Assistant nicht im selben Netz (Subnetz) wie das Gateway steht. Hole den Token dann auf einem Rechner im Netz des Gateways und gib ihn unter „Vorhandenen Token verwenden“ ein.",
       "local_token_database_full": "Die Token-Datenbank des Gateways ist voll. Prüfe die vorhandenen Tokens, bevor du einen weiteren anlegst. Es wurde kein Token gelöscht.",
       "local_rate_limited": "Das Gateway verlangt eine Pause. Warte, bis die angezeigte Frist abgelaufen ist.",
@@ -177,7 +177,7 @@
       "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
       "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
       "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
-      "local_certificate_unconfirmed": "Setze das Häkchen, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
+      "local_certificate_unconfirmed": "Schalte den Schalter ein, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
       "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
       "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
       "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Urlaubszeit löschen",
-        "description": "**{holiday}**\n\nMöchtest du diesen Urlaub vollständig löschen? Er wird auch aus der Heizungsanlage und dem Kalender entfernt. Lasse die Bestätigung frei, um ohne Löschen zurückzukehren.",
+        "description": "**{holiday}**\n\nMöchtest du diesen Urlaub vollständig löschen? Er wird auch aus der Heizungsanlage und dem Kalender entfernt. Lasse den Bestätigungsschalter aus, um ohne Löschen zurückzukehren.",
         "data": {
           "confirm_delete": "Diese Urlaubszeit vollständig löschen"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Zugang entfernen",
-        "description": "Die Zugangsdaten werden aus Home Assistant entfernt. Der Token bleibt auf dem Gateway, außer du widerrufst ihn mit dem Häkchen unten. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist; ohne verfügbaren Zugang zeigen sie keine aktuellen Werte. Lass das obere Häkchen frei, um ohne Änderung zurückzukehren.",
+        "description": "Die Zugangsdaten werden aus Home Assistant entfernt. Der Token bleibt auf dem Gateway, außer du widerrufst ihn mit dem Schalter unten. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist; ohne verfügbaren Zugang zeigen sie keine aktuellen Werte. Lass den oberen Schalter aus, um ohne Änderung zurückzukehren.",
         "data": {
           "confirm": "Diesen Zugang entfernen",
           "revoke": "Vorher den Token dieses Zugangs auf dem Gateway widerrufen"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Token widerrufen",
-        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet. Lass das Häkchen frei, um ohne Widerruf zurückzukehren. {use} Setze auch das zweite Häkchen, um das zu bestätigen.",
+        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet. Lass den Schalter aus, um ohne Widerruf zurückzukehren. {use} Schalte auch den zweiten Schalter ein, um das zu bestätigen.",
         "data": {
           "confirm": "Diesen Token auf dem Gateway widerrufen",
           "confirm_end": "Ein lokaler Zugang, der diesen Token nutzt, endet"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Das Tokenformat ist ungültig. Kopiere den vollständigen Token ohne Leerzeichen.",
       "local_invalid_credentials": "Das Gateway hat Login und Pass abgelehnt. Prüfe beide auf dem Gateway-Aufkleber und gib sie erneut ein.",
       "local_invalid_label_format": "Login oder Pass enthält Zeichen, die ein Geräteaufkleber nicht hat, zum Beispiel ein Leerzeichen im Wert. An das Gateway wurde nichts gesendet. Prüfe die Eingabe und gib sie erneut ein.",
-      "local_unlock_confirm_required": "Setze dieses Häkchen, sobald du die lokale Anmeldung am Gateway freigegeben und das blaue Signal gesehen hast.",
+      "local_unlock_confirm_required": "Schalte diesen Schalter ein, sobald du die lokale Anmeldung am Gateway freigegeben und das blaue Signal gesehen hast.",
       "local_unlock_required": "Das Gateway hat die lokale Anmeldung nicht freigegeben, oder die fünf Minuten nach der Freigabe sind abgelaufen. Drücke die WLAN- und die Wireless-Taste gleichzeitig 1 Sekunde lang, warte auf das blaue Signal und versuche es innerhalb von fünf Minuten erneut. Derselbe Fehler erscheint auch, wenn Home Assistant nicht im selben Netz (Subnetz) wie das Gateway steht. Hole den Token dann auf einem Rechner im Netz des Gateways und gib ihn unter „Vorhandenen Token verwenden“ ein.",
       "local_token_database_full": "Die Token-Datenbank des Gateways ist voll. Prüfe die vorhandenen Tokens, bevor du einen weiteren anlegst. Es wurde kein Token gelöscht.",
       "local_rate_limited": "Das Gateway verlangt eine Pause. Warte, bis die angezeigte Frist abgelaufen ist.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
       "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
       "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
-      "local_certificate_unconfirmed": "Setze das Häkchen, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
+      "local_certificate_unconfirmed": "Schalte den Schalter ein, um das Zertifikat zu bestätigen. Gehört es nicht zu deinem Gateway, schließe den Dialog; es wird nichts gesendet.",
       "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
       "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
       "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Es wurde nichts geändert.",
       "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
       "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert.",
-      "local_token_end_unconfirmed": "Der Widerruf dieses Tokens kann einen lokalen Zugang beenden. Setze auch das zweite Häkchen oder lass das erste frei, um zurückzukehren. Es wurde nichts gesendet.",
-      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt.",
+      "local_token_end_unconfirmed": "Der Widerruf dieses Tokens kann einen lokalen Zugang beenden. Schalte auch den zweiten Schalter ein oder lass den ersten aus, um zurückzukehren. Es wurde nichts gesendet.",
+      "connection_remove_unconfirmed": "Schalte auch den Schalter „Diesen Zugang entfernen“ ein: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt.",
       "switch_program_value": "Gib eine Temperatur von {minimum} bis {maximum} °C in Schritten von {step} °C ein.",
       "switch_program_day_emptied": "Ein Tag mit Schaltpunkten behält mindestens einen; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
       "rrc_point_limit": "Dieser Tag hat bereits die höchste Anzahl an Schaltpunkten, die die App erlaubt ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Außentemperatur"
       },
       "supply_temperature": {
-        "name": "Vorlauftemperatur Anlage"
+        "name": "Vorlauftemperatur Anlage (T0)"
       },
       "return_temperature": {
         "name": "Rücklauftemperatur"

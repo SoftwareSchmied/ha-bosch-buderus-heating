@@ -59,7 +59,7 @@ OLD_ENGLISH = (
     "Comfort start temperature",
 )
 NEW_ENGLISH = (
-    "System supply temperature",
+    "System supply temperature (T0)",
     "Liquid line temperature heating (TR3)",
     "Liquid line temperature cooling (TR4)",
     "Start threshold Eco+",
@@ -82,8 +82,8 @@ def _catalog(code: str) -> dict[str, str]:
 
 
 def test_the_heat_sources_supply_is_the_system_supply() -> None:
-    assert resource_name(SUPPLY, language="en") == "System supply temperature"
-    assert resource_name(SUPPLY, language="de") == "Vorlauftemperatur Anlage"
+    assert resource_name(SUPPLY, language="en") == "System supply temperature (T0)"
+    assert resource_name(SUPPLY, language="de") == "Vorlauftemperatur Anlage (T0)"
     # The supply temperature of a heating circuit is that circuit's own.
     assert resource_name(CIRCUIT_SUPPLY, language="en") == "Supply temperature"
     assert resource_name(CIRCUIT_SUPPLY, language="de") == "Vorlauftemperatur"
@@ -245,7 +245,7 @@ async def test_an_existing_supply_entity_keeps_its_entity_id(
     entry = registry.async_get(old.entity_id)
     assert entry is not None
     assert entry.unique_id == old.unique_id
-    assert entry.original_name.endswith("System supply temperature")
+    assert entry.original_name.endswith("System supply temperature (T0)")
     assert hass.states.get(old.entity_id).state == "26.2"
 
 

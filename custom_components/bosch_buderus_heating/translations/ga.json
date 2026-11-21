@@ -168,7 +168,7 @@
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
       "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
       "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
-      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_confirm_required": "Cas air an lasc seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
       "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad. Tagann an earráid chéanna chun cinn freisin mura bhfuil Home Assistant sa líonra (fo-líonra) céanna leis an tairseach. Sa chás sin faigh an comhartha ar ríomhaire i líonra an tairseaigh agus cuir isteach faoi “Úsáid comhartha atá ann cheana” é.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
@@ -177,7 +177,7 @@
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
       "local_certificate_changed": "Níorbh fhéidir an deimhniú a dheimhniú nó tá sé athraithe. Scrúdaigh deimhniú an gheata arís sula leanann tú ar aghaidh.",
-      "local_certificate_unconfirmed": "Cuir tic sa bhosca chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
+      "local_certificate_unconfirmed": "Cas air an lasc chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
       "local_token_rejected": "Dhiúltaigh an geata don chomhartha seo. Seiceáil é nó caith amach an iarracht seo d'aon turas chun ceann eile a úsáid.",
       "local_resource_forbidden": "Dhiúltaigh an geata rochtain ar acmhainn riachtanach. Ní chruthaíonn comhartha amháin rochtain léite.",
       "local_missing_resource": "Ní chuireann an geata acmhainn socraithe riachtanach ar fáil.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Scrios saoire",
-        "description": "**{holiday}**\n\nAn scriosfar an tsaoire seo go hiomlán? Bainfear í den chóras téimh agus den fhéilire freisin. Fág an deimhniú gan tic chun filleadh gan scriosadh.",
+        "description": "**{holiday}**\n\nAn scriosfar an tsaoire seo go hiomlán? Bainfear í den chóras téimh agus den fhéilire freisin. Fág an lasc dheimhnithe múchta chun filleadh gan scriosadh.",
         "data": {
           "confirm_delete": "Scrios an tsaoire seo go hiomlán"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Bain rochtain",
-        "description": "Bainfear na dintiúir de Home Assistant. Fanann an comhartha ar an ngeata mura gcúlghairmeann tú é leis an ticbhosca thíos. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach; gan rochtain atá ar fáil, ní thaispeánann siad luachanna reatha. Fág an ticbhosca uachtarach gan tic chun filleadh gan athruithe.",
+        "description": "Bainfear na dintiúir de Home Assistant. Fanann an comhartha ar an ngeata mura gcúlghairmeann tú é leis an lasc thíos. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach; gan rochtain atá ar fáil, ní thaispeánann siad luachanna reatha. Fág an lasc uachtarach múchta chun filleadh gan athruithe.",
         "data": {
           "confirm": "Bain an rochtain seo",
           "revoke": "Cúlghair comhartha na rochtana seo ar an tairseach ar dtús"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Cúlghair comhartha",
-        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin. Fág an ticbhosca gan tic chun filleadh gan cúlghairm. {use} Cuir tic sa dara ticbhosca freisin chun é seo a dheimhniú.",
+        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin. Fág an lasc múchta chun filleadh gan cúlghairm. {use} Cas air an dara lasc freisin chun é seo a dheimhniú.",
         "data": {
           "confirm": "Cúlghair an comhartha seo ar an ngeata",
           "confirm_end": "Críochnaíonn rochtain áitiúil a úsáideann an comhartha seo"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
       "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
       "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
-      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_confirm_required": "Cas air an lasc seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
       "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad. Tagann an earráid chéanna chun cinn freisin mura bhfuil Home Assistant sa líonra (fo-líonra) céanna leis an tairseach. Sa chás sin faigh an comhartha ar ríomhaire i líonra an tairseaigh agus cuir isteach faoi “Úsáid comhartha atá ann cheana” é.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
       "local_certificate_changed": "Níorbh fhéidir an deimhniú a dheimhniú nó tá sé athraithe. Scrúdaigh deimhniú an gheata arís sula leanann tú ar aghaidh.",
-      "local_certificate_unconfirmed": "Cuir tic sa bhosca chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
+      "local_certificate_unconfirmed": "Cas air an lasc chun an deimhniú a dhearbhú. Mura mbaineann sé le do gheata, dún an dialóg; ní sheoltar aon rud.",
       "local_token_rejected": "Dhiúltaigh an geata don chomhartha seo. Seiceáil é nó caith amach an iarracht seo d'aon turas chun ceann eile a úsáid.",
       "local_resource_forbidden": "Dhiúltaigh an geata rochtain ar acmhainn riachtanach. Ní chruthaíonn comhartha amháin rochtain léite.",
       "local_missing_resource": "Ní chuireann an geata acmhainn socraithe riachtanach ar fáil.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Dhiúltaigh seirbhís síniú isteach an gheata don iarratas. Níor athraíodh aon rud.",
       "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
       "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
-      "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
-      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
+      "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cas air an dara lasc freisin, nó fág an chéad cheann múchta chun filleadh. Níor seoladh aon rud.",
+      "connection_remove_unconfirmed": "Cas air an lasc “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
       "switch_program_value": "Cuir isteach teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C.",
       "switch_program_day_emptied": "Coinníonn lá a bhfuil pointí lasctha aige ceann amháin ar a laghad; ní fios cad is brí le lá folamh don rialaitheoir.",
       "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaíonn an aip ag an lá seo cheana ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Teocht lasmuigh"
       },
       "supply_temperature": {
-        "name": "Teocht sreafa an chórais"
+        "name": "Teocht sreafa an chórais (T0)"
       },
       "return_temperature": {
         "name": "Teocht fillte"

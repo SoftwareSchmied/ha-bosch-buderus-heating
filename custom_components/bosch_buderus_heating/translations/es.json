@@ -168,7 +168,7 @@
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
       "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
       "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
-      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_confirm_required": "Activa este interruptor cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
       "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos. El mismo error aparece también si Home Assistant no está en la misma red (subred) que la pasarela. En ese caso, obtén el token en un ordenador de la red de la pasarela e introdúcelo en «Usar un token existente».",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
@@ -177,7 +177,7 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
-      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
+      "local_certificate_unconfirmed": "Activa el interruptor para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Eliminar vacaciones",
-        "description": "**{holiday}**\n\n¿Eliminar estas vacaciones por completo? También se quitarán de la instalación de calefacción y del calendario. Deja la confirmación sin marcar para volver sin eliminar.",
+        "description": "**{holiday}**\n\n¿Eliminar estas vacaciones por completo? También se quitarán de la instalación de calefacción y del calendario. Deja el interruptor de confirmación desactivado para volver sin eliminar.",
         "data": {
           "confirm_delete": "Eliminar estas vacaciones por completo"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Eliminar el acceso",
-        "description": "Las credenciales se eliminan de Home Assistant. El token permanece en la pasarela, salvo que lo revoques con la casilla de abajo. Se conservan las instalaciones y las entidades, incluso si este es el último acceso; sin un acceso disponible no muestran valores actuales. Deja la casilla superior sin marcar para volver sin cambios.",
+        "description": "Las credenciales se eliminan de Home Assistant. El token permanece en la pasarela, salvo que lo revoques con el interruptor de abajo. Se conservan las instalaciones y las entidades, incluso si este es el último acceso; sin un acceso disponible no muestran valores actuales. Deja el interruptor superior desactivado para volver sin cambios.",
         "data": {
           "confirm": "Eliminar este acceso",
           "revoke": "Revocar antes el token de este acceso en la pasarela"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Revocar token",
-        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja la casilla sin marcar para volver sin revocar. {use} Marca también la segunda casilla para confirmarlo.",
+        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja el interruptor desactivado para volver sin revocar. {use} Activa también el segundo interruptor para confirmarlo.",
         "data": {
           "confirm": "Revocar este token en la pasarela",
           "confirm_end": "Un acceso local que use este token termina"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
       "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
       "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
-      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_confirm_required": "Activa este interruptor cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
       "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos. El mismo error aparece también si Home Assistant no está en la misma red (subred) que la pasarela. En ese caso, obtén el token en un ordenador de la red de la pasarela e introdúcelo en «Usar un token existente».",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
       "local_certificate_changed": "No se pudo confirmar el certificado o ha cambiado. Inspecciona de nuevo el certificado de la pasarela antes de continuar.",
-      "local_certificate_unconfirmed": "Marca la casilla para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
+      "local_certificate_unconfirmed": "Activa el interruptor para confirmar el certificado. Si no pertenece a tu pasarela, cierra el diálogo; no se envía nada.",
       "local_token_rejected": "La pasarela ha rechazado este token. Compruébalo o descarta este intento de forma deliberada para usar otro.",
       "local_resource_forbidden": "La pasarela denegó el acceso a un recurso necesario. Un token por sí solo no demuestra el acceso de lectura.",
       "local_missing_resource": "La pasarela no proporciona un recurso de configuración necesario.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "El servicio de inicio de sesión de la pasarela rechazó la solicitud. No se ha cambiado nada.",
       "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
       "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
-      "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Marca también la segunda casilla o deja la primera sin marcar para volver. No se ha enviado nada.",
-      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada.",
+      "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Activa también el segundo interruptor o deja el primero desactivado para volver. No se ha enviado nada.",
+      "connection_remove_unconfirmed": "Activa también el interruptor «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada.",
       "switch_program_value": "Introduce una temperatura de {minimum} a {maximum} °C en pasos de {step} °C.",
       "switch_program_day_emptied": "Un día que tiene puntos de conmutación conserva al menos uno; no se sabe qué significa un día vacío para el regulador.",
       "rrc_point_limit": "Este día ya tiene el mayor número de puntos de conmutación que permite la aplicación ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Temperatura exterior"
       },
       "supply_temperature": {
-        "name": "Temperatura de impulsión de la instalación"
+        "name": "Temperatura de impulsión de la instalación (T0)"
       },
       "return_temperature": {
         "name": "Temperatura de retorno"

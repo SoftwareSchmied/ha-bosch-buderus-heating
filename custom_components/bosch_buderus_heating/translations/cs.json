@@ -168,7 +168,7 @@
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
       "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
       "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
-      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_confirm_required": "Zapněte tento přepínač, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
       "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut. Stejná chyba se objeví také tehdy, když Home Assistant není ve stejné síti (podsíti) jako brána. V takovém případě získejte token na počítači v síti brány a zadejte jej v části „Použít existující token“.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
@@ -177,7 +177,7 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
-      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
+      "local_certificate_unconfirmed": "Zapnutím přepínače potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Odstranit dovolenou",
-        "description": "**{holiday}**\n\nOdstranit tuto dovolenou úplně? Odstraní se také z topné soustavy a z kalendáře. Ponecháte-li potvrzení nezaškrtnuté, vrátíte se bez odstranění.",
+        "description": "**{holiday}**\n\nOdstranit tuto dovolenou úplně? Odstraní se také z topné soustavy a z kalendáře. Ponecháte-li potvrzovací přepínač vypnutý, vrátíte se bez odstranění.",
         "data": {
           "confirm_delete": "Odstranit tuto dovolenou úplně"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Odstranění přístupu",
-        "description": "Přihlašovací údaje se odstraní z Home Assistantu. Token zůstane na bráně, pokud ho neodvoláte políčkem níže. Soustavy a entity zůstanou zachovány, i když jde o poslední přístup; bez dostupného přístupu nezobrazují aktuální hodnoty. Nechte horní políčko nezaškrtnuté, chcete-li se vrátit beze změn.",
+        "description": "Přihlašovací údaje se odstraní z Home Assistantu. Token zůstane na bráně, pokud ho neodvoláte přepínačem níže. Soustavy a entity zůstanou zachovány, i když jde o poslední přístup; bez dostupného přístupu nezobrazují aktuální hodnoty. Nechte horní přepínač vypnutý, chcete-li se vrátit beze změn.",
         "data": {
           "confirm": "Odstranit tento přístup",
           "revoke": "Nejprve odvolat token tohoto přístupu na bráně"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Odvolání tokenu",
-        "description": "Odvolat token této integrace vytvořený {created} na bráně **{host}**?\n\nBrána ho trvale odstraní. Pokud jde o token, který tento přístup používá, místní přístup skončí: přístup se vypne a bude potřebovat nové přihlášení pomocí štítku zařízení. Seznam se těsně předtím načte znovu a požadavek se odešle jen jednou. Nechte políčko nezaškrtnuté, chcete-li se vrátit bez odvolání. {use} Zaškrtněte i druhé políčko, abyste to potvrdili.",
+        "description": "Odvolat token této integrace vytvořený {created} na bráně **{host}**?\n\nBrána ho trvale odstraní. Pokud jde o token, který tento přístup používá, místní přístup skončí: přístup se vypne a bude potřebovat nové přihlášení pomocí štítku zařízení. Seznam se těsně předtím načte znovu a požadavek se odešle jen jednou. Nechte přepínač vypnutý, chcete-li se vrátit bez odvolání. {use} Zapněte i druhý přepínač, abyste to potvrdili.",
         "data": {
           "confirm": "Odvolat tento token na bráně",
           "confirm_end": "Místní přístup, který tento token používá, skončí"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
       "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
       "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
-      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_confirm_required": "Zapněte tento přepínač, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
       "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut. Stejná chyba se objeví také tehdy, když Home Assistant není ve stejné síti (podsíti) jako brána. V takovém případě získejte token na počítači v síti brány a zadejte jej v části „Použít existující token“.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
       "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
-      "local_certificate_unconfirmed": "Zaškrtnutím políčka potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
+      "local_certificate_unconfirmed": "Zapnutím přepínače potvrďte certifikát. Pokud nepatří k vaší bráně, zavřete dialog; nic se neodešle.",
       "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
       "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
       "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Přihlašovací služba brány požadavek odmítla. Nic se nezměnilo.",
       "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
       "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
-      "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zaškrtněte i druhé políčko, nebo nechte první nezaškrtnuté a vraťte se. Nic nebylo odesláno.",
-      "connection_remove_unconfirmed": "Zaškrtněte i políčko „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
+      "local_token_end_unconfirmed": "Odvolání tohoto tokenu může ukončit místní přístup. Zapněte i druhý přepínač, nebo nechte první vypnutý a vraťte se. Nic nebylo odesláno.",
+      "connection_remove_unconfirmed": "Zapněte i přepínač „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
       "switch_program_value": "Zadejte teplotu od {minimum} do {maximum} °C v krocích po {step} °C.",
       "switch_program_day_emptied": "Den se spínacími body si ponechá alespoň jeden; co znamená prázdný den pro regulátor, není známo.",
       "rrc_point_limit": "Tento den již má nejvyšší počet spínacích bodů, který aplikace dovoluje ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Venkovní teplota"
       },
       "supply_temperature": {
-        "name": "Výstupní teplota soustavy"
+        "name": "Výstupní teplota soustavy (T0)"
       },
       "return_temperature": {
         "name": "Vratná teplota"

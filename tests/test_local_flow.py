@@ -701,7 +701,10 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
     assert result["step_id"] == "local_auth" and not calls
     values = {"login": LABEL.login, "password": LABEL.password, "unlocked": True}
     result = await submit(hass, manager, result, {**values, "unlocked": False})
-    assert result["errors"] == {"unlocked": "local_unlock_confirm_required"}
+    assert result["errors"] == {
+        "base": "local_unlock_confirm_required",
+        "unlocked": "local_unlock_confirm_required",
+    }
     result = await submit(hass, manager, result, values)
     assert len(calls) == 1 and management.current().minor_version == 1
     assert (

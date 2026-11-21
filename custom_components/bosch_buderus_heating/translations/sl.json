@@ -168,7 +168,7 @@
       "local_invalid_token": "Oblika žetona ni veljavna. Kopirajte celoten žeton brez presledkov.",
       "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
       "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
-      "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
+      "local_unlock_confirm_required": "Vklopite to stikalo, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
       "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah. Ista napaka se pojavi tudi, če Home Assistant ni v istem omrežju (podomrežju) kot prehod. V tem primeru žeton pridobite na računalniku v omrežju prehoda in ga vnesite pod »Uporaba obstoječega žetona«.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
@@ -177,7 +177,7 @@
       "local_timeout": "Lokalni prehod ni odgovoril pravočasno. Preverite povezavo in poskusite znova.",
       "local_connection_failed": "Home Assistant tega prehoda ni mogel doseči. Preverite njegov naslov in omrežno povezavo.",
       "local_certificate_changed": "Certifikata ni bilo mogoče potrditi ali se je spremenil. Pred nadaljevanjem znova preglejte certifikat prehoda.",
-      "local_certificate_unconfirmed": "Označite polje, da potrdite certifikat. Če ne pripada vašemu prehodu, zaprite pogovorno okno; nič se ne pošlje.",
+      "local_certificate_unconfirmed": "Vklopite stikalo, da potrdite certifikat. Če ne pripada vašemu prehodu, zaprite pogovorno okno; nič se ne pošlje.",
       "local_token_rejected": "Prehod je zavrnil ta žeton. Preverite ga ali ta poskus namenoma zavrzite in uporabite drugega.",
       "local_resource_forbidden": "Prehod je zavrnil dostop do zahtevanega vira. Sam žeton ni dokaz dostopa za branje.",
       "local_missing_resource": "Prehod ne ponuja zahtevanega vira za nastavitev.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Brisanje počitnic",
-        "description": "**{holiday}**\n\nŽelite te počitnice popolnoma izbrisati? Odstranjene bodo tudi iz ogrevalnega sistema in koledarja. Pustite potrditev neoznačeno, če se želite vrniti brez brisanja.",
+        "description": "**{holiday}**\n\nŽelite te počitnice popolnoma izbrisati? Odstranjene bodo tudi iz ogrevalnega sistema in koledarja. Pustite stikalo za potrditev izklopljeno, če se želite vrniti brez brisanja.",
         "data": {
           "confirm_delete": "Popolnoma izbriši te počitnice"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Odstrani dostop",
-        "description": "Poverilnice se odstranijo iz Home Assistanta. Žeton ostane na prehodu, razen če ga prekličete s poljem spodaj. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop; brez razpoložljivega dostopa ne prikazujejo trenutnih vrednosti. Zgornje polje pustite neoznačeno, če se želite vrniti brez sprememb.",
+        "description": "Poverilnice se odstranijo iz Home Assistanta. Žeton ostane na prehodu, razen če ga prekličete s stikalom spodaj. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop; brez razpoložljivega dostopa ne prikazujejo trenutnih vrednosti. Zgornje stikalo pustite izklopljeno, če se želite vrniti brez sprememb.",
         "data": {
           "confirm": "Odstrani ta dostop",
           "revoke": "Najprej prekliči žeton tega dostopa na prehodu"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Preklic žetona",
-        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite potrditveno polje neoznačeno, če se želite vrniti brez preklica. {use} Označite še drugo polje, da to potrdite.",
+        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite stikalo izklopljeno, če se želite vrniti brez preklica. {use} Vklopite še drugo stikalo, da to potrdite.",
         "data": {
           "confirm": "Prekliči ta žeton na prehodu",
           "confirm_end": "Lokalni dostop, ki uporablja ta žeton, se konča"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Oblika žetona ni veljavna. Kopirajte celoten žeton brez presledkov.",
       "local_invalid_credentials": "Prehod je zavrnil Login in Pass. Preverite oba na oznaki prehoda in ju znova vnesite.",
       "local_invalid_label_format": "Login ali Pass vsebuje znake, ki jih oznaka naprave nima, na primer presledek znotraj vrednosti. Prehodu ni bilo poslano nič. Preverite vnos in ga znova vnesite.",
-      "local_unlock_confirm_required": "Označite to polje, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
+      "local_unlock_confirm_required": "Vklopite to stikalo, ko ste na prehodu sprostili lokalno prijavo in videli modri signal.",
       "local_unlock_required": "Prehod ni sprostil lokalne prijave ali pa je od sprostitve minilo pet minut. Hkrati pritisnite tipki Wi-Fi in brezžično za 1 sekundo, počakajte na modri signal in poskusite znova v petih minutah. Ista napaka se pojavi tudi, če Home Assistant ni v istem omrežju (podomrežju) kot prehod. V tem primeru žeton pridobite na računalniku v omrežju prehoda in ga vnesite pod »Uporaba obstoječega žetona«.",
       "local_token_database_full": "Zbirka žetonov prehoda je polna. Pred ustvarjanjem novega pregledajte obstoječe žetone. Noben žeton ni bil izbrisan.",
       "local_rate_limited": "Prehod je zahteval premor. Počakajte, da poteče prikazani čas.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Lokalni prehod ni odgovoril pravočasno. Preverite povezavo in poskusite znova.",
       "local_connection_failed": "Home Assistant tega prehoda ni mogel doseči. Preverite njegov naslov in omrežno povezavo.",
       "local_certificate_changed": "Certifikata ni bilo mogoče potrditi ali se je spremenil. Pred nadaljevanjem znova preglejte certifikat prehoda.",
-      "local_certificate_unconfirmed": "Označite polje, da potrdite certifikat. Če ne pripada vašemu prehodu, zaprite pogovorno okno; nič se ne pošlje.",
+      "local_certificate_unconfirmed": "Vklopite stikalo, da potrdite certifikat. Če ne pripada vašemu prehodu, zaprite pogovorno okno; nič se ne pošlje.",
       "local_token_rejected": "Prehod je zavrnil ta žeton. Preverite ga ali ta poskus namenoma zavrzite in uporabite drugega.",
       "local_resource_forbidden": "Prehod je zavrnil dostop do zahtevanega vira. Sam žeton ni dokaz dostopa za branje.",
       "local_missing_resource": "Prehod ne ponuja zahtevanega vira za nastavitev.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Storitev prijave prehoda je zavrnila zahtevo. Nič ni bilo spremenjeno.",
       "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
       "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno.",
-      "local_token_end_unconfirmed": "Preklic tega žetona lahko konča lokalni dostop. Označite še drugo polje ali pustite prvo neoznačeno, da se vrnete. Nič ni bilo poslano.",
-      "connection_remove_unconfirmed": "Označite še »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno.",
+      "local_token_end_unconfirmed": "Preklic tega žetona lahko konča lokalni dostop. Vklopite še drugo stikalo ali pustite prvo izklopljeno, da se vrnete. Nič ni bilo poslano.",
+      "connection_remove_unconfirmed": "Vklopite še stikalo »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno.",
       "switch_program_value": "Vnesite temperaturo od {minimum} do {maximum} °C v korakih po {step} °C.",
       "switch_program_day_emptied": "Dan, ki ima preklopne točke, obdrži vsaj eno; ni znano, kaj prazen dan pomeni za regulator.",
       "rrc_point_limit": "Ta dan ima že največje število preklopnih točk, ki ga aplikacija dovoljuje ({per_day}).",
@@ -2522,7 +2522,7 @@
         "name": "Zunanja temperatura"
       },
       "supply_temperature": {
-        "name": "Temperatura dvižnega voda sistema"
+        "name": "Temperatura dvižnega voda sistema (T0)"
       },
       "return_temperature": {
         "name": "Temperatura povratnega voda"

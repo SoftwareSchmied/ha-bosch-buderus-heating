@@ -314,7 +314,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             _HP1 + f"ElectricalHeaterStep{step}",
             f"electric_heater_step_{step}",
             FLAG,
-            (f"Heizstab Stufe {step}", f"Electric heater stage {step}"),
+            (f"Zuheizer Stufe {step}", f"Auxiliary heater stage {step}"),
             enabled=step <= 3,
         )
         for step in (1, 2, 3, 4)
@@ -323,7 +323,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "DripPanHeater",
         "drip_pan_heater",
         FLAG,
-        ("Kondensatwannenheizung", "Drip pan heater"),
+        ("Kondensatwannenheizung (EA0)", "Drip pan heater (EA0)"),
         enabled=True,
     ),
     _signal(
@@ -505,7 +505,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             (
                 _HP1 + "CompressorSpeedActual",
                 "compressor_speed_signal",
-                ("Kompressordrehzahl (Signal)", "Compressor speed (signal)"),
+                ("Kompressor-Istdrehzahl (Signal)", "Compressor speed (signal)"),
             ),
             (
                 _HP1 + "CHPumpSpeed",
@@ -557,7 +557,10 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             (
                 "SRC.IntDHW.CylTemp",
                 "cylinder_temperature_signal",
-                ("Speichertemperatur (Signal)", "Cylinder temperature (signal)"),
+                (
+                    "Speichertemperatur (TW1, Signal)",
+                    "Cylinder temperature (TW1, signal)",
+                ),
             ),
             (
                 "SRC.OutdoorTemp",
@@ -1208,7 +1211,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         HS + "/pumpVolumeFlow",
         "volume_flow",
         FLOW,
-        ("Volumenstrom primär", "Primary flow rate"),
+        ("Volumenstrom primär (PC0)", "Primary flow rate (PC0)"),
         enabled=True,
     ),
     _define(
@@ -1222,7 +1225,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "/heatSources/eHeater/powerElecActual",
         "electric_heater_power",
         POWER,
-        ("Elektrische Leistung Heizstab", "Electric heater power"),
+        ("Leistung Zuheizer", "Auxiliary heater power"),
         enabled=True,
     ),
     _define(
@@ -1253,7 +1256,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "/heatSources/dhw/cylinderTemperature",
         "cylinder_temperature",
         TEMPERATURE,
-        ("Speichertemperatur", "Cylinder temperature"),
+        ("Speichertemperatur (TW1)", "Cylinder temperature (TW1)"),
         # C3: the same temperature as the hot water temperature entity.
         enabled=False,
     ),
@@ -1393,7 +1396,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         REFRIGERANT + "/compressorActualSpeed",
         "compressor_speed",
         PERCENT,
-        ("Kompressordrehzahl", "Compressor speed"),
+        ("Kompressor-Istdrehzahl", "Compressor speed"),
     ),
     _define(
         "/heatSources/additionalHeater/flowTemp",
@@ -1416,7 +1419,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "/heatSources/eHeater/powerElecActualLowResolution",
         "electric_heater_power_coarse",
         POWER,
-        ("Elektrische Leistung Heizstab (grob)", "Electric heater power (coarse)"),
+        ("Leistung Zuheizer (grob)", "Auxiliary heater power (coarse)"),
     ),
     # Disabled: readings of a ventilation unit (P31). The units below are the
     # documented ones; a reading in another unit is not shown.

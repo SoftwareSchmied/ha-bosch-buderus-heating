@@ -210,8 +210,8 @@ access the message stays as before.
 - **Remove access** for a local access has an extra choice to revoke the
   token of this access first. Only with that choice is anything sent; the
   access is removed only after the revocation was confirmed (or when no token
-  is chosen in the list). Ticking only that choice without "Remove this
-  access" shows a message and changes nothing. If that choice is ticked but
+  is chosen in the list). Turning on only that choice without "Remove this
+  access" shows a message and changes nothing. If that choice is turned on but
   there is no token to offer (the gateway lists none of this integration, the
   token of this access cannot be identified, or its list could not be read),
   the access is not removed silently: a step says so and offers "Remove without
