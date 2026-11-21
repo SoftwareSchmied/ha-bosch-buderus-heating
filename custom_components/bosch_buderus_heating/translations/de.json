@@ -2518,7 +2518,7 @@
         "name": "Außentemperatur"
       },
       "supply_temperature": {
-        "name": "Vorlauftemperatur Anlage"
+        "name": "Vorlauftemperatur Anlage (T0)"
       },
       "return_temperature": {
         "name": "Rücklauftemperatur"

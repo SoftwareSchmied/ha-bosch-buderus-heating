@@ -84,7 +84,17 @@ NAMES = {
         "Kondensatwannentemperatur (TA4)",
         "Drip pan temperature (TA4)",
     ),
-    HP1 + "DripPanHeater": ("Kondensatwannenheizung", "Drip pan heater"),
+    HP1 + "DripPanHeater": ("Kondensatwannenheizung (EA0)", "Drip pan heater (EA0)"),
+    HP1 + "ElectricalHeaterStep1": ("Zuheizer Stufe 1", "Auxiliary heater stage 1"),
+    HP1 + "ElectricalHeaterStep4": ("Zuheizer Stufe 4", "Auxiliary heater stage 4"),
+    "/heatSources/eHeater/powerElecActual": (
+        "Leistung Zuheizer",
+        "Auxiliary heater power",
+    ),
+    "/heatSources/dhw/cylinderTemperature": (
+        "Speichertemperatur (TW1)",
+        "Cylinder temperature (TW1)",
+    ),
     HP1 + "ExpansionValveActual": ("Expansionsventil VR1", "Expansion valve VR1"),
     HP1 + "ReceiverValveActual": ("Sammlerventil (VR0)", "Receiver valve (VR0)"),
     HP1 + "FourwayValve": ("4-Wege-Ventil (VR4)", "4-way valve (VR4)"),
@@ -126,7 +136,7 @@ NAMES = {
         "Compressor run time hot water",
     ),
     HS + "/refrigerant/compressorActualSpeed": (
-        "Kompressordrehzahl",
+        "Kompressor-Istdrehzahl",
         "Compressor speed",
     ),
     HS + "/refrigerant/compressorTemp": (
@@ -139,7 +149,7 @@ NAMES = {
     ),
     "/signals/HYBMAN.CAN.FourWayValveActive": ("4-Wege-Ventil", "4-way valve"),
     # The flow of the primary heating pump PC0, as its second source.
-    HS + "/pumpVolumeFlow": ("Volumenstrom primär", "Primary flow rate"),
+    HS + "/pumpVolumeFlow": ("Volumenstrom primär (PC0)", "Primary flow rate (PC0)"),
     # The season signal repeats the cloud's current heating/cooling status.
     "/signals/SC.SeasonOpt.Mode": (
         "Aktueller Heiz-/Kühlstatus (Signal)",
@@ -164,7 +174,7 @@ SECOND_SOURCES = {
     ),
     "/signals/SRC.RelayStatus.3WayValve": "Hot water 3-way valve relay (signal)",
     "/signals/SRC.RelayStatus.CHPump": "Primary heating pump relay (signal)",
-    "/signals/SRC.IntDHW.CylTemp": "Cylinder temperature (signal)",
+    "/signals/SRC.IntDHW.CylTemp": "Cylinder temperature (TW1, signal)",
     "/signals/SRC.OutdoorTemp": "Outdoor temperature (signal)",
 }
 

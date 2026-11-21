@@ -651,7 +651,7 @@ _GERMAN_NAMES = {
 # the return of a heating circuit.
 _GERMAN_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
-    "/heatSources/actualSupplyTemperature": "Vorlauftemperatur Anlage",
+    "/heatSources/actualSupplyTemperature": "Vorlauftemperatur Anlage (T0)",
     "/heatSources/returnTemperature": "Rücklauf zum Wärmeerzeuger",
     "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
     "/heatSources/additionalHeater/operationMode": "Betriebsart des Zuheizers",
@@ -816,7 +816,7 @@ _ENGLISH_NAMES = {
 
 _ENGLISH_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Data processing status",
-    "/heatSources/actualSupplyTemperature": "System supply temperature",
+    "/heatSources/actualSupplyTemperature": "System supply temperature (T0)",
     "/heatSources/returnTemperature": "Return to the heat source",
     "/heatSources/Source/eHeater/status": "Auxiliary heater status",
     "/heatSources/additionalHeater/operationMode": "Auxiliary heater operation mode",

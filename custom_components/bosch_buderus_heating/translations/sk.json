@@ -2518,7 +2518,7 @@
         "name": "Vonkajšia teplota"
       },
       "supply_temperature": {
-        "name": "Výstupná teplota systému"
+        "name": "Výstupná teplota systému (T0)"
       },
       "return_temperature": {
         "name": "Vratná teplota"

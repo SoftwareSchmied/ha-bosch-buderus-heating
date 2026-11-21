@@ -2518,7 +2518,7 @@
         "name": "Température extérieure"
       },
       "supply_temperature": {
-        "name": "Température de départ de l'installation"
+        "name": "Température de départ de l'installation (T0)"
       },
       "return_temperature": {
         "name": "Température de retour"
