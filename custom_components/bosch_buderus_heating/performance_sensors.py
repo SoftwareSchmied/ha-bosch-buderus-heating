@@ -36,6 +36,8 @@ from .held_readings import cloud_usable
 from .i18n import localize
 from .performance import (
     COLLECTIONS,
+    HEAT_PUMP_COUNTERS,
+    HP_PREFIX,
     MODES,
     LiveResult,
     brine_input_paths,
@@ -44,6 +46,8 @@ from .performance import (
     cop_input_paths,
     cop_possible,
     counter_possible,
+    heat_pump_counter_possible,
+    heat_pump_lifetime,
     live_cop,
     primary_spread,
     spread_input_paths,
@@ -320,6 +324,7 @@ class PerformanceFactorSensor(
             "reason",
             "note",
             "little_heat_below_kwh",
+            "basis",
         }
     )
 
@@ -346,6 +351,8 @@ class PerformanceFactorSensor(
         )
         self._attr_entity_registry_enabled_default = (period, mode) in ENABLED_FACTORS
         self._result: PeriodResult | None = None
+        # The path of the heat pump's own counters while they are the basis.
+        self._heat_pump_path: str | None = None
 
     @property
     def available(self) -> bool:
@@ -358,7 +365,7 @@ class PerformanceFactorSensor(
 
     @property
     def native_value(self) -> float | None:
-        if self._burner_share():
+        if self._heat_pump_path is None and self._burner_share():
             return None
         return self._result.ratio if self._result is not None else None
 
@@ -366,10 +373,25 @@ class PerformanceFactorSensor(
         """Heat of a burner is not covered by the heat pump's electricity."""
         return burner_share(self.coordinator, self.resource_path)
 
+    def _heat_pump_basis(self) -> str | None:
+        """The path of the heat pump's own counters when the gateway's heat
+        includes a boiler's and the heat pump reports counters of its own."""
+        if not self._burner_share():
+            return None
+        found = heat_pump_lifetime(self.coordinator, self._mode)
+        return found[1] if found is not None else None
+
     @property
     def extra_state_attributes(self) -> dict[str, object] | None:
         result = self._result
+        basis = self._heat_pump_path is not None
         if result is None:
+            if basis:
+                if self._period not in (Period.TODAY, Period.SINCE_COMMISSIONING) and (
+                    not self._engine.history_read
+                ):
+                    return {"basis": HEAT_PUMP_COUNTERS, "reason": HISTORY_LOADING}
+                return {"basis": HEAT_PUMP_COUNTERS}
             if self._burner_share():
                 return {"reason": BURNER_SHARE}
             if self._period not in (Period.TODAY, Period.SINCE_COMMISSIONING) and (
@@ -397,7 +419,9 @@ class PerformanceFactorSensor(
         if result.first_day is not None:
             attributes["first_day"] = result.first_day.isoformat()
         attributes["derived_from"] = self._derived_from(result)
-        if self._burner_share():
+        if basis:
+            attributes["basis"] = HEAT_PUMP_COUNTERS
+        if not basis and self._burner_share():
             attributes["reason"] = BURNER_SHARE
         elif result.ratio is None:
             attributes["reason"] = unknown_reason(result.electricity)
@@ -409,8 +433,8 @@ class PerformanceFactorSensor(
         found: dict[str, str] = {}
         sources = result.heat_sources | result.electricity_sources
         if COUNTERS in sources:
-            live = self._engine.live_origin(self._mode)
-            found[self.resource_path] = live or COUNTERS
+            live = self._engine.live_origin(self._engine_mode)
+            found[self._heat_pump_path or self.resource_path] = live or COUNTERS
         if result.heat_sources - {COUNTERS}:
             found[_RECORDING.format(mode=self._mode, kind="outputProduced")] = (
                 "recording"
@@ -420,9 +444,14 @@ class PerformanceFactorSensor(
                 found[_RECORDING.format(mode=self._mode, kind=kind)] = "recording"
         return dict(sorted(found.items()))
 
+    @property
+    def _engine_mode(self) -> str:
+        return HP_PREFIX + self._mode if self._heat_pump_path else self._mode
+
     def _refresh(self) -> None:
         self._sync_once()
-        self._result = self._engine.value(self._period, self._mode)
+        self._heat_pump_path = self._heat_pump_basis()
+        self._result = self._engine.value(self._period, self._engine_mode)
 
     def _sync_once(self) -> None:
         """Take the counters' readings once per update pass: all factor
@@ -475,7 +504,15 @@ def _candidates(
         (f"brine:{root}", partial(BrineSpreadSensor, coordinator, root))
         for root in brine_roots(coordinator)
     )
-    modes = [mode for mode in MODES if counter_possible(coordinator, mode)]
+    modes = [
+        mode
+        for mode in MODES
+        if counter_possible(coordinator, mode)
+        or (
+            heat_pump_counter_possible(coordinator, mode)
+            and burner_share(coordinator, COLLECTIONS[mode])
+        )
+    ]
     if modes and (engine := engine_for(coordinator)) is not None:
         found.extend(
             (

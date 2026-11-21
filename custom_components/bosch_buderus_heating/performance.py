@@ -60,6 +60,7 @@ from .heat_source_kind import BRINE, classify
 
 if TYPE_CHECKING:
     from .coordinator import BoschBuderusDataUpdateCoordinator
+    from .pointt import Resource
 
 MODES: Final = ("total", "ch", "dhw")
 COLLECTIONS: Final = {
@@ -68,6 +69,18 @@ COLLECTIONS: Final = {
     "dhw": "/heatSources/emon/dhwConsumption",
 }
 PRODUCED: Final = "outputProduced"
+# A hybrid system's heat pump reports its own counters under its heat source
+# (the gateway's collections count the boiler). Their modes carry this prefix
+# in the history, so they never mix with the gateway's.
+HP_PREFIX: Final = "hp:"
+HP_MODES: Final = tuple(HP_PREFIX + mode for mode in MODES)
+HEAT_PUMP_COUNTERS: Final = "heat_pump_counters"
+_HEAT_SOURCE_TOTAL: Final = re.compile(r"/heatSources/hs\d+/emon/totalConsumption")
+_HEAT_SOURCE_COLLECTIONS: Final = {
+    "total": "totalConsumption",
+    "ch": "chConsumption",
+    "dhw": "dhwConsumption",
+}
 
 # The heat output of the refrigerant circuit (despite its name the thermal
 # output; it matches the heat meter on a real installation).
@@ -364,11 +377,105 @@ class CounterReading:
     observed_at: datetime | None = field(default=None, compare=False)
 
 
+def is_heat_pump_mode(mode: str) -> bool:
+    return mode.startswith(HP_PREFIX)
+
+
+def heat_pump_path(root: str, mode: str) -> str:
+    """The heat pump's own collection of a mode (``mode`` without prefix)."""
+    return f"{root}/emon/{_HEAT_SOURCE_COLLECTIONS[mode]}"
+
+
+def _is_heat_pump_counter(reading: Input | None) -> bool:
+    """Heat and electricity are reported and no burner part: not a boiler."""
+    if reading is None or _counters(reading) is None:
+        return False
+    burner = energy_part(reading, "burner")
+    return burner is None or burner <= 0
+
+
+def heat_pump_root(
+    coordinator: BoschBuderusDataUpdateCoordinator, *, current: bool = True
+) -> str | None:
+    """The heat source (``/heatSources/hs2``) whose own total counters report
+    heat and electricity of a heat pump, else ``None``.
+
+    ``current`` asks for a current reading; without it the plant offering the
+    counters is enough (to find the entities of their statistics)."""
+    for path in known_paths(coordinator, _HEAT_SOURCE_TOTAL):
+        root = path.removesuffix("/emon/totalConsumption")
+        if current:
+            if _is_heat_pump_counter(read(coordinator, path)):
+                return root
+            continue
+        resources = getattr(coordinator, "resources", None) or {}
+        resource = resources.get(path)
+        if resource is not None and _resource_has_counters(resource):
+            return root
+    return None
+
+
+def heat_pump_mode_path(
+    coordinator: BoschBuderusDataUpdateCoordinator, mode: str
+) -> str | None:
+    """The collection the heat pump's counters of a mode are read from."""
+    root = heat_pump_root(coordinator)
+    return heat_pump_path(root, mode) if root is not None else None
+
+
+def _counters(reading: Input | None) -> tuple[float, float] | None:
+    heat = energy_part(reading, PRODUCED)
+    electricity = energy_part(reading, "electricity")
+    if electricity is None:
+        compressor = energy_part(reading, "compressor")
+        heater = energy_part(reading, "eheater")
+        if compressor is not None and heater is not None:
+            electricity = compressor + heater
+    if reading is None or heat is None or electricity is None:
+        return None
+    return heat, electricity
+
+
+def heat_pump_lifetime(
+    coordinator: BoschBuderusDataUpdateCoordinator, mode: str
+) -> tuple[CounterReading, str] | None:
+    """The heat pump's own counters of a mode and their path."""
+    path = heat_pump_mode_path(coordinator, mode)
+    if path is None:
+        return None
+    reading = read(coordinator, path)
+    if not _is_heat_pump_counter(reading) or reading is None:
+        return None
+    counters = _counters(reading)
+    if counters is None:
+        return None
+    return CounterReading(*counters, reading.origin, reading.observed_at), path
+
+
+def heat_pump_environmental(
+    coordinator: BoschBuderusDataUpdateCoordinator, mode: str
+) -> tuple[float | None, str] | None:
+    """Environmental energy of a hybrid system's heat pump: its own heat minus
+    its electricity (``None`` for a negative difference, a measuring
+    artifact), with the collection it comes from; ``None`` without counters."""
+    found = heat_pump_lifetime(coordinator, mode)
+    if found is None:
+        return None
+    reading, path = found
+    difference = reading.heat - reading.electricity
+    if difference < -1e-9:
+        return None, path
+    return max(0.0, difference), path
+
+
 def lifetime(
     coordinator: BoschBuderusDataUpdateCoordinator, mode: str
 ) -> CounterReading | None:
     """The produced heat and the electricity (compressor plus heater) of a
     mode since commissioning, from the device's counters."""
+    if is_heat_pump_mode(mode):
+        found = heat_pump_lifetime(coordinator, mode.removeprefix(HP_PREFIX))
+        return found[0] if found is not None else None
     reading = read(coordinator, COLLECTIONS[mode])
     heat = energy_part(reading, PRODUCED)
     electricity = energy_part(reading, "electricity")
@@ -382,12 +489,36 @@ def lifetime(
     return CounterReading(heat, electricity, reading.origin, reading.observed_at)
 
 
+def _resource_has_counters(resource: Resource) -> bool:
+    """Heat and electricity of a collection, and no burner part."""
+    burner = resource_energy_part(resource, "burner")
+    if burner is not None and burner > 0:
+        return False
+    return _resource_counters(resource)
+
+
+def heat_pump_counter_possible(
+    coordinator: BoschBuderusDataUpdateCoordinator, mode: str
+) -> bool:
+    """The plant offers the heat pump's own counters of a mode."""
+    root = heat_pump_root(coordinator, current=False)
+    if root is None:
+        return False
+    resources = getattr(coordinator, "resources", None) or {}
+    resource = resources.get(heat_pump_path(root, mode))
+    return resource is not None and _resource_has_counters(resource)
+
+
 def counter_possible(coordinator: BoschBuderusDataUpdateCoordinator, mode: str) -> bool:
     """The mode's counter collection offers heat and electricity."""
     resources = getattr(coordinator, "resources", None) or {}
     resource = resources.get(COLLECTIONS[mode])
     if resource is None:
         return False
+    return _resource_counters(resource)
+
+
+def _resource_counters(resource: Resource) -> bool:
     if resource_energy_part(resource, PRODUCED) is None:
         return False
     return resource_energy_part(resource, "electricity") is not None or (
