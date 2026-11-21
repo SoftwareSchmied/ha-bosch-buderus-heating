@@ -338,7 +338,13 @@ defrosts, so the heat taken back from the water is netted.
   recordings count the boiler and are not used. Without such counters (no
   separate heat counter, no electricity, or a value that is not current) the
   value stays unknown with `reason: burner_share`. The boiler's efficiency
-  is not calculated.
+  is not calculated. Through the cloud the integration reads only the heat
+  pump's total counters (`/heatSources/hsN/emon/totalConsumption`), not its
+  heating and hot water counters, so a hybrid system connected only through
+  the cloud gets the total factors and environmental energy of the heat pump,
+  while the heating and hot water factors stay unknown (`reason:
+  burner_share`). A local access reads the heating and hot water counters
+  as well where the gateway offers them.
 - A factor stays shown when its period holds very little heat, but its
   attribute `note` is then `little_heat` and `little_heat_below_kwh` names
   the limit: 5 kWh of heat for today and yesterday, 30 kWh for a month, a
@@ -411,4 +417,10 @@ Wärmepumpe erstmals gelesen werden (und mit den Langzeitstatistiken ihrer
 Entitäten, soweit vorhanden); die Aufzeichnungen der Anlage zählen den Kessel
 und werden nicht verwendet. Fehlen solche Zähler (keine eigene Wärmemenge, kein
 Strom oder kein aktueller Wert), bleibt der Wert unbekannt (`reason:
-burner_share`). Der Wirkungsgrad des Kessels wird nicht berechnet.
+burner_share`). Der Wirkungsgrad des Kessels wird nicht berechnet. Über die
+Cloud liest die Integration nur die Gesamtzähler der Wärmepumpe
+(`/heatSources/hsN/emon/totalConsumption`), nicht ihre Zähler für Heizung und
+Warmwasser. Ein Hybridsystem, das nur über die Cloud angebunden ist, erhält
+daher die Gesamt-Arbeitszahlen und die Umweltenergie der Wärmepumpe; die
+Arbeitszahlen für Heizung und Warmwasser bleiben unbekannt (`reason:
+burner_share`). Ein lokaler Zugang liest auch diese Zähler, sofern das Gateway sie anbietet.
