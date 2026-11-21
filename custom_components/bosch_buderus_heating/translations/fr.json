@@ -168,7 +168,7 @@
       "local_invalid_token": "Le format du jeton n'est pas valide. Copiez le jeton complet sans espaces.",
       "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
       "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
-      "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
+      "local_unlock_confirm_required": "Activez cet interrupteur une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
       "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes. La même erreur apparaît aussi si Home Assistant ne se trouve pas dans le même réseau (sous-réseau) que la passerelle. Dans ce cas, récupérez le jeton sur un ordinateur du réseau de la passerelle et saisissez-le sous « Utiliser un jeton existant ».",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
@@ -177,7 +177,7 @@
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
       "local_certificate_changed": "Le certificat n'a pas pu être confirmé ou a changé. Examinez à nouveau le certificat de la passerelle avant de continuer.",
-      "local_certificate_unconfirmed": "Cochez la case pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
+      "local_certificate_unconfirmed": "Activez l'interrupteur pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
       "local_token_rejected": "La passerelle a rejeté ce jeton. Vérifiez-le ou abandonnez volontairement cette tentative pour en utiliser un autre.",
       "local_resource_forbidden": "La passerelle a refusé l'accès à une ressource nécessaire. Un jeton seul ne prouve pas l'accès en lecture.",
       "local_missing_resource": "La passerelle ne fournit pas une ressource de configuration nécessaire.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Supprimer les vacances",
-        "description": "**{holiday}**\n\nSupprimer complètement ces vacances ? Elles seront aussi retirées de l'installation de chauffage et du calendrier. Laissez la confirmation décochée pour revenir sans supprimer.",
+        "description": "**{holiday}**\n\nSupprimer complètement ces vacances ? Elles seront aussi retirées de l'installation de chauffage et du calendrier. Laissez l'interrupteur de confirmation désactivé pour revenir sans supprimer.",
         "data": {
           "confirm_delete": "Supprimer complètement ces vacances"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Supprimer l'accès",
-        "description": "Les identifiants sont supprimés de Home Assistant. Le jeton reste sur la passerelle, sauf si vous le révoquez avec la case ci-dessous. Les installations et les entités sont conservées, même s'il s'agit du dernier accès ; sans accès disponible, elles n'affichent pas de valeurs actuelles. Laissez la case du haut décochée pour revenir sans modification.",
+        "description": "Les identifiants sont supprimés de Home Assistant. Le jeton reste sur la passerelle, sauf si vous le révoquez avec l'interrupteur ci-dessous. Les installations et les entités sont conservées, même s'il s'agit du dernier accès ; sans accès disponible, elles n'affichent pas de valeurs actuelles. Laissez l'interrupteur du haut désactivé pour revenir sans modification.",
         "data": {
           "confirm": "Supprimer cet accès",
           "revoke": "Révoquer d'abord le jeton de cet accès sur la passerelle"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Révoquer le jeton",
-        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois. Laissez la case décochée pour revenir sans révoquer. {use} Cochez aussi la deuxième case pour le confirmer.",
+        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois. Laissez l'interrupteur désactivé pour revenir sans révoquer. {use} Activez aussi le deuxième interrupteur pour le confirmer.",
         "data": {
           "confirm": "Révoquer ce jeton sur la passerelle",
           "confirm_end": "Un accès local qui utilise ce jeton prend fin"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Le format du jeton n'est pas valide. Copiez le jeton complet sans espaces.",
       "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
       "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
-      "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
+      "local_unlock_confirm_required": "Activez cet interrupteur une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
       "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes. La même erreur apparaît aussi si Home Assistant ne se trouve pas dans le même réseau (sous-réseau) que la passerelle. Dans ce cas, récupérez le jeton sur un ordinateur du réseau de la passerelle et saisissez-le sous « Utiliser un jeton existant ».",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
       "local_certificate_changed": "Le certificat n'a pas pu être confirmé ou a changé. Examinez à nouveau le certificat de la passerelle avant de continuer.",
-      "local_certificate_unconfirmed": "Cochez la case pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
+      "local_certificate_unconfirmed": "Activez l'interrupteur pour confirmer le certificat. S'il n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
       "local_token_rejected": "La passerelle a rejeté ce jeton. Vérifiez-le ou abandonnez volontairement cette tentative pour en utiliser un autre.",
       "local_resource_forbidden": "La passerelle a refusé l'accès à une ressource nécessaire. Un jeton seul ne prouve pas l'accès en lecture.",
       "local_missing_resource": "La passerelle ne fournit pas une ressource de configuration nécessaire.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Le service de connexion de la passerelle a refusé la requête. Rien n'a été modifié.",
       "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
       "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié.",
-      "local_token_end_unconfirmed": "Révoquer ce jeton peut mettre fin à un accès local. Cochez aussi la deuxième case, ou laissez la première décochée pour revenir. Rien n'a été envoyé.",
-      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé.",
+      "local_token_end_unconfirmed": "Révoquer ce jeton peut mettre fin à un accès local. Activez aussi le deuxième interrupteur, ou laissez le premier désactivé pour revenir. Rien n'a été envoyé.",
+      "connection_remove_unconfirmed": "Activez aussi l'interrupteur « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé.",
       "switch_program_value": "Saisissez une température de {minimum} à {maximum} °C par pas de {step} °C.",
       "switch_program_day_emptied": "Un jour qui a des points de commutation en garde au moins un ; on ne sait pas ce qu'un jour vide signifie pour le régulateur.",
       "rrc_point_limit": "Ce jour a déjà le nombre maximal de points de commutation que l'application autorise ({per_day}).",

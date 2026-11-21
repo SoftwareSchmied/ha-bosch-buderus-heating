@@ -168,7 +168,7 @@
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
       "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
       "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
-      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_confirm_required": "Attiva questo interruttore dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
       "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti. Lo stesso errore compare anche se Home Assistant non si trova nella stessa rete (sottorete) del gateway. In tal caso ottieni il token da un computer nella rete del gateway e inseriscilo in «Usa un token esistente».",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
@@ -177,7 +177,7 @@
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
       "local_certificate_changed": "Non è stato possibile confermare il certificato oppure è cambiato. Ispeziona di nuovo il certificato del gateway prima di continuare.",
-      "local_certificate_unconfirmed": "Seleziona la casella per confermare il certificato. Se non appartiene al tuo gateway, chiudi la finestra di dialogo; non viene inviato nulla.",
+      "local_certificate_unconfirmed": "Attiva l'interruttore per confermare il certificato. Se non appartiene al tuo gateway, chiudi la finestra di dialogo; non viene inviato nulla.",
       "local_token_rejected": "Il gateway ha rifiutato questo token. Controllalo oppure scarta deliberatamente questo tentativo per usarne un altro.",
       "local_resource_forbidden": "Il gateway ha negato l'accesso a una risorsa necessaria. Un token da solo non dimostra l'accesso in lettura.",
       "local_missing_resource": "Il gateway non fornisce una risorsa necessaria per la configurazione.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Elimina vacanza",
-        "description": "**{holiday}**\n\nEliminare completamente questa vacanza? Verrà rimossa anche dall'impianto di riscaldamento e dal calendario. Lascia la conferma deselezionata per tornare indietro senza eliminare.",
+        "description": "**{holiday}**\n\nEliminare completamente questa vacanza? Verrà rimossa anche dall'impianto di riscaldamento e dal calendario. Lascia disattivato l'interruttore di conferma per tornare indietro senza eliminare.",
         "data": {
           "confirm_delete": "Elimina completamente questa vacanza"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Rimuovi accesso",
-        "description": "Le credenziali vengono rimosse da Home Assistant. Il token resta sul gateway, a meno che tu non lo revochi con la casella qui sotto. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso; senza un accesso disponibile non mostrano valori aggiornati. Lascia deselezionata la casella in alto per tornare indietro senza modifiche.",
+        "description": "Le credenziali vengono rimosse da Home Assistant. Il token resta sul gateway, a meno che tu non lo revochi con l'interruttore qui sotto. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso; senza un accesso disponibile non mostrano valori aggiornati. Lascia disattivato l'interruttore in alto per tornare indietro senza modifiche.",
         "data": {
           "confirm": "Rimuovi questo accesso",
           "revoke": "Prima revoca il token di questo accesso sul gateway"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Revoca token",
-        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia la casella deselezionata per tornare indietro senza revocare. {use} Seleziona anche la seconda casella per confermarlo.",
+        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia disattivato l'interruttore per tornare indietro senza revocare. {use} Attiva anche il secondo interruttore per confermarlo.",
         "data": {
           "confirm": "Revoca questo token sul gateway",
           "confirm_end": "Un accesso locale che usa questo token termina"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
       "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
       "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
-      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_confirm_required": "Attiva questo interruttore dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
       "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti. Lo stesso errore compare anche se Home Assistant non si trova nella stessa rete (sottorete) del gateway. In tal caso ottieni il token da un computer nella rete del gateway e inseriscilo in «Usa un token esistente».",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
       "local_certificate_changed": "Non è stato possibile confermare il certificato oppure è cambiato. Ispeziona di nuovo il certificato del gateway prima di continuare.",
-      "local_certificate_unconfirmed": "Seleziona la casella per confermare il certificato. Se non appartiene al tuo gateway, chiudi la finestra di dialogo; non viene inviato nulla.",
+      "local_certificate_unconfirmed": "Attiva l'interruttore per confermare il certificato. Se non appartiene al tuo gateway, chiudi la finestra di dialogo; non viene inviato nulla.",
       "local_token_rejected": "Il gateway ha rifiutato questo token. Controllalo oppure scarta deliberatamente questo tentativo per usarne un altro.",
       "local_resource_forbidden": "Il gateway ha negato l'accesso a una risorsa necessaria. Un token da solo non dimostra l'accesso in lettura.",
       "local_missing_resource": "Il gateway non fornisce una risorsa necessaria per la configurazione.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Il servizio di login del gateway ha rifiutato la richiesta. Non è stato modificato nulla.",
       "local_tokens_unsupported": "Questo gateway non fornisce un elenco dei token. Non è stato modificato nulla.",
       "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla.",
-      "local_token_end_unconfirmed": "Revocare questo token può terminare un accesso locale. Seleziona anche la seconda casella oppure lascia la prima deselezionata per tornare indietro. Non è stato inviato nulla.",
-      "connection_remove_unconfirmed": "Seleziona anche «Rimuovi questo accesso»: un token viene revocato solo insieme alla rimozione dell'accesso. Non è stato inviato né rimosso nulla.",
+      "local_token_end_unconfirmed": "Revocare questo token può terminare un accesso locale. Attiva anche il secondo interruttore oppure lascia disattivato il primo per tornare indietro. Non è stato inviato nulla.",
+      "connection_remove_unconfirmed": "Attiva anche l'interruttore «Rimuovi questo accesso»: un token viene revocato solo insieme alla rimozione dell'accesso. Non è stato inviato né rimosso nulla.",
       "switch_program_value": "Inserisci una temperatura da {minimum} a {maximum} °C a passi di {step} °C.",
       "switch_program_day_emptied": "Un giorno che ha punti di commutazione ne mantiene almeno uno; non è noto cosa significhi un giorno vuoto per il regolatore.",
       "rrc_point_limit": "Questo giorno ha già il numero massimo di punti di commutazione consentito dall'app ({per_day}).",

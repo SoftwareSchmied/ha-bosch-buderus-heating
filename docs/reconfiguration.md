@@ -90,7 +90,7 @@ starts the separate sign-in again.
 When the gateway of a local access answers at a new address (for example after
 a router restart), a note **Local gateway found at a new address** offers to use
 it. The gateway was recognized by the certificate confirmed during setup, with
-one TLS handshake and without the token. Tick the box and submit to save the
+one TLS handshake and without the token. Turn on the switch and submit to save the
 address; the certificate is checked once more right before. The token and the
 certificate stay, so no new sign-in is needed. The note disappears on its own
 when the access reaches its gateway again or Home Assistant restarts. Details

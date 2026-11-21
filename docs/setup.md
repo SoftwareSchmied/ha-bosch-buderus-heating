@@ -393,7 +393,7 @@ What removal does and does not do:
 - The sign-in tokens saved in the entry are deleted with it. The integration
   sends nothing to the cloud for that; it does not sign you out of SingleKey ID.
 - Tokens on the gateway are never revoked automatically. To revoke the token
-  of a local access, tick that choice in **Remove access** before you remove
+  of a local access, turn on that choice in **Remove access** before you remove
   it (see [local enrollment](local-enrollment.md#tokens-on-the-gateway)).
 
 ### Deutsch: Integration entfernen

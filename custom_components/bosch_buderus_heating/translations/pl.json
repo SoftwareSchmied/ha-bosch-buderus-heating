@@ -168,7 +168,7 @@
       "local_invalid_token": "Format tokenu jest nieprawidłowy. Skopiuj cały token bez spacji.",
       "local_invalid_credentials": "Bramka odrzuciła Login i Pass. Sprawdź oba na etykiecie bramki i wprowadź je ponownie.",
       "local_invalid_label_format": "Login lub Pass zawiera znaki, których nie ma na etykiecie urządzenia, na przykład spację wewnątrz wartości. Do bramki nic nie wysłano. Sprawdź wpis i wprowadź go ponownie.",
-      "local_unlock_confirm_required": "Zaznacz to pole, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
+      "local_unlock_confirm_required": "Włącz ten przełącznik, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
       "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut. Ten sam błąd pojawia się także wtedy, gdy Home Assistant nie znajduje się w tej samej sieci (podsieci) co brama. W takim przypadku pobierz token na komputerze w sieci bramy i wpisz go w „Użyj istniejącego tokenu”.",
       "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
       "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
@@ -177,7 +177,7 @@
       "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
       "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
       "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
-      "local_certificate_unconfirmed": "Zaznacz pole, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
+      "local_certificate_unconfirmed": "Włącz przełącznik, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
       "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
       "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
       "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Usuń urlop",
-        "description": "**{holiday}**\n\nUsunąć ten urlop całkowicie? Zostanie on także usunięty z instalacji grzewczej i kalendarza. Pozostaw potwierdzenie niezaznaczone, aby wrócić bez usuwania.",
+        "description": "**{holiday}**\n\nUsunąć ten urlop całkowicie? Zostanie on także usunięty z instalacji grzewczej i kalendarza. Pozostaw przełącznik potwierdzenia wyłączony, aby wrócić bez usuwania.",
         "data": {
           "confirm_delete": "Usuń ten urlop całkowicie"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Usuń dostęp",
-        "description": "Dane logowania zostaną usunięte z Home Assistanta. Token pozostanie na bramce, chyba że unieważnisz go polem poniżej. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp; bez działającego dostępu nie pokazują wartości bieżących. Pozostaw górne pole niezaznaczone, aby wrócić bez zmian.",
+        "description": "Dane logowania zostaną usunięte z Home Assistanta. Token pozostanie na bramce, chyba że unieważnisz go przełącznikiem poniżej. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp; bez działającego dostępu nie pokazują wartości bieżących. Pozostaw górny przełącznik wyłączony, aby wrócić bez zmian.",
         "data": {
           "confirm": "Usuń ten dostęp",
           "revoke": "Najpierw unieważnij token tego dostępu w bramie"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Unieważnij token",
-        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz. Pozostaw pole niezaznaczone, aby wrócić bez unieważniania. {use} Zaznacz również drugie pole, aby to potwierdzić.",
+        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz. Pozostaw przełącznik wyłączony, aby wrócić bez unieważniania. {use} Włącz również drugi przełącznik, aby to potwierdzić.",
         "data": {
           "confirm": "Unieważnij ten token na bramce",
           "confirm_end": "Dostęp lokalny używający tego tokenu się kończy"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Format tokenu jest nieprawidłowy. Skopiuj cały token bez spacji.",
       "local_invalid_credentials": "Bramka odrzuciła Login i Pass. Sprawdź oba na etykiecie bramki i wprowadź je ponownie.",
       "local_invalid_label_format": "Login lub Pass zawiera znaki, których nie ma na etykiecie urządzenia, na przykład spację wewnątrz wartości. Do bramki nic nie wysłano. Sprawdź wpis i wprowadź go ponownie.",
-      "local_unlock_confirm_required": "Zaznacz to pole, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
+      "local_unlock_confirm_required": "Włącz ten przełącznik, gdy odblokujesz logowanie lokalne na bramce i zobaczysz niebieski sygnał.",
       "local_unlock_required": "Bramka nie odblokowała logowania lokalnego albo minęło pięć minut od odblokowania. Naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę, poczekaj na niebieski sygnał i spróbuj ponownie w ciągu pięciu minut. Ten sam błąd pojawia się także wtedy, gdy Home Assistant nie znajduje się w tej samej sieci (podsieci) co brama. W takim przypadku pobierz token na komputerze w sieci bramy i wpisz go w „Użyj istniejącego tokenu”.",
       "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
       "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
       "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
       "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
-      "local_certificate_unconfirmed": "Zaznacz pole, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
+      "local_certificate_unconfirmed": "Włącz przełącznik, aby potwierdzić certyfikat. Jeśli nie należy do Twojej bramki, zamknij okno dialogowe; nic nie zostanie wysłane.",
       "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
       "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
       "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Usługa logowania bramki odrzuciła żądanie. Nic nie zostało zmienione.",
       "local_tokens_unsupported": "Ta bramka nie udostępnia listy tokenów. Nic nie zostało zmienione.",
       "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione.",
-      "local_token_end_unconfirmed": "Unieważnienie tego tokenu może zakończyć dostęp lokalny. Zaznacz również drugie pole albo pozostaw pierwsze niezaznaczone, aby wrócić. Nic nie zostało wysłane.",
-      "connection_remove_unconfirmed": "Zaznacz również „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte.",
+      "local_token_end_unconfirmed": "Unieważnienie tego tokenu może zakończyć dostęp lokalny. Włącz również drugi przełącznik albo pozostaw pierwszy wyłączony, aby wrócić. Nic nie zostało wysłane.",
+      "connection_remove_unconfirmed": "Włącz również przełącznik „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte.",
       "switch_program_value": "Wpisz temperaturę od {minimum} do {maximum} °C w krokach co {step} °C.",
       "switch_program_day_emptied": "Dzień, który ma punkty przełączenia, zachowuje co najmniej jeden; nie wiadomo, co pusty dzień oznacza dla regulatora.",
       "rrc_point_limit": "Ten dzień ma już największą liczbę punktów przełączenia, jaką dopuszcza aplikacja ({per_day}).",

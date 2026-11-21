@@ -168,7 +168,7 @@
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
       "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
       "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
-      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_confirm_required": "Uključite ovaj prekidač kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
       "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta. Ista se pogreška pojavljuje i ako Home Assistant nije u istoj mreži (podmreži) kao pristupnik. Tada dohvatite token na računalu u mreži pristupnika i unesite ga pod „Upotreba postojećeg tokena“.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
@@ -177,7 +177,7 @@
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
       "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
-      "local_certificate_unconfirmed": "Označite okvir kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
+      "local_certificate_unconfirmed": "Uključite prekidač kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
       "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
       "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
       "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Brisanje odmora",
-        "description": "**{holiday}**\n\nObrisati ovaj odmor u potpunosti? Uklonit će se i iz sustava grijanja i iz kalendara. Ostavite potvrdu neoznačenom za povratak bez brisanja.",
+        "description": "**{holiday}**\n\nObrisati ovaj odmor u potpunosti? Uklonit će se i iz sustava grijanja i iz kalendara. Ostavite prekidač potvrde isključenim za povratak bez brisanja.",
         "data": {
           "confirm_delete": "Obriši ovaj odmor u potpunosti"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Ukloni pristup",
-        "description": "Podaci za prijavu uklanjaju se iz Home Assistanta. Token ostaje na pristupniku osim ako ga ne opozovete kvačicom u nastavku. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup; bez dostupnog pristupa ne prikazuju trenutne vrijednosti. Ostavite gornju kvačicu neoznačenom da se vratite bez promjena.",
+        "description": "Podaci za prijavu uklanjaju se iz Home Assistanta. Token ostaje na pristupniku osim ako ga ne opozovete prekidačem u nastavku. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup; bez dostupnog pristupa ne prikazuju trenutne vrijednosti. Ostavite gornji prekidač isključenim da se vratite bez promjena.",
         "data": {
           "confirm": "Ukloni ovaj pristup",
           "revoke": "Prvo opozovi token ovog pristupa na pristupniku"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Opoziv tokena",
-        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite kvačicu neoznačenom da se vratite bez opoziva. {use} Označite i drugu kvačicu kako biste to potvrdili.",
+        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite prekidač isključenim da se vratite bez opoziva. {use} Uključite i drugi prekidač kako biste to potvrdili.",
         "data": {
           "confirm": "Opozovi ovaj token na pristupniku",
           "confirm_end": "Lokalni pristup koji koristi ovaj token završava"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
       "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
       "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
-      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_confirm_required": "Uključite ovaj prekidač kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
       "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta. Ista se pogreška pojavljuje i ako Home Assistant nije u istoj mreži (podmreži) kao pristupnik. Tada dohvatite token na računalu u mreži pristupnika i unesite ga pod „Upotreba postojećeg tokena“.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
       "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
-      "local_certificate_unconfirmed": "Označite okvir kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
+      "local_certificate_unconfirmed": "Uključite prekidač kako biste potvrdili certifikat. Ako ne pripada vašem pristupniku, zatvorite dijalog; ništa se ne šalje.",
       "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
       "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
       "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Ništa nije promijenjeno.",
       "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
       "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
-      "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Označite i drugu kvačicu ili ostavite prvu neoznačenom da se vratite. Ništa nije poslano.",
-      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno.",
+      "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Uključite i drugi prekidač ili ostavite prvi isključenim da se vratite. Ništa nije poslano.",
+      "connection_remove_unconfirmed": "Uključite i prekidač „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno.",
       "switch_program_value": "Unesite temperaturu od {minimum} do {maximum} °C u koracima od {step} °C.",
       "switch_program_day_emptied": "Dan koji ima točke uklapanja zadržava barem jednu; nije poznato što prazan dan znači za regulator.",
       "rrc_point_limit": "Ovaj dan već ima najveći broj točaka uklapanja koji aplikacija dopušta ({per_day}).",

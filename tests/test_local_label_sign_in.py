@@ -109,11 +109,67 @@ async def test_a_space_inside_a_value_is_an_input_error_and_sends_nothing(
     )
     assert result["step_id"] == "local_auth"
     assert result["errors"] == {"base": "local_invalid_label_format"}
+    # What was typed stays, so only the faulty value has to be corrected.
+    assert _suggested(result, "login") == LABEL.login
+    assert _suggested(result, "password") == broken
     assert forms == []
     await hass.async_block_till_done()
     (attempt,) = await local_setup_history(hass, entry.entry_id).async_attempts()
     assert attempt["error"] == "local_invalid_label_format"
     assert attempt["detail"] == "not_sent"
+
+
+def _suggested(result, name: str):
+    for marker in result["data_schema"].schema:
+        if marker == name:
+            return (marker.description or {}).get("suggested_value")
+    raise AssertionError(name)
+
+
+async def test_without_the_switch_the_error_is_at_the_top_and_the_login_stays(
+    hass, supported, journal, auth_gateway, monkeypatch
+):
+    entry, manager, result, forms = await _to_auth(hass, monkeypatch, auth_gateway)
+    result = await submit(
+        hass,
+        manager,
+        result,
+        {"login": f" {LABEL.login} ", "password": LABEL.password, "unlocked": False},
+    )
+    assert result["step_id"] == "local_auth"
+    # The general error first, the field error next to the switch.
+    assert result["errors"] == {
+        "base": "local_unlock_confirm_required",
+        "unlocked": "local_unlock_confirm_required",
+    }
+    assert _suggested(result, "login") == LABEL.login
+    assert _suggested(result, "password") == LABEL.password
+    # The switch itself is never pre-set, and nothing was sent.
+    assert _suggested(result, "unlocked") is None
+    assert forms == []
+    await hass.async_block_till_done()
+    (attempt,) = await local_setup_history(hass, entry.entry_id).async_attempts()
+    assert attempt["error"] == "local_unlock_confirm_required"
+    assert attempt["detail"] == "not_sent"
+    # The typed values are not kept anywhere: not in the stored attempt either.
+    assert LABEL.password not in str(attempt)
+    # Turning the switch on with the kept values signs in.
+    result = await submit(
+        hass,
+        manager,
+        result,
+        {"login": LABEL.login, "password": LABEL.password, "unlocked": True},
+    )
+    assert result["step_id"] == "local_certificate_data"
+    assert len(forms) == 1
+
+
+async def test_a_blank_form_without_the_switch_keeps_nothing_to_suggest(
+    hass, supported, journal, auth_gateway, monkeypatch
+):
+    _, _, result, _ = await _to_auth(hass, monkeypatch, auth_gateway)
+    assert _suggested(result, "login") is None
+    assert _suggested(result, "password") is None
 
 
 @pytest.mark.parametrize(

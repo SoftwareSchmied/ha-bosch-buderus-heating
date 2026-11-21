@@ -168,7 +168,7 @@
       "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
       "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
       "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
-      "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
+      "local_unlock_confirm_required": "Turn on the switch once you have released local sign-in on the gateway and seen the blue signal.",
       "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes. The same error also appears if Home Assistant is not in the same network (subnet) as the gateway. In that case get the token on a computer in the gateway's network and enter it under “Use an existing token”.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
@@ -177,7 +177,7 @@
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
       "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
-      "local_certificate_unconfirmed": "Tick the box to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
+      "local_certificate_unconfirmed": "Turn on the switch to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
       "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
       "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
       "local_missing_resource": "The gateway does not provide a required setup resource.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Delete holiday",
-        "description": "**{holiday}**\n\nDelete this holiday completely? It will also be removed from the heating system and the calendar. Leave the confirmation unchecked to return without deleting.",
+        "description": "**{holiday}**\n\nDelete this holiday completely? It will also be removed from the heating system and the calendar. Leave the confirmation switch off to return without deleting.",
         "data": {
           "confirm_delete": "Delete this holiday completely"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Remove access",
-        "description": "The credentials are removed from Home Assistant. The token stays on the gateway unless you revoke it with the box below. Systems and entities are kept, even if this is the last access; without an available access they show no current values. Leave the top box unticked to go back without changes.",
+        "description": "The credentials are removed from Home Assistant. The token stays on the gateway unless you revoke it with the switch below. Systems and entities are kept, even if this is the last access; without an available access they show no current values. Leave the top switch off to go back without changes.",
         "data": {
           "confirm": "Remove this access",
           "revoke": "First revoke this access's token on the gateway"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Revoke token",
-        "description": "Revoke the token of this integration created on {created} on the gateway at **{host}**?\n\nThe gateway deletes it for good. If it is the token this access uses, local access ends: the access is switched off and needs a new sign-in with the device label. The list is read again right before, and the request is sent only once. Leave the box unticked to go back without revoking. {use} Tick the second box as well to confirm this.",
+        "description": "Revoke the token of this integration created on {created} on the gateway at **{host}**?\n\nThe gateway deletes it for good. If it is the token this access uses, local access ends: the access is switched off and needs a new sign-in with the device label. The list is read again right before, and the request is sent only once. Leave the switch off to go back without revoking. {use} Turn on the second switch as well to confirm this.",
         "data": {
           "confirm": "Revoke this token on the gateway",
           "confirm_end": "A local access using this token ends"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
       "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
       "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
-      "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
+      "local_unlock_confirm_required": "Turn on the switch once you have released local sign-in on the gateway and seen the blue signal.",
       "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes. The same error also appears if Home Assistant is not in the same network (subnet) as the gateway. In that case get the token on a computer in the gateway's network and enter it under “Use an existing token”.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
       "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
-      "local_certificate_unconfirmed": "Tick the box to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
+      "local_certificate_unconfirmed": "Turn on the switch to confirm the certificate. If it does not belong to your gateway, close the dialog; nothing is sent.",
       "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
       "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
       "local_missing_resource": "The gateway does not provide a required setup resource.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "The gateway's sign-in service refused the request. Nothing was changed.",
       "local_tokens_unsupported": "This gateway does not provide a token list. Nothing was changed.",
       "local_tokens_invalid": "The gateway's token list could not be checked (unexpected or too large answer). Nothing was changed.",
-      "local_token_end_unconfirmed": "Revoking this token can end a local access. Tick the second box as well, or leave the first box unticked to go back. Nothing was sent.",
-      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed.",
+      "local_token_end_unconfirmed": "Revoking this token can end a local access. Turn on the second switch as well, or leave the first switch off to go back. Nothing was sent.",
+      "connection_remove_unconfirmed": "Turn on the “Remove this access” switch as well: a token is revoked only together with removing the access. Nothing was sent or removed.",
       "switch_program_value": "Enter a temperature from {minimum} to {maximum} °C in steps of {step} °C.",
       "switch_program_day_emptied": "A day that has switch points keeps at least one; what an empty day means for the controller is not known.",
       "rrc_point_limit": "This day already has the highest number of switch points the app allows ({per_day}).",

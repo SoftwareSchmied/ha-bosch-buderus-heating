@@ -67,7 +67,7 @@ access only. Its address is preselected in the local setup of the new entry,
 also when other gateways are announced; any other address can still be chosen.
 
 The local setup asks to confirm a certificate once per port. The second page,
-for the data port after the sign-in, has its own title. Not ticking the box
+for the data port after the sign-in, has its own title. Leaving the switch off
 shows a note instead of the same page again; nothing is sent. The last page
 saves with **OK**; to keep nothing, close the dialog.
 

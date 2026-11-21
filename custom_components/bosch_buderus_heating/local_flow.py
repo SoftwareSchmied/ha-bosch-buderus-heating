@@ -948,6 +948,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return denied
         errors = {}
         placeholders: dict[str, str] | None = None
+        # What the person typed before a validation error, offered again so
+        # only the missing switch has to be fixed. It lives in this call only:
+        # it is never stored on the flow, in an entry or in a log.
+        typed: dict[str, str] = {}
         if user_input is None and self._local_error:
             # The reason of the rejected attempt before (FLOW-5).
             errors["base"] = self._local_error
@@ -962,34 +966,39 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             login = str(user_input.get("login", "")).strip()
             password = str(user_input.get("password", "")).strip()
             if user_input.get("unlocked") is not True:
+                # Shown at the top as well: the switch is easy to overlook.
+                errors["base"] = "local_unlock_confirm_required"
                 errors["unlocked"] = "local_unlock_confirm_required"
+                typed = {"login": login, "password": password}
                 self._local_detail = NOT_SENT
             else:
                 try:
                     label = LabelCredentials(login, password)
                 except ValueError:
                     errors["base"] = "local_invalid_label_format"
+                    typed = {"login": login, "password": password}
                     self._local_detail = NOT_SENT
                 else:
                     # The retry callback never retains device-label credentials.
                     result = await self._local_start(lambda: self._local_create(label))
                     self._local_retry = self._local_resume_pending
                     return result
+        schema = vol.Schema(
+            {
+                # The login is visible, so a typo can be seen; the pass
+                # field has its own show and hide switch.
+                vol.Required("login"): TextSelector(
+                    TextSelectorConfig(type=TextSelectorType.TEXT)
+                ),
+                vol.Required("password"): TextSelector(
+                    TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                ),
+                vol.Required("unlocked", default=False): BooleanSelector(),
+            }
+        )
         return self._local_form(
             "local_auth",
-            vol.Schema(
-                {
-                    # The login is visible, so a typo can be seen; the pass
-                    # field has its own show and hide switch.
-                    vol.Required("login"): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
-                    ),
-                    vol.Required("password"): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
-                    ),
-                    vol.Required("unlocked", default=False): BooleanSelector(),
-                }
-            ),
+            self.add_suggested_values_to_schema(schema, typed) if typed else schema,
             errors=errors,
             placeholders=placeholders,
         )

@@ -66,11 +66,15 @@ physical release. Device login and password are neither saved nor returned as
 form defaults. The login field shows what is typed; the pass field is masked
 with its show switch. Spaces and line breaks at the edges of both are removed
 before the check; a value with other characters a label does not have, such as
-a space inside it, is refused without a request. A blue-signal checkbox is a
+a space inside it, is refused without a request. The blue-signal switch is a
 user action, not proof that the gateway has accepted the physical release.
+If the switch was left off, or the input was refused before sending, the page
+shows the message at the top and next to the switch and keeps Login and Pass
+as typed, so only the switch has to be turned on. They are kept in the open
+dialog only and never stored. The switch itself always starts off.
 
 Each case has its own message: input the label cannot have (nothing sent), the
-unticked checkbox (nothing sent), Login and Pass rejected by the gateway (400),
+switch left off (nothing sent), Login and Pass rejected by the gateway (400),
 sign-in not released or the five minutes after the release passed (412, with
 the button instruction of 1 second and the second possible cause, Home
 Assistant outside the gateway's network, with the way out of entering an
@@ -82,7 +86,7 @@ its text says why it appears.
 
 Resource trust is checked separately after credentials exist. Previously stored
 trust applies only to the same address and port role with the exact full leaf
-fingerprint. Every certificate change needs confirmation. No checkbox is selected
+fingerprint. Every certificate change needs confirmation. No switch is turned on
 in advance. The transport checks the binding again before transmitting credentials.
 
 The read check verifies the three base resources, then the trusted provider must
@@ -120,7 +124,7 @@ never identity; the only proof is the certificate binding confirmed at setup.
 4. The proven address is kept in memory only. The note is not persistent: it
    disappears after a restart and as soon as the access reaches its gateway
    again.
-5. Confirming the note requires a tick. Right before the change the certificate
+5. Confirming the note requires turning on its switch. Right before the change the certificate
    is checked again with a fresh handshake, the access must still not reach its
    gateway, and its saved address and binding must be unchanged. Only then the
    host of the access is replaced; the token, both certificate bindings and the

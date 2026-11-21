@@ -168,7 +168,7 @@
       "local_invalid_token": "O formato do token é inválido. Copie o token completo sem espaços.",
       "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
       "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
-      "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
+      "local_unlock_confirm_required": "Ative este interruptor depois de libertar o início de sessão local no gateway e ver o sinal azul.",
       "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos. O mesmo erro também aparece se o Home Assistant não estiver na mesma rede (sub-rede) que o gateway. Nesse caso, obtenha o token num computador na rede do gateway e introduza-o em «Utilizar um token existente».",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
@@ -177,7 +177,7 @@
       "local_timeout": "O gateway local não respondeu a tempo. Verifique a ligação e tente novamente.",
       "local_connection_failed": "O Home Assistant não conseguiu alcançar este gateway. Verifique o seu endereço e a ligação de rede.",
       "local_certificate_changed": "Não foi possível confirmar o certificado ou este foi alterado. Inspecione novamente o certificado do gateway antes de continuar.",
-      "local_certificate_unconfirmed": "Assinale a caixa para confirmar o certificado. Se não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
+      "local_certificate_unconfirmed": "Ative o interruptor para confirmar o certificado. Se não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
       "local_token_rejected": "O gateway rejeitou este token. Verifique-o ou rejeite deliberadamente esta tentativa para utilizar outro.",
       "local_resource_forbidden": "O gateway negou o acesso a um recurso necessário. Um token, por si só, não comprova o acesso de leitura.",
       "local_missing_resource": "O gateway não disponibiliza um recurso de configuração necessário.",
@@ -276,7 +276,7 @@
       },
       "delete_holiday": {
         "title": "Eliminar período de férias",
-        "description": "**{holiday}**\n\nEliminar completamente este período de férias? Será também removido do sistema de aquecimento e do calendário. Deixe a confirmação desmarcada para voltar sem eliminar.",
+        "description": "**{holiday}**\n\nEliminar completamente este período de férias? Será também removido do sistema de aquecimento e do calendário. Deixe o interruptor de confirmação desativado para voltar sem eliminar.",
         "data": {
           "confirm_delete": "Eliminar completamente este período de férias"
         }
@@ -605,7 +605,7 @@
       },
       "connection_remove": {
         "title": "Remover acesso",
-        "description": "As credenciais são removidas do Home Assistant. O token permanece no gateway, a menos que o revogue com a caixa abaixo. As instalações e as entidades são mantidas, mesmo que este seja o último acesso; sem um acesso disponível, não mostram valores atuais. Deixe a caixa de cima desmarcada para voltar sem alterações.",
+        "description": "As credenciais são removidas do Home Assistant. O token permanece no gateway, a menos que o revogue com o interruptor abaixo. As instalações e as entidades são mantidas, mesmo que este seja o último acesso; sem um acesso disponível, não mostram valores atuais. Deixe o interruptor de cima desativado para voltar sem alterações.",
         "data": {
           "confirm": "Remover este acesso",
           "revoke": "Primeiro revogar o token deste acesso no gateway"
@@ -805,7 +805,7 @@
       },
       "local_token_revoke": {
         "title": "Revogar token",
-        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez. Deixe a caixa desmarcada para voltar sem revogar. {use} Marque também a segunda caixa para o confirmar.",
+        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez. Deixe o interruptor desativado para voltar sem revogar. {use} Ative também o segundo interruptor para o confirmar.",
         "data": {
           "confirm": "Revogar este token no gateway",
           "confirm_end": "Um acesso local que use este token termina"
@@ -1095,7 +1095,7 @@
       "local_invalid_token": "O formato do token é inválido. Copie o token completo sem espaços.",
       "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
       "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
-      "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
+      "local_unlock_confirm_required": "Ative este interruptor depois de libertar o início de sessão local no gateway e ver o sinal azul.",
       "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos. O mesmo erro também aparece se o Home Assistant não estiver na mesma rede (sub-rede) que o gateway. Nesse caso, obtenha o token num computador na rede do gateway e introduza-o em «Utilizar um token existente».",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
@@ -1104,7 +1104,7 @@
       "local_timeout": "O gateway local não respondeu a tempo. Verifique a ligação e tente novamente.",
       "local_connection_failed": "O Home Assistant não conseguiu alcançar este gateway. Verifique o seu endereço e a ligação de rede.",
       "local_certificate_changed": "Não foi possível confirmar o certificado ou este foi alterado. Inspecione novamente o certificado do gateway antes de continuar.",
-      "local_certificate_unconfirmed": "Assinale a caixa para confirmar o certificado. Se não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
+      "local_certificate_unconfirmed": "Ative o interruptor para confirmar o certificado. Se não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
       "local_token_rejected": "O gateway rejeitou este token. Verifique-o ou rejeite deliberadamente esta tentativa para utilizar outro.",
       "local_resource_forbidden": "O gateway negou o acesso a um recurso necessário. Um token, por si só, não comprova o acesso de leitura.",
       "local_missing_resource": "O gateway não disponibiliza um recurso de configuração necessário.",
@@ -1141,8 +1141,8 @@
       "local_tokens_forbidden": "O serviço de início de sessão do gateway recusou o pedido. Nada foi alterado.",
       "local_tokens_unsupported": "Este gateway não disponibiliza uma lista de tokens. Nada foi alterado.",
       "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado.",
-      "local_token_end_unconfirmed": "Revogar este token pode terminar um acesso local. Marque também a segunda caixa ou deixe a primeira desmarcada para voltar. Nada foi enviado.",
-      "connection_remove_unconfirmed": "Marque também «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido.",
+      "local_token_end_unconfirmed": "Revogar este token pode terminar um acesso local. Ative também o segundo interruptor ou deixe o primeiro desativado para voltar. Nada foi enviado.",
+      "connection_remove_unconfirmed": "Ative também o interruptor «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido.",
       "switch_program_value": "Introduza uma temperatura de {minimum} a {maximum} °C em passos de {step} °C.",
       "switch_program_day_emptied": "Um dia que tem pontos de comutação mantém pelo menos um; não se sabe o que um dia vazio significa para o regulador.",
       "rrc_point_limit": "Este dia já tem o maior número de pontos de comutação que a aplicação permite ({per_day}).",
