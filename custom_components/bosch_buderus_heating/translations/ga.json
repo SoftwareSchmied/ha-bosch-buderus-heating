@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Tástáil naisc",
-        "description": "Theip ar an síniú isteach: ní oireann na pasfhocail don gheata. Seiceáil iad trí “Athraigh sonraí rochtana iCom”. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh; ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis. Ní shocraíonn an aip scamall choíche é, agus ní chruthaíonn ceangal an tairseaigh ansin ná focal faire ar scáileán an ghaireas téimh go bhfuil sé ann; ní shocraíonn é ach an aip ghaireas níos sine leis an rogha nasc a dhéanamh go háitiúil amháin."
+        "description": "Theip ar an síniú isteach: ní oireann na pasfhocail don gheata. Seiceáil iad trí “Athraigh sonraí rochtana iCom”. An chúis is coitianta: tá an pasfhocal príobháideach difriúil ón gceann atá ar an ngeata. Is é pasfhocal pearsanta an gheata é, a shocraítear nuair a phéireáiltear an geata san aip nó sa sean-aip ghléis. Mura bhfuil tú cinnte cé acu atá ann, socraigh arís é san aip agus cuir an ceann céanna isteach anseo. Ní hé pasfhocal ar scáileán an ghaireas téimh an pasfhocal seo."
       },
       "connection_test_certificate_changed": {
         "title": "Tástáil naisc",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Rochtain áitiúil ar gheata iCom",
-        "description": "Léann sé luachanna geata iCom (mar shampla KM200, IP inside, MB LAN 2 nó modúl IP) ó do líonra baile. Fanann scríobh tríd an scamall. Cuir isteach seoladh an gheata, pasfhocal an gheata ón lipéad agus an pasfhocal príobháideach a shocraigh tú sa sean-aip ghléis. Fanann na pasfhocail san iontráil seo agus ní sheoltar chuig áit ar bith iad. Tá súil leis go n-oibreoidh sé, ach níor tástáladh go fóill é ar gheata fíor.",
+        "description": "Léann sé luachanna geata iCom (mar shampla KM200, IP inside, MB LAN 2 nó modúl IP) ó do líonra baile. Fanann scríobh tríd an scamall. Cuir isteach seoladh an gheata, pasfhocal an gheata ón lipéad agus an pasfhocal príobháideach (pasfhocal pearsanta an gheata, a shocraítear nuair a phéireáiltear é san aip nó sa sean-aip ghléis). Fanann na pasfhocail san iontráil seo agus ní sheoltar chuig áit ar bith iad. Tá súil leis go n-oibreoidh sé, ach níor tástáladh go fóill é ar gheata fíor.",
         "data": {
           "host": "Seoladh IP nó óstainm",
           "gateway_password": "Pasfhocal an gheata (lipéad an ghléis)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "An pasfhocal ar lipéad an ghléis; déantar neamhaird de dhashanna.",
-          "private_password": "An pasfhocal a shocraigh tú sa sean-aip ghléis (mar shampla MyDevice). Ní hé pasfhocal cuntais na haipe nua é."
+          "private_password": "Pasfhocal pearsanta an gheata, a shocraítear nuair a phéireáiltear é san aip nó sa sean-aip ghléis (mar shampla MyDevice). Ní hé pasfhocal cuntais na haipe nua é."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
       "switch_program_aircon_setting": "Roghnaigh modh a thairgeann an t-aerchóiritheoir agus, dó sin, teocht laistigh dá raon agus dá chéimeanna agus ceann dá luasanna lucht aeraithe.",
       "icom_cannot_connect": "Níor fhreagair an geata. Seiceáil an seoladh agus an féidir teacht ar an ngeata ar chalafort 80.",
-      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal. An chúis is coitianta: níor sábháladh an pasfhocal príobháideach ar an geata riamh. Ní bhíonn sé ann ach amháin má socraíodh é uair amháin sa sean-aip ghléis. Ní shocraíonn an aip scamall choíche é, agus ní chruthaíonn ceangal an tairseaigh ansin ná focal faire ar scáileán an ghaireas téimh go bhfuil sé ann; ní shocraíonn é ach an aip ghaireas níos sine leis an rogha nasc a dhéanamh go háitiúil amháin.",
+      "icom_invalid_auth": "Níorbh fhéidir freagra an gheata a dhíchriptiú. Seiceáil an dá phasfhocal. An chúis is coitianta: tá an pasfhocal príobháideach difriúil ón gceann atá ar an ngeata. Is é pasfhocal pearsanta an gheata é, a shocraítear nuair a phéireáiltear an geata san aip nó sa sean-aip ghléis. Mura bhfuil tú cinnte cé acu atá ann, socraigh arís é san aip agus cuir an ceann céanna isteach anseo. Ní hé pasfhocal ar scáileán an ghaireas téimh an pasfhocal seo.",
       "icom_busy": "Tá an geata gnóthach. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_no_identity": "Níorbh fhéidir an geata a mheaitseáil leis an gcóras: ní thuairiscíonn sé aitheantas úsáidte, agus ní réitíonn a luachanna go leor le luachanna na scamall. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_other_gateway": "Ní hé seo geata an chórais roghnaithe. Seiceáil an seoladh.",

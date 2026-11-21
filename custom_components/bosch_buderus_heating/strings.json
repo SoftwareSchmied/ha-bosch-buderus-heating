@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Connection test",
-        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password was never saved on the gateway; it is only stored there if it was set once in the old device app. The cloud app never sets it, and neither pairing the gateway there nor a password on the heater display shows that it exists; only the older device app sets it, with the option to connect locally only."
+        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway, set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, set it again in the app and enter the same one here. A password on the heater display is not this password."
       },
       "connection_test_certificate_changed": {
         "title": "Connection test",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Local access to an iCom gateway",
-        "description": "Reads the values of an iCom gateway (for example KM200, IP inside, MB LAN 2 or an IP module) from your home network. Writing stays with the cloud. Enter the gateway's address, the gateway password from its sticker and the private password you set in the old device app. The passwords stay in this entry and are never sent anywhere. Expected to work, but not yet tested on a real gateway.",
+        "description": "Reads the values of an iCom gateway (for example KM200, IP inside, MB LAN 2 or an IP module) from your home network. Writing stays with the cloud. Enter the gateway's address, the gateway password from its sticker and the private password (the personal password of the gateway, set when pairing it in the app or in the old device app). The passwords stay in this entry and are never sent anywhere. Expected to work, but not yet tested on a real gateway.",
         "data": {
           "host": "IP address or hostname",
           "gateway_password": "Gateway password (device sticker)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "The password on the device sticker; dashes are ignored.",
-          "private_password": "The password you set in the old device app (for example MyDevice). It is not the account password of the new app."
+          "private_password": "The personal password of the gateway, set when pairing it in the app or in the old device app (for example MyDevice). It is not the account password of the new app."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
       "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds.",
       "icom_cannot_connect": "The gateway did not answer. Check the address and that the gateway can be reached on port 80.",
-      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password was never saved on the gateway. It is only stored there if it was set once in the old device app. The cloud app never sets it, and neither pairing the gateway there nor a password on the heater display shows that it exists; only the older device app sets it, with the option to connect locally only.",
+      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway, set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, set it again in the app and enter the same one here. A password on the heater display is not this password.",
       "icom_busy": "The gateway is busy. Try again in a few minutes.",
       "icom_no_identity": "The gateway could not be matched with the system: it reports no usable ID, and its values do not agree closely enough with the cloud values. Try again in a few minutes.",
       "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",

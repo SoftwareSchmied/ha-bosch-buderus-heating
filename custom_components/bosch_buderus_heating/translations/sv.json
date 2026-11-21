@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Anslutningstest",
-        "description": "Inloggningen misslyckades: lösenorden passar inte till gatewayen. Kontrollera dem via “Ändra iCom-åtkomstuppgifter”. Vanligaste orsaken: det privata lösenordet har aldrig sparats på gatewayen; det finns där bara om det någon gång angetts i den gamla enhetsappen. Moln-appen anger det aldrig, och varken parkoppling av gatewayen där eller ett lösenord på värmeenhetens display visar att det finns; bara den äldre enhetsappen anger det, med alternativet att bara ansluta lokalt."
+        "description": "Inloggningen misslyckades: lösenorden passar inte till gatewayen. Kontrollera dem via “Ändra iCom-åtkomstuppgifter”. Vanligaste orsaken: det privata lösenordet skiljer sig från det som gatewayen har. Det är gatewayens personliga lösenord, som anges vid parkoppling av gatewayen i appen eller i den gamla enhetsappen. Om du är osäker på vilket det är, ange det på nytt i appen och skriv in samma här. Ett lösenord på värmeenhetens display är inte det här lösenordet."
       },
       "connection_test_certificate_changed": {
         "title": "Anslutningstest",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokal åtkomst till en iCom-gateway",
-        "description": "Läser värdena från en iCom-gateway (till exempel KM200, IP inside, MB LAN 2 eller en IP-modul) i hemnätverket. Skrivning sker fortfarande via molnet. Ange gatewayens adress, gatewaylösenordet från etiketten och det privata lösenordet som du angav i den gamla enhetsappen. Lösenorden stannar i den här posten och skickas aldrig någon annanstans. Förväntas fungera, men har ännu inte testats på en riktig gateway.",
+        "description": "Läser värdena från en iCom-gateway (till exempel KM200, IP inside, MB LAN 2 eller en IP-modul) i hemnätverket. Skrivning sker fortfarande via molnet. Ange gatewayens adress, gatewaylösenordet från etiketten och det privata lösenordet (gatewayens personliga lösenord, som anges vid parkoppling i appen eller i den gamla enhetsappen). Lösenorden stannar i den här posten och skickas aldrig någon annanstans. Förväntas fungera, men har ännu inte testats på en riktig gateway.",
         "data": {
           "host": "IP-adress eller värdnamn",
           "gateway_password": "Gatewaylösenord (etikett på enheten)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Lösenordet på enhetens etikett; bindestreck ignoreras.",
-          "private_password": "Lösenordet du angav i den gamla enhetsappen (till exempel MyDevice). Det är inte kontolösenordet i den nya appen."
+          "private_password": "Gatewayens personliga lösenord, som anges vid parkoppling i appen eller i den gamla enhetsappen (till exempel MyDevice). Det är inte kontolösenordet i den nya appen."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken.",
       "switch_program_aircon_setting": "Välj ett läge som luftkonditioneringen erbjuder och för det en temperatur inom dess intervall och steg samt en av dess fläkthastigheter.",
       "icom_cannot_connect": "Gatewayen svarade inte. Kontrollera adressen och att gatewayen går att nå på port 80.",
-      "icom_invalid_auth": "Gatewayens svar gick inte att dekryptera. Kontrollera båda lösenorden. Vanligaste orsaken: det privata lösenordet har aldrig sparats på gatewayen. Det finns där bara om det någon gång angetts i den gamla enhetsappen. Moln-appen anger det aldrig, och varken parkoppling av gatewayen där eller ett lösenord på värmeenhetens display visar att det finns; bara den äldre enhetsappen anger det, med alternativet att bara ansluta lokalt.",
+      "icom_invalid_auth": "Gatewayens svar gick inte att dekryptera. Kontrollera båda lösenorden. Vanligaste orsaken: det privata lösenordet skiljer sig från det som gatewayen har. Det är gatewayens personliga lösenord, som anges vid parkoppling av gatewayen i appen eller i den gamla enhetsappen. Om du är osäker på vilket det är, ange det på nytt i appen och skriv in samma här. Ett lösenord på värmeenhetens display är inte det här lösenordet.",
       "icom_busy": "Gatewayen är upptagen. Försök igen om några minuter.",
       "icom_no_identity": "Gatewayen kunde inte kopplas till anläggningen: den rapporterar inget användbart ID och dess värden stämmer inte tillräckligt väl med molnets värden. Försök igen om några minuter.",
       "icom_other_gateway": "Det här är inte gatewayen för den valda anläggningen. Kontrollera adressen.",

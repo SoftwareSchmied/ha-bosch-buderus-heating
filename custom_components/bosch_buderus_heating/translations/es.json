@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Prueba de conexión",
-        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada nunca se guardó en la pasarela; solo está allí si se definió una vez en la antigua aplicación del aparato. La aplicación de la nube nunca la establece, y ni el emparejamiento de la pasarela allí ni una contraseña en la pantalla del aparato de calefacción demuestran que exista; solo la establece la aplicación antigua del dispositivo, con la opción de conectar solo en local."
+        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela, definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es, defínala de nuevo en la aplicación e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña."
       },
       "connection_test_certificate_changed": {
         "title": "Prueba de conexión",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Acceso local a una pasarela iCom",
-        "description": "Lee los valores de una pasarela iCom (por ejemplo KM200, IP inside, MB LAN 2 o un módulo IP) desde su red doméstica. La escritura sigue pasando por la nube. Introduzca la dirección de la pasarela, su contraseña de la etiqueta y la contraseña privada que definió en la antigua aplicación del aparato. Las contraseñas se quedan en esta entrada y no se envían a ningún sitio. Se espera que funcione, pero aún no se ha probado con una pasarela real.",
+        "description": "Lee los valores de una pasarela iCom (por ejemplo KM200, IP inside, MB LAN 2 o un módulo IP) desde su red doméstica. La escritura sigue pasando por la nube. Introduzca la dirección de la pasarela, su contraseña de la etiqueta y la contraseña privada (la contraseña personal de la pasarela, definida al emparejarla en la aplicación o en la antigua aplicación del aparato). Las contraseñas se quedan en esta entrada y no se envían a ningún sitio. Se espera que funcione, pero aún no se ha probado con una pasarela real.",
         "data": {
           "host": "Dirección IP o nombre de host",
           "gateway_password": "Contraseña de la pasarela (etiqueta del aparato)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "La contraseña de la etiqueta del aparato; se ignoran los guiones.",
-          "private_password": "La contraseña que definió en la antigua aplicación del aparato (por ejemplo MyDevice). No es la contraseña de la cuenta de la nueva aplicación."
+          "private_password": "La contraseña personal de la pasarela, definida al emparejarla en la aplicación o en la antigua aplicación del aparato (por ejemplo MyDevice). No es la contraseña de la cuenta de la nueva aplicación."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
       "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador.",
       "icom_cannot_connect": "La pasarela no respondió. Compruebe la dirección y que se pueda acceder a la pasarela por el puerto 80.",
-      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada nunca se guardó en la pasarela. Solo está allí si se definió una vez en la antigua aplicación del aparato. La aplicación de la nube nunca la establece, y ni el emparejamiento de la pasarela allí ni una contraseña en la pantalla del aparato de calefacción demuestran que exista; solo la establece la aplicación antigua del dispositivo, con la opción de conectar solo en local.",
+      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela, definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es, defínala de nuevo en la aplicación e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña.",
       "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
       "icom_no_identity": "No se pudo asignar la pasarela a la instalación: no informa de un ID utilizable y sus valores no coinciden lo bastante con los de la nube. Inténtelo de nuevo en unos minutos.",
       "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",

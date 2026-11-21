@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Yhteystesti",
-        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään; se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa. Pilvisovellus ei koskaan aseta sitä, eikä sen olemassaoloa osoita yhdyskäytävän pariliitos siellä eikä lämmityslaitteen näytöllä oleva salasana; sen asettaa vain vanhempi laitesovellus asetuksella, jolla yhdistetään vain paikallisesti."
+        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana, joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, aseta se uudelleen sovelluksessa ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana."
       },
       "connection_test_certificate_changed": {
         "title": "Yhteystesti",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Paikallinen käyttö iCom-yhdyskäytävään",
-        "description": "Lukee iCom-yhdyskäytävän (esimerkiksi KM200, IP inside, MB LAN 2 tai IP-moduuli) arvot kotiverkosta. Kirjoittaminen tapahtuu edelleen pilven kautta. Anna yhdyskäytävän osoite, tarrassa oleva yhdyskäytävän salasana ja yksityinen salasana, jonka asetit vanhassa laitesovelluksessa. Salasanat pysyvät tässä merkinnässä, eikä niitä lähetetä minnekään. Odotetaan toimivan, mutta sitä ei ole vielä testattu oikealla yhdyskäytävällä.",
+        "description": "Lukee iCom-yhdyskäytävän (esimerkiksi KM200, IP inside, MB LAN 2 tai IP-moduuli) arvot kotiverkosta. Kirjoittaminen tapahtuu edelleen pilven kautta. Anna yhdyskäytävän osoite, tarrassa oleva yhdyskäytävän salasana ja yksityinen salasana (yhdyskäytävän henkilökohtainen salasana, joka asetetaan pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa). Salasanat pysyvät tässä merkinnässä, eikä niitä lähetetä minnekään. Odotetaan toimivan, mutta sitä ei ole vielä testattu oikealla yhdyskäytävällä.",
         "data": {
           "host": "IP-osoite tai isäntänimi",
           "gateway_password": "Yhdyskäytävän salasana (laitteen tarra)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Laitteen tarrassa oleva salasana; väliviivat ohitetaan.",
-          "private_password": "Salasana, jonka asetit vanhassa laitesovelluksessa (esimerkiksi MyDevice). Se ei ole uuden sovelluksen tilin salasana."
+          "private_password": "Yhdyskäytävän henkilökohtainen salasana, joka asetetaan pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa (esimerkiksi MyDevice). Se ei ole uuden sovelluksen tilin salasana."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
       "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista.",
       "icom_cannot_connect": "Yhdyskäytävä ei vastannut. Tarkista osoite ja että yhdyskäytävä on tavoitettavissa portissa 80.",
-      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityistä salasanaa ei ole koskaan tallennettu yhdyskäytävään. Se on siellä vain, jos se on asetettu kerran vanhassa laitesovelluksessa. Pilvisovellus ei koskaan aseta sitä, eikä sen olemassaoloa osoita yhdyskäytävän pariliitos siellä eikä lämmityslaitteen näytöllä oleva salasana; sen asettaa vain vanhempi laitesovellus asetuksella, jolla yhdistetään vain paikallisesti.",
+      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana, joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, aseta se uudelleen sovelluksessa ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana.",
       "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_no_identity": "Yhdyskäytävää ei voitu yhdistää järjestelmään: se ei ilmoita käyttökelpoista tunnusta, eivätkä sen arvot täsmää riittävän tarkasti pilven arvoihin. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",

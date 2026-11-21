@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test połączenia",
-        "description": "Logowanie nie powiodło się: hasła nie pasują do bramy. Sprawdź je przez „Zmień dane dostępu iCom”. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie; jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia. Aplikacja chmurowa nigdy go nie ustawia, a istnienia hasła nie dowodzi ani sparowanie bramy w niej, ani hasło na wyświetlaczu urządzenia grzewczego; ustawia je tylko starsza aplikacja urządzenia z opcją łączenia wyłącznie lokalnie."
+        "description": "Logowanie nie powiodło się: hasła nie pasują do bramy. Sprawdź je przez „Zmień dane dostępu iCom”. Najczęstsza przyczyna: hasło prywatne różni się od hasła zapisanego w bramie. To osobiste hasło bramy, ustawiane podczas parowania bramy w aplikacji lub w starej aplikacji urządzenia. Jeśli nie wiesz, które to jest, ustaw je ponownie w aplikacji i wpisz tutaj to samo. Hasło na wyświetlaczu urządzenia grzewczego nie jest tym hasłem."
       },
       "connection_test_certificate_changed": {
         "title": "Test połączenia",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Dostęp lokalny do bramy iCom",
-        "description": "Odczytuje wartości z bramy iCom (na przykład KM200, IP inside, MB LAN 2 lub modułu IP) w sieci domowej. Zapis nadal odbywa się przez chmurę. Podaj adres bramy, hasło bramy z naklejki oraz hasło prywatne ustawione w starej aplikacji urządzenia. Hasła pozostają w tym wpisie i nigdzie nie są wysyłane. Oczekuje się, że działa, ale nie zostało jeszcze sprawdzone na prawdziwej bramie.",
+        "description": "Odczytuje wartości z bramy iCom (na przykład KM200, IP inside, MB LAN 2 lub modułu IP) w sieci domowej. Zapis nadal odbywa się przez chmurę. Podaj adres bramy, hasło bramy z naklejki oraz hasło prywatne (osobiste hasło bramy, ustawiane podczas parowania w aplikacji lub w starej aplikacji urządzenia). Hasła pozostają w tym wpisie i nigdzie nie są wysyłane. Oczekuje się, że działa, ale nie zostało jeszcze sprawdzone na prawdziwej bramie.",
         "data": {
           "host": "Adres IP lub nazwa hosta",
           "gateway_password": "Hasło bramy (naklejka na urządzeniu)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Hasło z naklejki na urządzeniu; myślniki są pomijane.",
-          "private_password": "Hasło ustawione w starej aplikacji urządzenia (na przykład MyDevice). To nie jest hasło konta nowej aplikacji."
+          "private_password": "Osobiste hasło bramy, ustawiane podczas parowania w aplikacji lub w starej aplikacji urządzenia (na przykład MyDevice). To nie jest hasło konta nowej aplikacji."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
       "switch_program_aircon_setting": "Wybierz tryb oferowany przez klimatyzator, a dla niego temperaturę w jego zakresie i krokach oraz jedną z jego prędkości wentylatora.",
       "icom_cannot_connect": "Brama nie odpowiedziała. Sprawdź adres i czy brama jest osiągalna na porcie 80.",
-      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła. Najczęstsza przyczyna: hasło prywatne nigdy nie zostało zapisane w bramie. Jest tam tylko wtedy, gdy zostało raz ustawione w starej aplikacji urządzenia. Aplikacja chmurowa nigdy go nie ustawia, a istnienia hasła nie dowodzi ani sparowanie bramy w niej, ani hasło na wyświetlaczu urządzenia grzewczego; ustawia je tylko starsza aplikacja urządzenia z opcją łączenia wyłącznie lokalnie.",
+      "icom_invalid_auth": "Nie udało się odszyfrować odpowiedzi bramy. Sprawdź oba hasła. Najczęstsza przyczyna: hasło prywatne różni się od hasła zapisanego w bramie. To osobiste hasło bramy, ustawiane podczas parowania bramy w aplikacji lub w starej aplikacji urządzenia. Jeśli nie wiesz, które to jest, ustaw je ponownie w aplikacji i wpisz tutaj to samo. Hasło na wyświetlaczu urządzenia grzewczego nie jest tym hasłem.",
       "icom_busy": "Brama jest zajęta. Spróbuj ponownie za kilka minut.",
       "icom_no_identity": "Nie można przypisać bramy do instalacji: nie podaje użytecznego identyfikatora, a jej wartości nie zgadzają się dostatecznie dokładnie z wartościami z chmury. Spróbuj ponownie za kilka minut.",
       "icom_other_gateway": "To nie jest brama wybranej instalacji. Sprawdź adres.",

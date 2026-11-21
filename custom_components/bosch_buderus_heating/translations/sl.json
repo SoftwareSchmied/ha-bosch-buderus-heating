@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Preizkus povezave",
-        "description": "Prijava ni uspela: gesli ne ustrezata prehodu. Preveri ju prek »Spremeni podatke za dostop iCom«. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu; tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave. Aplikacija v oblaku ga nikoli ne nastavi, obstoja pa ne dokazujeta niti seznanitev prehoda v njej niti geslo na zaslonu ogrevalne naprave; nastavi ga samo starejša aplikacija naprave z možnostjo povezovanja samo lokalno."
+        "description": "Prijava ni uspela: gesli ne ustrezata prehodu. Preveri ju prek »Spremeni podatke za dostop iCom«. Najpogostejši vzrok: zasebno geslo se razlikuje od gesla, ki ga ima prehod. To je osebno geslo prehoda, nastavljeno ob seznanitvi prehoda v aplikaciji ali v stari aplikaciji naprave. Če nisi prepričan, katero je, ga v aplikaciji nastavi znova in tukaj vnesi enako. Geslo na zaslonu ogrevalne naprave ni to geslo."
       },
       "connection_test_certificate_changed": {
         "title": "Preizkus povezave",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokalni dostop do prehoda iCom",
-        "description": "Bere vrednosti prehoda iCom (na primer KM200, IP inside, MB LAN 2 ali modul IP) iz domačega omrežja. Pisanje ostaja prek oblaka. Vnesi naslov prehoda, geslo prehoda z nalepke in zasebno geslo, ki si ga nastavil v stari aplikaciji naprave. Gesli ostaneta v tem vnosu in se nikamor ne pošiljata. Pričakuje se, da deluje, vendar še ni preizkušeno na pravem prehodu.",
+        "description": "Bere vrednosti prehoda iCom (na primer KM200, IP inside, MB LAN 2 ali modul IP) iz domačega omrežja. Pisanje ostaja prek oblaka. Vnesi naslov prehoda, geslo prehoda z nalepke in zasebno geslo (osebno geslo prehoda, nastavljeno ob seznanitvi v aplikaciji ali v stari aplikaciji naprave). Gesli ostaneta v tem vnosu in se nikamor ne pošiljata. Pričakuje se, da deluje, vendar še ni preizkušeno na pravem prehodu.",
         "data": {
           "host": "Naslov IP ali ime gostitelja",
           "gateway_password": "Geslo prehoda (nalepka na napravi)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Geslo z nalepke na napravi; vezaji se prezrejo.",
-          "private_password": "Geslo, ki si ga nastavil v stari aplikaciji naprave (na primer MyDevice). To ni geslo računa nove aplikacije."
+          "private_password": "Osebno geslo prehoda, nastavljeno ob seznanitvi v aplikaciji ali v stari aplikaciji naprave (na primer MyDevice). To ni geslo računa nove aplikacije."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
       "switch_program_aircon_setting": "Izberite način, ki ga ponuja klimatska naprava, in zanj temperaturo znotraj njenega območja in korakov ter eno od njenih hitrosti ventilatorja.",
       "icom_cannot_connect": "Prehod ni odgovoril. Preveri naslov in ali je prehod dosegljiv na vratih 80.",
-      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli. Najpogostejši vzrok: zasebno geslo nikoli ni bilo shranjeno v prehodu. Tam je samo, če je bilo enkrat nastavljeno v stari aplikaciji naprave. Aplikacija v oblaku ga nikoli ne nastavi, obstoja pa ne dokazujeta niti seznanitev prehoda v njej niti geslo na zaslonu ogrevalne naprave; nastavi ga samo starejša aplikacija naprave z možnostjo povezovanja samo lokalno.",
+      "icom_invalid_auth": "Odgovora prehoda ni bilo mogoče dešifrirati. Preveri obe gesli. Najpogostejši vzrok: zasebno geslo se razlikuje od gesla, ki ga ima prehod. To je osebno geslo prehoda, nastavljeno ob seznanitvi prehoda v aplikaciji ali v stari aplikaciji naprave. Če nisi prepričan, katero je, ga v aplikaciji nastavi znova in tukaj vnesi enako. Geslo na zaslonu ogrevalne naprave ni to geslo.",
       "icom_busy": "Prehod je zaseden. Poskusi znova čez nekaj minut.",
       "icom_no_identity": "Prehoda ni mogoče povezati s sistemom: ne sporoča uporabnega ID, njegove vrednosti pa se ne ujemajo dovolj natančno z vrednostmi iz oblaka. Poskusi znova čez nekaj minut.",
       "icom_other_gateway": "To ni prehod izbranega sistema. Preveri naslov.",

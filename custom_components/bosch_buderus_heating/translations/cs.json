@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test připojení",
-        "description": "Přihlášení se nezdařilo: hesla k bráně nepasují. Zkontrolujte je pomocí „Změnit přístupové údaje iCom“. Nejčastější příčina: soukromé heslo nebylo nikdy uloženo v bráně; je tam jen tehdy, pokud bylo jednou nastaveno ve staré aplikaci zařízení. Cloudová aplikace jej nikdy nenastavuje a existenci hesla neprokazuje ani spárování brány v ní, ani heslo na displeji topného zařízení; nastavuje jej jen starší aplikace zařízení s volbou připojit pouze lokálně."
+        "description": "Přihlášení se nezdařilo: hesla k bráně nepasují. Zkontrolujte je pomocí „Změnit přístupové údaje iCom“. Nejčastější příčina: soukromé heslo se liší od hesla uloženého v bráně. Je to osobní heslo brány, nastavené při párování brány v aplikaci nebo ve staré aplikaci zařízení. Pokud si nejste jisti, které to je, nastavte ho v aplikaci znovu a zadejte sem stejné. Heslo na displeji topného zařízení není toto heslo."
       },
       "connection_test_certificate_changed": {
         "title": "Test připojení",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Místní přístup k bráně iCom",
-        "description": "Čte hodnoty brány iCom (například KM200, IP inside, MB LAN 2 nebo IP modul) z domácí sítě. Zápis zůstává přes cloud. Zadejte adresu brány, heslo brány ze štítku a soukromé heslo, které jste nastavili ve staré aplikaci zařízení. Hesla zůstávají v tomto záznamu a nikam se neposílají. Očekává se, že funguje, ale zatím nebylo vyzkoušeno na skutečné bráně.",
+        "description": "Čte hodnoty brány iCom (například KM200, IP inside, MB LAN 2 nebo IP modul) z domácí sítě. Zápis zůstává přes cloud. Zadejte adresu brány, heslo brány ze štítku a soukromé heslo (osobní heslo brány, nastavené při párování v aplikaci nebo ve staré aplikaci zařízení). Hesla zůstávají v tomto záznamu a nikam se neposílají. Očekává se, že funguje, ale zatím nebylo vyzkoušeno na skutečné bráně.",
         "data": {
           "host": "IP adresa nebo název hostitele",
           "gateway_password": "Heslo brány (štítek na zařízení)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Heslo na štítku zařízení; pomlčky se ignorují.",
-          "private_password": "Heslo, které jste nastavili ve staré aplikaci zařízení (například MyDevice). Není to heslo k účtu nové aplikace."
+          "private_password": "Osobní heslo brány, nastavené při párování v aplikaci nebo ve staré aplikaci zařízení (například MyDevice). Není to heslo k účtu nové aplikace."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků.",
       "switch_program_aircon_setting": "Zvolte režim, který klimatizace nabízí, a k němu teplotu v jejím rozsahu a krocích a jednu z jejích rychlostí ventilátoru.",
       "icom_cannot_connect": "Brána neodpověděla. Zkontrolujte adresu a zda je brána dostupná na portu 80.",
-      "icom_invalid_auth": "Odpověď brány nešlo dešifrovat. Zkontrolujte obě hesla. Nejčastější příčina: soukromé heslo nebylo nikdy uloženo v bráně. V bráně je jen tehdy, pokud bylo jednou nastaveno ve staré aplikaci zařízení. Cloudová aplikace jej nikdy nenastavuje a existenci hesla neprokazuje ani spárování brány v ní, ani heslo na displeji topného zařízení; nastavuje jej jen starší aplikace zařízení s volbou připojit pouze lokálně.",
+      "icom_invalid_auth": "Odpověď brány nešlo dešifrovat. Zkontrolujte obě hesla. Nejčastější příčina: soukromé heslo se liší od hesla uloženého v bráně. Je to osobní heslo brány, nastavené při párování brány v aplikaci nebo ve staré aplikaci zařízení. Pokud si nejste jisti, které to je, nastavte ho v aplikaci znovu a zadejte sem stejné. Heslo na displeji topného zařízení není toto heslo.",
       "icom_busy": "Brána je zaneprázdněná. Zkuste to znovu za několik minut.",
       "icom_no_identity": "Bránu nelze přiřadit k soustavě: nehlásí použitelné ID a její hodnoty se dostatečně přesně neshodují s hodnotami z cloudu. Zkuste to znovu za pár minut.",
       "icom_other_gateway": "Toto není brána vybrané soustavy. Zkontrolujte adresu.",

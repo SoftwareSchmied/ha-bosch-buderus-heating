@@ -47,7 +47,25 @@ def test_the_icom_password_hint_names_who_sets_the_private_password():
     for text in (
         options["error"]["icom_invalid_auth"],
         options["step"]["connection_test_auth_icom"]["description"],
+        options["step"]["icom_access"]["description"],
+        options["step"]["icom_access"]["data_description"]["private_password"],
     ):
-        # Not doubled: the earlier sentence stays once.
-        assert text.count("never saved on the gateway") == 1
-        assert "never sets it" in text and "connect locally only" in text
+        # The personal password is set when the gateway is paired in the app
+        # or in the old device app; no text claims the app never sets it.
+        assert text.count("when pairing") == 1, text
+        assert "old device app" in text
+        assert "never sets" not in text and "never saved" not in text
+
+
+@pytest.mark.parametrize("path", FILES, ids=lambda path: path.stem)
+def test_both_icom_password_hints_give_the_same_explanation(path):
+    options = _load(path)["options"]
+    hints = [
+        options["error"]["icom_invalid_auth"],
+        options["step"]["connection_test_auth_icom"]["description"],
+    ]
+    # The explanation after the cause label is the same in both texts and
+    # names the pairing, setting it again and the display password.
+    tails = [hint.rsplit(":", 1)[1].strip() for hint in hints]
+    assert tails[0] == tails[1], path
+    assert tails[0].count(". ") >= 3, path

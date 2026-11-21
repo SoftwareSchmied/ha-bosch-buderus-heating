@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test veze",
-        "description": "Prijava nije uspjela: lozinke ne odgovaraju pristupniku. Provjeri ih putem „Promijeni podatke za pristup iCom”. Najčešći uzrok: privatna lozinka nikada nije spremljena na pristupniku; tamo je samo ako je jednom postavljena u staroj aplikaciji uređaja. Aplikacija u oblaku nikada ga ne postavlja, a ni uparivanje pristupnika u njoj ni lozinka na zaslonu grijaćeg uređaja ne dokazuju da postoji; postavlja ga samo starija aplikacija uređaja s opcijom povezivanja samo lokalno."
+        "description": "Prijava nije uspjela: lozinke ne odgovaraju pristupniku. Provjeri ih putem „Promijeni podatke za pristup iCom”. Najčešći uzrok: privatna lozinka razlikuje se od one koju ima pristupnik. To je osobna lozinka pristupnika, postavljena pri uparivanju pristupnika u aplikaciji ili u staroj aplikaciji uređaja. Ako nisi siguran koja je, postavi je ponovno u aplikaciji i ovdje unesi istu. Lozinka na zaslonu grijaćeg uređaja nije ta lozinka."
       },
       "connection_test_certificate_changed": {
         "title": "Test veze",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokalni pristup iCom pristupniku",
-        "description": "Čita vrijednosti iCom pristupnika (na primjer KM200, IP inside, MB LAN 2 ili IP modula) iz kućne mreže. Pisanje i dalje ide putem oblaka. Unesi adresu pristupnika, lozinku pristupnika s naljepnice i privatnu lozinku koju si postavio u staroj aplikaciji uređaja. Lozinke ostaju u ovom unosu i nikamo se ne šalju. Očekuje se da radi, ali još nije isprobano na pravom pristupniku.",
+        "description": "Čita vrijednosti iCom pristupnika (na primjer KM200, IP inside, MB LAN 2 ili IP modula) iz kućne mreže. Pisanje i dalje ide putem oblaka. Unesi adresu pristupnika, lozinku pristupnika s naljepnice i privatnu lozinku (osobnu lozinku pristupnika, postavljenu pri uparivanju u aplikaciji ili u staroj aplikaciji uređaja). Lozinke ostaju u ovom unosu i nikamo se ne šalju. Očekuje se da radi, ali još nije isprobano na pravom pristupniku.",
         "data": {
           "host": "IP adresa ili naziv hosta",
           "gateway_password": "Lozinka pristupnika (naljepnica na uređaju)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Lozinka s naljepnice na uređaju; crtice se zanemaruju.",
-          "private_password": "Lozinka koju si postavio u staroj aplikaciji uređaja (na primjer MyDevice). To nije lozinka računa nove aplikacije."
+          "private_password": "Osobna lozinka pristupnika, postavljena pri uparivanju u aplikaciji ili u staroj aplikaciji uređaja (na primjer MyDevice). To nije lozinka računa nove aplikacije."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka.",
       "switch_program_aircon_setting": "Odaberite način rada koji nudi klimatizacijski uređaj i za njega temperaturu unutar njegova raspona i koraka te jednu od njegovih brzina ventilatora.",
       "icom_cannot_connect": "Pristupnik nije odgovorio. Provjeri adresu i je li pristupnik dostupan na portu 80.",
-      "icom_invalid_auth": "Odgovor pristupnika nije se mogao dešifrirati. Provjeri obje lozinke. Najčešći uzrok: privatna lozinka nikada nije spremljena na pristupniku. Tamo je samo ako je jednom postavljena u staroj aplikaciji uređaja. Aplikacija u oblaku nikada ga ne postavlja, a ni uparivanje pristupnika u njoj ni lozinka na zaslonu grijaćeg uređaja ne dokazuju da postoji; postavlja ga samo starija aplikacija uređaja s opcijom povezivanja samo lokalno.",
+      "icom_invalid_auth": "Odgovor pristupnika nije se mogao dešifrirati. Provjeri obje lozinke. Najčešći uzrok: privatna lozinka razlikuje se od one koju ima pristupnik. To je osobna lozinka pristupnika, postavljena pri uparivanju pristupnika u aplikaciji ili u staroj aplikaciji uređaja. Ako nisi siguran koja je, postavi je ponovno u aplikaciji i ovdje unesi istu. Lozinka na zaslonu grijaćeg uređaja nije ta lozinka.",
       "icom_busy": "Pristupnik je zauzet. Pokušaj ponovno za nekoliko minuta.",
       "icom_no_identity": "Pristupnik se ne može povezati sa sustavom: ne javlja upotrebljiv ID, a njegove se vrijednosti ne podudaraju dovoljno točno s vrijednostima iz clouda. Pokušaj ponovno za nekoliko minuta.",
       "icom_other_gateway": "Ovo nije pristupnik odabranog sustava. Provjeri adresu.",

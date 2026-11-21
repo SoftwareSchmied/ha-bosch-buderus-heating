@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Verbindungstest",
-        "description": "Anmeldung fehlgeschlagen: Die Passwörter passen nicht zum Gateway. Prüfe sie über „iCom-Zugangsdaten ändern“. Häufigste Ursache: Das private Passwort wurde nie auf dem Gateway gespeichert; es liegt nur dort, wenn es einmal in der alten Geräte-App festgelegt wurde. Die Cloud-App setzt es nie, und weder das Koppeln des Gateways dort noch ein Passwort am Display des Heizgeräts zeigt, dass es existiert; nur die ältere Geräte-App setzt es, mit der Option, nur lokal zu verbinden."
+        "description": "Anmeldung fehlgeschlagen: Die Passwörter passen nicht zum Gateway. Prüfe sie über „iCom-Zugangsdaten ändern“. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways, festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, lege es in der App neu fest und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort."
       },
       "connection_test_certificate_changed": {
         "title": "Verbindungstest",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokaler Zugang zu einem iCom-Gateway",
-        "description": "Liest die Werte eines iCom-Gateways (zum Beispiel KM200, IP inside, MB LAN 2 oder IP-Modul) aus dem Heimnetz. Schreiben bleibt bei der Cloud. Gib die Adresse des Gateways, das Gateway-Passwort vom Aufkleber und das private Passwort aus der alten Geräte-App ein. Die Passwörter bleiben in diesem Eintrag und werden nirgendwohin gesendet. Soll funktionieren, ist aber noch nicht an einem echten Gateway getestet.",
+        "description": "Liest die Werte eines iCom-Gateways (zum Beispiel KM200, IP inside, MB LAN 2 oder IP-Modul) aus dem Heimnetz. Schreiben bleibt bei der Cloud. Gib die Adresse des Gateways, das Gateway-Passwort vom Aufkleber und das private Passwort ein (das persönliche Passwort des Gateways, festgelegt beim Koppeln in der App oder in der alten Geräte-App). Die Passwörter bleiben in diesem Eintrag und werden nirgendwohin gesendet. Soll funktionieren, ist aber noch nicht an einem echten Gateway getestet.",
         "data": {
           "host": "IP-Adresse oder Hostname",
           "gateway_password": "Gateway-Passwort (Geräteaufkleber)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Das Passwort auf dem Geräteaufkleber; Bindestriche werden ignoriert.",
-          "private_password": "Das Passwort, das du in der alten Geräte-App festgelegt hast (zum Beispiel MyDevice). Es ist nicht das Konto-Passwort der neuen App."
+          "private_password": "Das persönliche Passwort des Gateways, festgelegt beim Koppeln in der App oder in der alten Geräte-App (zum Beispiel MyDevice). Es ist nicht das Konto-Passwort der neuen App."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
       "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen.",
       "icom_cannot_connect": "Das Gateway hat nicht geantwortet. Prüfe die Adresse und ob das Gateway über Port 80 erreichbar ist.",
-      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter. Häufigste Ursache: Das private Passwort wurde nie auf dem Gateway gespeichert. Es liegt nur dort, wenn es einmal in der alten Geräte-App festgelegt wurde. Die Cloud-App setzt es nie, und weder das Koppeln des Gateways dort noch ein Passwort am Display des Heizgeräts zeigt, dass es existiert; nur die ältere Geräte-App setzt es, mit der Option, nur lokal zu verbinden.",
+      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways, festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, lege es in der App neu fest und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort.",
       "icom_busy": "Das Gateway ist ausgelastet. Versuche es in ein paar Minuten erneut.",
       "icom_no_identity": "Das Gateway lässt sich der Anlage nicht zuordnen: Es meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein. Versuche es in ein paar Minuten erneut.",
       "icom_other_gateway": "Das ist nicht das Gateway der gewählten Anlage. Prüfe die Adresse.",

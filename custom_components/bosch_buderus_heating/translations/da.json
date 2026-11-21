@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Forbindelsestest",
-        "description": "Login mislykkedes: adgangskoderne passer ikke til gatewayen. Kontrollér dem via “Skift iCom-adgangsdata”. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen; den ligger kun der, hvis den én gang er sat i den gamle enheds-app. Cloud-appen angiver det aldrig, og hverken parring af gatewayen dér eller en adgangskode på varmeenhedens display viser, at det findes; kun den ældre enhedsapp angiver det, med indstillingen om kun at forbinde lokalt."
+        "description": "Login mislykkedes: adgangskoderne passer ikke til gatewayen. Kontrollér dem via “Skift iCom-adgangsdata”. Hyppigste årsag: den private adgangskode afviger fra den, gatewayen har. Det er gatewayens personlige adgangskode, valgt ved parring af gatewayen i appen eller i den gamle enheds-app. Er du i tvivl om, hvilken det er, så vælg den igen i appen og indtast den samme her. En adgangskode på varmeenhedens display er ikke denne adgangskode."
       },
       "connection_test_certificate_changed": {
         "title": "Forbindelsestest",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokal adgang til en iCom-gateway",
-        "description": "Læser værdierne fra en iCom-gateway (for eksempel KM200, IP inside, MB LAN 2 eller et IP-modul) i hjemmenetværket. Skrivning sker fortsat via skyen. Angiv gatewayens adresse, gatewayens adgangskode fra mærkatet og den private adgangskode, du valgte i den gamle enheds-app. Adgangskoderne bliver i denne post og sendes aldrig nogen steder hen. Forventes at fungere, men er endnu ikke testet på en rigtig gateway.",
+        "description": "Læser værdierne fra en iCom-gateway (for eksempel KM200, IP inside, MB LAN 2 eller et IP-modul) i hjemmenetværket. Skrivning sker fortsat via skyen. Angiv gatewayens adresse, gatewayens adgangskode fra mærkatet og den private adgangskode (gatewayens personlige adgangskode, valgt ved parring i appen eller i den gamle enheds-app). Adgangskoderne bliver i denne post og sendes aldrig nogen steder hen. Forventes at fungere, men er endnu ikke testet på en rigtig gateway.",
         "data": {
           "host": "IP-adresse eller værtsnavn",
           "gateway_password": "Gateway-adgangskode (mærkat på enheden)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Adgangskoden på enhedens mærkat; bindestreger ignoreres.",
-          "private_password": "Adgangskoden, du valgte i den gamle enheds-app (for eksempel MyDevice). Det er ikke kontoadgangskoden i den nye app."
+          "private_password": "Gatewayens personlige adgangskode, valgt ved parring i appen eller i den gamle enheds-app (for eksempel MyDevice). Det er ikke kontoadgangskoden i den nye app."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives.",
       "switch_program_aircon_setting": "Vælg en tilstand, som klimaanlægget tilbyder, og dertil en temperatur inden for dets område og trin samt en af dets blæserhastigheder.",
       "icom_cannot_connect": "Gatewayen svarede ikke. Kontrollér adressen, og at gatewayen kan nås på port 80.",
-      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder. Hyppigste årsag: den private adgangskode blev aldrig gemt på gatewayen. Den ligger kun der, hvis den én gang er sat i den gamle enheds-app. Cloud-appen angiver det aldrig, og hverken parring af gatewayen dér eller en adgangskode på varmeenhedens display viser, at det findes; kun den ældre enhedsapp angiver det, med indstillingen om kun at forbinde lokalt.",
+      "icom_invalid_auth": "Gatewayens svar kunne ikke dekrypteres. Kontrollér begge adgangskoder. Hyppigste årsag: den private adgangskode afviger fra den, gatewayen har. Det er gatewayens personlige adgangskode, valgt ved parring af gatewayen i appen eller i den gamle enheds-app. Er du i tvivl om, hvilken det er, så vælg den igen i appen og indtast den samme her. En adgangskode på varmeenhedens display er ikke denne adgangskode.",
       "icom_busy": "Gatewayen er optaget. Prøv igen om nogle minutter.",
       "icom_no_identity": "Gatewayen kunne ikke knyttes til anlægget: den rapporterer intet brugbart ID, og dens værdier stemmer ikke tilstrækkeligt præcist med skyens værdier. Prøv igen om nogle minutter.",
       "icom_other_gateway": "Det er ikke gatewayen til det valgte anlæg. Kontrollér adressen.",

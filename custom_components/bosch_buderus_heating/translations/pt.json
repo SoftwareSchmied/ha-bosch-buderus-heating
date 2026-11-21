@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Teste de ligação",
-        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway; só lá está se tiver sido definida uma vez na antiga aplicação do aparelho. A aplicação na nuvem nunca a define, e nem o emparelhamento do gateway nela nem uma palavra-passe no ecrã do aparelho de aquecimento provam que existe; só a aplicação antiga do dispositivo a define, com a opção de ligar apenas localmente."
+        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway, definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, defina-a de novo na aplicação e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe."
       },
       "connection_test_certificate_changed": {
         "title": "Teste de ligação",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Acesso local a um gateway iCom",
-        "description": "Lê os valores de um gateway iCom (por exemplo KM200, IP inside, MB LAN 2 ou um módulo IP) a partir da rede doméstica. A escrita continua a ser feita pela nuvem. Introduza o endereço do gateway, a palavra-passe do gateway da etiqueta e a palavra-passe privada que definiu na antiga aplicação do aparelho. As palavras-passe ficam nesta entrada e nunca são enviadas para lado nenhum. Espera-se que funcione, mas ainda não foi testado com um gateway real.",
+        "description": "Lê os valores de um gateway iCom (por exemplo KM200, IP inside, MB LAN 2 ou um módulo IP) a partir da rede doméstica. A escrita continua a ser feita pela nuvem. Introduza o endereço do gateway, a palavra-passe do gateway da etiqueta e a palavra-passe privada (a palavra-passe pessoal do gateway, definida ao emparelhá-lo na aplicação ou na antiga aplicação do aparelho). As palavras-passe ficam nesta entrada e nunca são enviadas para lado nenhum. Espera-se que funcione, mas ainda não foi testado com um gateway real.",
         "data": {
           "host": "Endereço IP ou nome de anfitrião",
           "gateway_password": "Palavra-passe do gateway (etiqueta do aparelho)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "A palavra-passe da etiqueta do aparelho; os hífenes são ignorados.",
-          "private_password": "A palavra-passe que definiu na antiga aplicação do aparelho (por exemplo MyDevice). Não é a palavra-passe da conta da nova aplicação."
+          "private_password": "A palavra-passe pessoal do gateway, definida ao emparelhá-lo na aplicação ou na antiga aplicação do aparelho (por exemplo MyDevice). Não é a palavra-passe da conta da nova aplicação."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
       "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador.",
       "icom_cannot_connect": "O gateway não respondeu. Verifique o endereço e se o gateway está acessível na porta 80.",
-      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada nunca foi guardada no gateway. Só lá está se tiver sido definida uma vez na antiga aplicação do aparelho. A aplicação na nuvem nunca a define, e nem o emparelhamento do gateway nela nem uma palavra-passe no ecrã do aparelho de aquecimento provam que existe; só a aplicação antiga do dispositivo a define, com a opção de ligar apenas localmente.",
+      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway, definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, defina-a de novo na aplicação e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe.",
       "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
       "icom_no_identity": "Não foi possível associar o gateway à instalação: não indica um ID utilizável e os seus valores não coincidem o suficiente com os da cloud. Tente novamente dentro de alguns minutos.",
       "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",

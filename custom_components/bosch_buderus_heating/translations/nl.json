@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Verbindingstest",
-        "description": "Aanmelden mislukt: de wachtwoorden passen niet bij de gateway. Controleer ze via “iCom-toegangsgegevens wijzigen”. Meest voorkomende oorzaak: het privéwachtwoord is nooit op de gateway opgeslagen; het staat er alleen als het ooit in de oude apparaat-app is ingesteld. De cloud-app stelt het nooit in, en noch het koppelen van de gateway daarin noch een wachtwoord op het display van het verwarmingstoestel toont dat het bestaat; alleen de oudere apparaat-app stelt het in, met de optie om alleen lokaal te verbinden."
+        "description": "Aanmelden mislukt: de wachtwoorden passen niet bij de gateway. Controleer ze via “iCom-toegangsgegevens wijzigen”. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, stel het dan opnieuw in de app in en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord."
       },
       "connection_test_certificate_changed": {
         "title": "Verbindingstest",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Lokale toegang tot een iCom-gateway",
-        "description": "Leest de waarden van een iCom-gateway (bijvoorbeeld KM200, IP inside, MB LAN 2 of een IP-module) uit je thuisnetwerk. Schrijven blijft via de cloud lopen. Voer het adres van de gateway in, het gatewaywachtwoord van het etiket en het privéwachtwoord dat je in de oude apparaat-app hebt ingesteld. De wachtwoorden blijven in dit item en worden nergens naartoe verstuurd. Naar verwachting werkt dit, maar het is nog niet getest met een echte gateway.",
+        "description": "Leest de waarden van een iCom-gateway (bijvoorbeeld KM200, IP inside, MB LAN 2 of een IP-module) uit je thuisnetwerk. Schrijven blijft via de cloud lopen. Voer het adres van de gateway in, het gatewaywachtwoord van het etiket en het privéwachtwoord (het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen in de app of in de oude apparaat-app). De wachtwoorden blijven in dit item en worden nergens naartoe verstuurd. Naar verwachting werkt dit, maar het is nog niet getest met een echte gateway.",
         "data": {
           "host": "IP-adres of hostnaam",
           "gateway_password": "Gatewaywachtwoord (etiket op het apparaat)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Het wachtwoord op het etiket van het apparaat; streepjes worden genegeerd.",
-          "private_password": "Het wachtwoord dat je in de oude apparaat-app hebt ingesteld (bijvoorbeeld MyDevice). Het is niet het accountwachtwoord van de nieuwe app."
+          "private_password": "Het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen in de app of in de oude apparaat-app (bijvoorbeeld MyDevice). Het is niet het accountwachtwoord van de nieuwe app."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
       "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden.",
       "icom_cannot_connect": "De gateway antwoordde niet. Controleer het adres en of de gateway bereikbaar is op poort 80.",
-      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden. Meest voorkomende oorzaak: het privéwachtwoord is nooit op de gateway opgeslagen. Het staat er alleen als het ooit in de oude apparaat-app is ingesteld. De cloud-app stelt het nooit in, en noch het koppelen van de gateway daarin noch een wachtwoord op het display van het verwarmingstoestel toont dat het bestaat; alleen de oudere apparaat-app stelt het in, met de optie om alleen lokaal te verbinden.",
+      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, stel het dan opnieuw in de app in en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord.",
       "icom_busy": "De gateway is bezet. Probeer het over enkele minuten opnieuw.",
       "icom_no_identity": "De gateway kon niet aan de installatie worden gekoppeld: hij meldt geen bruikbaar ID en zijn waarden komen niet nauwkeurig genoeg overeen met de cloudwaarden. Probeer het over een paar minuten opnieuw.",
       "icom_other_gateway": "Dit is niet de gateway van de gekozen installatie. Controleer het adres.",

@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test della connessione",
-        "description": "Accesso non riuscito: le password non corrispondono al gateway. Controllale tramite “Modifica i dati di accesso iCom”. Causa più frequente: la password privata non è mai stata salvata sul gateway; vi si trova solo se è stata impostata una volta nella vecchia app del dispositivo. L'app cloud non la imposta mai, e né l'associazione del gateway in essa né una password sul display dell'apparecchio di riscaldamento dimostrano che esista; la imposta solo la vecchia app del dispositivo, con l'opzione di collegarsi solo in locale."
+        "description": "Accesso non riuscito: le password non corrispondono al gateway. Controllale tramite “Modifica i dati di accesso iCom”. Causa più frequente: la password privata è diversa da quella del gateway. È la password personale del gateway, impostata durante l'associazione del gateway nell'app o nella vecchia app del dispositivo. Se non sai quale sia, impostala di nuovo nell'app e inserisci qui la stessa. Una password sul display dell'apparecchio di riscaldamento non è questa password."
       },
       "connection_test_certificate_changed": {
         "title": "Test della connessione",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Accesso locale a un gateway iCom",
-        "description": "Legge i valori di un gateway iCom (ad esempio KM200, IP inside, MB LAN 2 o un modulo IP) dalla rete domestica. La scrittura resta affidata al cloud. Inserisci l'indirizzo del gateway, la password del gateway riportata sull'etichetta e la password privata impostata nella vecchia app del dispositivo. Le password restano in questa voce e non vengono inviate da nessuna parte. Dovrebbe funzionare, ma non è ancora stato provato con un gateway reale.",
+        "description": "Legge i valori di un gateway iCom (ad esempio KM200, IP inside, MB LAN 2 o un modulo IP) dalla rete domestica. La scrittura resta affidata al cloud. Inserisci l'indirizzo del gateway, la password del gateway riportata sull'etichetta e la password privata (la password personale del gateway, impostata durante l'associazione nell'app o nella vecchia app del dispositivo). Le password restano in questa voce e non vengono inviate da nessuna parte. Dovrebbe funzionare, ma non è ancora stato provato con un gateway reale.",
         "data": {
           "host": "Indirizzo IP o nome host",
           "gateway_password": "Password del gateway (etichetta del dispositivo)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "La password sull'etichetta del dispositivo; i trattini vengono ignorati.",
-          "private_password": "La password impostata nella vecchia app del dispositivo (ad esempio MyDevice). Non è la password dell'account della nuova app."
+          "private_password": "La password personale del gateway, impostata durante l'associazione nell'app o nella vecchia app del dispositivo (ad esempio MyDevice). Non è la password dell'account della nuova app."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili.",
       "switch_program_aircon_setting": "Scegli una modalità offerta dal climatizzatore e, per essa, una temperatura entro il suo intervallo e i suoi passi e una delle sue velocità della ventola.",
       "icom_cannot_connect": "Il gateway non ha risposto. Controlla l'indirizzo e che il gateway sia raggiungibile sulla porta 80.",
-      "icom_invalid_auth": "Non è stato possibile decifrare la risposta del gateway. Controlla entrambe le password. Causa più frequente: la password privata non è mai stata salvata sul gateway. Vi si trova solo se è stata impostata una volta nella vecchia app del dispositivo. L'app cloud non la imposta mai, e né l'associazione del gateway in essa né una password sul display dell'apparecchio di riscaldamento dimostrano che esista; la imposta solo la vecchia app del dispositivo, con l'opzione di collegarsi solo in locale.",
+      "icom_invalid_auth": "Non è stato possibile decifrare la risposta del gateway. Controlla entrambe le password. Causa più frequente: la password privata è diversa da quella del gateway. È la password personale del gateway, impostata durante l'associazione del gateway nell'app o nella vecchia app del dispositivo. Se non sai quale sia, impostala di nuovo nell'app e inserisci qui la stessa. Una password sul display dell'apparecchio di riscaldamento non è questa password.",
       "icom_busy": "Il gateway è occupato. Riprova tra qualche minuto.",
       "icom_no_identity": "Il gateway non può essere associato all'impianto: non comunica un ID utilizzabile e i suoi valori non coincidono abbastanza con quelli del cloud. Riprova tra qualche minuto.",
       "icom_other_gateway": "Questo non è il gateway dell'impianto selezionato. Controlla l'indirizzo.",

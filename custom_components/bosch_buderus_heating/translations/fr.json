@@ -517,7 +517,7 @@
       },
       "connection_test_auth_icom": {
         "title": "Test de connexion",
-        "description": "Échec de la connexion : les mots de passe ne correspondent pas à la passerelle. Vérifiez-les via « Modifier les données d'accès iCom ». Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle ; il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil. L'application cloud ne le définit jamais, et ni l'appairage de la passerelle dans celle-ci ni un mot de passe sur l'écran de l'appareil de chauffage ne prouvent qu'il existe ; seule l'ancienne application de l'appareil le définit, avec l'option de connexion locale uniquement."
+        "description": "Échec de la connexion : les mots de passe ne correspondent pas à la passerelle. Vérifiez-les via « Modifier les données d'accès iCom ». Cause la plus fréquente : le mot de passe privé diffère de celui de la passerelle. C'est le mot de passe personnel de la passerelle, défini lors de l'appairage de la passerelle dans l'application ou dans l'ancienne application de l'appareil. Si vous ne savez pas lequel c'est, définissez-le à nouveau dans l'application et saisissez le même ici. Un mot de passe sur l'écran de l'appareil de chauffage n'est pas ce mot de passe."
       },
       "connection_test_certificate_changed": {
         "title": "Test de connexion",
@@ -1010,7 +1010,7 @@
       },
       "icom_access": {
         "title": "Accès local à une passerelle iCom",
-        "description": "Lit les valeurs d'une passerelle iCom (par exemple KM200, IP inside, MB LAN 2 ou un module IP) depuis votre réseau domestique. L'écriture reste assurée par le cloud. Saisissez l'adresse de la passerelle, son mot de passe figurant sur l'étiquette et le mot de passe privé défini dans l'ancienne application de l'appareil. Les mots de passe restent dans cette entrée et ne sont envoyés nulle part. Fonctionnement attendu, mais pas encore testé sur une vraie passerelle.",
+        "description": "Lit les valeurs d'une passerelle iCom (par exemple KM200, IP inside, MB LAN 2 ou un module IP) depuis votre réseau domestique. L'écriture reste assurée par le cloud. Saisissez l'adresse de la passerelle, son mot de passe figurant sur l'étiquette et le mot de passe privé (le mot de passe personnel de la passerelle, défini lors de l'appairage dans l'application ou dans l'ancienne application de l'appareil). Les mots de passe restent dans cette entrée et ne sont envoyés nulle part. Fonctionnement attendu, mais pas encore testé sur une vraie passerelle.",
         "data": {
           "host": "Adresse IP ou nom d'hôte",
           "gateway_password": "Mot de passe de la passerelle (étiquette de l'appareil)",
@@ -1018,7 +1018,7 @@
         },
         "data_description": {
           "gateway_password": "Le mot de passe de l'étiquette de l'appareil ; les tirets sont ignorés.",
-          "private_password": "Le mot de passe défini dans l'ancienne application de l'appareil (par exemple MyDevice). Ce n'est pas le mot de passe du compte de la nouvelle application."
+          "private_password": "Le mot de passe personnel de la passerelle, défini lors de l'appairage dans l'application ou dans l'ancienne application de l'appareil (par exemple MyDevice). Ce n'est pas le mot de passe du compte de la nouvelle application."
         }
       },
       "result_icom_connected": {
@@ -1151,7 +1151,7 @@
       "wallbox_name_invalid": "Le nom peut contenir jusqu'à 64 caractères imprimables.",
       "switch_program_aircon_setting": "Choisissez un mode proposé par le climatiseur et, pour ce mode, une température dans sa plage et ses pas ainsi qu'une de ses vitesses de ventilateur.",
       "icom_cannot_connect": "La passerelle n'a pas répondu. Vérifiez l'adresse et que la passerelle est joignable sur le port 80.",
-      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe. Cause la plus fréquente : le mot de passe privé n'a jamais été enregistré sur la passerelle. Il n'y figure que s'il a été défini une fois dans l'ancienne application de l'appareil. L'application cloud ne le définit jamais, et ni l'appairage de la passerelle dans celle-ci ni un mot de passe sur l'écran de l'appareil de chauffage ne prouvent qu'il existe ; seule l'ancienne application de l'appareil le définit, avec l'option de connexion locale uniquement.",
+      "icom_invalid_auth": "La réponse de la passerelle n'a pas pu être déchiffrée. Vérifiez les deux mots de passe. Cause la plus fréquente : le mot de passe privé diffère de celui de la passerelle. C'est le mot de passe personnel de la passerelle, défini lors de l'appairage de la passerelle dans l'application ou dans l'ancienne application de l'appareil. Si vous ne savez pas lequel c'est, définissez-le à nouveau dans l'application et saisissez le même ici. Un mot de passe sur l'écran de l'appareil de chauffage n'est pas ce mot de passe.",
       "icom_busy": "La passerelle est occupée. Réessayez dans quelques minutes.",
       "icom_no_identity": "La passerelle n'a pas pu être associée à l'installation : elle ne communique pas d'identifiant utilisable, et ses valeurs ne concordent pas assez avec celles du cloud. Réessayez dans quelques minutes.",
       "icom_other_gateway": "Ce n'est pas la passerelle de l'installation sélectionnée. Vérifiez l'adresse.",
