@@ -46,11 +46,21 @@ from homeassistant.helpers.event import async_call_later, async_track_time_chang
 from homeassistant.util import dt as dt_util
 from homeassistant.util.hass_dict import HassKey
 
+from .burner_share import burner_share
 from .const import DOMAIN
 from .counter_drop import DropHold, large_drop
 from .derived_store import derived_store
 from .log_helpers import log_failure
-from .performance import COLLECTIONS, MODES, CounterReading, lifetime, ratio
+from .performance import (
+    COLLECTIONS,
+    HP_MODES,
+    HP_PREFIX,
+    MODES,
+    CounterReading,
+    heat_pump_root,
+    lifetime,
+    ratio,
+)
 
 if TYPE_CHECKING:
     from .coordinator import BoschBuderusDataUpdateCoordinator
@@ -292,7 +302,7 @@ class PerformanceHistory:
             self._baseline = {
                 mode: (float(pair[0]), float(pair[1]))
                 for mode, pair in dict(row.get("baseline") or {}).items()
-                if mode in MODES
+                if mode in MODES or mode in HP_MODES
             }
             self._baseline_day = day
             method = row.get("method")
@@ -301,7 +311,7 @@ class PerformanceHistory:
             if isinstance(last_at, int | float):
                 self._last_at = datetime.fromtimestamp(float(last_at), UTC)
             for mode, pair in dict(row.get("last") or {}).items():
-                if mode in MODES:
+                if mode in MODES or mode in HP_MODES:
                     self._live[mode] = CounterReading(
                         float(pair[0]), float(pair[1]), "restored"
                     )
@@ -345,7 +355,7 @@ class PerformanceHistory:
         now = now or dt_util.utcnow()
         readings = {
             mode: reading
-            for mode in MODES
+            for mode in (*MODES, *self._heat_pump_modes())
             if (reading := lifetime(self.coordinator, mode)) is not None
             and not self._outlier(mode, reading)
         }
@@ -366,6 +376,15 @@ class PerformanceHistory:
         self._live.update(readings)
         self._last_at = self._saved_at = now
         self._save()
+
+    def _heat_pump_modes(self) -> tuple[str, ...]:
+        """The modes of the heat pump's own counters, while the plant shows a
+        burner share: the gateway's collections then count the boiler, and the
+        heat pump's counters are the basis of the factors (see
+        ``burner_share``). Without a burner share there are none."""
+        if any(burner_share(self.coordinator, COLLECTIONS[mode]) for mode in MODES):
+            return HP_MODES
+        return ()
 
     def _outlier(self, mode: str, reading: CounterReading) -> bool:
         """A single reading far below the last one of the mode, held until a
@@ -451,7 +470,7 @@ class PerformanceHistory:
             self._lookup = "not_needed"
             return
         found: dict[str, tuple[float, float]] = {}
-        for mode in MODES:
+        for mode in (*MODES, *HP_MODES):
             values = []
             for quantity in QUANTITIES:
                 entity_id = ids.get((mode, quantity))
@@ -490,6 +509,20 @@ class PerformanceHistory:
                     if entity_id is not None:
                         found[(mode, quantity)] = entity_id
                         break
+        if self._heat_pump_modes() and (
+            root := heat_pump_root(self.coordinator, current=False)
+        ):
+            stem = root.strip("/").replace("/", ":")
+            for mode in MODES:
+                for quantity in QUANTITIES:
+                    part = "outputProduced" if quantity == HEAT else "total_electricity"
+                    entity_id = registry.async_get_entity_id(
+                        "sensor",
+                        DOMAIN,
+                        f"{self.gateway_id}:{stem}:emon:{_COUNTER_PATH[mode]}:{part}",
+                    )
+                    if entity_id is not None:
+                        found[(HP_PREFIX + mode, quantity)] = entity_id
         self.counter_entities = found
         return found
 

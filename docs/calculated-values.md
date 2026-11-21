@@ -323,6 +323,22 @@ defrosts, so the heat taken back from the water is netted.
   (since commissioning), not at a single period: once a plant has reported
   burner energy, its factors stay unknown. A heat pump without a burner
   share is not affected.
+- **Hybrid systems with counters of the heat pump:** the counters of the
+  gateway (`/heatSources/emon/...`) count the boiler's heat. If the heat pump
+  reports its own counters under its heat source (for example
+  `/heatSources/hs2/emon/totalConsumption`, with `outputProduced` and its
+  electricity, and the same for heating and hot water), the factors of all
+  periods (today, yesterday, month, year, since commissioning) and the
+  environmental energy are calculated from those counters alone: heat of the
+  heat pump over electricity of the heat pump. The heat of the boiler is
+  never part of it. The attribute `basis: heat_pump_counters` says so, and
+  `derived_from` names the heat pump's collection. The history of these
+  factors starts when the heat pump's counters are first read (and with the
+  long-term statistics of their entities, where those exist); the plant's
+  recordings count the boiler and are not used. Without such counters (no
+  separate heat counter, no electricity, or a value that is not current) the
+  value stays unknown with `reason: burner_share`. The boiler's efficiency
+  is not calculated.
 - A factor stays shown when its period holds very little heat, but its
   attribute `note` is then `little_heat` and `little_heat_below_kwh` names
   the limit: 5 kWh of heat for today and yesterday, 30 kWh for a month, a
@@ -382,3 +398,17 @@ ein Hybrid-Manager erkannt, sind Arbeitszahlen und Umweltenergie unbekannt
 (`reason: burner_share`), weil nicht bekannt ist, welcher Wärmeanteil vom Kessel
 stammt. Die Regel betrachtet den Brennerzähler seit der Inbetriebnahme, nicht
 den einzelnen Zeitraum. Eine reine Wärmepumpe ist nicht betroffen.
+
+Meldet die Wärmepumpe eines Hybridsystems eigene Zähler unter ihrer
+Wärmequelle (zum Beispiel `/heatSources/hs2/emon/totalConsumption` mit
+`outputProduced` und ihrem Strom, ebenso für Heizung und Warmwasser), werden die
+Arbeitszahlen aller Zeiträume (heute, gestern, Monat, Jahr, seit
+Inbetriebnahme) und die Umweltenergie allein aus diesen Zählern berechnet:
+Wärme der Wärmepumpe durch Strom der Wärmepumpe. Die Wärme des Kessels fließt nie
+ein. Das Attribut `basis: heat_pump_counters` zeigt das an, `derived_from` nennt
+die Sammlung der Wärmepumpe. Der Verlauf beginnt, sobald die Zähler der
+Wärmepumpe erstmals gelesen werden (und mit den Langzeitstatistiken ihrer
+Entitäten, soweit vorhanden); die Aufzeichnungen der Anlage zählen den Kessel
+und werden nicht verwendet. Fehlen solche Zähler (keine eigene Wärmemenge, kein
+Strom oder kein aktueller Wert), bleibt der Wert unbekannt (`reason:
+burner_share`). Der Wirkungsgrad des Kessels wird nicht berechnet.

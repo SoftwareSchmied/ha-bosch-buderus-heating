@@ -1378,7 +1378,13 @@ measurement and does not start a new meter cycle. If the collection reports
 burner energy above zero, or a hybrid manager is detected, the heat of the
 boiler is not separated from the heat pump's, so the value is unknown with the
 attribute `reason: burner_share` (in German: Umweltenergie und Arbeitszahlen
-sind dann unbekannt, weil der Kesselanteil nicht bekannt ist). A user with a heating and
+sind dann unbekannt, weil der Kesselanteil nicht bekannt ist). Where the heat
+pump reports its own heat and electricity counters under its heat source
+(`/heatSources/hs2/emon/totalConsumption` and the heating and hot water
+collections), the value is that heat minus that electricity instead, with the
+attribute `basis: heat_pump_counters` (in German: bei eigenen Zählern der
+Wärmepumpe wird Umweltenergie aus deren Wärme und Strom berechnet); see
+[Calculated values](calculated-values.md). A user with a heating and
 cooling heat pump confirmed on 0.9.2-beta.3 (discussion #111) that the heating
 and hot water values equal the user's own calculation to the last digit and that the
 total equals both plus the cooling energy.

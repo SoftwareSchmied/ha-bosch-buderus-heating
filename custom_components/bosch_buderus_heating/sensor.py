@@ -121,6 +121,8 @@ from .local_only_sensor import (
     track_local_only_sensors,
 )
 from .outdoor_unit_software import track_outdoor_unit_software_sensor
+from .performance import COLLECTIONS as _GATEWAY_COLLECTIONS
+from .performance import HEAT_PUMP_COUNTERS, heat_pump_environmental
 from .performance_sensors import track_performance_sensors
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import Resource
@@ -1845,7 +1847,8 @@ class BoschBuderusSensor(
             return fsum((compressor, auxiliary))
         if description.value_kind == "environmental_energy":
             if self._burner_share(resource):
-                return None
+                found = self._heat_pump_environmental(resource)
+                return found[0] if found is not None else None
             return environmental_energy(_energy_values(resource))
         if description.value_kind == "unknown_number":
             value = resource.value
@@ -1988,11 +1991,24 @@ class BoschBuderusSensor(
             self.coordinator
         )
 
+    def _heat_pump_environmental(
+        self, resource: Resource
+    ) -> tuple[float | None, str] | None:
+        """With a burner share: the heat pump's own counters, where it reports
+        them (heat minus electricity), instead of the gateway's collection."""
+        for mode, path in _GATEWAY_COLLECTIONS.items():
+            if path == resource.path:
+                return heat_pump_environmental(self.coordinator, mode)
+        return None
+
     def _base_attributes(self) -> Mapping[str, object] | None:
         description = self.entity_description
         if description.value_kind == "environmental_energy":
             snapshot = self._snapshot
             if snapshot is not None and self._burner_share(snapshot.resource):
+                found = self._heat_pump_environmental(snapshot.resource)
+                if found is not None:
+                    return {"basis": HEAT_PUMP_COUNTERS}
                 return {"reason": BURNER_SHARE}
             return None
         if description.value_kind == "switch_program":
