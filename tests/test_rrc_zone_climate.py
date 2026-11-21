@@ -627,6 +627,28 @@ async def test_ct200_and_tc100_get_a_climate_per_zone(hass: HomeAssistant) -> No
         await teardown(hass, entry, stack)
 
 
+async def test_ct200_setpoint_in_auto_keeps_the_program(hass: HomeAssistant) -> None:
+    """A target set while the zone follows its program is a temporary
+    setpoint: one PUT to it, the program (mode) is neither written nor
+    left, also not after the next regular reading."""
+    cloud = RrcCloud(load_tree("rrc/ct200-shapes.json"))
+    entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
+    try:
+        zone = climate(hass, 1)
+        assert hass.states.get(zone).state == "auto"
+        await set_temperature(hass, zone, temperature=22.0)
+        assert cloud.written("PUT") == [("PUT", path(1, OVERRIDE), 22.0)]
+        shown = hass.states.get(zone)
+        assert shown.state == "auto"
+        assert shown.attributes["temperature"] == 22.0
+        assert shown.attributes["temporary_override"] is True
+        await refresh(hass, coordinator, clock, 120)
+        assert hass.states.get(zone).state == "auto"
+        assert cloud.written("PUT") == [("PUT", path(1, OVERRIDE), 22.0)]
+    finally:
+        await teardown(hass, entry, stack)
+
+
 # --------------------------------------------------------------- polling
 
 
