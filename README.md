@@ -33,7 +33,7 @@ access; when it is back, the same entities carry on with their history.
 > Updating from 0.8.x? Make a full backup first, see [Updating](#updating).
 
 > [!NOTE]
-> **Beta: local access for iCom gateways.** The beta adds a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, for gateways that are also connected to the Bosch or Buderus app. It is expected to work, but not yet tested on a real gateway: testers are wanted. If you have one and would like to help, please install the beta versions (HACS → "Show beta versions"), follow [the setup](docs/icom-local-access.md) and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
+> **Beta: local access for iCom gateways.** The beta adds a local access in your home network for iCom gateways such as KM200, IP inside or the IVT/Bosch IP module, for gateways that are also connected to the Bosch or Buderus app. It is expected to work, but not yet tested on a real gateway: testers are wanted. If you have one and would like to help, please install the beta versions (Marketplace: ⋮ → **Include pre-releases** on the integration's page; HACS: "Show beta versions"), follow [the setup](docs/icom-local-access.md) and leave a short note in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 ## Features
 
@@ -98,16 +98,34 @@ Details: [supported systems](docs/compatibility.md#supported-systems-at-a-glance
 
 ## Installation
 
-Requirements: Home Assistant 2026.5.0 or newer, [HACS](https://www.hacs.xyz/docs/use/download/download/)
-and a SingleKey ID account already connected to the Bosch or Buderus app (not
-needed for local access only).
+Requirements: Home Assistant 2026.5.0 or newer and a SingleKey ID account
+already connected to the Bosch or Buderus app (not needed for local access
+only). The integration is in the community catalog that both the Marketplace
+and HACS use.
+
+[![Open this repository in the Marketplace or HACS of your Home Assistant.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SoftwareSchmied&repository=ha-bosch-buderus-heating&category=integration)
 
 <a id="2-install-boschbuderus-heating"></a>
 
-1. Open **HACS**, search for **Bosch/Buderus Home Comfort** and select **Download**.
+**Home Assistant 2026.11 or newer: Marketplace**
+
+1. Open **Settings → Marketplace** (German: **Einstellungen → Marketplace**).
+   The first time, read the notice and confirm it.
+2. Search for **Bosch/Buderus Home Comfort**, open it, select **Install** and
+   confirm the version with **Install**.
+3. The setup usually opens directly; otherwise continue with
+   [Add the integration](#add-the-integration). Restart Home Assistant only
+   if the Marketplace asks for it.
+
+**Home Assistant 2026.5 to 2026.10: HACS**
+
+1. Open **HACS**, search for **Bosch/Buderus Home Comfort** and select **Download**
+   ([installing HACS](https://www.hacs.xyz/docs/use/download/download/)).
 2. Restart Home Assistant.
 
-Not found? See the [search troubleshooting](docs/setup.md#repository-does-not-appear-in-hacs-search).
+Already installed through HACS? Updating Home Assistant to 2026.11 moves it to
+the Marketplace automatically; there is nothing to reinstall. Not found? See the
+[search troubleshooting](docs/setup.md#not-found-in-the-marketplace-or-hacs-search).
 
 ## Add the integration
 
@@ -164,9 +182,10 @@ See [heating controls](docs/heating-controls.md) and
 
 ## Updating
 
-HACS shows new versions; read the release notes, select **Update** and restart
-Home Assistant. From 0.8.x the configuration entry moves to storage format 4,
-which 0.8.x cannot load: make a full Home Assistant backup before you update,
+New versions appear under **Settings → Updates** (Marketplace, Home Assistant
+2026.11 or newer) or in HACS; read the release notes, select **Update** and
+restart Home Assistant. From 0.8.x the configuration entry moves to storage
+format 4, which 0.8.x cannot load: make a full Home Assistant backup before you update,
 because going back is only possible by restoring it. 0.9 needs Home Assistant
 2026.5.0 or newer. See [updating](docs/setup.md#updating).
 

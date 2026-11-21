@@ -18,8 +18,8 @@ still displays it.
 
 ## Requirements
 
-- Home Assistant 2026.5.0 or newer (HACS does not offer the integration to
-  older versions);
+- Home Assistant 2026.5.0 or newer (older versions are not offered the
+  integration);
 - a compatible Bosch or Buderus heating system with an MX300, MX400, K30/K30RF,
   K40/K40RF, or another compatible PointT gateway;
 - a working SingleKey ID account that is already connected to the heating app;
@@ -30,9 +30,49 @@ still displays it.
 Enter the SingleKey ID password only on the official SingleKey ID website.
 Neither Home Assistant nor this integration asks for that password.
 
-## Installation with HACS
+## Installation
 
-### HACS is not installed yet
+The integration is in the community catalog. From Home Assistant 2026.11 on,
+Home Assistant installs it through its built-in **Marketplace**; HACS can no
+longer be installed there. Home Assistant 2026.5 to 2026.10 keeps using HACS.
+Both use the same catalog and the same releases.
+
+<a id="installation-with-the-marketplace"></a>
+
+### Home Assistant 2026.11 or newer: Marketplace
+
+1. Open **Settings → Marketplace**. Only administrators see it.
+2. The first time, read the notice and select **I understand the risks and
+   agree**, then **Continue**.
+3. Enter **Bosch/Buderus** in the search field and open **Bosch/Buderus Home
+   Comfort**. Check that the repository is
+   `SoftwareSchmied/ha-bosch-buderus-heating`.
+4. Select **Install**, check the suggested current version and select
+   **Install** again.
+5. The setup usually opens directly; continue with the choice of the
+   connection in [Add the integration](#add-the-integration). If you close
+   it, add the integration later as described there. Restart Home
+   Assistant only if the Marketplace asks for it.
+
+No GitHub account and no custom repository are needed.
+
+German route: **Einstellungen → Marketplace → Bosch/Buderus Home Comfort →
+Installieren**. The notice is confirmed with **Ich bin mir der Risiken bewusst
+und stimme zu** and **Fortfahren**.
+
+#### Moving from HACS
+
+If the integration was installed through HACS, updating Home Assistant to
+2026.11 or newer moves it to the Marketplace automatically when Home Assistant
+starts. The integration, its entry, devices and entities stay as they are, and
+future versions arrive through the Marketplace. Do not uninstall or reinstall
+anything.
+
+<a id="installation-with-hacs"></a>
+
+### Home Assistant 2026.5 to 2026.10: HACS
+
+#### HACS is not installed yet
 
 1. Open the official
    [HACS installation guide](https://www.hacs.xyz/docs/use/download/download/).
@@ -45,8 +85,9 @@ Neither Home Assistant nor this integration asks for that password.
 HACS then appears in the Home Assistant sidebar.
 
 <a id="install-boschbuderus-heating"></a>
+<a id="install-boschbuderus-home-comfort"></a>
 
-### Install Bosch/Buderus Home Comfort
+#### Install Bosch/Buderus Home Comfort with HACS
 
 The integration is included in the default HACS catalog. Find it
 using the search below; HACS will notify you about future updates.
@@ -65,24 +106,58 @@ using the search below; HACS will notify you about future updates.
 > becomes available under **Settings → Devices & services** only after Home
 > Assistant has restarted.
 
-#### Repository does not appear in HACS search
+<a id="repository-does-not-appear-in-hacs-search"></a>
 
-The integration is listed in the default catalog. If it is missing from your
+### Not found in the Marketplace or HACS search
+
+The integration is listed in the community catalog. If it is missing from your
 search results:
 
-1. Search in **HACS**, rather than Home Assistant's **Add integration** dialog.
-2. Clear any filters that limit the results, such as showing only downloaded
+1. Search in the **Marketplace** (or **HACS**), rather than Home Assistant's
+   **Add integration** dialog.
+2. Clear any filters that limit the results, such as showing only installed
    repositories, and search for **Bosch/Buderus** or **Buderus**.
-3. Check that HACS is up to date and can connect to GitHub. If HACS reports a
-   connection or rate-limit error, resolve it or wait for the indicated retry
-   time, then search again after the catalog has refreshed.
-4. If it is still missing, include your HACS version and any displayed error
-   when [requesting help](#request-help).
+3. Check that the catalog can be reached. If the Marketplace or HACS reports a
+   connection or GitHub limit error, wait for the indicated time and search
+   again after the catalog has refreshed. In the Marketplace, connecting GitHub
+   (shown with the error) raises that limit.
+4. If it is still missing, include your Home Assistant version (and your HACS
+   version on older Home Assistant) and any displayed error when
+   [requesting help](#request-help).
 
 The standard installation does not require a custom repository entry. If you
-previously installed this same repository manually through HACS, continue to
-update that installation through HACS; reinstalling the integration is not
-required.
+previously added this same repository manually as a custom repository, keep
+using that installation; reinstalling the integration is not required.
+
+### Deutsch: Installation
+
+Ab Home Assistant 2026.11 installierst du die Integration über den
+eingebauten **Marketplace**; HACS lässt sich dort nicht mehr installieren.
+Home Assistant 2026.5 bis 2026.10 nutzt weiter HACS. Beide greifen auf
+denselben Community-Katalog und dieselben Versionen zu.
+
+1. Öffne **Einstellungen → Marketplace** (nur für Administratoren sichtbar).
+   Beim ersten Mal bestätigst du den Hinweis mit **Ich bin mir der Risiken
+   bewusst und stimme zu** und **Fortfahren**.
+2. Suche nach **Bosch/Buderus**, öffne **Bosch/Buderus Home Comfort** und
+   prüfe, dass das Repository `SoftwareSchmied/ha-bosch-buderus-heating` ist.
+3. Wähle **Installieren**, prüfe die vorgeschlagene Version und wähle erneut
+   **Installieren**.
+4. Die Einrichtung öffnet sich meist direkt; sonst fügst du die Integration
+   unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** hinzu.
+   Neu starten musst du nur, wenn der Marketplace dazu auffordert.
+
+Ein GitHub-Konto oder ein benutzerdefiniertes Repository ist nicht nötig.
+Hast du die Integration bisher mit HACS installiert, übernimmt Home Assistant
+sie beim ersten Start nach dem Update auf 2026.11 automatisch in den
+Marketplace; du musst nichts deinstallieren oder neu installieren.
+
+Neue Versionen erscheinen unter **Einstellungen → Updates**. Nach einem
+Update startest du Home Assistant neu; eine Reparaturmeldung erinnert daran
+und kann den Neustart auslösen. Betas erhältst du nur, wenn du sie anforderst:
+im Marketplace auf der Seite der Integration über das Drei-Punkte-Menü →
+**Vorabversionen einschließen** → **Einschließen**, eine einzelne Version über
+**Andere Version installieren**. Mach vorher ein vollständiges Backup.
 
 ## Add the integration
 
@@ -311,8 +386,8 @@ which existing setup the gateway belongs to.
 
 The following controls are included since stable **0.8.2** and were introduced
 in Beta.7. The older 0.8.2-beta.6 and 0.8.1 packages do not contain this dialog.
-Update to the latest release through HACS, restart Home Assistant and reload the
-browser.
+Update to the latest release through the Marketplace or HACS, restart Home
+Assistant and reload the browser.
 
 1. Open **Settings > Devices & services > Bosch/Buderus Home Comfort > Configure**.
 2. Select **Operate appliance**. With several PointT gateways, select the
@@ -366,11 +441,33 @@ See the [heating guide](heating-controls.md) and
 
 ## Updating
 
-For a HACS installation, Home Assistant displays an available new version.
-Open the notification, read the release notes, and select **Update**. Restart
-Home Assistant if HACS requests it. Reload the browser after an update that
-changes the dialogs. Reinstalling the integration or deleting existing entities
-is not necessary.
+Home Assistant shows an available new version under **Settings → Updates**
+(German: **Einstellungen → Updates**), on Home Assistant 2026.11 or newer
+through the Marketplace, on older versions through HACS. Open it, read the
+release notes, and select **Update**. Then restart Home Assistant; after a
+Marketplace update a repair reminds you and can restart for you. Reload the
+browser after an update that changes the dialogs. Reinstalling the integration
+or deleting existing entities is not necessary.
+
+<a id="beta-versions"></a>
+
+### Test versions (pre-releases)
+
+Betas are published as pre-releases and are only offered when you ask for
+them:
+
+- **Marketplace:** open **Settings → Marketplace → Bosch/Buderus Home
+  Comfort**, select the three-dot menu and **Include pre-releases**, then
+  confirm with **Include** (German: **Vorabversionen einschließen**,
+  **Einschließen**). The update then appears under **Settings → Updates**.
+  **Exclude pre-releases** turns it off again; an installed beta stays until a
+  newer stable version is out. A single version is chosen with **Install
+  another version** (**Andere Version installieren**).
+- **HACS (Home Assistant 2026.5 to 2026.10):** open the integration in HACS
+  and turn on **Show beta versions** when choosing the version.
+
+Make a full Home Assistant backup first. Going back to an earlier version is
+only safe by restoring that backup.
 
 ## Removing the integration
 
@@ -379,8 +476,11 @@ is not necessary.
 2. Open the three-dot menu of the entry and select **Delete**. For a local
    access alone, **Remove access** in the options of the entry removes just
    that access.
-3. If you installed the integration with HACS, remove it there as well, then
-   restart Home Assistant.
+3. After the last entry is deleted, Home Assistant 2026.11 or newer asks
+   whether to also uninstall the integration from the Marketplace: select
+   **Uninstall** to remove its files (or later in the Marketplace: three-dot
+   menu → **Uninstall**). On older versions, remove it in HACS as well.
+   Restart Home Assistant afterwards if asked.
 
 What removal does and does not do:
 
@@ -403,8 +503,12 @@ What removal does and does not do:
 2. Öffne das Drei-Punkte-Menü des Eintrags und wähle **Löschen**. Nur einen
    lokalen Zugang entfernst du mit **Zugang entfernen** in den Optionen des
    Eintrags.
-3. Hast du die Integration mit HACS installiert, entferne sie auch dort und
-   starte Home Assistant neu.
+3. Nach dem Löschen des letzten Eintrags fragt Home Assistant ab 2026.11, ob
+   die Integration auch aus dem Marketplace deinstalliert werden soll:
+   **Deinstallieren** entfernt ihre Dateien (später auch unter
+   **Einstellungen → Marketplace** im Drei-Punkte-Menü → **Deinstallieren**).
+   Bei älteren Versionen entferne sie auch in HACS. Starte Home Assistant
+   danach neu, wenn es dazu auffordert.
 
 Was das Entfernen bewirkt und was nicht:
 
@@ -767,11 +871,11 @@ delete the entry and add the integration again.
 
 First determine where the search fails:
 
-- **Not found in HACS:** check the search term, active filters and HACS catalog
-  access as described under
-  [Repository does not appear in HACS search](#repository-does-not-appear-in-hacs-search).
-- **Downloaded in HACS but missing from Add integration:** restart Home
-  Assistant completely. Then check **Settings → System → Logs** for a loading
+- **Not found in the Marketplace or HACS:** check the search term, active
+  filters and catalog access as described under
+  [Not found in the Marketplace or HACS search](#not-found-in-the-marketplace-or-hacs-search).
+- **Installed but missing from Add integration:** restart Home Assistant
+  completely. Then check **Settings → System → Logs** for a loading
   error involving `bosch_buderus_heating`.
 
 ## Request help

@@ -144,7 +144,8 @@ wieder ein.
 
 Das Protokoll ist nach öffentlichen Beschreibungen umgesetzt und nur gegen ein
 simuliertes Gateway geprüft. Wenn du ein iCom-Gateway hast, probiere die Beta
-bitte aus und schreib mir in einem
+bitte aus ([Testversionen erhalten](setup.md#deutsch-installation)) und
+schreib mir in einem
 [Issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues)
 oder bei [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81),
 was passiert ist, mit der Diagnose der Integration im Anhang. Besonders

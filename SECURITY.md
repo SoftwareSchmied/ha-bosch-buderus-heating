@@ -14,4 +14,5 @@ receive an acknowledgement within seven days.
 
 Security fixes go into the latest stable release and the current pre-release
 line. Older releases are not updated; please update to the latest release
-through HACS before reporting a problem that may already be fixed.
+through the Marketplace (Home Assistant 2026.11 or newer) or HACS before
+reporting a problem that may already be fixed.
