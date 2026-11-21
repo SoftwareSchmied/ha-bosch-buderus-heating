@@ -115,6 +115,7 @@ def code_texts() -> dict[str, str]:
         assert set(german) == set(english)
         pairs.extend((german[key], english[key]) for key in english)
     pairs.extend(catalog._APP_PATH_NAMES.values())
+    pairs.extend(catalog._HEAT_PUMP_PATH_NAMES.values())
     pairs.extend(control_presentation._LABELS.values())
     pairs.extend(rrc_devices.TYPE_LABELS.values())
     pairs.extend(rrc_contracts.texts())
