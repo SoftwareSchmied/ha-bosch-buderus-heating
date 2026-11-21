@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Die Cloud gibt die Daten dieses Gateways nicht frei",
+      "description": "Die Cloud beantwortet die Datenanfragen dieses Gateways mit „Precondition Required“ (HTTP 428), deshalb kommen keine Werte an. Die Cloud-Kopplung des Gateways scheint unvollständig zu sein. Öffne das Gateway in der MyBuderus- oder HomeCom-App, setze oder bestätige sein persönliches Passwort und entferne das Gateway, falls die App es anbietet, und füge es erneut hinzu. Die Integration fragt nach wachsenden Pausen erneut an (5, 15 und 30 Minuten, danach stündlich) und entfernt diesen Hinweis von selbst, sobald Daten ankommen. Für eine sofortige neue Anfrage lade die Integration neu."
+    },
     "setup_unfinished": {
       "title": "Einrichtung nicht abgeschlossen",
       "description": "Der Eintrag „{title}“ hat noch keinen Zugang. Wähle bei ihm **Konfigurieren** und dann „Lokalen Zugang einrichten“ (oder verbinde einen Cloud-Zugang)."

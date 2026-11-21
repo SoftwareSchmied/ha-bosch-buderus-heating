@@ -23,6 +23,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
 from . import rrc_platforms
+from .access_precondition import forget_entry_access
 from .aircon import AirconCoordinator, is_aircon_gateway
 from .auth_diagnostics import async_load_auth_histories
 from .auth_lifecycle import (
@@ -436,6 +437,8 @@ async def async_unload_entry(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> bool:
     """Unload a Bosch/Buderus Home Comfort config entry."""
+    # #146: a reload starts anew: no pause after refused cloud data remains.
+    forget_entry_access(hass, entry.entry_id)
     if isinstance(entry.runtime_data, ManagedEntry):
         return await entry.runtime_data.unload()
     unloaded = bool(await hass.config_entries.async_unload_platforms(entry, PLATFORMS))

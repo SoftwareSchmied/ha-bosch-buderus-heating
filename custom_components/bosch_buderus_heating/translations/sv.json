@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Molnet lämnar inte ut data från den här gatewayen",
+      "description": "Molnet svarar på den här gatewayens dataförfrågningar med ”Precondition Required” (HTTP 428), så inga värden kommer fram. Gatewayens molnparkoppling verkar vara ofullständig. Öppna gatewayen i appen MyBuderus eller HomeCom, ange eller bekräfta dess personliga lösenord och ta bort gatewayen och lägg till den igen om appen erbjuder det. Integrationen frågar igen efter växande pauser (5, 15 och 30 minuter, därefter varje timme) och tar själv bort det här meddelandet så snart data kommer. Ladda om integrationen för att fråga direkt igen."
+    },
     "setup_unfinished": {
       "title": "Konfigurationen är inte klar",
       "description": "Posten “{title}” har ännu ingen åtkomst. Välj **Konfigurera** på den och sedan “Konfigurera lokal åtkomst” (eller anslut en molnåtkomst)."

@@ -497,7 +497,9 @@ Was das Entfernen bewirkt und was nicht:
   inventory, for example right after installing or upgrading, or if the
   system has not answered successfully for more than 30 days. Home Assistant
   then retries on its own: the cloud access starts the system again about
-  every minute (the setup of older entries is retried by Home Assistant).
+  every minute (the setup of older entries is retried by Home Assistant). If
+  the cloud refuses the data with HTTP 428, the wait grows instead, see
+  [The cloud returns no data for a gateway](#the-cloud-returns-no-data-for-a-gateway-http-428).
 - **Other cloud devices** (air conditioners, air purifiers, dehumidifiers or
   water heaters) do not hold back the start either. If they cannot sign in
   while Home Assistant starts, they connect in the background and their
@@ -710,6 +712,64 @@ Zwei verschiedene Meldungen werden leicht verwechselt.
 Wenn du eine verlorene Anmeldung meldest, hänge bitte die Diagnosedatei an,
 bevor du dich neu anmeldest: Sie enthält keine Zugangsdaten und zeigt diese
 Versuche.
+
+### The cloud returns no data for a gateway (HTTP 428)
+
+Typical for an iCom gateway (for example a KM200): no entities appear for the
+gateway, **Settings → System → Repairs** shows "The cloud withholds the data
+of this gateway", and the log says that the cloud refuses the data of a gateway
+with HTTP 428 (precondition required).
+
+The cloud answers the requests for the main data of the system (for example
+`/system`, `/gateway` and `/heatingCircuits`) with status 428, although it
+reaches the gateway. That points to an incomplete pairing of the gateway in the
+cloud, not to a fault of the integration or of the heating system.
+
+1. Open the gateway in the MyBuderus or HomeCom app and check that it is set
+   up completely there.
+2. Set or confirm its personal password.
+3. If the app offers it, remove the gateway there and add it again.
+4. Reload the integration (**Settings → Devices & services**, the three dots of
+   the integration, **Reload**) to ask again at once. Otherwise it asks again
+   by itself.
+
+The integration does not ask every minute in this case: after the first refusal
+it waits 5 minutes, then 15 and 30 minutes, and from then on one hour. The
+notice disappears by itself as soon as data arrive, and reloading the
+integration also ends the wait. If it does not help, open an
+[issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues) and
+attach the diagnostics: `cloud_data_access` shows the refusals and, if the
+cloud sent one, a short error code, without passwords or identifiers (see
+[Cloud data access](diagnostics.md#cloud-data-access)).
+
+#### Deutsch: Die Cloud liefert keine Daten für ein Gateway (HTTP 428)
+
+Typisch für ein iCom-Gateway (zum Beispiel KM200): Für das Gateway erscheinen
+keine Entitäten, unter **Einstellungen → System → Reparaturen** steht „Die Cloud
+gibt die Daten dieses Gateways nicht frei“, und das Protokoll meldet, dass die
+Cloud die Daten eines Gateways mit HTTP 428 (Precondition Required) verweigert.
+
+Die Cloud beantwortet die Anfragen nach den Hauptdaten der Anlage (zum Beispiel
+`/system`, `/gateway` und `/heatingCircuits`) mit Status 428, obwohl sie das
+Gateway erreicht. Das deutet auf eine unvollständige Kopplung des Gateways in
+der Cloud hin, nicht auf einen Fehler der Integration oder der Heizungsanlage.
+
+1. Öffne das Gateway in der MyBuderus- oder HomeCom-App und prüfe, ob es dort
+   vollständig eingerichtet ist.
+2. Setze sein persönliches Passwort oder bestätige es.
+3. Wenn die App es anbietet, entferne das Gateway dort und füge es erneut hinzu.
+4. Lade die Integration neu (**Einstellungen → Geräte & Dienste**, die drei
+   Punkte der Integration, **Neu laden**), um sofort erneut anzufragen. Sonst
+   fragt sie von selbst wieder an.
+
+Die Integration fragt in diesem Fall nicht jede Minute an: Nach der ersten
+Ablehnung wartet sie 5 Minuten, dann 15 und 30 Minuten, danach eine Stunde. Der
+Hinweis verschwindet von selbst, sobald Daten ankommen, und auch ein Neuladen
+der Integration beendet die Wartezeit. Hilft das nicht, öffne ein
+[Issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues) und
+hänge die Diagnose an: `cloud_data_access` zeigt die Ablehnungen und, falls die
+Cloud einen geschickt hat, einen kurzen Fehlercode, ohne Passwörter oder
+Kennungen (siehe [Cloud-Datenzugriff](diagnostics.md#cloud-data-access)).
 
 ### No gateway is found
 

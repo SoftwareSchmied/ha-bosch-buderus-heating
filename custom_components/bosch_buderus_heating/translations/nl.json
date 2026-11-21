@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "De cloud geeft de gegevens van deze gateway niet vrij",
+      "description": "De cloud beantwoordt de gegevensaanvragen van deze gateway met „Precondition Required” (HTTP 428), waardoor er geen waarden binnenkomen. De cloudkoppeling van de gateway lijkt onvolledig. Open de gateway in de app MyBuderus of HomeCom, stel het persoonlijke wachtwoord in of bevestig het en verwijder de gateway en voeg hem opnieuw toe als de app dat aanbiedt. De integratie vraagt opnieuw na steeds langere pauzes (5, 15 en 30 minuten, daarna elk uur) en verwijdert deze melding zelf zodra er gegevens binnenkomen. Laad de integratie opnieuw om meteen opnieuw te vragen."
+    },
     "setup_unfinished": {
       "title": "Configuratie niet voltooid",
       "description": "De invoer \"{title}\" heeft nog geen toegang. Kies **Configureren** bij deze invoer en daarna \"Lokale toegang instellen\" (of verbind een cloudtoegang)."

@@ -32,6 +32,7 @@ from homeassistant.helpers.event import async_call_later, async_track_point_in_u
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .access_precondition import ISSUE_TRANSLATION_KEY, gateway_access
 from .circuit_controls import (
     GENERIC_ONLY_POLICIES,
     coupled_paths,
@@ -39,7 +40,12 @@ from .circuit_controls import (
     room_controller_check_complete,
 )
 from .cloud_hold import CloudHold, LastFailedRefresh
-from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
+from .const import (
+    DOMAIN,
+    PRECONDITION_ISSUE_PREFIX,
+    RATE_LIMIT_ISSUE_PREFIX,
+    PollingProfile,
+)
 from .discovery import (
     MAX_DISCOVERY_RESOURCES,
     MAX_EXTRA_PROBES,
@@ -280,6 +286,23 @@ def _server_error_item(result: BatchItemResult) -> bool:
         and result.status is not None
         and 500 <= result.status <= 599
     )
+
+
+def _precondition_refused(results: Iterable[BatchItemResult]) -> bool:
+    """#146: the answers of a cycle show the cloud refusing the data (428).
+
+    At least one item has status 428 and the other failures that are no
+    routine refusal (403, 404, 406) are fewer.
+    """
+    refused = other = 0
+    for result in results:
+        if result.resource is not None:
+            return False
+        if result.status == 428:
+            refused += 1
+        elif result.status not in (403, 404, 406):
+            other += 1
+    return refused > other
 
 
 def _no_usable_item(results: tuple[BatchItemResult, ...]) -> bool:
@@ -767,6 +790,13 @@ class BoschBuderusDataUpdateCoordinator(
         self._unknown_enum_value_counts: Counter[str] = Counter()
         self._contract_changes: Counter[str] = Counter()
         self.discovery_diagnostics = DiscoveryDiagnostics()
+        # #146: refusals with HTTP 428 and failed bulk items, kept per gateway
+        # over source restarts (a managed source builds a new coordinator).
+        self.gateway_access = gateway_access(
+            hass, config_entry.entry_id, gateway.gateway_id
+        )
+        self.gateway_access.note_gateway(gateway)
+        self.discovery_diagnostics.item_errors = self.gateway_access.item_errors
         # Set once a finished discovery settled the room controller evidence
         # (``circuit_controls.room_controller_check_complete``); never unset.
         self.room_controller_checked = False
@@ -3114,6 +3144,15 @@ class BoschBuderusDataUpdateCoordinator(
 
     async def _async_update_data_locked(self) -> dict[str, ResourceSnapshot]:
         """Refresh due groups while preventing overlapping gateway polls."""
+        if (pause := self.gateway_access.precondition.remaining(monotonic())) > 0:
+            # #146: the cloud refused the data (428); no request until the
+            # growing pause is over. The cycle is no further failure; marked
+            # failed here, a new coordinator (a source start) is not logged as
+            # an error by Home Assistant for it.
+            self.last_update_success = False
+            raise IdleAfterFailure(
+                f"The pause after a refusal of the cloud data is active ({pause:.0f} s)"
+            )
         if not self.resources:
             return await self._async_discover_data(
                 progressive=self.progressive_discovery
@@ -3464,6 +3503,14 @@ class BoschBuderusDataUpdateCoordinator(
             not result.ok and result.status not in (403, 404, 406)
             for result in cycle_results
         )
+        if successful == 0 and _precondition_refused(cycle_results):
+            # #146: the cloud refuses the data itself; it is no outage of the
+            # gateway (no breaker) but a failed cycle with a longer pause.
+            failed_chunks += 1
+            failure_category = "precondition_required"
+            self._note_precondition_refused()
+        elif successful > 0 and self.gateway_access.precondition.active:
+            self._clear_precondition()
         if not failed_chunks:
             # O81, COORD-3: only a cycle in which every batch answered ends
             # the outage; a later failure then warns again. A batch that keeps
@@ -3727,8 +3774,15 @@ class BoschBuderusDataUpdateCoordinator(
             self.last_failed_refresh.cycle_failure(_pointt_result(err))
             raise UpdateFailed("The cloud resources could not be discovered") from err
         if not resources:
+            if self.discovery_diagnostics.precondition_required():
+                self._note_precondition_refused()
+                self.last_failed_refresh.cycle_failure("precondition_required")
+                raise UpdateFailed(
+                    "The cloud refuses the data of this gateway (precondition required)"
+                )
             self.last_failed_refresh.cycle_failure("unknown")
             raise UpdateFailed("The cloud discovery returned no resources")
+        self._clear_precondition()
 
         successful_resources = dict(resources)
         candidates = tuple(
@@ -4503,24 +4557,70 @@ class BoschBuderusDataUpdateCoordinator(
                 )
         return tuple(results)
 
-    @staticmethod
     def _log_unusable_bulk_results(
+        self,
         results: tuple[BatchItemResult, ...],
     ) -> None:
         """Log value-free details for bulk items that could not be parsed."""
+        self.gateway_access.item_errors.record(results)
         for result in results:
             if result.resource is not None:
                 continue
             _LOGGER.debug(
                 "Ignoring PointT bulk item %s: status=%s, server_status=%s, "
-                "gateway_status=%s, error=%s (%s)",
+                "gateway_status=%s, error=%s (%s)%s",
                 resource_path_template(result.path),
                 result.status,
                 result.server_status,
                 result.gateway_status,
                 type(result.error).__name__ if result.error else "none",
                 result.error or "no parsed resource",
+                f", details={dict(result.error_details)}"
+                if result.error_details
+                else "",
             )
+
+    def _precondition_issue_id(self) -> str:
+        return repair_id(
+            PRECONDITION_ISSUE_PREFIX,
+            self._config_entry,
+            self.connection_id or "",
+            self.gateway.gateway_id,
+        )
+
+    def _note_precondition_refused(self) -> None:
+        """#146: the cloud answers the data of this gateway with 428.
+
+        Raises the repair note (once per outage, identical afterwards) and
+        sets the next, longer pause. A gateway whose cloud pairing is
+        incomplete cannot be helped by asking every minute.
+        """
+        precondition = self.gateway_access.precondition
+        first = not precondition.active
+        pause = precondition.refused(monotonic())
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._precondition_issue_id(),
+            data=repair_data(self._config_entry, self.connection_id or ""),
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_TRANSLATION_KEY,
+        )
+        _LOGGER.log(
+            logging.WARNING if first else logging.DEBUG,
+            "The cloud refuses the data of a gateway with HTTP 428 (precondition "
+            "required); the cloud pairing of the gateway may be incomplete. Next "
+            "request in %.0f minutes (refusal %d in a row)",
+            pause / 60,
+            precondition.failures,
+        )
+
+    def _clear_precondition(self) -> None:
+        """Data arrived: the refusal and its repair note end."""
+        if self.gateway_access.precondition.cleared():
+            _LOGGER.info("The cloud data of the gateway are available again")
+        ir.async_delete_issue(self.hass, DOMAIN, self._precondition_issue_id())
 
     def _apply_results(
         self,
@@ -5096,6 +5196,7 @@ def _result_category(error: PointTError | None, status: int | None) -> str:
     return {
         403: "forbidden",
         404: "not_found",
+        428: "precondition_required",
         429: "rate_limited",
         502: "service_unavailable",
         503: "service_unavailable",

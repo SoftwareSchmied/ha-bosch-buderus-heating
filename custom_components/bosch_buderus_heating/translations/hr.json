@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Oblak ne daje podatke ovog pristupnika",
+      "description": "Oblak odgovara na zahtjeve za podacima ovog pristupnika s „Precondition Required“ (HTTP 428), pa vrijednosti ne stižu. Čini se da je uparivanje pristupnika s oblakom nepotpuno. Otvorite pristupnik u aplikaciji MyBuderus ili HomeCom, postavite ili potvrdite njegovu osobnu lozinku i, ako aplikacija to nudi, uklonite pristupnik i dodajte ga ponovno. Integracija ponovno pita nakon sve duljih stanki (5, 15 i 30 minuta, zatim svaki sat) i sama uklanja ovu obavijest čim stignu podaci. Za trenutačan novi upit ponovno učitajte integraciju."
+    },
     "setup_unfinished": {
       "title": "Konfiguracija nije dovršena",
       "description": "Unos „{title}” još nema pristup. Odaberite na njemu **Konfiguriraj**, a zatim „Postavljanje lokalnog pristupa” (ili povežite pristup putem oblaka)."

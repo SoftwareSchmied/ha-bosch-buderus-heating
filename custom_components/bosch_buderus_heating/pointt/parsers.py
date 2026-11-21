@@ -15,6 +15,7 @@ from .exceptions import (
     ResourceNotAcceptable,
     ResourceNotFound,
     ResourceOmitted,
+    ResourcePreconditionRequired,
 )
 from .models import (
     BatchItemResult,
@@ -25,6 +26,7 @@ from .models import (
     ResourceMetadata,
     ResourceReference,
 )
+from .redaction import safe_error_details
 
 
 def _mapping(value: object, *, message: str) -> Mapping[str, object]:
@@ -107,6 +109,17 @@ def _lenient_string(value: object) -> str | None:
     return value if isinstance(value, str) else None
 
 
+def _presence(data: Mapping[str, object], key: str) -> bool | None:
+    """Whether a secret field of the gateway list holds something.
+
+    None: the field is not in the answer. The value itself is never kept.
+    """
+    if key not in data:
+        return None
+    value = data[key]
+    return value is not None and value != "" and value is not False
+
+
 def parse_gateway(payload: object) -> Gateway:
     """Parse one gateway while tolerating unknown fields."""
     data = _mapping(payload, message="Gateway response must be an object")
@@ -124,6 +137,8 @@ def parse_gateway(payload: object) -> Gateway:
         firmware_version=_lenient_string(
             data.get("firmwareVersion", data.get("firmware_version"))
         ),
+        user_password_set=_presence(data, "userPassword"),
+        gateway_password_set=_presence(data, "gatewayPassword"),
     )
 
 
@@ -428,6 +443,8 @@ def resource_error(path: str, status: int) -> ResourceError:
         return ResourceNotFound(path, status)
     if status == 406:
         return ResourceNotAcceptable(path, status)
+    if status == 428:
+        return ResourcePreconditionRequired(path, status)
     return ResourceError(path, status)
 
 
@@ -492,6 +509,7 @@ def parse_batch_response(
                     status=server_status,
                     error=resource_error(path, status),
                     server_status=server_status,
+                    error_details=safe_error_details(indexed_item),
                 )
             )
             continue

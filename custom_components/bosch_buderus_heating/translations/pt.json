@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "A nuvem não fornece os dados deste gateway",
+      "description": "A nuvem responde aos pedidos de dados deste gateway com «Precondition Required» (HTTP 428), por isso não chegam valores. O emparelhamento do gateway com a nuvem parece estar incompleto. Abra o gateway na aplicação MyBuderus ou HomeCom, defina ou confirme a sua palavra-passe pessoal e, se a aplicação o oferecer, remova o gateway e adicione-o de novo. A integração volta a perguntar após pausas crescentes (5, 15 e 30 minutos, depois de hora a hora) e remove este aviso por si própria assim que chegarem dados. Para perguntar de imediato, recarregue a integração."
+    },
     "setup_unfinished": {
       "title": "Configuração não concluída",
       "description": "A entrada \"{title}\" ainda não tem nenhum acesso. Selecione **Configurar** nela e depois \"Configurar o acesso local\" (ou ligue um acesso à cloud)."

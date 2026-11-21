@@ -7,6 +7,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import datetime, timedelta
+from time import monotonic
 from typing import TYPE_CHECKING, cast
 
 from homeassistant.core import CALLBACK_TYPE, callback
@@ -290,6 +291,13 @@ class PointTSource:
                         coordinator,
                         ManagedWallboxCoordinator | ManagedAirconCoordinator,
                     ):
+                        precondition = coordinator.gateway_access.precondition
+                        if precondition.active:
+                            # #146: the cloud refuses the data (428); the next
+                            # start waits for the growing pause, not a minute.
+                            raise SourceFailure(
+                                retry_after=precondition.remaining(monotonic())
+                            )
                         raise SourceFailure()
         finally:
             connection.startup_finished(self.binding_id)

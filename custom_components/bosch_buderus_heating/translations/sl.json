@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "Oblak ne daje podatkov tega prehoda",
+      "description": "Oblak na zahteve za podatke tega prehoda odgovarja z „Precondition Required“ (HTTP 428), zato vrednosti ne prispejo. Zdi se, da je seznanitev prehoda z oblakom nepopolna. Odprite prehod v aplikaciji MyBuderus ali HomeCom, nastavite ali potrdite njegovo osebno geslo in, če aplikacija to ponuja, prehod odstranite in ga znova dodajte. Integracija znova vpraša po vse daljših premorih (5, 15 in 30 minut, nato vsako uro) in to obvestilo sama odstrani, takoj ko prispejo podatki. Za takojšnje novo spraševanje ponovno naložite integracijo."
+    },
     "setup_unfinished": {
       "title": "Nastavitev ni dokončana",
       "description": "Vnos »{title}« še nima nobenega dostopa. Pri njem izberite **Konfiguriraj** in nato »Nastavi lokalni dostop« (ali povežite dostop prek oblaka)."

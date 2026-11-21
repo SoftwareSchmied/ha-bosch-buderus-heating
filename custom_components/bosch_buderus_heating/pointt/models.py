@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field, fields
 from enum import StrEnum
 from time import time
@@ -62,6 +63,10 @@ class Gateway:
     device_type: str | None = None
     model: str | None = None
     firmware_version: str | None = None
+    # Only whether the gateway list reports these fields as set (None: not
+    # reported). Never their values; not part of the identity of a gateway.
+    user_password_set: bool | None = field(default=None, compare=False)
+    gateway_password_set: bool | None = field(default=None, compare=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,6 +159,8 @@ class BatchItemResult:
     error: PointTError | None = field(default=None, compare=False)
     server_status: int | None = None
     gateway_status: int | None = None
+    # Redacted error fields of a failed item (see redaction.safe_error_details).
+    error_details: Mapping[str, object] | None = field(default=None, compare=False)
 
     @property
     def ok(self) -> bool:

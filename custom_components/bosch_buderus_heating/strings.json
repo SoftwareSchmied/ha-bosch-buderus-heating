@@ -1450,6 +1450,10 @@
         }
       }
     },
+    "gateway_precondition": {
+      "title": "The cloud withholds the data of this gateway",
+      "description": "The cloud answers the data requests of this gateway with \"precondition required\" (HTTP 428), so no readings arrive. The cloud pairing of the gateway seems to be incomplete. Open the gateway in the MyBuderus or HomeCom app, set or confirm its personal password and, if the app offers it, remove the gateway and add it again. The integration asks again after growing pauses (5, 15 and 30 minutes, then hourly) and removes this notice by itself as soon as data arrives. To ask again right away, reload the integration."
+    },
     "setup_unfinished": {
       "title": "Setup not finished",
       "description": "The entry \"{title}\" has no access yet. Select **Configure** on it and then \"Set up local access\" (or connect a cloud access)."

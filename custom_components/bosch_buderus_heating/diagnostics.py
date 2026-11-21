@@ -25,6 +25,7 @@ from . import (
     rrc_energy_statistics,
     system_controls_extra,
 )
+from .access_precondition import access_diagnostics
 from .aircon import AirconCoordinator
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
@@ -168,6 +169,12 @@ async def async_get_config_entry_diagnostics(
             else 0,
         },
         "update_load": update_load_diagnostics(hass),
+        # #146 (the schema number stays 48): per gateway, the refusals of the
+        # cloud data with HTTP 428 and their pause, the failed bulk items
+        # (counts per status, the last ten with redacted error fields) and
+        # whether the gateway list reports its password fields as set (flags,
+        # never values).
+        "cloud_data_access": access_diagnostics(hass, entry.entry_id, monotonic()),
         # Schema 47: the last local setup and cloud sign-in attempts, codes
         # and times only.
         "local_setup_attempts": await _local_setup_attempts(hass, entry.entry_id),

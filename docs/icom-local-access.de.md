@@ -17,14 +17,14 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
   immer zu einer solchen Anlage; eine Anlage, die nur lokal existiert, wird für
   iCom-Gateways nicht angeboten.
 - Das **Gateway-Passwort** vom Aufkleber auf dem Gerät (die Bindestriche werden
-  ignoriert) und das **private Passwort**, das du in der alten Geräte-App des
-  Gateways festgelegt hast (zum Beispiel MyDevice). Die App der Cloud setzt es
-  nie. Wurde nie eines festgelegt, lässt sich der lokale Zugang nicht
-  einrichten. Die häufigste Ursache für „ließ sich nicht entschlüsseln“ ist ein
-  privates Passwort, das nie auf dem Gateway gespeichert wurde: Es liegt nur dort,
-  wenn es einmal in der älteren Geräte-App festgelegt wurde, mit deren Option,
-  nur lokal zu verbinden. Das Koppeln des Gateways in der Cloud-App oder ein am
-  Display des Heizgeräts eingegebenes Passwort beweist dazu nichts.
+  ignoriert) und das **private Passwort** (das persönliche Passwort des
+  Gateways): das, das du dafür beim Koppeln in der App oder in der alten
+  Geräte-App des Gateways festgelegt hast (zum Beispiel MyDevice). Wurde nie
+  eines festgelegt, lässt sich der lokale Zugang nicht einrichten. Die häufigste
+  Ursache für „ließ sich nicht entschlüsseln“ ist ein privates Passwort, das vom
+  Passwort des Gateways abweicht: Bist du unsicher, welches das ist, lege in der
+  App ein neues fest und verwende hier dasselbe. Ein am Display des Heizgeräts
+  eingegebenes Passwort beweist dazu nichts.
 - Die Adresse des Gateways im Heimnetz (IP-Adresse oder Hostname). Eine feste
   Adresse (Reservierung im Router) erspart dir eine erneute Einrichtung.
 
@@ -135,7 +135,7 @@ wieder ein.
 | Text | Bedeutung |
 |---|---|
 | Das Gateway hat nicht geantwortet | Keine Verbindung in der Zeit; Adresse und Port 80 prüfen. |
-| Die Antwort ließ sich nicht entschlüsseln | Eines der beiden Passwörter ist falsch oder wurde in der Geräte-App geändert. Meist wurde das private Passwort nie auf dem Gateway gespeichert; die Cloud-App setzt es nie, nur die ältere Geräte-App (Option „nur lokal verbinden“) tut es. |
+| Die Antwort ließ sich nicht entschlüsseln | Eines der beiden Passwörter ist falsch oder wurde in der Geräte-App geändert. Meist weicht das private Passwort von dem des Gateways ab; prüfe es in der App, in der du es festgelegt hast. |
 | Das Gateway ist ausgelastet | Es hat mit einer Überlastungsmeldung geantwortet; später erneut versuchen. |
 | Es ließ sich der Anlage nicht zuordnen | Das Gateway meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein (oder die Cloud hat noch keine aktuellen Werte). In ein paar Minuten erneut versuchen. |
 | Nicht das Gateway der gewählten Anlage | Die lokal gelesene Kennung ist nicht die Gateway-Kennung der Cloud. |
