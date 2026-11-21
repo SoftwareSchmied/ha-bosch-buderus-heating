@@ -11,19 +11,19 @@ Versioning after its first tagged preview.
 > **Before you update**
 >
 > - This is a pre-release for testing; 0.9.2 stays the stable release.
-> - Nothing changes in what Home Assistant shows: no new entities, no changed entity IDs, names or states. The change is inside the integration (less computing), see Improved.
+> - No new entities, no changed entity IDs or names. The changes are inside the integration: less computing (see Improved) and one fix for energy totals (see Fixed).
 
 ### Improved
 
-- **Lower CPU load in continuous operation with local access.** With the local access, every answer of the gateway made the integration check all of its roughly 1250 readings again, and each performance factor sensor looked at all local readings to find out whether a hybrid system is present. Now work that would give the same result again is done once: the hybrid check once per update, the comparison of the readings only for those that were read again, the check of a published state only for the views that were replaced, the fault lists only where one was read, and a few results that cannot change meanwhile (the assessment of an energy counter, the paths a calculated sensor looks at, the check whether a request is still current) are kept until their input changes. Values, attributes, timestamps and availability stay exactly the same. In a simulated day with about 1250 local signals, 162 entities and 150 local updates per minute (including pauses, an outage, a local sign-in that is required again, a fault, expired readings, a cloud outage and a hybrid system), the computing time of the update path fell by about two thirds: from 34 s to 11 s for one simulated hour, from 1036 s to 298 s for the whole day. I ran the simulated day with the state of 0.9.3-beta.1 and with this one, for a heat pump only plant and for a hybrid plant, and compared every state change of every entity (state, attributes, timestamps): they are identical. Tested with simulation and automated tests; I have not yet measured it on a real plant.
+- **Lower CPU load with local access.** The integration no longer repeats work whose result cannot have changed in the meantime, for example checking all of the roughly 1250 local readings again after every answer of the gateway, or every performance factor sensor searching all readings for a hybrid system. Values, attributes, timestamps and availability stay exactly the same. In a simulated day (about 1250 local signals and 162 entities, including outages, pauses, faults and a hybrid system) the computing time fell by about two thirds, and every state change was identical to 0.9.3-beta.1. I have not yet measured it on a real plant.
+
+### Fixed
+
+- Energy totals that only ever grow (electricity consumption counters) no longer step back by one resolution unit, for example from 372.01 to 372.00 kWh, after a restart, a pause of Home Assistant or a change between the local and the cloud connection. Statistics and dashboards that add up increases therefore no longer count the whole meter again. A larger drop, for example after a meter replacement, is still shown as reported; heat counters, which fall slightly during a defrost, are unchanged. Tested with simulated update cycles.
 
 ### Documentation
 
 - Marked as confirmed: the **Child lock** switch of the zones and the handling of the humidity placeholders (on an MX400 with RT10RF zones, reported by petergoris-netizen in #131 with 0.9.3-beta.1), and writing the electricity price on a hybrid system with a Logamax plus GB172i.2, a WLW MB 5 AR heat pump and the HYC25 hybrid module on an MX300 (reported by markoox in #138; the read-back and the app show the written price, and the strategy "cost" is read correctly; the feed-in tariff was not tested). Thank you both for testing and for the details.
-
-### Notes
-
-- Everything marked as simulated above has been tested in automated tests and in the simulated day only (the full suite on Home Assistant 2026.11.2 and 2026.5.4).
 
 ## [0.9.3-beta.1] - 2026-11-20
 
