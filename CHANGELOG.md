@@ -5,6 +5,42 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.3-beta.3] - 2026-11-22
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - This is a pre-release for testing; 0.9.2 stays the stable release.
+> - Some entity names change: readings with a sensor code on the controller display now end with that code, for example *Cylinder temperature (TW1)*, *Primary flow rate (PC0)* and *Drip pan heater (EA0)*, and in a plant with a heat pump *System supply temperature (T0)*. Entity IDs, unique IDs and history stay the same, and names you set yourself stay as well (see Changed).
+> - The local sign-in dialog keeps Login and Pass after an input error, and its texts now say "turn on the switch" instead of "tick the box".
+> - Hybrid systems: where the heat pump reports its own counters, its performance factors and environmental energy are now calculated instead of showing `unknown`.
+> - A gateway whose data the cloud refuses with HTTP 428 now gets a repair notice and is asked less often.
+> - From Home Assistant 2026.11 you install and update the integration through the built-in Marketplace (Settings > Marketplace); an installation from HACS moves over automatically. The setup guide describes both ways.
+
+### New
+
+- **HTTP 428 from the cloud.** A gateway whose data the cloud refuses with HTTP 428 (precondition required), as reported for a KM200 in #146, is now recognised as its own case. A repair notice (in all 19 languages) points to an incomplete cloud pairing of the gateway and says what to check in the MyBuderus or HomeCom app. The integration then asks again after 5, 15 and 30 minutes and after that hourly, instead of every minute; reloading the entry asks at once. The notice goes away by itself when data arrives. Thanks to Chrissieoda for the report in #146. Tested with simulated 428 answers in real update cycles; not tested on an affected gateway.
+- **Diagnostics: cloud data access.** Under `cloud_data_access` the diagnostics list the failed bulk items (counts per status and the last ten with redacted error fields) and whether the gateway list reports a personal and a gateway password as set (flags only, never values).
+
+### Improved
+
+- **Hybrid systems: values from the heat pump's own counters.** Where the heat pump reports its own heat and electricity counters under its heat source (for example `/heatSources/hs2/emon/totalConsumption`), I now calculate the environmental energy and the performance factors of all periods from those counters instead of leaving them unknown. The boiler's heat is never part of the calculation, and the attribute `basis: heat_pump_counters` shows the source. Without such counters the values stay unknown (`reason: burner_share`); the boiler's efficiency is not calculated. Through the cloud only the heat pump's total counters are read, so a hybrid system connected only through the cloud gets the total factors, while the heating and hot water factors stay unknown. Thanks to markoox for the measurements in #138 this is based on. Tested with synthetic hybrid data (counters of the boiler only, of the heat pump only, both, restart, missing counters, heat without electricity); not yet confirmed on a real plant.
+- **Local sign-in dialog.** If the confirmation switch is off, the message now also appears at the top of the page, and Login and Pass stay filled in, so only the switch has to be turned on (they are kept in the open dialog only and never stored). All dialog texts say "turn on the switch" instead of "tick the box", as Home Assistant shows these fields as switches. Thanks to yf86jtggjp-stack for the report in #147. Tested with the dialog tests; not tested on a real gateway.
+
+### Fixed
+
+- **iCom local access: hint on the private password.** The connection test, the decryption error and the setup dialog said that the app never sets the private password. That was wrong: pairing the gateway in the app sets its personal password. The texts in all 19 languages now say that it is set when pairing in the app or in the old device app, and suggest setting it again in the app if you are not sure which one it is.
+
+### Changed
+
+- **Sensor codes in entity names.** Names of readings that have a sensor code on the controller display now end with that code: *Cylinder temperature (TW1)* (also its signal), *Primary flow rate (PC0)*, *Drip pan heater (EA0)* and, in a plant with a heat pump, *System supply temperature (T0)*. On a boiler the system supply keeps its name, because there the same reading is the boiler's own flow. The German names of the auxiliary heater stages, the auxiliary heater power and the actual compressor speed follow the display wording (*Zuheizer Stufe 1*, *Leistung Zuheizer*, *Kompressor-Istdrehzahl*). Names change in all 19 languages; entity IDs and unique IDs are unchanged, and names you set yourself stay.
+
+### Documentation
+
+- **Installation through the Marketplace.** From Home Assistant 2026.11 on, I describe the installation through the built-in Marketplace (Settings > Marketplace), which uses the same catalog as HACS. HACS stays the way for Home Assistant 2026.5 to 2026.10. The setup guide also covers the automatic move from HACS, updates, test versions (pre-releases) and removal, in English and German. The steps follow the Home Assistant 2026.11 documentation and interface texts; I have not yet walked through them on a fresh installation.
+- The iCom local access pages describe the personal password correctly now, and the setup guide has a troubleshooting entry for a gateway that the cloud answers with HTTP 428.
+- The calculated values page explains the hybrid rule, including the limit for the heating and hot water factors through the cloud, and the entity page lists the sensor codes used in names.
+
 ## [0.9.3-beta.2] - 2026-11-21
 
 > [!IMPORTANT]
