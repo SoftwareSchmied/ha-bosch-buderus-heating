@@ -250,9 +250,10 @@ other functions are tested with automated tests and simulated data only.
 4. Compare the published archive and its SHA-256 with the local build.
 
 > [!WARNING]
-> **HACS and older versions.** From 0.9.0 on, `main` and every release store
-> the configuration entry in format 4. Never publish another release that
-> uses format 3. HACS still offers the 0.8.x releases under **Redownload**;
+> **HACS, Marketplace and older versions.** From 0.9.0 on, `main` and every
+> release store the configuration entry in format 4. Never publish another
+> release that uses format 3. HACS still offers the 0.8.x releases under
+> **Redownload** and the Marketplace under **Install another version**;
 > 0.8.x cannot load a format 4 entry, so going back is only possible by
 > restoring the backup made before the update. The release notes and the
 > README say so.

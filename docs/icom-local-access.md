@@ -136,8 +136,8 @@ access on again.
 ## Reporting
 
 The protocol is implemented from public descriptions and checked against a
-simulated gateway only. If you have an iCom gateway, please try the beta and
-tell me in an
+simulated gateway only. If you have an iCom gateway, please try the beta
+([how to get test versions](setup.md#beta-versions)) and tell me in an
 [issue](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues)
 or in [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81)
 what happened, with the diagnostics of the integration attached. Of particular

@@ -121,7 +121,7 @@ Both deviations are accepted for this project.
 | Area | Status | Main remaining work |
 |---|---|---|
 | Repository, package structure, and CI | implemented | Preview ZIP is reproducible and was imported in isolation; HACS and hassfest also run in the release workflow before publication |
-| Default HACS catalog listing | completed | Accepted on 2026-10-20 through [hacs/default#10040](https://github.com/hacs/default/pull/10040); installation is available directly through HACS search |
+| Default HACS catalog listing | completed | Accepted on 2026-10-20 through [hacs/default#10040](https://github.com/hacs/default/pull/10040); installation is available directly through HACS search and, from Home Assistant 2026.11, through the Marketplace, which uses the same catalog |
 | OAuth/PKCE and token rotation | implemented, lifecycle corrections in Beta.7 | Real Bosch, reauthentication and endurance tests; see [connection recovery](connection-recovery.md) |
 | Dynamic discovery | implemented | Reconfiguration and capability-based firmware schema checks are available; observe additional real installations |
 | Polling and partial failures | mostly implemented | Standard and cloud-friendly profiles are available; gateway jitter remains open |
