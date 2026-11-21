@@ -267,7 +267,10 @@ async def test_an_existing_supply_entity_keeps_its_entity_id(
     ("heat_source", "name"),
     [
         (("/heatSources/hs1/type", "heatPump"), "System supply temperature (T0)"),
-        (("/heatSources/hs1/heatPumpType", "air_water"), "System supply temperature (T0)"),
+        (
+            ("/heatSources/hs1/heatPumpType", "air_water"),
+            "System supply temperature (T0)",
+        ),
         (("/heatSources/hs1/type", "boiler"), "System supply temperature"),
         (None, "System supply temperature"),
     ],

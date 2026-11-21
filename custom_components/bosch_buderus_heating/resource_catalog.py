@@ -863,6 +863,7 @@ def named_by_plant_type(path: str) -> bool:
     """Whether the name of ``path`` depends on a heat pump in the plant."""
     return path in _HEAT_PUMP_PATH_NAMES
 
+
 # The weekly programs of the further program kinds, by translation key.
 _PROGRAM_ROOT = re.compile(r"^/(heatingCircuits|dhwCircuits|ventilation|zones)/[^/]+/")
 _FURTHER_PROGRAM_NAMES = {
