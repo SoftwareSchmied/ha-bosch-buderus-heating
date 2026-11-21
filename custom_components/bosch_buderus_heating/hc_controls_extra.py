@@ -187,6 +187,21 @@ def has_heat_pump(readings: Mapping[str, Resource]) -> bool:
     return False
 
 
+def plant_has_heat_pump(coordinator: object) -> bool:
+    """``has_heat_pump`` over a coordinator's readings: the current values,
+    else the resources found by the discovery."""
+    readings: dict[str, Resource] = {
+        path: resource
+        for path, resource in (getattr(coordinator, "resources", None) or {}).items()
+        if isinstance(resource, Resource)
+    }
+    for path, snapshot in (getattr(coordinator, "data", None) or {}).items():
+        resource = getattr(snapshot, "resource", None)
+        if isinstance(resource, Resource):
+            readings[path] = resource
+    return has_heat_pump(readings)
+
+
 def offered(path: str, heat_sources: Mapping[str, Resource]) -> bool:
     """Whether a control of ``path`` is offered: the boost temperature only
     on a plant without a heat pump, as the manufacturer's app shows it. A

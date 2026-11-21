@@ -2522,7 +2522,7 @@
         "name": "Buitentemperatuur"
       },
       "supply_temperature": {
-        "name": "Aanvoertemperatuur installatie (T0)"
+        "name": "Aanvoertemperatuur installatie"
       },
       "return_temperature": {
         "name": "Retourtemperatuur"

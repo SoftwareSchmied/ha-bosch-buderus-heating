@@ -2522,7 +2522,7 @@
         "name": "Utomhustemperatur"
       },
       "supply_temperature": {
-        "name": "Anläggningens framledningstemperatur (T0)"
+        "name": "Anläggningens framledningstemperatur"
       },
       "return_temperature": {
         "name": "Returtemperatur"

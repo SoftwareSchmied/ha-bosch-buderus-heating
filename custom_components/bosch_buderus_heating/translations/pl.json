@@ -2522,7 +2522,7 @@
         "name": "Temperatura zewnętrzna"
       },
       "supply_temperature": {
-        "name": "Temperatura zasilania instalacji (T0)"
+        "name": "Temperatura zasilania instalacji"
       },
       "return_temperature": {
         "name": "Temperatura powrotu"

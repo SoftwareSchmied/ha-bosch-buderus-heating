@@ -543,6 +543,7 @@
     "System pressure": "Systemtrykk",
     "System pressure status (calculated)": "Status for systemtrykk (beregnet)",
     "System return temperature": "Returtemperatur anlegg",
+    "System supply temperature": "Turtemperatur anlegg",
     "System supply temperature (T0)": "Turtemperatur anlegg (T0)",
     "System type": "Anleggstype",
     "Tank bottom temperature": "Temperatur nederst i tanken",

@@ -543,6 +543,7 @@
     "System pressure": "Järjestelmän paine",
     "System pressure status (calculated)": "Järjestelmän paineen tila (laskettu)",
     "System return temperature": "Järjestelmän paluulämpötila",
+    "System supply temperature": "Järjestelmän menolämpötila",
     "System supply temperature (T0)": "Järjestelmän menolämpötila (T0)",
     "System type": "Järjestelmän tyyppi",
     "Tank bottom temperature": "Säiliön pohjan lämpötila",

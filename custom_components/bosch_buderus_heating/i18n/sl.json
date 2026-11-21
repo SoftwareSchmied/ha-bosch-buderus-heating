@@ -543,6 +543,7 @@
     "System pressure": "Tlak v sistemu",
     "System pressure status (calculated)": "Stanje tlaka v sistemu (izračunano)",
     "System return temperature": "Temperatura povratnega voda sistema",
+    "System supply temperature": "Temperatura dvižnega voda sistema",
     "System supply temperature (T0)": "Temperatura dvižnega voda sistema (T0)",
     "System type": "Vrsta sistema",
     "Tank bottom temperature": "Temperatura na dnu hranilnika",

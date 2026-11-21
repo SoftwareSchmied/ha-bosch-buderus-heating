@@ -2522,7 +2522,7 @@
         "name": "Outdoor temperature"
       },
       "supply_temperature": {
-        "name": "System supply temperature (T0)"
+        "name": "System supply temperature"
       },
       "return_temperature": {
         "name": "Return temperature"

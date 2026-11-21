@@ -394,7 +394,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Auxiliary-heater operation mode | Diagnostic sensor (disabled) and select | `/heatSources/additionalHeater/operationMode` | Yes | Yes | 5 min; staggered read-back after change |
 | Primary auxiliary-heater type (disabled) | Diagnostic sensor | `/heatSources/additionalHeater/primary/type` | No | No | startup only |
 | Emergency mode | Sensor | `/heatSources/currentEmergencyMode` | No | No | 60 s |
-| System supply temperature (T0) (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
+| System supply temperature, with a heat pump *System supply temperature (T0)* (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
 | Heat source active (before 0.9.1 *Burner status*; also exists on boilers) | Sensor; on a heat pump created disabled from 0.9.0 (see [default activation](#maturity-and-default-activation)) | `/heatSources/flameStatus` | No | No | 60 s |
 | Return temperature | Sensor | `/heatSources/returnTemperature` | No | No | 60 s |
@@ -478,7 +478,8 @@ about 52 °C, and in heating it reads a few tenths of a kelvin below TC1. The
 controller's Info menu shows it as *Vorlauftemperatur*. Up to 0.9.0 the
 entity was called *Supply temperature* and, under the heat pump device, read
 like the heat pump's flow; since 0.9.1 it is *System supply temperature*
-(*Vorlauftemperatur Anlage*), with its sensor code *(T0)* added in 0.9.3. Its entity ID, unique ID and history stay; a
+(*Vorlauftemperatur Anlage*); in a plant with a heat pump its sensor code
+*(T0)* is added from 0.9.3. Its entity ID, unique ID and history stay; a
 name you set yourself stays as well. The supply temperature of a heating
 circuit (`/heatingCircuits/{hc}/actualSupplyTemperature`) keeps its name.
 
@@ -1295,7 +1296,7 @@ yourself stays.
 
 | Code | Reading | Name (English) |
 | --- | --- | --- |
-| T0 | System supply, behind a buffer cylinder the heating side's flow (`/heatSources/actualSupplyTemperature`) | System supply temperature (T0) |
+| T0 | System supply, behind a buffer cylinder the heating side's flow (`/heatSources/actualSupplyTemperature`); only in a plant with a heat pump | System supply temperature (T0) |
 | TC1 | Flow of the heat pump itself | Primary supply temperature (TC1) |
 | TC3 | Condenser outlet | Condenser outlet temperature (TC3) |
 | TL2 | Air intake | Air intake temperature (TL2) |
@@ -1309,8 +1310,11 @@ the heat pump; the entity ID of the air intake temperature ends in
 `…evaporator_temperature` although the reading is TL2. The IDs stay for
 compatibility. The liquid line temperatures keep the codes TR3 and TR4.
 
-Not every plant measures the same with the same path, so a few names have no
-code: the return of the heat source (`/heatSources/returnTemperature`, TC0 on
+Not every plant measures the same with the same path. The system supply
+temperature carries T0 only when a heat source reports itself as a heat pump
+(heat pump type or source type); on a boiler without a low-loss header the
+same path is the boiler's own flow, so the name stays *System supply
+temperature* there. A few names have no code at all: the return of the heat source (`/heatSources/returnTemperature`, TC0 on
 a heat pump but another sensor on a boiler) and the hot water temperature of
 the cloud (the cylinder on most plants, but the outlet of a fresh water
 station on others). The auxiliary heater stages are named *Auxiliary heater

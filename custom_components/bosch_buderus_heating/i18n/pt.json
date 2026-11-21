@@ -543,6 +543,7 @@
     "System pressure": "Pressão da instalação",
     "System pressure status (calculated)": "Estado da pressão da instalação (calculado)",
     "System return temperature": "Temperatura de retorno da instalação",
+    "System supply temperature": "Temperatura de ida da instalação",
     "System supply temperature (T0)": "Temperatura de ida da instalação (T0)",
     "System type": "Tipo de instalação",
     "Tank bottom temperature": "Temperatura da parte inferior do depósito",

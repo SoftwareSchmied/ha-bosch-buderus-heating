@@ -543,6 +543,7 @@
     "System pressure": "Systemtryck",
     "System pressure status (calculated)": "Status för systemtryck (beräknad)",
     "System return temperature": "Anläggningens returtemperatur",
+    "System supply temperature": "Anläggningens framledningstemperatur",
     "System supply temperature (T0)": "Anläggningens framledningstemperatur (T0)",
     "System type": "Anläggningstyp",
     "Tank bottom temperature": "Temperatur tankbotten",

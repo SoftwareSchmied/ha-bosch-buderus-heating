@@ -2522,7 +2522,7 @@
         "name": "Temperatura esterna"
       },
       "supply_temperature": {
-        "name": "Temperatura di mandata dell'impianto (T0)"
+        "name": "Temperatura di mandata dell'impianto"
       },
       "return_temperature": {
         "name": "Temperatura di ritorno"

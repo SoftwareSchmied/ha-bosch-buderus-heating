@@ -95,6 +95,7 @@ from .faults import (
     no_active_faults_label,
 )
 from .gateway_clock import track_clock_deviation_sensor
+from .hc_controls_extra import plant_has_heat_pump
 from .heat_generator_sensor import track_heat_generator_sensor
 from .holidays import (
     HolidayPeriod,
@@ -143,6 +144,7 @@ from .resource_catalog import (
     is_additional_app_scalar,
     is_opt_in_diagnostic_resource,
     is_read_only_control_mirror,
+    named_by_plant_type,
     plant_duplicate_paths,
     poll_group,
     resource_name,
@@ -1697,6 +1699,8 @@ class BoschBuderusSensor(
                 description.resource_path,
                 display_subkey,
                 language=language,
+                heat_pump=named_by_plant_type(description.resource_path)
+                and plant_has_heat_pump(coordinator),
                 **rrc_kwargs(context_of(coordinator).rrc_plant),
             )
         self._attr_name = grouped_entity_name(

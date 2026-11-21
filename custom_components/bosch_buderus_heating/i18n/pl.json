@@ -543,6 +543,7 @@
     "System pressure": "Ciśnienie w instalacji",
     "System pressure status (calculated)": "Stan ciśnienia w instalacji (obliczony)",
     "System return temperature": "Temperatura powrotu instalacji",
+    "System supply temperature": "Temperatura zasilania instalacji",
     "System supply temperature (T0)": "Temperatura zasilania instalacji (T0)",
     "System type": "Typ instalacji",
     "Tank bottom temperature": "Temperatura dna zbiornika",

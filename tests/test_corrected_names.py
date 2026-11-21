@@ -59,6 +59,7 @@ OLD_ENGLISH = (
     "Comfort start temperature",
 )
 NEW_ENGLISH = (
+    "System supply temperature",
     "System supply temperature (T0)",
     "Liquid line temperature heating (TR3)",
     "Liquid line temperature cooling (TR4)",
@@ -82,8 +83,20 @@ def _catalog(code: str) -> dict[str, str]:
 
 
 def test_the_heat_sources_supply_is_the_system_supply() -> None:
-    assert resource_name(SUPPLY, language="en") == "System supply temperature (T0)"
-    assert resource_name(SUPPLY, language="de") == "Vorlauftemperatur Anlage (T0)"
+    assert resource_name(SUPPLY, language="en") == "System supply temperature"
+    assert resource_name(SUPPLY, language="de") == "Vorlauftemperatur Anlage"
+    # T0 only where a heat source reads as a heat pump: on a boiler without a
+    # low-loss header the same path is the boiler's own flow.
+    assert (
+        resource_name(SUPPLY, language="en", heat_pump=True)
+        == "System supply temperature (T0)"
+    )
+    assert (
+        resource_name(SUPPLY, language="de", heat_pump=True)
+        == "Vorlauftemperatur Anlage (T0)"
+    )
+    assert resource_name(SUPPLY, language="cs", heat_pump=True).endswith(" (T0)")
+    assert not resource_name(SUPPLY, language="cs").endswith(" (T0)")
     # The supply temperature of a heating circuit is that circuit's own.
     assert resource_name(CIRCUIT_SUPPLY, language="en") == "Supply temperature"
     assert resource_name(CIRCUIT_SUPPLY, language="de") == "Vorlauftemperatur"
@@ -137,7 +150,8 @@ def test_every_language_has_the_corrected_names(code) -> None:
     for english in OLD_ENGLISH:
         assert english not in texts, (code, english)
     assert resource_name(SUPPLY, language=code) == texts[NEW_ENGLISH[0]]
-    assert entity_name(definition_for(TR3), TR3, code) == texts[NEW_ENGLISH[1]]
+    assert resource_name(SUPPLY, language=code, heat_pump=True) == texts[NEW_ENGLISH[1]]
+    assert entity_name(definition_for(TR3), TR3, code) == texts[NEW_ENGLISH[2]]
 
 
 @pytest.mark.parametrize(
@@ -245,8 +259,57 @@ async def test_an_existing_supply_entity_keeps_its_entity_id(
     entry = registry.async_get(old.entity_id)
     assert entry is not None
     assert entry.unique_id == old.unique_id
-    assert entry.original_name.endswith("System supply temperature (T0)")
+    assert entry.original_name.endswith("System supply temperature")
     assert hass.states.get(old.entity_id).state == "26.2"
+
+
+@pytest.mark.parametrize(
+    ("heat_source", "name"),
+    [
+        (("/heatSources/hs1/type", "heatPump"), "System supply temperature (T0)"),
+        (("/heatSources/hs1/heatPumpType", "air_water"), "System supply temperature (T0)"),
+        (("/heatSources/hs1/type", "boiler"), "System supply temperature"),
+        (None, "System supply temperature"),
+    ],
+)
+async def test_the_supply_carries_t0_only_with_a_heat_pump(
+    hass: HomeAssistant, heat_source: tuple[str, str] | None, name: str
+) -> None:
+    """The code depends on the plant; unique ID and entity ID do not."""
+    from datetime import UTC, datetime
+
+    from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
+    from custom_components.bosch_buderus_heating.sensor import BoschBuderusSensor
+
+    assert await async_setup_component(hass, "sensor", {})
+    hass.config.language = "en"
+    sensor = _supply_sensor(hass)
+    coordinator = sensor.coordinator
+    if heat_source is not None:
+        path, value = heat_source
+        kind = Resource(
+            path=path,
+            value=value,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        )
+        coordinator.data[path] = ResourceSnapshot(kind, True, datetime.now(UTC))
+    sensor = BoschBuderusSensor(coordinator, sensor.entity_description)
+    assert sensor.unique_id == "gateway-one:gateway:supply_temperature"
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "sensor",
+        "sensor",
+        sensor.unique_id,
+        suggested_object_id="k40_heat_pump_supply_temperature",
+    )
+    await add_without_device(hass, sensor)
+    await hass.async_block_till_done()
+    assert sensor.entity_id == old.entity_id
+    entry = registry.async_get(old.entity_id)
+    assert entry is not None
+    assert entry.original_name.endswith(name)
+    assert entry.original_name.endswith("(T0)") == name.endswith("(T0)")
 
 
 async def test_an_existing_tr3_entity_keeps_its_entity_id(

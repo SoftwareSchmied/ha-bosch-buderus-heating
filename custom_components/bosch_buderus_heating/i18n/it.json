@@ -543,6 +543,7 @@
     "System pressure": "Pressione dell'impianto",
     "System pressure status (calculated)": "Stato pressione dell'impianto (calcolato)",
     "System return temperature": "Temperatura di ritorno dell'impianto",
+    "System supply temperature": "Temperatura di mandata dell'impianto",
     "System supply temperature (T0)": "Temperatura di mandata dell'impianto (T0)",
     "System type": "Tipo di impianto",
     "Tank bottom temperature": "Temperatura del fondo del serbatoio",

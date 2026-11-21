@@ -651,7 +651,7 @@ _GERMAN_NAMES = {
 # the return of a heating circuit.
 _GERMAN_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
-    "/heatSources/actualSupplyTemperature": "Vorlauftemperatur Anlage (T0)",
+    "/heatSources/actualSupplyTemperature": "Vorlauftemperatur Anlage",
     "/heatSources/returnTemperature": "Rücklauf zum Wärmeerzeuger",
     "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
     "/heatSources/additionalHeater/operationMode": "Betriebsart des Zuheizers",
@@ -816,7 +816,7 @@ _ENGLISH_NAMES = {
 
 _ENGLISH_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Data processing status",
-    "/heatSources/actualSupplyTemperature": "System supply temperature (T0)",
+    "/heatSources/actualSupplyTemperature": "System supply temperature",
     "/heatSources/returnTemperature": "Return to the heat source",
     "/heatSources/Source/eHeater/status": "Auxiliary heater status",
     "/heatSources/additionalHeater/operationMode": "Auxiliary heater operation mode",
@@ -846,6 +846,22 @@ _ENGLISH_PATH_NAMES = {
     "/system/iSRC/installationStatus": "iSRC installation status",
     "/system/variableTariff/supportStatus": "Variable tariff \N{EN DASH} support",
 }
+
+# T0 is the system supply sensor of a heat pump's controller. On a boiler
+# without a low-loss header the same path is the boiler's own flow, so the
+# code is only part of the name where a heat source reads as a heat pump
+# (German, English).
+_HEAT_PUMP_PATH_NAMES = {
+    "/heatSources/actualSupplyTemperature": (
+        "Vorlauftemperatur Anlage (T0)",
+        "System supply temperature (T0)",
+    ),
+}
+
+
+def named_by_plant_type(path: str) -> bool:
+    """Whether the name of ``path`` depends on a heat pump in the plant."""
+    return path in _HEAT_PUMP_PATH_NAMES
 
 # The weekly programs of the further program kinds, by translation key.
 _PROGRAM_ROOT = re.compile(r"^/(heatingCircuits|dhwCircuits|ventilation|zones)/[^/]+/")
@@ -1755,11 +1771,20 @@ def resource_name(
     *,
     language: str = "de",
     rrc_plant: bool = False,
+    heat_pump: bool = False,
 ) -> str:
     """Return a localized user-facing name without exposing technical IDs.
 
-    On an RRC controller (``rrc_plant``) its contracts' names come first.
+    On an RRC controller (``rrc_plant``) its contracts' names come first. In a
+    plant with a heat pump (``heat_pump``) a few names carry the sensor code
+    of the heat pump's controller.
     """
+    if (
+        heat_pump
+        and subkey is None
+        and (names := _HEAT_PUMP_PATH_NAMES.get(path)) is not None
+    ):
+        return localize(language, *names)
     if (
         rrc_plant
         and subkey is None

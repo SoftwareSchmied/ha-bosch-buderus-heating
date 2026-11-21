@@ -2522,7 +2522,7 @@
         "name": "Udetemperatur"
       },
       "supply_temperature": {
-        "name": "Anlæggets fremløbstemperatur (T0)"
+        "name": "Anlæggets fremløbstemperatur"
       },
       "return_temperature": {
         "name": "Returtemperatur"
