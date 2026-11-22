@@ -5,6 +5,22 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.3-beta.5] - 2026-11-22
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - This is a pre-release for testing; 0.9.2 stays the stable release.
+> - The cloud sign-in is renewed more carefully when SingleKey ID does not answer, so a lost answer should no longer end in a new sign-in as easily. Nothing to do after the update.
+
+### Improved
+
+- **Sign-in renewal when SingleKey ID does not answer.** SingleKey ID replaces the refresh token with every renewal. If its answer gets lost, the new token is lost with it, and the saved sign-in is rejected afterwards (`invalid_grant`). This was observed once after a renewal request had gone unanswered for 90 seconds. A shorter timeout would make such a loss more likely, so I kept it. Instead, a renewal in the background, while the current access token still works, now waits longer for the answer: the remaining lifetime less two minutes, at least 90 seconds and at most five minutes. Connecting stays limited to 10 seconds. A request that could not connect was never sent and is repeated up to twice after about 8 seconds. A request that was sent but got no answer is repeated once with the same token after about 12 seconds, and the log gets a warning with the start time, the wait and the remaining lifetime, never a token. These tries run inside the one running renewal, so no second renewal starts meanwhile, and a new token is still saved at once. If SingleKey ID rejects the token after a lost answer, Home Assistant asks for a new sign-in as before, and a repair note (in all 19 languages) explains that the answer was lost and that signing in once again is needed; it goes away after the new sign-in. The diagnostics show for each failed try whether the request was not sent or its answer was lost (`failure_case`) and whether a rejection followed a lost answer (`after_lost_answer`). Tested with a simulated sign-in service (slow answers, refused and dropped connections, `invalid_grant` after a lost answer); a lost answer cannot be produced on purpose with the real service, so this is not confirmed there.
+
+### Documentation
+
+- The setup guide (troubleshooting, English and German), the connection recovery page and the diagnostics page describe the longer wait, the retries, the new warning, the repair note and the new diagnostics fields.
+
 ## [0.9.3-beta.4] - 2026-11-22
 
 > [!IMPORTANT]
