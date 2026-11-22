@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entiteter leveres ikke lenger",
       "description": "{count} skyentiteter leveres ikke lenger fordi en annen entitet i denne integrasjonen viser samme verdi via den lokale tilgangen (gammel → ny): {entities}. Automatiseringer, skript og dashbord som bruker den gamle entiteten, bør bruke den nye. Fjern den gamle entiteten når du ikke lenger trenger den; historikken beholdes til da. Du kan ignorere denne meldingen; den vises igjen ved neste omstart så lenge den gamle entiteten finnes."
+    },
+    "sign_in_answer_lost": {
+      "title": "Logg på igjen: et svar fra SingleKey ID gikk tapt",
+      "description": "Mens integrasjonen fornyet påloggingen sin, svarte ikke SingleKey ID i tide, eller forbindelsen ble brutt etter at forespørselen var sendt. Deretter godtok ikke SingleKey ID lenger den lagrede påloggingen: Den var mest sannsynlig allerede erstattet i svaret som aldri kom frem. Dette skyldes verken innstillingene dine eller gatewayen, og integrasjonen kan ikke gjenopprette påloggingen selv. Logg på igjen én gang: Velg **Konfigurer på nytt** for denne integrasjonen under Innstillinger → Enheter og tjenester. Enhetene og valget av gatewayer beholdes. Dette varselet forsvinner etter den nye påloggingen."
     }
   },
   "exceptions": {

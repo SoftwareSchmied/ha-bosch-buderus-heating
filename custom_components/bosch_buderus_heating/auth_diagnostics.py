@@ -30,6 +30,7 @@ from .configuration_migration import legacy_cloud_connection_id
 from .const import DOMAIN
 from .log_helpers import log_failure
 from .pointt import (
+    ANSWER_LOST,
     AuthTokens,
     RateLimited,
     RefreshAttempt,
@@ -215,6 +216,12 @@ class AuthDiagnostics:
             "presented_refresh_token": presented,
             "last_successful_refresh_age_s": previous_success,
         }
+        # X39: how long this try waited for the answer and which retry of
+        # one renewal it was.
+        if attempt.answer_timeout is not None:
+            event["answer_timeout_s"] = _seconds(attempt.answer_timeout)
+        if attempt.retry:
+            event["retry"] = attempt.retry
         self._mark_presented(attempt.presented_refresh_token, attempt.started_at)
         new_tokens = attempt.new_tokens
         if attempt.outcome == "success" and new_tokens is not None:
@@ -252,6 +259,12 @@ class AuthDiagnostics:
             self._set_accepted(attempt.presented_refresh_token, False)
             self._count("refresh_rejected")
             failed = self._failed_attempts(attempt.presented_refresh_token)
+            after_lost_answer = attempt.after_lost_answer or any(
+                item.get("failure_case") == ANSWER_LOST for item in failed
+            )
+            if after_lost_answer:
+                event["after_lost_answer"] = True
+                self._count("refresh_rejected_after_lost_answer")
             hint = ""
             if failed:
                 # NX-05: the attempts that failed before, compact in the
@@ -264,6 +277,13 @@ class AuthDiagnostics:
                     ". This token had already been presented before without a "
                     f"usable answer ({_describe_failures(failed)}); signing in "
                     "again is required"
+                )
+            if after_lost_answer:
+                # X39: the service most likely replaced the token in an
+                # answer that never arrived.
+                hint += (
+                    ". An earlier answer of the sign-in service with this token "
+                    "was lost; SingleKey ID most likely replaced the token in it"
                 )
             _LOGGER.warning(
                 "SingleKey ID rejected the token refresh (%s). Trigger: %s. "
@@ -288,6 +308,12 @@ class AuthDiagnostics:
                     event["http_status"] = status
             if isinstance(error, RateLimited) and error.retry_after is not None:
                 event["retry_after_s"] = _seconds(error.retry_after)
+            if attempt.failure_case is not None:
+                # X39: the request never left, or its answer was lost.
+                event["failure_case"] = _safe(attempt.failure_case)
+                self._count(f"refresh_{_safe(attempt.failure_case)}")
+                if attempt.retry_in is not None:
+                    event["retry_in_s"] = _seconds(attempt.retry_in)
             if isinstance(error, RefreshRefused):
                 # Refused without a definite OAuth error: retried later.
                 event.update(_rejection_fields(error.rejection))
@@ -310,6 +336,16 @@ class AuthDiagnostics:
                 "A refreshed SingleKey ID token was not saved (%s)", outcome
             )
         self._append(now, {"event": "persist", "outcome": _safe(outcome)})
+
+    def answer_lost_before(self, token: str | None) -> bool:
+        """Whether a request with this refresh token lost its answer (X39).
+
+        Read from the stored attempts, so it holds after a restart as well.
+        """
+        return any(
+            item.get("failure_case") == ANSWER_LOST
+            for item in self._failed_attempts(token)
+        )
 
     # ----------------------------------------------------------------- output
 
@@ -345,6 +381,7 @@ class AuthDiagnostics:
                 "refresh_token": self._relation(tokens.refresh_token, now),
                 "scope": [_safe(item) for item in tokens.scope],
                 "refresh_rejected": manager.refresh_rejected,
+                "rejected_after_lost_answer": manager.rejected_after_lost_answer,
             }
         return report
 
@@ -415,6 +452,7 @@ class AuthDiagnostics:
         entry: dict[str, Any] = {
             "outcome": event.get("outcome"),
             "error_type": event.get("error_type"),
+            "failure_case": event.get("failure_case"),
             "http_status": event.get("http_status"),
             "duration_ms": event.get("duration_ms"),
         }
@@ -531,7 +569,7 @@ def _clean_failed(value: object) -> list[dict[str, Any]]:
         if not isinstance(item, Mapping):
             continue
         entry: dict[str, Any] = {}
-        for key in ("outcome", "error_type"):
+        for key in ("outcome", "error_type", "failure_case"):
             if isinstance(item.get(key), str):
                 entry[key] = _safe(item[key])
         for key in ("http_status", "duration_ms"):
@@ -547,6 +585,8 @@ def _describe_failures(failed: list[dict[str, Any]]) -> str:
     parts = []
     for item in failed:
         text = str(item.get("error_type") or item.get("outcome") or "failed")
+        if "failure_case" in item:
+            text += f" ({str(item['failure_case']).replace('_', ' ')})"
         if "http_status" in item:
             text += f" HTTP {item['http_status']}"
         if "duration_ms" in item:

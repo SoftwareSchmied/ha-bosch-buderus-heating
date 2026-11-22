@@ -39,7 +39,7 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.util import dt as dt_util
 
-from .auth_lifecycle import entry_auth
+from .auth_lifecycle import clear_answer_lost_issue, entry_auth
 from .bacon import flow as bacon_flow
 from .bacon.models import CONF_BACON_ACCOUNT, CONF_BACON_IDS, BaconError
 from .cloud_auth_flow import CloudAuthorizationFlow
@@ -738,6 +738,8 @@ class BoschBuderusConfigFlow(
             )
             if (not selected or selected.isdisjoint(visible)) and not bacon_matches:
                 return self.async_abort(reason="reauth_wrong_account")
+            # X39: the new sign-in ends the note about a lost one.
+            clear_answer_lost_issue(self.hass, self._reauth_entry.entry_id)
             return self._update_and_restart(
                 self._reauth_entry,
                 data_updates=tokens_to_data(self._tokens),
@@ -793,6 +795,10 @@ class BoschBuderusConfigFlow(
             )
         from .managed_entry import ManagedEntry
 
+        # X39: the new sign-in ends the note about a lost one.
+        clear_answer_lost_issue(
+            self.hass, self._reauth_entry.entry_id, self._managed_edit.connection_id
+        )
         runtime = getattr(self._reauth_entry, "runtime_data", None)
         if isinstance(runtime, ManagedEntry):
             self.hass.loop.call_soon(runtime.schedule_reauthentication)

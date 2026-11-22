@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entiteiten worden niet meer geleverd",
       "description": "{count} cloudentiteiten worden niet meer geleverd omdat een andere entiteit van deze integratie dezelfde waarde via de lokale toegang toont (oud → nieuw): {entities}. Automatiseringen, scripts en dashboards die de oude entiteit gebruiken, moeten de nieuwe gebruiken. Verwijder de oude entiteit wanneer je haar niet meer nodig hebt; haar geschiedenis blijft tot dan behouden. Je kunt deze melding negeren; ze verschijnt bij de volgende herstart opnieuw zolang de oude entiteit bestaat."
+    },
+    "sign_in_answer_lost": {
+      "title": "Opnieuw aanmelden: een antwoord van SingleKey ID is verloren gegaan",
+      "description": "Terwijl de integratie haar aanmelding vernieuwde, antwoordde SingleKey ID niet op tijd, of werd de verbinding verbroken nadat het verzoek was verzonden. Daarna accepteerde SingleKey ID de opgeslagen aanmelding niet meer: die was hoogstwaarschijnlijk al vervangen in het antwoord dat nooit is aangekomen. Dit ligt niet aan je instellingen of aan de gateway, en de integratie kan de aanmelding niet zelf herstellen. Meld je één keer opnieuw aan: selecteer **Opnieuw configureren** voor deze integratie onder Instellingen → Apparaten en services. De apparaten en de selectie van gateways blijven behouden. Deze melding verdwijnt na de nieuwe aanmelding."
     }
   },
   "exceptions": {

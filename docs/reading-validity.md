@@ -158,7 +158,9 @@ that finds the renewal due goes on with the current token, and the renewal runs
 in the background; if it fails or is slow, the next attempts follow after 30
 seconds, doubling, and at the latest halfway to the end of the current token. The
 refresh token is still presented only once per attempt, the token request
-still has its 90 seconds, and a token the cloud refused is never reused.
+has at least its 90 seconds (a renewal in the background waits up to five
+minutes, see [sign-in renewal](connection-recovery.md#sign-in-renewal-since-09)),
+and a token the cloud refused is never reused.
 Only the last 30 seconds of the token wait for the renewal as before.
 
 Diagnostics show `cloud_hold` (limits, whether values are held now, failed

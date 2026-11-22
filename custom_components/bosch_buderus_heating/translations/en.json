@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entities no longer provided",
       "description": "{count} cloud entities are no longer provided because another entity of this integration shows the same reading from the local access (old → new): {entities}. Automations, scripts and dashboards that use the old entity should use the new one. Remove the old entity when you no longer need it; its history stays until then. You can ignore this notice; it appears again at the next restart while the old entity exists."
+    },
+    "sign_in_answer_lost": {
+      "title": "Sign in again: an answer of SingleKey ID was lost",
+      "description": "While the integration renewed its sign-in, SingleKey ID did not answer in time, or the connection broke after the request had been sent. After that, SingleKey ID no longer accepted the saved sign-in: it had most likely already replaced it in the answer that never arrived. This is not caused by your settings or by the gateway, and the integration cannot restore the sign-in by itself. Please sign in again once: select **Reconfigure** for this integration under Settings → Devices & services. The devices and the gateway selection are kept. This notice disappears after the new sign-in."
     }
   },
   "exceptions": {

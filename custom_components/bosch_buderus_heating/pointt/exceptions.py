@@ -83,18 +83,33 @@ class AuthorizationCodeConsumed(AuthenticationError):
 
 
 class TransportError(PointTError):
-    """Base class for HTTP and network failures."""
+    """Base class for HTTP and network failures.
+
+    ``request_sent`` tells a failure without an answer apart (X39): False
+    when the connection could not be established, so the request never left;
+    True when it may have reached the service but no answer arrived; None when
+    an answer came or this is not known.
+    """
+
+    request_sent: bool | None = None
 
 
 class RequestTimeout(TransportError):
     """A request exceeded its configured timeout."""
 
+    def __init__(self, *args: object, request_sent: bool | None = None) -> None:
+        super().__init__(*args)
+        self.request_sent = request_sent
+
 
 class ServiceUnavailable(TransportError):
     """The PointT service returned a temporary failure."""
 
-    def __init__(self, status: int | None = None) -> None:
+    def __init__(
+        self, status: int | None = None, *, request_sent: bool | None = None
+    ) -> None:
         self.status = status
+        self.request_sent = request_sent
         message = "PointT service is unavailable"
         if status is not None:
             message = f"PointT service is unavailable (HTTP {status})"

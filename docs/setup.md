@@ -775,13 +775,25 @@ Two different messages are easy to mix up.
   a short wait, and as long as the saved sign-in still works, nothing needs to be
   done. Earlier versions logged such an outage as a failed gateway request
   (`service_unavailable`).
+- **"The sign-in service did not answer the token renewal started at …"** (a
+  warning): the renewal request may have reached SingleKey ID, but no answer
+  arrived. The message names the start time, how long the integration waited
+  and how long the current access token is still valid; it contains no token.
+  The integration tries once more with the same token after about 12 seconds.
+  If that works, nothing needs to be done. A renewal that could not reach the
+  sign-in service at all (no connection) is repeated up to twice after about
+  8 seconds without a warning.
 - **"SingleKey ID rejected the token refresh (HTTP 400, invalid_grant)"**: the
   saved sign-in is no longer accepted. This cannot repair itself, and Home
   Assistant asks for a new sign-in (a notification and the integration
   card under **Settings → Devices & services**). If the warning adds that the token "had already been presented
   before without a usable answer", the renewal had failed earlier (for example a
   timeout) and was then rejected; the list in the message and the diagnostics
-  (`failed_before_rejection`) show how those attempts failed. A new sign-in is
+  (`failed_before_rejection`) show how those attempts failed. If an earlier
+  answer was lost (see above), **Settings → System → Repairs** also shows
+  "Sign in again: an answer of SingleKey ID was lost": SingleKey ID most likely
+  replaced the token in the answer that never arrived. That notice goes away
+  after the new sign-in. A new sign-in is
   the way out in every case; do the whole sign-in on one computer in one
   browser, see [Signing in with a tablet or phone does not work](#signing-in-with-a-tablet-or-phone-does-not-work).
   The existing devices and the gateway selection are kept.
@@ -800,6 +812,14 @@ Zwei verschiedene Meldungen werden leicht verwechselt.
   wiederholt; solange die gespeicherte Anmeldung noch gilt, ist nichts zu tun.
   Frühere Versionen haben so einen Ausfall als fehlgeschlagene Gateway-Anfrage
   (`service_unavailable`) protokolliert.
+- **„The sign-in service did not answer the token renewal started at …“**
+  (Warnung): Die Anfrage zur Erneuerung hat SingleKey ID vielleicht erreicht,
+  aber es kam keine Antwort. Die Meldung nennt den Startzeitpunkt, wie lange die
+  Integration gewartet hat und wie lange der aktuelle Zugriffstoken noch gilt;
+  sie enthält keinen Token. Die Integration versucht es nach etwa 12 Sekunden
+  einmal mit demselben Token. Klappt das, ist nichts zu tun. Eine Erneuerung,
+  die den Anmeldedienst gar nicht erreicht hat (keine Verbindung), wird ohne
+  Warnung bis zu zweimal nach etwa 8 Sekunden wiederholt.
 - **„SingleKey ID rejected the token refresh (HTTP 400, invalid_grant)“**: Die
   gespeicherte Anmeldung wird nicht mehr akzeptiert. Das repariert sich nicht
   von selbst, Home Assistant fordert eine neue Anmeldung an (Benachrichtigung und
@@ -809,6 +829,10 @@ Zwei verschiedene Meldungen werden leicht verwechselt.
   Erneuerung vorher schon fehlgeschlagen (zum Beispiel durch eine
   Zeitüberschreitung) und wurde dann abgelehnt; die Liste in der Meldung und die
   Diagnose (`failed_before_rejection`) zeigen, wie diese Versuche ausgingen.
+  Ging vorher eine Antwort verloren (siehe oben), zeigt **Einstellungen → System
+  → Reparaturen** zusätzlich „Neu anmelden: Eine Antwort von SingleKey ID ging
+  verloren“: SingleKey ID hat den Token sehr wahrscheinlich in der Antwort
+  ersetzt, die nie ankam. Der Hinweis verschwindet nach der neuen Anmeldung.
   Eine neue Anmeldung ist in jedem Fall der Weg; führe die ganze Anmeldung an
   einem Computer in einem Browser durch (siehe oben). Die vorhandenen Geräte und
   die Auswahl der Gateways bleiben erhalten.

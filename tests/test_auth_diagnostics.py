@@ -61,7 +61,7 @@ class ScriptedOAuth:
         self.presented: list[str] = []
         self.accepted: set[str] = {"refresh-0"}
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.presented.append(refresh_token)
         if refresh_token not in self.accepted:
             raise RefreshTokenRejected(
@@ -287,7 +287,7 @@ async def test_transient_failure_is_recorded_without_counting_a_rejection(
     hass,
 ) -> None:
     class TimingOut:
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             raise RequestTimeout("OAuth token request timed out")
 
     clock = Clock()
@@ -315,7 +315,7 @@ async def test_refusal_without_oauth_code_is_recorded_as_temporary(hass) -> None
     )
 
     class Refusing:
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             raise RefreshRefused(403, rejection=rejection)
 
     clock = Clock()
@@ -429,7 +429,7 @@ async def test_rate_limits_and_server_errors_keep_their_details(hass) -> None:
         def __init__(self) -> None:
             self.errors = [RateLimited(90), ServiceUnavailable(503)]
 
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             raise self.errors.pop(0)
 
     entry = MockConfigEntry(

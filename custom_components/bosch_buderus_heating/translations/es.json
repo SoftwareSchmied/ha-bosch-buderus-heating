@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entidades que ya no se proporcionan",
       "description": "{count} entidades de la nube ya no se proporcionan porque otra entidad de esta integración muestra el mismo valor a través del acceso local (antigua → nueva): {entities}. Las automatizaciones, los scripts y los paneles que usan la entidad antigua deberían usar la nueva. Elimina la entidad antigua cuando ya no la necesites; su historial se mantiene hasta entonces. Puedes ignorar este aviso; vuelve a aparecer en el siguiente reinicio mientras exista la entidad antigua."
+    },
+    "sign_in_answer_lost": {
+      "title": "Vuelve a iniciar sesión: se perdió una respuesta de SingleKey ID",
+      "description": "Mientras la integración renovaba su inicio de sesión, SingleKey ID no respondió a tiempo o la conexión se cortó después de enviar la solicitud. Después, SingleKey ID ya no aceptó el inicio de sesión guardado: lo más probable es que ya lo hubiera sustituido en la respuesta que nunca llegó. No se debe a tus ajustes ni a la pasarela, y la integración no puede restablecer el inicio de sesión por sí sola. Vuelve a iniciar sesión una vez: selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios. Los dispositivos y la selección de pasarelas se conservan. Este aviso desaparece tras el nuevo inicio de sesión."
     }
   },
   "exceptions": {

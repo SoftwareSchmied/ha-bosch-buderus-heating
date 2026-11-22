@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Ní sholáthraítear na heintitis a thuilleadh",
       "description": "Ní sholáthraítear {count} eintiteas scamaill a thuilleadh mar go dtaispeánann eintiteas eile den chomhtháthú seo an luach céanna tríd an rochtain áitiúil (sean → nua): {entities}. Ba cheart d'uathoibrithe, scripteanna agus deaiseanna a úsáideann an sean-eintiteas an ceann nua a úsáid. Bain an sean-eintiteas nuair nach mbíonn sé de dhíth ort a thuilleadh; fanann a stair go dtí sin. Is féidir leat neamhaird a dhéanamh den fhógra seo; feictear arís é ag an gcéad atosú eile fad is atá an sean-eintiteas ann."
+    },
+    "sign_in_answer_lost": {
+      "title": "Sínigh isteach arís: cailleadh freagra ó SingleKey ID",
+      "description": "Agus an comhtháthú ag athnuachan a shínithe isteach, níor thug SingleKey ID freagra in am, nó briseadh an ceangal tar éis an t-iarratas a sheoladh. Ina dhiaidh sin, níor ghlac SingleKey ID leis an síniú isteach sábháilte a thuilleadh: is dócha gur chuir sé ceann nua ina áit cheana féin sa fhreagra nár tháinig riamh. Ní do shocruithe ná an geata is cúis leis seo, agus ní féidir leis an gcomhtháthú an síniú isteach a athbhunú as a stuaim féin. Sínigh isteach arís uair amháin, le do thoil: roghnaigh **Athchumraigh** don chomhtháthú seo faoi Socruithe → Feistí & seirbhísí. Coinnítear na gléasanna agus rogha na ngeataí. Imeoidh an fógra seo tar éis an tsínithe isteach nua."
     }
   },
   "exceptions": {

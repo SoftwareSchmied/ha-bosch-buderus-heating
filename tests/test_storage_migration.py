@@ -309,7 +309,7 @@ async def test_pending_rotation_finishes_in_old_storage_before_migration(
     started, release = asyncio.Event(), asyncio.Event()
     rotated = AuthTokens("synthetic-new-access", "synthetic-new-refresh", 10**12)
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         started.set()
         await release.wait()
         return rotated

@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entités qui ne sont plus fournies",
       "description": "{count} entités du cloud ne sont plus fournies, car une autre entité de cette intégration affiche la même valeur via l'accès local (ancienne → nouvelle) : {entities}. Les automatisations, scripts et tableaux de bord qui utilisent l'ancienne entité devraient utiliser la nouvelle. Supprimez l'ancienne entité lorsque vous n'en avez plus besoin ; son historique est conservé jusque-là. Vous pouvez ignorer cet avis ; il réapparaît au prochain redémarrage tant que l'ancienne entité existe."
+    },
+    "sign_in_answer_lost": {
+      "title": "Reconnectez-vous : une réponse de SingleKey ID a été perdue",
+      "description": "Pendant que l'intégration renouvelait sa connexion, SingleKey ID n'a pas répondu à temps, ou la connexion a été interrompue après l'envoi de la requête. Ensuite, SingleKey ID n'a plus accepté la connexion enregistrée : il l'avait très probablement déjà remplacée dans la réponse qui n'est jamais arrivée. Cela ne vient ni de vos réglages ni de la passerelle, et l'intégration ne peut pas rétablir la connexion d'elle-même. Veuillez vous reconnecter une fois : sélectionnez **Reconfigurer** pour cette intégration sous Paramètres → Appareils et services. Les appareils et la sélection des passerelles sont conservés. Cet avis disparaît après la nouvelle connexion."
     }
   },
   "exceptions": {

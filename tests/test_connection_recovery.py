@@ -87,7 +87,7 @@ async def test_pending_rotation_survives_home_assistant_unload(hass, next_action
     entered = asyncio.Event()
     release = asyncio.Event()
 
-    async def refresh(_token):
+    async def refresh(_token, **_kwargs):
         entered.set()
         await release.wait()
         return AuthTokens("rotated", "rotated-refresh", 10**12)
@@ -131,7 +131,7 @@ async def test_removing_entry_during_refresh_does_not_restore_credentials(hass):
     entered = asyncio.Event()
     release = asyncio.Event()
 
-    async def refresh(_token):
+    async def refresh(_token, **_kwargs):
         entered.set()
         await release.wait()
         return AuthTokens("rotated", "rotated-refresh", 10**12)
@@ -168,7 +168,7 @@ async def test_ordinary_rotation_keeps_the_loaded_integration_running(hass):
         await hass.async_block_till_done()
     assert entry.runtime_data is runtime
     assert entry.data["refresh_token"] == "rotated-refresh"
-    refresh.assert_awaited_once_with("original-refresh")
+    refresh.assert_awaited_once_with("original-refresh", answer_timeout=90.0)
     reload_entry.assert_not_called()
 
 
@@ -215,7 +215,7 @@ async def test_delayed_refresh_cannot_overwrite_new_interactive_credentials(hass
     release = asyncio.Event()
     new_login = AuthTokens("signed-in", "signed-in-refresh", 10**12)
 
-    async def refresh(_token):
+    async def refresh(_token, **_kwargs):
         entered.set()
         await release.wait()
         return AuthTokens("previous-session", "previous-session-refresh", 10**12)
@@ -259,7 +259,7 @@ async def test_setup_retry_keeps_oauth_rate_limit_without_more_requests(
             del entry.runtime_data
         with pytest.raises(ConfigEntryNotReady):
             await async_setup_entry(hass, entry)
-    refresh.assert_awaited_once_with("refresh")
+    refresh.assert_awaited_once_with("refresh", answer_timeout=90.0)
 
 
 @pytest.mark.parametrize("already_friendly", [False, True])
@@ -483,7 +483,7 @@ async def test_reconfigure_and_poll_share_one_refresh_rotation(hass):
     entry.add_to_hass(hass)
     calls = []
 
-    async def refresh(token):
+    async def refresh(token, **_kwargs):
         calls.append(token)
         await asyncio.sleep(0)
         if len(calls) > 1:
@@ -525,7 +525,7 @@ async def test_concurrent_transient_refresh_failure_recovers_next_cycle(error):
     updated = AuthTokens("new", "rotated", 10**12)
     calls = []
 
-    async def refresh(token):
+    async def refresh(token, **_kwargs):
         calls.append(token)
         if len(calls) == 1:
             entered.set()
@@ -568,7 +568,7 @@ async def test_rejected_refresh_is_not_repeated_by_other_gateways():
     for _ in range(5):
         with pytest.raises(RefreshTokenRejected):
             await manager.get_access_token(force_refresh=True)
-    oauth.refresh.assert_awaited_once_with("refresh")
+    oauth.refresh.assert_awaited_once_with("refresh", answer_timeout=90.0)
 
 
 async def test_oauth_rate_limit_blocks_repeated_refresh_and_recovers():
@@ -628,7 +628,7 @@ async def test_cancelled_refresh_waiter_does_not_lose_rotated_tokens():
     updated = AuthTokens("new", "rotated", 10**12)
     calls = []
 
-    async def refresh(token):
+    async def refresh(token, **_kwargs):
         calls.append(token)
         if len(calls) > 1:
             raise RefreshTokenRejected("Already consumed")

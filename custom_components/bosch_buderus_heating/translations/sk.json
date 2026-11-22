@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entity už nie sú poskytované",
       "description": "{count} cloudových entít už nie je poskytovaných, pretože iná entita tejto integrácie zobrazuje rovnakú hodnotu cez miestny prístup (stará → nová): {entities}. Automatizácie, skripty a dashboardy, ktoré používajú starú entitu, by mali používať novú. Starú entitu odstráňte, keď ju už nebudete potrebovať; jej história dovtedy zostáva. Toto upozornenie môžete ignorovať; pri ďalšom reštarte sa objaví znova, kým stará entita existuje."
+    },
+    "sign_in_answer_lost": {
+      "title": "Prihláste sa znova: odpoveď SingleKey ID sa stratila",
+      "description": "Keď integrácia obnovovala prihlásenie, SingleKey ID neodpovedal včas alebo sa spojenie prerušilo až po odoslaní požiadavky. Potom SingleKey ID uložené prihlásenie už neprijal: s veľkou pravdepodobnosťou ho nahradil už v odpovedi, ktorá nikdy nedorazila. Nespôsobili to vaše nastavenia ani brána a integrácia nemôže prihlásenie obnoviť sama. Prihláste sa prosím raz znova: pre túto integráciu vyberte v Nastavenia → Zariadenia a služby možnosť **Prekonfigurovať**. Zariadenia a výber brán zostanú zachované. Toto upozornenie po novom prihlásení zmizne."
     }
   },
   "exceptions": {

@@ -303,7 +303,7 @@ async def test_bacon_refresh_releases_http_slot_and_preserves_rotation(expired, 
     entered, resume = asyncio.Event(), asyncio.Event()
     saved, requests = [], []
 
-    async def refresh(refresh_token):
+    async def refresh(refresh_token, **_kwargs):
         assert refresh_token == "old-refresh"
         entered.set()
         await resume.wait()

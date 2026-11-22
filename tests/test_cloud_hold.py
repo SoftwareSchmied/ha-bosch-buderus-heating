@@ -565,7 +565,7 @@ class SlowSignIn:
         self.requests: list[float] = []
         self.issued = 0
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.requests.append(self.clock.now)
         if self.mode == "timeout":
             # A request that did not connect in 10 s, as in the evidence.

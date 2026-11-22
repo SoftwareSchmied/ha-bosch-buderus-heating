@@ -55,6 +55,8 @@ from .models import (
 )
 from .redaction import anonymize_identifier
 from .token_manager import (
+    ANSWER_LOST,
+    NOT_SENT,
     RefreshAttempt,
     RefreshObserver,
     StaticTokenProvider,
@@ -63,6 +65,8 @@ from .token_manager import (
 from .transport import RetryPolicy
 
 __all__ = [
+    "ANSWER_LOST",
+    "NOT_SENT",
     "AccessTokenProvider",
     "AccessTokenRejected",
     "AuthTokens",

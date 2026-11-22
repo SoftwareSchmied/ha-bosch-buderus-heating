@@ -898,7 +898,7 @@ async def test_selection_waits_for_a_running_rotation_and_keeps_it(hass, backend
     rotated = AuthTokens("rotated-access", "rotated-refresh", 10**12)
     entered, release = asyncio.Event(), asyncio.Event()
 
-    async def refresh(_token):
+    async def refresh(_token, **_kwargs):
         entered.set()
         await release.wait()
         return rotated

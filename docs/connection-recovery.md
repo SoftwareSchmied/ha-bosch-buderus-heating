@@ -62,9 +62,19 @@ this is not a claim of complete compatibility with an unreleased HA version.
   the requests are not affected; the next attempt follows after the wait above,
   but at the latest halfway to the end of the current token. In the last 30
   seconds of the token a request waits for the renewal as before. A token the
-  cloud refused is never reused, and the 90-second limit of the token request,
-  the rotation of the refresh token and the rule that it is presented once per
-  attempt stay as they were.
+  cloud refused is never reused, and the rotation of the refresh token and the
+  rule that it is presented once per attempt stay as they were.
+- The token request is never given up sooner than after 90 seconds. A
+  renewal in the background, while the current token still works,
+  waits longer: the remaining lifetime less two minutes, at most five minutes.
+  Connecting stays limited to 10 seconds. A request that could not connect was
+  never sent and is repeated up to twice after about 8 seconds. A request that
+  was sent but got no answer (timeout or a connection broken afterwards) is
+  repeated once with the same token after about 12 seconds, with a warning in
+  the log. If SingleKey ID then answers `invalid_grant`, it had most likely
+  replaced the token in the lost answer: Home Assistant asks for a new sign-in,
+  and a repair note explains why. These tries stay inside the one running
+  renewal, so no second renewal starts meanwhile.
 - A sign-in that was rejected is not submitted again by the same token
   manager. A reload of the entry, a new start of the access or a check in its
   dialog tries the stored token once more.
@@ -214,9 +224,19 @@ Home-Assistant-Version.
   nächste Versuch folgt nach der oben genannten Wartezeit, spätestens aber zur
   Hälfte der Restlaufzeit des aktuellen Tokens. In den letzten 30 Sekunden des
   Tokens wartet eine Anfrage wie bisher auf die Erneuerung. Ein vom Cloud-Dienst
-  abgewiesener Token wird nie weiterverwendet; das 90-Sekunden-Limit der
-  Token-Anfrage, der Wechsel des Refresh-Tokens und die Regel, ihn je Versuch
-  nur einmal vorzulegen, bleiben unverändert.
+  abgewiesener Token wird nie weiterverwendet; der Wechsel des Refresh-Tokens
+  und die Regel, ihn je Versuch nur einmal vorzulegen, bleiben unverändert.
+- Die Token-Anfrage wird nie vor 90 Sekunden aufgegeben. Eine Erneuerung im Hintergrund, solange der aktuelle Token noch gilt, wartet
+  länger: Restlaufzeit minus zwei Minuten, höchstens fünf Minuten. Der
+  Verbindungsaufbau bleibt auf 10 Sekunden begrenzt. Eine Anfrage, die keine
+  Verbindung bekam, wurde nie gesendet und wird bis zu zweimal nach etwa
+  8 Sekunden wiederholt. Eine gesendete Anfrage ohne Antwort (Zeitüberschreitung
+  oder danach abgebrochene Verbindung) wird einmal nach etwa 12 Sekunden mit
+  demselben Token wiederholt, mit einer Warnung im Log. Antwortet SingleKey ID
+  dann mit `invalid_grant`, hat es den Token sehr wahrscheinlich in der
+  verlorenen Antwort ersetzt: Home Assistant fordert eine neue Anmeldung an, und
+  ein Reparaturhinweis erklärt den Grund. Diese Versuche laufen innerhalb der
+  einen laufenden Erneuerung; währenddessen startet keine zweite.
 - Eine abgewiesene Anmeldung sendet dieselbe Tokenverwaltung nicht erneut. Ein
   Neuladen des Eintrags, ein Neustart des Zugangs oder ein Test im Dialog
   versucht den gespeicherten Token noch einmal.

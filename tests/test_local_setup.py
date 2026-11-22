@@ -881,7 +881,7 @@ async def test_pending_cloud_refresh_blocks_minor_upgrade_without_losing_rotated
         }
     )
 
-    async def refresh(token):
+    async def refresh(token, **_kwargs):
         started.set()
         await release.wait()
         return updated
@@ -939,7 +939,7 @@ async def test_later_local_replacement_runs_independently_of_cloud_refresh(
         }
     )
 
-    async def refresh(token):
+    async def refresh(token, **_kwargs):
         started.set()
         await release.wait()
         return refreshed

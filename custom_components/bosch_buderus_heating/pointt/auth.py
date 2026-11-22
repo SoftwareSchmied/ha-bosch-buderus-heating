@@ -206,8 +206,14 @@ class OAuthClient:
             fallback_refresh_token=None,
         )
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
-        """Rotate a refresh token and return the new token set."""
+    async def refresh(
+        self, refresh_token: str, *, answer_timeout: float | None = None
+    ) -> AuthTokens:
+        """Rotate a refresh token and return the new token set.
+
+        ``answer_timeout`` replaces the total time for the answer of this request;
+        the time to establish the connection stays the same (X39).
+        """
         return await self._token_request(
             {
                 "grant_type": "refresh_token",
@@ -216,6 +222,13 @@ class OAuthClient:
             },
             refresh_request=True,
             fallback_refresh_token=refresh_token,
+            client_timeout=(
+                self._timeout
+                if answer_timeout is None
+                else aiohttp.ClientTimeout(
+                    connect=DEFAULT_CONNECT_TIMEOUT, total=answer_timeout
+                )
+            ),
         )
 
     async def _token_request(
@@ -224,6 +237,7 @@ class OAuthClient:
         *,
         refresh_request: bool,
         fallback_refresh_token: str | None,
+        client_timeout: aiohttp.ClientTimeout | None = None,
     ) -> AuthTokens:
         headers = {
             "Accept": "application/json",
@@ -234,7 +248,7 @@ class OAuthClient:
                 self._token_url,
                 data=data,
                 headers=headers,
-                timeout=self._timeout,
+                timeout=self._timeout if client_timeout is None else client_timeout,
                 # A redirect would resend the refresh token or the code
                 # verifier to the redirect target, possibly another host.
                 allow_redirects=False,
@@ -258,9 +272,18 @@ class OAuthClient:
                     raise UnexpectedHttpStatus(response.status)
                 raw = await _read_bounded(response, _MAX_TOKEN_RESPONSE)
         except TimeoutError as err:
-            raise RequestTimeout("OAuth token request timed out") from err
+            # X39: only a timeout while connecting proves that the request
+            # never left; after that it may have reached the service.
+            raise RequestTimeout(
+                "OAuth token request timed out",
+                request_sent=not isinstance(err, aiohttp.ConnectionTimeoutError),
+            ) from err
+        except aiohttp.ClientConnectorError as err:
+            raise ServiceUnavailable(request_sent=False) from err
         except aiohttp.ClientError as err:
-            raise ServiceUnavailable() from err
+            # The connection broke after it was established: the request may
+            # have reached the service and only its answer was lost.
+            raise ServiceUnavailable(request_sent=True) from err
         if raw is None:
             raise InvalidPayload("OAuth token response exceeded the size limit")
         try:

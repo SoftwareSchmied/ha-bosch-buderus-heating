@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entitete niso več na voljo",
       "description": "{count} entitet iz oblaka ni več na voljo, ker druga entiteta te integracije prikazuje isto vrednost prek lokalnega dostopa (stara → nova): {entities}. Avtomatizacije, skripte in nadzorne plošče, ki uporabljajo staro entiteto, naj uporabljajo novo. Staro entiteto odstranite, ko je ne potrebujete več; njena zgodovina do takrat ostane. To obvestilo lahko prezrete; ob naslednjem ponovnem zagonu se znova prikaže, dokler stara entiteta obstaja."
+    },
+    "sign_in_answer_lost": {
+      "title": "Znova se prijavite: odgovor SingleKey ID se je izgubil",
+      "description": "Medtem ko je integracija obnavljala prijavo, SingleKey ID ni pravočasno odgovoril ali pa se je povezava prekinila po pošiljanju zahteve. Nato SingleKey ID shranjene prijave ni več sprejel: najverjetneje jo je zamenjal že v odgovoru, ki ni nikoli prispel. Vzrok niso vaše nastavitve niti prehod, integracija pa prijave ne more obnoviti sama. Enkrat se znova prijavite: za to integracijo izberite **Znova konfiguriraj** v Nastavitve → Naprave in storitve. Naprave in izbira prehodov ostanejo ohranjeni. To obvestilo izgine po novi prijavi."
     }
   },
   "exceptions": {

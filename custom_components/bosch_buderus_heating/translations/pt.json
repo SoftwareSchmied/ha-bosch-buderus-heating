@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entidades que já não são fornecidas",
       "description": "{count} entidades da nuvem já não são fornecidas porque outra entidade desta integração mostra o mesmo valor através do acesso local (antiga → nova): {entities}. Automatizações, scripts e painéis que usam a entidade antiga devem usar a nova. Remova a entidade antiga quando já não precisar dela; o seu histórico mantém-se até lá. Pode ignorar este aviso; volta a aparecer no próximo reinício enquanto a entidade antiga existir."
+    },
+    "sign_in_answer_lost": {
+      "title": "Inicie sessão novamente: uma resposta do SingleKey ID perdeu-se",
+      "description": "Enquanto a integração renovava o seu início de sessão, o SingleKey ID não respondeu a tempo ou a ligação foi interrompida depois de o pedido ter sido enviado. Depois disso, o SingleKey ID deixou de aceitar o início de sessão guardado: muito provavelmente já o tinha substituído na resposta que nunca chegou. A causa não está nas suas definições nem no gateway, e a integração não consegue restabelecer o início de sessão sozinha. Inicie sessão novamente uma vez: selecione **Reconfigurar** para esta integração em Definições → Dispositivos e serviços. Os dispositivos e a seleção de gateways são mantidos. Este aviso desaparece após o novo início de sessão."
     }
   },
   "exceptions": {

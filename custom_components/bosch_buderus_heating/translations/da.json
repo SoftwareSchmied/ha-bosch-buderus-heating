@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Enheder leveres ikke længere",
       "description": "{count} cloud-enheder leveres ikke længere, fordi en anden enhed i denne integration viser den samme værdi via den lokale adgang (gammel → ny): {entities}. Automatiseringer, scripts og dashboards, der bruger den gamle enhed, bør bruge den nye. Fjern den gamle enhed, når du ikke længere har brug for den; dens historik bevares indtil da. Du kan ignorere denne meddelelse; den vises igen ved næste genstart, så længe den gamle enhed findes."
+    },
+    "sign_in_answer_lost": {
+      "title": "Log ind igen: et svar fra SingleKey ID gik tabt",
+      "description": "Mens integrationen fornyede sit login, svarede SingleKey ID ikke i tide, eller forbindelsen blev afbrudt, efter at anmodningen var sendt. Derefter accepterede SingleKey ID ikke længere det gemte login: Det var højst sandsynligt allerede blevet erstattet i det svar, der aldrig nåede frem. Det skyldes hverken dine indstillinger eller gatewayen, og integrationen kan ikke selv genoprette login. Log venligst ind igen én gang: Vælg **Genkonfigurer** for denne integration under Indstillinger → Enheder og tjenester. Enhederne og valget af gateways bevares. Denne meddelelse forsvinder efter det nye login."
     }
   },
   "exceptions": {

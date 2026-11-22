@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entitäten werden nicht mehr bereitgestellt",
       "description": "{count} Cloud-Entitäten werden nicht mehr bereitgestellt, weil eine andere Entität dieser Integration denselben Wert über den lokalen Zugang zeigt (alt → neu): {entities}. Automationen, Skripte und Dashboards, die die alte Entität nutzen, sollten die neue verwenden. Entferne die alte Entität, wenn du sie nicht mehr brauchst; ihr Verlauf bleibt bis dahin erhalten. Du kannst diesen Hinweis ignorieren; er erscheint beim nächsten Neustart wieder, solange die alte Entität existiert."
+    },
+    "sign_in_answer_lost": {
+      "title": "Neu anmelden: Eine Antwort von SingleKey ID ging verloren",
+      "description": "Beim Erneuern der Anmeldung hat SingleKey ID nicht rechtzeitig geantwortet, oder die Verbindung brach ab, nachdem die Anfrage gesendet war. Danach hat SingleKey ID die gespeicherte Anmeldung nicht mehr akzeptiert: Sie wurde sehr wahrscheinlich schon in der Antwort ersetzt, die nie angekommen ist. Das liegt weder an deinen Einstellungen noch am Gateway, und die Integration kann die Anmeldung nicht selbst wiederherstellen. Bitte melde dich einmal neu an: Wähle unter Einstellungen → Geräte & Dienste bei dieser Integration **Neu konfigurieren**. Die Geräte und die Auswahl der Gateways bleiben erhalten. Dieser Hinweis verschwindet nach der neuen Anmeldung."
     }
   },
   "exceptions": {

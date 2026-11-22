@@ -24,7 +24,7 @@ class FakeOAuthClient:
     def __init__(self) -> None:
         self.calls: list[str] = []
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.calls.append(refresh_token)
         await asyncio.sleep(0)
         return AuthTokens("fresh", "rotated", expires_at=5000.0)
@@ -149,7 +149,7 @@ async def test_observer_receives_rejection_and_retains_its_reason() -> None:
     class RejectingClient:
         calls = 0
 
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             self.calls += 1
             raise RefreshTokenRejected(rejection=rejection)
 
@@ -185,7 +185,7 @@ async def test_observer_receives_transient_failures(
     error: Exception, outcome: str
 ) -> None:
     class FailingClient:
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             raise error
 
     attempts = []
@@ -209,7 +209,7 @@ async def test_observer_reports_cancelled_refresh() -> None:
     entered = asyncio.Event()
 
     class HangingClient:
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             entered.set()
             await asyncio.Event().wait()
             raise AssertionError("unreachable")
@@ -290,7 +290,7 @@ class _FlakyClient:
         self.error = error or ServiceUnavailable(503)
         self.calls = 0
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.calls += 1
         if self.calls <= self.failures:
             raise self.error
@@ -434,7 +434,7 @@ class _ShortLivedOAuth:
         self._clock = clock
         self._lifetime = lifetime
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.calls += 1
         now = self._clock[0]
         return AuthTokens(
@@ -512,7 +512,7 @@ class _ExpiringOAuth:
         self._clock = clock
         self.expired = expired
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.presented.append(refresh_token)
         count = len(self.presented)
         now = self._clock[0]
@@ -595,8 +595,8 @@ async def test_an_expired_answer_respects_a_rate_limit_pause() -> None:
     manager = _expiring_manager(oauth, clock, [])
     original = oauth.refresh
 
-    async def refresh_then_pause(refresh_token: str) -> AuthTokens:
-        tokens = await original(refresh_token)
+    async def refresh_then_pause(refresh_token: str, **kwargs: object) -> AuthTokens:
+        tokens = await original(refresh_token, **kwargs)
         manager._backoff.activate(60.0)
         return tokens
 
@@ -619,7 +619,7 @@ class _TimedClient:
         self.error = error or RequestTimeout()
         self.requests: list[float] = []
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
+    async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
         self.requests.append(self.clock[0])
         await asyncio.sleep(0)
         if self.failing:
@@ -737,7 +737,7 @@ async def test_many_requests_share_one_early_renewal_without_waiting() -> None:
     calls: list[str] = []
 
     class Slow:
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             calls.append(refresh_token)
             entered.set()
             await release.wait()
@@ -802,7 +802,7 @@ async def test_a_failed_early_renewal_leaves_the_refresh_token_for_the_next_try(
     presented: list[str] = []
 
     class Recorder(_TimedClient):
-        async def refresh(self, refresh_token: str) -> AuthTokens:
+        async def refresh(self, refresh_token: str, **_: object) -> AuthTokens:
             presented.append(refresh_token)
             return await super().refresh(refresh_token)
 

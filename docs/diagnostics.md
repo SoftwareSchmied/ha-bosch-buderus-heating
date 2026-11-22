@@ -674,7 +674,17 @@ Also without a new schema number (0.9.3):
   there was one and `duration_ms`) and `failed_before_rejection_total` (how many
   failed attempts that token had in all). It shows at once whether the earlier
   attempts timed out or got a server error. Only fixed codes and numbers are
-  kept, no token and no text of the service.
+  kept, no token and no text of the service;
+- each renewal event adds `answer_timeout_s` (how long it waited for the
+  answer) and, for a repeated try within one renewal, `retry`. A failed try
+  without an answer adds `failure_case`: `not_sent` (no connection, the
+  request never left) or `answer_lost` (sent, but no answer), and
+  `retry_in_s` when the next try follows at once; the counters add
+  `refresh_not_sent` and `refresh_answer_lost`. A rejection after a lost
+  answer with the same refresh token adds `after_lost_answer: true` (counter
+  `refresh_rejected_after_lost_answer`), the entries of
+  `failed_before_rejection` carry their `failure_case`, and `current` adds
+  `rejected_after_lost_answer`.
 
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or

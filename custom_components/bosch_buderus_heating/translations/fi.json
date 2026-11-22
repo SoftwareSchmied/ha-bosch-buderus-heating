@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entiteettejä ei enää tarjota",
       "description": "{count} pilven entiteettiä ei enää tarjota, koska tämän integraation toinen entiteetti näyttää saman arvon paikallisen yhteyden kautta (vanha → uusi): {entities}. Vanhaa entiteettiä käyttävien automaatioiden, skriptien ja kojelautojen pitäisi käyttää uutta. Poista vanha entiteetti, kun et enää tarvitse sitä; sen historia säilyy siihen asti. Voit ohittaa tämän ilmoituksen; se näkyy uudelleen seuraavassa uudelleenkäynnistyksessä niin kauan kuin vanha entiteetti on olemassa."
+    },
+    "sign_in_answer_lost": {
+      "title": "Kirjaudu uudelleen: SingleKey ID:n vastaus katosi",
+      "description": "Kun integraatio uusi kirjautumistaan, SingleKey ID ei vastannut ajoissa tai yhteys katkesi pyynnön lähettämisen jälkeen. Sen jälkeen SingleKey ID ei enää hyväksynyt tallennettua kirjautumista: se oli todennäköisesti jo korvannut sen vastauksessa, joka ei koskaan saapunut. Syy ei ole asetuksissasi eikä yhdyskäytävässä, eikä integraatio voi palauttaa kirjautumista itse. Kirjaudu uudelleen kerran: valitse tälle integraatiolle **Määritä uudelleen** kohdassa Asetukset → Laitteet ja palvelut. Laitteet ja yhdyskäytävien valinta säilyvät. Tämä ilmoitus häviää uuden kirjautumisen jälkeen."
     }
   },
   "exceptions": {

@@ -5,11 +5,13 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from datetime import datetime
 from inspect import isawaitable
 from time import monotonic, time
-from typing import Protocol
+from typing import Final, Protocol
 
+from .const import TOKEN_TOTAL_TIMEOUT
 from .exceptions import (
     InvalidPayload,
     PointTError,
@@ -38,13 +40,33 @@ USABLE_MARGIN_SECONDS = 30.0
 # between fail at once instead of each starting another token request.
 REFRESH_RETRY_INITIAL_SECONDS = 30.0
 REFRESH_RETRY_MAXIMUM_SECONDS = 600.0
+# X39: an early renewal waits longer for the answer, as the current access
+# token still works meanwhile: the remaining lifetime less a reserve for one
+# more try, never less than the usual token timeout and at most five minutes.
+# Giving up on an answer that is merely late can lose the rotated token; a
+# shorter wait would only make that more likely.
+EARLY_REFRESH_TIMEOUT_MAXIMUM_SECONDS = 300.0
+EARLY_REFRESH_TIMEOUT_RESERVE_SECONDS = 120.0
+# X39: a request that never left (no connection) is safe to repeat soon.
+NOT_SENT_RETRY_DELAY_SECONDS = 8.0
+NOT_SENT_RETRIES = 2
+# X39: after a lost answer, one more try with the same token shows whether
+# the service had used it: an answer renews, ``invalid_grant`` means that the
+# answer with the new token was lost and a new sign-in is needed.
+ANSWER_LOST_RETRY_DELAY_SECONDS = 12.0
+ANSWER_LOST_RETRIES = 1
+# Fixed codes of a failed attempt without an answer (diagnostics, X39).
+NOT_SENT: Final = "not_sent"
+ANSWER_LOST: Final = "answer_lost"
 
 
 class OAuthTokenClient(Protocol):
     """Token refresh interface required by TokenManager."""
 
-    async def refresh(self, refresh_token: str) -> AuthTokens:
-        """Refresh and rotate a token set."""
+    async def refresh(
+        self, refresh_token: str, *, answer_timeout: float | None = None
+    ) -> AuthTokens:
+        """Refresh and rotate a token set; ``answer_timeout`` bounds the answer."""
         ...
 
 
@@ -67,9 +89,58 @@ class RefreshAttempt:
     presented_refresh_token: str | None = field(repr=False)
     new_tokens: AuthTokens | None = field(default=None, repr=False)
     error: BaseException | None = field(default=None, repr=False)
+    # X39: the wait for the answer, which try of this renewal it was (0 the
+    # first), the kind of a failure without an answer (``not_sent`` or
+    # ``answer_lost``), the delay of the immediate next try, and whether a
+    # rejection followed a lost answer with the same refresh token.
+    answer_timeout: float | None = None
+    retry: int = 0
+    failure_case: str | None = None
+    retry_in: float | None = None
+    after_lost_answer: bool = False
 
 
 RefreshObserver = Callable[[RefreshAttempt], None]
+Sleep = Callable[[float], Awaitable[None]]
+
+
+@dataclass(slots=True)
+class _RetryBudget:
+    """The immediate retries left within one renewal (X39)."""
+
+    not_sent: int = NOT_SENT_RETRIES
+    answer_lost: int = ANSWER_LOST_RETRIES
+    tries: int = 0
+
+    def take(self, case: str | None) -> float | None:
+        """The delay of the next try for this failure, or None for none."""
+        if case == NOT_SENT and self.not_sent > 0:
+            self.not_sent -= 1
+            return NOT_SENT_RETRY_DELAY_SECONDS
+        if case == ANSWER_LOST and self.answer_lost > 0:
+            self.answer_lost -= 1
+            return ANSWER_LOST_RETRY_DELAY_SECONDS
+        return None
+
+
+@dataclass(frozen=True, slots=True)
+class _AttemptDetails:
+    """The X39 fields of one reported attempt."""
+
+    answer_timeout: float
+    retry: int
+    failure_case: str | None = None
+    retry_in: float | None = None
+    after_lost_answer: bool = False
+
+
+class _RetrySoon(Exception):
+    """Internal: try the same renewal again after ``delay`` seconds."""
+
+    def __init__(self, error: PointTError, delay: float) -> None:
+        super().__init__(type(error).__name__)
+        self.error = error
+        self.delay = delay
 
 
 class TokenManager:
@@ -86,6 +157,7 @@ class TokenManager:
         backoff: RateLimitBackoff | None = None,
         observer: RefreshObserver | None = None,
         retry_clock: Callable[[], float] = monotonic,
+        sleep: Sleep = asyncio.sleep,
     ) -> None:
         self._oauth_client = oauth_client
         self._tokens = tokens
@@ -104,6 +176,11 @@ class TokenManager:
         self._failures = 0
         self._retry_not_before = 0.0
         self._last_failure: SignInUnavailable | None = None
+        self._sleep = sleep
+        # X39: the refresh token whose request may have reached the service
+        # without an answer, and whether its rejection followed such a loss.
+        self._answer_lost_token: str | None = None
+        self._rejected_after_lost_answer = False
 
     def set_observer(self, observer: RefreshObserver | None) -> None:
         """Attach the diagnostics observer for subsequent refresh attempts."""
@@ -113,6 +190,15 @@ class TokenManager:
     def refresh_rejected(self) -> bool:
         """Return whether this manager stopped after a rejected refresh."""
         return self._refresh_rejected
+
+    @property
+    def rejected_after_lost_answer(self) -> bool:
+        """Whether the rejection followed a lost answer with the same token.
+
+        Then the service most likely replaced the token in the answer that
+        never arrived (X39); only a new sign-in helps.
+        """
+        return self._refresh_rejected and self._rejected_after_lost_answer
 
     @property
     def refresh_in_progress(self) -> bool:
@@ -256,30 +342,65 @@ class TokenManager:
         failure and the usual retry wait (30 s doubling up to 10 min) holds
         every further refresh. There is never a tight refresh loop.
         """
-        tokens = await self._refresh_once(trigger)
+        tokens = await self._refresh_with_retries(trigger)
         if not _expired_on_arrival(tokens):
             return tokens.access_token
         self._backoff.raise_if_active()
-        tokens = await self._refresh_once("expired_on_arrival")
+        tokens = await self._refresh_with_retries("expired_on_arrival")
         if not _expired_on_arrival(tokens):
             return tokens.access_token
         raise self._temporary_failure(
             InvalidPayload("OAuth access token was expired on arrival")
         )
 
-    async def _refresh_once(self, trigger: str) -> AuthTokens:
+    async def _refresh_with_retries(self, trigger: str) -> AuthTokens:
+        """One renewal with its few immediate retries (X39).
+
+        The retries run inside the one shared renewal task, so no request and
+        no scheduled renewal starts a second token request meanwhile. Only
+        after them does the usual retry wait begin.
+        """
+        budget = _RetryBudget()
+        while True:
+            try:
+                return await self._refresh_once(trigger, budget)
+            except _RetrySoon as retry:
+                await self._sleep(retry.delay)
+                budget.tries += 1
+
+    def _answer_timeout(self) -> float:
+        """How long this try waits for the answer of the sign-in service (X39).
+
+        An early renewal, while the access token still works, waits up to the
+        remaining usable time less a reserve for one more try (90 s to 5 min).
+        Otherwise requests are waiting, so the usual 90 s apply.
+        """
+        if not (self._refresh_early and self._current_token_usable(False)):
+            return TOKEN_TOTAL_TIMEOUT
+        remaining = self._tokens.expires_at - self._clock()
+        return min(
+            EARLY_REFRESH_TIMEOUT_MAXIMUM_SECONDS,
+            max(TOKEN_TOTAL_TIMEOUT, remaining - EARLY_REFRESH_TIMEOUT_RESERVE_SECONDS),
+        )
+
+    async def _refresh_once(self, trigger: str, budget: _RetryBudget) -> AuthTokens:
         refresh_token = self._tokens.refresh_token
         started_at = self._clock()
         started = monotonic()
         remaining = self._tokens.expires_at - started_at
+        timeout = self._answer_timeout()
         new_tokens: AuthTokens | None = None
+        details = _AttemptDetails(answer_timeout=timeout, retry=budget.tries)
         try:
             if not refresh_token:
                 raise RefreshTokenRejected("No refresh token is available")
-            new_tokens = await self._oauth_client.refresh(refresh_token)
+            new_tokens = await self._oauth_client.refresh(
+                refresh_token, answer_timeout=timeout
+            )
             # The old refresh token may already be invalid. Retain the new one
             # in memory even if the persistence callback itself fails.
             self._tokens = new_tokens
+            self._answer_lost_token = None
             if not _expired_on_arrival(new_tokens):
                 # An expired token ends no retry wait (D15).
                 self._failures = 0
@@ -292,6 +413,7 @@ class TokenManager:
                 remaining,
                 refresh_token,
                 new_tokens=new_tokens,
+                details=details,
             )
             persisted = self._persist(new_tokens)
             if isawaitable(persisted):
@@ -300,6 +422,9 @@ class TokenManager:
         except RefreshTokenRejected as err:
             self._refresh_rejected = True
             self._rejection = err.rejection
+            self._rejected_after_lost_answer = (
+                refresh_token is not None and refresh_token == self._answer_lost_token
+            )
             self._report(
                 trigger,
                 "rejected",
@@ -308,6 +433,9 @@ class TokenManager:
                 remaining,
                 refresh_token,
                 error=err,
+                details=replace(
+                    details, after_lost_answer=self._rejected_after_lost_answer
+                ),
             )
             raise
         except RateLimited as err:
@@ -320,6 +448,7 @@ class TokenManager:
                 remaining,
                 refresh_token,
                 error=err,
+                details=details,
             )
             raise
         except asyncio.CancelledError:
@@ -331,12 +460,24 @@ class TokenManager:
                     started,
                     remaining,
                     refresh_token,
+                    details=details,
                 )
             raise
         except Exception as err:
             if new_tokens is not None:
                 # Saving failed; the new tokens are already in use.
                 raise
+            case = _failure_case(err)
+            retry_in = None
+            if case is not None and self._backoff.remaining <= 0:
+                retry_in = budget.take(case)
+            # The first lost answer of a refresh token is a warning; repeats
+            # with the same token, after the usual wait, are logged for debug.
+            first_loss = (
+                case == ANSWER_LOST and refresh_token != self._answer_lost_token
+            )
+            if case == ANSWER_LOST:
+                self._answer_lost_token = refresh_token
             self._report(
                 trigger,
                 "failed",
@@ -345,8 +486,24 @@ class TokenManager:
                 remaining,
                 refresh_token,
                 error=err,
+                details=replace(details, failure_case=case, retry_in=retry_in),
             )
+            if case == ANSWER_LOST:
+                _log_lost_answer(
+                    started_at, started, remaining, retry_in, warn=first_loss
+                )
+            elif case == NOT_SENT:
+                _LOGGER.debug(
+                    "The token renewal could not reach the sign-in service (%s); "
+                    "the request was not sent. %s",
+                    type(err).__name__,
+                    f"Next try in {retry_in:.0f} s"
+                    if retry_in is not None
+                    else "The usual retry wait applies",
+                )
             if isinstance(err, PointTError):
+                if retry_in is not None:
+                    raise _RetrySoon(err, retry_in) from err
                 # Not an answer of the PointT service: no gateway or reading
                 # failed, and an unreadable token answer is no invalid value.
                 raise self._temporary_failure(err) from err
@@ -376,6 +533,7 @@ class TokenManager:
         *,
         new_tokens: AuthTokens | None = None,
         error: BaseException | None = None,
+        details: _AttemptDetails,
     ) -> None:
         observer = self._observer
         if observer is None:
@@ -389,12 +547,55 @@ class TokenManager:
             presented_refresh_token=refresh_token,
             new_tokens=new_tokens,
             error=error,
+            answer_timeout=details.answer_timeout,
+            retry=details.retry,
+            failure_case=details.failure_case,
+            retry_in=details.retry_in,
+            after_lost_answer=details.after_lost_answer,
         )
         try:
             observer(attempt)
         except Exception:
             # Diagnostics must never change authentication behavior.
             _LOGGER.debug("Refresh diagnostics observer failed", exc_info=True)
+
+
+def _failure_case(err: BaseException) -> str | None:
+    """X39: a failure without an answer, by whether the request was sent."""
+    sent = getattr(err, "request_sent", None)
+    if sent is False:
+        return NOT_SENT
+    if sent is True:
+        return ANSWER_LOST
+    return None
+
+
+def _log_lost_answer(
+    started_at: float,
+    started: float,
+    remaining: float,
+    retry_in: float | None,
+    *,
+    warn: bool,
+) -> None:
+    """X39: say at once that an answer of the sign-in service was lost.
+
+    Never with a token: only the time, the wait and the remaining lifetime.
+    """
+    waited = max(0.0, monotonic() - started)
+    _LOGGER.log(
+        logging.WARNING if warn else logging.DEBUG,
+        "The sign-in service did not answer the token renewal started at %s "
+        "(no answer after %.0f s, access token valid for %.0f s more). The "
+        "request may have reached it; if it already replaced the refresh token "
+        "in the lost answer, signing in again is required. %s",
+        datetime.fromtimestamp(started_at).astimezone().isoformat(timespec="seconds"),
+        waited,
+        max(0.0, remaining - waited),
+        f"One more try with the same token follows in {retry_in:.0f} s"
+        if retry_in is not None
+        else "The next try follows after the usual wait",
+    )
 
 
 def _expired_on_arrival(tokens: AuthTokens) -> bool:

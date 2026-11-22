@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -10,19 +11,36 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.util.hass_dict import HassKey
 
-from .auth_diagnostics import auth_diagnostics_for, forget_auth_history
+from .auth_diagnostics import (
+    AuthDiagnostics,
+    auth_diagnostics_for,
+    forget_auth_history,
+)
 from .cloud_pauses import cloud_pause_store
 from .configuration_access import CredentialContext, EntryConfiguration
-from .const import DOMAIN
-from .pointt import AuthTokens, OAuthClient, PointTError, TokenManager
+from .const import DOMAIN, SIGN_IN_ANSWER_LOST_ISSUE_PREFIX
+from .pointt import (
+    AuthTokens,
+    OAuthClient,
+    PointTError,
+    RefreshAttempt,
+    RefreshObserver,
+    TokenManager,
+)
 from .pointt.metrics import RequestMetrics
 from .pointt.transport import RateLimitBackoff
+from .repair_scope import repair_data, repair_id
 from .runtime import BoschBuderusRuntimeData
+
+_LOGGER = logging.getLogger(__name__)
 
 type ConnectionKey = tuple[str, str]
 REFRESH_MIGRATION_TIMEOUT_SECONDS = 30
+# X39: the repair note after a sign-in that was lost with an answer.
+ANSWER_LOST_ISSUE_KEY = "sign_in_answer_lost"
 
 ACCOUNT_BACKOFFS: HassKey[dict[ConnectionKey, RateLimitBackoff]] = HassKey(
     f"{DOMAIN}.account_backoffs"
@@ -98,8 +116,7 @@ def entry_auth(
         # temporary refusal; a genuinely invalid token is rejected again.
         and not previous.refresh_rejected
     ):
-        if recorder is not None:
-            previous.set_observer(recorder.refresh_finished)
+        previous.set_observer(_refresh_observer(hass, entry, key, recorder))
         return previous, backoff
 
     persisted_tokens = tokens
@@ -133,19 +150,95 @@ def entry_auth(
         tokens,
         persist_tokens,
         backoff=backoff,
-        observer=recorder.refresh_finished if recorder is not None else None,
+        observer=_refresh_observer(hass, entry, key, recorder),
     )
     managers[key] = manager
     contexts[key] = context
+    if previous is None:
+        reason = "start"
+    elif previous.refresh_rejected and previous.tokens == tokens:
+        reason = "retry_after_rejection"
+    else:
+        reason = "credentials_changed"
+    if reason == "credentials_changed":
+        # X39: a new sign-in ends the note about the lost one.
+        clear_answer_lost_issue(hass, entry.entry_id, key[1])
     if recorder is not None:
-        if previous is None:
-            reason = "start"
-        elif previous.refresh_rejected and previous.tokens == tokens:
-            reason = "retry_after_rejection"
-        else:
-            reason = "credentials_changed"
         recorder.credentials_loaded(tokens, reason=reason)
     return manager, backoff
+
+
+@callback
+def _refresh_observer(
+    hass: HomeAssistant,
+    entry: ConfigEntry[Any],
+    key: ConnectionKey,
+    recorder: AuthDiagnostics | None,
+) -> RefreshObserver:
+    """Record each renewal and keep the note about a lost answer (X39)."""
+
+    @callback
+    def observe(attempt: RefreshAttempt) -> None:
+        if recorder is not None:
+            recorder.refresh_finished(attempt)
+        if attempt.outcome == "success":
+            clear_answer_lost_issue(hass, entry.entry_id, key[1])
+        elif attempt.outcome == "rejected" and (
+            attempt.after_lost_answer
+            or (
+                recorder is not None
+                and recorder.answer_lost_before(attempt.presented_refresh_token)
+            )
+        ):
+            _raise_answer_lost_issue(hass, entry, key[1])
+
+    return observe
+
+
+@callback
+def _raise_answer_lost_issue(
+    hass: HomeAssistant, entry: ConfigEntry[Any], connection_id: str
+) -> None:
+    """X39: explain beside Home Assistant's own sign-in request why it came.
+
+    Not fixable here: the new sign-in itself is the fix, and it ends the note.
+    """
+    try:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            repair_id(SIGN_IN_ANSWER_LOST_ISSUE_PREFIX, entry, connection_id),
+            data=repair_data(entry, connection_id),
+            is_fixable=False,
+            is_persistent=False,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key=ANSWER_LOST_ISSUE_KEY,
+        )
+    except Exception:  # a note never changes the sign-in
+        _LOGGER.debug(
+            "The note about a lost sign-in could not be raised", exc_info=True
+        )
+
+
+@callback
+def clear_answer_lost_issue(
+    hass: HomeAssistant, owner_id: str, connection_id: str | None = None
+) -> None:
+    """End the note of one access, or of every access of an entry."""
+    try:
+        registry = ir.async_get(hass)
+        for domain, issue_id in tuple(registry.issues):
+            issue = registry.issues[(domain, issue_id)]
+            data = issue.data or {}
+            if (
+                domain == DOMAIN
+                and issue_id.startswith(SIGN_IN_ANSWER_LOST_ISSUE_PREFIX)
+                and data.get("entry_id") == owner_id
+                and connection_id in (None, data.get("connection_id", connection_id))
+            ):
+                ir.async_delete_issue(hass, DOMAIN, issue_id)
+    except Exception:  # a note never changes the sign-in
+        _LOGGER.debug("The note about a lost sign-in could not be ended", exc_info=True)
 
 
 @callback
@@ -208,6 +301,7 @@ def forget_connection_auth(
     hass: HomeAssistant, owner_id: str, connection_id: str
 ) -> None:
     """Remove one saved access without touching another connection's session."""
+    clear_answer_lost_issue(hass, owner_id, connection_id)
     cloud_pause_store(hass).discard((owner_id, connection_id))
     forget_auth_history(hass, owner_id, connection_id)
     for registry in (
@@ -222,6 +316,7 @@ def forget_connection_auth(
 @callback
 def forget_entry_auth(hass: HomeAssistant, entry: ConfigEntry[Any]) -> None:
     """Drop account memory on removal; an outstanding refresh cannot restore it."""
+    clear_answer_lost_issue(hass, entry.entry_id)
     cloud_pause_store(hass).discard_owner(entry.entry_id)
     forget_auth_history(hass, entry.entry_id)
     for registry in (

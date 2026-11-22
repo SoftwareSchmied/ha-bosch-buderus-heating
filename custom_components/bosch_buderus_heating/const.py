@@ -42,6 +42,8 @@ PRECONDITION_ISSUE_PREFIX: Final = "gateway_precondition_"
 LOCAL_START_ISSUE_PREFIX: Final = "local_start_failed_"
 # The gateway of a local access answers at a new address (after a DHCP change).
 LOCAL_ADDRESS_ISSUE_PREFIX: Final = "local_address_moved_"
+# X39: SingleKey ID rejected the sign-in after its renewal answer was lost.
+SIGN_IN_ANSWER_LOST_ISSUE_PREFIX: Final = "sign_in_answer_lost_"
 
 
 def polling_profile_from_options(options: Mapping[str, Any]) -> PollingProfile:

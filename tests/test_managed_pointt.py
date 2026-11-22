@@ -477,7 +477,7 @@ async def test_late_rotation_is_saved_only_while_the_same_access_exists(hass, ch
         entered, release = asyncio.Event(), asyncio.Event()
         renewed = AuthTokens("rotated-access", "rotated-refresh", 10**12)
 
-        async def refresh(token):
+        async def refresh(token, **_kwargs):
             entered.set()
             await release.wait()
             return renewed

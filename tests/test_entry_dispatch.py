@@ -418,7 +418,7 @@ async def test_migration_waits_for_existing_rotation_without_cancelling_it(
     started, release = asyncio.Event(), asyncio.Event()
     rotated = AuthTokens("synthetic-new", "synthetic-rotated", 10**12)
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         started.set()
         await release.wait()
         return rotated
@@ -519,7 +519,7 @@ async def test_other_entry_rotation_does_not_delay_migration(hass, active_versio
     peer.add_to_hass(hass)
     release = asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         await release.wait()
         return AuthTokens("peer-new", "peer-refresh", 10**12)
 
@@ -579,7 +579,7 @@ async def test_late_refresh_error_after_all_waiters_cancel_is_retrieved(
     release = asyncio.Event()
     started = asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         started.set()
         await release.wait()
         raise RefreshTokenRejected("private response details")

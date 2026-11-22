@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entiteter tillhandahålls inte längre",
       "description": "{count} molnentiteter tillhandahålls inte längre eftersom en annan entitet i den här integrationen visar samma värde via den lokala åtkomsten (gammal → ny): {entities}. Automationer, skript och instrumentpaneler som använder den gamla entiteten bör använda den nya. Ta bort den gamla entiteten när du inte längre behöver den; dess historik finns kvar tills dess. Du kan ignorera det här meddelandet; det visas igen vid nästa omstart så länge den gamla entiteten finns."
+    },
+    "sign_in_answer_lost": {
+      "title": "Logga in igen: ett svar från SingleKey ID gick förlorat",
+      "description": "Medan integrationen förnyade sin inloggning svarade SingleKey ID inte i tid, eller så bröts anslutningen efter att begäran hade skickats. Därefter accepterade SingleKey ID inte längre den sparade inloggningen: den hade med största sannolikhet redan ersatts i svaret som aldrig kom fram. Det beror varken på dina inställningar eller på gatewayen, och integrationen kan inte återställa inloggningen på egen hand. Logga in igen en gång: välj **Konfigurera om** för den här integrationen under Inställningar → Enheter och tjänster. Enheterna och valet av gatewayer behålls. Det här meddelandet försvinner efter den nya inloggningen."
     }
   },
   "exceptions": {

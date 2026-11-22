@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Encje nie są już udostępniane",
       "description": "{count} encji z chmury nie jest już udostępnianych, ponieważ inna encja tej integracji pokazuje tę samą wartość przez dostęp lokalny (stara → nowa): {entities}. Automatyzacje, skrypty i pulpity, które używają starej encji, powinny używać nowej. Usuń starą encję, gdy nie będzie już potrzebna; jej historia pozostaje do tego czasu. Możesz zignorować to powiadomienie; pojawi się ponownie przy następnym ponownym uruchomieniu, dopóki stara encja istnieje."
+    },
+    "sign_in_answer_lost": {
+      "title": "Zaloguj się ponownie: odpowiedź SingleKey ID została utracona",
+      "description": "Podczas odnawiania logowania przez integrację SingleKey ID nie odpowiedział na czas albo połączenie zostało przerwane po wysłaniu żądania. Potem SingleKey ID nie zaakceptował już zapisanego logowania: najprawdopodobniej zastąpił je już w odpowiedzi, która nigdy nie dotarła. Przyczyną nie są Twoje ustawienia ani brama, a integracja nie może sama przywrócić logowania. Zaloguj się ponownie jeden raz: wybierz **Skonfiguruj ponownie** dla tej integracji w Ustawienia → Urządzenia i usługi. Urządzenia i wybór bram zostaną zachowane. To powiadomienie zniknie po nowym zalogowaniu."
     }
   },
   "exceptions": {

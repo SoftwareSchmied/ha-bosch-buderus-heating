@@ -101,7 +101,7 @@ async def test_pending_rotation_checks_login_but_preserves_other_changes(
     oauth = AsyncMock()
     entered, release = asyncio.Event(), asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         entered.set()
         await release.wait()
         return NEW
@@ -190,7 +190,7 @@ async def test_consumers_share_connection_and_rotation_survives_cancelled_waiter
     oauth = AsyncMock()
     entered, release = asyncio.Event(), asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         entered.set()
         await release.wait()
         return NEW
@@ -306,7 +306,7 @@ async def test_account_metadata_change_during_refresh_keeps_rotated_token(hass, 
     oauth = AsyncMock()
     entered, release = asyncio.Event(), asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         entered.set()
         await release.wait()
         return NEW
@@ -461,7 +461,7 @@ async def test_late_refresh_cannot_restore_forgotten_session(hass):
     oauth = AsyncMock()
     entered, release = asyncio.Event(), asyncio.Event()
 
-    async def refresh(_):
+    async def refresh(_, **_kwargs):
         entered.set()
         await release.wait()
         return NEW

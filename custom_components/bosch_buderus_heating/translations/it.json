@@ -1470,6 +1470,10 @@
     "local_only_entities_kept": {
       "title": "Entità non più fornite",
       "description": "{count} entità del cloud non sono più fornite perché un'altra entità di questa integrazione mostra lo stesso valore tramite l'accesso locale (vecchia → nuova): {entities}. Automazioni, script e dashboard che usano la vecchia entità dovrebbero usare la nuova. Rimuovi la vecchia entità quando non ti serve più; la sua cronologia resta fino ad allora. Puoi ignorare questo avviso; ricompare al prossimo riavvio finché la vecchia entità esiste."
+    },
+    "sign_in_answer_lost": {
+      "title": "Accedi di nuovo: una risposta di SingleKey ID è andata persa",
+      "description": "Mentre l'integrazione rinnovava il suo accesso, SingleKey ID non ha risposto in tempo oppure la connessione si è interrotta dopo l'invio della richiesta. In seguito SingleKey ID non ha più accettato l'accesso salvato: molto probabilmente lo aveva già sostituito nella risposta che non è mai arrivata. Non dipende dalle tue impostazioni né dal gateway, e l'integrazione non può ripristinare l'accesso da sola. Accedi di nuovo una volta: seleziona **Riconfigura** per questa integrazione in Impostazioni → Dispositivi e servizi. I dispositivi e la selezione dei gateway vengono mantenuti. Questo avviso scompare dopo il nuovo accesso."
     }
   },
   "exceptions": {
