@@ -27,7 +27,7 @@ from datetime import date
 from enum import StrEnum
 from typing import Any, Final, Protocol
 
-from ..local_api.catalog import make_request
+from ..local_api.catalog import make_request, request_for_path
 from ..local_api.errors import LocalResourceError
 from ..local_api.models import Recording
 from ..local_read import ReadProblem, ReadResult, ReadState
@@ -92,7 +92,12 @@ async def read_local(
     driver: LocalDriver, series: Series, query: dict[str, str]
 ) -> Answer:
     try:
-        request = make_request(series.path, query=query)
+        request = (
+            # A heat source's path fills the placeholder of its template.
+            request_for_path(series.path, query=query)
+            if series.heat_source is not None
+            else make_request(series.path, query=query)
+        )
     except LocalResourceError:
         return Answer(Outcome.FAILED)
     try:

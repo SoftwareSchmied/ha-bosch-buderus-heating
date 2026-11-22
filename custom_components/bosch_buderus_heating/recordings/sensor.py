@@ -26,6 +26,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from ..device import device_info_for_resource, grouped_entity_name
 from ..platform_scope import DiscoveryLifecycle
+from .gating import heat_pump_source
 from .manager import RecordingsManager, manager_for
 from .measures import EntitySpec, entity_name
 from .series import Quantity
@@ -87,6 +88,7 @@ class RecordingPeriodSensor(SensorEntity):
             "derived_from",
             "method",
             "counter_history_start",
+            "heat_generator",
         }
     )
 
@@ -146,6 +148,14 @@ class RecordingPeriodSensor(SensorEntity):
         shown = self._manager.shown(self._spec)
         measure = self._spec.measure
         attributes: dict[str, Any] = {"method": self._spec.method}
+        if (
+            measure.kind == "heat"
+            and measure.mode in ("total", "ch", "dhw")
+            and heat_pump_source(self._manager.coordinator()) is not None
+        ):
+            # A hybrid system: the gateway's heat is the boiler's; the heat
+            # pump's own heat is recorded under its heat source.
+            attributes["heat_generator"] = "boiler"
         if shown is None:
             return attributes
         if shown.source == "counters":

@@ -25,7 +25,9 @@ Reads (``async_run``):
   history is read again. A run without anything to read locally, with the
   local access answering, never falls back to the cloud.
 - The cloud only without a working local access and only for the nine
-  energy paths, throttled for the many installations without a local
+  energy paths (and, on a hybrid system, the heat pump's own six; locally
+  they are read first, from the cloud only where the local access does not
+  answer them), throttled for the many installations without a local
   access: yesterday until it is final (then at most every
   ``CLOUD_REREAD``) for the series something needs, today only for the
   current month and year or the import, and ``CLOUD_BACKFILL`` older days,
@@ -72,7 +74,13 @@ from ..const import DOMAIN
 from ..log_helpers import log_failure
 from ..rrc_energy_statistics import async_gateway_digest
 from .anchor import has_recording_anchor
-from .gating import SOFTENER_CIRCUIT, allowed_keys, softener_plant
+from .gating import (
+    SOFTENER_CIRCUIT,
+    allowed_keys,
+    heat_pump_keys,
+    heat_pump_source,
+    softener_plant,
+)
 from .ledger import CLOUD, LOCAL, DailyValue, Ledger
 from .measures import (
     CALCULATED,
@@ -96,7 +104,15 @@ from .parse import (
     parse_local,
 )
 from .periods import Period, PeriodValue, bounds, combine, period_value
-from .series import ALL_SERIES, BY_KEY, BY_PATH, SERIES, Quantity, Series
+from .series import (
+    ALL_SERIES,
+    BY_KEY,
+    BY_PATH,
+    HEAT_SOURCE_SERIES,
+    SERIES,
+    Quantity,
+    Series,
+)
 from .sources import Outcome, local_query, read_cloud, read_local
 
 if TYPE_CHECKING:
@@ -482,6 +498,8 @@ class RecordingsManager:
         keys: set[str] = set()
         if self._consumers > 0:
             keys.update(series.key for series in SERIES if series.cloud)
+            # A hybrid system's heat pump (only read where ``gating`` allows).
+            keys.update(series.key for series in HEAT_SOURCE_SERIES)
         wanted = set(self._requested)
         for spec in self.specs():
             if spec.key in wanted and (spec.primary or spec.method == RECORDING):
@@ -721,8 +739,9 @@ class RecordingsManager:
             self._full_read.clear()  # the whole history again
         today = now.astimezone(zone).date()
         wanted = self.hourly_series()
+        local_series = self._local_series()
         todo: list[tuple[Series, bool]] = []
-        for series in SERIES:
+        for series in local_series:
             path = series.path
             if (LOCAL, path) in self._forbidden:
                 continue
@@ -791,13 +810,23 @@ class RecordingsManager:
             report["local_busy_left"] = len(busy)
         if succeeded:
             self.last_local_ok = now.timestamp()
-        self._full_done = bool(self._full_read) and not self._history_pending()
+        self._full_done = bool(self._full_read) and not self._history_pending(
+            local_series
+        )
         return succeeded or (reachable and not busy)
 
-    def _history_pending(self) -> bool:
+    def _local_series(self) -> tuple[Series, ...]:
+        """The local paths of a run: the catalogue's and, on a hybrid system,
+        the heat pump's own (``gating``)."""
+        pump = heat_pump_keys(self.coordinator())
+        if not pump:
+            return SERIES
+        return (*SERIES, *(item for item in HEAT_SOURCE_SERIES if item.key in pump))
+
+    def _history_pending(self, local_series: tuple[Series, ...] = SERIES) -> bool:
         """A local path still to be read with its whole history: one that
         answered (or never did) and is neither failing nor slow."""
-        for series in SERIES:
+        for series in local_series:
             path = series.path
             known = self.local_paths.get(path)
             if (
@@ -875,12 +904,34 @@ class RecordingsManager:
     def _cloud_candidates(self, now: datetime, exclusive: bool = False) -> list[Series]:
         """The series the cloud is asked for: the energy paths of a heat
         pump (not when ``exclusive``) and the series without a local path
-        of a plant that shows what they belong to."""
-        allowed = allowed_keys(self.coordinator())
+        of a plant that shows what they belong to. A hybrid system's heat
+        pump's own series come first (the gateway's count the boiler there),
+        and not while the local access answers them."""
+        coordinator = self.coordinator()
+        allowed = allowed_keys(coordinator)
+        pump = heat_pump_keys(coordinator)
+        ordered = (
+            (
+                *HEAT_SOURCE_SERIES,
+                *(item for item in ALL_SERIES if not item.heat_source),
+            )
+            if pump
+            else ALL_SERIES
+        )
         return [
             series
-            for series in ALL_SERIES
-            if ((series.cloud and not exclusive) or series.key in allowed)
+            for series in ordered
+            if (
+                (
+                    series.key in pump
+                    and not (
+                        exclusive
+                        and (self.local_paths.get(series.path) or [None])[0] == "ok"
+                    )
+                )
+                if series.heat_source is not None
+                else ((series.cloud and not exclusive) or series.key in allowed)
+            )
             and (CLOUD, series.path) not in self._forbidden
             and (self.cloud_paths.get(series.path) or [None])[0] != "unit"
             and self._cloud_deferred.get(series.path, 0.0) <= now.timestamp()
@@ -1551,7 +1602,12 @@ class RecordingsManager:
                     }
                 )
             series[item.key] = report
-        return {
+        found: dict[str, object] = {}
+        source = heat_pump_source(self.coordinator())
+        if source is not None:
+            # A hybrid system: the heat pump's own series are read too.
+            found["heat_pump_source"] = source
+        return found | {
             "confirmation": "unconfirmed",
             "import_enabled": import_enabled(self.entry),
             "recorder_available": self.recorder_ready(),

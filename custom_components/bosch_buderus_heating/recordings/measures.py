@@ -8,6 +8,11 @@ when no recording is there; only the heat per mode (heating, hot water)
 comes from the counters first, because the plant counts the hours in which
 it switches between the modes for both of them. Energy measures with a
 counter have a second, disabled entity with the other method to compare.
+
+The heat pump's own series of a hybrid system (``heat_source``) have
+measures, with the compressor alone as their electricity, but no entities:
+the performance factors use them (``RecordingsView``), and the import
+names their statistics.
 """
 
 from __future__ import annotations
@@ -73,6 +78,8 @@ class Measure:
     path_id: str
     counter: Counter | None
     primary: str
+    # The heat source of the heat pump's own series (``hs2``), else None.
+    heat_source: str | None = None
 
     @property
     def mean(self) -> bool:
@@ -130,6 +137,8 @@ class EntitySpec:
 
 
 def _kind_slug(series: Series) -> str:
+    if series.heat_source is not None:
+        return series.key.removeprefix(f"{series.heat_source}_{series.mode}_")
     if series.mode:
         return series.key.removeprefix(f"{series.mode}_")
     return series.kind if series.kind in ("outdoor", "supply") else series.key
@@ -176,6 +185,21 @@ def measures(available: Iterable[str]) -> tuple[Measure, ...]:
         if series is None:
             continue
         kind = _kind_slug(series)
+        if series.heat_source is not None:
+            found.append(
+                Measure(
+                    key,
+                    series.mode,
+                    kind,
+                    series.quantity,
+                    (key,),
+                    _path_id(series.path),
+                    None,
+                    RECORDING,
+                    series.heat_source,
+                )
+            )
+            continue
         primary = (
             CALCULATED if kind == "heat" and series.mode in ("ch", "dhw") else RECORDING
         )
@@ -211,13 +235,39 @@ def measures(available: Iterable[str]) -> tuple[Measure, ...]:
                 RECORDING,
             )
         )
+    # The heat pump's own electricity: its compressor (it has no heater).
+    for key in sorted(keys):
+        series = BY_KEY.get(key)
+        if (
+            series is None
+            or series.heat_source is None
+            or series.kind != "compressor"
+            or series.mode is None
+        ):
+            continue
+        source, mode = series.heat_source, series.mode
+        found.append(
+            Measure(
+                f"{source}_{mode}_electricity",
+                mode,
+                "electricity",
+                Quantity.ENERGY,
+                (key,),
+                f"heatSources:{source}:emon:{mode}:electricity",
+                None,
+                RECORDING,
+                source,
+            )
+        )
     return tuple(found)
 
 
 def entity_specs(items: Iterable[Measure]) -> tuple[EntitySpec, ...]:
+    """The period entities; the heat pump's own series have none."""
     return tuple(
         EntitySpec(measure, period, method)
         for measure in items
+        if measure.heat_source is None
         for period in Period
         for method in measure.methods
     )
@@ -279,7 +329,11 @@ def measure_name(language: str, measure: Measure) -> str:
     kind = _kind_name(language, measure)
     if measure.mode is None or measure.kind in ("solar", "ventilation"):
         return kind
-    return f"{_mode_name(language, measure.mode)} \N{EN DASH} {kind}"
+    name = f"{_mode_name(language, measure.mode)} \N{EN DASH} {kind}"
+    if measure.heat_source is not None:
+        pump = localize(language, "Wärmepumpe", "Heat pump")
+        return f"{pump} \N{EN DASH} {name}"
+    return name
 
 
 def _recorded(language: str, period: Period) -> str:

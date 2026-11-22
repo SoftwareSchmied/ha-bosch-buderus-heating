@@ -282,7 +282,26 @@ async def test_today_and_earlier_days_use_the_heat_pump_counters(
         plant.coordinator, engine, Period.CURRENT_MONTH, "total"
     )
     month._refresh()
-    assert month.native_value == pytest.approx((80.0 + 3.0) / (20.0 + 1.0), abs=0.01)
+    # X42: from the counters alone, 3 of the 15 days so far (20 %) are too
+    # few for a month: unknown, with the coverage as an attribute.
+    assert month.native_value is None
+    attributes = month.extra_state_attributes or {}
+    assert attributes["reason"] == "partial_period"
+    assert attributes["coverage_percent"] == pytest.approx(20.0)
+    assert attributes["heat_kwh"] == pytest.approx(83.0)
+    assert "environmental_energy_kwh" not in attributes
+    for quantity, value in ((HEAT, 40.0), ("electricity", 10.0)):
+        engine._counted[("hp:total", quantity)] = {
+            date(2026, 11, day): value for day in range(1, 15)
+        }
+    engine._first.clear()
+    month._refresh()
+    assert month.native_value == pytest.approx(
+        (14 * 40.0 + 3.0) / (14 * 10.0 + 1.0), abs=0.01
+    )
+    attributes = month.extra_state_attributes or {}
+    assert attributes["coverage_percent"] == pytest.approx(100.0)
+    assert attributes["environmental_energy_kwh"] == pytest.approx(563.0 - 141.0)
     # The gateway's own history is not touched.
     assert ("total", HEAT) not in engine._counted
 

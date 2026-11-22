@@ -5,7 +5,8 @@ cloud: the plant itself sums its energy, starts and working time per hour,
 day and month, and records outdoor and supply temperatures as sums with a
 sample count. The candidate paths come from the local read catalogue (only
 paths without a placeholder); a series exists on a plant only when its path
-answers (``sources``).
+answers (``sources``). The heat pump of a hybrid system keeps recordings of
+its own under its heat source (``HEAT_SOURCE_SERIES``).
 """
 
 from __future__ import annotations
@@ -88,6 +89,9 @@ class Series:
     # The cloud answers this series with the sum of minute values (``c`` about
     # 60 per hour, about 1440 per day): kWh is the sum divided by 60.
     minute_sums: bool = False
+    # The heat source (``hs2``) whose own recording this is; ``None`` for
+    # the gateway's series.
+    heat_source: str | None = None
 
     @property
     def mean(self) -> bool:
@@ -180,7 +184,44 @@ CLOUD_ONLY: Final = (
         minute_sums=True,
     ),
 )
-ALL_SERIES: Final = (*SERIES, *CLOUD_ONLY)
+# A hybrid system's heat pump keeps recordings of its own under its heat
+# source: heat and compressor per total, heating and hot water (it has no
+# electric heater). The gateway's energy series then count the boiler. The
+# local data port names these paths for the heat sources hs2 to hs6; they
+# are read (local, else cloud) only for a hybrid system whose heat pump
+# reports counters of its own under that heat source (``gating``).
+REQUIRES_HEAT_PUMP: Final = "heat_pump_source"
+HEAT_SOURCE_IDS: Final = ("hs2", "hs3", "hs4", "hs5", "hs6")
+HEAT_SOURCE_MODES: Final = ("total", "ch", "dhw")
+HEAT_SOURCE_KINDS: Final = ("outputProduced", "compressor")
+
+
+def heat_source_path(source: str, mode: str, kind: str) -> str:
+    return f"{PREFIX}/heatSources/{source}/emon/{mode}/{kind}"
+
+
+def _heat_source_series() -> tuple[Series, ...]:
+    found = []
+    for source in HEAT_SOURCE_IDS:
+        for mode in HEAT_SOURCE_MODES:
+            for kind in HEAT_SOURCE_KINDS:
+                slug, quantity = _KINDS[kind]
+                found.append(
+                    Series(
+                        f"{source}_{mode}_{slug}",
+                        heat_source_path(source, mode, kind),
+                        mode,
+                        kind,
+                        quantity,
+                        requires=REQUIRES_HEAT_PUMP,
+                        heat_source=source,
+                    )
+                )
+    return tuple(found)
+
+
+HEAT_SOURCE_SERIES: Final = _heat_source_series()
+ALL_SERIES: Final = (*SERIES, *CLOUD_ONLY, *HEAT_SOURCE_SERIES)
 BY_PATH: Final = {item.path: item for item in ALL_SERIES}
 BY_KEY: Final = {item.key: item for item in ALL_SERIES}
 

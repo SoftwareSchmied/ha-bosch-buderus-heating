@@ -15,6 +15,7 @@ enabled entity shows its value at once.
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import timedelta
 from functools import partial
 from typing import TYPE_CHECKING, Any, Final
 
@@ -86,6 +87,20 @@ ENABLED_FACTORS: Final = frozenset(
 )
 HISTORY_LOADING: Final = "history_loading"
 _RECORDING: Final = "/recordings/heatSources/emon/{mode}/{kind}"
+_HEAT_SOURCE_RECORDING: Final = "/recordings/heatSources/{source}/emon/{mode}/{kind}"
+# A hybrid system's heat pump without recordings of its own: a month or a year
+# from the counters alone stays unknown while they cover less than this share
+# of the period's days so far.
+PARTIAL_PERIOD: Final = "partial_period"
+MIN_COVERAGE_PERCENT: Final = 50.0
+_LONG_PERIODS: Final = frozenset(
+    {
+        Period.CURRENT_MONTH,
+        Period.PREVIOUS_MONTH,
+        Period.CURRENT_YEAR,
+        Period.PREVIOUS_YEAR,
+    }
+)
 
 
 def _key(path: str) -> str:
@@ -325,6 +340,8 @@ class PerformanceFactorSensor(
             "note",
             "little_heat_below_kwh",
             "basis",
+            "coverage_percent",
+            "environmental_energy_kwh",
         }
     )
 
@@ -367,7 +384,35 @@ class PerformanceFactorSensor(
     def native_value(self) -> float | None:
         if self._heat_pump_path is None and self._burner_share():
             return None
+        if self._partial():
+            return None
         return self._result.ratio if self._result is not None else None
+
+    def _coverage(self) -> float | None:
+        """For the heat pump of a hybrid system: the share of the period's days
+        so far (up to today) that have a value, in percent."""
+        result = self._result
+        if self._heat_pump_path is None or result is None or result.start is None:
+            return None
+        end = result.end or result.start
+        elapsed = (
+            min(end, self._engine.today() + timedelta(days=1)) - result.start
+        ).days
+        if elapsed <= 0:
+            return None
+        return min(100.0, round(100.0 * result.days / elapsed, 1))
+
+    def _partial(self) -> bool:
+        """A month or a year of a hybrid system's heat pump from its counters
+        alone (no recording of its own for the heat or the electricity) that
+        covers less than ``MIN_COVERAGE_PERCENT`` of the period so far."""
+        result = self._result
+        if self._period not in _LONG_PERIODS or result is None:
+            return False
+        if result.heat_sources - {COUNTERS} and result.electricity_sources - {COUNTERS}:
+            return False
+        coverage = self._coverage()
+        return coverage is not None and coverage < MIN_COVERAGE_PERCENT
 
     def _burner_share(self) -> bool:
         """Heat of a burner is not covered by the heat pump's electricity."""
@@ -419,10 +464,23 @@ class PerformanceFactorSensor(
         if result.first_day is not None:
             attributes["first_day"] = result.first_day.isoformat()
         attributes["derived_from"] = self._derived_from(result)
+        partial = False
         if basis:
             attributes["basis"] = HEAT_PUMP_COUNTERS
+            coverage = self._coverage()
+            if coverage is not None:
+                attributes["coverage_percent"] = coverage
+            partial = self._partial()
+            environmental = result.heat - result.electricity
+            if not partial and environmental >= -1e-9:
+                # Heat minus electricity; a negative difference is no value.
+                attributes["environmental_energy_kwh"] = round(
+                    max(0.0, environmental), 3
+                )
         if not basis and self._burner_share():
             attributes["reason"] = BURNER_SHARE
+        elif partial:
+            attributes["reason"] = PARTIAL_PERIOD
         elif result.ratio is None:
             attributes["reason"] = unknown_reason(result.electricity)
         else:
@@ -435,6 +493,22 @@ class PerformanceFactorSensor(
         if COUNTERS in sources:
             live = self._engine.live_origin(self._engine_mode)
             found[self._heat_pump_path or self.resource_path] = live or COUNTERS
+        if self._heat_pump_path is not None:
+            # The heat pump's own recordings under its heat source.
+            source = self._heat_pump_path.split("/")[2]
+            if result.heat_sources - {COUNTERS}:
+                found[
+                    _HEAT_SOURCE_RECORDING.format(
+                        source=source, mode=self._mode, kind="outputProduced"
+                    )
+                ] = "recording"
+            if result.electricity_sources - {COUNTERS}:
+                found[
+                    _HEAT_SOURCE_RECORDING.format(
+                        source=source, mode=self._mode, kind="compressor"
+                    )
+                ] = "recording"
+            return dict(sorted(found.items()))
         if result.heat_sources - {COUNTERS}:
             found[_RECORDING.format(mode=self._mode, kind="outputProduced")] = (
                 "recording"

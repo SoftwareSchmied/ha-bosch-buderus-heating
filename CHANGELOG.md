@@ -5,6 +5,14 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Improved
+
+- **Hybrid systems: month and year values of the heat pump from its own recordings.** On a hybrid system the gateway's energy recordings count the boiler's heat, and the gateway keeps recordings of the heat pump under its heat source (`/recordings/heatSources/hs2/emon/<total|ch|dhw>/<outputProduced|compressor>`). Where the heat pump reports counters of its own (`basis: heat_pump_counters`), I now read these recordings as well: through the local access where it answers them, otherwise from the cloud, with the same hourly reads, history back-fill and optional statistics import as the other recordings. The performance factors of yesterday, the months and the years come from them first (heat over compressor electricity), so a month or a year is complete back to the first recorded day instead of counting only the days the integration has seen itself. The counters' statistics count only where these recordings are missing; then a month or a year stays `unknown` (`reason: partial_period`) while its days with a value cover less than half of the period's days so far. The new attribute `coverage_percent` always shows that share, and `environmental_energy_kwh` gives the heat pump's environmental energy of the period (heat minus electricity, left out when negative). On such a plant the period entities of the gateway's heat get the attribute `heat_generator: boiler`. No entity is added or renamed, and a plant with a heat pump only is not affected. The diagnostics show the heat source (`heat_pump_source`) and each of these recordings as `ok` or `missing`. Thanks to markoox for pointing out in #138 that month and year were built only from the days recorded since the integration started. Tested with synthetic hybrid recordings; not yet confirmed on a real hybrid system.
+
+### Documentation
+
+- The calculated values page (English and German), the plant recordings page and the diagnostics page describe the heat pump's own recordings on hybrid systems, the coverage rule and the new attributes.
+
 ## [0.9.3-beta.5] - 2026-11-22
 
 > [!IMPORTANT]

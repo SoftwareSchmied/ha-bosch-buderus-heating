@@ -195,6 +195,42 @@ manufacturer's app reads; if a plant answers in another form, the series is
 discarded (`unit` or a count mismatch in the diagnostics) rather than shown
 wrongly. Please report such a case on GitHub with the diagnostics.
 
+## The heat pump of a hybrid system
+
+On a hybrid system (a heat pump together with a boiler) the gateway's energy
+recordings (`/recordings/heatSources/emon/...`) count the boiler's heat. The
+gateway keeps recordings of the heat pump under its heat source:
+
+| Recording | Content |
+|---|---|
+| `/recordings/heatSources/hs2/emon/total/outputProduced` (also `ch`, `dhw`) | Heat produced by the heat pump |
+| `/recordings/heatSources/hs2/emon/total/compressor` (also `ch`, `dhw`) | Electricity of its compressor (the heat pump of a hybrid system has no electric heater) |
+
+They are asked only for a plant with a burner share (burner energy in the
+gateway's counters, or a hybrid manager) whose heat pump reports counters of
+its own under that heat source (for example
+`/heatSources/hs2/emon/totalConsumption`, see
+[calculated values](calculated-values.md)), and only for that heat source
+(`hs2` to `hs6`). A plant with a heat pump only is never asked. With a local
+access they are read through the local data port like the other recordings;
+the cloud is asked only for those the local access does not answer. Without
+a local access the cloud reads them like the nine energy recordings, with
+the same limits, and before them, so that their history (back-fill) comes
+first. A path that answers 404 is remembered and asked again once a day.
+
+They have no period entities of their own (no entity is added). The
+performance factors and the environmental energy of the heat pump use them
+for yesterday, the months and the years, and the import into the statistics
+takes them like the others (named for example *Heat pump – Total – Heat
+produced (system recording)*). On such a plant the period entities of the
+gateway's heat carry the attribute `heat_generator: boiler`.
+
+Expected, untested on a real installation: the paths follow the local data
+port's list of recordings for the heat sources hs2 to hs6; an answer of a
+real hybrid system has not been seen yet. Please report on GitHub with the
+diagnostics whether `hs2_total_heat` and `hs2_total_compressor` show `ok`
+there.
+
 ## Import into the statistics
 
 **Settings → Devices & services → Bosch/Buderus Home Comfort → Configure →
@@ -288,7 +324,10 @@ plant's UTC offset differs from the time zone of Home Assistant, and the
 plausibility bound per hour. Also: `time_zone_on_the_hour` (`false`: the
 import waits), `local_paths_read_by_days_only` (recordings whose whole
 history did not arrive in time) and `cloud_paths_left_out` (cloud
-recordings left out for a while after a failed read); a run reports
+recordings left out for a while after a failed read), and on a hybrid system
+`heat_pump_source` (the heat source whose own recordings are read, for
+example `hs2`, with its recordings listed as `hs2_total_heat`,
+`hs2_total_compressor` and so on); a run reports
 `cloud_paths_left_out`, `cloud_backfill_left` and
 `import_rows_not_on_the_hour` where they apply.
 

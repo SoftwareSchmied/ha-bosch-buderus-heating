@@ -9,18 +9,26 @@ what it belongs to, so that no other plant collects refusals for it:
   recordings are read for at all (``anchor``) but without the energy
   monitoring (``/heatSources/emon``) a heat pump has.
 
+The heat pump's own series of a hybrid system (``series.HEAT_SOURCE_SERIES``)
+are read, locally or from the cloud, only for a plant with a burner share
+(``burner_share``) whose heat pump reports counters of its own under its heat
+source (``performance.heat_pump_root``), and only for that heat source.
+
 A path that does not answer there (404, 403, an unknown unit) yields no
 entity. See ``docs/recordings.md``.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Final
 
 from .anchor import _ANCHOR, _known
 from .series import (
     CLOUD_ONLY,
+    HEAT_SOURCE_IDS,
+    HEAT_SOURCE_SERIES,
     REQUIRES_BOILER,
     REQUIRES_SOFTENER,
     Series,
@@ -32,6 +40,7 @@ if TYPE_CHECKING:
 SOFTENER_CIRCUIT: Final = "/swCircuits/sw1/"
 _HEAT_SOURCE: Final = "/heatSources"
 _EMON: Final = "/heatSources/emon"
+_HEAT_SOURCE_TOTAL: Final = re.compile(r"/heatSources/hs\d+/emon/totalConsumption")
 
 
 def has_softener_circuit(paths: Iterable[str]) -> bool:
@@ -70,6 +79,43 @@ def allowed_keys(
         return frozenset()
     paths = tuple(_known(coordinator))
     return frozenset(item.key for item in CLOUD_ONLY if allowed(item, paths))
+
+
+def heat_pump_source(
+    coordinator: BoschBuderusDataUpdateCoordinator | None,
+) -> str | None:
+    """The heat source (``hs2``) of a hybrid system's heat pump whose own
+    recordings are read: the plant shows a burner share, and the heat pump
+    reports counters of its own (heat and electricity, no burner part) under
+    that heat source. ``None`` for any other plant."""
+    if coordinator is None or not any(
+        _HEAT_SOURCE_TOTAL.fullmatch(path) for path in _known(coordinator)
+    ):
+        return None
+    from ..burner_share import burner_share
+    from ..performance import COLLECTIONS, heat_pump_root
+
+    root = heat_pump_root(coordinator, current=False) or heat_pump_root(coordinator)
+    if root is None:
+        return None
+    source = root.rpartition("/")[2]
+    if source not in HEAT_SOURCE_IDS:
+        return None
+    if not any(burner_share(coordinator, path) for path in COLLECTIONS.values()):
+        return None
+    return source
+
+
+def heat_pump_keys(
+    coordinator: BoschBuderusDataUpdateCoordinator | None,
+) -> frozenset[str]:
+    """The keys of the heat pump's own series this plant is asked for."""
+    source = heat_pump_source(coordinator)
+    if source is None:
+        return frozenset()
+    return frozenset(
+        item.key for item in HEAT_SOURCE_SERIES if item.heat_source == source
+    )
 
 
 def softener_plant(coordinator: BoschBuderusDataUpdateCoordinator | None) -> bool:

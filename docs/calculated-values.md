@@ -336,10 +336,22 @@ defrosts, so the heat taken back from the water is netted.
   electricity is its `electricity` part, else `compressor` plus `eheater`;
   a heat pump collection that reports no `eheater` part at all (the heat
   pump of a hybrid system has no electric heater, #138) counts `compressor`
-  alone. The gateway's collections still need both parts. The history of these
-  factors starts when the heat pump's counters are first read (and with the
-  long-term statistics of their entities, where those exist); the plant's
-  recordings count the boiler and are not used. Without such counters (no
+  alone. The gateway's collections still need both parts. The gateway also
+  keeps recordings of the heat pump under its heat source
+  (`/recordings/heatSources/hs2/emon/<total|ch|dhw>/<outputProduced|compressor>`,
+  see [plant recordings](recordings.md)). The factors of yesterday, the
+  months and the years take the heat and the electricity (the compressor)
+  from these recordings first, so a month or a year is complete back to the
+  first recorded day; the long-term statistics of the heat pump's counter
+  entities count only where these recordings are missing. The gateway's own
+  recordings count the boiler and are never used for these factors. Without
+  the heat pump's recordings a month or a year from the counters alone stays
+  unknown (`reason: partial_period`) while its days with a value cover less
+  than half of the period's days so far (today included); the attribute
+  `coverage_percent` always shows that share. The attribute
+  `environmental_energy_kwh` gives the environmental energy of the period
+  (heat minus electricity; left out when negative and while the value is a
+  partial period). Without such counters (no
   separate heat counter, no electricity, or a value that is not current) the
   value stays unknown with `reason: burner_share`. The boiler's efficiency
   is not calculated. Through the cloud the integration reads only the heat
@@ -363,7 +375,9 @@ Attributes: `period_start`, `period_end` (the last day), `heat_kwh`,
 `missing_days` (days of the period without a value, today included while
 its start is unknown), `first_day` (the first day of the history when it
 lies within the period) and `derived_from` (the counter collection with
-`local` or `cloud`, the recorded paths with `recording`).
+`local` or `cloud`, the recorded paths with `recording`). For the heat pump
+of a hybrid system also `basis`, `coverage_percent` and
+`environmental_energy_kwh` (see above).
 
 A replay of one day recorded on a real air-to-water heat pump (heat output,
 compressor and heater power and the counters as Home Assistant recorded
@@ -420,10 +434,21 @@ die Sammlung der Wärmepumpe. Strom der Wärmepumpe ist ihr Teil `electricity`,
 sonst `compressor` plus `eheater`; meldet ihre Sammlung gar keinen Teil
 `eheater` (die Wärmepumpe eines Hybridsystems hat keinen Heizstab, #138), zählt
 `compressor` allein. Die Sammlungen des Gateways brauchen weiterhin beide Teile.
-Der Verlauf beginnt, sobald die Zähler der
-Wärmepumpe erstmals gelesen werden (und mit den Langzeitstatistiken ihrer
-Entitäten, soweit vorhanden); die Aufzeichnungen der Anlage zählen den Kessel
-und werden nicht verwendet. Fehlen solche Zähler (keine eigene Wärmemenge, kein
+Das Gateway führt außerdem Aufzeichnungen der Wärmepumpe unter ihrer Wärmequelle
+(`/recordings/heatSources/hs2/emon/<total|ch|dhw>/<outputProduced|compressor>`,
+siehe [Anlagenaufzeichnungen](recordings.md)). Die Arbeitszahlen von gestern,
+der Monate und der Jahre nehmen Wärme und Strom (den Verdichter) zuerst aus
+diesen Aufzeichnungen, sodass Monat und Jahr bis zum ersten aufgezeichneten Tag
+vollständig sind; die Langzeitstatistiken der Zähler-Entitäten der Wärmepumpe
+zählen nur, wo diese Aufzeichnungen fehlen. Die eigenen Aufzeichnungen des
+Gateways zählen den Kessel und fließen nie in diese Arbeitszahlen ein. Fehlen die
+Aufzeichnungen der Wärmepumpe, bleibt ein Monat oder ein Jahr allein aus den
+Zählern unbekannt (`reason: partial_period`), solange seine Tage mit Wert
+weniger als die Hälfte der bisherigen Tage des Zeitraums (heute eingeschlossen)
+abdecken; das Attribut `coverage_percent` zeigt diesen Anteil immer. Das
+Attribut `environmental_energy_kwh` nennt die Umweltenergie des Zeitraums
+(Wärme minus Strom; entfällt, wenn negativ, und solange der Zeitraum nur
+teilweise abgedeckt ist). Fehlen solche Zähler (keine eigene Wärmemenge, kein
 Strom oder kein aktueller Wert), bleibt der Wert unbekannt (`reason:
 burner_share`). Der Wirkungsgrad des Kessels wird nicht berechnet. Über die
 Cloud liest die Integration nur die Gesamtzähler der Wärmepumpe

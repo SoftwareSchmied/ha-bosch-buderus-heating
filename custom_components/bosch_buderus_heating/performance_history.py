@@ -20,6 +20,9 @@ Where the values come from:
   heat per mode (the recordings count hours in which the plant switches
   between the modes for both). Each falls back to the other source.
   Months without all of their days take the plant's month value.
+* A hybrid system's heat pump (modes ``hp:*``): its own recordings under its
+  heat source (heat and compressor, all modes) first, its counters'
+  statistics only where those are missing.
 
 A day without counter statistics (Home Assistant off) puts its energy into
 the change of the next day; where the recordings fill such a day, the
@@ -60,6 +63,7 @@ from .performance import (
     CounterReading,
     heat_pump_path,
     heat_pump_root,
+    is_heat_pump_mode,
     lifetime,
     ratio,
 )
@@ -379,6 +383,23 @@ class PerformanceHistory:
         self._last_at = self._saved_at = now
         self._save()
 
+    def _heat_pump_recording_keys(self) -> dict[tuple[str, str], str]:
+        """The heat pump's own recordings per mode and quantity (``hs2_total_heat``,
+        ``hs2_total_electricity`` …), while its modes are tracked."""
+        if not self._heat_pump_modes():
+            return {}
+        root = heat_pump_root(self.coordinator, current=False) or heat_pump_root(
+            self.coordinator
+        )
+        if root is None:
+            return {}
+        source = root.rpartition("/")[2]
+        return {
+            (HP_PREFIX + mode, quantity): f"{source}_{mode}_{quantity}"
+            for mode in MODES
+            for quantity in QUANTITIES
+        }
+
     def _heat_pump_modes(self) -> tuple[str, ...]:
         """The modes of the heat pump's own counters, while the plant shows a
         burner share: the gateway's collections then count the boiler, and the
@@ -569,7 +590,8 @@ class PerformanceHistory:
         keys = set(view.measure_keys())
         recorded: dict[tuple[str, str], dict[date, Amount]] = {}
         months: dict[tuple[str, str], dict[date, Amount]] = {}
-        for item, key in RECORDING_KEYS.items():
+        wanted = {**RECORDING_KEYS, **self._heat_pump_recording_keys()}
+        for item, key in wanted.items():
             if key not in keys:
                 continue
             days: dict[date, Amount] = {}
@@ -686,7 +708,7 @@ class PerformanceHistory:
     def _amount(self, mode: str, quantity: str, day: date) -> Amount | None:
         recorded = self._recorded.get((mode, quantity), {}).get(day)
         counted = self._counted_amount((mode, quantity), day)
-        if quantity == HEAT and mode != "total":
+        if quantity == HEAT and mode != "total" and not is_heat_pump_mode(mode):
             # Heat per mode: the counters first (see the module text).
             return counted or recorded
         return recorded or counted
