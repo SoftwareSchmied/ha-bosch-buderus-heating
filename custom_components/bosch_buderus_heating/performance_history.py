@@ -50,6 +50,7 @@ from .burner_share import burner_share
 from .const import DOMAIN
 from .counter_drop import DropHold, large_drop
 from .derived_store import derived_store
+from .energy_contracts import compressor_is_electricity
 from .log_helpers import log_failure
 from .performance import (
     COLLECTIONS,
@@ -57,6 +58,7 @@ from .performance import (
     HP_PREFIX,
     MODES,
     CounterReading,
+    heat_pump_path,
     heat_pump_root,
     lifetime,
     ratio,
@@ -513,16 +515,29 @@ class PerformanceHistory:
             root := heat_pump_root(self.coordinator, current=False)
         ):
             stem = root.strip("/").replace("/", ":")
+            resources = getattr(self.coordinator, "resources", None) or {}
             for mode in MODES:
+                resource = resources.get(heat_pump_path(root, mode))
                 for quantity in QUANTITIES:
                     part = "outputProduced" if quantity == HEAT else "total_electricity"
-                    entity_id = registry.async_get_entity_id(
-                        "sensor",
-                        DOMAIN,
-                        f"{self.gateway_id}:{stem}:emon:{_COUNTER_PATH[mode]}:{part}",
-                    )
-                    if entity_id is not None:
-                        found[(HP_PREFIX + mode, quantity)] = entity_id
+                    parts: tuple[str, ...] = (part,)
+                    if (
+                        quantity == ELECTRICITY
+                        and resource is not None
+                        and compressor_is_electricity(resource)
+                    ):
+                        # No heater part (#138): the compressor's entity is
+                        # the heat pump's electricity.
+                        parts = (part, "compressor")
+                    for name in parts:
+                        entity_id = registry.async_get_entity_id(
+                            "sensor",
+                            DOMAIN,
+                            f"{self.gateway_id}:{stem}:emon:{_COUNTER_PATH[mode]}:{name}",
+                        )
+                        if entity_id is not None:
+                            found[(HP_PREFIX + mode, quantity)] = entity_id
+                            break
         self.counter_entities = found
         return found
 

@@ -74,7 +74,11 @@ from .derived_sensors import track_calculated_sensors
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_instant import is_instant_zero
 from .dhw_safety import is_dhw_safety_path
-from .energy_contracts import assess_energy, is_energy_collection
+from .energy_contracts import (
+    assess_energy,
+    compressor_is_electricity,
+    is_energy_collection,
+)
 from .enum_translation import enum_value_to_ha
 from .environmental_energy import (
     ENABLED_BY_DEFAULT as ENVIRONMENTAL_ENABLED_BY_DEFAULT,
@@ -1846,6 +1850,8 @@ class BoschBuderusSensor(
                 return direct
             compressor = values.get("compressor")
             auxiliary = values.get("eheater")
+            if compressor is not None and compressor_is_electricity(resource):
+                return compressor
             if compressor is None or auxiliary is None:
                 return None
             return fsum((compressor, auxiliary))
@@ -2037,6 +2043,10 @@ class BoschBuderusSensor(
             values = _energy_values(snapshot.resource)
             if values.get("electricity") is not None:
                 return {"value_source": "direct"}
+            if values.get("compressor") is not None and compressor_is_electricity(
+                snapshot.resource
+            ):
+                return {"value_source": "calculated", "calculation": "compressor"}
             if (
                 values.get("compressor") is not None
                 and values.get("eheater") is not None

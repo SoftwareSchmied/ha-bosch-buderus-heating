@@ -301,14 +301,17 @@ Each available EMON response can contain these subvalues:
 | Raw key | User-facing name | Rule |
 |---|---|---|
 | `compressor` | Heat-pump electricity consumption | Do not call it “compressor energy”; it may include assigned standby consumption |
-| `eheater` | Electric auxiliary-heater consumption | Missing does not mean zero |
+| `eheater` | Electric auxiliary-heater consumption | Missing does not mean zero (exception: a heat source's own collection, see below) |
 | `electricity` | Electricity consumption | Prefer the direct value when available |
 | `outputProduced` | Heat or cooling energy produced | Display as “Cooling energy produced” in the cooling area |
 
 Derived total values:
 
 - **Total electricity consumption:** direct `electricity`, or
-  `compressor + eheater` only when both components are complete.
+  `compressor + eheater` only when both components are complete. A heat
+  source's own collection (`/heatSources/hsN/emon/...`) that reports no
+  `eheater` part at all counts `compressor` alone (a hybrid system's heat
+  pump has no electric heater, #138).
 - **Environmental energy:**
   `outputProduced - compressor - eheater`, only for complete, finite,
   non-negative inputs and a non-negative result, for the total, heating, hot

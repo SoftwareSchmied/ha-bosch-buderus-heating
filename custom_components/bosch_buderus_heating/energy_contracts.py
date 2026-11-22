@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from collections import Counter
 from dataclasses import dataclass
 
@@ -31,6 +32,25 @@ class EnergyAssessment:
 
 def is_energy_collection(resource: Resource) -> bool:
     return resource.metadata.resource_type == "emonValue" and "/emon/" in resource.path
+
+
+# A heat source's own collections (``/heatSources/hs2/emon/totalConsumption``).
+_HEAT_SOURCE_COLLECTION = re.compile(r"/heatSources/hs\d+/emon/[^/]+")
+
+
+def compressor_is_electricity(resource: Resource) -> bool:
+    """The compressor part alone is the electricity of the collection.
+
+    So it is for a heat source's own collection that reports no electric
+    heater part at all: the heat pump of a hybrid system has no heater
+    (#138). A reported heater part, valid or not, still counts; the
+    gateway's collections (``/heatSources/emon/...``) always need it.
+    """
+    if _HEAT_SOURCE_COLLECTION.fullmatch(resource.path) is None:
+        return False
+    if not is_energy_collection(resource):
+        return False
+    return all(key != "eheater" for key, _ in assess_energy(resource).readings)
 
 
 def _reading(value: object, resource: Resource, scale: float) -> EnergyReading:

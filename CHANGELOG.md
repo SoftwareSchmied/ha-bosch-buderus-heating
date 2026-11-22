@@ -5,6 +5,10 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Hybrid systems: heat pump counters without a heater part.** The heat pump of a hybrid system reports its own counters with the heat and the compressor only (for example `/heatSources/hs2/emon/totalConsumption` on an MX300), because it has no electric heater. 0.9.3-beta.3 expected compressor and heater, so these counters were never used and the performance factors stayed `unknown` (`reason: burner_share`). For a heat source's own counters I now count the compressor alone as the electricity when no heater part is reported; a reported heater part is still added, an `electricity` part still comes first, and a burner part still rules the counters out. This also applies to the heating and hot water counters and the environmental energy of the heat pump; the period factors take their statistics from the heat pump's existing compressor entity, so no new entity is added. The gateway's own counters (`/heatSources/emon/...`) are unchanged. Thanks to markoox for testing beta.3 and tracking down the cause in #138. Tested with synthetic data using the counters from #138 (lifetime factor 3.01); not yet confirmed on a real plant.
+
 ## [0.9.3-beta.3] - 2026-11-22
 
 > [!IMPORTANT]

@@ -56,6 +56,7 @@ from .derived_inputs import (
     read,
     resource_energy_part,
 )
+from .energy_contracts import compressor_is_electricity
 from .heat_source_kind import BRINE, classify
 
 if TYPE_CHECKING:
@@ -388,7 +389,7 @@ def heat_pump_path(root: str, mode: str) -> str:
 
 def _is_heat_pump_counter(reading: Input | None) -> bool:
     """Heat and electricity are reported and no burner part: not a boiler."""
-    if reading is None or _counters(reading) is None:
+    if reading is None or _counters(reading, heat_source=True) is None:
         return False
     burner = energy_part(reading, "burner")
     return burner is None or burner <= 0
@@ -423,7 +424,11 @@ def heat_pump_mode_path(
     return heat_pump_path(root, mode) if root is not None else None
 
 
-def _counters(reading: Input | None) -> tuple[float, float] | None:
+def _counters(
+    reading: Input | None, *, heat_source: bool = False
+) -> tuple[float, float] | None:
+    """Heat and electricity of a collection. A heat source's own collection
+    (``heat_source``) without a heater part counts the compressor alone."""
     heat = energy_part(reading, PRODUCED)
     electricity = energy_part(reading, "electricity")
     if electricity is None:
@@ -431,6 +436,14 @@ def _counters(reading: Input | None) -> tuple[float, float] | None:
         heater = energy_part(reading, "eheater")
         if compressor is not None and heater is not None:
             electricity = compressor + heater
+        elif (
+            compressor is not None
+            and heat_source
+            and reading is not None
+            and reading.resource is not None
+            and compressor_is_electricity(reading.resource)
+        ):
+            electricity = compressor
     if reading is None or heat is None or electricity is None:
         return None
     return heat, electricity
@@ -446,7 +459,7 @@ def heat_pump_lifetime(
     reading = read(coordinator, path)
     if not _is_heat_pump_counter(reading) or reading is None:
         return None
-    counters = _counters(reading)
+    counters = _counters(reading, heat_source=True)
     if counters is None:
         return None
     return CounterReading(*counters, reading.origin, reading.observed_at), path
@@ -494,7 +507,7 @@ def _resource_has_counters(resource: Resource) -> bool:
     burner = resource_energy_part(resource, "burner")
     if burner is not None and burner > 0:
         return False
-    return _resource_counters(resource)
+    return _resource_counters(resource, heat_source=True)
 
 
 def heat_pump_counter_possible(
@@ -518,12 +531,16 @@ def counter_possible(coordinator: BoschBuderusDataUpdateCoordinator, mode: str) 
     return _resource_counters(resource)
 
 
-def _resource_counters(resource: Resource) -> bool:
+def _resource_counters(resource: Resource, *, heat_source: bool = False) -> bool:
+    """Heat and electricity of a collection; see ``_counters``."""
     if resource_energy_part(resource, PRODUCED) is None:
         return False
-    return resource_energy_part(resource, "electricity") is not None or (
-        resource_energy_part(resource, "compressor") is not None
-        and resource_energy_part(resource, "eheater") is not None
+    if resource_energy_part(resource, "electricity") is not None:
+        return True
+    if resource_energy_part(resource, "compressor") is None:
+        return False
+    return resource_energy_part(resource, "eheater") is not None or (
+        heat_source and compressor_is_electricity(resource)
     )
 
 

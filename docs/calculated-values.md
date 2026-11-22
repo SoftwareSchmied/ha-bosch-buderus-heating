@@ -332,7 +332,11 @@ defrosts, so the heat taken back from the water is netted.
   environmental energy are calculated from those counters alone: heat of the
   heat pump over electricity of the heat pump. The heat of the boiler is
   never part of it. The attribute `basis: heat_pump_counters` says so, and
-  `derived_from` names the heat pump's collection. The history of these
+  `derived_from` names the heat pump's collection. The heat pump's
+  electricity is its `electricity` part, else `compressor` plus `eheater`;
+  a heat pump collection that reports no `eheater` part at all (the heat
+  pump of a hybrid system has no electric heater, #138) counts `compressor`
+  alone. The gateway's collections still need both parts. The history of these
   factors starts when the heat pump's counters are first read (and with the
   long-term statistics of their entities, where those exist); the plant's
   recordings count the boiler and are not used. Without such counters (no
@@ -412,7 +416,11 @@ Arbeitszahlen aller Zeiträume (heute, gestern, Monat, Jahr, seit
 Inbetriebnahme) und die Umweltenergie allein aus diesen Zählern berechnet:
 Wärme der Wärmepumpe durch Strom der Wärmepumpe. Die Wärme des Kessels fließt nie
 ein. Das Attribut `basis: heat_pump_counters` zeigt das an, `derived_from` nennt
-die Sammlung der Wärmepumpe. Der Verlauf beginnt, sobald die Zähler der
+die Sammlung der Wärmepumpe. Strom der Wärmepumpe ist ihr Teil `electricity`,
+sonst `compressor` plus `eheater`; meldet ihre Sammlung gar keinen Teil
+`eheater` (die Wärmepumpe eines Hybridsystems hat keinen Heizstab, #138), zählt
+`compressor` allein. Die Sammlungen des Gateways brauchen weiterhin beide Teile.
+Der Verlauf beginnt, sobald die Zähler der
 Wärmepumpe erstmals gelesen werden (und mit den Langzeitstatistiken ihrer
 Entitäten, soweit vorhanden); die Aufzeichnungen der Anlage zählen den Kessel
 und werden nicht verwendet. Fehlen solche Zähler (keine eigene Wärmemenge, kein

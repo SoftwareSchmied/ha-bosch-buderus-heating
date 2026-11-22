@@ -1430,7 +1430,13 @@ The total-electricity entity reports `value_source: direct` when PointT
 provides `electricity`. When it falls back to the complete sum of `compressor`
 and `eheater`, it reports `value_source: calculated` and documents the formula
 in its `calculation` attribute. Its entity name remains stable because the
-source may change between responses.
+source may change between responses. A heat source's own collection
+(`/heatSources/hsN/emon/...`) that reports no `eheater` part at all counts
+`compressor` alone (the heat pump of a hybrid system has no electric heater,
+#138): it gets no separate electricity entity, the compressor entity is its
+electricity (also for the statistics of the performance factors), and an
+electricity entity created before the first reading shows the compressor
+(`calculation: compressor`).
 
 ### Energy estimated from current power
 
