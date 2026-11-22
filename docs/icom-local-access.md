@@ -16,15 +16,23 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
   this integration through the cloud connection. The local access always
   belongs to such a system; a system that only exists locally is not offered
   for iCom gateways.
-- The **gateway password** from the sticker on the device (the dashes are
-  ignored) and the **private password** (the personal password of the
-  gateway): the one you set for it in the app when pairing the gateway, or in
-  the old device app of the gateway (for example MyDevice). If you never set
-  one, the local access cannot be set up. The most common cause of "could not
-  be decrypted" is a private password that differs from the one the gateway
-  has: if you are not sure which one that is, set one again in the app and use
-  the same one here. A password entered on the display of the heating appliance
-  proves nothing about it.
+- The **gateway password** from the sticker on the device (dashes and spaces
+  are ignored) and the **private password** (the personal password of the
+  gateway, 4 to 16 characters, upper and lower case count): the one you set for
+  it in the app when pairing the gateway, or in the old device app of the
+  gateway (for example MyDevice). If you never set one, or it was reset, the
+  local access cannot be set up; the dialog then says that the gateway has no
+  private password stored. Set it once in the old device app with the phone in
+  the same Wi-Fi as the gateway and use the same one here. The most common
+  cause of "could not be decrypted" is a private password that differs from the
+  one the gateway has: if you are not sure which one that is, set it again the
+  same way. A password entered on the display of the heating appliance proves
+  nothing about it.
+- The private password is used exactly as typed. If the gateway's answer cannot
+  be decrypted with it, the setup also tries the same answer without spaces at
+  the start and end of the password (no further request); if that fits, that
+  form is saved. The diagnostics show which form fitted
+  (`private_password.variant`: `exact` or `trimmed`).
 - The address of the gateway in your home network (an IP address or host
   name). A fixed address (a reservation in the router) saves you from setting
   it up again.
@@ -36,25 +44,32 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
 3. Choose the system, unless only one fits.
 4. Enter the address, the gateway password and the private password.
 
-The setup reads the gateway's own ID once. It must be the gateway ID the cloud
-knows for that system; otherwise nothing is saved and the dialog says so
-(another gateway at that address, or a wrong address). A wrong password is
+The setup reads the gateway's own ID once. If it is the gateway ID the cloud
+knows for that system, the gateway is recognised by it. A wrong password is
 named separately.
 
-If the gateway reports no usable ID (none at all, empty or a placeholder such
-as -1), the setup compares what the gateway answers with what the cloud has
-just read for the same paths: firmware and hardware version, type, brand,
-outdoor temperature (within 2 K, cloud reading at most 15 minutes old), system
-pressure and the number of starts. At least two readings must agree, at least
-one of them a live value (temperature, pressure or starts), and none may
-clearly contradict. This needs a running cloud connection with current values;
-if it is not there yet, wait a few minutes and try again. A gateway that does
-report a usable but different ID is never accepted this way. The way used is
-shown in the diagnostics (`identity_method`); later checks then read one stored
-version value instead of the ID. If that value changes later (a replaced gateway, or a firmware
-update when the gateway reports no hardware version), the access stops as for a
-different gateway; run **Change iCom access data** once more. To change the address or a password later, open the access
-under **Connections** and choose **Change iCom access data**.
+How a gateway's own ID relates to the cloud's is not known for every gateway.
+So if the gateway reports no usable ID (none at all, empty or a placeholder such
+as -1) or one that differs from the cloud's, the setup compares what the gateway
+answers with what the cloud has just read for the same paths: firmware and
+hardware version, type, brand, outdoor temperature (within 2 K, cloud reading at
+most 15 minutes old), system pressure and the number of starts. If at least two
+readings agree, at least one of them a live value (temperature, pressure or
+starts), the gateway is recognised by its values; later checks then read one
+stored version value instead of the ID. If that value changes later (for
+example after a firmware update), the values decide again as at setup; when they
+confirm the gateway, the stored value is renewed (the access starts once more
+with it). Only a clear contradiction (another version, type or brand, or a live
+value far off) stops the setup as another gateway. If too little agrees (for
+example because the cloud has no current values yet), the access is set up
+**unverified**: it reads the gateway without an identity check, so a missing or
+odd ID never stops it. The way used is shown in the diagnostics
+(`identity_method`: `uuid`, `values` or `unverified`), together with what
+the gateway reported as its ID (only its kind, length and whether it holds
+digits only, hex digits or other characters, never a character of the ID) and
+how many values agreed (`setup_check`). To
+change the address or a password later, open the access under **Connections**
+and choose **Change iCom access data**.
 
 Local values stay **off** after the setup. The access reads and checks the
 gateway, but the existing entities keep the cloud values until you switch on
@@ -95,11 +110,15 @@ therefore:
   them after three missed periods or from the second pause on;
 - stops completely, without further requests, when two answers in a row cannot
   be decrypted (wrong or changed password; a single one, also right after a
-  restart, is only looked at again after a minute) or when the gateway reports
-  a usable ID other than the one it was set up with. The access then shows
+  restart, is only looked at again after a minute). The access then shows
   "sign-in required" or "not reachable" until you enter the data again;
-- treats an ID that says nothing (none, empty or a placeholder such as -1) as
-  no answer for the check: the access pauses and looks again, it does not stop;
+- judges a gateway set up by its own ID that later reports no ID, an ID that
+  says nothing (empty or a placeholder such as -1) or another ID, and one
+  recognised by a stored version value that later reports none or another one
+  (for example after a firmware update), by its values, as at setup: only a clear contradiction pauses the access (its values are
+  withdrawn and it looks again after the pause); otherwise it reads on,
+  confirmed by the values or unverified. A firmware update therefore never
+  stops the access. The diagnostics show the last such check (`identity_check`); an unverified access checks no ID at all;
 - makes no request while no cloud connection supplies the system any more (for
   example after the cloud connection was removed), and goes on by itself when
   one does again;
@@ -129,9 +148,9 @@ access on again.
 |---|---|
 | The gateway did not answer | No connection within the time limit; check the address and port 80. |
 | The answer could not be decrypted | One of the two passwords is wrong, or one was changed in the device app. Most often the private password differs from the one the gateway has; check it in the app where you set it. |
+| No private password stored | The gateway answers as one whose private password was reset. Set it once in the old device app (phone in the same Wi-Fi as the gateway), then try again. The connection test of an existing access names this too. |
 | The gateway is busy | It answered with an overload message; try again later. |
-| It could not be matched with the system | The gateway reports no usable ID, and its values do not agree closely enough with the cloud values (or the cloud has no current values yet). Try again in a few minutes. |
-| Not the gateway of the selected system | The ID read locally is not the cloud's gateway ID. |
+| Not the gateway of the selected system | The gateway's own ID is not the cloud's, and its values clearly contradict the cloud's (another version, type or brand, or a live value far off). |
 
 ## Reporting
 

@@ -81,8 +81,11 @@ async def test_the_check_reads_the_identity_and_keeps_the_proof(gateway, session
 
 async def test_the_cloud_s_own_reading_of_the_id_may_be_the_proof(gateway, session):
     gateway.documents["/gateway/uuid"]["value"] = "ab-99-77"
-    with pytest.raises(IcomSetupError, match="icom_other_gateway"):
-        await verify(session, gateway)
+    # Without it the ID is not the cloud's; with no values to compare the
+    # access is only set up unverified (X17).
+    unverified = await verify(session, gateway)
+    assert unverified.method == "unverified"
+    assert unverified.check["uuid_matches_cloud"] is False
     proof = await verify(session, gateway, also_accepted=("AB9977",))
     assert proof.local_id == "ab-99-77" and proof.gateway_id == "000123"
 
@@ -90,31 +93,21 @@ async def test_the_cloud_s_own_reading_of_the_id_may_be_the_proof(gateway, sessi
 @pytest.mark.parametrize(
     ("change", "code"),
     [
-        ("other", "icom_other_gateway"),
         ("password", "icom_invalid_auth"),
         ("busy", "icom_busy"),
-        ("missing", "icom_no_identity"),
-        ("forbidden", "icom_no_identity"),
         ("hang", "icom_cannot_connect"),
         ("error", "icom_cannot_connect"),
         ("html", "icom_cannot_connect"),
-        ("number", "icom_no_identity"),
     ],
 )
 async def test_a_failed_check_names_one_fixed_cause_and_saves_nothing(
     gateway, session, monkeypatch, change, code
 ):
     arguments = {}
-    if change == "other":
-        gateway.documents["/gateway/uuid"]["value"] = "999999"
-    elif change == "password":
+    if change == "password":
         arguments["private_password"] = "wrong"
     elif change == "busy":
         gateway.status = 503
-    elif change == "missing":
-        gateway.drop("/gateway/uuid")
-    elif change == "forbidden":
-        gateway.path_status["/gateway/uuid"] = 403
     elif change == "hang":
         gateway.hang = True
         from custom_components.bosch_buderus_heating import icom_client
@@ -124,8 +117,6 @@ async def test_a_failed_check_names_one_fixed_cause_and_saves_nothing(
         gateway.status = 500
     elif change == "html":
         gateway.raw = b"<html>login</html>"
-    elif change == "number":
-        gateway.documents["/gateway/uuid"]["value"] = 123
     with pytest.raises(IcomSetupError) as raised:
         await verify(session, gateway, **arguments)
     assert str(raised.value) == code
@@ -358,11 +349,7 @@ async def test_the_dialog_saves_a_checked_access_and_reports_it(
         assert wrong["step_id"] == "icom_access"
         assert wrong["errors"] == {"base": "icom_invalid_auth"}
         assert len(management.current().connections) == 1
-        gateway.documents["/gateway/uuid"]["value"] = "999999"
-        other = await manager.async_configure(wrong["flow_id"], form)
-        assert other["errors"] == {"base": "icom_other_gateway"}
-        gateway.documents["/gateway/uuid"]["value"] = "000123"
-        done = await manager.async_configure(other["flow_id"], form)
+        done = await manager.async_configure(wrong["flow_id"], form)
     finally:
         dialog.verify_icom_access = dialog_verify
     assert await outcome(hass, done) == "icom_connected"
@@ -472,10 +459,10 @@ async def test_a_usable_own_id_is_all_that_counts(gateway, session):
     proof = await verify(session, gateway, cloud_readings=CLOUD)
     assert proof.method == "uuid" and proof.fingerprint is None
     assert gateway.requests == ["/gateway/uuid"]
-    # A different usable ID is never rescued by matching values.
+    # A different usable ID is compared by values (X17): enough agreement
+    # recognises the gateway by them.
     gateway.value("/gateway/uuid", "999999")
-    with pytest.raises(IcomSetupError, match="icom_other_gateway"):
-        await verify(session, gateway, cloud_readings=CLOUD)
+    assert (await verify(session, gateway, cloud_readings=CLOUD)).method == "values"
 
 
 async def test_the_fallback_asks_only_for_paths_the_cloud_has_read(gateway, session):
@@ -498,13 +485,13 @@ async def test_the_fallback_asks_only_for_paths_the_cloud_has_read(gateway, sess
         {FIRMWARE: CloudReading("01.02.03", 30.0), OUTDOOR: CloudReading(7.9, 30.0)},
     ],
 )
-async def test_too_little_agreement_names_the_missing_proof_and_saves_nothing(
+async def test_too_little_agreement_sets_the_access_up_unverified(
     gateway, session, cloud
 ):
     gateway.value("/gateway/uuid", "-1")
-    with pytest.raises(IcomSetupError) as raised:
-        await verify(session, gateway, cloud_readings=cloud)
-    assert str(raised.value) == "icom_no_identity"
+    proof = await verify(session, gateway, cloud_readings=cloud)
+    assert proof.method == "unverified"
+    assert proof.check["values_verdict"] == "insufficient"
 
 
 @pytest.mark.parametrize(
@@ -526,10 +513,12 @@ async def test_a_failing_read_of_the_fallback_is_a_cause_of_its_own(gateway, ses
     gateway.path_status[OUTDOOR] = 500
     with pytest.raises(IcomSetupError, match="icom_cannot_connect"):
         await verify(session, gateway, cloud_readings=CLOUD)
-    # A path the gateway does not offer is only left out.
+    # A path the gateway does not offer is only left out: firmware and
+    # hardware alone (no live value) are too little, so the access is unverified.
     gateway.path_status[OUTDOOR] = 404
-    with pytest.raises(IcomSetupError, match="icom_no_identity"):
-        await verify(session, gateway, cloud_readings=CLOUD)
+    proof = await verify(session, gateway, cloud_readings=CLOUD)
+    assert proof.method == "unverified"
+    assert proof.fingerprint == (HARDWARE, "fixture-hw")
 
 
 def test_the_fallback_is_stored_with_its_fingerprint_and_read_back():

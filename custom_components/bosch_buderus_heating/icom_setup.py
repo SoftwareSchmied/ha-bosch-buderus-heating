@@ -6,10 +6,17 @@ the cloud's gateway ID. A gateway that reports no usable ID is recognised by
 values it shares with the cloud instead (icom_identity). A different usable ID
 or a clear contradiction, or too little agreement, saves nothing. The check
 reads a few resources and sends the passwords nowhere else.
+
+The private password is used exactly as typed. Only when the first answer
+cannot be decrypted with it is the same answer tried offline with the typed
+password without spaces at its start and end, then with an empty one (a
+gateway whose private password was reset): the first is saved instead, the
+second is named and saves nothing.
 """
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -31,12 +38,25 @@ from .gateway_identity import GatewayNamespace
 from .icom_access import (
     ICOM_CONTRACT,
     ICOM_DEFAULT_PORT,
+    IDENTITY_UNVERIFIED,
+    IDENTITY_UUID,
+    IDENTITY_VALUES,
     comparable_id,
+    describe_reported_id,
     gateway_ids_match,
     icom_connection_data,
     is_icom_connection,
 )
-from .icom_client import PATH_PROBLEMS, IcomClient, IcomError, IcomProblem
+from .icom_client import (
+    EXACT,
+    PATH_PROBLEMS,
+    RESET,
+    IcomClient,
+    IcomError,
+    IcomProblem,
+    IcomReply,
+    other_private_password,
+)
 from .icom_crypto import IcomCryptoError, derive_key
 from .icom_identity import (
     FALLBACK_PATHS,
@@ -49,6 +69,8 @@ from .icom_plan import UUID_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_probe import LocalProbeError, normalize_local_address
 
+_LOGGER = logging.getLogger(__name__)
+
 # What a failed check reports; each code has its own text in the dialog.
 CANNOT_CONNECT = "icom_cannot_connect"
 INVALID_AUTH = "icom_invalid_auth"
@@ -56,6 +78,7 @@ BUSY = "icom_busy"
 NO_IDENTITY = "icom_no_identity"
 OTHER_GATEWAY = "icom_other_gateway"
 INVALID_HOST = "icom_invalid_host"
+NO_PRIVATE_PASSWORD = "icom_no_private_password"
 _PROBLEM_CODES = {
     IcomProblem.UNDECRYPTABLE: INVALID_AUTH,
     IcomProblem.BUSY: BUSY,
@@ -96,14 +119,67 @@ class IcomVerification:
     verified_at: float = field(repr=False)
     # Set when the gateway was recognised by values: (path, text) to check later.
     fingerprint: tuple[str, str] | None = field(repr=False, default=None)
+    # Which form of the typed private password fits: "exact" or "trimmed".
+    private_password_variant: str = field(repr=False, default=EXACT)
+    # How the gateway was recognised; empty: from the fingerprint (old proofs).
+    identity_method: str = field(repr=False, default="")
+    # Notes of the identity check for the diagnostics: kinds and counts only.
+    check: Mapping[str, object] = field(repr=False, default_factory=dict)
 
     @property
     def method(self) -> str:
-        return "uuid" if self.fingerprint is None else "values"
+        if self.identity_method:
+            return self.identity_method
+        return IDENTITY_UUID if self.fingerprint is None else IDENTITY_VALUES
 
 
 def _code(error: IcomError) -> str:
     return _PROBLEM_CODES.get(error.problem, CANNOT_CONNECT)
+
+
+class _CheckedReads:
+    """The reads of one check, with the offline look at the private password.
+
+    Until one answer is decrypted, an undecryptable one is tried offline with
+    the other forms of the private password (no further request). After that
+    the key is proved, and an undecryptable answer is a failure like any other.
+    """
+
+    def __init__(
+        self, client: IcomClient, gateway_password: str, private_password: str
+    ) -> None:
+        self.client = client
+        self.gateway_password = gateway_password
+        self.private_password = private_password
+        self.variant = EXACT
+        self._proved = False
+
+    async def get(self, path: str) -> IcomReply:
+        try:
+            reply = await self.client.get(path)
+        except IcomError as error:
+            if (
+                self._proved
+                or error.problem is not IcomProblem.UNDECRYPTABLE
+                or error.answer is None
+            ):
+                raise
+            reply = self._other_form(error.answer)
+        self._proved = True
+        return reply
+
+    def _other_form(self, answer: bytes) -> IcomReply:
+        found = other_private_password(
+            self.gateway_password, self.private_password, answer
+        )
+        if found is None:
+            raise IcomSetupError(INVALID_AUTH)
+        if found.variant == RESET:
+            # Never set up with an empty private password: it must be set first.
+            raise IcomSetupError(NO_PRIVATE_PASSWORD)
+        self.client.use_key(found.key)
+        self.private_password, self.variant = found.private_password, found.variant
+        return found.reply
 
 
 async def verify_icom_access(
@@ -123,80 +199,133 @@ async def verify_icom_access(
     The IDs in also_accepted are further IDs the cloud itself reports for the same
     gateway (its reading of the same resource); the first one that matches
     is kept as the ID to check later. cloud_readings are the cloud's last
-    readings, used only when the gateway reports no usable ID of its own.
+    readings, compared when the gateway reports no usable ID of its own or one
+    that is not the cloud's: how a gateway's own ID relates to the cloud's is
+    not known for every gateway. Only a clear contradiction of the values
+    stops the setup; too little agreement sets the access up unverified.
     """
     try:
         key = derive_key(gateway_password, private_password)
     except IcomCryptoError as error:
         raise IcomSetupError(str(error)) from None
     address = normalize_icom_host(host)
-    client = IcomClient(session, address, key, port=port)
+    reads = _CheckedReads(
+        IcomClient(session, address, key, port=port),
+        gateway_password,
+        private_password,
+    )
     reported: object = None
+    offered = True
     try:
-        reply = await client.get(UUID_PATH)
+        reply = await reads.get(UUID_PATH)
     except IcomError as error:
         if error.problem not in PATH_PROBLEMS:
             raise IcomSetupError(_code(error)) from None
+        offered = False
     else:
         reported = reply.document.get("value")
-    if comparable_id(reported) is None:
-        # No ID, or an unusable one (empty, a number, "-1"): compare values.
+    check: dict[str, object] = {
+        "uuid": describe_reported_id(reported, read=offered),
+        "uuid_matches_cloud": None,
+    }
+    own_id = (
+        reported
+        if isinstance(reported, str) and comparable_id(reported) is not None
+        else None
+    )
+    if own_id is not None:
+        check["uuid_matches_cloud"] = any(
+            gateway_ids_match(own_id, expected)
+            for expected in (gateway_id, *also_accepted)
+        )
+    if own_id is None or check["uuid_matches_cloud"] is not True:
+        # No ID, an unusable one (empty, a number, "-1") or another one than
+        # the cloud's: compare values.
         return await _verify_by_values(
-            client,
+            reads,
             cloud_readings or {},
             target_id,
             gateway_id,
             address,
             port,
             gateway_password,
-            private_password,
+            check,
         )
-    if not isinstance(reported, str) or not any(
-        gateway_ids_match(reported, expected)
-        for expected in (gateway_id, *also_accepted)
-    ):
-        raise IcomSetupError(OTHER_GATEWAY)
+    check["method"] = IDENTITY_UUID
+    _log_check(check)
     return IcomVerification(
         target_id,
         gateway_id,
-        reported,
+        own_id,
         address,
         port,
         gateway_password,
-        private_password,
+        reads.private_password,
         time(),
+        private_password_variant=reads.variant,
+        identity_method=IDENTITY_UUID,
+        check=check,
+    )
+
+
+def _log_check(check: Mapping[str, object]) -> None:
+    """The identity check on the debug log: kinds, counts and a verdict only."""
+    _LOGGER.debug(
+        "iCom setup identity check: own ID %s, the cloud's ID: %s, values: %s "
+        "(%s of %s matching), method %s",
+        check.get("uuid"),
+        check.get("uuid_matches_cloud"),
+        check.get("values_verdict", "not compared"),
+        check.get("values_matching", 0),
+        check.get("values_read", 0),
+        check.get("method"),
     )
 
 
 async def _verify_by_values(
-    client: IcomClient,
+    reads: _CheckedReads,
     cloud: Mapping[str, CloudReading],
     target_id: str,
     gateway_id: str,
     address: str,
     port: int,
     gateway_password: str,
-    private_password: str,
+    check: dict[str, object],
 ) -> IcomVerification:
-    """Compare what the gateway answers with the cloud's last readings."""
+    """Compare what the gateway answers with the cloud's last readings.
+
+    A clear contradiction is another gateway. Enough agreement recognises the
+    gateway by its values; too little sets the access up unverified (with the
+    fingerprint when one was read), so that a gateway without a usable ID of
+    its own can still be read.
+    """
     local: dict[str, object] = {}
     # Only paths the cloud has a reading of are worth a request.
     for path in FALLBACK_PATHS:
         if path not in cloud:
             continue
         try:
-            reply = await client.get(path)
+            reply = await reads.get(path)
         except IcomError as error:
             if error.problem in PATH_PROBLEMS:
                 continue
             raise IcomSetupError(_code(error)) from None
         local[path] = reply.document.get("value")
     outcome = compare(local, cloud)
+    check["values_verdict"] = outcome.verdict.value
+    check["values_matching"] = outcome.matches
+    check["values_read"] = len(local)
     if outcome.verdict is Verdict.CONTRADICTION:
+        _log_check(check)
         raise IcomSetupError(OTHER_GATEWAY)
     remembered = fingerprint(local)
-    if outcome.verdict is not Verdict.CONFIRMED or remembered is None:
-        raise IcomSetupError(NO_IDENTITY)
+    method = (
+        IDENTITY_VALUES
+        if outcome.verdict is Verdict.CONFIRMED and remembered is not None
+        else IDENTITY_UNVERIFIED
+    )
+    check["method"] = method
+    _log_check(check)
     return IcomVerification(
         target_id,
         gateway_id,
@@ -204,9 +333,12 @@ async def _verify_by_values(
         address,
         port,
         gateway_password,
-        private_password,
+        reads.private_password,
         time(),
         remembered,
+        reads.variant,
+        method,
+        check,
     )
 
 
@@ -275,6 +407,9 @@ def prepare_icom_configuration(
                 local_id=verification.local_id,
                 verified_at=verification.verified_at,
                 fingerprint=verification.fingerprint,
+                private_password_variant=verification.private_password_variant,
+                identity_method=verification.method,
+                setup_check=verification.check,
             ),
         ),
     }
@@ -381,12 +516,30 @@ def cloud_readings(
 
     if not isinstance(owner, ManagedEntry):
         return {}
+    return readings_of(owner.connections, snapshot, target_id, paths, now=now)
+
+
+def readings_of(
+    connections: object,
+    snapshot: ConfigurationSnapshot,
+    target_id: str,
+    paths: Collection[str] = FALLBACK_PATHS,
+    *,
+    now: datetime | None = None,
+) -> dict[str, CloudReading]:
+    """The cloud's last readings of some paths from the running connections.
+
+    Used by the setup and by a running access that checks its gateway again.
+    """
+    source_data = getattr(connections, "source_data", None)
+    if not callable(source_data):
+        return {}
     moment = now or datetime.now(UTC)
     found: dict[str, CloudReading] = {}
     for key, binding in snapshot.bindings.items():
         if binding.target_id != target_id or binding.adapter != "pointt":
             continue
-        data = getattr(owner.connections.source_data(key), "data", None)
+        data = getattr(source_data(key), "data", None)
         if not isinstance(data, dict):
             continue
         for path in paths:

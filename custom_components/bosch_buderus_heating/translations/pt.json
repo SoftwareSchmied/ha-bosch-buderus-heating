@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Teste de ligação",
-        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway, definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, defina-a de novo na aplicação e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe."
+        "description": "Falha no início de sessão: as palavras-passe não correspondem ao gateway. Verifique-as através de “Alterar os dados de acesso iCom”. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway (de 4 a 16 caracteres), definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, ou após uma reposição, defina-a de novo na antiga aplicação do aparelho, com o telemóvel na mesma rede Wi-Fi que o gateway, e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Teste de ligação",
+        "description": "Falha no início de sessão: o gateway já não tem nenhuma palavra-passe privada guardada, por exemplo após uma reposição. Defina-a uma vez na antiga aplicação do aparelho, com o telemóvel na mesma rede Wi-Fi que o gateway, e introduza depois a mesma através de “Alterar os dados de acesso iCom”."
       },
       "connection_test_certificate_changed": {
         "title": "Teste de ligação",
@@ -1017,7 +1021,7 @@
           "private_password": "Palavra-passe privada (aplicação do aparelho)"
         },
         "data_description": {
-          "gateway_password": "A palavra-passe da etiqueta do aparelho; os hífenes são ignorados.",
+          "gateway_password": "A palavra-passe da etiqueta do aparelho; os hífenes e os espaços são ignorados.",
           "private_password": "A palavra-passe pessoal do gateway, definida ao emparelhá-lo na aplicação ou na antiga aplicação do aparelho (por exemplo MyDevice). Não é a palavra-passe da conta da nova aplicação."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
       "switch_program_aircon_setting": "Escolha um modo que o ar condicionado ofereça e, para ele, uma temperatura dentro do seu intervalo e passos e uma das suas velocidades de ventilador.",
       "icom_cannot_connect": "O gateway não respondeu. Verifique o endereço e se o gateway está acessível na porta 80.",
-      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway, definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, defina-a de novo na aplicação e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe.",
+      "icom_invalid_auth": "Não foi possível desencriptar a resposta do gateway. Verifique ambas as palavras-passe; maiúsculas e minúsculas contam. Causa mais frequente: a palavra-passe privada difere da que o gateway tem. É a palavra-passe pessoal do gateway (de 4 a 16 caracteres), definida ao emparelhar o gateway na aplicação ou na antiga aplicação do aparelho. Se não tiver a certeza de qual é, ou após uma reposição, defina-a de novo na antiga aplicação do aparelho, com o telemóvel na mesma rede Wi-Fi que o gateway, e introduza aqui a mesma. Uma palavra-passe no ecrã do aparelho de aquecimento não é esta palavra-passe.",
+      "icom_no_private_password": "O gateway não tem nenhuma palavra-passe privada guardada, por exemplo após uma reposição. Defina-a uma vez na antiga aplicação do aparelho, com o telemóvel na mesma rede Wi-Fi que o gateway, e tente de novo aqui com a mesma palavra-passe.",
       "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
       "icom_no_identity": "Não foi possível associar o gateway à instalação: não indica um ID utilizável e os seus valores não coincidem o suficiente com os da cloud. Tente novamente dentro de alguns minutos.",
       "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",

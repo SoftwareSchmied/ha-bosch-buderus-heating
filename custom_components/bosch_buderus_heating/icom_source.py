@@ -28,7 +28,7 @@ import asyncio
 import logging
 from collections import deque
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from time import monotonic
 from typing import Any, Protocol, cast
@@ -48,12 +48,25 @@ from .configuration import (
 from .connection_runtime import ConnectionRuntime, SourceContext
 from .gateway_identity import GatewayNamespace
 from .icom_access import (
+    IDENTITY_UNVERIFIED,
+    IDENTITY_UUID,
+    IDENTITY_VALUES,
     IcomAccess,
     IcomAccessError,
+    comparable_id,
+    describe_reported_id,
     is_icom_connection,
     load_icom_access,
 )
-from .icom_client import PATH_PROBLEMS, IcomClient, IcomError, IcomProblem
+from .icom_client import (
+    PATH_PROBLEMS,
+    RESET,
+    IcomClient,
+    IcomError,
+    IcomProblem,
+    other_private_password,
+)
+from .icom_identity import FALLBACK_PATHS, Verdict, compare, fingerprint
 from .icom_plan import DIRECTORIES, circuit_ids, readings
 from .local_api.catalog import ReadRequest
 from .local_api.decoder import decode_resource
@@ -212,6 +225,12 @@ class IcomSource:
         self._closed = False
         self._failures_in_row = 0
         self._undecryptable = 0
+        # The last undecryptable answer fits an empty private password: the
+        # gateway's private password was reset (checked offline only).
+        self._reset_seen = False
+        # The last check of the gateway's own ID while running: kinds, counts
+        # and a verdict only (never the ID).
+        self._identity_check: dict[str, object] | None = None
         self._pauses = 0
         self._pause_total = 0
         self._pause_until: float | None = None
@@ -270,32 +289,72 @@ class IcomSource:
             self._wake.set()
         return count
 
+    @property
+    def private_password_reset(self) -> bool:
+        """Whether the gateway answers as one whose private password was reset."""
+        return self._reset_seen
+
+    def _note_undecryptable(self, error: IcomError) -> None:
+        """Look offline whether the answer fits a reset private password.
+
+        Uses the answer already received; the access keeps reading with its
+        stored key only.
+        """
+        access = self._access
+        if access is None or error.answer is None:
+            return
+        found = other_private_password(
+            access.gateway_password, access.private_password, error.answer
+        )
+        self._reset_seen = found is not None and found.variant == RESET
+
     async def test_connection(self) -> tuple[str, int]:
         """Read the gateway ID once on explicit request (the connection test).
 
-        Uses the running client and its gap; the ID must still be the cloud's.
-        Returns a result key and the elapsed milliseconds.
+        Uses the running client and its gap. An access set up by its own ID
+        whose gateway now reports another, an unusable or no ID is judged by
+        its values, as at setup: only a clear contradiction is another
+        gateway. Returns a result key and the elapsed milliseconds.
         """
         client, access = self.client, self._access
         if client is None or access is None or not self.current():
             return "not_running", 0
         started = monotonic()
+
+        def elapsed() -> int:
+            return round((monotonic() - started) * 1000)
+
         try:
-            reply = await client.get(access.identity_path)
+            try:
+                reply = await client.get(access.identity_path)
+            except IcomError as error:
+                if error.problem not in PATH_PROBLEMS:
+                    raise
+                if access.identity_method == IDENTITY_UNVERIFIED:
+                    # The gateway answered; an unverified access checks no more.
+                    return "ok", elapsed()
+                value: object = None
+                offered = False
+            else:
+                value, offered = reply.document.get("value"), True
+                if access.usable(value) and access.confirms(value):
+                    return "ok", elapsed()
+            # No longer confirmed by its ID or version: the values decide.
+            verdict, _ = await self._compare_identity(value, offered=offered)
         except IcomError as error:
-            millis = round((monotonic() - started) * 1000)
-            return _TEST_RESULTS.get(error.problem, "unreachable"), millis
+            if error.problem is IcomProblem.UNDECRYPTABLE:
+                self._note_undecryptable(error)
+                if self._reset_seen:
+                    return "auth_reset", elapsed()
+            return _TEST_RESULTS.get(error.problem, "unreachable"), elapsed()
         except asyncio.CancelledError:
             task = asyncio.current_task()
             if task is not None and task.cancelling():
                 raise
             return "not_running", 0
-        millis = round((monotonic() - started) * 1000)
-        if not access.usable(reply.document.get("value")):
-            return "unreachable", millis
-        if not access.confirms(reply.document.get("value")):
-            return "other_gateway", millis
-        return "ok", millis
+        if verdict is Verdict.CONTRADICTION:
+            return "other_gateway", elapsed()
+        return "ok", elapsed()
 
     def diagnostics(self) -> dict[str, object]:
         """Counts, ages and fixed codes; no value, password, address or ID."""
@@ -308,6 +367,24 @@ class IcomSource:
             "identity_confirmed": self._confirmed,
             "identity_method": self._access.identity_method
             if self._access is not None
+            else None,
+            # Which form of the private password the setup proved, and whether
+            # an answer showed a reset private password: codes only.
+            "private_password": {
+                "variant": self._access.private_password_variant
+                if self._access is not None
+                else None,
+                "reset_detected": self._reset_seen,
+            },
+            # How the setup recognised the gateway: what /gateway/uuid
+            # answered (kind and length, a text masked), whether it was the
+            # cloud's ID, the verdict of the values and how many matched.
+            "setup_check": dict(self._access.setup_check)
+            if self._access is not None
+            else {},
+            # The last check of the own ID while running (same fields).
+            "identity_check": dict(self._identity_check)
+            if self._identity_check is not None
             else None,
             "problem": self._problem,
             "request_metrics": {
@@ -602,6 +679,7 @@ class IcomSource:
         """Judge a failed request: a verdict, or _OK to go on with the next."""
         problem = error.problem
         if problem is IcomProblem.UNDECRYPTABLE:
+            self._note_undecryptable(error)
             self._undecryptable += 1
             if self._undecryptable >= UNDECRYPTABLE_BEFORE_STOP:
                 self._publish(LocalCondition.AUTH_REQUIRED, "auth_required")
@@ -619,9 +697,17 @@ class IcomSource:
     def _succeeded(self) -> None:
         self._failures_in_row = 0
         self._undecryptable = 0
+        self._reset_seen = False
 
     async def _check_identity(self) -> _Verdict:
-        """The gateway must still be the one that was recognised at setup."""
+        """The gateway must still be the one that was recognised at setup.
+
+        An access recognised by its own ID or by a stored version reading
+        whose gateway no longer confirms it (no ID, "-1", another ID, no
+        version reading or another one, for example after a firmware update)
+        is judged by its values as at setup: only a clear contradiction
+        pauses it, and it is never stopped for good.
+        """
         client, access = self.client, self._access
         assert client is not None and access is not None
         if (
@@ -632,25 +718,177 @@ class IcomSource:
         try:
             reply = await client.get(access.identity_path)
         except IcomError as error:
+            if (
+                error.problem in PATH_PROBLEMS
+                and access.identity_method != IDENTITY_UNVERIFIED
+            ):
+                return await self._identity_by_values(None, offered=False)
             return self._after_identity_failure(error)
         if not self.current():
             return _STOP
-        if not access.usable(reply.document.get("value")):
-            # An ID that says nothing (such as "-1") is no other gateway: the
-            # access pauses and looks again; only a usable, different ID stops.
-            return _Verdict(delay=self._grown_pause(), reason="identity_unavailable")
-        if not access.confirms(reply.document.get("value")):
-            self._confirmed = False
-            self._publish(LocalCondition.UNAVAILABLE, "local_identity_conflict")
+        value = reply.document.get("value")
+        if not (access.usable(value) and access.confirms(value)):
+            # The values decide, as at setup.
+            return await self._identity_by_values(value, offered=True)
+        if access.identity_method == IDENTITY_UUID:
+            self._identity_check = {
+                "uuid": describe_reported_id(value),
+                "uuid_matches_cloud": True,
+                "method": IDENTITY_UUID,
+            }
+        elif access.identity_method == IDENTITY_VALUES:
+            self._identity_check = {
+                "fingerprint_matches": True,
+                "method": IDENTITY_VALUES,
+            }
+        self._identity_confirmed()
+        return _OK
+
+    async def _compare_identity(
+        self, reported: object, *, offered: bool
+    ) -> tuple[Verdict, dict[str, object]]:
+        """Compare the gateway's values with the cloud's, as the setup does.
+
+        For an access whose own ID or stored version reading no longer
+        confirms the gateway. Reads only the paths the cloud has a current
+        reading of; the outcome is noted for the log and diagnostics (kinds
+        and counts, never an ID or a version). Returns the verdict and the
+        local readings. Raises IcomError for a failed request other than a
+        missing path.
+        """
+        from .icom_setup import readings_of
+
+        client, context, access = self.client, self.context, self._access
+        assert client is not None and access is not None
+        cloud = (
+            readings_of(
+                context.runtime, context.runtime.snapshot, self.binding.target_id
+            )
+            if context is not None
+            else {}
+        )
+        local: dict[str, object] = {}
+        for path in FALLBACK_PATHS:
+            if path not in cloud:
+                continue
+            try:
+                reply = await client.get(path)
+            except IcomError as error:
+                if error.problem in PATH_PROBLEMS:
+                    continue
+                raise
+            local[path] = reply.document.get("value")
+        outcome = compare(local, cloud)
+        check: dict[str, object]
+        if access.identity_method == IDENTITY_VALUES:
+            check = {"fingerprint_matches": False if offered else None}
+        else:
+            usable = isinstance(reported, str) and comparable_id(reported) is not None
+            check = {
+                "uuid": describe_reported_id(reported, read=offered),
+                "uuid_matches_cloud": False if usable else None,
+            }
+        check.update(
+            {
+                "values_verdict": outcome.verdict.value,
+                "values_matching": outcome.matches,
+                "values_read": len(local),
+                "method": IDENTITY_VALUES
+                if outcome.verdict is Verdict.CONFIRMED
+                else IDENTITY_UNVERIFIED
+                if outcome.verdict is Verdict.INSUFFICIENT
+                else None,
+            }
+        )
+        self._identity_check = check
+        _LOGGER.debug(
+            "iCom identity check while running: own ID %s, the cloud's ID: %s, "
+            "stored version reading matches: %s, values: %s (%s of %s matching), "
+            "reading on: %s",
+            check.get("uuid", "not used"),
+            check.get("uuid_matches_cloud"),
+            check.get("fingerprint_matches", "not used"),
+            check["values_verdict"],
+            check["values_matching"],
+            check["values_read"],
+            check["method"] or "no, paused",
+        )
+        return outcome.verdict, local
+
+    async def _identity_by_values(self, reported: object, *, offered: bool) -> _Verdict:
+        """The values decide whether a gateway that no longer confirms reads on."""
+        try:
+            verdict, local = await self._compare_identity(reported, offered=offered)
+        except IcomError as error:
+            return self._after_identity_failure(error)
+        if not self.current():
             return _STOP
+        if verdict is Verdict.CONTRADICTION:
+            # Only a clear contradiction: the readings are withdrawn and the
+            # gateway is looked at again after a pause.
+            self._confirmed = False
+            return _Verdict(delay=self._grown_pause(), reason="identity_contradiction")
+        if verdict is Verdict.CONFIRMED:
+            self._renew_fingerprint(local)
+        self._identity_confirmed()
+        return _OK
+
+    def _renew_fingerprint(self, local: Mapping[str, object]) -> None:
+        """After a confirming check, recognise the gateway by its new version.
+
+        Only for an access recognised by a version reading, for example after
+        a firmware update. The entry is updated once (the access then starts
+        again with the new reading); the diagnostics note it.
+        """
+        access = self._access
+        renewed = fingerprint(local)
+        if (
+            access is None
+            or access.identity_method != IDENTITY_VALUES
+            or renewed is None
+            or renewed == (access.fingerprint_path, access.fingerprint)
+        ):
+            return
+        self._access = replace(
+            access, fingerprint_path=renewed[0], fingerprint=renewed[1]
+        )
+        if self._identity_check is not None:
+            self._identity_check["fingerprint_updated"] = True
+        _LOGGER.debug("iCom access: the stored version reading was renewed")
+        hass = self.connection.factory.hass
+        hass.loop.call_soon(self._store_fingerprint, renewed)
+
+    def _store_fingerprint(self, renewed: tuple[str, str]) -> None:
+        context = self.context
+        if context is None or not self.current():
+            return
+        try:
+            context.runtime.management.update_icom_fingerprint(
+                self.connection.identifier, renewed
+            )
+        except Exception:  # the access reads on with it in memory
+            _LOGGER.debug(
+                "The renewed version reading of the iCom access was not stored"
+            )
+
+    def _identity_confirmed(self) -> None:
         self._succeeded()
         self._identity_at = monotonic()
         if not self._confirmed or self._condition is not LocalCondition.READY:
             self._confirmed = True
             self._publish(LocalCondition.READY)
-        return _OK
 
     def _after_identity_failure(self, error: IcomError) -> _Verdict:
+        access = self._access
+        if (
+            error.problem in PATH_PROBLEMS
+            and access is not None
+            and access.identity_method == IDENTITY_UNVERIFIED
+        ):
+            # An unverified access has nothing to confirm: a gateway that
+            # does not offer the path still answered.
+            self._identity_confirmed()
+            return _OK
         if error.problem in PATH_PROBLEMS:
             # A gateway without an ID cannot be confirmed: tried again later.
             return self._pause_for(error, "identity_unavailable")

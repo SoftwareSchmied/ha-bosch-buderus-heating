@@ -16,15 +16,24 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
   Integration über die Cloud-Verbindung eingerichtet. Der lokale Zugang gehört
   immer zu einer solchen Anlage; eine Anlage, die nur lokal existiert, wird für
   iCom-Gateways nicht angeboten.
-- Das **Gateway-Passwort** vom Aufkleber auf dem Gerät (die Bindestriche werden
-  ignoriert) und das **private Passwort** (das persönliche Passwort des
-  Gateways): das, das du dafür beim Koppeln in der App oder in der alten
-  Geräte-App des Gateways festgelegt hast (zum Beispiel MyDevice). Wurde nie
-  eines festgelegt, lässt sich der lokale Zugang nicht einrichten. Die häufigste
-  Ursache für „ließ sich nicht entschlüsseln“ ist ein privates Passwort, das vom
-  Passwort des Gateways abweicht: Bist du unsicher, welches das ist, lege in der
-  App ein neues fest und verwende hier dasselbe. Ein am Display des Heizgeräts
-  eingegebenes Passwort beweist dazu nichts.
+- Das **Gateway-Passwort** vom Aufkleber auf dem Gerät (Bindestriche und
+  Leerzeichen werden ignoriert) und das **private Passwort** (das persönliche
+  Passwort des Gateways, 4 bis 16 Zeichen, Groß- und Kleinschreibung zählt):
+  das, das du dafür beim Koppeln in der App oder in der alten Geräte-App des
+  Gateways festgelegt hast (zum Beispiel MyDevice). Wurde nie eines festgelegt
+  oder wurde es zurückgesetzt, lässt sich der lokale Zugang nicht einrichten;
+  der Dialog meldet dann, dass auf dem Gateway kein privates Passwort
+  gespeichert ist. Lege es einmal in der alten Geräte-App fest, mit dem Handy im
+  selben WLAN wie das Gateway, und verwende hier dasselbe. Die häufigste Ursache
+  für „ließ sich nicht entschlüsseln“ ist ein privates Passwort, das vom
+  Passwort des Gateways abweicht: Bist du unsicher, welches das ist, lege es auf
+  dieselbe Weise neu fest. Ein am Display des Heizgeräts eingegebenes Passwort
+  beweist dazu nichts.
+- Das private Passwort wird genau so verwendet, wie du es eingibst. Lässt sich
+  die Antwort des Gateways damit nicht entschlüsseln, probiert die Einrichtung
+  dieselbe Antwort auch ohne Leerzeichen am Anfang und Ende des Passworts (ohne
+  weitere Anfrage); passt das, wird diese Form gespeichert. Die Diagnose zeigt,
+  welche Form gepasst hat (`private_password.variant`: `exact` oder `trimmed`).
 - Die Adresse des Gateways im Heimnetz (IP-Adresse oder Hostname). Eine feste
   Adresse (Reservierung im Router) erspart dir eine erneute Einrichtung.
 
@@ -35,26 +44,32 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
 3. Wähle die Anlage, falls mehrere in Frage kommen.
 4. Gib Adresse, Gateway-Passwort und privates Passwort ein.
 
-Die Einrichtung liest einmal die eigene Kennung des Gateways. Sie muss die
-Gateway-Kennung sein, die die Cloud für diese Anlage kennt; sonst wird nichts
-gespeichert und der Dialog sagt es (anderes Gateway unter dieser Adresse oder
-falsche Adresse). Ein falsches Passwort wird gesondert genannt.
+Die Einrichtung liest einmal die eigene Kennung des Gateways. Ist sie die
+Gateway-Kennung, die die Cloud für diese Anlage kennt, wird das Gateway daran
+erkannt. Ein falsches Passwort wird gesondert genannt.
 
-Meldet das Gateway keine brauchbare Kennung (gar keine, eine leere oder einen
-Platzhalter wie -1), vergleicht die Einrichtung, was das Gateway antwortet, mit
-dem, was die Cloud gerade für dieselben Pfade gelesen hat: Firmware- und
+Wie die eigene Kennung eines Gateways mit der der Cloud zusammenhängt, ist nicht
+für jedes Gateway bekannt. Meldet das Gateway deshalb keine brauchbare Kennung
+(gar keine, eine leere oder einen Platzhalter wie -1) oder eine andere als die
+der Cloud, vergleicht die Einrichtung, was das Gateway antwortet, mit dem, was
+die Cloud gerade für dieselben Pfade gelesen hat: Firmware- und
 Hardware-Version, Typ, Marke, Außentemperatur (innerhalb von 2 K, Cloud-Wert
-höchstens 15 Minuten alt), Systemdruck und Anzahl der Starts. Mindestens zwei
-Werte müssen übereinstimmen, mindestens einer davon ein Livewert (Temperatur,
-Druck oder Starts), und keiner darf eindeutig widersprechen. Das braucht eine
-laufende Cloud-Verbindung mit aktuellen Werten; ist sie noch nicht so weit,
-warte ein paar Minuten und versuche es erneut. Ein Gateway, das eine brauchbare,
-aber andere Kennung meldet, wird auf diesem Weg nie angenommen. Der verwendete
-Weg steht in der Diagnose (`identity_method`); spätere Prüfungen lesen dann einen
-gespeicherten Versionswert statt der Kennung. Ändert sich dieser Wert später (getauschtes Gateway oder
-Firmware-Update, wenn das Gateway keine Hardware-Version meldet), hält der Zugang
-an wie bei einem anderen Gateway; richte dann **iCom-Zugangsdaten ändern** noch
-einmal durch. Adresse oder
+höchstens 15 Minuten alt), Systemdruck und Anzahl der Starts. Stimmen mindestens
+zwei Werte überein, mindestens einer davon ein Livewert (Temperatur, Druck oder
+Starts), wird das Gateway an seinen Werten erkannt; spätere Prüfungen lesen dann
+einen gespeicherten Versionswert statt der Kennung. Ändert sich dieser Wert
+später (zum Beispiel nach einem Firmware-Update), entscheiden wieder die Werte
+wie bei der Einrichtung; bestätigen sie das Gateway, wird der gespeicherte Wert
+erneuert (der Zugang startet damit einmal neu). Nur ein eindeutiger
+Widerspruch (andere Version, anderer Typ oder andere Marke oder ein weit
+abweichender Livewert) stoppt die Einrichtung als anderes Gateway. Stimmt zu
+wenig überein (zum Beispiel, weil die Cloud noch keine aktuellen Werte hat), wird
+der Zugang **unbestätigt** eingerichtet: Er liest das Gateway ohne
+Kennungsprüfung, eine fehlende oder seltsame Kennung hält ihn also nie an. Der
+verwendete Weg steht in der Diagnose (`identity_method`: `uuid`, `values`
+oder `unverified`), zusammen damit, was das Gateway als Kennung gemeldet hat
+(nur Art, Länge und ob sie nur Ziffern, Hex-Ziffern oder andere Zeichen enthält,
+nie ein Zeichen der Kennung), und wie viele Werte übereinstimmten (`setup_check`). Adresse oder
 Passwörter änderst du später, indem du den Zugang unter **Verbindungen** öffnest
 und **iCom-Zugangsdaten ändern** wählst.
 
@@ -100,12 +115,19 @@ wird. Der lokale Zugang
 - hält ganz an, ohne weitere Anfragen, wenn sich zwei Antworten hintereinander
   nicht entschlüsseln lassen (falsches oder geändertes Passwort; eine einzelne,
   auch direkt nach einem Neustart, wird erst nach einer Minute noch einmal
-  angesehen) oder das Gateway eine brauchbare, aber andere Kennung meldet als bei
-  der Einrichtung. Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
+  angesehen). Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
   erreichbar“, bis du die Daten neu eingibst;
-- behandelt eine Kennung ohne Aussage (keine, leer oder ein Platzhalter wie -1)
-  bei der Prüfung wie eine fehlende Antwort: Der Zugang pausiert und fragt
-  erneut, er hält nicht an;
+- beurteilt ein Gateway, das an seiner eigenen Kennung erkannt wurde und später
+  keine Kennung, eine Kennung ohne Aussage (leer oder ein Platzhalter wie -1)
+  oder eine andere Kennung meldet, und eines, das an einem gespeicherten
+  Versionswert erkannt wurde und später keinen oder einen anderen meldet (zum
+  Beispiel nach einem Firmware-Update), wie bei der Einrichtung an seinen Werten:
+  Nur ein eindeutiger Widerspruch pausiert den Zugang (seine Werte werden
+  zurückgenommen, nach der Pause wird erneut geprüft); sonst liest er weiter,
+  bestätigt durch die Werte oder unbestätigt. Ein Firmware-Update hält den
+  Zugang also nie an. Die letzte solche Prüfung steht
+  in der Diagnose (`identity_check`); ein unbestätigter Zugang prüft gar keine
+  Kennung;
 - stellt keine Anfragen, solange keine Cloud-Verbindung das System mehr versorgt
   (zum Beispiel nach dem Entfernen der Cloud-Verbindung), und macht von selbst
   weiter, sobald wieder eine besteht;
@@ -136,9 +158,9 @@ wieder ein.
 |---|---|
 | Das Gateway hat nicht geantwortet | Keine Verbindung in der Zeit; Adresse und Port 80 prüfen. |
 | Die Antwort ließ sich nicht entschlüsseln | Eines der beiden Passwörter ist falsch oder wurde in der Geräte-App geändert. Meist weicht das private Passwort von dem des Gateways ab; prüfe es in der App, in der du es festgelegt hast. |
+| Kein privates Passwort gespeichert | Das Gateway antwortet wie eines, dessen privates Passwort zurückgesetzt wurde. Lege es einmal in der alten Geräte-App fest (Handy im selben WLAN wie das Gateway) und versuche es dann erneut. Auch der Verbindungstest eines bestehenden Zugangs nennt das. |
 | Das Gateway ist ausgelastet | Es hat mit einer Überlastungsmeldung geantwortet; später erneut versuchen. |
-| Es ließ sich der Anlage nicht zuordnen | Das Gateway meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein (oder die Cloud hat noch keine aktuellen Werte). In ein paar Minuten erneut versuchen. |
-| Nicht das Gateway der gewählten Anlage | Die lokal gelesene Kennung ist nicht die Gateway-Kennung der Cloud. |
+| Nicht das Gateway der gewählten Anlage | Die eigene Kennung des Gateways ist nicht die der Cloud, und seine Werte widersprechen den Cloud-Werten eindeutig (andere Version, anderer Typ oder andere Marke oder ein weit abweichender Livewert). |
 
 ## Rückmeldung
 

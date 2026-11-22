@@ -444,6 +444,8 @@ async def test_connection(
     icom = is_icom_connection(connection.to_data())
     auth_page = "auth_icom" if icom else "auth_local"
     if status.state == "auth_required":
+        if icom and _private_password_reset(connections, key):
+            return "auth_icom_reset", {}
         return auth_page, {}
     if status.state == "certificate_changed":
         return "certificate_changed", {}
@@ -461,6 +463,8 @@ async def test_connection(
             return "ok", {"ms": str(millis)}
         if result == "auth_required":
             return auth_page, {}
+        if result == "auth_reset" and icom:
+            return "auth_icom_reset", {}
         if result == "paused":
             return _paused(access_status(entry, key).until)
         if result == "not_running" and status.state == "unreachable":
@@ -476,11 +480,22 @@ async def test_connection(
     return "not_running", {}
 
 
+def _private_password_reset(connections: Any, key: str) -> bool:
+    """Whether an iCom source of the access saw a reset private password."""
+    return any(
+        getattr(connections.source_driver(binding_id), "private_password_reset", False)
+        is True
+        for binding_id, binding in connections.snapshot.bindings.items()
+        if binding.connection_id == key
+    )
+
+
 # Every code of ``test_connection``; each has its page.
 TEST_CODES = frozenset(
     {
         "auth_cloud",
         "auth_icom",
+        "auth_icom_reset",
         "auth_local",
         "busy",
         "certificate_changed",

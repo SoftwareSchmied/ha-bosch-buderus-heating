@@ -3,9 +3,10 @@
 The iCom gateways (KM200 family, IP inside, IP modules, MB LAN 2) answer on
 port 80 with text that is AES-256 encrypted and Base64 coded. The key follows
 from two passwords: the gateway password of the device sticker and the
-private password set in the vendor's device app. This module only derives the
-key and converts between the JSON text of a request or answer and its wire
-form. It opens no connection and knows no path.
+private password set in the vendor's device app. A gateway whose private
+password was reset uses an empty one until a new one is set. This module only
+derives the key and converts between the JSON text of a request or answer and
+its wire form. It opens no connection and knows no path.
 
 The key is the MD5 digest of the gateway password followed by a fixed
 protocol constant, directly followed by the MD5 digest of that constant
@@ -39,15 +40,18 @@ class IcomCryptoError(ValueError):
 
 
 def normalize_gateway_password(value: object) -> str:
-    """The sticker password without the dashes of its groups (xxxx-xxxx-...)."""
+    """The sticker password without the dashes and spaces of its groups.
+
+    The groups (xxxx-xxxx-...) may be typed with dashes, spaces or both; the
+    password itself holds neither.
+    """
     if not isinstance(value, str):
         raise IcomCryptoError("invalid_gateway_password")
-    text = value.strip().replace("-", "")
+    text = "".join(value.split()).replace("-", "")
     if (
         not 0 < len(text) <= MAX_PASSWORD_LENGTH
         or not text.isascii()
         or not text.isprintable()
-        or any(character.isspace() for character in text)
     ):
         raise IcomCryptoError("invalid_gateway_password")
     return text
@@ -64,13 +68,24 @@ def validate_private_password(value: object) -> str:
     return value
 
 
-def derive_key(gateway_password: str, private_password: str) -> bytes:
-    """The 32-byte AES key of a gateway from its two passwords."""
+def _key(gateway_password: str, private: bytes) -> bytes:
     gateway = normalize_gateway_password(gateway_password).encode()
-    private = validate_private_password(private_password).encode()
     first = hashlib.md5(gateway + _PROTOCOL_CONSTANT, usedforsecurity=False)
     second = hashlib.md5(_PROTOCOL_CONSTANT + private, usedforsecurity=False)
     return first.digest() + second.digest()
+
+
+def derive_key(gateway_password: str, private_password: str) -> bytes:
+    """The 32-byte AES key of a gateway from its two passwords."""
+    return _key(gateway_password, validate_private_password(private_password).encode())
+
+
+def reset_key(gateway_password: str) -> bytes:
+    """The key of a gateway whose private password was reset (an empty one).
+
+    Only used to recognise that state; an access is never set up with it.
+    """
+    return _key(gateway_password, b"")
 
 
 def _cipher(key: bytes) -> Cipher[modes.ECB]:

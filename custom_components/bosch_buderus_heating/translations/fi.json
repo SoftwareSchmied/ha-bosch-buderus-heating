@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Yhteystesti",
-        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana, joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, aseta se uudelleen sovelluksessa ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana."
+        "description": "Kirjautuminen epäonnistui: salasanat eivät sovi yhdyskäytävään. Tarkista ne valinnalla “Muuta iCom-käyttötietoja”. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana (4–16 merkkiä), joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, tai se on nollattu, aseta se uudelleen vanhassa laitesovelluksessa puhelimen ollessa samassa Wi-Fi-verkossa kuin yhdyskäytävä ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Yhteystesti",
+        "description": "Kirjautuminen epäonnistui: yhdyskäytävään ei ole enää tallennettu yksityistä salasanaa, esimerkiksi nollauksen jälkeen. Aseta se kerran vanhassa laitesovelluksessa puhelimen ollessa samassa Wi-Fi-verkossa kuin yhdyskäytävä ja anna sitten sama valinnalla “Muuta iCom-käyttötietoja”."
       },
       "connection_test_certificate_changed": {
         "title": "Yhteystesti",
@@ -1017,7 +1021,7 @@
           "private_password": "Yksityinen salasana (laitesovellus)"
         },
         "data_description": {
-          "gateway_password": "Laitteen tarrassa oleva salasana; väliviivat ohitetaan.",
+          "gateway_password": "Laitteen tarrassa oleva salasana; väliviivat ja välilyönnit ohitetaan.",
           "private_password": "Yhdyskäytävän henkilökohtainen salasana, joka asetetaan pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa (esimerkiksi MyDevice). Se ei ole uuden sovelluksen tilin salasana."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
       "switch_program_aircon_setting": "Valitse toimintatila, jonka ilmastointilaite tarjoaa, ja sille lämpötila sen alueella ja portain sekä yksi sen puhaltimen nopeuksista.",
       "icom_cannot_connect": "Yhdyskäytävä ei vastannut. Tarkista osoite ja että yhdyskäytävä on tavoitettavissa portissa 80.",
-      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana, joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, aseta se uudelleen sovelluksessa ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana.",
+      "icom_invalid_auth": "Yhdyskäytävän vastausta ei voitu purkaa. Tarkista molemmat salasanat; isot ja pienet kirjaimet ovat merkitseviä. Yleisin syy: yksityinen salasana poikkeaa yhdyskäytävään tallennetusta. Se on yhdyskäytävän henkilökohtainen salasana (4–16 merkkiä), joka asetetaan yhdyskäytävän pariliitoksessa sovelluksessa tai vanhassa laitesovelluksessa. Jos et ole varma, mikä se on, tai se on nollattu, aseta se uudelleen vanhassa laitesovelluksessa puhelimen ollessa samassa Wi-Fi-verkossa kuin yhdyskäytävä ja anna sama tähän. Lämmityslaitteen näytöllä oleva salasana ei ole tämä salasana.",
+      "icom_no_private_password": "Yhdyskäytävään ei ole tallennettu yksityistä salasanaa, esimerkiksi nollauksen jälkeen. Aseta se kerran vanhassa laitesovelluksessa puhelimen ollessa samassa Wi-Fi-verkossa kuin yhdyskäytävä ja yritä sitten uudelleen tässä samalla salasanalla.",
       "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_no_identity": "Yhdyskäytävää ei voitu yhdistää järjestelmään: se ei ilmoita käyttökelpoista tunnusta, eivätkä sen arvot täsmää riittävän tarkasti pilven arvoihin. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",

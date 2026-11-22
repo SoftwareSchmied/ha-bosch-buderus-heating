@@ -313,6 +313,30 @@ class ConfigurationManagement:
             raise ConfigurationError("local_setup_not_enabled")
 
     @callback
+    def update_icom_fingerprint(
+        self, connection_id: str, renewed: tuple[str, str]
+    ) -> ConfigurationSnapshot | None:
+        """Store the version reading a running iCom access recognises its gateway by.
+
+        Called after a check by values confirmed the gateway again with another
+        version reading (for example after a firmware update). Changes only the
+        stored reading of an access recognised by values; None otherwise.
+        """
+        before = self.current()
+        if connection_id not in before.connections:
+            return None
+        data = before.to_data()
+        raw = cast(JsonObject, cast(JsonObject, data["connections"])[connection_id])
+        access = raw.get("icom_access")
+        if not isinstance(access, dict) or access.get("identity") != "values":
+            return None
+        path, value = renewed
+        if access.get("fingerprint") == {"path": path, "value": value}:
+            return None
+        access["fingerprint"] = {"path": path, "value": value}
+        return self._save(data, before.to_options())
+
+    @callback
     def commit_local_access(
         self, before: ConfigurationSnapshot, proposed: ConfigurationSnapshot
     ) -> ConfigurationSnapshot:

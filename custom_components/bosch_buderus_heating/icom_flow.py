@@ -32,6 +32,7 @@ from .icom_setup import (
     commit_icom_setup,
     verify_icom_access,
 )
+from .local_setup_history import local_setup_history
 from .local_support import setup_support
 from .options_navigation import NavigatingOptionsFlow
 from .plant_labels import plant_choices
@@ -41,6 +42,7 @@ _FORM_ERRORS = frozenset(
     {
         "icom_cannot_connect",
         "icom_invalid_auth",
+        "icom_no_private_password",
         "icom_busy",
         "icom_no_identity",
         "icom_other_gateway",
@@ -158,12 +160,16 @@ class IcomSetupFlow(NavigatingOptionsFlow):
         if user_input is not None:
             self._icom_host = str(user_input.get("host", "")).strip()
             try:
-                return await self._icom_save(target, user_input)
+                result = await self._icom_save(target, user_input)
             except ConfigurationError as error:
                 code = str(error)
+                self._icom_attempt(code)
                 if code in _ABORTS:
                     return self.async_abort(reason=code)
                 errors["base"] = code if code in _FORM_ERRORS else "icom_cannot_connect"
+            else:
+                self._icom_attempt(None)
+                return result
         return self.async_show_form(
             step_id="icom_access",
             data_schema=vol.Schema(
@@ -181,6 +187,15 @@ class IcomSetupFlow(NavigatingOptionsFlow):
             ),
             errors=errors,
         )
+
+    def _icom_attempt(self, error: str | None) -> None:
+        """Note the check in the entry's history: codes only, never data."""
+        try:
+            local_setup_history(self.hass, self._entry.entry_id).add(
+                "icom_access", error
+            )
+        except Exception:  # the history only explains; it never stops a dialog
+            return
 
     async def _icom_save(
         self, target_id: str, user_input: dict[str, Any]

@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Prueba de conexión",
-        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela, definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es, defínala de nuevo en la aplicación e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña."
+        "description": "Error de inicio de sesión: las contraseñas no corresponden a la pasarela. Compruébelas mediante «Cambiar los datos de acceso iCom». Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela (de 4 a 16 caracteres), definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es o se restableció, defínala de nuevo en la antigua aplicación del aparato, con el teléfono en la misma red wifi que la pasarela, e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Prueba de conexión",
+        "description": "Error de inicio de sesión: la pasarela ya no tiene ninguna contraseña privada guardada, por ejemplo tras un restablecimiento. Defínala una vez en la antigua aplicación del aparato, con el teléfono en la misma red wifi que la pasarela, e introduzca después la misma mediante «Cambiar los datos de acceso iCom»."
       },
       "connection_test_certificate_changed": {
         "title": "Prueba de conexión",
@@ -1017,7 +1021,7 @@
           "private_password": "Contraseña privada (aplicación del aparato)"
         },
         "data_description": {
-          "gateway_password": "La contraseña de la etiqueta del aparato; se ignoran los guiones.",
+          "gateway_password": "La contraseña de la etiqueta del aparato; se ignoran los guiones y los espacios.",
           "private_password": "La contraseña personal de la pasarela, definida al emparejarla en la aplicación o en la antigua aplicación del aparato (por ejemplo MyDevice). No es la contraseña de la cuenta de la nueva aplicación."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "El nombre puede contener hasta 64 caracteres imprimibles.",
       "switch_program_aircon_setting": "Elige un modo que ofrezca el aire acondicionado y, para él, una temperatura dentro de su rango y sus pasos y una de sus velocidades de ventilador.",
       "icom_cannot_connect": "La pasarela no respondió. Compruebe la dirección y que se pueda acceder a la pasarela por el puerto 80.",
-      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas. Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela, definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es, defínala de nuevo en la aplicación e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña.",
+      "icom_invalid_auth": "No se pudo descifrar la respuesta de la pasarela. Compruebe ambas contraseñas; se distinguen mayúsculas y minúsculas. Causa más frecuente: la contraseña privada no coincide con la que tiene la pasarela. Es la contraseña personal de la pasarela (de 4 a 16 caracteres), definida al emparejar la pasarela en la aplicación o en la antigua aplicación del aparato. Si no está seguro de cuál es o se restableció, defínala de nuevo en la antigua aplicación del aparato, con el teléfono en la misma red wifi que la pasarela, e introduzca aquí la misma. Una contraseña en la pantalla del aparato de calefacción no es esta contraseña.",
+      "icom_no_private_password": "La pasarela no tiene ninguna contraseña privada guardada, por ejemplo tras un restablecimiento. Defínala una vez en la antigua aplicación del aparato, con el teléfono en la misma red wifi que la pasarela, y vuelva a intentarlo aquí con la misma contraseña.",
       "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
       "icom_no_identity": "No se pudo asignar la pasarela a la instalación: no informa de un ID utilizable y sus valores no coinciden lo bastante con los de la nube. Inténtelo de nuevo en unos minutos.",
       "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",

@@ -13,6 +13,7 @@ from custom_components.bosch_buderus_heating.icom_crypto import (
     derive_key,
     encrypt,
     normalize_gateway_password,
+    reset_key,
     validate_private_password,
 )
 
@@ -88,7 +89,9 @@ def test_unusable_answers_are_invalid_responses(body):
         decrypt(derive_key(GATEWAY, PRIVATE), body)
 
 
-@pytest.mark.parametrize("value", [None, 5, "", "a b", "ä" * 4, "x" * 200, "-"])
+@pytest.mark.parametrize(
+    "value", [None, 5, "", " ", "- -", "ä" * 4, "x" * 200, "-", "a\x00b"]
+)
 def test_gateway_password_must_be_plain_text(value):
     with pytest.raises(IcomCryptoError, match="invalid_gateway_password"):
         normalize_gateway_password(value)
@@ -104,6 +107,50 @@ def test_private_password_may_hold_any_printable_character():
     assert validate_private_password("Ünï cödé §$% 1") == "Ünï cödé §$% 1"
     key = derive_key("abcd", "Ünï cödé")
     assert decrypt(key, encrypt(key, b"{}")) == b"{}"
+
+
+@pytest.mark.parametrize(
+    "typed",
+    [
+        "abcd-efgh-ijkl-mnop",
+        "abcd efgh ijkl mnop",
+        "  abcd - efgh - ijkl - mnop  ",
+        "abcd\tefgh\u00a0ijkl-mnop\n",
+        "abcdefghijklmnop",
+    ],
+)
+def test_dashes_and_spaces_of_the_gateway_password_are_ignored(typed):
+    # The sticker groups may be typed with dashes, spaces or both.
+    assert normalize_gateway_password(typed) == "abcdefghijklmnop"
+    assert derive_key(typed, PRIVATE) == derive_key("abcdefghijklmnop", PRIVATE)
+
+
+def test_the_case_of_the_gateway_password_is_kept():
+    assert normalize_gateway_password("AbCd-efgh") == "AbCdefgh"
+    assert derive_key("ABCD", "x") != derive_key("abcd", "x")
+
+
+def test_the_private_password_keeps_its_spaces():
+    # Spaces at the start or end may belong to a private password.
+    assert validate_private_password(" pin ") == " pin "
+    assert derive_key(GATEWAY, " pin ") != derive_key(GATEWAY, "pin")
+
+
+def test_the_reset_key_uses_an_empty_private_password():
+    constant = bytes.fromhex(
+        "867845e97c4e29dce522b9a7d3a3e07b152bffadddbed7f5ffd842e9895ad1e4"
+    )
+    expected = (
+        hashlib.md5(b"abcdefghijklmnop" + constant).digest()
+        + hashlib.md5(constant).digest()
+    )
+    assert reset_key(GATEWAY) == expected
+    assert reset_key("abcd efgh ijkl mnop") == expected
+    # An empty private password is never accepted as typed.
+    with pytest.raises(IcomCryptoError, match="invalid_private_password"):
+        derive_key(GATEWAY, "")
+    with pytest.raises(IcomCryptoError, match="invalid_gateway_password"):
+        reset_key(" - ")
 
 
 def test_bad_keys_and_payloads_are_rejected():

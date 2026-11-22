@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Verbindingstest",
-        "description": "Aanmelden mislukt: de wachtwoorden passen niet bij de gateway. Controleer ze via “iCom-toegangsgegevens wijzigen”. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, stel het dan opnieuw in de app in en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord."
+        "description": "Aanmelden mislukt: de wachtwoorden passen niet bij de gateway. Controleer ze via “iCom-toegangsgegevens wijzigen”. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway (4 tot 16 tekens), ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, of is het gereset, stel het dan opnieuw in in de oude apparaat-app, met de telefoon op hetzelfde wifi-netwerk als de gateway, en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Verbindingstest",
+        "description": "Aanmelden mislukt: op de gateway is geen privéwachtwoord meer opgeslagen, bijvoorbeeld na een reset. Stel het eenmaal in in de oude apparaat-app, met de telefoon op hetzelfde wifi-netwerk als de gateway, en voer daarna hetzelfde in via “iCom-toegangsgegevens wijzigen”."
       },
       "connection_test_certificate_changed": {
         "title": "Verbindingstest",
@@ -1017,7 +1021,7 @@
           "private_password": "Privéwachtwoord (apparaat-app)"
         },
         "data_description": {
-          "gateway_password": "Het wachtwoord op het etiket van het apparaat; streepjes worden genegeerd.",
+          "gateway_password": "Het wachtwoord op het etiket van het apparaat; streepjes en spaties worden genegeerd.",
           "private_password": "Het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen in de app of in de oude apparaat-app (bijvoorbeeld MyDevice). Het is niet het accountwachtwoord van de nieuwe app."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
       "switch_program_aircon_setting": "Kies een modus die de airconditioner biedt en daarvoor een temperatuur binnen het bereik en de stappen ervan en een van de ventilatorsnelheden.",
       "icom_cannot_connect": "De gateway antwoordde niet. Controleer het adres en of de gateway bereikbaar is op poort 80.",
-      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway, ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, stel het dan opnieuw in de app in en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord.",
+      "icom_invalid_auth": "Het antwoord van de gateway kon niet worden ontsleuteld. Controleer beide wachtwoorden; hoofdletters en kleine letters tellen. Meest voorkomende oorzaak: het privéwachtwoord wijkt af van dat van de gateway. Het is het persoonlijke wachtwoord van de gateway (4 tot 16 tekens), ingesteld bij het koppelen van de gateway in de app of in de oude apparaat-app. Weet je niet zeker welk het is, of is het gereset, stel het dan opnieuw in in de oude apparaat-app, met de telefoon op hetzelfde wifi-netwerk als de gateway, en voer hier hetzelfde in. Een wachtwoord op het display van het verwarmingstoestel is niet dit wachtwoord.",
+      "icom_no_private_password": "Op de gateway is geen privéwachtwoord opgeslagen, bijvoorbeeld na een reset. Stel het eenmaal in in de oude apparaat-app, met de telefoon op hetzelfde wifi-netwerk als de gateway, en probeer het daarna hier opnieuw met hetzelfde wachtwoord.",
       "icom_busy": "De gateway is bezet. Probeer het over enkele minuten opnieuw.",
       "icom_no_identity": "De gateway kon niet aan de installatie worden gekoppeld: hij meldt geen bruikbaar ID en zijn waarden komen niet nauwkeurig genoeg overeen met de cloudwaarden. Probeer het over een paar minuten opnieuw.",
       "icom_other_gateway": "Dit is niet de gateway van de gekozen installatie. Controleer het adres.",

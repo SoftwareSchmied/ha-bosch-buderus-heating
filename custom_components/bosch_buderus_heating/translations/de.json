@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Verbindungstest",
-        "description": "Anmeldung fehlgeschlagen: Die Passwörter passen nicht zum Gateway. Prüfe sie über „iCom-Zugangsdaten ändern“. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways, festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, lege es in der App neu fest und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort."
+        "description": "Anmeldung fehlgeschlagen: Die Passwörter passen nicht zum Gateway. Prüfe sie über „iCom-Zugangsdaten ändern“. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways (4 bis 16 Zeichen), festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, oder wurde es zurückgesetzt, lege es in der alten Geräte-App neu fest, mit dem Handy im selben WLAN wie das Gateway, und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Verbindungstest",
+        "description": "Anmeldung fehlgeschlagen: Auf dem Gateway ist kein privates Passwort mehr gespeichert, zum Beispiel nach einem Zurücksetzen. Lege es einmal in der alten Geräte-App fest, mit dem Handy im selben WLAN wie das Gateway, und gib dann dasselbe über „iCom-Zugangsdaten ändern“ ein."
       },
       "connection_test_certificate_changed": {
         "title": "Verbindungstest",
@@ -1017,7 +1021,7 @@
           "private_password": "Privates Passwort (Geräte-App)"
         },
         "data_description": {
-          "gateway_password": "Das Passwort auf dem Geräteaufkleber; Bindestriche werden ignoriert.",
+          "gateway_password": "Das Passwort auf dem Geräteaufkleber; Bindestriche und Leerzeichen werden ignoriert.",
           "private_password": "Das persönliche Passwort des Gateways, festgelegt beim Koppeln in der App oder in der alten Geräte-App (zum Beispiel MyDevice). Es ist nicht das Konto-Passwort der neuen App."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
       "switch_program_aircon_setting": "Wähle eine Betriebsart, die das Klimagerät anbietet, und dazu eine Temperatur in ihrem Bereich und ihren Schritten sowie eine ihrer Lüfterstufen.",
       "icom_cannot_connect": "Das Gateway hat nicht geantwortet. Prüfe die Adresse und ob das Gateway über Port 80 erreichbar ist.",
-      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways, festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, lege es in der App neu fest und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort.",
+      "icom_invalid_auth": "Die Antwort des Gateways ließ sich nicht entschlüsseln. Prüfe beide Passwörter; Groß- und Kleinschreibung zählt. Häufigste Ursache: Das private Passwort weicht von dem ab, das das Gateway hat. Es ist das persönliche Passwort des Gateways (4 bis 16 Zeichen), festgelegt beim Koppeln des Gateways in der App oder in der alten Geräte-App. Bist du unsicher, welches es ist, oder wurde es zurückgesetzt, lege es in der alten Geräte-App neu fest, mit dem Handy im selben WLAN wie das Gateway, und gib hier dasselbe ein. Ein Passwort am Display des Heizgeräts ist nicht dieses Passwort.",
+      "icom_no_private_password": "Auf dem Gateway ist kein privates Passwort gespeichert, zum Beispiel nach einem Zurücksetzen. Lege es einmal in der alten Geräte-App fest, mit dem Handy im selben WLAN wie das Gateway, und versuche es dann hier mit demselben Passwort erneut.",
       "icom_busy": "Das Gateway ist ausgelastet. Versuche es in ein paar Minuten erneut.",
       "icom_no_identity": "Das Gateway lässt sich der Anlage nicht zuordnen: Es meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein. Versuche es in ein paar Minuten erneut.",
       "icom_other_gateway": "Das ist nicht das Gateway der gewählten Anlage. Prüfe die Adresse.",

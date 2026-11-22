@@ -20,7 +20,7 @@ from typing import Any, Final
 import aiohttp
 from yarl import URL
 
-from .icom_crypto import IcomCryptoError, decrypt
+from .icom_crypto import IcomCryptoError, decrypt, derive_key, reset_key
 
 ICOM_PORT: Final = 80
 # The client name some firmware versions expect.
@@ -61,10 +61,16 @@ class IcomError(Exception):
         problem: IcomProblem,
         status: int | None = None,
         retry_after: float | None = None,
+        *,
+        answer: bytes | None = None,
     ) -> None:
         self.problem = problem
         self.status = status
         self.retry_after = retry_after
+        # The encrypted answer of an undecryptable read, so that other forms
+        # of the private password can be checked offline with it (no further
+        # request). Never part of the text of the error.
+        self.answer = answer
         super().__init__(problem.value)
 
 
@@ -74,6 +80,68 @@ class IcomReply:
 
     body: bytes = field(repr=False)
     document: dict[str, Any] = field(repr=False)
+
+
+def decode_answer(key: bytes, body: bytes) -> IcomReply:
+    """Decrypt one answer of the gateway into its document.
+
+    Raises IcomError: INVALID_RESPONSE for no encrypted text at all,
+    UNDECRYPTABLE (with the answer kept) when the key gives no JSON object.
+    """
+    try:
+        text = decrypt(key, body)
+    except IcomCryptoError:
+        raise IcomError(IcomProblem.INVALID_RESPONSE, 200) from None
+    try:
+        # A control character or a byte of another encoding inside a text
+        # is the gateway's own content, not a sign of a wrong key.
+        document = json.loads(text.decode("utf-8", errors="replace"), strict=False)
+    except ValueError, RecursionError:
+        # A whole number of blocks that is no JSON: the key is wrong.
+        raise IcomError(IcomProblem.UNDECRYPTABLE, 200, answer=body) from None
+    if not isinstance(document, dict):
+        raise IcomError(IcomProblem.UNDECRYPTABLE, 200, answer=body)
+    return IcomReply(text, document)
+
+
+# How the private password fits the gateway (diagnostics; never the password).
+EXACT: Final = "exact"
+TRIMMED: Final = "trimmed"
+RESET: Final = "reset"
+
+
+@dataclass(frozen=True, slots=True)
+class OtherPrivatePassword:
+    """A form of the private password that decrypted an answer offline."""
+
+    variant: str
+    private_password: str = field(repr=False)
+    key: bytes = field(repr=False)
+    reply: IcomReply = field(repr=False)
+
+
+def other_private_password(
+    gateway_password: str, private_password: str, answer: bytes
+) -> OtherPrivatePassword | None:
+    """Try other forms of the private password on an undecryptable answer.
+
+    Offline, with the answer already received: first the password without
+    spaces at its start and end (when that differs), then an empty one, the
+    state of a gateway whose private password was reset. None when neither
+    decrypts the answer.
+    """
+    trimmed = private_password.strip()
+    candidates: list[tuple[str, str, bytes]] = []
+    if trimmed and trimmed != private_password:
+        candidates.append((TRIMMED, trimmed, derive_key(gateway_password, trimmed)))
+    candidates.append((RESET, "", reset_key(gateway_password)))
+    for variant, candidate, key in candidates:
+        try:
+            reply = decode_answer(key, answer)
+        except IcomError:
+            continue
+        return OtherPrivatePassword(variant, candidate, key, reply)
+    return None
 
 
 def _retry_after(value: str | None) -> float | None:
@@ -124,6 +192,10 @@ class IcomClient:
         self._lock = asyncio.Lock()
         self._earliest = 0.0
         self.metrics = IcomMetrics()
+
+    def use_key(self, key: bytes) -> None:
+        """Read on with another key (one proved on an answer of this gateway)."""
+        self._key = key
 
     def _url(self, path: str) -> URL:
         return URL.build(
@@ -188,21 +260,9 @@ class IcomClient:
         return self._decoded(body)
 
     def _decoded(self, body: bytes) -> IcomReply:
-        try:
-            text = decrypt(self._key, body)
-        except IcomCryptoError:
-            raise IcomError(IcomProblem.INVALID_RESPONSE, 200) from None
-        try:
-            # A control character or a byte of another encoding inside a text
-            # is the gateway's own content, not a sign of a wrong key.
-            document = json.loads(text.decode("utf-8", errors="replace"), strict=False)
-        except ValueError, RecursionError:
-            # A whole number of blocks that is no JSON: the key is wrong.
-            raise IcomError(IcomProblem.UNDECRYPTABLE, 200) from None
-        if not isinstance(document, dict):
-            raise IcomError(IcomProblem.UNDECRYPTABLE, 200)
+        reply = decode_answer(self._key, body)
         self.metrics.answered += 1
-        return IcomReply(text, document)
+        return reply
 
 
 def _status_problem(status: int) -> IcomProblem:

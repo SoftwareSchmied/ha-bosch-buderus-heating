@@ -6,6 +6,7 @@ scale is shortened (periods, pauses, timeouts) so the cycles run in seconds.
 
 import asyncio
 import json
+import logging
 from types import SimpleNamespace
 
 import pytest
@@ -89,6 +90,28 @@ async def until(hass, predicate, *, seconds=8.0):
         while not predicate():
             await settle(hass)
             await asyncio.sleep(0.02)
+
+
+def contradict(monkeypatch):
+    """The cloud's readings clearly contradict the simulated gateway's."""
+    from custom_components.bosch_buderus_heating import icom_setup
+    from custom_components.bosch_buderus_heating.icom_identity import CloudReading
+
+    monkeypatch.setattr(
+        icom_setup,
+        "readings_of",
+        lambda *args, **kwargs: {
+            "/gateway/versionFirmware": CloudReading("09.09.09", 30.0)
+        },
+    )
+
+
+def agree(monkeypatch):
+    """The cloud's readings agree with the simulated gateway's."""
+    from custom_components.bosch_buderus_heating import icom_setup
+    from tests.test_icom_setup import CLOUD
+
+    monkeypatch.setattr(icom_setup, "readings_of", lambda *args, **kwargs: CLOUD)
 
 
 def state(p):
@@ -239,48 +262,81 @@ async def test_an_unusable_document_is_a_problem_of_its_path_only(hass, gateway,
 # --------------------------------------------------------------- identity
 
 
-async def test_another_gateway_stops_the_access_before_any_value_is_read(
-    hass, gateway, fast
+async def test_another_id_at_the_start_is_judged_by_the_values(
+    hass, gateway, fast, monkeypatch, caplog
 ):
+    caplog.set_level(logging.DEBUG)
+    # X17: how the own ID relates to the cloud's is not known for every
+    # gateway; without a contradiction the access reads on (unverified here,
+    # as the test cloud has no readings to compare).
+    gateway.documents[UUID_PATH]["value"] = "999999"
+    p = build(hass, gateway)
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        assert source(p).diagnostics()["identity_check"] == {
+            "uuid": {"kind": "text", "length": 6, "chars": "digits"},
+            "uuid_matches_cloud": False,
+            "values_verdict": "insufficient",
+            "values_matching": 0,
+            "values_read": 0,
+            "method": "unverified",
+        }
+        assert "reading on: unverified" in caplog.text
+        assert "999999" not in caplog.text and "000123" not in caplog.text
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_clear_contradiction_pauses_before_any_value_is_read(
+    hass, gateway, fast, monkeypatch
+):
+    contradict(monkeypatch)
     gateway.documents[UUID_PATH]["value"] = "999999"
     p = build(hass, gateway)
     p.runtime.start()
     try:
         await until(
             hass,
-            lambda: state(p) and state(p).condition is LocalCondition.UNAVAILABLE,
+            lambda: (
+                p.runtime.connection_driver("local") is not None
+                and source(p).pause_reason == "identity_contradiction"
+            ),
         )
-        assert state(p).problem == "local_identity_conflict"
         assert not state(p).identity_confirmed and not state(p).current_observations
-        await asyncio.sleep(1.0)
-        assert gateway.requests == [UUID_PATH]
+        assert source(p).diagnostics()["identity_check"]["method"] is None
+        # Not stopped: once the values agree again, it reads on.
+        agree(monkeypatch)
+        await until(
+            hass, lambda: state(p).condition is LocalCondition.READY, seconds=20
+        )
+        assert source(p).diagnostics()["identity_check"]["method"] == "values"
     finally:
         await p.runtime.close()
 
 
 async def test_a_gateway_exchanged_later_is_noticed_after_a_pause(
-    hass, gateway, running
+    hass, gateway, running, monkeypatch
 ):
     p = running
+    contradict(monkeypatch)
     gateway.documents[UUID_PATH]["value"] = "424242"
     gateway.hang_next = 2  # two lost requests pause the access
     await until(hass, lambda: source(p).pause_reason == "connection")
     await until(
         hass,
-        lambda: (
-            state(p).condition is LocalCondition.UNAVAILABLE
-            and state(p).problem == "local_identity_conflict"
-        ),
+        lambda: source(p).pause_reason == "identity_contradiction",
+        seconds=15,
     )
-    assert not state(p).current_observations
-    requests = len(gateway.requests)
-    await asyncio.sleep(1.0)
-    assert len(gateway.requests) == requests  # stopped for good
+    assert not state(p).identity_confirmed
+    await until(hass, lambda: not state(p).current_observations, seconds=15)
 
 
 # ------------------------------------------------ identity by a fingerprint
 
 HARDWARE = "/gateway/versionHardware"
+FIRMWARE = "/gateway/versionFirmware"
 
 
 async def test_a_gateway_without_a_usable_id_is_recognised_by_its_fingerprint(
@@ -300,22 +356,100 @@ async def test_a_gateway_without_a_usable_id_is_recognised_by_its_fingerprint(
         await p.runtime.close()
 
 
-async def test_a_changed_fingerprint_stops_the_access_before_any_value(
-    hass, gateway, fast
+async def test_a_changed_version_with_a_contradiction_pauses_before_any_value(
+    hass, gateway, fast, monkeypatch
 ):
+    contradict(monkeypatch)
     gateway.value(HARDWARE, "another-model")
     p = build(hass, gateway, fingerprint=(HARDWARE, "fixture-hw"))
     p.runtime.start()
     try:
         await until(
             hass,
-            lambda: state(p) and state(p).condition is LocalCondition.UNAVAILABLE,
+            lambda: (
+                p.runtime.connection_driver("local") is not None
+                and source(p).pause_reason == "identity_contradiction"
+            ),
         )
-        assert state(p).problem == "local_identity_conflict"
         assert not state(p).identity_confirmed and not state(p).current_observations
-        await asyncio.sleep(1.0)
-        assert gateway.requests == [HARDWARE]
+        check = source(p).diagnostics()["identity_check"]
+        assert check["fingerprint_matches"] is False and check["method"] is None
+        assert "uuid" not in check
         assert (await source(p).test_connection())[0] == "other_gateway"
+        assert state(p).problem != "local_identity_conflict"
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_firmware_update_renews_the_stored_version_and_reads_on(
+    hass, gateway, fast, monkeypatch, caplog
+):
+    from custom_components.bosch_buderus_heating import icom_setup
+    from custom_components.bosch_buderus_heating.icom_identity import CloudReading
+
+    caplog.set_level(logging.DEBUG)
+    monkeypatch.setattr(
+        icom_setup,
+        "readings_of",
+        lambda *args, **kwargs: {
+            FIRMWARE: CloudReading("01.02.03", 30.0),
+            "/system/sensors/temperatures/outdoor_t1": CloudReading(5.0, 30.0),
+        },
+    )
+    p = build(hass, gateway, fingerprint=(FIRMWARE, "00.99.00"))
+    p.runtime.start()
+    try:
+        await until(
+            hass,
+            lambda: (
+                p.entry.data["connections"]["local"]["icom_access"]["fingerprint"]
+                == {"path": FIRMWARE, "value": "01.02.03"}
+            ),
+            seconds=15,
+        )
+        # The access started once more with the renewed reading and reads on.
+        await until(
+            hass,
+            lambda: (
+                p.runtime.connection_driver("local") is not None
+                and state(p)
+                and state(p).condition is LocalCondition.READY
+                and state(p).current_observations
+            ),
+            seconds=15,
+        )
+        assert p.entry.data["connections"]["local"]["icom_access"]["identity"] == (
+            "values"
+        )
+        assert "the stored version reading was renewed" in caplog.text
+        assert "01.02.03" not in caplog.text and "00.99.00" not in caplog.text
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_changed_version_with_too_little_agreement_reads_on_unverified(
+    hass, gateway, fast, monkeypatch
+):
+    from custom_components.bosch_buderus_heating import icom_setup
+    from custom_components.bosch_buderus_heating.icom_identity import CloudReading
+
+    # The firmware agrees, but no live value: too little to renew anything.
+    monkeypatch.setattr(
+        icom_setup,
+        "readings_of",
+        lambda *args, **kwargs: {FIRMWARE: CloudReading("01.02.03", 30.0)},
+    )
+    p = build(hass, gateway, fingerprint=(FIRMWARE, "00.99.00"))
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        check = source(p).diagnostics()["identity_check"]
+        assert check["method"] == "unverified" and "fingerprint_updated" not in check
+        # Too little agreement renews nothing.
+        stored = p.entry.data["connections"]["local"]["icom_access"]["fingerprint"]
+        assert stored == {"path": FIRMWARE, "value": "00.99.00"}
+        assert (await source(p).test_connection())[0] == "ok"
     finally:
         await p.runtime.close()
 
@@ -534,13 +668,18 @@ async def test_refresh_does_nothing_while_the_access_is_paused(hass, gateway, ru
     assert source(p).refresh(("/heatSources/flameStatus",)) == 0
 
 
-async def test_the_connection_test_reads_the_identity_once(hass, gateway, running):
+async def test_the_connection_test_reads_the_identity_once(
+    hass, gateway, running, monkeypatch
+):
     p = running
     before = gateway.count(UUID_PATH)
     result, millis = await source(p).test_connection()
     assert result == "ok" and millis >= 0
     assert gateway.count(UUID_PATH) == before + 1
     gateway.documents[UUID_PATH]["value"] = "777777"
+    # Another ID: the values decide, as at setup.
+    assert (await source(p).test_connection())[0] == "ok"
+    contradict(monkeypatch)
     assert (await source(p).test_connection())[0] == "other_gateway"
     gateway.status = 503
     assert (await source(p).test_connection())[0] == "paused"
@@ -629,64 +768,90 @@ async def test_removing_the_cloud_connection_ends_the_polling_probe(
 # ------------------------------------------------ unusable ID, restart, session
 
 
-@pytest.mark.parametrize("unusable", ["-1", "", None])
-async def test_an_unusable_id_after_a_pause_is_no_other_gateway(
-    hass, gateway, running, unusable
+async def test_a_contradiction_while_running_withdraws_the_values_at_once(
+    hass, gateway, running, monkeypatch
+):
+    p = running
+    assert state(p).condition is LocalCondition.READY
+    contradict(monkeypatch)
+    gateway.documents[UUID_PATH]["value"] = "424242"
+    monkeypatch.setattr(icom_source, "IDENTITY_PERIOD", 0.2)
+    await until(
+        hass,
+        lambda: source(p).pause_reason == "identity_contradiction",
+        seconds=15,
+    )
+    # Not kept during the first pause, as a confirmed access's values would be.
+    assert state(p).condition is LocalCondition.UNAVAILABLE
+    assert not state(p).identity_confirmed
+
+
+@pytest.mark.parametrize(
+    ("unusable", "kind"), [("-1", "minus_one"), ("", "empty"), (None, "none")]
+)
+async def test_an_unusable_id_after_a_pause_keeps_the_access_reading(
+    hass, gateway, running, unusable, kind
 ):
     p = running
     gateway.value(UUID_PATH, unusable)
     gateway.hang_next = 2  # two lost requests pause the access
-    await until(hass, lambda: source(p).pause_reason == "identity_unavailable")
-    assert state(p).problem != "local_identity_conflict"
-    # The access keeps looking again, with growing pauses.
-    first = gateway.count(UUID_PATH)
-    await until(hass, lambda: gateway.count(UUID_PATH) >= first + 2, seconds=15)
-    assert "local_identity_conflict" not in [
-        item["reason"] for item in source(p).diagnostics()["condition_changes"]
-    ]
-    assert state(p).problem != "local_identity_conflict"
-    gateway.value(UUID_PATH, "000123")
-    await until(hass, lambda: state(p).condition is LocalCondition.READY, seconds=20)
-    assert state(p).identity_confirmed and state(p).problem is None
+    await until(hass, lambda: source(p).pause_reason == "connection")
+    await until(
+        hass,
+        lambda: (
+            (source(p).diagnostics()["identity_check"] or {}).get("method")
+            == "unverified"
+        ),
+        seconds=15,
+    )
+    await until(hass, lambda: state(p).condition is LocalCondition.READY, seconds=15)
+    assert source(p).diagnostics()["identity_check"]["uuid"]["kind"] == kind
+    reasons = [item["reason"] for item in source(p).diagnostics()["condition_changes"]]
+    assert "local_identity_conflict" not in reasons
+    assert "identity_unavailable" not in reasons
 
 
-@pytest.mark.parametrize("unusable", ["-1", ""])
-async def test_an_unusable_id_at_the_start_waits_and_never_stops(
+@pytest.mark.parametrize("unusable", ["-1", "", "missing"])
+async def test_an_unusable_id_at_the_start_never_stops_the_access(
     hass, gateway, fast, unusable
 ):
-    gateway.value(UUID_PATH, unusable)
+    if unusable == "missing":
+        gateway.path_status[UUID_PATH] = 404
+    else:
+        gateway.value(UUID_PATH, unusable)
     p = build(hass, gateway)
     p.runtime.start()
     try:
-        await until(
-            hass,
-            lambda: (
-                p.runtime.connection_driver("local") is not None
-                and source(p).pause_reason == "identity_unavailable"
-            ),
-        )
-        await until(hass, lambda: gateway.count(UUID_PATH) >= 3, seconds=15)
-        assert state(p).problem != "local_identity_conflict"
-        assert not state(p).current_observations
-        assert (await source(p).test_connection())[0] != "ok"
-        gateway.value(UUID_PATH, "000123")
-        await until(
-            hass, lambda: state(p).condition is LocalCondition.READY, seconds=20
-        )
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        assert source(p).pause_reason is None
+        assert (await source(p).test_connection())[0] == "ok"
     finally:
         await p.runtime.close()
 
 
-async def test_a_usable_different_id_still_stops_after_a_pause(hass, gateway, running):
+async def test_a_different_id_after_an_unusable_one_is_judged_by_the_values(
+    hass, gateway, running, monkeypatch
+):
     p = running
     gateway.value(UUID_PATH, "-1")
     gateway.hang_next = 2
-    await until(hass, lambda: source(p).pause_reason == "identity_unavailable")
-    gateway.value(UUID_PATH, "424242")
+    await until(hass, lambda: source(p).pause_reason == "connection")
     await until(
         hass,
-        lambda: state(p).problem == "local_identity_conflict",
+        lambda: (
+            (source(p).diagnostics()["identity_check"] or {}).get("method")
+            == "unverified"
+        ),
         seconds=15,
+    )
+    contradict(monkeypatch)
+    gateway.value(UUID_PATH, "424242")
+    gateway.hang_next = 2
+    await until(
+        hass,
+        lambda: source(p).pause_reason == "identity_contradiction",
+        seconds=20,
     )
 
 
@@ -725,3 +890,30 @@ async def test_the_session_is_closed_without_a_session_warning(
     assert "closes the Home Assistant aiohttp session" not in caplog.text
     # Our own session, ended by us (detached), never by the entry's cleanup.
     assert created == [{"auto_cleanup": False}]
+
+
+async def test_a_missing_version_path_reads_on(hass, gateway, fast):
+    gateway.path_status[HARDWARE] = 404
+    p = build(hass, gateway, fingerprint=(HARDWARE, "fixture-hw"))
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        check = source(p).diagnostics()["identity_check"]
+        assert check["fingerprint_matches"] is None
+        assert check["method"] == "unverified"
+    finally:
+        await p.runtime.close()
+
+
+def test_only_an_access_recognised_by_values_gets_a_renewed_version(hass, gateway):
+    plain = build(hass, gateway)
+    assert (
+        plain.runtime.management.update_icom_fingerprint("local", (FIRMWARE, "x"))
+        is None
+    )
+    assert "fingerprint" not in plain.entry.data["connections"]["local"]["icom_access"]
+    assert (
+        plain.runtime.management.update_icom_fingerprint("gone", (FIRMWARE, "x"))
+        is None
+    )

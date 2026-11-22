@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Tilkoblingstest",
-        "description": "Pålogging mislyktes: passordene passer ikke til gatewayen. Kontroller dem via «Endre iCom-tilgangsdata». Vanligste årsak: det private passordet avviker fra det gatewayen har. Det er gatewayens personlige passord, satt ved paring av gatewayen i appen eller i den gamle enhetsappen. Er du usikker på hvilket det er, sett det på nytt i appen og skriv inn det samme her. Et passord på varmeapparatets display er ikke dette passordet."
+        "description": "Pålogging mislyktes: passordene passer ikke til gatewayen. Kontroller dem via «Endre iCom-tilgangsdata». Vanligste årsak: det private passordet avviker fra det gatewayen har. Det er gatewayens personlige passord (4 til 16 tegn), satt ved paring av gatewayen i appen eller i den gamle enhetsappen. Er du usikker på hvilket det er, eller er det tilbakestilt, sett det på nytt i den gamle enhetsappen med telefonen på samme Wi-Fi som gatewayen, og skriv inn det samme her. Et passord på varmeapparatets display er ikke dette passordet."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Tilkoblingstest",
+        "description": "Pålogging mislyktes: gatewayen har ikke lenger lagret noe privat passord, for eksempel etter en tilbakestilling. Sett det én gang i den gamle enhetsappen med telefonen på samme Wi-Fi som gatewayen, og skriv deretter inn det samme via «Endre iCom-tilgangsdata»."
       },
       "connection_test_certificate_changed": {
         "title": "Tilkoblingstest",
@@ -1017,7 +1021,7 @@
           "private_password": "Privat passord (enhetsappen)"
         },
         "data_description": {
-          "gateway_password": "Passordet på enhetens etikett; bindestreker ignoreres.",
+          "gateway_password": "Passordet på enhetens etikett; bindestreker og mellomrom ignoreres.",
           "private_password": "Gatewayens personlige passord, satt ved paring i appen eller i den gamle enhetsappen (for eksempel MyDevice). Det er ikke kontopassordet i den nye appen."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "Navnet kan inneholde opptil 64 utskrivbare tegn.",
       "switch_program_aircon_setting": "Velg en driftsmodus som klimaanlegget tilbyr, og for den en temperatur innenfor dets område og trinn og en av dets viftehastigheter.",
       "icom_cannot_connect": "Gatewayen svarte ikke. Kontroller adressen og at gatewayen kan nås på port 80.",
-      "icom_invalid_auth": "Svaret fra gatewayen kunne ikke dekrypteres. Kontroller begge passordene. Vanligste årsak: det private passordet avviker fra det gatewayen har. Det er gatewayens personlige passord, satt ved paring av gatewayen i appen eller i den gamle enhetsappen. Er du usikker på hvilket det er, sett det på nytt i appen og skriv inn det samme her. Et passord på varmeapparatets display er ikke dette passordet.",
+      "icom_invalid_auth": "Svaret fra gatewayen kunne ikke dekrypteres. Kontroller begge passordene; store og små bokstaver teller. Vanligste årsak: det private passordet avviker fra det gatewayen har. Det er gatewayens personlige passord (4 til 16 tegn), satt ved paring av gatewayen i appen eller i den gamle enhetsappen. Er du usikker på hvilket det er, eller er det tilbakestilt, sett det på nytt i den gamle enhetsappen med telefonen på samme Wi-Fi som gatewayen, og skriv inn det samme her. Et passord på varmeapparatets display er ikke dette passordet.",
+      "icom_no_private_password": "Gatewayen har ikke lagret noe privat passord, for eksempel etter en tilbakestilling. Sett det én gang i den gamle enhetsappen med telefonen på samme Wi-Fi som gatewayen, og prøv deretter igjen her med det samme passordet.",
       "icom_busy": "Gatewayen er opptatt. Prøv igjen om noen minutter.",
       "icom_no_identity": "Gatewayen kunne ikke knyttes til anlegget: den rapporterer ingen brukbar ID, og verdiene stemmer ikke godt nok med verdiene fra skyen. Prøv igjen om noen minutter.",
       "icom_other_gateway": "Dette er ikke gatewayen til det valgte anlegget. Kontroller adressen.",

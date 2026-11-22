@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Test pripojenia",
-        "description": "Prihlásenie zlyhalo: heslá k bráne nesedia. Skontrolujte ich cez „Zmeniť prístupové údaje iCom“. Najčastejšia príčina: súkromné heslo sa líši od hesla uloženého v bráne. Je to osobné heslo brány, nastavené pri párovaní brány v aplikácii alebo v starej aplikácii zariadenia. Ak si nie ste istí, ktoré to je, nastavte ho v aplikácii znova a zadajte sem rovnaké. Heslo na displeji vykurovacieho zariadenia nie je toto heslo."
+        "description": "Prihlásenie zlyhalo: heslá k bráne nesedia. Skontrolujte ich cez „Zmeniť prístupové údaje iCom“. Najčastejšia príčina: súkromné heslo sa líši od hesla uloženého v bráne. Je to osobné heslo brány (4 až 16 znakov), nastavené pri párovaní brány v aplikácii alebo v starej aplikácii zariadenia. Ak si nie ste istí, ktoré to je, alebo bolo resetované, nastavte ho znova v starej aplikácii zariadenia s telefónom v rovnakej Wi-Fi sieti ako brána a zadajte sem rovnaké. Heslo na displeji vykurovacieho zariadenia nie je toto heslo."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Test pripojenia",
+        "description": "Prihlásenie zlyhalo: v bráne už nie je uložené žiadne súkromné heslo, napríklad po resete. Nastavte ho raz v starej aplikácii zariadenia s telefónom v rovnakej Wi-Fi sieti ako brána a potom zadajte rovnaké cez „Zmeniť prístupové údaje iCom“."
       },
       "connection_test_certificate_changed": {
         "title": "Test pripojenia",
@@ -1017,7 +1021,7 @@
           "private_password": "Súkromné heslo (aplikácia zariadenia)"
         },
         "data_description": {
-          "gateway_password": "Heslo na štítku zariadenia; spojovníky sa ignorujú.",
+          "gateway_password": "Heslo na štítku zariadenia; spojovníky a medzery sa ignorujú.",
           "private_password": "Osobné heslo brány, nastavené pri párovaní v aplikácii alebo v starej aplikácii zariadenia (napríklad MyDevice). Nie je to heslo k účtu novej aplikácie."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "Názov môže obsahovať najviac 64 tlačiteľných znakov.",
       "switch_program_aircon_setting": "Vyberte režim, ktorý klimatizácia ponúka, a k nemu teplotu v jej rozsahu a krokoch a jednu z jej rýchlostí ventilátora.",
       "icom_cannot_connect": "Brána neodpovedala. Skontrolujte adresu a či je brána dostupná na porte 80.",
-      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá. Najčastejšia príčina: súkromné heslo sa líši od hesla uloženého v bráne. Je to osobné heslo brány, nastavené pri párovaní brány v aplikácii alebo v starej aplikácii zariadenia. Ak si nie ste istí, ktoré to je, nastavte ho v aplikácii znova a zadajte sem rovnaké. Heslo na displeji vykurovacieho zariadenia nie je toto heslo.",
+      "icom_invalid_auth": "Odpoveď brány sa nepodarilo dešifrovať. Skontrolujte obe heslá; záleží na veľkých a malých písmenách. Najčastejšia príčina: súkromné heslo sa líši od hesla uloženého v bráne. Je to osobné heslo brány (4 až 16 znakov), nastavené pri párovaní brány v aplikácii alebo v starej aplikácii zariadenia. Ak si nie ste istí, ktoré to je, alebo bolo resetované, nastavte ho znova v starej aplikácii zariadenia s telefónom v rovnakej Wi-Fi sieti ako brána a zadajte sem rovnaké. Heslo na displeji vykurovacieho zariadenia nie je toto heslo.",
+      "icom_no_private_password": "V bráne nie je uložené žiadne súkromné heslo, napríklad po resete. Nastavte ho raz v starej aplikácii zariadenia s telefónom v rovnakej Wi-Fi sieti ako brána a potom to tu skúste znova s rovnakým heslom.",
       "icom_busy": "Brána je zaneprázdnená. Skúste to znova o niekoľko minút.",
       "icom_no_identity": "Bránu nemožno priradiť k sústave: nehlási použiteľné ID a jej hodnoty sa dostatočne presne nezhodujú s hodnotami z cloudu. Skúste to znova o pár minút.",
       "icom_other_gateway": "Toto nie je brána vybranej sústavy. Skontrolujte adresu.",

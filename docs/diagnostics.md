@@ -190,7 +190,10 @@ and deleted with the entry. Each attempt has only `at` (UTC, ISO 8601, to
 the second), `step` (the dialog step, for example `local_auth`), `result`
 (`failed` or `succeeded`) and `error` (the code the dialog showed, for
 example `local_invalid_credentials`, `local_unlock_required`,
-`local_token_database_full` or `local_invalid_address`, and
+`local_token_database_full` or `local_invalid_address`; the iCom dialog notes
+its step `icom_access` with codes such as `icom_invalid_auth` or
+`icom_no_private_password`, the latter when the gateway has no private
+password stored, and
 `unexpected:<type>` with only the type of an unexpected error; `null` on
 success). A failed attempt can also have `detail`: `http_<status>` when the
 gateway answered with an error status, or `not_sent` when the input check
@@ -1453,8 +1456,31 @@ reports under `connections[].local[]` like the other local accesses, with the
 schema unchanged. Counts, ages and fixed codes only:
 
 - `identity_method`: how the gateway is recognised, `uuid` (its own ID equals the
-  cloud's gateway ID) or `values` (it reports no usable ID, so values it shares
-  with the cloud were compared at setup and one stored reading is checked again);
+  cloud's gateway ID), `values` (it reports no usable ID or another one, so values
+  it shares with the cloud were compared at setup and one stored reading is
+  checked again) or `unverified` (too few values agreed and none contradicted:
+  the access reads without an identity check);
+- `setup_check`: the setup's identity check: `uuid` (what `/gateway/uuid`
+  answered: `kind` `not_offered`, `none`, `empty`, `minus_one`,
+  `placeholder`, `number`, `text` or `other`, with `length` and `chars`
+  (`digits`, `hex` or `other`); never a character of the ID),
+  `uuid_matches_cloud`, `values_verdict` (`confirmed`, `insufficient` or
+  `contradiction`), `values_matching`, `values_read` and `method`. The same is
+  written to the debug log;
+- `identity_check`: the last identity check while running, in the same form.
+  For an access set up by its own ID that later reports no usable ID or another
+  one, and for one recognised by values whose stored version reading no longer
+  matches (`fingerprint_matches` `false`, or `null` when the path is not
+  offered), the values decide as at setup: `method` `values` or `unverified`
+  reads on, `null` (a clear contradiction) pauses with the reason
+  `identity_contradiction`. `fingerprint_updated` `true`: the values confirmed
+  the gateway with another version reading, which is stored from then on (the
+  access starts once more with it);
+- `private_password`: `variant`, the form of the typed private password that
+  fitted at setup (`exact`, or `trimmed` when only the form without spaces at
+  its start and end fitted), and `reset_detected`, whether the last answer that
+  could not be decrypted fits an empty private password (the gateway's private
+  password was reset; checked offline with that answer). Never a password or key;
 - `protocol` `icom`, `condition`, `identity_confirmed`, `problem` (a fixed code such as
   `auth_required` or `local_identity_conflict`) and `condition_changes` (the last 20
   changes with time and reason);
@@ -1463,8 +1489,8 @@ schema unchanged. Counts, ages and fixed codes only:
   `invalid_response`, `not_found`, `forbidden`, `service_unavailable` and
   `http_error`;
 - `pauses`: `in_a_row` (the current series), `total`, `remaining_seconds` and
-  the `reason` (`connection`, `rate_limited`, `identity_unavailable` or
-  `undecryptable`); a `condition_changes` reason `no_cloud_system` means that no
+  the `reason` (`connection`, `rate_limited`, `identity_unavailable`,
+  `identity_contradiction` or `undecryptable`); a `condition_changes` reason `no_cloud_system` means that no
   cloud connection supplies the system and nothing is requested;
 - `circuits`: how many heating circuits (`hc`), hot water circuits (`dhw`) and
   heat sources (`hs`) the gateway lists, `discovery_complete` and

@@ -35,7 +35,14 @@ MAX_ID_LENGTH: Final = 1024
 # cloud (when it reports no usable ID).
 IDENTITY_UUID: Final = "uuid"
 IDENTITY_VALUES: Final = "values"
+# Neither the gateway's own ID nor its values proved it, but nothing
+# contradicted the cloud either: the access is used without an identity check.
+IDENTITY_UNVERIFIED: Final = "unverified"
+IDENTITY_METHODS: Final = (IDENTITY_UUID, IDENTITY_VALUES, IDENTITY_UNVERIFIED)
 IDENTITY_UUID_PATH: Final = "/gateway/uuid"
+# Which form of the typed private password the setup proved: as typed, or
+# without spaces at its start and end. Only a code for the diagnostics.
+PRIVATE_PASSWORD_VARIANTS: Final = ("exact", "trimmed")
 
 
 class IcomAccessError(ValueError):
@@ -58,6 +65,86 @@ def comparable_id(value: object) -> str | None:
         return None
     text = re.sub(r"[^0-9a-z]", "", value.lower())
     return text if len(text) >= 3 else None
+
+
+# The readings of /gateway/uuid that only stand for "no ID".
+_PLACEHOLDER_NUMBERS: Final = (-1, 0)
+_HEX_DIGITS: Final = frozenset("0123456789abcdefABCDEF")
+
+
+def _characters(text: str) -> str:
+    """Which characters a reported ID holds: digits only, hex digits or others."""
+    if text.isascii() and text.isdigit():
+        return "digits"
+    if text and set(text) <= _HEX_DIGITS:
+        return "hex"
+    return "other"
+
+
+def describe_reported_id(value: object, *, read: bool = True) -> dict[str, object]:
+    """What /gateway/uuid answered, for the debug log and the diagnostics.
+
+    Only its kind, its length and which characters it holds (digits only, hex
+    digits or others); never a character of the ID itself.
+    """
+    if not read:
+        return {"kind": "not_offered"}
+    if value is None:
+        return {"kind": "none"}
+    if isinstance(value, bool):
+        return {"kind": "other", "type": "bool"}
+    if isinstance(value, int | float):
+        if value == -1:
+            return {"kind": "minus_one"}
+        if value in _PLACEHOLDER_NUMBERS:
+            return {"kind": "placeholder"}
+        return {
+            "kind": "number",
+            "length": len(str(abs(int(value)))) if math.isfinite(value) else 0,
+            "chars": "digits",
+        }
+    if not isinstance(value, str):
+        return {"kind": "other", "type": type(value).__name__}
+    text = value.strip()
+    if not text:
+        return {"kind": "empty", "length": len(value)}
+    if text == "-1":
+        return {"kind": "minus_one"}
+    return {
+        # "x", "0" and the like stand for no ID.
+        "kind": "placeholder" if comparable_id(value) is None else "text",
+        "length": len(value),
+        "chars": _characters(text),
+    }
+
+
+def safe_setup_check(value: object) -> dict[str, object]:
+    """The stored notes of an identity check, known fields only."""
+    if not isinstance(value, Mapping):
+        return {}
+    result: dict[str, object] = {}
+    uuid = value.get("uuid")
+    if isinstance(uuid, Mapping):
+        result["uuid"] = {
+            key: item
+            for key, item in uuid.items()
+            if (key in ("kind", "type", "chars") and isinstance(item, str))
+            or (key == "length" and type(item) is int)
+            if not isinstance(item, str) or len(item) <= 32
+        }
+    for key in ("uuid_matches_cloud",):
+        if value.get(key) in (True, False, None) and key in value:
+            result[key] = value[key]
+    verdict = value.get("values_verdict")
+    if verdict in ("confirmed", "contradiction", "insufficient"):
+        result["values_verdict"] = verdict
+    for key in ("values_matching", "values_read"):
+        number = value.get(key)
+        if type(number) is int and 0 <= number <= 100:
+            result[key] = number
+    if value.get("method") in IDENTITY_METHODS:
+        result["method"] = value["method"]
+    return result
 
 
 def gateway_ids_match(local: object, expected: str) -> bool:
@@ -84,6 +171,11 @@ class IcomAccess:
     identity_method: str = IDENTITY_UUID
     fingerprint_path: str = field(repr=False, default="")
     fingerprint: str = field(repr=False, default="")
+    private_password_variant: str = field(
+        repr=False, default=PRIVATE_PASSWORD_VARIANTS[0]
+    )
+    # Notes of the setup's identity check (kinds, counts and a verdict only).
+    setup_check: Mapping[str, object] = field(repr=False, default_factory=dict)
 
     @property
     def key(self) -> bytes:
@@ -94,6 +186,9 @@ class IcomAccess:
         """The resource read to recognise the gateway again."""
         if self.identity_method == IDENTITY_VALUES:
             return self.fingerprint_path
+        if self.identity_method == IDENTITY_UNVERIFIED:
+            # Read only to see that the gateway answers with this key.
+            return self.fingerprint_path or IDENTITY_UUID_PATH
         return IDENTITY_UUID_PATH
 
     def usable(self, reported: object) -> bool:
@@ -102,12 +197,19 @@ class IcomAccess:
         An ID such as "-1" or an empty one says nothing about the gateway; it
         neither confirms nor contradicts the stored one.
         """
+        if self.identity_method == IDENTITY_UNVERIFIED:
+            return True
         if self.identity_method == IDENTITY_VALUES:
             return text_of(reported) is not None
         return comparable_id(reported) is not None
 
     def confirms(self, reported: object) -> bool:
-        """Whether a reading of the identity resource is still this gateway."""
+        """Whether a reading of the identity resource is still this gateway.
+
+        An unverified access has nothing to compare with: every answer counts.
+        """
+        if self.identity_method == IDENTITY_UNVERIFIED:
+            return True
         if self.identity_method == IDENTITY_VALUES:
             return text_of(reported) == self.fingerprint
         return gateway_ids_match(reported, self.local_id)
@@ -123,17 +225,33 @@ def icom_connection_data(
     port: int = ICOM_DEFAULT_PORT,
     local_id: str | None = None,
     fingerprint: tuple[str, str] | None = None,
+    private_password_variant: str = PRIVATE_PASSWORD_VARIANTS[0],
+    identity_method: str | None = None,
+    setup_check: Mapping[str, object] | None = None,
 ) -> dict[str, Any]:
     """The stored fields of an iCom connection, without the common counters."""
+    if private_password_variant not in PRIVATE_PASSWORD_VARIANTS:
+        raise IcomAccessError("invalid_icom_access")
+    method = identity_method or (
+        IDENTITY_UUID if fingerprint is None else IDENTITY_VALUES
+    )
+    if method not in IDENTITY_METHODS or (
+        method == IDENTITY_VALUES and fingerprint is None
+    ):
+        raise IcomAccessError("invalid_icom_identity")
     record: dict[str, Any] = {
         "version": ICOM_ACCESS_VERSION,
         "gateway_id": gateway_id,
         "local_id": local_id or gateway_id,
         "verified_at": verified_at,
+        "private_password_variant": private_password_variant,
     }
-    if fingerprint is not None:
-        record["identity"] = IDENTITY_VALUES
+    if method != IDENTITY_UUID:
+        record["identity"] = method
+    if fingerprint is not None and method != IDENTITY_UUID:
         record["fingerprint"] = {"path": fingerprint[0], "value": fingerprint[1]}
+    if setup_check:
+        record["setup_check"] = safe_setup_check(setup_check)
     return {
         "endpoint": {"host": host, "port": port, "transport": ICOM_TRANSPORT},
         "credentials": {
@@ -197,10 +315,17 @@ def load_icom_access(connection: Mapping[str, object]) -> IcomAccess:
     if type(verified) not in (int, float) or not math.isfinite(cast(float, verified)):
         raise IcomAccessError("invalid_icom_verification_time")
     method = record.get("identity", IDENTITY_UUID)
-    if method not in (IDENTITY_UUID, IDENTITY_VALUES):
+    if method not in IDENTITY_METHODS:
         raise IcomAccessError("invalid_icom_identity")
+    # Accesses saved before this code was kept were always used as typed.
+    variant = record.get("private_password_variant", PRIVATE_PASSWORD_VARIANTS[0])
+    if variant not in PRIVATE_PASSWORD_VARIANTS:
+        raise IcomAccessError("invalid_icom_access")
     path = text = ""
-    if method == IDENTITY_VALUES:
+    # An unverified access keeps a fingerprint only when one was read.
+    if method == IDENTITY_VALUES or (
+        method == IDENTITY_UNVERIFIED and record.get("fingerprint") is not None
+    ):
         stored = record.get("fingerprint")
         if not isinstance(stored, Mapping):
             raise IcomAccessError("invalid_icom_identity")
@@ -223,4 +348,6 @@ def load_icom_access(connection: Mapping[str, object]) -> IcomAccess:
         method,
         path,
         text,
+        variant,
+        safe_setup_check(record.get("setup_check")),
     )

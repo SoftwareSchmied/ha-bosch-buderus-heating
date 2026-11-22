@@ -517,7 +517,11 @@
       },
       "connection_test_auth_icom": {
         "title": "Connection test",
-        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway, set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, set it again in the app and enter the same one here. A password on the heater display is not this password."
+        "description": "Sign-in failed: the passwords do not fit the gateway. Check them via “Change iCom access data”. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway (4 to 16 characters), set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, or after a reset, set it again in the old device app with the phone in the same Wi-Fi as the gateway and enter the same one here. A password on the heater display is not this password."
+      },
+      "connection_test_auth_icom_reset": {
+        "title": "Connection test",
+        "description": "Sign-in failed: the gateway has no private password stored any more, for example after a reset. Set it once in the old device app with the phone in the same Wi-Fi as the gateway, then enter the same one via “Change iCom access data”."
       },
       "connection_test_certificate_changed": {
         "title": "Connection test",
@@ -1017,7 +1021,7 @@
           "private_password": "Private password (device app)"
         },
         "data_description": {
-          "gateway_password": "The password on the device sticker; dashes are ignored.",
+          "gateway_password": "The password on the device sticker; dashes and spaces are ignored.",
           "private_password": "The personal password of the gateway, set when pairing it in the app or in the old device app (for example MyDevice). It is not the account password of the new app."
         }
       },
@@ -1151,7 +1155,8 @@
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
       "switch_program_aircon_setting": "Choose a mode the air conditioner offers and, for it, a temperature within its range and steps and one of its fan speeds.",
       "icom_cannot_connect": "The gateway did not answer. Check the address and that the gateway can be reached on port 80.",
-      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway, set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, set it again in the app and enter the same one here. A password on the heater display is not this password.",
+      "icom_invalid_auth": "The gateway's answer could not be decrypted. Check both passwords; upper and lower case count. Common cause: the private password differs from the one the gateway has. It is the personal password of the gateway (4 to 16 characters), set when pairing the gateway in the app or in the old device app. If you are not sure which one it is, or after a reset, set it again in the old device app with the phone in the same Wi-Fi as the gateway and enter the same one here. A password on the heater display is not this password.",
+      "icom_no_private_password": "The gateway has no private password stored, for example after a reset. Set it once in the old device app with the phone in the same Wi-Fi as the gateway, then try again here with the same password.",
       "icom_busy": "The gateway is busy. Try again in a few minutes.",
       "icom_no_identity": "The gateway could not be matched with the system: it reports no usable ID, and its values do not agree closely enough with the cloud values. Try again in a few minutes.",
       "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",

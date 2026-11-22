@@ -16,7 +16,11 @@ from typing import Any
 
 from aiohttp import web
 
-from custom_components.bosch_buderus_heating.icom_crypto import derive_key, encrypt
+from custom_components.bosch_buderus_heating.icom_crypto import (
+    derive_key,
+    encrypt,
+    reset_key,
+)
 
 FIXTURE = Path(__file__).parents[1] / "fixtures/contracts/icom/gateway-shapes.json"
 
@@ -43,7 +47,12 @@ class SimulatedIcomGateway:
             "value": gateway_id,
             "writeable": 0,
         }
-        self.key = derive_key(gateway_password, private_password)
+        # An empty private password: a gateway whose private password was reset.
+        self.key = (
+            derive_key(gateway_password, private_password)
+            if private_password
+            else reset_key(gateway_password)
+        )
         self.requests: list[str] = []
         self.concurrent = 0
         self.max_concurrent = 0
