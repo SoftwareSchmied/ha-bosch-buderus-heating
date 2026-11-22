@@ -1,0 +1,570 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "System component table, schema 1",
+  "description": "Type numbers and places of system components with their names, and the few roles and flags that change what the integration does. Roles and flags only have the basis rule, observed or documented.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "table_version",
+    "updated",
+    "documented_sources",
+    "places",
+    "components",
+    "roles",
+    "flags"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "table_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "documented_sources": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9.-]+\\.[a-z]{2,}(/[A-Za-z0-9._/-]+)?$"
+      }
+    },
+    "places": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "place",
+          "key",
+          "name",
+          "basis"
+        ],
+        "properties": {
+          "place": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "key": {
+            "enum": [
+              "heat_generator_control",
+              "basic_controller",
+              "system_controller",
+              "pool",
+              "remote_hc1_legacy",
+              "remote_hc2_legacy",
+              "remote_hc3_legacy",
+              "remote_hc4_legacy",
+              "fresh_water",
+              "solar",
+              "remote_hc1",
+              "remote_hc2",
+              "remote_hc3",
+              "remote_hc4",
+              "gateway",
+              "gateway_service",
+              "radio",
+              "ventilation",
+              "hybrid_manager"
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[!-~]([ -~]*[!-~])?$",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "basis": {
+            "enum": [
+              "name",
+              "rule",
+              "observed",
+              "documented"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[!-~]([ -~]*[!-~])?$",
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^https://",
+            "maxLength": 300
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "name"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[!-~]([ -~]*[!-~])?$",
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "documented"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note",
+                "source"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "enum": [
+                    "name",
+                    "rule",
+                    "observed"
+                  ]
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "name",
+          "basis"
+        ],
+        "properties": {
+          "type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[!-~]([ -~]*[!-~])?$",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "aliases": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[!-~]([ -~]*[!-~])?$",
+              "maxLength": 64
+            }
+          },
+          "basis": {
+            "enum": [
+              "name",
+              "rule",
+              "observed",
+              "documented"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[!-~]([ -~]*[!-~])?$",
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^https://",
+            "maxLength": 300
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "name"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[!-~]([ -~]*[!-~])?$",
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "documented"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note",
+                "source"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "enum": [
+                    "name",
+                    "rule",
+                    "observed"
+                  ]
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "place",
+          "role",
+          "basis"
+        ],
+        "properties": {
+          "type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "place": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 999999
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              "heat_source",
+              "outdoor_unit",
+              "hybrid_manager",
+              "system_controller",
+              "gateway"
+            ]
+          },
+          "basis": {
+            "enum": [
+              "rule",
+              "observed",
+              "documented"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[!-~]([ -~]*[!-~])?$",
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^https://",
+            "maxLength": 300
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "documented"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note",
+                "source"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "enum": [
+                    "rule",
+                    "observed"
+                  ]
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "flag",
+          "basis"
+        ],
+        "properties": {
+          "type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "flag": {
+            "enum": [
+              "hmi800_hp_light"
+            ]
+          },
+          "basis": {
+            "enum": [
+              "rule",
+              "observed",
+              "documented"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[!-~]([ -~]*[!-~])?$",
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^https://",
+            "maxLength": 300
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "documented"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note",
+                "source"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "enum": [
+                    "rule",
+                    "observed"
+                  ]
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

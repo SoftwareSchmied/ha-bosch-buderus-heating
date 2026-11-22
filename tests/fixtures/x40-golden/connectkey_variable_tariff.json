@@ -1,0 +1,637 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_current_setpoint",
+   "original_name": "System – Current setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:ch:currentSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_high_price_setpoint_delta",
+   "original_name": "System – High-price setpoint delta",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:ch:highPriceDelta"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_low_price_setpoint_delta",
+   "original_name": "System – Low-price setpoint delta",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:ch:lowPriceDelta"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_mid_price_setpoint",
+   "original_name": "System – Mid-price setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:ch:midPriceSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_tariff_optimization",
+   "original_name": "System – Tariff optimization",
+   "platform": "sensor",
+   "translation_key": "on_off_state",
+   "unique_id": "gateway-one:system:variableTariff:ch:optimization"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_status",
+   "original_name": "System – Status",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:ch:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_current_price_category",
+   "original_name": "System – Current price category",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:currentPriceCatagorization"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_current_operation_mode",
+   "original_name": "System – Current operation mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:dhw:currentOpmode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_high_price_enabled",
+   "original_name": "System – High price enabled",
+   "platform": "sensor",
+   "translation_key": "on_off_state",
+   "unique_id": "gateway-one:system:variableTariff:dhw:highPriceEnable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_low_price_enabled",
+   "original_name": "System – Low price enabled",
+   "platform": "sensor",
+   "translation_key": "on_off_state",
+   "unique_id": "gateway-one:system:variableTariff:dhw:lowPriceEnable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_tariff_optimization_2",
+   "original_name": "System – Tariff optimization",
+   "platform": "sensor",
+   "translation_key": "on_off_state",
+   "unique_id": "gateway-one:system:variableTariff:dhw:optimization"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_status_2",
+   "original_name": "System – Status",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:dhw:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_price_info",
+   "original_name": "System – Price Info",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:priceInfo"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_variable_tariff_support",
+   "original_name": "System – Variable tariff – support",
+   "platform": "sensor",
+   "translation_key": "support_status",
+   "unique_id": "gateway-one:system:variableTariff:supportStatus:values"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_tariff_id",
+   "original_name": "System – Tariff ID",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:variableTariff:tariffId"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:k40",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "base resources of connectkey/variable-tariff-k40.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "connectkey/variable-tariff-k40.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/system/variableTariff/ch/currentSetpoint",
+      "/system/variableTariff/ch/highPriceDelta",
+      "/system/variableTariff/ch/lowPriceDelta",
+      "/system/variableTariff/ch/midPriceSetpoint",
+      "/system/variableTariff/ch/optimization",
+      "/system/variableTariff/ch/status",
+      "/system/variableTariff/currentPriceCatagorization",
+      "/system/variableTariff/dhw/currentOpmode",
+      "/system/variableTariff/dhw/highPriceEnable",
+      "/system/variableTariff/dhw/lowPriceEnable",
+      "/system/variableTariff/dhw/optimization",
+      "/system/variableTariff/dhw/status",
+      "/system/variableTariff/priceInfo",
+      "/system/variableTariff/tariffId"
+     ]
+    ],
+    "queries": {},
+    "read_count": 14,
+    "reads": {
+     "/system/variableTariff/ch/currentSetpoint": 1,
+     "/system/variableTariff/ch/highPriceDelta": 1,
+     "/system/variableTariff/ch/lowPriceDelta": 1,
+     "/system/variableTariff/ch/midPriceSetpoint": 1,
+     "/system/variableTariff/ch/optimization": 1,
+     "/system/variableTariff/ch/status": 1,
+     "/system/variableTariff/currentPriceCatagorization": 1,
+     "/system/variableTariff/dhw/currentOpmode": 1,
+     "/system/variableTariff/dhw/highPriceEnable": 1,
+     "/system/variableTariff/dhw/lowPriceEnable": 1,
+     "/system/variableTariff/dhw/optimization": 1,
+     "/system/variableTariff/dhw/status": 1,
+     "/system/variableTariff/priceInfo": 1,
+     "/system/variableTariff/tariffId": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 5,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/system/appliance/enabled",
+      "/system/appliance/model",
+      "/system/appliance/versionFirmware",
+      "/system/awayMode/temperature",
+      "/system/energyTariff/electricity",
+      "/system/energyTariff/gas",
+      "/system/energyTariff/oil",
+      "/system/energyTariff/pv",
+      "/system/globalSeasonOptimizer/currentMode",
+      "/system/healthStatus",
+      "/system/holidayMode",
+      "/system/holidayModes",
+      "/system/iSRC/installationStatus",
+      "/system/iSRC/supportStatus",
+      "/system/lowNoise/duration",
+      "/system/lowNoise/mode",
+      "/system/powerGuard/active",
+      "/system/powerLimitation/active",
+      "/system/seasonOptimizer/coolingThreshold",
+      "/system/seasonOptimizer/heatingThreshold",
+      "/system/seasonOptimizer/mode",
+      "/system/sensors/temperatures/chimney",
+      "/system/sensors/temperatures/return",
+      "/system/sensors/temperatures/supply_t1",
+      "/system/sensors/temperatures/supply_t1_setpoint",
+      "/system/silentMode/enabled",
+      "/system/silentMode/powerReduction",
+      "/system/silentMode/startTime",
+      "/system/silentMode/stopTime",
+      "/system/systemOfUnits"
+     ],
+     [
+      "/system/variableTariff"
+     ],
+     [
+      "/system/variableTariff/ch/currentSetpoint",
+      "/system/variableTariff/ch/highPriceDelta",
+      "/system/variableTariff/ch/lowPriceDelta",
+      "/system/variableTariff/ch/midPriceSetpoint",
+      "/system/variableTariff/ch/optimization",
+      "/system/variableTariff/ch/status",
+      "/system/variableTariff/currentPriceCatagorization",
+      "/system/variableTariff/dhw/currentOpmode",
+      "/system/variableTariff/dhw/highPriceEnable",
+      "/system/variableTariff/dhw/lowPriceEnable",
+      "/system/variableTariff/dhw/optimization",
+      "/system/variableTariff/dhw/status",
+      "/system/variableTariff/priceInfo",
+      "/system/variableTariff/supportStatus",
+      "/system/variableTariff/tariffId"
+     ]
+    ],
+    "queries": {},
+    "read_count": 64,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/system/appliance/enabled": 1,
+     "/system/appliance/model": 1,
+     "/system/appliance/versionFirmware": 1,
+     "/system/awayMode/temperature": 1,
+     "/system/energyTariff/electricity": 1,
+     "/system/energyTariff/gas": 1,
+     "/system/energyTariff/oil": 1,
+     "/system/energyTariff/pv": 1,
+     "/system/globalSeasonOptimizer/currentMode": 1,
+     "/system/healthStatus": 1,
+     "/system/holidayMode": 1,
+     "/system/holidayModes": 1,
+     "/system/iSRC/installationStatus": 1,
+     "/system/iSRC/supportStatus": 1,
+     "/system/lowNoise/duration": 1,
+     "/system/lowNoise/mode": 1,
+     "/system/powerGuard/active": 1,
+     "/system/powerLimitation/active": 1,
+     "/system/seasonOptimizer/coolingThreshold": 1,
+     "/system/seasonOptimizer/heatingThreshold": 1,
+     "/system/seasonOptimizer/mode": 1,
+     "/system/sensors/temperatures/chimney": 1,
+     "/system/sensors/temperatures/return": 1,
+     "/system/sensors/temperatures/supply_t1": 1,
+     "/system/sensors/temperatures/supply_t1_setpoint": 1,
+     "/system/silentMode/enabled": 1,
+     "/system/silentMode/powerReduction": 1,
+     "/system/silentMode/startTime": 1,
+     "/system/silentMode/stopTime": 1,
+     "/system/systemOfUnits": 1,
+     "/system/variableTariff": 1,
+     "/system/variableTariff/ch/currentSetpoint": 1,
+     "/system/variableTariff/ch/highPriceDelta": 1,
+     "/system/variableTariff/ch/lowPriceDelta": 1,
+     "/system/variableTariff/ch/midPriceSetpoint": 1,
+     "/system/variableTariff/ch/optimization": 1,
+     "/system/variableTariff/ch/status": 1,
+     "/system/variableTariff/currentPriceCatagorization": 1,
+     "/system/variableTariff/dhw/currentOpmode": 1,
+     "/system/variableTariff/dhw/highPriceEnable": 1,
+     "/system/variableTariff/dhw/lowPriceEnable": 1,
+     "/system/variableTariff/dhw/optimization": 1,
+     "/system/variableTariff/dhw/status": 1,
+     "/system/variableTariff/priceInfo": 1,
+     "/system/variableTariff/supportStatus": 1,
+     "/system/variableTariff/tariffId": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

@@ -1,0 +1,22 @@
+{
+  "header": {
+    "device_class": "air_conditioner",
+    "firmware_family": "1",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "air conditioner on a PointT gateway"
+  },
+  "gateway": null,
+  "no_block": true,
+  "cloud": null,
+  "local": null,
+  "values": {},
+  "expected": {
+    "plant_kind": null,
+    "fuel": null,
+    "cascade": null,
+    "evidence": [],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

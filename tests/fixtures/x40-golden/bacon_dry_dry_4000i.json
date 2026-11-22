@@ -1,0 +1,370 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-A)",
+   "sw_version": null,
+   "via_device": null
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-B)",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_a_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.appliance_rial_a_defrosting",
+   "original_name": "Defrosting",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_dry_defrosting",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_defrosting"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.appliance_rial_a_reported_device_error",
+   "original_name": "Reported device error",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_dry_device_error",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_device_error"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.appliance_rial_a_idle_state",
+   "original_name": "Idle state",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_dry_idle",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_idle"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.appliance_rial_a_water_tank_full",
+   "original_name": "Water tank full",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_dry_water_tank_full",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_water_tank_full"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_b_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "humidifier.appliance_rial_a_dehumidifier",
+   "original_name": "Dehumidifier",
+   "platform": "humidifier",
+   "translation_key": "bacon_dry_dehumidifier",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_dehumidifier"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_relative_humidity",
+   "original_name": "Relative humidity",
+   "platform": "sensor",
+   "translation_key": "bacon_dry_humidity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_humidity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_operating_status",
+   "original_name": "Operating status",
+   "platform": "sensor",
+   "translation_key": "bacon_dry_operating_status",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_operating_status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_room_temperature",
+   "original_name": "Room temperature",
+   "platform": "sensor",
+   "translation_key": "bacon_dry_temperature",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_temperature"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_display",
+   "original_name": "Display",
+   "platform": "switch",
+   "translation_key": "bacon_dry_display",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_display"
+  }
+ ],
+ "provenance": {
+  "device_class": "bacon:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "separately connected cloud device (dry, dry_4000i)",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "bacon-dry/dry_4000i.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "publish": 0
+   },
+   "setup": {
+    "publish": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-A) Device connection"
+   },
+   "state": "on"
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_defrosting": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Defrosting"
+   },
+   "state": "off"
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_device_error": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Reported device error"
+   },
+   "state": "off"
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_idle": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Idle state"
+   },
+   "state": "off"
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_water_tank_full": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Water tank full"
+   },
+   "state": "off"
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-B) Device connection"
+   },
+   "state": "on"
+  },
+  "humidifier bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_dehumidifier": {
+   "attributes": {
+    "action": "drying",
+    "available_modes": [
+     "auto",
+     "night"
+    ],
+    "current_humidity": 60.0,
+    "device_class": "dehumidifier",
+    "friendly_name": "Appliance (…rial-A) Dehumidifier",
+    "humidity": 55,
+    "max_humidity": 65,
+    "min_humidity": 40,
+    "mode": "auto",
+    "supported_features": 1,
+    "target_humidity_step": 5
+   },
+   "state": "on"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_humidity": {
+   "attributes": {
+    "device_class": "humidity",
+    "friendly_name": "Appliance (…rial-A) Relative humidity",
+    "state_class": "measurement",
+    "unit_of_measurement": "%"
+   },
+   "state": "60.0"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_operating_status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Appliance (…rial-A) Operating status",
+    "options": [
+     "off",
+     "running",
+     "idle",
+     "water_tank_full",
+     "defrosting",
+     "device_error"
+    ]
+   },
+   "state": "running"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_temperature": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Appliance (…rial-A) Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "22.5"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_display": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Display"
+   },
+   "state": "on"
+  }
+ },
+ "writes": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_defrosting": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_device_error": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_idle": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_water_tank_full": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "humidifier bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_dehumidifier": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_humidity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_operating_status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_temperature": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:dry_display": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

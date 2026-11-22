@@ -1,0 +1,46 @@
+{
+  "header": {
+    "device_class": "mx400",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "boiler without hot water listing"
+  },
+  "gateway": {
+    "device_type": "MX400",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "195",
+      "Tok": "8",
+      "Ver": "3.1"
+    },
+    {
+      "Id": "17",
+      "Tok": "72",
+      "Ver": "12.34.56"
+    },
+    {
+      "Id": "17",
+      "Tok": "72",
+      "Ver": "12.34.56"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/system/type": "boiler",
+    "/heatSources/hs1/type": "OilBoiler"
+  },
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "oil",
+    "cascade": false,
+    "evidence": [
+      "reported_heat_source_type",
+      "reported_system_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

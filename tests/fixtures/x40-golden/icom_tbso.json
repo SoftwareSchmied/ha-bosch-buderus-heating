@@ -1,0 +1,333 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "icom",
+   "model_id": null,
+   "name": "icom",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.icom_variable_tariff_active",
+   "original_name": "Variable tariff active",
+   "platform": "binary_sensor",
+   "translation_key": "variable_tariff_active",
+   "unique_id": "gateway-one:application:tbso:enable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.icom_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.icom_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.icom_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.icom_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.icom_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.icom_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.icom_tariff_id",
+   "original_name": "Tariff ID",
+   "platform": "sensor",
+   "translation_key": "tariff_id",
+   "unique_id": "gateway-one:application:tbso:electricity:tariffID"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.icom_system_enable",
+   "original_name": "System – Enable",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:application:tbso:enable"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:icom",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "base resources of icom/tbso.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "icom/tbso.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 0,
+    "bulks": [],
+    "queries": {},
+    "read_count": 0,
+    "reads": {},
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 3,
+    "bulks": [
+     [
+      "/application/tbso/electricity/tariffID",
+      "/application/tbso/enable"
+     ],
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/notifications"
+     ]
+    ],
+    "queries": {},
+    "read_count": 20,
+    "reads": {
+     "/application/tbso/electricity/tariffID": 1,
+     "/application/tbso/enable": 1,
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "icom Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "icom System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "icom System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "icom Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "icom Active notifications"
+   },
+   "state": "unavailable"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

@@ -1,0 +1,49 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "heat pump with a solar circuit"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "8",
+      "Tok": "8",
+      "Ver": "1.0"
+    },
+    {
+      "Id": "48",
+      "Tok": "48",
+      "Ver": "1.0"
+    },
+    {
+      "Id": "17",
+      "Tok": "72",
+      "Ver": "12.34.56"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/system/type": "heatpump_single",
+    "/heatSources/hs1/type": "Heatpump",
+    "/heatSources/hs1/heatPumpType": "air_water",
+    "/system/bus": "EMS2_0"
+  },
+  "expected": {
+    "plant_kind": "heat_pump",
+    "fuel": null,
+    "cascade": false,
+    "evidence": [
+      "reported_heat_pump_type",
+      "reported_heat_source_type",
+      "reported_system_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

@@ -1,0 +1,266 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-A)",
+   "sw_version": null,
+   "via_device": null
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-B)",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_a_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_b_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.appliance_rial_a_air_conditioner",
+   "original_name": "Air conditioner",
+   "platform": "climate",
+   "translation_key": "bacon_rac",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_electrical_energy_cooling",
+   "original_name": "Total electrical energy (cooling)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_cooling",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_cooling"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_electrical_energy_dehumidifying",
+   "original_name": "Total electrical energy (dehumidifying)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_dry",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_dry"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_electrical_energy_fan_only",
+   "original_name": "Total electrical energy (fan only)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_fan",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_fan"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_thermal_output_cooling",
+   "original_name": "Total thermal output (cooling)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_heat_output_cooling",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_heat_output_cooling"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_thermal_output_heating",
+   "original_name": "Total thermal output (heating)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_heat_output_heating",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_heat_output_heating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_total_electrical_energy_heating",
+   "original_name": "Total electrical energy (heating)",
+   "platform": "sensor",
+   "translation_key": "bacon_rac_energy_heating",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:rac_energy_heating"
+  }
+ ],
+ "provenance": {
+  "device_class": "bacon:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "separately connected cloud device (rac, ac_186i3)",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "bacon-rac/ac_186i3.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "publish": 0
+   },
+   "setup": {
+    "publish": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-A) Device connection"
+   },
+   "state": "on"
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-B) Device connection"
+   },
+   "state": "on"
+  },
+  "climate bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:climate": {
+   "attributes": {
+    "current_temperature": 22.5,
+    "fan_mode": "auto",
+    "fan_modes": [
+     "auto",
+     "quiet",
+     "low",
+     "medium",
+     "high",
+     "turbo"
+    ],
+    "friendly_name": "Appliance (…rial-A) Air conditioner",
+    "hvac_modes": [
+     "off",
+     "auto",
+     "heat",
+     "cool",
+     "dry",
+     "fan_only"
+    ],
+    "max_temp": 30,
+    "min_temp": 17,
+    "supported_features": 937,
+    "swing_horizontal_mode": "on",
+    "swing_horizontal_modes": [
+     "off",
+     "on"
+    ],
+    "swing_mode": "off",
+    "swing_modes": [
+     "off",
+     "on"
+    ],
+    "target_temp_step": 1,
+    "temperature": 22,
+    "temperature_unit": "°C"
+   },
+   "state": "cool"
+  }
+ },
+ "writes": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:climate": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

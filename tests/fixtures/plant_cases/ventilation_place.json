@@ -1,0 +1,34 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "no heat appliance, ventilation place"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "81",
+      "Tok": "81"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "No_Appliance",
+    "/system/bus": "EMS2_0"
+  },
+  "expected": {
+    "plant_kind": "ventilation",
+    "fuel": null,
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

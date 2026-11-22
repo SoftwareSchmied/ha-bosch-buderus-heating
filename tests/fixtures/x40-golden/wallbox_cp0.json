@@ -1,0 +1,363 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": "Synthetic wallbox",
+   "model_id": null,
+   "name": "Wallbox",
+   "sw_version": "5.1.0",
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "button.wallbox_pause_charging",
+   "original_name": "Pause charging",
+   "platform": "button",
+   "translation_key": "wallbox_pause_charging",
+   "unique_id": "gateway-one:wallbox:cp0:pause_charging"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "button.wallbox_start_charging",
+   "original_name": "Start charging",
+   "platform": "button",
+   "translation_key": "wallbox_start_charging",
+   "unique_id": "gateway-one:wallbox:cp0:start_charging"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "number.wallbox_charging_current_limit",
+   "original_name": "Charging current limit",
+   "platform": "number",
+   "translation_key": "wallbox_charging_current_limit",
+   "unique_id": "gateway-one:wallbox:cp0:charging_current_limit"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_charging_start",
+   "original_name": "Charging start",
+   "platform": "sensor",
+   "translation_key": "wallbox_charging_start",
+   "unique_id": "gateway-one:wallbox:cp0:charging_start"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_reported_current_limit",
+   "original_name": "Reported current limit",
+   "platform": "sensor",
+   "translation_key": "wallbox_current_limit",
+   "unique_id": "gateway-one:wallbox:cp0:current_limit"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_active_charging_time",
+   "original_name": "Active charging time",
+   "platform": "sensor",
+   "translation_key": "wallbox_duration",
+   "unique_id": "gateway-one:wallbox:cp0:duration"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_reported_charged_energy",
+   "original_name": "Reported charged energy",
+   "platform": "sensor",
+   "translation_key": "wallbox_energy",
+   "unique_id": "gateway-one:wallbox:cp0:energy"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_total_charged_energy",
+   "original_name": "Total charged energy",
+   "platform": "sensor",
+   "translation_key": "wallbox_energy_total",
+   "unique_id": "gateway-one:wallbox:cp0:energy_total"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.wallbox_hardware_current_limit",
+   "original_name": "Hardware current limit",
+   "platform": "sensor",
+   "translation_key": "wallbox_hardware_current_limit",
+   "unique_id": "gateway-one:wallbox:cp0:hardware_current_limit"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_charging_power",
+   "original_name": "Charging power",
+   "platform": "sensor",
+   "translation_key": "wallbox_power",
+   "unique_id": "gateway-one:wallbox:cp0:power"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.wallbox_wallbox_role",
+   "original_name": "Wallbox role",
+   "platform": "sensor",
+   "translation_key": "wallbox_role",
+   "unique_id": "gateway-one:wallbox:cp0:role"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.wallbox_charging_state",
+   "original_name": "Charging state",
+   "platform": "sensor",
+   "translation_key": "wallbox_state",
+   "unique_id": "gateway-one:wallbox:cp0:state"
+  }
+ ],
+ "provenance": {
+  "device_class": "wallbox:commodule",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "wallbox on a PointT gateway (pointt-wallbox/cp0.json)",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "pointt-wallbox/cp0.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "reads": {
+     "info/extmeterCurrentMaximum": 1,
+     "telemetry/extInputState": 1,
+     "telemetry/extmeterState": 1,
+     "telemetry/forceActive": 1
+    }
+   },
+   "setup": {
+    "reads": {
+     "conf": 1,
+     "info": 1,
+     "telemetry": 1
+    }
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "sensor gateway-one:wallbox:cp0:charging_start": {
+   "attributes": {
+    "device_class": "timestamp",
+    "friendly_name": "Wallbox Charging start"
+   },
+   "state": "2026-10-24T07:00:00+00:00"
+  },
+  "sensor gateway-one:wallbox:cp0:current_limit": {
+   "attributes": {
+    "device_class": "current",
+    "friendly_name": "Wallbox Reported current limit",
+    "unit_of_measurement": "A"
+   },
+   "state": "16.0"
+  },
+  "sensor gateway-one:wallbox:cp0:duration": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "Wallbox Active charging time",
+    "unit_of_measurement": "min"
+   },
+   "state": "35"
+  },
+  "sensor gateway-one:wallbox:cp0:energy": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Wallbox Reported charged energy",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "1.25"
+  },
+  "sensor gateway-one:wallbox:cp0:energy_total": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Wallbox Total charged energy",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "4321.5"
+  },
+  "sensor gateway-one:wallbox:cp0:hardware_current_limit": {
+   "attributes": {
+    "device_class": "current",
+    "friendly_name": "Wallbox Hardware current limit",
+    "unit_of_measurement": "A"
+   },
+   "state": "32.0"
+  },
+  "sensor gateway-one:wallbox:cp0:power": {
+   "attributes": {
+    "device_class": "power",
+    "friendly_name": "Wallbox Charging power",
+    "state_class": "measurement",
+    "unit_of_measurement": "kW"
+   },
+   "state": "7.2"
+  },
+  "sensor gateway-one:wallbox:cp0:role": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Wallbox Wallbox role",
+    "options": [
+     "standalone",
+     "leader",
+     "follower"
+    ]
+   },
+   "state": "standalone"
+  },
+  "sensor gateway-one:wallbox:cp0:state": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Wallbox Charging state",
+    "options": [
+     "initializing",
+     "available",
+     "authenticated",
+     "preparing",
+     "charging",
+     "suspended_ev",
+     "suspended_evse",
+     "faulted",
+     "locked",
+     "limited",
+     "phase_switch"
+    ]
+   },
+   "state": "charging"
+  }
+ },
+ "writes": {
+  "sensor gateway-one:wallbox:cp0:charging_start": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:current_limit": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:duration": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:energy": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:energy_total": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:hardware_current_limit": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:power": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:role": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:wallbox:cp0:state": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

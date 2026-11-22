@@ -1,0 +1,3191 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "RRC 2.0",
+   "model_id": null,
+   "name": "Room controller",
+   "sw_version": null,
+   "via_device": null
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Room thermostat",
+   "model_id": null,
+   "name": "Room thermostat 10",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device11"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radio repeater",
+   "model_id": null,
+   "name": "Radio repeater 11",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 2",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 3",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 4",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 5",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 6",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 7",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 8",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Radiator thermostat",
+   "model_id": null,
+   "name": "Radiator thermostat 9",
+   "sw_version": "1.6.0",
+   "via_device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ]
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.room_controller_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_2_room_thermostat_10_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device10:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device11"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.radio_repeater_11_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device11:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_2_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_2_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device2:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_3_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_3_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device3:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_4_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_4_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device4:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_5_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_1_radiator_thermostat_5_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device5:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_6_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_6_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device6:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_7_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_7_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device7:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_8_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_9_battery_low",
+   "original_name": "Battery low",
+   "platform": "binary_sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:battery"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.raum_2_radiator_thermostat_9_valve_problem",
+   "original_name": "Valve problem",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_valve_problem",
+   "unique_id": "gateway-one:devices:device9:valve_problem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.room_controller_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.room_controller_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.room_controller_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_2_room_thermostat_10_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device10:wth:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.room_controller_room_controller_temperature_offset",
+   "original_name": "Room controller – Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device1:thermostat:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_1_radiator_thermostat_2_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device2:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_1_radiator_thermostat_4_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device4:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_1_radiator_thermostat_5_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device5:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_2_radiator_thermostat_6_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device6:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_2_radiator_thermostat_7_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device7:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_2_radiator_thermostat_8_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device8:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.raum_2_radiator_thermostat_9_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "number",
+   "translation_key": "rrc_temperature_offset",
+   "unique_id": "gateway-one:devices:device9:etrv:offset:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_1_radiator_thermostat_2_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device2:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_1_radiator_thermostat_3_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device3:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_1_radiator_thermostat_4_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device4:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_1_radiator_thermostat_5_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device5:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_2_radiator_thermostat_6_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device6:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_2_radiator_thermostat_7_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_2_radiator_thermostat_8_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device8:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.raum_2_radiator_thermostat_9_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "select",
+   "translation_key": "rrc_window_sensitivity",
+   "unique_id": "gateway-one:devices:device9:etrv:openWindowDetection:sensitivity:control"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_room_thermostat_10_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device10:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_room_thermostat_10_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device10:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_room_thermostat_10_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device10:wth:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_room_thermostat_10_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device10:wth:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device11"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.radio_repeater_11_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device11:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device11"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.radio_repeater_11_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device11:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_room_controller_child_lock",
+   "original_name": "Room controller – Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device1:thermostat:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_room_controller_temperature_offset",
+   "original_name": "Room controller – Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device1:thermostat:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_room_controller_firmware_version",
+   "original_name": "Room controller – Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device1:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device2:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device2:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device2:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device2:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device2:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_2_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device2:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device3:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device3:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device3:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device3:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device3:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_3_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device3:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device4:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device4:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device4:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device4:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device4:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_4_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device4:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device5:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device5:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device5:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device5:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device5:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_1_radiator_thermostat_5_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device5:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device6:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device6:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device6:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device6:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device6:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_6_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device6:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device7:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device7:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device7:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device7:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device7:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_7_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device7:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device8:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device8:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device8:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device8:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device8:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_8_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device8:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_child_lock",
+   "original_name": "Child lock",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:etrv:childLock:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_maximum_valve_opening",
+   "original_name": "Maximum valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_max_valve_position",
+   "unique_id": "gateway-one:devices:device9:etrv:maxValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_temperature_offset",
+   "original_name": "Temperature offset",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:etrv:offset"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_open_window_detection_sensitivity",
+   "original_name": "Open window detection sensitivity",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:etrv:openWindowDetection:sensitivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_temperature_at_the_valve",
+   "original_name": "Temperature at the valve",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_temperature",
+   "unique_id": "gateway-one:devices:device9:etrv:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_valve_opening",
+   "original_name": "Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_position",
+   "unique_id": "gateway-one:devices:device9:etrv:valvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_valve_state",
+   "original_name": "Valve state",
+   "platform": "sensor",
+   "translation_key": "rrc_valve_state",
+   "unique_id": "gateway-one:devices:device9:etrv:valveState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_whisper_mode",
+   "original_name": "Whisper mode",
+   "platform": "sensor",
+   "translation_key": "rrc_whisper_mode",
+   "unique_id": "gateway-one:devices:device9:etrv:whisperMode:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_radio_signal",
+   "original_name": "Radio signal",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:signal"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.raum_2_radiator_thermostat_9_firmware_version",
+   "original_name": "Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:devices:device9:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_raum_1_room_temperature",
+   "original_name": "Raum 1 – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn1:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_raum_2_room_temperature",
+   "original_name": "Raum 2 – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn2:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device10"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_2_room_thermostat_10_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device10:wth:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.room_controller_room_controller_child_lock",
+   "original_name": "Room controller – Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device1:thermostat:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device2"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_1_radiator_thermostat_2_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device2:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device3"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_1_radiator_thermostat_3_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device3:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device4"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_1_radiator_thermostat_4_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device4:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device5"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_1_radiator_thermostat_5_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device5:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device6"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_2_radiator_thermostat_6_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device6:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device7"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_2_radiator_thermostat_7_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device7:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device8"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_2_radiator_thermostat_8_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device8:etrv:childLock:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one:devices:device9"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.raum_2_radiator_thermostat_9_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "rrc_child_lock",
+   "unique_id": "gateway-one:devices:device9:etrv:childLock:enabled:control"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of rrc/device_settings.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "rrc/device_settings.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 3,
+    "bulks": [
+     [
+      "/devices/device1/thermostat/childLock/enabled",
+      "/devices/device1/thermostat/offset",
+      "/devices/device10/wth/childLock/enabled",
+      "/devices/device10/wth/offset",
+      "/devices/device2/etrv/childLock/enabled",
+      "/devices/device2/etrv/offset",
+      "/devices/device2/etrv/status",
+      "/devices/device3/etrv/childLock/enabled",
+      "/devices/device3/etrv/offset",
+      "/devices/device3/etrv/status",
+      "/devices/device4/etrv/childLock/enabled",
+      "/devices/device4/etrv/offset",
+      "/devices/device4/etrv/status",
+      "/devices/device5/etrv/childLock/enabled",
+      "/devices/device5/etrv/offset",
+      "/devices/device5/etrv/status",
+      "/devices/device6/etrv/childLock/enabled",
+      "/devices/device6/etrv/offset",
+      "/devices/device6/etrv/status",
+      "/devices/device7/etrv/childLock/enabled",
+      "/devices/device7/etrv/offset",
+      "/devices/device7/etrv/status",
+      "/devices/device8/etrv/childLock/enabled",
+      "/devices/device8/etrv/offset",
+      "/devices/device9/etrv/childLock/enabled",
+      "/devices/device9/etrv/offset",
+      "/devices/device9/etrv/status",
+      "/zones/list",
+      "/zones/zn1/temperatureActual",
+      "/zones/zn2/temperatureActual"
+     ],
+     [
+      "/devices/device2/etrv/maxValvePosition",
+      "/devices/device2/etrv/whisperMode/enabled",
+      "/devices/device3/etrv/maxValvePosition",
+      "/devices/device3/etrv/whisperMode/enabled",
+      "/devices/device4/etrv/maxValvePosition",
+      "/devices/device4/etrv/whisperMode/enabled",
+      "/devices/device5/etrv/maxValvePosition",
+      "/devices/device5/etrv/whisperMode/enabled",
+      "/devices/device6/etrv/maxValvePosition",
+      "/devices/device6/etrv/whisperMode/enabled",
+      "/devices/device7/etrv/maxValvePosition",
+      "/devices/device7/etrv/whisperMode/enabled",
+      "/devices/device8/etrv/maxValvePosition",
+      "/devices/device8/etrv/valveState",
+      "/devices/device8/etrv/whisperMode/enabled",
+      "/devices/device9/etrv/maxValvePosition",
+      "/devices/device9/etrv/valveState",
+      "/devices/device9/etrv/whisperMode/enabled",
+      "/devices/list"
+     ],
+     [
+      "/devices/device2/etrv/openWindowDetection/sensitivity",
+      "/devices/device2/etrv/temperatureActual",
+      "/devices/device2/etrv/valvePosition",
+      "/devices/device2/etrv/valveState",
+      "/devices/device3/etrv/openWindowDetection/sensitivity",
+      "/devices/device3/etrv/temperatureActual",
+      "/devices/device3/etrv/valvePosition",
+      "/devices/device3/etrv/valveState",
+      "/devices/device4/etrv/openWindowDetection/sensitivity",
+      "/devices/device4/etrv/temperatureActual",
+      "/devices/device4/etrv/valvePosition",
+      "/devices/device4/etrv/valveState",
+      "/devices/device5/etrv/openWindowDetection/sensitivity",
+      "/devices/device5/etrv/temperatureActual",
+      "/devices/device5/etrv/valvePosition",
+      "/devices/device5/etrv/valveState",
+      "/devices/device6/etrv/openWindowDetection/sensitivity",
+      "/devices/device6/etrv/temperatureActual",
+      "/devices/device6/etrv/valvePosition",
+      "/devices/device6/etrv/valveState",
+      "/devices/device7/etrv/openWindowDetection/sensitivity",
+      "/devices/device7/etrv/temperatureActual",
+      "/devices/device7/etrv/valvePosition",
+      "/devices/device7/etrv/valveState",
+      "/devices/device8/etrv/openWindowDetection/sensitivity",
+      "/devices/device8/etrv/temperatureActual",
+      "/devices/device8/etrv/valvePosition",
+      "/devices/device9/etrv/openWindowDetection/sensitivity",
+      "/devices/device9/etrv/temperatureActual",
+      "/devices/device9/etrv/valvePosition"
+     ]
+    ],
+    "queries": {},
+    "read_count": 79,
+    "reads": {
+     "/devices/device1/thermostat/childLock/enabled": 1,
+     "/devices/device1/thermostat/offset": 1,
+     "/devices/device10/wth/childLock/enabled": 1,
+     "/devices/device10/wth/offset": 1,
+     "/devices/device2/etrv/childLock/enabled": 1,
+     "/devices/device2/etrv/maxValvePosition": 1,
+     "/devices/device2/etrv/offset": 1,
+     "/devices/device2/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device2/etrv/status": 1,
+     "/devices/device2/etrv/temperatureActual": 1,
+     "/devices/device2/etrv/valvePosition": 1,
+     "/devices/device2/etrv/valveState": 1,
+     "/devices/device2/etrv/whisperMode/enabled": 1,
+     "/devices/device3/etrv/childLock/enabled": 1,
+     "/devices/device3/etrv/maxValvePosition": 1,
+     "/devices/device3/etrv/offset": 1,
+     "/devices/device3/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device3/etrv/status": 1,
+     "/devices/device3/etrv/temperatureActual": 1,
+     "/devices/device3/etrv/valvePosition": 1,
+     "/devices/device3/etrv/valveState": 1,
+     "/devices/device3/etrv/whisperMode/enabled": 1,
+     "/devices/device4/etrv/childLock/enabled": 1,
+     "/devices/device4/etrv/maxValvePosition": 1,
+     "/devices/device4/etrv/offset": 1,
+     "/devices/device4/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device4/etrv/status": 1,
+     "/devices/device4/etrv/temperatureActual": 1,
+     "/devices/device4/etrv/valvePosition": 1,
+     "/devices/device4/etrv/valveState": 1,
+     "/devices/device4/etrv/whisperMode/enabled": 1,
+     "/devices/device5/etrv/childLock/enabled": 1,
+     "/devices/device5/etrv/maxValvePosition": 1,
+     "/devices/device5/etrv/offset": 1,
+     "/devices/device5/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device5/etrv/status": 1,
+     "/devices/device5/etrv/temperatureActual": 1,
+     "/devices/device5/etrv/valvePosition": 1,
+     "/devices/device5/etrv/valveState": 1,
+     "/devices/device5/etrv/whisperMode/enabled": 1,
+     "/devices/device6/etrv/childLock/enabled": 1,
+     "/devices/device6/etrv/maxValvePosition": 1,
+     "/devices/device6/etrv/offset": 1,
+     "/devices/device6/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device6/etrv/status": 1,
+     "/devices/device6/etrv/temperatureActual": 1,
+     "/devices/device6/etrv/valvePosition": 1,
+     "/devices/device6/etrv/valveState": 1,
+     "/devices/device6/etrv/whisperMode/enabled": 1,
+     "/devices/device7/etrv/childLock/enabled": 1,
+     "/devices/device7/etrv/maxValvePosition": 1,
+     "/devices/device7/etrv/offset": 1,
+     "/devices/device7/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device7/etrv/status": 1,
+     "/devices/device7/etrv/temperatureActual": 1,
+     "/devices/device7/etrv/valvePosition": 1,
+     "/devices/device7/etrv/valveState": 1,
+     "/devices/device7/etrv/whisperMode/enabled": 1,
+     "/devices/device8/etrv/childLock/enabled": 1,
+     "/devices/device8/etrv/maxValvePosition": 1,
+     "/devices/device8/etrv/offset": 1,
+     "/devices/device8/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device8/etrv/temperatureActual": 1,
+     "/devices/device8/etrv/valvePosition": 1,
+     "/devices/device8/etrv/valveState": 1,
+     "/devices/device8/etrv/whisperMode/enabled": 1,
+     "/devices/device9/etrv/childLock/enabled": 1,
+     "/devices/device9/etrv/maxValvePosition": 1,
+     "/devices/device9/etrv/offset": 1,
+     "/devices/device9/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device9/etrv/status": 1,
+     "/devices/device9/etrv/temperatureActual": 1,
+     "/devices/device9/etrv/valvePosition": 1,
+     "/devices/device9/etrv/valveState": 1,
+     "/devices/device9/etrv/whisperMode/enabled": 1,
+     "/devices/list": 1,
+     "/zones/list": 1,
+     "/zones/zn1/temperatureActual": 1,
+     "/zones/zn2/temperatureActual": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 10,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/devices/device1/thermostat/childLock/enabled",
+      "/devices/device1/thermostat/offset",
+      "/devices/device10/wth/childLock/enabled",
+      "/devices/device10/wth/offset",
+      "/devices/device2/etrv/childLock/enabled",
+      "/devices/device2/etrv/offset",
+      "/devices/device2/etrv/openWindowDetection/sensitivity",
+      "/devices/device2/etrv/status",
+      "/devices/device3/etrv/childLock/enabled",
+      "/devices/device3/etrv/offset",
+      "/devices/device3/etrv/status",
+      "/devices/device4/etrv/childLock/enabled",
+      "/devices/device4/etrv/offset",
+      "/devices/device4/etrv/status",
+      "/devices/device5/etrv/childLock/enabled",
+      "/devices/device5/etrv/offset",
+      "/devices/device5/etrv/status",
+      "/devices/device6/etrv/childLock/enabled",
+      "/devices/device6/etrv/offset",
+      "/devices/device6/etrv/status",
+      "/devices/device7/etrv/childLock/enabled",
+      "/devices/device7/etrv/offset",
+      "/devices/device7/etrv/status",
+      "/devices/device8/etrv/childLock/enabled",
+      "/devices/device8/etrv/offset",
+      "/devices/device8/etrv/status",
+      "/devices/device9/etrv/childLock/enabled",
+      "/devices/device9/etrv/offset",
+      "/devices/device9/etrv/status",
+      "/gateway/productType"
+     ],
+     [
+      "/devices/device1/versionFirmware",
+      "/events",
+      "/gateway/productType",
+      "/programs",
+      "/zones/zn1/actualValvePosition",
+      "/zones/zn1/clockOverride/temperatureHeating",
+      "/zones/zn1/clockProgram",
+      "/zones/zn1/manualTemperatureHeating",
+      "/zones/zn1/nextSetpoint",
+      "/zones/zn1/openWindowDetection/enabled",
+      "/zones/zn1/openWindowDetection/status",
+      "/zones/zn1/optimumStartHeatupRate",
+      "/zones/zn1/optimumStartState",
+      "/zones/zn1/status",
+      "/zones/zn1/temperatureHeatingSetpoint",
+      "/zones/zn1/timeToNextSetpoint",
+      "/zones/zn1/userMode",
+      "/zones/zn2/actualValvePosition",
+      "/zones/zn2/clockOverride/temperatureHeating",
+      "/zones/zn2/clockProgram",
+      "/zones/zn2/manualTemperatureHeating",
+      "/zones/zn2/nextSetpoint",
+      "/zones/zn2/openWindowDetection/enabled",
+      "/zones/zn2/openWindowDetection/status",
+      "/zones/zn2/optimumStartHeatupRate",
+      "/zones/zn2/optimumStartState",
+      "/zones/zn2/status",
+      "/zones/zn2/temperatureHeatingSetpoint",
+      "/zones/zn2/timeToNextSetpoint",
+      "/zones/zn2/userMode"
+     ],
+     [
+      "/devices/device10/versionFirmware",
+      "/devices/device11/versionFirmware",
+      "/devices/device2/versionFirmware",
+      "/devices/device3/versionFirmware",
+      "/devices/device4/versionFirmware",
+      "/devices/device5/versionFirmware",
+      "/devices/device6/versionFirmware",
+      "/devices/device7/versionFirmware",
+      "/devices/device8/versionFirmware",
+      "/devices/device9/versionFirmware",
+      "/gateway/productType"
+     ],
+     [
+      "/devices/device2/etrv/maxValvePosition",
+      "/devices/device2/etrv/whisperMode/enabled",
+      "/devices/device3/etrv/maxValvePosition",
+      "/devices/device3/etrv/whisperMode/enabled",
+      "/devices/device4/etrv/maxValvePosition",
+      "/devices/device4/etrv/whisperMode/enabled",
+      "/devices/device5/etrv/maxValvePosition",
+      "/devices/device5/etrv/whisperMode/enabled",
+      "/devices/device6/etrv/maxValvePosition",
+      "/devices/device6/etrv/whisperMode/enabled",
+      "/devices/device7/etrv/maxValvePosition",
+      "/devices/device7/etrv/whisperMode/enabled",
+      "/devices/device8/etrv/maxValvePosition",
+      "/devices/device8/etrv/valveState",
+      "/devices/device8/etrv/whisperMode/enabled",
+      "/devices/device9/etrv/maxValvePosition",
+      "/devices/device9/etrv/valveState",
+      "/devices/device9/etrv/whisperMode/enabled",
+      "/gateway/productType"
+     ],
+     [
+      "/devices/device2/etrv/temperatureActual",
+      "/devices/device2/etrv/valvePosition",
+      "/devices/device2/etrv/valveState",
+      "/devices/device3/etrv/openWindowDetection/sensitivity",
+      "/devices/device3/etrv/temperatureActual",
+      "/devices/device3/etrv/valvePosition",
+      "/devices/device3/etrv/valveState",
+      "/devices/device4/etrv/openWindowDetection/sensitivity",
+      "/devices/device4/etrv/temperatureActual",
+      "/devices/device4/etrv/valvePosition",
+      "/devices/device4/etrv/valveState",
+      "/devices/device5/etrv/openWindowDetection/sensitivity",
+      "/devices/device5/etrv/temperatureActual",
+      "/devices/device5/etrv/valvePosition",
+      "/devices/device5/etrv/valveState",
+      "/devices/device6/etrv/openWindowDetection/sensitivity",
+      "/devices/device6/etrv/temperatureActual",
+      "/devices/device6/etrv/valvePosition",
+      "/devices/device6/etrv/valveState",
+      "/devices/device7/etrv/openWindowDetection/sensitivity",
+      "/devices/device7/etrv/temperatureActual",
+      "/devices/device7/etrv/valvePosition",
+      "/devices/device7/etrv/valveState",
+      "/devices/device8/etrv/openWindowDetection/sensitivity",
+      "/devices/device8/etrv/temperatureActual",
+      "/devices/device8/etrv/valvePosition",
+      "/devices/device9/etrv/openWindowDetection/sensitivity",
+      "/devices/device9/etrv/temperatureActual",
+      "/devices/device9/etrv/valvePosition",
+      "/gateway/productType"
+     ],
+     [
+      "/devices/list",
+      "/gateway/productType",
+      "/programs/list",
+      "/zones/list",
+      "/zones/zn1",
+      "/zones/zn2"
+     ],
+     [
+      "/events/list1",
+      "/events/list2",
+      "/events/list3",
+      "/gateway/dataProcessing/status",
+      "/gateway/leds/inactivityTimeout",
+      "/gateway/productType",
+      "/zones/configuration"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/zones/zn1/name",
+      "/zones/zn1/temperatureActual",
+      "/zones/zn2/name",
+      "/zones/zn2/temperatureActual"
+     ]
+    ],
+    "queries": {},
+    "read_count": 155,
+    "reads": {
+     "/devices": 1,
+     "/devices/device1/thermostat/childLock/enabled": 1,
+     "/devices/device1/thermostat/offset": 1,
+     "/devices/device1/versionFirmware": 1,
+     "/devices/device10/versionFirmware": 1,
+     "/devices/device10/wth/childLock/enabled": 1,
+     "/devices/device10/wth/offset": 1,
+     "/devices/device11/versionFirmware": 1,
+     "/devices/device2/etrv/childLock/enabled": 1,
+     "/devices/device2/etrv/maxValvePosition": 1,
+     "/devices/device2/etrv/offset": 1,
+     "/devices/device2/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device2/etrv/status": 1,
+     "/devices/device2/etrv/temperatureActual": 1,
+     "/devices/device2/etrv/valvePosition": 1,
+     "/devices/device2/etrv/valveState": 1,
+     "/devices/device2/etrv/whisperMode/enabled": 1,
+     "/devices/device2/versionFirmware": 1,
+     "/devices/device3/etrv/childLock/enabled": 1,
+     "/devices/device3/etrv/maxValvePosition": 1,
+     "/devices/device3/etrv/offset": 1,
+     "/devices/device3/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device3/etrv/status": 1,
+     "/devices/device3/etrv/temperatureActual": 1,
+     "/devices/device3/etrv/valvePosition": 1,
+     "/devices/device3/etrv/valveState": 1,
+     "/devices/device3/etrv/whisperMode/enabled": 1,
+     "/devices/device3/versionFirmware": 1,
+     "/devices/device4/etrv/childLock/enabled": 1,
+     "/devices/device4/etrv/maxValvePosition": 1,
+     "/devices/device4/etrv/offset": 1,
+     "/devices/device4/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device4/etrv/status": 1,
+     "/devices/device4/etrv/temperatureActual": 1,
+     "/devices/device4/etrv/valvePosition": 1,
+     "/devices/device4/etrv/valveState": 1,
+     "/devices/device4/etrv/whisperMode/enabled": 1,
+     "/devices/device4/versionFirmware": 1,
+     "/devices/device5/etrv/childLock/enabled": 1,
+     "/devices/device5/etrv/maxValvePosition": 1,
+     "/devices/device5/etrv/offset": 1,
+     "/devices/device5/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device5/etrv/status": 1,
+     "/devices/device5/etrv/temperatureActual": 1,
+     "/devices/device5/etrv/valvePosition": 1,
+     "/devices/device5/etrv/valveState": 1,
+     "/devices/device5/etrv/whisperMode/enabled": 1,
+     "/devices/device5/versionFirmware": 1,
+     "/devices/device6/etrv/childLock/enabled": 1,
+     "/devices/device6/etrv/maxValvePosition": 1,
+     "/devices/device6/etrv/offset": 1,
+     "/devices/device6/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device6/etrv/status": 1,
+     "/devices/device6/etrv/temperatureActual": 1,
+     "/devices/device6/etrv/valvePosition": 1,
+     "/devices/device6/etrv/valveState": 1,
+     "/devices/device6/etrv/whisperMode/enabled": 1,
+     "/devices/device6/versionFirmware": 1,
+     "/devices/device7/etrv/childLock/enabled": 1,
+     "/devices/device7/etrv/maxValvePosition": 1,
+     "/devices/device7/etrv/offset": 1,
+     "/devices/device7/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device7/etrv/status": 1,
+     "/devices/device7/etrv/temperatureActual": 1,
+     "/devices/device7/etrv/valvePosition": 1,
+     "/devices/device7/etrv/valveState": 1,
+     "/devices/device7/etrv/whisperMode/enabled": 1,
+     "/devices/device7/versionFirmware": 1,
+     "/devices/device8/etrv/childLock/enabled": 1,
+     "/devices/device8/etrv/maxValvePosition": 1,
+     "/devices/device8/etrv/offset": 1,
+     "/devices/device8/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device8/etrv/status": 1,
+     "/devices/device8/etrv/temperatureActual": 1,
+     "/devices/device8/etrv/valvePosition": 1,
+     "/devices/device8/etrv/valveState": 1,
+     "/devices/device8/etrv/whisperMode/enabled": 1,
+     "/devices/device8/versionFirmware": 1,
+     "/devices/device9/etrv/childLock/enabled": 1,
+     "/devices/device9/etrv/maxValvePosition": 1,
+     "/devices/device9/etrv/offset": 1,
+     "/devices/device9/etrv/openWindowDetection/sensitivity": 1,
+     "/devices/device9/etrv/status": 1,
+     "/devices/device9/etrv/temperatureActual": 1,
+     "/devices/device9/etrv/valvePosition": 1,
+     "/devices/device9/etrv/valveState": 1,
+     "/devices/device9/etrv/whisperMode/enabled": 1,
+     "/devices/device9/versionFirmware": 1,
+     "/devices/list": 1,
+     "/dhwCircuits": 1,
+     "/events": 1,
+     "/events/list1": 1,
+     "/events/list2": 1,
+     "/events/list3": 1,
+     "/gateway": 1,
+     "/gateway/dataProcessing/status": 1,
+     "/gateway/leds/inactivityTimeout": 1,
+     "/gateway/productType": 7,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/programs": 1,
+     "/programs/list": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/zones": 1,
+     "/zones/configuration": 1,
+     "/zones/list": 1,
+     "/zones/zn1": 1,
+     "/zones/zn1/actualValvePosition": 1,
+     "/zones/zn1/clockOverride/temperatureHeating": 1,
+     "/zones/zn1/clockProgram": 1,
+     "/zones/zn1/manualTemperatureHeating": 1,
+     "/zones/zn1/name": 1,
+     "/zones/zn1/nextSetpoint": 1,
+     "/zones/zn1/openWindowDetection/enabled": 1,
+     "/zones/zn1/openWindowDetection/status": 1,
+     "/zones/zn1/optimumStartHeatupRate": 1,
+     "/zones/zn1/optimumStartState": 1,
+     "/zones/zn1/status": 1,
+     "/zones/zn1/temperatureActual": 1,
+     "/zones/zn1/temperatureHeatingSetpoint": 1,
+     "/zones/zn1/timeToNextSetpoint": 1,
+     "/zones/zn1/userMode": 1,
+     "/zones/zn2": 1,
+     "/zones/zn2/actualValvePosition": 1,
+     "/zones/zn2/clockOverride/temperatureHeating": 1,
+     "/zones/zn2/clockProgram": 1,
+     "/zones/zn2/manualTemperatureHeating": 1,
+     "/zones/zn2/name": 1,
+     "/zones/zn2/nextSetpoint": 1,
+     "/zones/zn2/openWindowDetection/enabled": 1,
+     "/zones/zn2/openWindowDetection/status": 1,
+     "/zones/zn2/optimumStartHeatupRate": 1,
+     "/zones/zn2/optimumStartState": 1,
+     "/zones/zn2/status": 1,
+     "/zones/zn2/temperatureActual": 1,
+     "/zones/zn2/temperatureHeatingSetpoint": 1,
+     "/zones/zn2/timeToNextSetpoint": 1,
+     "/zones/zn2/userMode": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:devices:device10:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Room thermostat 10 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device11:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radio repeater 11 Battery low"
+   },
+   "state": "unknown"
+  },
+  "binary_sensor gateway-one:devices:device2:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 2 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device2:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 2 Valve problem",
+    "valve_problems": []
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device3:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 3 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device3:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 3 Valve problem",
+    "valve_problems": [
+     "valve_too_tight"
+    ]
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:devices:device4:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 4 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device4:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 4 Valve problem",
+    "valve_problems": []
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device5:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 5 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device5:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 5 Valve problem",
+    "valve_problems": [
+     "valve_error_position"
+    ]
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:devices:device6:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 6 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device6:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 6 Valve problem",
+    "valve_problems": []
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device7:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 7 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device7:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 7 Valve problem",
+    "valve_problems": []
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device8:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 8 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device9:battery": {
+   "attributes": {
+    "device_class": "battery",
+    "friendly_name": "Radiator thermostat 9 Battery low"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:devices:device9:valve_problem": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Radiator thermostat 9 Valve problem",
+    "valve_problems": []
+   },
+   "state": "unknown"
+  },
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Room controller Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Room controller System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Room controller System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Room controller Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Room controller Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:zones:zn1:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Raum 1 – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn2:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Raum 2 – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:devices:device10:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device11:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device2:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device2:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device3:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device3:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device4:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device4:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device5:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device5:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device6:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device6:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device7:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device7:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device8:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device9:battery": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:devices:device9:valve_problem": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn1:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn2:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

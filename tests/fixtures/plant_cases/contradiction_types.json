@@ -1,0 +1,29 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "system type and heat source type contradict"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/system/type": "heatpump_single",
+    "/heatSources/hs1/type": "GasBoiler"
+  },
+  "expected": {
+    "plant_kind": null,
+    "fuel": null,
+    "cascade": null,
+    "evidence": [],
+    "conflicts": [
+      "system_type_vs_heat_source_type"
+    ],
+    "gate": "not_applicable"
+  }
+}

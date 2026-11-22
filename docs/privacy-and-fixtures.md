@@ -28,15 +28,47 @@ automatically by Home Assistant.
 Locally displayed identity diagnostics do not relax this policy. Serial
 numbers, UUIDs, country data, and sanitized system information are disabled by
 default in Home Assistant and must never be copied into issues, fixtures, logs,
-or diagnostic exports without explicit redaction. Internal token fields from
-system information are never exposed.
+or diagnostic exports without explicit redaction. The `Tok` field of system
+information is the place number of a component on the bus, not a secret; it
+appears with the type number in the diagnostics block `plant`. The serial
+number fields of system information (`No`, `ProductSerialNumber`,
+`ModuleSerialNumber`) and `ProductUuid` are never exposed.
+
+## Stored plant row
+
+The file `.storage/bosch_buderus_heating.calculated_values` keeps the saved
+calculated values of all gateways, one row per key; each key starts with the
+gateway ID, so the rows of a gateway are deleted with it (when no entry uses
+the gateway any more). The file is private to the Home Assistant host and is
+not part of any diagnostics export.
+
+Since schema 49 of the diagnostics, one row per gateway (`<gateway>:plant`)
+holds the plant model: the component lists of the cloud and of the local
+access (place, type number, version, product name, hardware type, update
+type, software identifier and article number of the model per component),
+when each component was first seen and, for 30 days, when it disappeared,
+the reported type values as safe tokens, the gateway class and firmware, the
+inputs of the hybrid manager rule, the plant kind with its evidence and
+conflicts, and the results of targeted reads. It never holds serial numbers,
+UUIDs or the `No` field. The row is written only when its content changes;
+it holds no running time stamps. After a restart it gives the plant kind
+before the module list is read again. Versions appear here and in the
+diagnostics only, never in entity attributes or the log. The form is
+[`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.json).
+
+The test cases of the plant model in `tests/fixtures/plant_cases/` are
+constructed from the structure of diagnostics files: type numbers and places
+as reported, versions, names and article numbers constructed, identifiers
+replaced by markers. A test checks that no marker reaches the diagnostics,
+the stored row, the anonymized inventory or the log.
 
 ## Home Assistant diagnostics
 
 The integration diagnostic export contains schema, aggregate state and a narrow
 allowlist of technical metadata in schema 14. Known product labels, recognized
-manufacturers, strictly numeric dotted version strings and validated installed
-circuit counts may be included. Its privacy declaration explicitly identifies
+manufacturers, version strings made of letters, digits and `._-` (for
+example a firmware version or the software version of a system component)
+and validated installed circuit counts may be included. Its privacy declaration explicitly identifies
 these allowed resource values when present. It omits config-entry data,
 credentials, stable identifiers, unrestricted firmware/product text, current
 measurements and settings, user-defined names, request URLs and response bodies.

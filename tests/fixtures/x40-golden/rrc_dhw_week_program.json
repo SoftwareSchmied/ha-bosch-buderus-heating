@@ -1,0 +1,358 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of rrc/dhw-week-program.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "rrc/dhw-week-program.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/dhwCircuits/dhw1/programs/pg1/week"
+     ]
+    ],
+    "queries": {},
+    "read_count": 1,
+    "reads": {
+     "/dhwCircuits/dhw1/programs/pg1/week": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 7,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/dhwCircuits/dhw1"
+     ],
+     [
+      "/dhwCircuits/dhw1/currentFriwaSupplyTemperature",
+      "/dhwCircuits/dhw1/dhwType",
+      "/dhwCircuits/dhw1/friwaPrimaryPumpModulation",
+      "/dhwCircuits/dhw1/inletTemperature",
+      "/dhwCircuits/dhw1/learningWeek",
+      "/dhwCircuits/dhw1/manualsetpoint",
+      "/dhwCircuits/dhw1/monitorValues",
+      "/dhwCircuits/dhw1/numberOfShowersAvailable",
+      "/dhwCircuits/dhw1/operationSetpoints",
+      "/dhwCircuits/dhw1/outTemp",
+      "/dhwCircuits/dhw1/outletTemperature",
+      "/dhwCircuits/dhw1/recirculation/enabled",
+      "/dhwCircuits/dhw1/safetyTemperature",
+      "/dhwCircuits/dhw1/sensor/airBoxTemperature",
+      "/dhwCircuits/dhw1/sensor/atmosphericPressure",
+      "/dhwCircuits/dhw1/sensor/exhaustFlueGasTemperature",
+      "/dhwCircuits/dhw1/sensor/externalTankTemperature",
+      "/dhwCircuits/dhw1/sensor/fanSpeed",
+      "/dhwCircuits/dhw1/sensor/gasFlow",
+      "/dhwCircuits/dhw1/sensor/heatExchangerFlueGasTemperature",
+      "/dhwCircuits/dhw1/sensor/heatExchangerTemperature",
+      "/dhwCircuits/dhw1/sensor/waterFlow",
+      "/dhwCircuits/dhw1/switchPrograms/A",
+      "/dhwCircuits/dhw1/volumeFlow",
+      "/dhwCircuits/dhw1/waterTotalConsumption",
+      "/dhwCircuits/waterTotalConsumption"
+     ],
+     [
+      "/dhwCircuits/dhw1/programs"
+     ],
+     [
+      "/dhwCircuits/dhw1/programs/pg1"
+     ],
+     [
+      "/dhwCircuits/dhw1/programs/pg1/week"
+     ],
+     [
+      "/notifications"
+     ]
+    ],
+    "queries": {},
+    "read_count": 48,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/dhwCircuits/dhw1": 1,
+     "/dhwCircuits/dhw1/currentFriwaSupplyTemperature": 1,
+     "/dhwCircuits/dhw1/dhwType": 1,
+     "/dhwCircuits/dhw1/friwaPrimaryPumpModulation": 1,
+     "/dhwCircuits/dhw1/inletTemperature": 1,
+     "/dhwCircuits/dhw1/learningWeek": 1,
+     "/dhwCircuits/dhw1/manualsetpoint": 1,
+     "/dhwCircuits/dhw1/monitorValues": 1,
+     "/dhwCircuits/dhw1/numberOfShowersAvailable": 1,
+     "/dhwCircuits/dhw1/operationSetpoints": 1,
+     "/dhwCircuits/dhw1/outTemp": 1,
+     "/dhwCircuits/dhw1/outletTemperature": 1,
+     "/dhwCircuits/dhw1/programs": 1,
+     "/dhwCircuits/dhw1/programs/pg1": 1,
+     "/dhwCircuits/dhw1/programs/pg1/week": 1,
+     "/dhwCircuits/dhw1/recirculation/enabled": 1,
+     "/dhwCircuits/dhw1/safetyTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/airBoxTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/atmosphericPressure": 1,
+     "/dhwCircuits/dhw1/sensor/exhaustFlueGasTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/externalTankTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/fanSpeed": 1,
+     "/dhwCircuits/dhw1/sensor/gasFlow": 1,
+     "/dhwCircuits/dhw1/sensor/heatExchangerFlueGasTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/heatExchangerTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/waterFlow": 1,
+     "/dhwCircuits/dhw1/switchPrograms/A": 1,
+     "/dhwCircuits/dhw1/volumeFlow": 1,
+     "/dhwCircuits/dhw1/waterTotalConsumption": 1,
+     "/dhwCircuits/waterTotalConsumption": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

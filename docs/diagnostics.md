@@ -4,6 +4,14 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 49 (0.9.3) adds `gateways[].plant` and the same block in
+`views_without_cloud[]`: the plant model with the components of the module
+list (type number, place, version, hardware type, product name, update type,
+software identifier, article number of the model), the reported type values,
+the plant kind with its evidence and conflicts, and the stored plant row
+(see [plant model](#plant-model)). Serial numbers are never part of it. The
+anonymized inventory keeps only `plant_kind` of it.
+
 Schema 48 (0.9.2) adds, again without readings, names or identifiers:
 
 - `cloud_data_access`: for each gateway whose cloud data were refused or
@@ -962,7 +970,8 @@ tokens and component type numbers only:
   write (1, 2, 3 and 4 s), see [request behavior](request-behavior.md#icom-gateways);
 - `system_info_read` and `system_components`: the component type (`id`) and
   token (`token`) of each entry of `/system/info`. Serial numbers, product
-  names and versions are never included;
+  names and versions are never included in this block; the block `plant`
+  shows the same rows with their versions (see [plant model](#plant-model));
 - `bus`: `EMS2_0`, `EMS1_0`, `CAN`, `MODBUS`, `No_Bus`, `other` or `null`.
   With `EMS1_0`, `CAN` or `No_Bus`, `bus_hint` is
   `bus_possibly_unsupported_reported_values_only`: the bus is possibly not
@@ -994,13 +1003,92 @@ stays complete:
 - `unmapped_modules`: the modules without a table entry for their product.
   Reporting them lets the model table grow.
 
-Only the product name and the hardware type of a module are read. Serial
-numbers, tokens, versions and type numbers are never included; a name field
-that holds a serial number of the same module, or only digits, is left out.
+In this block, only the product name and the hardware type of a module are
+used. Serial numbers, tokens, versions and type numbers are never included
+in it; a name field that holds a serial number of the same module, or only
+digits, is left out. Type numbers, places and versions of the same rows are
+in the block `plant` (see [plant model](#plant-model)).
 Because product names are included, the privacy block then sets
 `contains_raw_resource_values: true` with
 `raw_resource_values_scope: allowlisted_technical_metadata`. The anonymized
 inventory drops this block.
+
+## Plant model
+
+`gateways[].plant` (schema 49) appears for every heating gateway, room
+controllers and iCom gateways included; a system shown from its local
+readings alone has the same block in `views_without_cloud[]`. Water
+softeners, air conditioners and wallboxes have none. The block makes no
+request: it shows what the integration already reads and what it keeps in
+its stored plant row (see [privacy and fixtures](privacy-and-fixtures.md#stored-plant-row)).
+If the block cannot be worked out, it only says `error: unavailable` and the
+rest of the report stays complete.
+
+- `model_version`: the version of the rules that work the plant kind out;
+  `table_version` and `table_available`: the component table in use;
+- `plant_kind`: `heat_pump`, `hybrid`, `boiler`, `ventilation`, `none`
+  or `null` (not known: everything behaves as before); `fuel` (`gas`,
+  `oil`, `unknown` or `null`) for a boiler or a hybrid system; `cascade`
+  (`true` for the system type `heatpump_cascade`, `null` without a system
+  type);
+- `evidence`: why, as fixed codes: `reported_system_type`,
+  `reported_heat_source_type`, `reported_heat_pump_type`,
+  `reported_outdoor_status` (the plant reports the type or status),
+  `hybrid_manager_component` (a hybrid manager at the hybrid place, see
+  `gates`), `heat_source_types_combined` (a heat pump type and a boiler type
+  in the same plant), `hybrid_resources` and `hybrid_manager_signals` (the
+  resources of a hybrid control or the signals of a hybrid manager are
+  present), `stored` (the result rests on a value kept from an earlier
+  reading);
+- `conflicts`: what does not fit, as fixed codes:
+  `system_type_vs_heat_source_type` (the plant kind stays `null`),
+  `components_vs_outdoor_status`, `heat_pump_component_on_boiler_plant`,
+  `hybrid_name_rule_only` (only the names of paths, signals or a type text
+  point to a hybrid system), `cloud_local_components_differ`,
+  `unknown_type_value` (a type value outside the known ones; it does not
+  count) and `component_rule_skipped` (a row at the hybrid place that the
+  rule does not accept, see `gates`);
+- `inputs`: the reported values as safe tokens (`other` for anything else):
+  `system_type`, `heat_source_types` per heat source, `heat_sources_type`,
+  `heat_pump_types`, `bus`, `outdoor_status`, their `allowed_values` (at
+  most 16 each), the hybrid evidence codes the integration used before
+  (`hybrid_evidence`), `platform`, `gateway_class`, `gateway_firmware` and
+  `restored` (the inputs taken from the stored row because the current
+  readings do not have them);
+- `gates.hybrid_manager_place`: the rule for a hybrid manager at the hybrid
+  place 83, with its inputs: `result` (`passed`, `failed` or
+  `not_applicable`), `reason`, `platform`, `gateway_firmware` and
+  `firmware_minimum`, `hybrid_place_rows` (rows at place 83), `first_type`
+  and `first_version` (only the first such row counts), `version_minimum`
+  and `version_passed`. The rule counts on K30 and K40 gateways from firmware
+  08.02.02 (K30) or 11.00.00 (K40) on, for the type 248 from version 06.01 on
+  and for the type 16; other gateways show the row only;
+- `components_source` and `components`: the component list shown (the
+  source follows the [heat generator modules](#heat-generator-modules)). Per
+  component: `id` (type number), `token` (place number), `place` (place key)
+  and `place_name`, `name` (from the [component table](system-components.md)),
+  `role` and `basis`, `gateway` (a row of the gateway itself), `version`,
+  `hardware_type`, `product_name` and `has_product_name`,
+  `sw_update_type`, `sw_ident` (software identifier) and `article_number`
+  (the article number of the model, never of a single device);
+- `unmapped_components`: type numbers the table does not know, with place
+  and count (at most 32);
+- `sources`: both lists, `cloud` and `local`, each with `current` (read in
+  this run, else kept from the stored row), `rows` and `components`;
+- `stored`, `restored` and `stored_age_seconds`: whether a stored plant row
+  exists, whether the result rests on it, and the age of its last change;
+  `changes`: how often a new reading changed the plant kind;
+- `probes`: the results of targeted reads (empty for now).
+
+A version, hardware type, software identifier or article number equal to a
+serial number of the same row is left out, as is a name field that holds a
+serial number or only digits. Serial numbers (`No`, `ProductSerialNumber`,
+`ModuleSerialNumber`), `ProductUuid`, gateway IDs and entry IDs are never
+part of the block. Because versions and type values are included, the
+privacy block then sets `contains_raw_resource_values: true` with
+`raw_resource_values_scope: allowlisted_technical_metadata`. The anonymized
+inventory keeps only `plant_kind` of this block. The machine-readable form
+of the block is [`schemas/diagnostics-plant.v1.json`](schemas/diagnostics-plant.v1.json).
 
 ## RRC program selection
 
@@ -1521,7 +1609,9 @@ read.
 - gateway IDs, config-entry IDs, serial numbers, and UUIDs;
 - IP addresses, MAC addresses, SSIDs, and location data;
 - firmware identifiers and complete model names, except the product names
-  of the heat generator modules (see [heat generator modules](#heat-generator-modules));
+  of the heat generator modules (see [heat generator modules](#heat-generator-modules))
+  and the software versions, software identifiers and article numbers of
+  the system components in the block `plant` (see [plant model](#plant-model));
 - user-defined heating-circuit, hot-water, and schedule names;
 - current temperatures, setpoints, operating modes, and energy consumption;
 - complete request or response bodies.

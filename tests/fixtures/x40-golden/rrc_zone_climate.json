@@ -1,0 +1,2688 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "RRC 2.0",
+   "model_id": null,
+   "name": "Room controller",
+   "sw_version": "05.04.00",
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.room_controller_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.room_controller_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.room_controller_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.room_controller_zone_a_window_open",
+   "original_name": "Zone A – Window open",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_window_open",
+   "unique_id": "gateway-one:zones:zn1:openWindowDetection:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.room_controller_zone_b_window_open",
+   "original_name": "Zone B – Window open",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_window_open",
+   "unique_id": "gateway-one:zones:zn2:openWindowDetection:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.room_controller_zone_c_window_open",
+   "original_name": "Zone C – Window open",
+   "platform": "binary_sensor",
+   "translation_key": "rrc_window_open",
+   "unique_id": "gateway-one:zones:zn3:openWindowDetection:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_a_advance_next_switch_point",
+   "original_name": "Zone A – Advance next switch point",
+   "platform": "button",
+   "translation_key": "rrc_override_advance",
+   "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:advance"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_a_clear_temporary_setpoint",
+   "original_name": "Zone A – Clear temporary setpoint",
+   "platform": "button",
+   "translation_key": "rrc_override_clear",
+   "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:clear"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_b_advance_next_switch_point",
+   "original_name": "Zone B – Advance next switch point",
+   "platform": "button",
+   "translation_key": "rrc_override_advance",
+   "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:advance"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_b_clear_temporary_setpoint",
+   "original_name": "Zone B – Clear temporary setpoint",
+   "platform": "button",
+   "translation_key": "rrc_override_clear",
+   "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:clear"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_c_advance_next_switch_point",
+   "original_name": "Zone C – Advance next switch point",
+   "platform": "button",
+   "translation_key": "rrc_override_advance",
+   "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:advance"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_c_clear_temporary_setpoint",
+   "original_name": "Zone C – Clear temporary setpoint",
+   "platform": "button",
+   "translation_key": "rrc_override_clear",
+   "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:clear"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_d_clear_temporary_setpoint",
+   "original_name": "Zone D – Clear temporary setpoint",
+   "platform": "button",
+   "translation_key": "rrc_override_clear",
+   "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating:clear"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "button.room_controller_zone_f_clear_temporary_setpoint",
+   "original_name": "Zone F – Clear temporary setpoint",
+   "platform": "button",
+   "translation_key": "rrc_override_clear",
+   "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating:clear"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.room_controller_zone_a",
+   "original_name": "Zone A",
+   "platform": "climate",
+   "translation_key": "rrc_zone",
+   "unique_id": "gateway-one:zones:zn1:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.room_controller_zone_b",
+   "original_name": "Zone B",
+   "platform": "climate",
+   "translation_key": "rrc_zone",
+   "unique_id": "gateway-one:zones:zn2:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.room_controller_zone_c",
+   "original_name": "Zone C",
+   "platform": "climate",
+   "translation_key": "rrc_zone",
+   "unique_id": "gateway-one:zones:zn3:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.room_controller_zone_d",
+   "original_name": "Zone D",
+   "platform": "climate",
+   "translation_key": "rrc_zone",
+   "unique_id": "gateway-one:zones:zn4:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.room_controller_zone_e",
+   "original_name": "Zone E",
+   "platform": "climate",
+   "translation_key": "rrc_zone",
+   "unique_id": "gateway-one:zones:zn5:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.room_controller_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.room_controller_system_open_window_duration",
+   "original_name": "System – Open window duration",
+   "platform": "number",
+   "translation_key": "rrc_window_duration",
+   "unique_id": "gateway-one:system:openWindowDetection:duration:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_a_set_manual_heating_setpoint",
+   "original_name": "Zone A – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn1:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_b_set_manual_heating_setpoint",
+   "original_name": "Zone B – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn2:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_c_set_manual_heating_setpoint",
+   "original_name": "Zone C – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn3:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_d_set_manual_heating_setpoint",
+   "original_name": "Zone D – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn4:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_e_set_manual_heating_setpoint",
+   "original_name": "Zone E – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn5:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.room_controller_zone_f_set_manual_heating_setpoint",
+   "original_name": "Zone F – Set manual heating setpoint",
+   "platform": "number",
+   "translation_key": "manual_room_setpoint",
+   "unique_id": "gateway-one:zones:zn6:manualTemperatureHeating:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_a_set_heating_mode",
+   "original_name": "Zone A – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn1:userMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_b_set_heating_mode",
+   "original_name": "Zone B – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn2:userMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_c_set_heating_mode",
+   "original_name": "Zone C – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn3:userMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_d_set_heating_mode",
+   "original_name": "Zone D – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn4:userMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_e_set_heating_mode",
+   "original_name": "Zone E – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn5:userMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "select.room_controller_zone_f_set_heating_mode",
+   "original_name": "Zone F – Set heating mode",
+   "platform": "select",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn6:userMode:control"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_gateway_firmware_version",
+   "original_name": "Gateway – Firmware version",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:gateway:versionFirmware"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_system_open_window_duration",
+   "original_name": "System – Open window duration",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:openWindowDetection:duration"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_system_open_window_detection",
+   "original_name": "System – Open window detection",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:openWindowDetection:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_system_open_window_temperature",
+   "original_name": "System – Open window temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:openWindowDetection:temperature"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_valve_opening",
+   "original_name": "Zone A – Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_valve_position",
+   "unique_id": "gateway-one:zones:zn1:actualValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_temporary_heating_setpoint",
+   "original_name": "Zone A – Temporary heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_manual_heating_setpoint",
+   "original_name": "Zone A – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn1:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_next_setpoint",
+   "original_name": "Zone A – Next setpoint",
+   "platform": "sensor",
+   "translation_key": "rrc_next_setpoint",
+   "unique_id": "gateway-one:zones:zn1:nextSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_zone_a_optimum_start_heat_up_rate",
+   "original_name": "Zone A – Optimum start heat-up rate",
+   "platform": "sensor",
+   "translation_key": "rrc_optimum_start_heatup_rate",
+   "unique_id": "gateway-one:zones:zn1:optimumStartHeatupRate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.room_controller_zone_a_optimum_start",
+   "original_name": "Zone A – Optimum start",
+   "platform": "sensor",
+   "translation_key": "rrc_optimum_start_state",
+   "unique_id": "gateway-one:zones:zn1:optimumStartState"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_zone_status",
+   "original_name": "Zone A – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn1:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_room_temperature",
+   "original_name": "Zone A – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn1:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_active_heating_setpoint",
+   "original_name": "Zone A – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn1:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_a_heating_mode",
+   "original_name": "Zone A – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn1:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_valve_opening",
+   "original_name": "Zone B – Valve opening",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_valve_position",
+   "unique_id": "gateway-one:zones:zn2:actualValvePosition"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_temporary_heating_setpoint",
+   "original_name": "Zone B – Temporary heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_manual_heating_setpoint",
+   "original_name": "Zone B – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn2:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_next_setpoint",
+   "original_name": "Zone B – Next setpoint",
+   "platform": "sensor",
+   "translation_key": "rrc_next_setpoint",
+   "unique_id": "gateway-one:zones:zn2:nextSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_zone_status",
+   "original_name": "Zone B – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn2:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_room_temperature",
+   "original_name": "Zone B – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn2:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_active_heating_setpoint",
+   "original_name": "Zone B – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn2:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_minutes_to_the_next_setpoint",
+   "original_name": "Zone B – Minutes to the next setpoint",
+   "platform": "sensor",
+   "translation_key": "rrc_minutes_to_next_setpoint",
+   "unique_id": "gateway-one:zones:zn2:timeToNextSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_b_heating_mode",
+   "original_name": "Zone B – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn2:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_temporary_heating_setpoint",
+   "original_name": "Zone C – Temporary heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_manual_heating_setpoint",
+   "original_name": "Zone C – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn3:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_next_setpoint",
+   "original_name": "Zone C – Next setpoint",
+   "platform": "sensor",
+   "translation_key": "rrc_next_setpoint",
+   "unique_id": "gateway-one:zones:zn3:nextSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_zone_status",
+   "original_name": "Zone C – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn3:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_room_temperature",
+   "original_name": "Zone C – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn3:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_active_heating_setpoint",
+   "original_name": "Zone C – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn3:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_minutes_to_the_next_setpoint",
+   "original_name": "Zone C – Minutes to the next setpoint",
+   "platform": "sensor",
+   "translation_key": "rrc_minutes_to_next_setpoint",
+   "unique_id": "gateway-one:zones:zn3:timeToNextSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_c_heating_mode",
+   "original_name": "Zone C – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn3:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_temporary_heating_setpoint",
+   "original_name": "Zone D – Temporary heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_manual_heating_setpoint",
+   "original_name": "Zone D – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn4:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_zone_status",
+   "original_name": "Zone D – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn4:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_room_temperature",
+   "original_name": "Zone D – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn4:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_active_heating_setpoint",
+   "original_name": "Zone D – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn4:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_d_heating_mode",
+   "original_name": "Zone D – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn4:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_e_manual_heating_setpoint",
+   "original_name": "Zone E – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn5:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_e_zone_status",
+   "original_name": "Zone E – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn5:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_e_room_temperature",
+   "original_name": "Zone E – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn5:temperatureActual"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_e_active_heating_setpoint",
+   "original_name": "Zone E – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn5:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_e_heating_mode",
+   "original_name": "Zone E – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn5:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_f_temporary_heating_setpoint",
+   "original_name": "Zone F – Temporary heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_f_manual_heating_setpoint",
+   "original_name": "Zone F – Manual heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn6:manualTemperatureHeating"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_f_zone_status",
+   "original_name": "Zone F – Zone status",
+   "platform": "sensor",
+   "translation_key": "rrc_zone_status",
+   "unique_id": "gateway-one:zones:zn6:status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_f_active_heating_setpoint",
+   "original_name": "Zone F – Active heating setpoint",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:zones:zn6:temperatureHeatingSetpoint"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.room_controller_zone_f_heating_mode",
+   "original_name": "Zone F – Heating mode",
+   "platform": "sensor",
+   "translation_key": "rrc_user_mode",
+   "unique_id": "gateway-one:zones:zn6:userMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.room_controller_system_open_window_detection",
+   "original_name": "System – Open window detection",
+   "platform": "switch",
+   "translation_key": "rrc_system_window_detection",
+   "unique_id": "gateway-one:system:openWindowDetection:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.room_controller_zone_a_open_window_detection",
+   "original_name": "Zone A – Open window detection",
+   "platform": "switch",
+   "translation_key": "rrc_window_detection",
+   "unique_id": "gateway-one:zones:zn1:openWindowDetection:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.room_controller_zone_b_open_window_detection",
+   "original_name": "Zone B – Open window detection",
+   "platform": "switch",
+   "translation_key": "rrc_window_detection",
+   "unique_id": "gateway-one:zones:zn2:openWindowDetection:enabled:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.room_controller_zone_c_open_window_detection",
+   "original_name": "Zone C – Open window detection",
+   "platform": "switch",
+   "translation_key": "rrc_window_detection",
+   "unique_id": "gateway-one:zones:zn3:openWindowDetection:enabled:control"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of rrc/zone_climate.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "rrc/zone_climate.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 2,
+    "bulks": [
+     [
+      "/gateway/versionFirmware",
+      "/system/openWindowDetection/duration",
+      "/system/openWindowDetection/enabled",
+      "/system/openWindowDetection/temperature",
+      "/zones/zn1/actualValvePosition",
+      "/zones/zn1/clockOverride/temperatureHeating",
+      "/zones/zn1/openWindowDetection/enabled",
+      "/zones/zn1/optimumStartHeatupRate",
+      "/zones/zn1/optimumStartState",
+      "/zones/zn2/actualValvePosition",
+      "/zones/zn2/clockOverride/temperatureHeating",
+      "/zones/zn2/openWindowDetection/enabled",
+      "/zones/zn3/clockOverride/temperatureHeating",
+      "/zones/zn3/manualTemperatureHeating",
+      "/zones/zn3/openWindowDetection/enabled",
+      "/zones/zn3/userMode",
+      "/zones/zn4/clockOverride/temperatureHeating",
+      "/zones/zn4/manualTemperatureHeating",
+      "/zones/zn4/userMode",
+      "/zones/zn5/manualTemperatureHeating",
+      "/zones/zn5/userMode",
+      "/zones/zn6/clockOverride/temperatureHeating",
+      "/zones/zn6/manualTemperatureHeating",
+      "/zones/zn6/userMode"
+     ],
+     [
+      "/zones/list",
+      "/zones/zn1/manualTemperatureHeating",
+      "/zones/zn1/nextSetpoint",
+      "/zones/zn1/openWindowDetection/status",
+      "/zones/zn1/status",
+      "/zones/zn1/temperatureActual",
+      "/zones/zn1/temperatureHeatingSetpoint",
+      "/zones/zn1/userMode",
+      "/zones/zn2/manualTemperatureHeating",
+      "/zones/zn2/nextSetpoint",
+      "/zones/zn2/openWindowDetection/status",
+      "/zones/zn2/status",
+      "/zones/zn2/temperatureActual",
+      "/zones/zn2/temperatureHeatingSetpoint",
+      "/zones/zn2/timeToNextSetpoint",
+      "/zones/zn2/userMode",
+      "/zones/zn3/nextSetpoint",
+      "/zones/zn3/openWindowDetection/status",
+      "/zones/zn3/status",
+      "/zones/zn3/temperatureActual",
+      "/zones/zn3/temperatureHeatingSetpoint",
+      "/zones/zn3/timeToNextSetpoint",
+      "/zones/zn4/status",
+      "/zones/zn4/temperatureActual",
+      "/zones/zn4/temperatureHeatingSetpoint",
+      "/zones/zn5/status",
+      "/zones/zn5/temperatureActual",
+      "/zones/zn5/temperatureHeatingSetpoint",
+      "/zones/zn6/status",
+      "/zones/zn6/temperatureHeatingSetpoint"
+     ]
+    ],
+    "queries": {},
+    "read_count": 54,
+    "reads": {
+     "/gateway/versionFirmware": 1,
+     "/system/openWindowDetection/duration": 1,
+     "/system/openWindowDetection/enabled": 1,
+     "/system/openWindowDetection/temperature": 1,
+     "/zones/list": 1,
+     "/zones/zn1/actualValvePosition": 1,
+     "/zones/zn1/clockOverride/temperatureHeating": 1,
+     "/zones/zn1/manualTemperatureHeating": 1,
+     "/zones/zn1/nextSetpoint": 1,
+     "/zones/zn1/openWindowDetection/enabled": 1,
+     "/zones/zn1/openWindowDetection/status": 1,
+     "/zones/zn1/optimumStartHeatupRate": 1,
+     "/zones/zn1/optimumStartState": 1,
+     "/zones/zn1/status": 1,
+     "/zones/zn1/temperatureActual": 1,
+     "/zones/zn1/temperatureHeatingSetpoint": 1,
+     "/zones/zn1/userMode": 1,
+     "/zones/zn2/actualValvePosition": 1,
+     "/zones/zn2/clockOverride/temperatureHeating": 1,
+     "/zones/zn2/manualTemperatureHeating": 1,
+     "/zones/zn2/nextSetpoint": 1,
+     "/zones/zn2/openWindowDetection/enabled": 1,
+     "/zones/zn2/openWindowDetection/status": 1,
+     "/zones/zn2/status": 1,
+     "/zones/zn2/temperatureActual": 1,
+     "/zones/zn2/temperatureHeatingSetpoint": 1,
+     "/zones/zn2/timeToNextSetpoint": 1,
+     "/zones/zn2/userMode": 1,
+     "/zones/zn3/clockOverride/temperatureHeating": 1,
+     "/zones/zn3/manualTemperatureHeating": 1,
+     "/zones/zn3/nextSetpoint": 1,
+     "/zones/zn3/openWindowDetection/enabled": 1,
+     "/zones/zn3/openWindowDetection/status": 1,
+     "/zones/zn3/status": 1,
+     "/zones/zn3/temperatureActual": 1,
+     "/zones/zn3/temperatureHeatingSetpoint": 1,
+     "/zones/zn3/timeToNextSetpoint": 1,
+     "/zones/zn3/userMode": 1,
+     "/zones/zn4/clockOverride/temperatureHeating": 1,
+     "/zones/zn4/manualTemperatureHeating": 1,
+     "/zones/zn4/status": 1,
+     "/zones/zn4/temperatureActual": 1,
+     "/zones/zn4/temperatureHeatingSetpoint": 1,
+     "/zones/zn4/userMode": 1,
+     "/zones/zn5/manualTemperatureHeating": 1,
+     "/zones/zn5/status": 1,
+     "/zones/zn5/temperatureActual": 1,
+     "/zones/zn5/temperatureHeatingSetpoint": 1,
+     "/zones/zn5/userMode": 1,
+     "/zones/zn6/clockOverride/temperatureHeating": 1,
+     "/zones/zn6/manualTemperatureHeating": 1,
+     "/zones/zn6/status": 1,
+     "/zones/zn6/temperatureHeatingSetpoint": 1,
+     "/zones/zn6/userMode": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 10,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/devices/list",
+      "/gateway/productType",
+      "/gateway/versionFirmware",
+      "/programs/list",
+      "/system/openWindowDetection",
+      "/zones/list",
+      "/zones/zn1",
+      "/zones/zn2",
+      "/zones/zn3",
+      "/zones/zn4",
+      "/zones/zn5",
+      "/zones/zn6"
+     ],
+     [
+      "/events",
+      "/gateway/productType",
+      "/programs",
+      "/zones/zn1/clockProgram",
+      "/zones/zn1/timeToNextSetpoint",
+      "/zones/zn2/clockProgram",
+      "/zones/zn2/optimumStartHeatupRate",
+      "/zones/zn2/optimumStartState",
+      "/zones/zn3/actualValvePosition",
+      "/zones/zn3/clockProgram",
+      "/zones/zn3/optimumStartHeatupRate",
+      "/zones/zn3/optimumStartState",
+      "/zones/zn4/actualValvePosition",
+      "/zones/zn4/clockProgram",
+      "/zones/zn4/nextSetpoint",
+      "/zones/zn4/openWindowDetection/enabled",
+      "/zones/zn4/openWindowDetection/status",
+      "/zones/zn4/optimumStartHeatupRate",
+      "/zones/zn4/optimumStartState",
+      "/zones/zn4/timeToNextSetpoint",
+      "/zones/zn5/actualValvePosition",
+      "/zones/zn5/clockOverride/temperatureHeating",
+      "/zones/zn5/clockProgram",
+      "/zones/zn5/nextSetpoint",
+      "/zones/zn5/openWindowDetection/enabled",
+      "/zones/zn5/openWindowDetection/status",
+      "/zones/zn5/optimumStartHeatupRate",
+      "/zones/zn5/optimumStartState",
+      "/zones/zn5/timeToNextSetpoint",
+      "/zones/zn6/temperatureActual"
+     ],
+     [
+      "/events/list1",
+      "/events/list2",
+      "/events/list3",
+      "/gateway/productType",
+      "/system/holidayMode",
+      "/system/holidayModes",
+      "/system/systemOfUnits",
+      "/zones/configuration"
+     ],
+     [
+      "/gateway/dataProcessing/status",
+      "/gateway/leds/inactivityTimeout",
+      "/gateway/productType",
+      "/system/appliance/enabled",
+      "/system/appliance/model",
+      "/system/appliance/versionFirmware",
+      "/system/awayMode/temperature",
+      "/system/energyTariff/electricity",
+      "/system/energyTariff/gas",
+      "/system/energyTariff/oil",
+      "/system/energyTariff/pv",
+      "/system/globalSeasonOptimizer/currentMode",
+      "/system/healthStatus",
+      "/system/iSRC/installationStatus",
+      "/system/iSRC/supportStatus",
+      "/system/lowNoise/duration",
+      "/system/lowNoise/mode",
+      "/system/powerGuard/active",
+      "/system/powerLimitation/active",
+      "/system/seasonOptimizer/coolingThreshold",
+      "/system/seasonOptimizer/heatingThreshold",
+      "/system/seasonOptimizer/mode",
+      "/system/sensors/temperatures/chimney",
+      "/system/sensors/temperatures/return",
+      "/system/sensors/temperatures/supply_t1",
+      "/system/sensors/temperatures/supply_t1_setpoint",
+      "/system/silentMode/enabled",
+      "/system/silentMode/powerReduction",
+      "/system/silentMode/startTime",
+      "/system/silentMode/stopTime"
+     ],
+     [
+      "/gateway/productType",
+      "/zones/zn6/actualValvePosition",
+      "/zones/zn6/clockProgram",
+      "/zones/zn6/nextSetpoint",
+      "/zones/zn6/openWindowDetection/enabled",
+      "/zones/zn6/openWindowDetection/status",
+      "/zones/zn6/optimumStartHeatupRate",
+      "/zones/zn6/optimumStartState",
+      "/zones/zn6/timeToNextSetpoint"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/system/openWindowDetection/duration",
+      "/system/openWindowDetection/enabled",
+      "/system/openWindowDetection/temperature",
+      "/zones/zn1/actualValvePosition",
+      "/zones/zn1/clockOverride",
+      "/zones/zn1/manualTemperatureHeating",
+      "/zones/zn1/name",
+      "/zones/zn1/nextSetpoint",
+      "/zones/zn1/openWindowDetection",
+      "/zones/zn1/optimumStartHeatupRate",
+      "/zones/zn1/optimumStartState",
+      "/zones/zn1/status",
+      "/zones/zn1/temperatureActual",
+      "/zones/zn1/temperatureHeatingSetpoint",
+      "/zones/zn1/userMode",
+      "/zones/zn2/actualValvePosition",
+      "/zones/zn2/clockOverride",
+      "/zones/zn2/manualTemperatureHeating",
+      "/zones/zn2/name",
+      "/zones/zn2/nextSetpoint",
+      "/zones/zn2/openWindowDetection",
+      "/zones/zn2/status",
+      "/zones/zn2/temperatureActual",
+      "/zones/zn2/temperatureHeatingSetpoint",
+      "/zones/zn2/timeToNextSetpoint",
+      "/zones/zn2/userMode",
+      "/zones/zn3/clockOverride",
+      "/zones/zn3/manualTemperatureHeating",
+      "/zones/zn3/name",
+      "/zones/zn3/nextSetpoint"
+     ],
+     [
+      "/zones/zn1/clockOverride/temperatureHeating",
+      "/zones/zn1/openWindowDetection/enabled",
+      "/zones/zn1/openWindowDetection/status",
+      "/zones/zn2/clockOverride/temperatureHeating",
+      "/zones/zn2/openWindowDetection/enabled",
+      "/zones/zn3/openWindowDetection",
+      "/zones/zn3/status",
+      "/zones/zn3/temperatureActual",
+      "/zones/zn3/temperatureHeatingSetpoint",
+      "/zones/zn3/timeToNextSetpoint",
+      "/zones/zn3/userMode",
+      "/zones/zn4/clockOverride",
+      "/zones/zn4/manualTemperatureHeating",
+      "/zones/zn4/name",
+      "/zones/zn4/status",
+      "/zones/zn4/temperatureActual",
+      "/zones/zn4/temperatureHeatingSetpoint",
+      "/zones/zn4/userMode",
+      "/zones/zn5/manualTemperatureHeating",
+      "/zones/zn5/name",
+      "/zones/zn5/status",
+      "/zones/zn5/temperatureActual",
+      "/zones/zn5/temperatureHeatingSetpoint",
+      "/zones/zn5/userMode",
+      "/zones/zn6/clockOverride",
+      "/zones/zn6/manualTemperatureHeating",
+      "/zones/zn6/name",
+      "/zones/zn6/status",
+      "/zones/zn6/temperatureHeatingSetpoint",
+      "/zones/zn6/userMode"
+     ],
+     [
+      "/zones/zn2/openWindowDetection/status",
+      "/zones/zn3/clockOverride/temperatureHeating",
+      "/zones/zn3/openWindowDetection/enabled",
+      "/zones/zn3/openWindowDetection/status",
+      "/zones/zn4/clockOverride/temperatureHeating",
+      "/zones/zn6/clockOverride/temperatureHeating"
+     ]
+    ],
+    "queries": {},
+    "read_count": 173,
+    "reads": {
+     "/devices": 1,
+     "/devices/list": 1,
+     "/dhwCircuits": 1,
+     "/events": 1,
+     "/events/list1": 1,
+     "/events/list2": 1,
+     "/events/list3": 1,
+     "/gateway": 1,
+     "/gateway/dataProcessing/status": 1,
+     "/gateway/leds/inactivityTimeout": 1,
+     "/gateway/productType": 5,
+     "/gateway/versionFirmware": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/programs": 1,
+     "/programs/list": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/system/appliance/enabled": 1,
+     "/system/appliance/model": 1,
+     "/system/appliance/versionFirmware": 1,
+     "/system/awayMode/temperature": 1,
+     "/system/energyTariff/electricity": 1,
+     "/system/energyTariff/gas": 1,
+     "/system/energyTariff/oil": 1,
+     "/system/energyTariff/pv": 1,
+     "/system/globalSeasonOptimizer/currentMode": 1,
+     "/system/healthStatus": 1,
+     "/system/holidayMode": 1,
+     "/system/holidayModes": 1,
+     "/system/iSRC/installationStatus": 1,
+     "/system/iSRC/supportStatus": 1,
+     "/system/lowNoise/duration": 1,
+     "/system/lowNoise/mode": 1,
+     "/system/openWindowDetection": 1,
+     "/system/openWindowDetection/duration": 1,
+     "/system/openWindowDetection/enabled": 1,
+     "/system/openWindowDetection/temperature": 1,
+     "/system/powerGuard/active": 1,
+     "/system/powerLimitation/active": 1,
+     "/system/seasonOptimizer/coolingThreshold": 1,
+     "/system/seasonOptimizer/heatingThreshold": 1,
+     "/system/seasonOptimizer/mode": 1,
+     "/system/sensors/temperatures/chimney": 1,
+     "/system/sensors/temperatures/return": 1,
+     "/system/sensors/temperatures/supply_t1": 1,
+     "/system/sensors/temperatures/supply_t1_setpoint": 1,
+     "/system/silentMode/enabled": 1,
+     "/system/silentMode/powerReduction": 1,
+     "/system/silentMode/startTime": 1,
+     "/system/silentMode/stopTime": 1,
+     "/system/systemOfUnits": 1,
+     "/ventilation": 1,
+     "/zones": 1,
+     "/zones/configuration": 1,
+     "/zones/list": 1,
+     "/zones/zn1": 1,
+     "/zones/zn1/actualValvePosition": 1,
+     "/zones/zn1/clockOverride": 1,
+     "/zones/zn1/clockOverride/temperatureHeating": 1,
+     "/zones/zn1/clockProgram": 1,
+     "/zones/zn1/manualTemperatureHeating": 1,
+     "/zones/zn1/name": 1,
+     "/zones/zn1/nextSetpoint": 1,
+     "/zones/zn1/openWindowDetection": 1,
+     "/zones/zn1/openWindowDetection/enabled": 1,
+     "/zones/zn1/openWindowDetection/status": 1,
+     "/zones/zn1/optimumStartHeatupRate": 1,
+     "/zones/zn1/optimumStartState": 1,
+     "/zones/zn1/status": 1,
+     "/zones/zn1/temperatureActual": 1,
+     "/zones/zn1/temperatureHeatingSetpoint": 1,
+     "/zones/zn1/timeToNextSetpoint": 1,
+     "/zones/zn1/userMode": 1,
+     "/zones/zn2": 1,
+     "/zones/zn2/actualValvePosition": 1,
+     "/zones/zn2/clockOverride": 1,
+     "/zones/zn2/clockOverride/temperatureHeating": 1,
+     "/zones/zn2/clockProgram": 1,
+     "/zones/zn2/manualTemperatureHeating": 1,
+     "/zones/zn2/name": 1,
+     "/zones/zn2/nextSetpoint": 1,
+     "/zones/zn2/openWindowDetection": 1,
+     "/zones/zn2/openWindowDetection/enabled": 1,
+     "/zones/zn2/openWindowDetection/status": 1,
+     "/zones/zn2/optimumStartHeatupRate": 1,
+     "/zones/zn2/optimumStartState": 1,
+     "/zones/zn2/status": 1,
+     "/zones/zn2/temperatureActual": 1,
+     "/zones/zn2/temperatureHeatingSetpoint": 1,
+     "/zones/zn2/timeToNextSetpoint": 1,
+     "/zones/zn2/userMode": 1,
+     "/zones/zn3": 1,
+     "/zones/zn3/actualValvePosition": 1,
+     "/zones/zn3/clockOverride": 1,
+     "/zones/zn3/clockOverride/temperatureHeating": 1,
+     "/zones/zn3/clockProgram": 1,
+     "/zones/zn3/manualTemperatureHeating": 1,
+     "/zones/zn3/name": 1,
+     "/zones/zn3/nextSetpoint": 1,
+     "/zones/zn3/openWindowDetection": 1,
+     "/zones/zn3/openWindowDetection/enabled": 1,
+     "/zones/zn3/openWindowDetection/status": 1,
+     "/zones/zn3/optimumStartHeatupRate": 1,
+     "/zones/zn3/optimumStartState": 1,
+     "/zones/zn3/status": 1,
+     "/zones/zn3/temperatureActual": 1,
+     "/zones/zn3/temperatureHeatingSetpoint": 1,
+     "/zones/zn3/timeToNextSetpoint": 1,
+     "/zones/zn3/userMode": 1,
+     "/zones/zn4": 1,
+     "/zones/zn4/actualValvePosition": 1,
+     "/zones/zn4/clockOverride": 1,
+     "/zones/zn4/clockOverride/temperatureHeating": 1,
+     "/zones/zn4/clockProgram": 1,
+     "/zones/zn4/manualTemperatureHeating": 1,
+     "/zones/zn4/name": 1,
+     "/zones/zn4/nextSetpoint": 1,
+     "/zones/zn4/openWindowDetection/enabled": 1,
+     "/zones/zn4/openWindowDetection/status": 1,
+     "/zones/zn4/optimumStartHeatupRate": 1,
+     "/zones/zn4/optimumStartState": 1,
+     "/zones/zn4/status": 1,
+     "/zones/zn4/temperatureActual": 1,
+     "/zones/zn4/temperatureHeatingSetpoint": 1,
+     "/zones/zn4/timeToNextSetpoint": 1,
+     "/zones/zn4/userMode": 1,
+     "/zones/zn5": 1,
+     "/zones/zn5/actualValvePosition": 1,
+     "/zones/zn5/clockOverride/temperatureHeating": 1,
+     "/zones/zn5/clockProgram": 1,
+     "/zones/zn5/manualTemperatureHeating": 1,
+     "/zones/zn5/name": 1,
+     "/zones/zn5/nextSetpoint": 1,
+     "/zones/zn5/openWindowDetection/enabled": 1,
+     "/zones/zn5/openWindowDetection/status": 1,
+     "/zones/zn5/optimumStartHeatupRate": 1,
+     "/zones/zn5/optimumStartState": 1,
+     "/zones/zn5/status": 1,
+     "/zones/zn5/temperatureActual": 1,
+     "/zones/zn5/temperatureHeatingSetpoint": 1,
+     "/zones/zn5/timeToNextSetpoint": 1,
+     "/zones/zn5/userMode": 1,
+     "/zones/zn6": 1,
+     "/zones/zn6/actualValvePosition": 1,
+     "/zones/zn6/clockOverride": 1,
+     "/zones/zn6/clockOverride/temperatureHeating": 1,
+     "/zones/zn6/clockProgram": 1,
+     "/zones/zn6/manualTemperatureHeating": 1,
+     "/zones/zn6/name": 1,
+     "/zones/zn6/nextSetpoint": 1,
+     "/zones/zn6/openWindowDetection/enabled": 1,
+     "/zones/zn6/openWindowDetection/status": 1,
+     "/zones/zn6/optimumStartHeatupRate": 1,
+     "/zones/zn6/optimumStartState": 1,
+     "/zones/zn6/status": 1,
+     "/zones/zn6/temperatureActual": 1,
+     "/zones/zn6/temperatureHeatingSetpoint": 1,
+     "/zones/zn6/timeToNextSetpoint": 1,
+     "/zones/zn6/userMode": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Room controller Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Room controller System fault"
+   },
+   "state": "unavailable"
+  },
+  "binary_sensor gateway-one:zones:zn1:openWindowDetection:status": {
+   "attributes": {
+    "device_class": "window",
+    "friendly_name": "Room controller Zone A – Window open"
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:zones:zn2:openWindowDetection:status": {
+   "attributes": {
+    "device_class": "window",
+    "friendly_name": "Room controller Zone B – Window open"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:zones:zn3:openWindowDetection:status": {
+   "attributes": {
+    "device_class": "window",
+    "friendly_name": "Room controller Zone C – Window open"
+   },
+   "state": "unknown"
+  },
+  "button gateway-one:zones:zn1:clockOverride:temperatureHeating:advance": {
+   "attributes": {
+    "friendly_name": "Room controller Zone A – Advance next switch point"
+   },
+   "state": "unavailable"
+  },
+  "button gateway-one:zones:zn1:clockOverride:temperatureHeating:clear": {
+   "attributes": {
+    "friendly_name": "Room controller Zone A – Clear temporary setpoint"
+   },
+   "state": "unavailable"
+  },
+  "button gateway-one:zones:zn2:clockOverride:temperatureHeating:advance": {
+   "attributes": {
+    "friendly_name": "Room controller Zone B – Advance next switch point",
+    "next_setpoint_advanced": false
+   },
+   "state": "unknown"
+  },
+  "button gateway-one:zones:zn2:clockOverride:temperatureHeating:clear": {
+   "attributes": {
+    "friendly_name": "Room controller Zone B – Clear temporary setpoint"
+   },
+   "state": "unknown"
+  },
+  "button gateway-one:zones:zn3:clockOverride:temperatureHeating:advance": {
+   "attributes": {
+    "friendly_name": "Room controller Zone C – Advance next switch point",
+    "next_setpoint_advanced": false
+   },
+   "state": "unknown"
+  },
+  "button gateway-one:zones:zn3:clockOverride:temperatureHeating:clear": {
+   "attributes": {
+    "friendly_name": "Room controller Zone C – Clear temporary setpoint"
+   },
+   "state": "unavailable"
+  },
+  "button gateway-one:zones:zn4:clockOverride:temperatureHeating:clear": {
+   "attributes": {
+    "friendly_name": "Room controller Zone D – Clear temporary setpoint"
+   },
+   "state": "unavailable"
+  },
+  "button gateway-one:zones:zn6:clockOverride:temperatureHeating:clear": {
+   "attributes": {
+    "friendly_name": "Room controller Zone F – Clear temporary setpoint"
+   },
+   "state": "unavailable"
+  },
+  "climate gateway-one:zones:zn1:climate": {
+   "attributes": {
+    "active_setpoint": 21.0,
+    "current_temperature": 20.5,
+    "friendly_name": "Room controller Zone A",
+    "hvac_action": "heating",
+    "hvac_modes": [
+     "heat",
+     "auto"
+    ],
+    "max_temp": 30.0,
+    "min_temp": 5.0,
+    "supported_features": 1,
+    "target_temp_step": 0.5,
+    "temperature": 21.0,
+    "temperature_unit": "°C",
+    "temporary_override": false,
+    "zone_status": "heat_request"
+   },
+   "state": "heat"
+  },
+  "climate gateway-one:zones:zn2:climate": {
+   "attributes": {
+    "active_setpoint": 23.5,
+    "current_temperature": 20.5,
+    "friendly_name": "Room controller Zone B",
+    "hvac_action": "idle",
+    "hvac_modes": [
+     "heat",
+     "auto"
+    ],
+    "max_temp": 30.0,
+    "min_temp": 5.0,
+    "minutes_to_next_setpoint": 45,
+    "next_setpoint": 18.0,
+    "next_setpoint_advanced": false,
+    "override_until_next_switch_point": true,
+    "supported_features": 1,
+    "target_temp_step": 0.5,
+    "temperature": 23.5,
+    "temperature_unit": "°C",
+    "temporary_override": true,
+    "zone_status": "idle"
+   },
+   "state": "auto"
+  },
+  "climate gateway-one:zones:zn3:climate": {
+   "attributes": {
+    "active_setpoint": 19.0,
+    "current_temperature": 20.5,
+    "friendly_name": "Room controller Zone C",
+    "hvac_modes": [
+     "heat",
+     "auto"
+    ],
+    "max_temp": 30.0,
+    "min_temp": 5.0,
+    "minutes_to_next_setpoint": 120,
+    "next_setpoint": 21.0,
+    "supported_features": 1,
+    "target_temp_step": 0.5,
+    "temperature": 19.0,
+    "temperature_unit": "°C",
+    "temporary_override": false
+   },
+   "state": "auto"
+  },
+  "climate gateway-one:zones:zn4:climate": {
+   "attributes": {
+    "active_setpoint": 21.0,
+    "current_temperature": 20.5,
+    "friendly_name": "Room controller Zone D",
+    "hvac_modes": [
+     "heat",
+     "auto"
+    ],
+    "max_temp": 30.0,
+    "min_temp": 5.0,
+    "supported_features": 1,
+    "target_temp_step": 0.5,
+    "temperature": 21.0,
+    "temperature_unit": "°C",
+    "temporary_override": false,
+    "zone_status": "comm_warning"
+   },
+   "state": "auto"
+  },
+  "climate gateway-one:zones:zn5:climate": {
+   "attributes": {
+    "active_setpoint": 20.0,
+    "current_temperature": 20.5,
+    "friendly_name": "Room controller Zone E",
+    "hvac_modes": [
+     "heat",
+     "auto"
+    ],
+    "max_temp": 35,
+    "min_temp": 7,
+    "supported_features": 0,
+    "temperature": 20.0,
+    "temperature_unit": "°C",
+    "temporary_override": false,
+    "zone_status": "low_battery"
+   },
+   "state": "auto"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Room controller System notifications"
+   },
+   "state": "unavailable"
+  },
+  "number gateway-one:zones:zn1:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone A – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "number gateway-one:zones:zn2:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone B – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "number gateway-one:zones:zn3:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone C – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.0"
+  },
+  "number gateway-one:zones:zn4:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone D – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "number gateway-one:zones:zn5:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone E – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "number gateway-one:zones:zn6:manualTemperatureHeating:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone F – Set manual heating setpoint",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "select gateway-one:zones:zn1:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone A – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "manual"
+  },
+  "select gateway-one:zones:zn2:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone B – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "clock"
+  },
+  "select gateway-one:zones:zn3:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone C – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "clock"
+  },
+  "select gateway-one:zones:zn4:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone D – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "clock"
+  },
+  "select gateway-one:zones:zn5:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone E – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "clock"
+  },
+  "select gateway-one:zones:zn6:userMode:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone F – Set heating mode",
+    "options": [
+     "manual",
+     "clock"
+    ]
+   },
+   "state": "manual"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Room controller Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Room controller Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:system:openWindowDetection:temperature": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller System – Open window temperature",
+    "icon": "mdi:thermometer",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "12.0"
+  },
+  "sensor gateway-one:zones:zn1:nextSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone A – Next setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:zones:zn1:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone A – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "heat_request"
+  },
+  "sensor gateway-one:zones:zn1:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone A – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn1:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone A – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "sensor gateway-one:zones:zn2:nextSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone B – Next setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "18.0"
+  },
+  "sensor gateway-one:zones:zn2:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone B – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "idle"
+  },
+  "sensor gateway-one:zones:zn2:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone B – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn2:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone B – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "23.5"
+  },
+  "sensor gateway-one:zones:zn3:nextSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone C – Next setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "sensor gateway-one:zones:zn3:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone C – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:zones:zn3:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone C – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn3:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone C – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "19.0"
+  },
+  "sensor gateway-one:zones:zn4:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone D – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "comm_warning"
+  },
+  "sensor gateway-one:zones:zn4:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone D – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn4:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone D – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "sensor gateway-one:zones:zn5:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone E – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "low_battery"
+  },
+  "sensor gateway-one:zones:zn5:temperatureActual": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone E – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor gateway-one:zones:zn5:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone E – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.0"
+  },
+  "sensor gateway-one:zones:zn6:status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Room controller Zone F – Zone status",
+    "icon": "mdi:home-thermometer-outline",
+    "options": [
+     "idle",
+     "heat_request",
+     "zone_error",
+     "comm_error",
+     "comm_warning",
+     "low_battery"
+    ]
+   },
+   "state": "zone_error"
+  },
+  "sensor gateway-one:zones:zn6:temperatureHeatingSetpoint": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Room controller Zone F – Active heating setpoint",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "switch gateway-one:zones:zn1:openWindowDetection:enabled:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone A – Open window detection",
+    "icon": "mdi:window-open-variant"
+   },
+   "state": "on"
+  },
+  "switch gateway-one:zones:zn2:openWindowDetection:enabled:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone B – Open window detection",
+    "icon": "mdi:window-open-variant"
+   },
+   "state": "off"
+  },
+  "switch gateway-one:zones:zn3:openWindowDetection:enabled:control": {
+   "attributes": {
+    "friendly_name": "Room controller Zone C – Open window detection",
+    "icon": "mdi:window-open-variant"
+   },
+   "state": "on"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:zones:zn1:openWindowDetection:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:zones:zn2:openWindowDetection:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:zones:zn3:openWindowDetection:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn1:clockOverride:temperatureHeating:advance": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn1:clockOverride:temperatureHeating:clear": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn2:clockOverride:temperatureHeating:advance": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn2:clockOverride:temperatureHeating:clear": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn3:clockOverride:temperatureHeating:advance": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn3:clockOverride:temperatureHeating:clear": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn4:clockOverride:temperatureHeating:clear": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "button gateway-one:zones:zn6:clockOverride:temperatureHeating:clear": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate gateway-one:zones:zn1:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate gateway-one:zones:zn2:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate gateway-one:zones:zn3:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate gateway-one:zones:zn4:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "climate gateway-one:zones:zn5:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn1:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn2:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn3:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn4:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn5:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:zones:zn6:manualTemperatureHeating:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn1:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn2:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn3:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn4:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn5:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:zones:zn6:userMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:system:openWindowDetection:temperature": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn1:nextSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn1:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn1:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn1:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn2:nextSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn2:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn2:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn2:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn3:nextSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn3:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn3:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn3:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn4:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn4:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn4:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn5:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn5:temperatureActual": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn5:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn6:status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:zones:zn6:temperatureHeatingSetpoint": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch gateway-one:zones:zn1:openWindowDetection:enabled:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch gateway-one:zones:zn2:openWindowDetection:enabled:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch gateway-one:zones:zn3:openWindowDetection:enabled:control": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

@@ -1,0 +1,33 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "brine heat pump"
+  },
+  "gateway": {
+    "device_type": "k40rf",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/system/type": "heatpump_single",
+    "/heatSources/hs1/type": "Heatpump",
+    "/heatSources/hs1/heatPumpType": "liquid_water",
+    "/system/bus": "EMS2_0"
+  },
+  "expected": {
+    "plant_kind": "heat_pump",
+    "fuel": null,
+    "cascade": false,
+    "evidence": [
+      "reported_heat_pump_type",
+      "reported_heat_source_type",
+      "reported_system_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

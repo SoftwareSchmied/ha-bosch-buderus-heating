@@ -1,0 +1,44 @@
+{
+  "header": {
+    "device_class": "mx300",
+    "firmware_family": "16",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "controller of a heat pump at the hybrid place"
+  },
+  "gateway": {
+    "device_type": "MX300",
+    "firmware": "16.00.09"
+  },
+  "cloud": [
+    {
+      "Id": "195",
+      "Tok": "8",
+      "Ver": "3.1"
+    },
+    {
+      "Id": "16",
+      "Tok": "83"
+    },
+    {
+      "Id": "17",
+      "Tok": "72",
+      "Ver": "16.00.09"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/system/type": "boiler",
+    "/heatSources/hs1/type": "GasBoiler"
+  },
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": false,
+    "evidence": [
+      "hybrid_manager_component"
+    ],
+    "conflicts": [],
+    "gate": "passed"
+  }
+}

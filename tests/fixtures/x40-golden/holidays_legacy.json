@@ -1,0 +1,663 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_holiday_mode_active",
+   "original_name": "Holiday mode active",
+   "platform": "binary_sensor",
+   "translation_key": "holiday_active",
+   "unique_id": "gateway-one:holiday_active"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "calendar.heating_holiday_periods",
+   "original_name": "Holiday periods",
+   "platform": "calendar",
+   "translation_key": "holiday_periods",
+   "unique_id": "gateway-one:holiday_periods"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_next_holiday",
+   "original_name": "Next holiday",
+   "platform": "sensor",
+   "translation_key": "next_holiday",
+   "unique_id": "gateway-one:next_holiday"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_holiday_mode",
+   "original_name": "System – Holiday mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_delete",
+   "original_name": "System – Delete",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm2:delete"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_dhw_mode",
+   "original_name": "System – Dhw Mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm2:dhwMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_fix_temperature",
+   "original_name": "System – Fix Temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm2:fixTemperature"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_hc_mode",
+   "original_name": "System – Hc Mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm2:hcMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_delete_2",
+   "original_name": "System – Delete",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm4:delete"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_dhw_mode_2",
+   "original_name": "System – Dhw Mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm4:dhwMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_fix_temperature_2",
+   "original_name": "System – Fix Temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm4:fixTemperature"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_system_hc_mode_2",
+   "original_name": "System – Hc Mode",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:system:holidayModes:hm4:hcMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.heating_system_holiday_mode",
+   "original_name": "System – Holiday mode",
+   "platform": "switch",
+   "translation_key": "wddw2_holiday_mode",
+   "unique_id": "gateway-one:system:holidayMode:control"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of holidays/legacy.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "holidays/legacy.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/system/holidayMode",
+      "/system/holidayModes",
+      "/system/holidayModes/hm2",
+      "/system/holidayModes/hm2/assignedTo",
+      "/system/holidayModes/hm2/delete",
+      "/system/holidayModes/hm2/dhwMode",
+      "/system/holidayModes/hm2/fixTemperature",
+      "/system/holidayModes/hm2/hcMode",
+      "/system/holidayModes/hm2/startStop",
+      "/system/holidayModes/hm4",
+      "/system/holidayModes/hm4/assignedTo",
+      "/system/holidayModes/hm4/delete",
+      "/system/holidayModes/hm4/dhwMode",
+      "/system/holidayModes/hm4/fixTemperature",
+      "/system/holidayModes/hm4/hcMode",
+      "/system/holidayModes/hm4/startStop"
+     ]
+    ],
+    "queries": {},
+    "read_count": 16,
+    "reads": {
+     "/system/holidayMode": 1,
+     "/system/holidayModes": 1,
+     "/system/holidayModes/hm2": 1,
+     "/system/holidayModes/hm2/assignedTo": 1,
+     "/system/holidayModes/hm2/delete": 1,
+     "/system/holidayModes/hm2/dhwMode": 1,
+     "/system/holidayModes/hm2/fixTemperature": 1,
+     "/system/holidayModes/hm2/hcMode": 1,
+     "/system/holidayModes/hm2/startStop": 1,
+     "/system/holidayModes/hm4": 1,
+     "/system/holidayModes/hm4/assignedTo": 1,
+     "/system/holidayModes/hm4/delete": 1,
+     "/system/holidayModes/hm4/dhwMode": 1,
+     "/system/holidayModes/hm4/fixTemperature": 1,
+     "/system/holidayModes/hm4/hcMode": 1,
+     "/system/holidayModes/hm4/startStop": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 6,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/system/appliance/enabled",
+      "/system/appliance/model",
+      "/system/appliance/versionFirmware",
+      "/system/awayMode/temperature",
+      "/system/energyTariff/electricity",
+      "/system/energyTariff/gas",
+      "/system/energyTariff/oil",
+      "/system/energyTariff/pv",
+      "/system/globalSeasonOptimizer/currentMode",
+      "/system/healthStatus",
+      "/system/iSRC/installationStatus",
+      "/system/iSRC/supportStatus",
+      "/system/lowNoise/duration",
+      "/system/lowNoise/mode",
+      "/system/powerGuard/active",
+      "/system/powerLimitation/active",
+      "/system/seasonOptimizer/coolingThreshold",
+      "/system/seasonOptimizer/heatingThreshold",
+      "/system/seasonOptimizer/mode",
+      "/system/sensors/temperatures/chimney",
+      "/system/sensors/temperatures/return",
+      "/system/sensors/temperatures/supply_t1",
+      "/system/sensors/temperatures/supply_t1_setpoint",
+      "/system/silentMode/enabled",
+      "/system/silentMode/powerReduction",
+      "/system/silentMode/startTime",
+      "/system/silentMode/stopTime",
+      "/system/systemOfUnits"
+     ],
+     [
+      "/system/holidayMode",
+      "/system/holidayModes"
+     ],
+     [
+      "/system/holidayModes/hm2",
+      "/system/holidayModes/hm4"
+     ],
+     [
+      "/system/holidayModes/hm2/assignedTo",
+      "/system/holidayModes/hm2/delete",
+      "/system/holidayModes/hm2/dhwMode",
+      "/system/holidayModes/hm2/fixTemperature",
+      "/system/holidayModes/hm2/hcMode",
+      "/system/holidayModes/hm2/startStop",
+      "/system/holidayModes/hm4/assignedTo",
+      "/system/holidayModes/hm4/delete",
+      "/system/holidayModes/hm4/dhwMode",
+      "/system/holidayModes/hm4/fixTemperature",
+      "/system/holidayModes/hm4/hcMode",
+      "/system/holidayModes/hm4/startStop"
+     ]
+    ],
+    "queries": {},
+    "read_count": 62,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/system/appliance/enabled": 1,
+     "/system/appliance/model": 1,
+     "/system/appliance/versionFirmware": 1,
+     "/system/awayMode/temperature": 1,
+     "/system/energyTariff/electricity": 1,
+     "/system/energyTariff/gas": 1,
+     "/system/energyTariff/oil": 1,
+     "/system/energyTariff/pv": 1,
+     "/system/globalSeasonOptimizer/currentMode": 1,
+     "/system/healthStatus": 1,
+     "/system/holidayMode": 1,
+     "/system/holidayModes": 1,
+     "/system/holidayModes/hm2": 1,
+     "/system/holidayModes/hm2/assignedTo": 1,
+     "/system/holidayModes/hm2/delete": 1,
+     "/system/holidayModes/hm2/dhwMode": 1,
+     "/system/holidayModes/hm2/fixTemperature": 1,
+     "/system/holidayModes/hm2/hcMode": 1,
+     "/system/holidayModes/hm2/startStop": 1,
+     "/system/holidayModes/hm4": 1,
+     "/system/holidayModes/hm4/assignedTo": 1,
+     "/system/holidayModes/hm4/delete": 1,
+     "/system/holidayModes/hm4/dhwMode": 1,
+     "/system/holidayModes/hm4/fixTemperature": 1,
+     "/system/holidayModes/hm4/hcMode": 1,
+     "/system/holidayModes/hm4/startStop": 1,
+     "/system/iSRC/installationStatus": 1,
+     "/system/iSRC/supportStatus": 1,
+     "/system/lowNoise/duration": 1,
+     "/system/lowNoise/mode": 1,
+     "/system/powerGuard/active": 1,
+     "/system/powerLimitation/active": 1,
+     "/system/seasonOptimizer/coolingThreshold": 1,
+     "/system/seasonOptimizer/heatingThreshold": 1,
+     "/system/seasonOptimizer/mode": 1,
+     "/system/sensors/temperatures/chimney": 1,
+     "/system/sensors/temperatures/return": 1,
+     "/system/sensors/temperatures/supply_t1": 1,
+     "/system/sensors/temperatures/supply_t1_setpoint": 1,
+     "/system/silentMode/enabled": 1,
+     "/system/silentMode/powerReduction": 1,
+     "/system/silentMode/startTime": 1,
+     "/system/silentMode/stopTime": 1,
+     "/system/systemOfUnits": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:holiday_active": {
+   "attributes": {
+    "active_period_count": 0,
+    "friendly_name": "Heating Holiday mode active",
+    "invalid_period_count": 0,
+    "period_count": 1
+   },
+   "state": "off"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "calendar gateway-one:holiday_periods": {
+   "attributes": {
+    "all_day": true,
+    "description": "",
+    "end_time": "2030-10-29 00:00:00",
+    "friendly_name": "Heating Holiday periods",
+    "location": "",
+    "message": "Holiday period",
+    "start_time": "2030-10-26 00:00:00",
+    "supported_features": 7
+   },
+   "state": "off"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:next_holiday": {
+   "attributes": {
+    "active": false,
+    "all_day": true,
+    "device_class": "timestamp",
+    "end": "2030-10-29T00:00:00-07:00",
+    "friendly_name": "Heating Next holiday"
+   },
+   "state": "2030-10-26T07:00:00+00:00"
+  },
+  "switch gateway-one:system:holidayMode:control": {
+   "attributes": {
+    "friendly_name": "Heating System – Holiday mode"
+   },
+   "state": "off"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:holiday_active": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "calendar gateway-one:holiday_periods": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:next_holiday": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch gateway-one:system:holidayMode:control": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

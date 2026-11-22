@@ -55,7 +55,7 @@ async def _setup(hass: HomeAssistant):
 async def test_the_report_counts_entities_and_states(hass: HomeAssistant) -> None:
     entry, device = await _setup(hass)
     report = await async_get_device_diagnostics(hass, entry, device)
-    assert report["diagnostics_schema"] == DIAGNOSTICS_SCHEMA_VERSION == 48
+    assert report["diagnostics_schema"] == DIAGNOSTICS_SCHEMA_VERSION == 49
     assert report["device"]["entity_count"] == 4
     assert report["device"]["disabled_entity_count"] == 1
     assert report["entities_by_domain"] == {"sensor": 3, "switch": 1}

@@ -1,0 +1,50 @@
+{
+  "header": {
+    "device_class": "mx300",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "boiler on a K30-class gateway"
+  },
+  "gateway": {
+    "device_type": "MX300",
+    "firmware": "16.00.09"
+  },
+  "cloud": [
+    {
+      "Id": "195",
+      "Tok": "8",
+      "Ver": "3.1",
+      "ModuleHwIdentStr": "ACU-MH"
+    },
+    {
+      "Id": "9999",
+      "Tok": "16",
+      "Ver": "2.0",
+      "ModuleHwIdentStr": "HMI800 GSBS_BU"
+    },
+    {
+      "Id": "17",
+      "Tok": "72",
+      "Ver": "16.00.09",
+      "ModuleHwIdentStr": "MX300"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/system/type": "boiler",
+    "/heatSources/hs1/type": "GasBoiler",
+    "/system/bus": "EMS2_0"
+  },
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "gas",
+    "cascade": false,
+    "evidence": [
+      "reported_heat_source_type",
+      "reported_system_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

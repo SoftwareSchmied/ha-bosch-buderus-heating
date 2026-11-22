@@ -1,0 +1,1129 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.heating_dhw_1_start_threshold_eco",
+   "original_name": "DHW 1: Start threshold Eco+",
+   "platform": "number",
+   "translation_key": "hot_water_eco_plus",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.heating_dhw_1_start_threshold_comfort",
+   "original_name": "DHW 1: Start threshold Comfort",
+   "platform": "number",
+   "translation_key": "hot_water_comfort",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.heating_dhw_1_start_threshold_eco_2",
+   "original_name": "DHW 1: Start threshold Eco",
+   "platform": "number",
+   "translation_key": "hot_water_eco",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.heating_hc_1_heating_temperature",
+   "original_name": "HC 1: Heating temperature",
+   "platform": "number",
+   "translation_key": "heating_temperature",
+   "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.heating_hc_1_setback_temperature",
+   "original_name": "HC 1: Setback temperature",
+   "platform": "number",
+   "translation_key": "reduced_temperature",
+   "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:eco:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "select.heating_dhw_1_operating_mode",
+   "original_name": "DHW 1: Operating mode",
+   "platform": "select",
+   "translation_key": "hot_water_operation_mode",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:operationMode:control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "select.heating_hc_1_active_schedule",
+   "original_name": "HC 1: Active schedule",
+   "platform": "select",
+   "translation_key": "active_switch_program",
+   "unique_id": "gateway-one:heatingCircuits:hc1:activeSwitchProgram:control"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_operation_mode",
+   "original_name": "Hot water 1 – Operation mode",
+   "platform": "sensor",
+   "translation_key": "hot_water_operation_mode",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:operationMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_time_program_a",
+   "original_name": "Hot water 1 – Time program A",
+   "platform": "sensor",
+   "translation_key": "dhw_switch_program",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:switchPrograms:A"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_start_threshold_eco",
+   "original_name": "Hot water 1 – Start threshold Eco+",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_start_threshold_comfort",
+   "original_name": "Hot water 1 – Start threshold Comfort",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_start_threshold_eco_2",
+   "original_name": "Hot water 1 – Start threshold Eco",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_hot_water_1_setpoint_level_off",
+   "original_name": "Hot water 1 – Setpoint level off",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:off"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_active_schedule",
+   "original_name": "Heating circuit 1 – Active schedule",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc1:activeSwitchProgram"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_schedule_type",
+   "original_name": "Heating circuit 1 – Schedule type",
+   "platform": "sensor",
+   "translation_key": "heating_circuit_switch_program_mode",
+   "unique_id": "gateway-one:heatingCircuits:hc1:switchProgramMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_time_program_a",
+   "original_name": "Heating circuit 1 – Time program A",
+   "platform": "sensor",
+   "translation_key": "heating_switch_program",
+   "unique_id": "gateway-one:heatingCircuits:hc1:switchPrograms:A"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_time_program_b",
+   "original_name": "Heating circuit 1 – Time program B",
+   "platform": "sensor",
+   "translation_key": "heating_switch_program",
+   "unique_id": "gateway-one:heatingCircuits:hc1:switchPrograms:B"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_schedule_a_name",
+   "original_name": "Heating circuit 1 – Schedule A name",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc1:switchPrograms:nameA"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_schedule_b_name",
+   "original_name": "Heating circuit 1 – Schedule B name",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc1:switchPrograms:nameB"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_heating_temperature",
+   "original_name": "Heating circuit 1 – Heating temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_1_setback_temperature",
+   "original_name": "Heating circuit 1 – Setback temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:eco"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "water_heater.heating_hot_water_1",
+   "original_name": "Hot water 1",
+   "platform": "water_heater",
+   "translation_key": "pointt_dhw",
+   "unique_id": "gateway-one:dhwCircuits:dhw1:water_heater"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of connectkey/switch-programs-ab.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "connectkey/switch-programs-ab.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/dhwCircuits/dhw1/operationMode",
+      "/dhwCircuits/dhw1/switchPrograms/A",
+      "/dhwCircuits/dhw1/temperatureLevels/eco",
+      "/dhwCircuits/dhw1/temperatureLevels/high",
+      "/dhwCircuits/dhw1/temperatureLevels/low",
+      "/dhwCircuits/dhw1/temperatureLevels/off",
+      "/heatingCircuits/hc1/activeSwitchProgram",
+      "/heatingCircuits/hc1/switchProgramMode",
+      "/heatingCircuits/hc1/switchPrograms/A",
+      "/heatingCircuits/hc1/switchPrograms/B",
+      "/heatingCircuits/hc1/switchPrograms/nameA",
+      "/heatingCircuits/hc1/switchPrograms/nameB",
+      "/heatingCircuits/hc1/temperatureLevels/comfort2",
+      "/heatingCircuits/hc1/temperatureLevels/eco"
+     ]
+    ],
+    "queries": {},
+    "read_count": 14,
+    "reads": {
+     "/dhwCircuits/dhw1/operationMode": 1,
+     "/dhwCircuits/dhw1/switchPrograms/A": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/eco": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/high": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/low": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/off": 1,
+     "/heatingCircuits/hc1/activeSwitchProgram": 1,
+     "/heatingCircuits/hc1/switchProgramMode": 1,
+     "/heatingCircuits/hc1/switchPrograms/A": 1,
+     "/heatingCircuits/hc1/switchPrograms/B": 1,
+     "/heatingCircuits/hc1/switchPrograms/nameA": 1,
+     "/heatingCircuits/hc1/switchPrograms/nameB": 1,
+     "/heatingCircuits/hc1/temperatureLevels/comfort2": 1,
+     "/heatingCircuits/hc1/temperatureLevels/eco": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 8,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/dhwCircuits/dhw1",
+      "/heatingCircuits/hc1"
+     ],
+     [
+      "/dhwCircuits/dhw1/currentFriwaSupplyTemperature",
+      "/dhwCircuits/dhw1/dhwType",
+      "/dhwCircuits/dhw1/friwaPrimaryPumpModulation",
+      "/dhwCircuits/dhw1/inletTemperature",
+      "/dhwCircuits/dhw1/learningWeek",
+      "/dhwCircuits/dhw1/manualsetpoint",
+      "/dhwCircuits/waterTotalConsumption",
+      "/heatingCircuits/hc1/actualHumidity",
+      "/heatingCircuits/hc1/actualSupplyTemperature",
+      "/heatingCircuits/hc1/awayTemperature",
+      "/heatingCircuits/hc1/boostDuration",
+      "/heatingCircuits/hc1/boostMode",
+      "/heatingCircuits/hc1/boostRemainingTime",
+      "/heatingCircuits/hc1/boostTemperature",
+      "/heatingCircuits/hc1/cooling/controlType",
+      "/heatingCircuits/hc1/cooling/manualRoomSetpoint",
+      "/heatingCircuits/hc1/cooling/operationMode",
+      "/heatingCircuits/hc1/cooling/outdoorThreshold",
+      "/heatingCircuits/hc1/cooling/roomTempSetpoint",
+      "/heatingCircuits/hc1/cooling/temperatureLevels/on",
+      "/heatingCircuits/hc1/cooling/temporaryRoomSetpoint",
+      "/heatingCircuits/hc1/openWindowDetection/enabled",
+      "/heatingCircuits/hc1/openWindowDetection/status",
+      "/heatingCircuits/hc1/operationSetpoints",
+      "/heatingCircuits/hc1/pumpModulation",
+      "/heatingCircuits/hc1/roomtemperature",
+      "/heatingCircuits/hc1/setpointOptimization",
+      "/heatingCircuits/hc1/suWiCoolingThreshold",
+      "/heatingCircuits/hc1/suWiThreshold",
+      "/heatingCircuits/hc1/temporaryRoomSetpoint"
+     ],
+     [
+      "/dhwCircuits/dhw1/monitorValues",
+      "/dhwCircuits/dhw1/numberOfShowersAvailable",
+      "/dhwCircuits/dhw1/operationSetpoints",
+      "/dhwCircuits/dhw1/outTemp",
+      "/dhwCircuits/dhw1/outletTemperature",
+      "/dhwCircuits/dhw1/recirculation/enabled",
+      "/dhwCircuits/dhw1/safetyTemperature",
+      "/dhwCircuits/dhw1/sensor/airBoxTemperature",
+      "/dhwCircuits/dhw1/sensor/atmosphericPressure",
+      "/dhwCircuits/dhw1/sensor/exhaustFlueGasTemperature",
+      "/dhwCircuits/dhw1/sensor/externalTankTemperature",
+      "/dhwCircuits/dhw1/sensor/fanSpeed",
+      "/dhwCircuits/dhw1/sensor/gasFlow",
+      "/dhwCircuits/dhw1/sensor/heatExchangerFlueGasTemperature",
+      "/dhwCircuits/dhw1/sensor/heatExchangerTemperature",
+      "/dhwCircuits/dhw1/sensor/waterFlow",
+      "/dhwCircuits/dhw1/volumeFlow",
+      "/dhwCircuits/dhw1/waterTotalConsumption"
+     ],
+     [
+      "/dhwCircuits/dhw1/operationMode",
+      "/dhwCircuits/dhw1/switchPrograms",
+      "/dhwCircuits/dhw1/temperatureLevels",
+      "/heatingCircuits/hc1/activeSwitchProgram",
+      "/heatingCircuits/hc1/switchProgramMode",
+      "/heatingCircuits/hc1/switchPrograms",
+      "/heatingCircuits/hc1/temperatureLevels"
+     ],
+     [
+      "/dhwCircuits/dhw1/switchPrograms/A",
+      "/dhwCircuits/dhw1/temperatureLevels/eco",
+      "/dhwCircuits/dhw1/temperatureLevels/high",
+      "/dhwCircuits/dhw1/temperatureLevels/low",
+      "/dhwCircuits/dhw1/temperatureLevels/off",
+      "/heatingCircuits/hc1/switchPrograms/A",
+      "/heatingCircuits/hc1/switchPrograms/B",
+      "/heatingCircuits/hc1/switchPrograms/nameA",
+      "/heatingCircuits/hc1/switchPrograms/nameB",
+      "/heatingCircuits/hc1/temperatureLevels/comfort2",
+      "/heatingCircuits/hc1/temperatureLevels/eco"
+     ],
+     [
+      "/heatingCircuits/hc1/controlType",
+      "/heatingCircuits/hc1/manualRoomSetpoint",
+      "/heatingCircuits/hc1/operationMode"
+     ],
+     [
+      "/notifications"
+     ]
+    ],
+    "queries": {},
+    "read_count": 89,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/dhwCircuits/dhw1": 1,
+     "/dhwCircuits/dhw1/currentFriwaSupplyTemperature": 1,
+     "/dhwCircuits/dhw1/dhwType": 1,
+     "/dhwCircuits/dhw1/friwaPrimaryPumpModulation": 1,
+     "/dhwCircuits/dhw1/inletTemperature": 1,
+     "/dhwCircuits/dhw1/learningWeek": 1,
+     "/dhwCircuits/dhw1/manualsetpoint": 1,
+     "/dhwCircuits/dhw1/monitorValues": 1,
+     "/dhwCircuits/dhw1/numberOfShowersAvailable": 1,
+     "/dhwCircuits/dhw1/operationMode": 1,
+     "/dhwCircuits/dhw1/operationSetpoints": 1,
+     "/dhwCircuits/dhw1/outTemp": 1,
+     "/dhwCircuits/dhw1/outletTemperature": 1,
+     "/dhwCircuits/dhw1/recirculation/enabled": 1,
+     "/dhwCircuits/dhw1/safetyTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/airBoxTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/atmosphericPressure": 1,
+     "/dhwCircuits/dhw1/sensor/exhaustFlueGasTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/externalTankTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/fanSpeed": 1,
+     "/dhwCircuits/dhw1/sensor/gasFlow": 1,
+     "/dhwCircuits/dhw1/sensor/heatExchangerFlueGasTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/heatExchangerTemperature": 1,
+     "/dhwCircuits/dhw1/sensor/waterFlow": 1,
+     "/dhwCircuits/dhw1/switchPrograms": 1,
+     "/dhwCircuits/dhw1/switchPrograms/A": 1,
+     "/dhwCircuits/dhw1/temperatureLevels": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/eco": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/high": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/low": 1,
+     "/dhwCircuits/dhw1/temperatureLevels/off": 1,
+     "/dhwCircuits/dhw1/volumeFlow": 1,
+     "/dhwCircuits/dhw1/waterTotalConsumption": 1,
+     "/dhwCircuits/waterTotalConsumption": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/heatingCircuits/hc1": 1,
+     "/heatingCircuits/hc1/activeSwitchProgram": 1,
+     "/heatingCircuits/hc1/actualHumidity": 1,
+     "/heatingCircuits/hc1/actualSupplyTemperature": 1,
+     "/heatingCircuits/hc1/awayTemperature": 1,
+     "/heatingCircuits/hc1/boostDuration": 1,
+     "/heatingCircuits/hc1/boostMode": 1,
+     "/heatingCircuits/hc1/boostRemainingTime": 1,
+     "/heatingCircuits/hc1/boostTemperature": 1,
+     "/heatingCircuits/hc1/controlType": 1,
+     "/heatingCircuits/hc1/cooling/controlType": 1,
+     "/heatingCircuits/hc1/cooling/manualRoomSetpoint": 1,
+     "/heatingCircuits/hc1/cooling/operationMode": 1,
+     "/heatingCircuits/hc1/cooling/outdoorThreshold": 1,
+     "/heatingCircuits/hc1/cooling/roomTempSetpoint": 1,
+     "/heatingCircuits/hc1/cooling/temperatureLevels/on": 1,
+     "/heatingCircuits/hc1/cooling/temporaryRoomSetpoint": 1,
+     "/heatingCircuits/hc1/manualRoomSetpoint": 1,
+     "/heatingCircuits/hc1/openWindowDetection/enabled": 1,
+     "/heatingCircuits/hc1/openWindowDetection/status": 1,
+     "/heatingCircuits/hc1/operationMode": 1,
+     "/heatingCircuits/hc1/operationSetpoints": 1,
+     "/heatingCircuits/hc1/pumpModulation": 1,
+     "/heatingCircuits/hc1/roomtemperature": 1,
+     "/heatingCircuits/hc1/setpointOptimization": 1,
+     "/heatingCircuits/hc1/suWiCoolingThreshold": 1,
+     "/heatingCircuits/hc1/suWiThreshold": 1,
+     "/heatingCircuits/hc1/switchProgramMode": 1,
+     "/heatingCircuits/hc1/switchPrograms": 1,
+     "/heatingCircuits/hc1/switchPrograms/A": 1,
+     "/heatingCircuits/hc1/switchPrograms/B": 1,
+     "/heatingCircuits/hc1/switchPrograms/nameA": 1,
+     "/heatingCircuits/hc1/switchPrograms/nameB": 1,
+     "/heatingCircuits/hc1/temperatureLevels": 1,
+     "/heatingCircuits/hc1/temperatureLevels/comfort2": 1,
+     "/heatingCircuits/hc1/temperatureLevels/eco": 1,
+     "/heatingCircuits/hc1/temporaryRoomSetpoint": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:eco:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating DHW 1: Start threshold Eco+",
+    "icon": "mdi:thermometer",
+    "max": 50.0,
+    "min": 30.0,
+    "mode": "box",
+    "step": 1.0,
+    "unit_of_measurement": "°C"
+   },
+   "state": "40.0"
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:high:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating DHW 1: Start threshold Comfort",
+    "icon": "mdi:thermometer",
+    "max": 60.0,
+    "min": 40.0,
+    "mode": "box",
+    "step": 1.0,
+    "unit_of_measurement": "°C"
+   },
+   "state": "55.0"
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating DHW 1: Start threshold Eco",
+    "icon": "mdi:thermometer",
+    "max": 55.0,
+    "min": 30.0,
+    "mode": "box",
+    "step": 1.0,
+    "unit_of_measurement": "°C"
+   },
+   "state": "45.0"
+  },
+  "number gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating HC 1: Heating temperature",
+    "icon": "mdi:thermometer",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "21.0"
+  },
+  "number gateway-one:heatingCircuits:hc1:temperatureLevels:eco:control": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating HC 1: Setback temperature",
+    "icon": "mdi:thermometer",
+    "max": 30.0,
+    "min": 5.0,
+    "mode": "box",
+    "step": 0.5,
+    "unit_of_measurement": "°C"
+   },
+   "state": "17.0"
+  },
+  "select gateway-one:dhwCircuits:dhw1:operationMode:control": {
+   "attributes": {
+    "friendly_name": "Heating DHW 1: Operating mode",
+    "options": [
+     "off",
+     "low",
+     "high",
+     "ownprogram",
+     "eco"
+    ]
+   },
+   "state": "ownprogram"
+  },
+  "select gateway-one:heatingCircuits:hc1:activeSwitchProgram:control": {
+   "attributes": {
+    "friendly_name": "Heating HC 1: Active schedule",
+    "options": [
+     "a",
+     "b"
+    ],
+    "program_name": "Home office",
+    "program_names": {
+     "a": "Home office"
+    }
+   },
+   "state": "a"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:dhwCircuits:dhw1:switchPrograms:A": {
+   "attributes": {
+    "allowed_levels": [
+     "high",
+     "low",
+     "off",
+     "eco"
+    ],
+    "device_class": "enum",
+    "friendly_name": "Heating Hot water 1 – Time program A",
+    "max_switch_points": 42,
+    "max_switch_points_per_day": 6,
+    "options": [
+     "low",
+     "eco",
+     "high",
+     "off"
+    ],
+    "switch_points": {
+     "Fr": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "Mo": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "Sa": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "Su": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "Th": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "Tu": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ],
+     "We": [
+      "05:45 high",
+      "09:00 low",
+      "21:00 off"
+     ]
+    },
+    "time_raster_minutes": 15
+   },
+   "state": "off"
+  },
+  "sensor gateway-one:heatingCircuits:hc1:switchPrograms:A": {
+   "attributes": {
+    "allowed_levels": [
+     "comfort2",
+     "eco"
+    ],
+    "device_class": "enum",
+    "friendly_name": "Heating Heating circuit 1 – Time program A",
+    "max_switch_points": 42,
+    "max_switch_points_per_day": 6,
+    "options": [
+     "comfort1",
+     "comfort2",
+     "comfort3",
+     "eco",
+     "off"
+    ],
+    "switch_points": {
+     "Fr": [
+      "06:30 comfort2",
+      "22:00 eco"
+     ],
+     "Mo": [
+      "06:30 comfort2",
+      "22:00 eco"
+     ],
+     "Sa": [
+      "08:00 comfort2",
+      "22:30 eco"
+     ],
+     "Su": [
+      "08:00 comfort2",
+      "22:30 eco"
+     ],
+     "Th": [
+      "06:30 comfort2",
+      "22:00 eco"
+     ],
+     "Tu": [
+      "06:30 comfort2",
+      "22:00 eco"
+     ],
+     "We": [
+      "06:30 comfort2",
+      "22:00 eco"
+     ]
+    },
+    "time_raster_minutes": 15
+   },
+   "state": "eco"
+  },
+  "sensor gateway-one:heatingCircuits:hc1:switchPrograms:B": {
+   "attributes": {
+    "allowed_levels": [
+     "comfort2",
+     "eco"
+    ],
+    "device_class": "enum",
+    "friendly_name": "Heating Heating circuit 1 – Time program B",
+    "max_switch_points": 42,
+    "max_switch_points_per_day": 6,
+    "options": [
+     "comfort1",
+     "comfort2",
+     "comfort3",
+     "eco",
+     "off"
+    ],
+    "switch_points": {
+     "Fr": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "Mo": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "Sa": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "Su": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "Th": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "Tu": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ],
+     "We": [
+      "05:00 comfort2",
+      "14:00 eco",
+      "16:30 comfort2",
+      "21:30 eco"
+     ]
+    },
+    "time_raster_minutes": 15
+   },
+   "state": "eco"
+  },
+  "water_heater gateway-one:dhwCircuits:dhw1:water_heater": {
+   "attributes": {
+    "current_temperature": null,
+    "friendly_name": "Heating Hot water 1",
+    "operation_list": [
+     "off",
+     "low",
+     "high",
+     "ownprogram",
+     "eco"
+    ],
+    "operation_mode": "ownprogram",
+    "supported_features": 2,
+    "target_temp_high": null,
+    "target_temp_low": null,
+    "temperature": null,
+    "temperature_unit": "°C"
+   },
+   "state": "ownprogram"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:eco:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:high:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number gateway-one:heatingCircuits:hc1:temperatureLevels:eco:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:dhwCircuits:dhw1:operationMode:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select gateway-one:heatingCircuits:hc1:activeSwitchProgram:control": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:dhwCircuits:dhw1:switchPrograms:A": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatingCircuits:hc1:switchPrograms:A": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatingCircuits:hc1:switchPrograms:B": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "water_heater gateway-one:dhwCircuits:dhw1:water_heater": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

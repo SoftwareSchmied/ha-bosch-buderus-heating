@@ -28,6 +28,8 @@ _CAPABILITY_FIELDS = (
     "has_minimum",
     "has_maximum",
 )
+# The plant kinds of the diagnostics block ``plant`` (schema 49).
+_PLANT_KINDS = frozenset({"heat_pump", "hybrid", "boiler", "ventilation", "none"})
 _INVENTORY_FIELDS = (
     "resource_count",
     "writable_count",
@@ -92,7 +94,7 @@ def _validate_privacy(value: object, *, schema: object = None) -> None:
     if value.get("contains_raw_resource_values") is False:
         return
     if (
-        schema in range(14, 49)
+        schema in range(14, 50)
         and value.get("contains_raw_resource_values") is True
         and value.get("raw_resource_values_scope") == "allowlisted_technical_metadata"
     ):
@@ -110,14 +112,23 @@ def _safe_gateway(number: int, value: object) -> dict[str, object]:
     if not isinstance(capabilities, list) or not isinstance(inventory, Mapping):
         raise InventoryError("Gateway capabilities or summary are missing")
     device_class = _token(value.get("device_class"), "device class")
+    plant = value.get("plant")
     return {
         "label": f"gateway_{number}",
         "device_class": device_class,
+        # Schema 49: of the plant block only the plant kind, never its
+        # components, versions or type values.
+        **({"plant_kind": _plant_kind(plant)} if isinstance(plant, Mapping) else {}),
         "summary": {
             key: _safe_structure(inventory.get(key), key) for key in _INVENTORY_FIELDS
         },
         "capabilities": [_safe_capability(item) for item in capabilities],
     }
+
+
+def _plant_kind(plant: Mapping[str, object]) -> str | None:
+    kind = plant.get("plant_kind")
+    return kind if isinstance(kind, str) and kind in _PLANT_KINDS else None
 
 
 def _safe_capability(value: object) -> dict[str, object]:

@@ -1,0 +1,567 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-A)",
+   "sw_version": null,
+   "via_device": null
+  },
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Appliance (…rial-B)",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_a_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.appliance_rial_b_device_connection",
+   "original_name": "Device connection",
+   "platform": "binary_sensor",
+   "translation_key": "bacon_connectivity",
+   "unique_id": "bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "fan.appliance_rial_a_air_purifier",
+   "original_name": "Air purifier",
+   "platform": "fan",
+   "translation_key": "bacon_purifier_fan",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "number.appliance_rial_a_fan_stage",
+   "original_name": "Fan stage",
+   "platform": "number",
+   "translation_key": "bacon_purifier_fan_speed",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan_speed"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "number.appliance_rial_a_ambient_light_brightness",
+   "original_name": "Ambient light brightness",
+   "platform": "number",
+   "translation_key": "bacon_purifier_light_intensity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_intensity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "select.appliance_rial_a_ambient_light_color",
+   "original_name": "Ambient light color",
+   "platform": "select",
+   "translation_key": "bacon_purifier_light_color",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_color"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_air_quality",
+   "original_name": "Air quality",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_air_quality",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_air_quality"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.appliance_rial_a_remaining_filter_life",
+   "original_name": "Remaining filter life",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_filter_life",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_life"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.appliance_rial_a_filter_status",
+   "original_name": "Filter status",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_filter_status",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_status"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_relative_humidity",
+   "original_name": "Relative humidity",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_humidity",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_humidity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_pm2_5",
+   "original_name": "PM2.5",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_pm2_5",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_pm2_5"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_room_temperature",
+   "original_name": "Room temperature",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_temperature",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_temperature"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.appliance_rial_a_tvoc_value",
+   "original_name": "TVOC value",
+   "platform": "sensor",
+   "translation_key": "bacon_purifier_tvoc",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_tvoc"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_child_lock",
+   "original_name": "Child lock",
+   "platform": "switch",
+   "translation_key": "bacon_purifier_child_lock",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_child_lock"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_display",
+   "original_name": "Display",
+   "platform": "switch",
+   "translation_key": "bacon_purifier_display",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_display"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_light_ring",
+   "original_name": "Light ring",
+   "platform": "switch",
+   "translation_key": "bacon_purifier_light",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_ambient_light_in_silent_mode",
+   "original_name": "Ambient light in silent mode",
+   "platform": "switch",
+   "translation_key": "bacon_purifier_light_in_sleep",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_sleep"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "config",
+   "entity_id": "switch.appliance_rial_a_ambient_light_in_standby",
+   "original_name": "Ambient light in standby",
+   "platform": "switch",
+   "translation_key": "bacon_purifier_light_in_standby",
+   "unique_id": "bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_standby"
+  }
+ ],
+ "provenance": {
+  "device_class": "bacon:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "separately connected cloud device (purifier, air_6001i)",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "bacon-purifier/air_6001i.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "publish": 0
+   },
+   "setup": {
+    "publish": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-A) Device connection"
+   },
+   "state": "on"
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "attributes": {
+    "device_class": "connectivity",
+    "friendly_name": "Appliance (…rial-B) Device connection"
+   },
+   "state": "on"
+  },
+  "fan bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Air purifier",
+    "preset_mode": "auto",
+    "preset_modes": [
+     "auto",
+     "manual",
+     "silent"
+    ],
+    "supported_features": 56
+   },
+   "state": "on"
+  },
+  "number bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan_speed": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Fan stage",
+    "max": 5,
+    "min": 1,
+    "mode": "box",
+    "step": 2
+   },
+   "state": "1"
+  },
+  "number bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_intensity": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Ambient light brightness",
+    "max": 100,
+    "min": 0,
+    "mode": "box",
+    "step": 10,
+    "unit_of_measurement": "%"
+   },
+   "state": "50"
+  },
+  "select bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_color": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Ambient light color",
+    "options": [
+     "warm_white",
+     "neutral_white",
+     "cool_white",
+     "blue",
+     "purple",
+     "orange",
+     "red"
+    ]
+   },
+   "state": "warm_white"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_air_quality": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Appliance (…rial-A) Air quality",
+    "options": [
+     "good",
+     "fair",
+     "poor",
+     "bad"
+    ]
+   },
+   "state": "fair"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_life": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Remaining filter life",
+    "state_class": "measurement",
+    "unit_of_measurement": "%"
+   },
+   "state": "50"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_status": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "Appliance (…rial-A) Filter status",
+    "options": [
+     "ok",
+     "warning",
+     "error"
+    ]
+   },
+   "state": "warning"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_humidity": {
+   "attributes": {
+    "device_class": "humidity",
+    "friendly_name": "Appliance (…rial-A) Relative humidity",
+    "state_class": "measurement",
+    "unit_of_measurement": "%"
+   },
+   "state": "45.5"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_pm2_5": {
+   "attributes": {
+    "device_class": "pm25",
+    "friendly_name": "Appliance (…rial-A) PM2.5",
+    "state_class": "measurement",
+    "unit_of_measurement": "μg/m³"
+   },
+   "state": "12"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_temperature": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Appliance (…rial-A) Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "20.5"
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_tvoc": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) TVOC value",
+    "state_class": "measurement"
+   },
+   "state": "3"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_child_lock": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Child lock"
+   },
+   "state": "off"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_display": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Display"
+   },
+   "state": "off"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Light ring"
+   },
+   "state": "off"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_sleep": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Ambient light in silent mode"
+   },
+   "state": "off"
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_standby": {
+   "attributes": {
+    "friendly_name": "Appliance (…rial-A) Ambient light in standby"
+   },
+   "state": "off"
+  }
+ },
+ "writes": {
+  "binary_sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor bacon:d799cf7e1c08d253b8b33204b6f0fd113e0fbcf979ee53c1d547521bc122f64b:connectivity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "fan bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_fan_speed": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "number bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_intensity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "select bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_color": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_air_quality": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_life": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_filter_status": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_humidity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_pm2_5": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_temperature": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_tvoc": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_child_lock": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_display": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_sleep": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "switch bacon:2ed3315da8efb646e6a02dcc2d6c2a277f3c30608980cc024bc1ee5569f6bacc:purifier_light_in_standby": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

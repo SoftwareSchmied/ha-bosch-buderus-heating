@@ -1,0 +1,51 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "heat pump cascade"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "8",
+      "Tok": "8"
+    },
+    {
+      "Id": "8",
+      "Tok": "8"
+    },
+    {
+      "Id": "65281",
+      "Tok": "8"
+    },
+    {
+      "Id": "65281",
+      "Tok": "8"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/system/type": "heatpump_cascade",
+    "/heatSources/hs1/type": "Heatpump",
+    "/heatSources/hs1/heatPumpType": "air_water",
+    "/system/bus": "EMS2_0",
+    "/heatSources/hs2/type": "Heatpump"
+  },
+  "expected": {
+    "plant_kind": "heat_pump",
+    "fuel": null,
+    "cascade": true,
+    "evidence": [
+      "reported_heat_pump_type",
+      "reported_heat_source_type",
+      "reported_system_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

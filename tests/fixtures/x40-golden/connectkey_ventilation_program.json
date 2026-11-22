@@ -1,0 +1,402 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_ventilation_zone_1_ventilation_time_program",
+   "original_name": "Ventilation zone 1 – Ventilation time program",
+   "platform": "sensor",
+   "translation_key": "ventilation_switch_program",
+   "unique_id": "gateway-one:ventilation:zone1:switchPrograms:cp"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "resources of connectkey/ventilation-switch-program.json below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "connectkey/ventilation-switch-program.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/ventilation/zone1/switchPrograms/cp"
+     ]
+    ],
+    "queries": {},
+    "read_count": 1,
+    "reads": {
+     "/ventilation/zone1/switchPrograms/cp": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 6,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/ventilation/operationModes/manual/fanSetpoint",
+      "/ventilation/zone1/exhaustFanLevel",
+      "/ventilation/zone1/filter/maxRunTime",
+      "/ventilation/zone1/filter/remainingTime",
+      "/ventilation/zone1/maxIndoorAirQuality",
+      "/ventilation/zone1/maxRelativeHumidity",
+      "/ventilation/zone1/operationMode",
+      "/ventilation/zone1/sensors/supplyTemp"
+     ],
+     [
+      "/ventilation/zone1"
+     ],
+     [
+      "/ventilation/zone1/switchPrograms",
+      "/ventilation/zone1/ventilationLevels"
+     ],
+     [
+      "/ventilation/zone1/switchPrograms/cp",
+      "/ventilation/zone1/ventilationLevels/max",
+      "/ventilation/zone1/ventilationLevels/min",
+      "/ventilation/zone1/ventilationLevels/nom",
+      "/ventilation/zone1/ventilationLevels/red"
+     ]
+    ],
+    "queries": {},
+    "read_count": 34,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatingCircuits": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/ventilation/operationModes/manual/fanSetpoint": 1,
+     "/ventilation/zone1": 1,
+     "/ventilation/zone1/exhaustFanLevel": 1,
+     "/ventilation/zone1/filter/maxRunTime": 1,
+     "/ventilation/zone1/filter/remainingTime": 1,
+     "/ventilation/zone1/maxIndoorAirQuality": 1,
+     "/ventilation/zone1/maxRelativeHumidity": 1,
+     "/ventilation/zone1/operationMode": 1,
+     "/ventilation/zone1/sensors/supplyTemp": 1,
+     "/ventilation/zone1/switchPrograms": 1,
+     "/ventilation/zone1/switchPrograms/cp": 1,
+     "/ventilation/zone1/ventilationLevels": 1,
+     "/ventilation/zone1/ventilationLevels/max": 1,
+     "/ventilation/zone1/ventilationLevels/min": 1,
+     "/ventilation/zone1/ventilationLevels/nom": 1,
+     "/ventilation/zone1/ventilationLevels/red": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:ventilation:zone1:switchPrograms:cp": {
+   "attributes": {
+    "allowed_levels": [
+     "nom",
+     "red",
+     "max",
+     "min"
+    ],
+    "device_class": "enum",
+    "friendly_name": "Heating Ventilation zone 1 – Ventilation time program",
+    "max_switch_points": 42,
+    "max_switch_points_per_day": 6,
+    "options": [
+     "min",
+     "red",
+     "nom",
+     "max",
+     "dem",
+     "off"
+    ],
+    "program_mode": "level",
+    "switch_points": {
+     "Fr": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "Mo": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "Sa": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "Su": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "Th": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "Tu": [
+      "07:00 nom",
+      "22:00 red"
+     ],
+     "We": [
+      "07:00 nom",
+      "22:00 red"
+     ]
+    },
+    "time_raster_minutes": 15
+   },
+   "state": "red"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:ventilation:zone1:switchPrograms:cp": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

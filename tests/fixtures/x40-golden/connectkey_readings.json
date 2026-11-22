@@ -1,0 +1,966 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "Heating system",
+   "model_id": null,
+   "name": "Heating",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.heating_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.heating_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.heating_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_environmental_energy_calculated",
+   "original_name": "Heat generator – Total – Environmental energy (calculated)",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:gateway:environmental_energy"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_electricity_consumption",
+   "original_name": "Heat generator – Total – Electricity consumption",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:gateway:total_electricity"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_heat_produced",
+   "original_name": "Heat generator – Total – Heat produced",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:gateway:total_heat_produced"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_net_heat_total_calculated",
+   "original_name": "Heat generator – Net heat total (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_net_heat",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_net_heat"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_this_month_calculated",
+   "original_name": "Heat generator – Total – Performance factor this month (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_month"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_this_year_calculated",
+   "original_name": "Heat generator – Total – Performance factor this year (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_year"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_previous_month_calculated",
+   "original_name": "Heat generator – Total – Performance factor previous month (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_month"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_previous_year_calculated",
+   "original_name": "Heat generator – Total – Performance factor previous year (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_year"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_since_commissioning_calculated",
+   "original_name": "Heat generator – Total – Performance factor since commissioning (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_since_commissioning"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_today_calculated",
+   "original_name": "Heat generator – Total – Performance factor today (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_today"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_performance_factor_yesterday_calculated",
+   "original_name": "Heat generator – Total – Performance factor yesterday (calculated)",
+   "platform": "sensor",
+   "translation_key": "calculated_performance_factor",
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_yesterday"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_heat_pump_electricity_consumption",
+   "original_name": "Heat generator – Total – Heat pump electricity consumption",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:compressor"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.heating_heat_generator_total_electric_auxiliary_heater_consumption",
+   "original_name": "Heat generator – Total – Electric auxiliary heater consumption",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:emon:totalConsumption:eheater"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heat_generator_2_operating_time_heating",
+   "original_name": "Heat generator 2 – Operating time Heating",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:hs2:workingTime:ch"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heat_generator_2_operating_time_cooling",
+   "original_name": "Heat generator 2 – Operating time Cooling",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:hs2:workingTime:cooling"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heat_generator_2_operating_time_hot_water",
+   "original_name": "Heat generator 2 – Operating time Hot water",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:hs2:workingTime:dhw"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heat_generator_2_operating_time_total",
+   "original_name": "Heat generator 2 – Operating time Total",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:hs2:workingTime:total"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heat_generator_total_system_runtime",
+   "original_name": "Heat generator – Total system runtime",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatSources:workingTime:totalSystem"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.heating_heating_circuit_2_room_temperature",
+   "original_name": "Heating circuit 2 – Room temperature",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:heatingCircuits:hc2:roomtemperature"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:unspecified",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "payloads of connectkey/readings.json as one plant below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "connectkey/readings.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 2,
+    "bulks": [
+     [
+      "/heatSources/emon/totalConsumption",
+      "/heatSources/hs2/workingTime",
+      "/heatSources/workingTime/totalSystem",
+      "/heatingCircuits/hc2/roomtemperature"
+     ],
+     [
+      "/heatSources/numberOfRefrigerantCircuitsInstalled"
+     ]
+    ],
+    "queries": {},
+    "read_count": 5,
+    "reads": {
+     "/heatSources/emon/totalConsumption": 1,
+     "/heatSources/hs2/workingTime": 1,
+     "/heatSources/numberOfRefrigerantCircuitsInstalled": 1,
+     "/heatSources/workingTime/totalSystem": 1,
+     "/heatingCircuits/hc2/roomtemperature": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 7,
+    "bulks": [
+     [
+      "/devices",
+      "/dhwCircuits",
+      "/gateway",
+      "/heatSources",
+      "/heatingCircuits",
+      "/holidayMode/activated",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/enabled",
+      "/holidayMode/list",
+      "/notifications",
+      "/pool",
+      "/pv",
+      "/solarCircuits",
+      "/system",
+      "/ventilation",
+      "/zones"
+     ],
+     [
+      "/heatSources/Source/eHeater/status",
+      "/heatSources/emon/chConsumption",
+      "/heatSources/emon/coolingConsumption",
+      "/heatSources/emon/dhwConsumption",
+      "/heatSources/emon/poolConsumption",
+      "/heatSources/hs2/actualPower",
+      "/heatSources/hs2/brineCircuit/collectorInflowTemp",
+      "/heatSources/hs2/brineCircuit/collectorOutflowTemp",
+      "/heatSources/hs2/defrostActive",
+      "/heatSources/hs2/electricityTotalConsumption",
+      "/heatSources/hs2/emon/totalConsumption",
+      "/heatSources/hs2/operationHours",
+      "/heatSources/hs2/powerPercentage",
+      "/heatSources/hybrid/activeHeatSource",
+      "/heatSources/hybrid/bivalentSetpoint",
+      "/heatSources/hybrid/controlStrategy",
+      "/heatSources/hybrid/outdoorStatus",
+      "/heatSources/hybrid/outdoorVariant",
+      "/heatSources/hybrid/reminderDate",
+      "/heatSources/hybrid/reminderEnable",
+      "/heatSources/hybrid/reminderLapsed",
+      "/heatSources/passiveCooling/inflowTemp",
+      "/heatSources/poolSetpointTemperature",
+      "/heatSources/poolStatus",
+      "/heatSources/poolTemperature",
+      "/heatSources/pvContactState",
+      "/heatSources/smartFunction/active",
+      "/heatSources/smartFunction/enabled",
+      "/heatSources/standbyMode",
+      "/heatSources/type"
+     ],
+     [
+      "/heatSources/additionalHeater/operationMode",
+      "/heatSources/additionalHeater/primary/status",
+      "/heatSources/additionalHeater/primary/type",
+      "/heatSources/chStatus",
+      "/heatSources/compressor/status",
+      "/heatSources/currentEmergencyMode",
+      "/heatSources/electricityTotalConsumption",
+      "/heatSources/gasTotalConsumption",
+      "/heatingCircuits/hc2/actualHumidity",
+      "/heatingCircuits/hc2/actualSupplyTemperature",
+      "/heatingCircuits/hc2/awayTemperature",
+      "/heatingCircuits/hc2/boostDuration",
+      "/heatingCircuits/hc2/boostMode",
+      "/heatingCircuits/hc2/boostRemainingTime",
+      "/heatingCircuits/hc2/boostTemperature",
+      "/heatingCircuits/hc2/cooling/controlType",
+      "/heatingCircuits/hc2/cooling/manualRoomSetpoint",
+      "/heatingCircuits/hc2/cooling/operationMode",
+      "/heatingCircuits/hc2/cooling/outdoorThreshold",
+      "/heatingCircuits/hc2/cooling/roomTempSetpoint",
+      "/heatingCircuits/hc2/cooling/temperatureLevels/on",
+      "/heatingCircuits/hc2/cooling/temporaryRoomSetpoint",
+      "/heatingCircuits/hc2/openWindowDetection/enabled",
+      "/heatingCircuits/hc2/openWindowDetection/status",
+      "/heatingCircuits/hc2/operationSetpoints",
+      "/heatingCircuits/hc2/pumpModulation",
+      "/heatingCircuits/hc2/setpointOptimization",
+      "/heatingCircuits/hc2/suWiCoolingThreshold",
+      "/heatingCircuits/hc2/suWiThreshold",
+      "/heatingCircuits/hc2/temporaryRoomSetpoint"
+     ],
+     [
+      "/heatSources/emon",
+      "/heatSources/hs2",
+      "/heatSources/workingTime",
+      "/heatingCircuits/hc2"
+     ],
+     [
+      "/heatSources/emon/totalConsumption",
+      "/heatSources/hs2/workingTime",
+      "/heatSources/workingTime/totalSystem",
+      "/heatingCircuits/hc2/roomtemperature"
+     ],
+     [
+      "/heatSources/hs2/activefailure",
+      "/heatSources/hs2/failurelist",
+      "/notifications"
+     ],
+     [
+      "/heatingCircuits/hc2/controlType",
+      "/heatingCircuits/hc2/manualRoomSetpoint",
+      "/heatingCircuits/hc2/operationMode",
+      "/heatingCircuits/hc2/temperatureLevels",
+      "/heatingCircuits/hc2/temperatureLevels/comfort2",
+      "/heatingCircuits/hc2/temperatureLevels/eco"
+     ]
+    ],
+    "queries": {},
+    "read_count": 94,
+    "reads": {
+     "/devices": 1,
+     "/dhwCircuits": 1,
+     "/gateway": 1,
+     "/heatSources": 1,
+     "/heatSources/Source/eHeater/status": 1,
+     "/heatSources/additionalHeater/operationMode": 1,
+     "/heatSources/additionalHeater/primary/status": 1,
+     "/heatSources/additionalHeater/primary/type": 1,
+     "/heatSources/chStatus": 1,
+     "/heatSources/compressor/status": 1,
+     "/heatSources/currentEmergencyMode": 1,
+     "/heatSources/electricityTotalConsumption": 1,
+     "/heatSources/emon": 1,
+     "/heatSources/emon/chConsumption": 1,
+     "/heatSources/emon/coolingConsumption": 1,
+     "/heatSources/emon/dhwConsumption": 1,
+     "/heatSources/emon/poolConsumption": 1,
+     "/heatSources/emon/totalConsumption": 1,
+     "/heatSources/gasTotalConsumption": 1,
+     "/heatSources/hs2": 1,
+     "/heatSources/hs2/activefailure": 1,
+     "/heatSources/hs2/actualPower": 1,
+     "/heatSources/hs2/brineCircuit/collectorInflowTemp": 1,
+     "/heatSources/hs2/brineCircuit/collectorOutflowTemp": 1,
+     "/heatSources/hs2/defrostActive": 1,
+     "/heatSources/hs2/electricityTotalConsumption": 1,
+     "/heatSources/hs2/emon/totalConsumption": 1,
+     "/heatSources/hs2/failurelist": 1,
+     "/heatSources/hs2/operationHours": 1,
+     "/heatSources/hs2/powerPercentage": 1,
+     "/heatSources/hs2/workingTime": 1,
+     "/heatSources/hybrid/activeHeatSource": 1,
+     "/heatSources/hybrid/bivalentSetpoint": 1,
+     "/heatSources/hybrid/controlStrategy": 1,
+     "/heatSources/hybrid/outdoorStatus": 1,
+     "/heatSources/hybrid/outdoorVariant": 1,
+     "/heatSources/hybrid/reminderDate": 1,
+     "/heatSources/hybrid/reminderEnable": 1,
+     "/heatSources/hybrid/reminderLapsed": 1,
+     "/heatSources/passiveCooling/inflowTemp": 1,
+     "/heatSources/poolSetpointTemperature": 1,
+     "/heatSources/poolStatus": 1,
+     "/heatSources/poolTemperature": 1,
+     "/heatSources/pvContactState": 1,
+     "/heatSources/smartFunction/active": 1,
+     "/heatSources/smartFunction/enabled": 1,
+     "/heatSources/standbyMode": 1,
+     "/heatSources/type": 1,
+     "/heatSources/workingTime": 1,
+     "/heatSources/workingTime/totalSystem": 1,
+     "/heatingCircuits": 1,
+     "/heatingCircuits/hc2": 1,
+     "/heatingCircuits/hc2/actualHumidity": 1,
+     "/heatingCircuits/hc2/actualSupplyTemperature": 1,
+     "/heatingCircuits/hc2/awayTemperature": 1,
+     "/heatingCircuits/hc2/boostDuration": 1,
+     "/heatingCircuits/hc2/boostMode": 1,
+     "/heatingCircuits/hc2/boostRemainingTime": 1,
+     "/heatingCircuits/hc2/boostTemperature": 1,
+     "/heatingCircuits/hc2/controlType": 1,
+     "/heatingCircuits/hc2/cooling/controlType": 1,
+     "/heatingCircuits/hc2/cooling/manualRoomSetpoint": 1,
+     "/heatingCircuits/hc2/cooling/operationMode": 1,
+     "/heatingCircuits/hc2/cooling/outdoorThreshold": 1,
+     "/heatingCircuits/hc2/cooling/roomTempSetpoint": 1,
+     "/heatingCircuits/hc2/cooling/temperatureLevels/on": 1,
+     "/heatingCircuits/hc2/cooling/temporaryRoomSetpoint": 1,
+     "/heatingCircuits/hc2/manualRoomSetpoint": 1,
+     "/heatingCircuits/hc2/openWindowDetection/enabled": 1,
+     "/heatingCircuits/hc2/openWindowDetection/status": 1,
+     "/heatingCircuits/hc2/operationMode": 1,
+     "/heatingCircuits/hc2/operationSetpoints": 1,
+     "/heatingCircuits/hc2/pumpModulation": 1,
+     "/heatingCircuits/hc2/roomtemperature": 1,
+     "/heatingCircuits/hc2/setpointOptimization": 1,
+     "/heatingCircuits/hc2/suWiCoolingThreshold": 1,
+     "/heatingCircuits/hc2/suWiThreshold": 1,
+     "/heatingCircuits/hc2/temperatureLevels": 1,
+     "/heatingCircuits/hc2/temperatureLevels/comfort2": 1,
+     "/heatingCircuits/hc2/temperatureLevels/eco": 1,
+     "/heatingCircuits/hc2/temporaryRoomSetpoint": 1,
+     "/holidayMode/activated": 1,
+     "/holidayMode/activeModes": 1,
+     "/holidayMode/configuration": 1,
+     "/holidayMode/enabled": 1,
+     "/holidayMode/list": 1,
+     "/notifications": 2,
+     "/pool": 1,
+     "/pv": 1,
+     "/solarCircuits": 1,
+     "/system": 1,
+     "/ventilation": 1,
+     "/zones": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "Heating Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "Heating System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "Heating System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "Heating Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "Heating Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:gateway:environmental_energy": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Heating Heat generator – Total – Environmental energy (calculated)",
+    "state_class": "total",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "25.0"
+  },
+  "sensor gateway-one:gateway:total_electricity": {
+   "attributes": {
+    "calculation": "compressor + auxiliary_heater",
+    "device_class": "energy",
+    "friendly_name": "Heating Heat generator – Total – Electricity consumption",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "kWh",
+    "value_source": "calculated"
+   },
+   "state": "15.0"
+  },
+  "sensor gateway-one:gateway:total_heat_produced": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Heating Heat generator – Total – Heat produced",
+    "state_class": "total",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "40.0"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_month": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor this month (calculated)",
+    "reason": "history_loading",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_year": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor this year (calculated)",
+    "reason": "history_loading",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_month": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor previous month (calculated)",
+    "reason": "history_loading",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_year": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor previous year (calculated)",
+    "reason": "history_loading",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_since_commissioning": {
+   "attributes": {
+    "derived_from": {
+     "/heatSources/emon/totalConsumption": "cloud"
+    },
+    "electricity_kwh": 15.0,
+    "electricity_source": "counters",
+    "friendly_name": "Heating Heat generator – Total – Performance factor since commissioning (calculated)",
+    "heat_kwh": 40.0,
+    "heat_source": "counters",
+    "state_class": "measurement"
+   },
+   "state": "2.67"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_today": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor today (calculated)",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_yesterday": {
+   "attributes": {
+    "friendly_name": "Heating Heat generator – Total – Performance factor yesterday (calculated)",
+    "reason": "history_loading",
+    "state_class": "measurement"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:compressor": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Heating Heat generator – Total – Heat pump electricity consumption",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "12.0"
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:eheater": {
+   "attributes": {
+    "device_class": "energy",
+    "friendly_name": "Heating Heat generator – Total – Electric auxiliary heater consumption",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "kWh"
+   },
+   "state": "3.0"
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:ch": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "Heating Heat generator 2 – Operating time Heating",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "h"
+   },
+   "state": "1.0"
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:cooling": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "Heating Heat generator 2 – Operating time Cooling",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "h"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:dhw": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "Heating Heat generator 2 – Operating time Hot water",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "h"
+   },
+   "state": "unknown"
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:total": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "Heating Heat generator 2 – Operating time Total",
+    "state_class": "total_increasing",
+    "unit_of_measurement": "h"
+   },
+   "state": "2.0"
+  },
+  "sensor gateway-one:heatingCircuits:hc2:roomtemperature": {
+   "attributes": {
+    "device_class": "temperature",
+    "friendly_name": "Heating Heating circuit 2 – Room temperature",
+    "state_class": "measurement",
+    "unit_of_measurement": "°C"
+   },
+   "state": "21"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:gateway:environmental_energy": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:gateway:total_electricity": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:gateway:total_heat_produced": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_month": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_current_year": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_month": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_previous_year": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_since_commissioning": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_today": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:calculated_performance_factor_yesterday": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:compressor": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:emon:totalConsumption:eheater": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:ch": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:cooling": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:dhw": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatSources:hs2:workingTime:total": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:heatingCircuits:hc2:roomtemperature": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

@@ -1,0 +1,453 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Buderus",
+   "model": "watersoftener",
+   "model_id": null,
+   "name": "watersoftener",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.watersoftener_cloud_control_available",
+   "original_name": "Cloud control available",
+   "platform": "binary_sensor",
+   "translation_key": "cloud_control",
+   "unique_id": "gateway-one:cloud_control"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.watersoftener_gateway_reachable",
+   "original_name": "Gateway reachable",
+   "platform": "binary_sensor",
+   "translation_key": "gateway_reachable",
+   "unique_id": "gateway-one:gateway_reachable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "binary_sensor.watersoftener_system_fault",
+   "original_name": "System fault",
+   "platform": "binary_sensor",
+   "translation_key": "system_fault",
+   "unique_id": "gateway-one:system_fault"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "event.watersoftener_system_notifications",
+   "original_name": "System notifications",
+   "platform": "event",
+   "translation_key": "system_notifications",
+   "unique_id": "gateway-one:system_notifications"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_last_hour",
+   "original_name": "Cloud requests – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_requests_total",
+   "original_name": "Cloud requests total",
+   "platform": "sensor",
+   "translation_key": "pointt_api_requests_total",
+   "unique_id": "<entry>:request_metrics:pointt_api_requests_total"
+  },
+  {
+   "device": null,
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "sensor.cloud_response_time_last_hour",
+   "original_name": "Cloud response time – last hour",
+   "platform": "sensor",
+   "translation_key": "pointt_api_response_time_last_hour",
+   "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_active_faults",
+   "original_name": "Active faults",
+   "platform": "sensor",
+   "translation_key": "active_faults",
+   "unique_id": "gateway-one:active_faults"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_active_notifications",
+   "original_name": "Active notifications",
+   "platform": "sensor",
+   "translation_key": "active_notifications",
+   "unique_id": "gateway-one:active_notifications"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_water_softener_1_regeneration_phase",
+   "original_name": "Water softener 1 – Regeneration phase",
+   "platform": "sensor",
+   "translation_key": "softener_regeneration_phase",
+   "unique_id": "gateway-one:swCircuits:sw1:regeneration:phase"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_water_softener_1_time_until_next_regeneration",
+   "original_name": "Water softener 1 – Time until next regeneration",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:swCircuits:sw1:regeneration:timeUntilNext"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_water_softener_1_regeneration_remaining_time",
+   "original_name": "Water softener 1 – Regeneration remaining time",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:swCircuits:sw1:regeneration:totalRemainingTime"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_water_softener_1_available_soft_water",
+   "original_name": "Water softener 1 – Available soft water",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:swCircuits:sw1:sensor:availableWater"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.watersoftener_water_softener_1_water_flow",
+   "original_name": "Water softener 1 – Water flow",
+   "platform": "sensor",
+   "translation_key": null,
+   "unique_id": "gateway-one:swCircuits:sw1:sensor:waterFlow"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:watersoftener",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "payloads of water_softener/readings.json as one plant below their containers",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "water_softener/readings.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/swCircuits/sw1/regeneration/phase",
+      "/swCircuits/sw1/regeneration/timeUntilNext",
+      "/swCircuits/sw1/regeneration/totalRemainingTime",
+      "/swCircuits/sw1/sensor/availableWater",
+      "/swCircuits/sw1/sensor/waterFlow"
+     ]
+    ],
+    "queries": {},
+    "read_count": 5,
+    "reads": {
+     "/swCircuits/sw1/regeneration/phase": 1,
+     "/swCircuits/sw1/regeneration/timeUntilNext": 1,
+     "/swCircuits/sw1/regeneration/totalRemainingTime": 1,
+     "/swCircuits/sw1/sensor/availableWater": 1,
+     "/swCircuits/sw1/sensor/waterFlow": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 6,
+    "bulks": [
+     [
+      "/gateway",
+      "/notifications",
+      "/swCircuits",
+      "/system"
+     ],
+     [
+      "/notifications"
+     ],
+     [
+      "/swCircuits/sw1"
+     ],
+     [
+      "/swCircuits/sw1/holidayMode/enabled",
+      "/swCircuits/sw1/regeneration/enabled",
+      "/swCircuits/sw1/regeneration/singleRegAppoint",
+      "/swCircuits/sw1/regeneration/totalProgressStatus",
+      "/swCircuits/sw1/sensor/saltLevel",
+      "/swCircuits/sw1/sensor/saltLevelAlarm"
+     ],
+     [
+      "/swCircuits/sw1/regeneration",
+      "/swCircuits/sw1/sensor"
+     ],
+     [
+      "/swCircuits/sw1/regeneration/phase",
+      "/swCircuits/sw1/regeneration/timeUntilNext",
+      "/swCircuits/sw1/regeneration/totalRemainingTime",
+      "/swCircuits/sw1/sensor/availableWater",
+      "/swCircuits/sw1/sensor/waterFlow"
+     ]
+    ],
+    "queries": {},
+    "read_count": 19,
+    "reads": {
+     "/gateway": 1,
+     "/notifications": 2,
+     "/swCircuits": 1,
+     "/swCircuits/sw1": 1,
+     "/swCircuits/sw1/holidayMode/enabled": 1,
+     "/swCircuits/sw1/regeneration": 1,
+     "/swCircuits/sw1/regeneration/enabled": 1,
+     "/swCircuits/sw1/regeneration/phase": 1,
+     "/swCircuits/sw1/regeneration/singleRegAppoint": 1,
+     "/swCircuits/sw1/regeneration/timeUntilNext": 1,
+     "/swCircuits/sw1/regeneration/totalProgressStatus": 1,
+     "/swCircuits/sw1/regeneration/totalRemainingTime": 1,
+     "/swCircuits/sw1/sensor": 1,
+     "/swCircuits/sw1/sensor/availableWater": 1,
+     "/swCircuits/sw1/sensor/saltLevel": 1,
+     "/swCircuits/sw1/sensor/saltLevelAlarm": 1,
+     "/swCircuits/sw1/sensor/waterFlow": 1,
+     "/system": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "attributes": {
+    "cloud": "reachable",
+    "device_class": "connectivity",
+    "friendly_name": "watersoftener Gateway reachable",
+    "local": "not_in_use"
+   },
+   "state": "on"
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "attributes": {
+    "device_class": "problem",
+    "friendly_name": "watersoftener System fault"
+   },
+   "state": "unavailable"
+  },
+  "event gateway-one:system_notifications": {
+   "attributes": {
+    "event_types": [
+     "appeared",
+     "resolved"
+    ],
+    "friendly_name": "watersoftener System notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_faults": {
+   "attributes": {
+    "friendly_name": "watersoftener Active faults"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:active_notifications": {
+   "attributes": {
+    "friendly_name": "watersoftener Active notifications"
+   },
+   "state": "unavailable"
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:phase": {
+   "attributes": {
+    "device_class": "enum",
+    "friendly_name": "watersoftener Water softener 1 – Regeneration phase",
+    "options": [
+     "normal",
+     "refill",
+     "brine_preparation",
+     "brine_draw",
+     "backwash",
+     "rinse",
+     "end"
+    ]
+   },
+   "state": "backwash"
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:timeUntilNext": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "watersoftener Water softener 1 – Time until next regeneration",
+    "state_class": "measurement",
+    "unit_of_measurement": "d"
+   },
+   "state": "3.0"
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:totalRemainingTime": {
+   "attributes": {
+    "device_class": "duration",
+    "friendly_name": "watersoftener Water softener 1 – Regeneration remaining time",
+    "state_class": "measurement",
+    "unit_of_measurement": "s"
+   },
+   "state": "600.0"
+  },
+  "sensor gateway-one:swCircuits:sw1:sensor:availableWater": {
+   "attributes": {
+    "device_class": "volume_storage",
+    "friendly_name": "watersoftener Water softener 1 – Available soft water",
+    "state_class": "measurement",
+    "unit_of_measurement": "L"
+   },
+   "state": "875.0"
+  },
+  "sensor gateway-one:swCircuits:sw1:sensor:waterFlow": {
+   "attributes": {
+    "device_class": "volume_flow_rate",
+    "friendly_name": "watersoftener Water softener 1 – Water flow",
+    "state_class": "measurement",
+    "unit_of_measurement": "L/min"
+   },
+   "state": "6.5"
+  }
+ },
+ "writes": {
+  "binary_sensor gateway-one:gateway_reachable": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "binary_sensor gateway-one:system_fault": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "event gateway-one:system_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_faults": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:active_notifications": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:phase": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:timeUntilNext": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:swCircuits:sw1:regeneration:totalRemainingTime": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:swCircuits:sw1:sensor:availableWater": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:swCircuits:sw1:sensor:waterFlow": {
+   "cycle": 1,
+   "setup": 1
+  }
+ }
+}

@@ -1,0 +1,130 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "physical_device_verified": false,
+  "firmware": null,
+  "capture_date": null,
+  "basis": "constructed",
+  "reference": "K40-class heat pump gateway: module list of the cloud (/system/info) and of the local access (/system/basicInfo)",
+  "note": "Every identifying field carries the marker PRIVACYMARK: serial numbers, module numbers, the product UUID, the gateway ID of the local answer, a product name that is the row's serial number, a version that is an identifier of the same row, and software and article identifiers with unsafe characters. Product names, hardware types and plain versions are constructed values in the shape of a real list."
+ },
+ "marker": "PRIVACYMARK",
+ "system_info": {
+  "id": "/system/info",
+  "type": "systeminfo",
+  "writeable": 0,
+  "recordable": 0,
+  "status": "completed",
+  "timeStamp": "2026-11-20T10:00:00",
+  "gatewayId": "PRIVACYMARK-GATEWAY-CLOUD",
+  "values": [
+   {
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-INDOOR",
+    "HwVersion": "1",
+    "SwIdenStr": "PRIVACYMARK-SWID<script>\u0007:hyd",
+    "Tok": "8",
+    "No": "PRIVACYMARK-NO-INDOOR",
+    "SwUpdateType": "can_uds_cuhp_style",
+    "Id": "8",
+    "Ver": "1.2.3-0a1b2c3d",
+    "ProductName": "Logatherm WLW176i-12 TP70",
+    "ProductSerialNumber": "PRIVACYMARK-PSN-INDOOR",
+    "ModuleHwIdentStr": "XCU_THH",
+    "ProductTtn": "PRIVACYMARK-TTN\"';--",
+    "ModuleTtn": "PRIVACYMARK-MTTN<>&"
+   },
+   {
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-HMI-3",
+    "HwVersion": "26.12",
+    "SwIdenStr": "PRIVACYMARK-SWID-HMI\u0000",
+    "SwIdenStr2": "PRIVACYMARK-SWID2;rm",
+    "Tok": "16",
+    "Id": "253",
+    "Ver": "PRIVACYMARK-MSN-HMI-3",
+    "ModuleTtn": "PRIVACYMARK-MTTN-HMI|x",
+    "ModuleHwIdentStr": "HMI_module_02_800-20_GSBS_BU_111x",
+    "SwStatus": "final"
+   },
+   {
+    "Id": "17",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-GATEWAY",
+    "ModuleHwIdentStr": "MX400",
+    "Ver": "15.00.01",
+    "Tok": "72",
+    "No": "PRIVACYMARK-NO-GATEWAY",
+    "ProductUuid": "PRIVACYMARK-UUID-GATEWAY"
+   },
+   {
+    "Id": "17",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-SERVICE",
+    "ModuleHwIdentStr": "MX400",
+    "Tok": "75",
+    "Ver": "15.00",
+    "No": "PRIVACYMARK-NO-SERVICE"
+   },
+   {
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-OUTDOOR-7",
+    "HwVersion": "1",
+    "Tok": "8",
+    "No": "PRIVACYMARK-NO-OUTDOOR",
+    "Id": "65281",
+    "Ver": "PRIVACYMARK-MSN-OUTDOOR-7",
+    "ProductName": "WLW-10 MB AR",
+    "ProductSerialNumber": "PRIVACYMARK-PSN-OUTDOOR",
+    "ModuleHwIdentStr": "XCU_SRH"
+   },
+   {
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-SECOND",
+    "Tok": "8",
+    "No": "PRIVACYMARK-NO-SECOND",
+    "Id": "8",
+    "Ver": "2.0.0",
+    "ProductName": "PRIVACYMARK-PSN-SECOND-2",
+    "ProductSerialNumber": "PRIVACYMARK-PSN-SECOND-2"
+   }
+  ]
+ },
+ "basic_info": {
+  "id": "/system/basicInfo",
+  "type": "systeminfo",
+  "writeable": 0,
+  "status": "completed",
+  "timeStamp": "1763632800",
+  "gatewayId": "PRIVACYMARK-GATEWAY-LOCAL",
+  "values": [
+   {
+    "Tok": "8",
+    "Id": "8",
+    "Ver": "1.2.3-0a1b2c3d",
+    "ProductName": "Logatherm WLW176i-12 TP70",
+    "ModuleSerialNumber": "PRIVACYMARK-LMSN-INDOOR",
+    "ProductSerialNumber": "PRIVACYMARK-LPSN-INDOOR",
+    "ModuleHwIdentStr": "XCU_THH"
+   },
+   {
+    "Tok": "8",
+    "Id": "65281",
+    "Ver": "PRIVACYMARK-LMSN-OUTDOOR-7",
+    "ProductName": "WLW-10 MB AR",
+    "ModuleSerialNumber": "PRIVACYMARK-LMSN-OUTDOOR-7",
+    "ProductSerialNumber": "PRIVACYMARK-LPSN-OUTDOOR",
+    "ModuleHwIdentStr": "XCU_SRH"
+   },
+   {
+    "Tok": "8",
+    "Id": "8",
+    "Ver": "2.0.0",
+    "ProductName": "PRIVACYMARK-LPSN-SECOND-2",
+    "ModuleSerialNumber": "PRIVACYMARK-LMSN-SECOND",
+    "ProductSerialNumber": "PRIVACYMARK-LPSN-SECOND-2"
+   },
+   {
+    "Tok": "72",
+    "Id": "17",
+    "Ver": "15.00.01",
+    "ModuleSerialNumber": "PRIVACYMARK-LMSN-GATEWAY",
+    "ModuleHwIdentStr": "K40RF"
+   }
+  ]
+ }
+}

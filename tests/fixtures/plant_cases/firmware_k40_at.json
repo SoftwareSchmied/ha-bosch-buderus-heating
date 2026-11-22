@@ -1,0 +1,36 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "11",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "hybrid manager on a K40 at the firmware limit"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "11.00.00"
+  },
+  "cloud": [
+    {
+      "Id": "248",
+      "Tok": "83",
+      "Ver": "06.01",
+      "ModuleHwIdentStr": "HM200",
+      "ModuleSerialNumber": "SERIAL-MARKER-H1"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler"
+  },
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "hybrid_manager_component"
+    ],
+    "conflicts": [],
+    "gate": "passed"
+  }
+}

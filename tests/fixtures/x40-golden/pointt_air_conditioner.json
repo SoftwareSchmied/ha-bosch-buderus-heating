@@ -1,0 +1,499 @@
+{
+ "devices": [
+  {
+   "entry_type": null,
+   "hw_version": null,
+   "identifiers": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "manufacturer": "Bosch Thermotechnology",
+   "model": null,
+   "model_id": null,
+   "name": "Air conditioner",
+   "sw_version": null,
+   "via_device": null
+  }
+ ],
+ "entities": [
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "diagnostic",
+   "entity_id": "binary_sensor.air_conditioner_solar_operation",
+   "original_name": "Solar operation",
+   "platform": "binary_sensor",
+   "translation_key": "aircon_solar_operation",
+   "unique_id": "gateway-one:pv:enable"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "button.air_conditioner_end_temporary_override",
+   "original_name": "End temporary override",
+   "platform": "button",
+   "translation_key": "aircon_end_temporary",
+   "unique_id": "gateway-one:airConditioning:switchPrograms:temporarySetting:enabled"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "climate.air_conditioner",
+   "original_name": null,
+   "platform": "climate",
+   "translation_key": "pointt_air_conditioner",
+   "unique_id": "gateway-one:airConditioning:climate"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.air_conditioner_switch_off_timer",
+   "original_name": "Switch-off timer",
+   "platform": "number",
+   "translation_key": "aircon_timer_off",
+   "unique_id": "gateway-one:airConditioning:timers:off"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "number.air_conditioner_switch_on_timer",
+   "original_name": "Switch-on timer",
+   "platform": "number",
+   "translation_key": "aircon_timer_on",
+   "unique_id": "gateway-one:airConditioning:timers:on"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.air_conditioner_spot_air_direction",
+   "original_name": "Spot air direction",
+   "platform": "select",
+   "translation_key": "aircon_quick_air_flow",
+   "unique_id": "gateway-one:airConditioning:quickAirFlows"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "select.air_conditioner_active_schedule",
+   "original_name": "Active schedule",
+   "platform": "select",
+   "translation_key": "aircon_active_schedule",
+   "unique_id": "gateway-one:airConditioning:switchPrograms:activeProgram"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.air_conditioner_schedule_1",
+   "original_name": "Schedule 1",
+   "platform": "sensor",
+   "translation_key": "aircon_switch_program",
+   "unique_id": "gateway-one:airConditioning:switchPrograms:program1"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": null,
+   "entity_category": null,
+   "entity_id": "sensor.air_conditioner_schedule_2",
+   "original_name": "Schedule 2",
+   "platform": "sensor",
+   "translation_key": "aircon_switch_program",
+   "unique_id": "gateway-one:airConditioning:switchPrograms:program2"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.air_conditioner_air_purification",
+   "original_name": "Air purification",
+   "platform": "switch",
+   "translation_key": "aircon_air_purification",
+   "unique_id": "gateway-one:airConditioning:airPurificationMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.air_conditioner_full_power",
+   "original_name": "Full power",
+   "platform": "switch",
+   "translation_key": "aircon_full_power",
+   "unique_id": "gateway-one:airConditioning:fullPowerMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.air_conditioner_frost_protection_heating_8_degc",
+   "original_name": "Frost-protection heating (8 °C)",
+   "platform": "switch",
+   "translation_key": "aircon_setback_8",
+   "unique_id": "gateway-one:airConditioning:setbackMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.air_conditioner_sleep_mode",
+   "original_name": "Sleep mode",
+   "platform": "switch",
+   "translation_key": "aircon_sleep",
+   "unique_id": "gateway-one:airConditioning:sleepMode"
+  },
+  {
+   "device": [
+    [
+     "bosch_buderus_heating",
+     "gateway-one"
+    ]
+   ],
+   "disabled_by": "integration",
+   "entity_category": "config",
+   "entity_id": "switch.air_conditioner_schedule_enabled",
+   "original_name": "Schedule enabled",
+   "platform": "switch",
+   "translation_key": "aircon_schedule_enabled",
+   "unique_id": "gateway-one:airConditioning:switchPrograms:enabled"
+  }
+ ],
+ "provenance": {
+  "device_class": "pointt:rac",
+  "firmware": null,
+  "kind": "test_snapshot",
+  "normalisation": "entry ID and managed-entry IDs replaced; request metric response times marked <volatile>",
+  "physical_device_verified": false,
+  "plant": "air conditioner on a PointT gateway (Midea detection) with programs",
+  "procedure": "tests/test_x40_golden.py: setup with the first discovery, then one coordinator cycle one hour later; wall clock frozen at 2026-11-20T10:00:00+00:00",
+  "recorded_at": "7eb6094",
+  "recorded_on": "2026-11-22",
+  "source": "pointt-rac/airconditioning.json + pointt-rac/switch-programs.json"
+ },
+ "requests": {
+  "cloud": {
+   "cycle": {
+    "bulk_count": 1,
+    "bulks": [
+     [
+      "/airConditioning/acControl",
+      "/airConditioning/advancedFunctions",
+      "/airConditioning/airFlowHorizontal",
+      "/airConditioning/airFlowVertical",
+      "/airConditioning/airPurificationMode",
+      "/airConditioning/ecoMode",
+      "/airConditioning/fanSpeed",
+      "/airConditioning/fullPowerMode",
+      "/airConditioning/operationMode",
+      "/airConditioning/quickAirFlows",
+      "/airConditioning/roomTemperature",
+      "/airConditioning/setbackMode",
+      "/airConditioning/sleepMode",
+      "/airConditioning/standardFunctions",
+      "/airConditioning/switchPrograms/activeProgram",
+      "/airConditioning/switchPrograms/configuration",
+      "/airConditioning/switchPrograms/enabled",
+      "/airConditioning/switchPrograms/program1",
+      "/airConditioning/switchPrograms/program2",
+      "/airConditioning/switchPrograms/temporarySetting/enabled",
+      "/airConditioning/temperatureSetpoint",
+      "/airConditioning/timers/off",
+      "/airConditioning/timers/on",
+      "/pv/enable"
+     ]
+    ],
+    "queries": {},
+    "read_count": 24,
+    "reads": {
+     "/airConditioning/acControl": 1,
+     "/airConditioning/advancedFunctions": 1,
+     "/airConditioning/airFlowHorizontal": 1,
+     "/airConditioning/airFlowVertical": 1,
+     "/airConditioning/airPurificationMode": 1,
+     "/airConditioning/ecoMode": 1,
+     "/airConditioning/fanSpeed": 1,
+     "/airConditioning/fullPowerMode": 1,
+     "/airConditioning/operationMode": 1,
+     "/airConditioning/quickAirFlows": 1,
+     "/airConditioning/roomTemperature": 1,
+     "/airConditioning/setbackMode": 1,
+     "/airConditioning/sleepMode": 1,
+     "/airConditioning/standardFunctions": 1,
+     "/airConditioning/switchPrograms/activeProgram": 1,
+     "/airConditioning/switchPrograms/configuration": 1,
+     "/airConditioning/switchPrograms/enabled": 1,
+     "/airConditioning/switchPrograms/program1": 1,
+     "/airConditioning/switchPrograms/program2": 1,
+     "/airConditioning/switchPrograms/temporarySetting/enabled": 1,
+     "/airConditioning/temperatureSetpoint": 1,
+     "/airConditioning/timers/off": 1,
+     "/airConditioning/timers/on": 1,
+     "/pv/enable": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   },
+   "setup": {
+    "bulk_count": 2,
+    "bulks": [
+     [
+      "/airConditioning/acControl",
+      "/airConditioning/advancedFunctions",
+      "/airConditioning/airFlowHorizontal",
+      "/airConditioning/airFlowVertical",
+      "/airConditioning/airPurificationMode",
+      "/airConditioning/ecoMode",
+      "/airConditioning/fanSpeed",
+      "/airConditioning/fullPowerMode",
+      "/airConditioning/operationMode",
+      "/airConditioning/quickAirFlows",
+      "/airConditioning/roomTemperature",
+      "/airConditioning/setbackMode",
+      "/airConditioning/sleepMode",
+      "/airConditioning/standardFunctions",
+      "/airConditioning/switchPrograms/activeProgram",
+      "/airConditioning/switchPrograms/configuration",
+      "/airConditioning/switchPrograms/enabled",
+      "/airConditioning/switchPrograms/temporarySetting/enabled",
+      "/airConditioning/temperatureSetpoint",
+      "/airConditioning/timers/off",
+      "/airConditioning/timers/on",
+      "/pv/enable"
+     ],
+     [
+      "/system/appliance/model",
+      "/system/bus"
+     ]
+    ],
+    "queries": {},
+    "read_count": 24,
+    "reads": {
+     "/airConditioning/acControl": 1,
+     "/airConditioning/advancedFunctions": 1,
+     "/airConditioning/airFlowHorizontal": 1,
+     "/airConditioning/airFlowVertical": 1,
+     "/airConditioning/airPurificationMode": 1,
+     "/airConditioning/ecoMode": 1,
+     "/airConditioning/fanSpeed": 1,
+     "/airConditioning/fullPowerMode": 1,
+     "/airConditioning/operationMode": 1,
+     "/airConditioning/quickAirFlows": 1,
+     "/airConditioning/roomTemperature": 1,
+     "/airConditioning/setbackMode": 1,
+     "/airConditioning/sleepMode": 1,
+     "/airConditioning/standardFunctions": 1,
+     "/airConditioning/switchPrograms/activeProgram": 1,
+     "/airConditioning/switchPrograms/configuration": 1,
+     "/airConditioning/switchPrograms/enabled": 1,
+     "/airConditioning/switchPrograms/temporarySetting/enabled": 1,
+     "/airConditioning/temperatureSetpoint": 1,
+     "/airConditioning/timers/off": 1,
+     "/airConditioning/timers/on": 1,
+     "/pv/enable": 1,
+     "/system/appliance/model": 1,
+     "/system/bus": 1
+    },
+    "recordings": {},
+    "single": {},
+    "writes": 0
+   }
+  },
+  "local": null
+ },
+ "states": {
+  "climate gateway-one:airConditioning:climate": {
+   "attributes": {
+    "current_temperature": 21.5,
+    "fan_mode": "auto",
+    "fan_modes": [
+     "auto",
+     "quiet",
+     "low",
+     "medium",
+     "high",
+     "turbo"
+    ],
+    "friendly_name": "Air conditioner",
+    "hvac_modes": [
+     "off",
+     "heat_cool",
+     "cool",
+     "heat",
+     "dry",
+     "fan_only"
+    ],
+    "max_temp": 30.0,
+    "min_temp": 16.0,
+    "preset_mode": "none",
+    "preset_modes": [
+     "none",
+     "eco"
+    ],
+    "supported_features": 953,
+    "swing_horizontal_mode": "center",
+    "swing_horizontal_modes": [
+     "auto",
+     "swing",
+     "left",
+     "center",
+     "right",
+     "wide",
+     "ultra_wide",
+     "fixed"
+    ],
+    "swing_mode": "auto",
+    "swing_modes": [
+     "auto",
+     "swing",
+     "angle1",
+     "angle2",
+     "angle3",
+     "angle4",
+     "angle5"
+    ],
+    "target_temp_step": 1.0,
+    "temperature": 22.0,
+    "temperature_unit": "°C"
+   },
+   "state": "cool"
+  },
+  "sensor gateway-one:airConditioning:switchPrograms:program1": {
+   "attributes": {
+    "active": true,
+    "device_class": "enum",
+    "editable": true,
+    "fan_speed": null,
+    "friendly_name": "Air conditioner Schedule 1",
+    "options": [
+     "off",
+     "auto",
+     "cool",
+     "heat",
+     "dry",
+     "fan_only"
+    ],
+    "program_mode": "aircon",
+    "switch_points": {
+     "Mo": [
+      "07:00 cool 24.0 auto",
+      "22:00 off"
+     ],
+     "Tu": [
+      "08:00 fanOnly low"
+     ]
+    },
+    "temperature": null
+   },
+   "state": "off"
+  },
+  "sensor gateway-one:airConditioning:switchPrograms:program2": {
+   "attributes": {
+    "active": false,
+    "device_class": "enum",
+    "editable": true,
+    "fan_speed": null,
+    "friendly_name": "Air conditioner Schedule 2",
+    "options": [
+     "off",
+     "auto",
+     "cool",
+     "heat",
+     "dry",
+     "fan_only"
+    ],
+    "program_mode": "aircon",
+    "switch_points": {
+     "Sa": [
+      "09:00 heat 21.5 mid"
+     ]
+    },
+    "temperature": null
+   },
+   "state": "off"
+  }
+ },
+ "writes": {
+  "climate gateway-one:airConditioning:climate": {
+   "cycle": 1,
+   "setup": 1
+  },
+  "sensor gateway-one:airConditioning:switchPrograms:program1": {
+   "cycle": 1
+  },
+  "sensor gateway-one:airConditioning:switchPrograms:program2": {
+   "cycle": 1
+  }
+ }
+}

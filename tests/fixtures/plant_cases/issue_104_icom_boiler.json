@@ -1,0 +1,29 @@
+{
+  "header": {
+    "device_class": "icom",
+    "firmware_family": "04",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "iCom boiler without components"
+  },
+  "gateway": {
+    "device_type": "icom",
+    "firmware": "4.1.2"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler",
+    "/system/bus": "EMS2_0"
+  },
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

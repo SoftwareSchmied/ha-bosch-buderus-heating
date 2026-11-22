@@ -1,0 +1,41 @@
+{
+  "header": {
+    "device_class": "rrc2",
+    "firmware_family": "05",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "room controller with two heat sources"
+  },
+  "gateway": {
+    "device_type": "rrc2",
+    "firmware": "5.4.1"
+  },
+  "cloud": [
+    {
+      "Id": "1",
+      "Tok": "1",
+      "Ver": "2.0"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/type": "Heatpump",
+    "/heatSources/hs1/type": "Heatpump",
+    "/heatSources/hs2/type": "GasBoiler"
+  },
+  "named_paths": [
+    "/heatSources/hybrid/control"
+  ],
+  "platform": "rrc",
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "heat_source_types_combined",
+      "hybrid_resources"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

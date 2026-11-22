@@ -1,0 +1,42 @@
+{
+  "header": {
+    "device_class": "icom",
+    "firmware_family": "04",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "iCom with a hybrid manager row"
+  },
+  "gateway": {
+    "device_type": "icom",
+    "firmware": "4.1.2"
+  },
+  "cloud": [
+    {
+      "Id": "172",
+      "Tok": "8"
+    },
+    {
+      "Id": "248",
+      "Tok": "83",
+      "Ver": "06.02",
+      "ModuleHwIdentStr": "HM200",
+      "ModuleSerialNumber": "SERIAL-MARKER-H1"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "Heatpump"
+  },
+  "expected": {
+    "plant_kind": "heat_pump",
+    "fuel": null,
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [
+      "component_rule_skipped"
+    ],
+    "gate": "failed"
+  }
+}

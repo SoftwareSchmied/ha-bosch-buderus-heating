@@ -1,0 +1,40 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "hybrid manager with a boiler and outdoor status not connected"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "248",
+      "Tok": "83",
+      "Ver": "06.02",
+      "ModuleHwIdentStr": "HM200",
+      "ModuleSerialNumber": "SERIAL-MARKER-H1"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler",
+    "/heatSources/hybrid/outdoorStatus": "NOT_CONNECTED"
+  },
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "hybrid_resources"
+    ],
+    "conflicts": [
+      "components_vs_outdoor_status",
+      "hybrid_name_rule_only"
+    ],
+    "gate": "passed"
+  }
+}

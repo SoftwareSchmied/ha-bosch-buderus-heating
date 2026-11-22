@@ -68,6 +68,7 @@ from .observations import (
     pair_summary,
 )
 from .performance_history import performance_diagnostics
+from .plant_inputs import plant_diagnostics, plant_has_values
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .program_names import config_issue, is_name_path
@@ -118,7 +119,7 @@ from .writes import (
 )
 from .zone_climate import zone_climate_diagnostics
 
-DIAGNOSTICS_SCHEMA_VERSION = 48
+DIAGNOSTICS_SCHEMA_VERSION = 49
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -359,7 +360,9 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
     )
     views = _views_without_cloud(runtime, targets)
     if _contains_technical_values(gateways) or any(
-        (view.get("heat_generator") or {}).get("modules") for view in views
+        (view.get("heat_generator") or {}).get("modules")
+        or plant_has_values(view.get("plant"))
+        for view in views
     ):
         base["privacy"]["contains_raw_resource_values"] = True
         base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
@@ -407,11 +410,13 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
 
 
 def _contains_technical_values(reports: list[dict[str, Any]]) -> bool:
-    """Reviewed technical values or the product names of the heat
-    generator modules (schema 47) are part of the report."""
+    """Reviewed technical values, the product names of the heat generator
+    modules (schema 47) or the components and type values of the plant
+    (schema 49) are part of the report."""
     return any(
         report["technical_metadata"]
         or (report.get("heat_generator") or {}).get("modules")
+        or plant_has_values(report.get("plant"))
         for report in reports
     )
 
@@ -628,6 +633,12 @@ def _views_without_cloud(
                         if (generators := heat_generator_diagnostics(view)) is not None
                         else {}
                     ),
+                    # Schema 49: as in the gateway report.
+                    **(
+                        {"plant": plant}
+                        if (plant := plant_diagnostics(view)) is not None
+                        else {}
+                    ),
                 }
             )
         except Exception:  # the report must stay available
@@ -826,6 +837,15 @@ def _gateway_diagnostics(
         **(
             {"heat_generator": generators}
             if (generators := heat_generator_diagnostics(coordinator)) is not None
+            else {}
+        ),
+        # Schema 49: the plant model (components with their type numbers,
+        # places and versions, the reported type values, the plant kind with
+        # its evidence); never serial numbers. Water softeners get none.
+        # Guarded: an error gives a fixed note.
+        **(
+            {"plant": plant}
+            if (plant := plant_diagnostics(coordinator)) is not None
             else {}
         ),
         # The calculated defrost: states and counts only, no readings.

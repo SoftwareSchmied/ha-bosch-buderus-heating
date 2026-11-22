@@ -1,0 +1,404 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plant-store-row.v1.json",
+  "title": "Stored plant row <gateway>:plant, format 1",
+  "description": "One row per gateway in .storage/bosch_buderus_heating.calculated_values. Rows of components are [place, type number, version, product name, hardware type, update type, software identifier, article number]. Never serial numbers, UUIDs or the No field.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "model_version",
+    "table_version",
+    "sources",
+    "shown",
+    "components",
+    "inputs",
+    "gates",
+    "kind",
+    "fuel",
+    "cascade",
+    "evidence",
+    "conflicts",
+    "changes",
+    "probes",
+    "updated_at"
+  ],
+  "properties": {
+    "v": {
+      "const": 1
+    },
+    "model_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "table_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cloud": {
+          "$ref": "#/$defs/source"
+        },
+        "local": {
+          "$ref": "#/$defs/source"
+        }
+      }
+    },
+    "shown": {
+      "enum": [
+        "cloud",
+        "local",
+        null
+      ]
+    },
+    "components": {
+      "type": "object",
+      "maxProperties": 128,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "first_seen",
+          "removed_at"
+        ],
+        "properties": {
+          "first_seen": {
+            "type": "string"
+          },
+          "removed_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system_type",
+        "heat_source_types",
+        "heat_sources_type",
+        "heat_pump_types",
+        "bus",
+        "outdoor_status",
+        "hybrid_evidence",
+        "allowed_values",
+        "gateway_class",
+        "gateway_firmware",
+        "platform"
+      ],
+      "properties": {
+        "system_type": {
+          "$ref": "#/$defs/token"
+        },
+        "heat_source_types": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,48}$"
+          }
+        },
+        "heat_sources_type": {
+          "$ref": "#/$defs/token"
+        },
+        "heat_pump_types": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,48}$"
+          }
+        },
+        "bus": {
+          "$ref": "#/$defs/token"
+        },
+        "outdoor_status": {
+          "$ref": "#/$defs/token"
+        },
+        "hybrid_evidence": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "enum": [
+              "hybrid_manager_signals",
+              "hybrid_resources",
+              "system_type",
+              "heat_source_type"
+            ]
+          }
+        },
+        "allowed_values": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,48}$"
+            }
+          }
+        },
+        "gateway_class": {
+          "$ref": "#/$defs/token"
+        },
+        "gateway_firmware": {
+          "$ref": "#/$defs/text"
+        },
+        "platform": {
+          "$ref": "#/$defs/token"
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hybrid_manager_place": {
+          "$ref": "#/$defs/gate"
+        }
+      }
+    },
+    "kind": {
+      "enum": [
+        "heat_pump",
+        "hybrid",
+        "boiler",
+        "ventilation",
+        "none",
+        null
+      ]
+    },
+    "fuel": {
+      "enum": [
+        "gas",
+        "oil",
+        "unknown",
+        null
+      ]
+    },
+    "cascade": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "reported_system_type",
+          "reported_heat_source_type",
+          "reported_heat_pump_type",
+          "reported_outdoor_status",
+          "hybrid_manager_component",
+          "heat_source_types_combined",
+          "hybrid_resources",
+          "hybrid_manager_signals",
+          "stored"
+        ]
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "system_type_vs_heat_source_type",
+          "components_vs_outdoor_status",
+          "heat_pump_component_on_boiler_plant",
+          "hybrid_name_rule_only",
+          "cloud_local_components_differ",
+          "unknown_type_value",
+          "component_rule_skipped"
+        ]
+      }
+    },
+    "changes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "probes": {
+      "type": "array",
+      "maxItems": 48,
+      "items": {
+        "$ref": "#/$defs/probe"
+      }
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "token": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9_.-]{1,48}$"
+    },
+    "text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "number": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "row": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": false,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/number"
+        },
+        {
+          "$ref": "#/$defs/number"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/text"
+        }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rows",
+        "changed_at"
+      ],
+      "properties": {
+        "rows": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "changed_at": {
+          "type": "string"
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "reason",
+        "gateway_class",
+        "platform",
+        "gateway_firmware",
+        "firmware_minimum",
+        "firmware_passed",
+        "hybrid_place_rows",
+        "first_type",
+        "first_version",
+        "version_minimum",
+        "version_passed"
+      ],
+      "properties": {
+        "result": {
+          "enum": [
+            "passed",
+            "failed",
+            "not_applicable"
+          ]
+        },
+        "reason": {
+          "enum": [
+            null,
+            "no_hybrid_place",
+            "table_unavailable",
+            "not_a_hybrid_manager",
+            "platform",
+            "firmware",
+            "version"
+          ]
+        },
+        "gateway_class": {
+          "$ref": "#/$defs/token"
+        },
+        "platform": {
+          "$ref": "#/$defs/token"
+        },
+        "gateway_firmware": {
+          "$ref": "#/$defs/text"
+        },
+        "firmware_minimum": {
+          "$ref": "#/$defs/text"
+        },
+        "firmware_passed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "hybrid_place_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "first_type": {
+          "$ref": "#/$defs/number"
+        },
+        "first_version": {
+          "$ref": "#/$defs/text"
+        },
+        "version_minimum": {
+          "$ref": "#/$defs/text"
+        },
+        "version_passed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "maxProperties": 16,
+      "additionalProperties": {
+        "type": [
+          "string",
+          "integer",
+          "boolean",
+          "null"
+        ],
+        "pattern": "^[A-Za-z0-9_./{}%:-]{1,96}$"
+      }
+    }
+  }
+}

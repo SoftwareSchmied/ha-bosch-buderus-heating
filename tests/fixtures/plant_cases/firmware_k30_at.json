@@ -1,0 +1,33 @@
+{
+  "header": {
+    "device_class": "k30",
+    "firmware_family": "08",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "hybrid manager on a K30 at the firmware limit"
+  },
+  "gateway": {
+    "device_type": "K30RF",
+    "firmware": "08.02.02"
+  },
+  "cloud": [
+    {
+      "Id": "16",
+      "Tok": "83"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler"
+  },
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "hybrid_manager_component"
+    ],
+    "conflicts": [],
+    "gate": "passed"
+  }
+}

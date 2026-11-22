@@ -129,6 +129,7 @@ from .outdoor_unit_software import track_outdoor_unit_software_sensor
 from .performance import COLLECTIONS as _GATEWAY_COLLECTIONS
 from .performance import HEAT_PUMP_COUNTERS, heat_pump_environmental
 from .performance_sensors import track_performance_sensors
+from .plant_inputs import track_plant
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import Resource
 from .pointt.metrics import RequestMetrics
@@ -621,6 +622,9 @@ def _setup_entities(
         track_recording_sensors(entry, coordinator, async_add_entities)
         track_softener_history_sensors(entry, coordinator, async_add_entities)
         track_performance_sensors(entry, coordinator, async_add_entities)
+        # The plant model (no entity of its own): its stored row is read
+        # before its first result.
+        track_plant(entry, coordinator)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_tariff_sensor(entry, coordinator, async_add_entities)

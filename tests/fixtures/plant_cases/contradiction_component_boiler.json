@@ -1,0 +1,60 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-22",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "heat pump components on a boiler plant"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": [
+    {
+      "Id": "8",
+      "Tok": "8",
+      "Ver": "1.2.3-abc",
+      "ProductName": "Example indoor unit 12",
+      "ModuleHwIdentStr": "XCU_THH",
+      "SwUpdateType": "can_uds_example",
+      "SwIdenStr": "example.rhp:hyd.5.aw",
+      "ProductTtn": "1000000001",
+      "ModuleTtn": "2000000001",
+      "HwVersion": "1",
+      "ModuleSerialNumber": "SERIAL-MARKER-A1",
+      "ProductSerialNumber": "SERIAL-MARKER-A2",
+      "No": "SERIAL-MARKER-A3"
+    },
+    {
+      "Id": "65281",
+      "Tok": "8",
+      "Ver": "7.8.9-def",
+      "ProductName": "Example outdoor unit 10",
+      "ModuleHwIdentStr": "XCU_SRH",
+      "SwUpdateType": "can_uds_example",
+      "SwIdenStr": "example.rhp:ref.5.aw",
+      "ProductTtn": "1000000002",
+      "ModuleTtn": "2000000003",
+      "ModuleSerialNumber": "SERIAL-MARKER-E1",
+      "ProductSerialNumber": "SERIAL-MARKER-E2",
+      "No": "SERIAL-MARKER-E3"
+    }
+  ],
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler"
+  },
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [
+      "heat_pump_component_on_boiler_plant"
+    ],
+    "gate": "not_applicable"
+  }
+}

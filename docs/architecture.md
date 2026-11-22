@@ -204,6 +204,35 @@ write flags never grant write capability.
 See [device presentation](device-presentation.md) for the device evidence rule,
 area assignment and the requirements for any future assignment migration.
 
+### Plant kind and system components
+
+`plant_model.py` groups resources; it does not say what kind of plant a
+gateway runs. That is the job of three newer modules (see
+[ADR 0006](adr/0006-plant-model.md)):
+
+- `component_rows.py` parses the component lists (`/system/info` of the
+  cloud, `/system/basicInfo` of the local access) into checked rows: type
+  number, place, version, product name, hardware type, update type, software
+  identifier and article number of the model. Serial number fields are never
+  read.
+- `plant_detection.py` is pure: from the reported type values, the component
+  rows and the hybrid evidence the integration already used it works out the
+  plant kind (`heat_pump`, `hybrid`, `boiler`, `ventilation`, `none` or
+  `None`) with evidence and conflict codes. Names of components never decide;
+  only roles with a basis other than `name` in the component table
+  (`system_components.py`) and fixed rules in the code do.
+- `plant_inputs.py` connects both to a coordinator: it reads the inputs from
+  the cloud's data and resources (including values kept in the discovery
+  inventory) and from the local readings, chooses the component list to show
+  as the heat generator sensor does, keeps one row `<gateway>:plant` in the
+  saved calculated values and offers `current_plant`, `components`,
+  `describe`, `set_probe_results` and `plant_diagnostics` to the rest of the
+  integration.
+
+In this stage the plant kind changes no entity, name, control or request; it
+is visible in the diagnostics (block `plant`) and in the stored row only.
+Without a result (`None`) every consumer behaves as before.
+
 ## Gateway exchange
 
 A replaced gateway continues the same system only after the user confirms it.
