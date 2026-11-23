@@ -314,6 +314,34 @@ def test_all_six_values_are_offered_in_the_documented_order():
     ]
 
 
+@pytest.mark.parametrize(
+    ("options", "wire"),
+    [
+        (("cost", "bivalent_alternative"), "bivalent_alternative"),
+        (("cost", "bivalentAlternativeMode"), "bivalentAlternativeMode"),
+        (
+            ("cost", "bivalent_alternative", "bivalentAlternativeMode"),
+            "bivalentAlternativeMode",
+        ),
+    ],
+)
+def test_the_second_spelling_of_bivalent_alternative_is_the_same_option(options, wire):
+    """S09: both spellings are one option; the advertised one is written."""
+    from custom_components.bosch_buderus_heating.select import _option_map
+    from custom_components.bosch_buderus_heating.sensor import _enum_state
+
+    resource = strategy("bivalent_alternative", options=options)
+    chosen = selects({STRATEGY: resource})
+    assert chosen[STRATEGY].options == ["cost", "bivalent_alternative"]
+    mapping = _option_map(
+        resource, hybrid.TRANSLATION_KEY, hybrid.STRATEGY_POLICY, GENERIC_CONTEXT
+    )
+    assert mapping == {"cost": "cost", "bivalent_alternative": wire}
+    assert _enum_state(hybrid.TRANSLATION_KEY, "bivalent_alternative") == (
+        "bivalent_alternative"
+    )
+
+
 def test_a_current_value_outside_the_options_keeps_the_control_like_the_others():
     resource = strategy("vendorSpecial", options=("cost", "maxRenewableShare"))
     assert STRATEGY in selects({STRATEGY: resource})

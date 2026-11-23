@@ -248,6 +248,11 @@ def _option_map(
         return writable_enum_options(
             translation_key, ordered, rrc_contracts.option_keys(resource.path)
         )
+    if translation_key == hybrid_controls.TRANSLATION_KEY:
+        # Two spellings of one strategy are one option (the first offered).
+        return writable_enum_options(
+            translation_key, ordered, hybrid_controls.STRATEGY_KEYS
+        )
     return writable_enum_options(translation_key, ordered)
 
 

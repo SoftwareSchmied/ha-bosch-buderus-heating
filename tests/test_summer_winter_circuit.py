@@ -118,6 +118,24 @@ async def test_unknown_code_sends_nothing(hass):
     assert cloud.puts == []
 
 
+async def test_an_unknown_current_code_keeps_the_selection(hass):
+    """S18: the current code is shown as unknown; only a known advertised
+    code is written, once."""
+    resources = variant(FIXTURE, "V1")
+    resources[SWITCH_MODE] = replace(resources[SWITCH_MODE], value="holiday")
+    assert SWITCH_MODE in select_paths(resources)
+    coordinator = coordinator_for(hass, resources)
+    cloud = Cloud(coordinator)
+    entity = select_entity(hass, coordinator, SWITCH_MODE)
+    assert entity.current_option is None
+    assert entity.options == ["automatic", "forced", "off"]
+    with pytest.raises(ServiceValidationError):
+        await entity.async_select_option("holiday")
+    assert cloud.puts == []
+    await entity.async_select_option("forced")
+    assert cloud.puts == [(SWITCH_MODE, "forced")]
+
+
 def test_no_control_without_allowed_values():
     resources = variant(FIXTURE, "V5")
     assert assess_control(resources[SWITCH_MODE]).rejection_reason == (

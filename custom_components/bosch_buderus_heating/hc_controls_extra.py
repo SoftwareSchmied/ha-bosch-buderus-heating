@@ -63,7 +63,10 @@ def _circuit_guard(
 
 def _switch(pattern: str, *, guarded: bool = False) -> EnumWritePolicy:
     """A switch over exactly ``on`` and ``off``: the gateway has to advertise
-    exactly these two values, else there is no control."""
+    exactly these two values, else there is no control. Without any
+    ``allowedValues`` key, a current value ``on`` or ``off`` stands for both;
+    other advertised values are never mapped to on or off (the diagnostics
+    list them, ``switch_diagnostics``)."""
     return EnumWritePolicy(
         pattern,
         _STRING,
@@ -74,6 +77,7 @@ def _switch(pattern: str, *, guarded: bool = False) -> EnumWritePolicy:
         off_value="off",
         enabled_by_default=False,
         value_check=_circuit_guard if guarded else None,
+        fallback_options=("on", "off"),
     )
 
 
@@ -115,15 +119,15 @@ CIRCUIT_COOLING_THRESHOLD_POLICY: Final = _temperature(
     CIRCUIT_COOLING_THRESHOLD_PATTERN, 1.0, guarded=True
 )
 
-# Only the modes of the app's list; at least two of them, and the current one
-# among them.
+# Only the known modes; at least two of them. A current mode that is not
+# known or not advertised stays shown as unknown; only the known advertised
+# modes are written.
 COOLING_MODE_POLICY: Final = EnumWritePolicy(
     COOLING_MODE_PATTERN,
     _STRING,
     frozenset(COOLING_MODES),
     known_only=True,
     min_options=2,
-    current_required=True,
     enabled_by_default=False,
     value_check=_circuit_guard,
 )
@@ -241,6 +245,31 @@ _NUMBERS: Final = (
         "Kühlbetrieb ab Außentemperatur",
     ),
 )
+
+
+_SAFE_TOKEN: Final = re.compile(r"[A-Za-z0-9_-]{1,32}")
+
+
+def switch_diagnostics(resource: Resource, policy: object) -> dict[str, object] | None:
+    """For the diagnostics of a switch: the advertised values other than
+    ``on`` and ``off`` as plain tokens (at most 8), so that values a gateway
+    uses instead can be told apart and mapped later; never the current
+    value. ``None`` for any other policy."""
+    if policy not in SWITCH_POLICIES:
+        return None
+    other = sorted(
+        {
+            value
+            for value in resource.metadata.allowed_values
+            if isinstance(value, str)
+            and value not in _ON_OFF
+            and _SAFE_TOKEN.fullmatch(value)
+        }
+    )
+    return {
+        "other_advertised_options": other[:8],
+        "allowed_values_missing": resource.metadata.allowed_values_missing,
+    }
 
 
 def switch_key(policy: object) -> str | None:

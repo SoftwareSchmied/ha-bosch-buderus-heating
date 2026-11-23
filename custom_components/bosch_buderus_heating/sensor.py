@@ -360,7 +360,9 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
     "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
     "pv_contact_state": ("inactive", "active"),
     "data_processing_status": ("in_progress", "completed"),
-    "hybrid_control_strategy": tuple(hybrid_controls.STRATEGY_KEYS.values()),
+    "hybrid_control_strategy": tuple(
+        dict.fromkeys(hybrid_controls.STRATEGY_KEYS.values())
+    ),
     "season_optimizer_mode": (
         "off",
         "heating",

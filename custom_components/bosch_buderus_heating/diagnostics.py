@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from . import (
     BoschBuderusConfigEntry,
+    hc_controls_extra,
     hybrid_controls,
     recordings,
     rrc,
@@ -1493,6 +1494,9 @@ def _control_diagnostics(
     if resource.path in hybrid_controls.CONTROL_PATHS:
         # The reported limits, step, unit class and strategies; no values.
         result["hybrid"] = hybrid_controls.diagnostics(resource)
+    if (switch := hc_controls_extra.switch_diagnostics(resource, policy)) is not None:
+        # The advertised values a switch does not know; never the current one.
+        result["switch"] = switch
     return result
 
 

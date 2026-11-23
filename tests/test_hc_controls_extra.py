@@ -157,7 +157,7 @@ def test_boost_switch_only_with_a_confirmed_on_off_list():
 @pytest.mark.parametrize(
     ("item", "reason"),
     [
-        (_string(BOOST_MODE, "off", None), "missing_options"),
+        (_string(BOOST_MODE, "auto", None), "missing_options"),
         (_string(BOOST_MODE, "off", []), "missing_options"),
         (_string(BOOST_MODE, "off", ["on"]), "unsupported_options"),
         (_string(BOOST_MODE, "off", ["on", "off", "auto"]), "unsupported_options"),
@@ -180,6 +180,35 @@ def test_boost_switch_gate(item, reason):
     assert assess_control(resources[BOOST_MODE]).rejection_reason == reason
     assert BOOST_MODE not in _switches(resources)
     assert BOOST_MODE not in _selects(resources)
+
+
+@pytest.mark.parametrize("value", ["on", "off"])
+async def test_a_switch_without_allowed_values_falls_back_to_on_and_off(hass, value):
+    """S17: without any allowedValues key, a current on or off stands for
+    both; the write sends only on or off."""
+    resources = _plant(_string(BOOST_MODE, value, None))
+    assert assess_control(resources[BOOST_MODE]).rejection_reason is None
+    assert BOOST_MODE in _switches(resources)
+    coordinator = coordinator_for(hass, resources)
+    cloud = Cloud(coordinator)
+    entity = _switch_entity(hass, coordinator, BOOST_MODE)
+    await (entity.async_turn_off() if value == "on" else entity.async_turn_on())
+    assert cloud.puts == [(BOOST_MODE, "off" if value == "on" else "on")]
+
+
+def test_foreign_switch_values_are_never_mapped_but_listed():
+    """S17: two other advertised values give no switch; the diagnostics list
+    them as tokens, never the current value."""
+    resources = _plant(
+        _string(SETPOINT_OPTIMIZATION, "Yes", ["Yes", "No", "on", "bad value"])
+    )
+    assessment = assess_control(resources[SETPOINT_OPTIMIZATION])
+    assert assessment.rejection_reason == "unsupported_options"
+    assert SETPOINT_OPTIMIZATION not in _switches(resources)
+    assert extra.switch_diagnostics(
+        resources[SETPOINT_OPTIMIZATION], assessment.policy
+    ) == {"other_advertised_options": ["No", "Yes"], "allowed_values_missing": False}
+    assert extra.switch_diagnostics(resources[SETPOINT_OPTIMIZATION], None) is None
 
 
 def test_no_boost_switch_without_the_path():
@@ -356,12 +385,29 @@ def test_cooling_mode_select_with_the_advertised_known_modes():
         _cooling_mode([]),
         _cooling_mode(["auto"]),
         _cooling_mode(["off", "manual", "auto"], writeable=0),
-        _cooling_mode(["off", "manual", "auto"], value="boost"),
         _cooling_mode(["comfort", "eco"], value="eco"),
     ],
 )
 def test_cooling_mode_select_gate(item):
     assert COOLING_MODE not in _selects(_plant(item))
+
+
+async def test_a_cooling_mode_not_known_is_shown_unknown_and_only_known_ones_written(
+    hass,
+):
+    """S18: a current mode that is not known keeps the selection; it shows no
+    option and only the known advertised modes can be written."""
+    resources = _plant(_cooling_mode(["off", "manual", "auto"], value="boost"))
+    assert _selects(resources)[COOLING_MODE].options == ["off", "manual", "auto"]
+    coordinator = coordinator_for(hass, resources)
+    cloud = Cloud(coordinator)
+    entity = select_entity(hass, coordinator, COOLING_MODE)
+    assert entity.current_option is None
+    with pytest.raises(ServiceValidationError):
+        await entity.async_select_option("boost")
+    assert cloud.puts == []
+    await entity.async_select_option("auto")
+    assert cloud.puts == [(COOLING_MODE, "auto")]
 
 
 def test_unknown_mode_codes_are_left_out():
@@ -535,8 +581,9 @@ async def test_circuit_switch_gate_and_write(hass, path, policy, key):
     assert description.translation_key == key
     assert description.entity_registry_enabled_default is False
     assert description.entity_category is EntityCategory.CONFIG
+    assert path in _switches(_plant(_string(path, "off", None)))
     for broken in (
-        _string(path, "off", None),
+        _string(path, "auto", None),
         _string(path, "off", ["on", "off", "auto"]),
         _string(path, "off", ["on", "off"], writeable=0),
     ):

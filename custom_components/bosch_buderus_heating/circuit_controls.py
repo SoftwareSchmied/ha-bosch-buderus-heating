@@ -183,15 +183,15 @@ MANUAL_SETPOINT_POLICY: Final = NumberWritePolicy(
     write_grid=True,
     value_check=_constant_control_check,
 )
-# Summer/winter switching of a heating circuit: only codes the app knows,
-# at least two of them, and the current one among them.
+# Summer/winter switching of a heating circuit: only known codes, at least
+# two of them. A current code that is not known or not advertised stays
+# shown as unknown; only the known advertised codes are written.
 SUMMER_WINTER_MODE_POLICY: Final = EnumWritePolicy(
     SUMMER_WINTER_MODE_PATTERN,
     frozenset({"stringValue"}),
     frozenset(SUMMER_WINTER_VALUES),
     known_only=True,
     min_options=2,
-    current_required=True,
     value_check=_circuit_check,
 )
 # The heating limit: the advertised step, else 1.0 as in the app.

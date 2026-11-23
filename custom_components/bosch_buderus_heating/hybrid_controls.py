@@ -52,6 +52,8 @@ STRATEGY_KEYS: Final[Mapping[str, str]] = {
     "environment": "environment",
     "boilerOnly": "boiler_only",
     "bivalentAlternativeMode": "bivalent_alternative",
+    # A second spelling of the same strategy on some controllers.
+    "bivalent_alternative": "bivalent_alternative",
 }
 STRATEGIES: Final = tuple(STRATEGY_KEYS)
 
