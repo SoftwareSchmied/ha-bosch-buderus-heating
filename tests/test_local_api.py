@@ -251,11 +251,15 @@ def test_identifiers_keep_exact_digits_and_leading_zeroes(value, expected):
     assert result.modules[0].serial_number == expected
 
 
-def test_fractional_identifiers_are_rejected_not_rounded():
+def test_fractional_identifiers_are_left_out_not_rounded():
+    # A serial number with a fraction identifies nothing: it counts as
+    # missing; the rest of the module list is read.
     raw = example("/system/basicInfo")
     raw["values"][0]["ModuleSerialNumber"] = 12.25
-    with pytest.raises(LocalResourceError, match="invalid_metadata"):
-        read(raw)
+    result = read(raw).data
+    assert isinstance(result, SystemInfo)
+    assert result.modules[0].serial_number is None
+    assert result.modules[0].token == raw["values"][0]["Tok"]
 
 
 def test_named_values_are_keyed_preserved_and_not_implicitly_summed():
@@ -792,10 +796,10 @@ def test_path_parameters_must_match_the_selected_operation(parameters):
 @pytest.mark.parametrize(
     "change",
     [
-        {"timeStamp": "yesterday"},
         {"gatewayId": 1},
-        {"values": [{"Tok": "8"}]},
-        {"status": []},
+        {"gatewayId": None},
+        {"values": {"Tok": "8"}},
+        {"values": None},
     ],
 )
 def test_system_information_contract_is_not_just_a_type_label(change):
@@ -803,6 +807,37 @@ def test_system_information_contract_is_not_just_a_type_label(change):
     raw.update(change)
     with pytest.raises(LocalResourceError, match="invalid_schema"):
         read(raw)
+
+
+@pytest.mark.parametrize(
+    ("change", "status", "timestamp", "modules"),
+    [
+        ({"timeStamp": "yesterday"}, "completed", "", 3),
+        ({"timeStamp": "1684201667123"}, "completed", "", 3),
+        ({"timeStamp": 1684201667}, "completed", "", 3),
+        ({"writeable": True}, "completed", "1684201667", 3),
+        ({"writeable": None}, "completed", "1684201667", 3),
+        ({"status": "In_Progress "}, "in_progress", "1684201667", 3),
+        ({"status": []}, "", "1684201667", 3),
+        ({"values": [{"Tok": "8"}, None, {"Tok": 8, "Id": 8}]}, "completed", "", 1),
+    ],
+)
+def test_the_system_information_envelope_is_read_tolerantly(
+    change, status, timestamp, modules
+):
+    # Only the gateway ID and the module list identify the gateway: the
+    # timestamp (not used), the writeable flag and the form of the status
+    # never reject the answer; a row without place or type is left out.
+    raw = example("/system/basicInfo")
+    raw.update(change)
+    if "values" in change:
+        raw["timeStamp"] = "now"
+    result = read(raw)
+    assert isinstance(result.data, SystemInfo)
+    assert result.data.gateway_id == raw["gatewayId"]
+    assert (result.data.status, result.data.timestamp) == (status, timestamp)
+    assert len(result.data.modules) == modules
+    assert result.reported_writeable is (change.get("writeable") is True)
 
 
 # ------------------------------------------ catalog lookups (O7, O9, O20, O62)

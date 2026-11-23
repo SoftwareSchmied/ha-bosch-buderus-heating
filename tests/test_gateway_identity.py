@@ -235,20 +235,6 @@ def test_parser_cannot_relabel_a_different_source(namespace: GatewayNamespace) -
         ("status", "pending", IdentityProblem.INCOMPLETE_RESPONSE),
         ("status", "failed", IdentityProblem.INCOMPLETE_RESPONSE),
         ("status", None, IdentityProblem.INCOMPLETE_RESPONSE),
-        ("timeStamp", 1684201667, IdentityProblem.INVALID_ENVELOPE),
-        ("timeStamp", None, IdentityProblem.INVALID_ENVELOPE),
-        ("timeStamp", "1684201667\n", IdentityProblem.INVALID_ENVELOPE),
-        ("timeStamp", "123", IdentityProblem.INVALID_ENVELOPE),
-        (
-            "timeStamp",
-            "\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19\uff10",
-            IdentityProblem.INVALID_ENVELOPE,
-        ),
-        ("writeable", True, IdentityProblem.INVALID_ENVELOPE),
-        ("writeable", False, IdentityProblem.INVALID_ENVELOPE),
-        ("writeable", 0.0, IdentityProblem.INVALID_ENVELOPE),
-        ("writeable", 1, IdentityProblem.INVALID_ENVELOPE),
-        ("writeable", "0", IdentityProblem.INVALID_ENVELOPE),
         ("values", None, IdentityProblem.INVALID_ENVELOPE),
         ("values", {}, IdentityProblem.INVALID_ENVELOPE),
         ("values", (), IdentityProblem.INVALID_ENVELOPE),
@@ -266,15 +252,55 @@ def test_local_identity_requires_the_expected_completed_envelope(
     assert error.value.problem == problem
 
 
-@pytest.mark.parametrize(
-    "field", ["id", "type", "status", "timeStamp", "writeable", "values"]
-)
+@pytest.mark.parametrize("field", ["id", "type", "status", "values"])
 def test_missing_required_local_envelope_fields_fail(field: str) -> None:
     payload = local_payload()
     payload.pop(field)
 
     with pytest.raises(IdentityError):
         parse_local_gateway_identity(payload, context=context())
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("timeStamp", 1684201667),
+        ("timeStamp", None),
+        ("timeStamp", "1684201667\n"),
+        ("timeStamp", "123"),
+        (
+            "timeStamp",
+            "\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19\uff10",
+        ),
+        ("writeable", True),
+        ("writeable", False),
+        ("writeable", 0.0),
+        ("writeable", 1),
+        ("writeable", "0"),
+        ("timeStamp", "1684201667123"),
+        ("status", "Completed"),
+        ("status", " completed "),
+    ],
+)
+def test_the_timestamp_and_the_writeable_flag_never_reject_the_identity(
+    field: str, value: object
+) -> None:
+    # Neither is used: a timestamp in milliseconds, as a number or missing,
+    # and any writeable flag leave the gateway ID as the only identity.
+    payload = local_payload()
+    payload[field] = value
+
+    identity = parse_local_gateway_identity(payload, context=context())
+
+    assert identity.value == payload["gatewayId"]
+
+
+@pytest.mark.parametrize("field", ["timeStamp", "writeable"])
+def test_a_missing_timestamp_or_writeable_flag_is_accepted(field: str) -> None:
+    payload = local_payload()
+    payload.pop(field)
+
+    assert parse_local_gateway_identity(payload, context=context()).value
 
 
 def test_local_parser_does_not_retain_or_interpret_modules_and_live_values() -> None:

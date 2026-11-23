@@ -511,7 +511,9 @@ async def test_failed_real_probe_leaves_old_access_untouched(gateways):
             current=lambda: before,
             is_active=lambda: True,
         )
-    assert len(requests) == 1
+    # The brand's refusal only leaves the brand unknown; the firmware's
+    # refusal ends the check.
+    assert len(requests) == 2
     assert (
         before.connections["local"].to_data()["credentials"]["token"]
         == "synthetic-local"

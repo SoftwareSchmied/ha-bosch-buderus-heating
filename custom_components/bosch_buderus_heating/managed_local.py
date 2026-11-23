@@ -198,6 +198,9 @@ class LocalSource:
         self.client: LocalReadClient | None = None
         # The gateway of the verified access, once the reads start.
         self._gateway_id: str | None = None
+        # Whether the start check found a K30/K40-class gateway, whose
+        # firmware must reach the minimum while it runs.
+        self._firmware_minimum = True
         # A3: per reading, the answer last judged and whether it has no entity.
         self._without_entity: dict[str, tuple[float | None, bool]] = {}
         self._closed = False
@@ -701,6 +704,7 @@ class LocalSource:
                     )
                 await budget.bind_gateway(access.gateway_id)
                 self._start_issue(None)
+                self._firmware_minimum = assessment.firmware_minimum
                 return True
             found = [issue.problem for issue in assessment.issues]
             # A refused token, a changed certificate or too old firmware
@@ -978,6 +982,7 @@ class LocalSource:
                     access_key=_access_key(context, self.binding.connection_id),
                     floor=self._unused_floor(use, access.gateway_id, self._hourly),
                     period_token=self._period_token(context, use, access.gateway_id),
+                    firmware_minimum=self._firmware_minimum,
                 )
                 self._stop_use_listener()
                 self._remove_use_listener = use.add_listener(

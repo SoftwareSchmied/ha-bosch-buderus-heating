@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -122,26 +121,21 @@ def parse_local_gateway_identity(
 ) -> GatewayIdentity:
     """Read the identity envelope of a completed K40/MX400 system response.
 
-    The timestamp is checked for its documented shape, not used as a freshness
-    clock. Module contents inside values are deliberately outside this parser.
-    No module identifiers, measurements or unknown fields are retained.
+    Only the gateway ID, the module list and the completion status count;
+    the timestamp and the ``writeable`` flag are not used, so their form
+    does not matter. Module contents inside values are deliberately outside
+    this parser. No module identifiers, measurements or unknown fields are
+    retained.
     """
     data = _payload(payload, context, GatewayNamespace.K40_LOCAL)
     if data.get("id") != "/system/basicInfo":
         raise IdentityError(IdentityProblem.WRONG_RESOURCE)
     if data.get("type") != "systeminfo":
         raise IdentityError(IdentityProblem.WRONG_RESOURCE_TYPE)
-    if data.get("status") != "completed":
+    status = data.get("status")
+    if not isinstance(status, str) or status.strip().lower() != "completed":
         raise IdentityError(IdentityProblem.INCOMPLETE_RESPONSE)
-    timestamp = data.get("timeStamp")
-    writable = data.get("writeable")
-    if (
-        not isinstance(timestamp, str)
-        or re.fullmatch(r"(?:[0-9]{10})?", timestamp) is None
-        or type(writable) is not int
-        or writable != 0
-        or not isinstance(data.get("values"), list)
-    ):
+    if not isinstance(data.get("values"), list):
         raise IdentityError(IdentityProblem.INVALID_ENVELOPE)
     if "gatewayId" not in data:
         raise IdentityError(IdentityProblem.MISSING_IDENTITY)

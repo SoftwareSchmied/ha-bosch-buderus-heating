@@ -15,7 +15,7 @@ from urllib.parse import parse_qsl
 from ..gateway_identity import GatewayNamespace, IdentityContext
 from ..unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
 from .catalog import ReadRequest, response_schema, validate_path
-from .compatibility import response_for_validation
+from .compatibility import received_document, response_for_validation
 from .errors import LocalResourceError, Problem
 from .json import DEFAULT_LIMITS, JsonLimits, load_json
 from .models import (
@@ -374,6 +374,7 @@ def decode_resource(
         raise LocalResourceError(Problem.INVALID_SCHEMA)
     if not _response_id_matches(payload.get("id"), request):
         raise LocalResourceError(Problem.WRONG_RESOURCE)
+    payload = received_document(payload)
     document = response_for_validation(payload)
     undeclared = False
     if not matches(document, schema):

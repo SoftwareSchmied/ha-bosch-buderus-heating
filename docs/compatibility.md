@@ -145,7 +145,8 @@ pinned schema is still rejected.
 
 | Resource | Deviation | Handling |
 | --- | --- | --- |
-| `/system/basicInfo` | a module row without `ModuleSerialNumber`, `ModuleHwIdentStr` or `Ver` (reported for a burner module of a K40RF on firmware 15.00.01) | accepted; the missing value stays missing, nothing is filled in. A module without a serial number is left out of the identity comparison. A `null` or wrongly typed value and a missing `Tok` or `Id` are still rejected |
+| `/system/basicInfo` | a module row without `ModuleSerialNumber`, `ModuleHwIdentStr` or `Ver` (reported for a burner module of a K40RF on firmware 15.00.01) | accepted; the missing value stays missing, nothing is filled in. A module without a serial number is left out of the identity comparison |
+| `/system/basicInfo` | a `null` or another type in a module field, a whole number instead of a text, a row without `Tok` or `Id`, a timestamp of another form (for example in milliseconds), another `writeable` flag, the status in another letter case | accepted: `null`, a fraction or another type counts as a missing field, a whole number as its digits; a row without place or type is left out; the timestamp (not used) is read as empty. The gateway ID and the module list itself stay strict |
 
 ## Checked systems
 
@@ -209,7 +210,7 @@ version and a checked device are separate facts; one does not imply the others.
 | Declared error marker | No value. | Never supplied. |
 | Changed shape of an important capability | A repair issue names the number of conflicts; everything else keeps working. | — |
 | Writing | Only for controls with a reviewed contract (range, step, allowed values). A missing range, another quantity or text instead of a number removes the write. | Read only. |
-| Firmware update while running | The firmware versions are read every 15 minutes; a change leads to one discovery after the next working cycle. Rate limits and the protection pause postpone it; a failed attempt is repeated after 5, 15 and 60 minutes and then every six hours, until one day after the first failure. New parts become entities; parts missing afterwards are searched again. | The polling plan is renewed; below the minimum firmware 15.00.01 the local access pauses with the cause "firmware update required". After updating the gateway, reload the integration to resume it. |
+| Firmware update while running | The firmware versions are read every 15 minutes; a change leads to one discovery after the next working cycle. Rate limits and the protection pause postpone it; a failed attempt is repeated after 5, 15 and 60 minutes and then every six hours, until one day after the first failure. New parts become entities; parts missing afterwards are searched again. | The polling plan is renewed; a K30/K40-class gateway below the minimum firmware 15.00.01 pauses the local access with the cause "firmware update required" (other gateways have no minimum). After updating the gateway, reload the integration to resume it. |
 | Firmware different from the last start | Noted in diagnostics; the start-up discovery checks the capabilities anyway. | — |
 | Parts missing after a start | Searched again on a schedule ([diagnostics](diagnostics.md)). | — |
 

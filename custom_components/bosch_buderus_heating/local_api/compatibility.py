@@ -1,5 +1,7 @@
 """Narrow response variants observed beside the pinned manufacturer schema."""
 
+import re
+from decimal import Decimal
 from functools import cache
 from typing import Any
 
@@ -20,11 +22,94 @@ _TOLERANT_ROWS: dict[str, tuple[str, str]] = {
 
 # Descriptive row fields that the real firmware leaves out (a K40RF on
 # 15.00.01 reports a burner module without ModuleSerialNumber) or reports as
-# empty strings. Only a missing key is tolerated, never null or another type.
-# The decoder reads these fields with get(); nothing is invented for them.
+# empty strings. A null or another type already counts as a missing key
+# (received_document); the decoder reads these fields with get() and
+# nothing is invented for them.
 _OPTIONAL_ROW_FIELDS: dict[str, tuple[str, ...]] = {
     "systeminfo": ("ModuleSerialNumber", "ModuleHwIdentStr", "Ver"),
 }
+
+
+# The text fields of a module row of /system/basicInfo. The place and type
+# (Tok, Id) identify a row; a row without them is left out.
+_SYSTEM_KEYS = ("Tok", "Id")
+_SYSTEM_TEXTS = ("Ver", "ProductSerialNumber", "ModuleHwIdentStr", "ProductName")
+_ROW_FIELDS = frozenset((*_SYSTEM_KEYS, *_SYSTEM_TEXTS, "ModuleSerialNumber"))
+_TIMESTAMP = re.compile(r"(?:[0-9]{10})?")
+
+
+def _whole(value: object) -> int | None:
+    """A whole number as the JSON text wrote it (also with an exponent)."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, Decimal) and value == value.to_integral_value():
+        return int(value)
+    return None
+
+
+def _system_text(value: object) -> str | None:
+    """A text field; a whole number stands for its digits, anything else
+    (null, a fraction, a list) for a missing field."""
+    if isinstance(value, str):
+        return value
+    number = _whole(value)
+    return None if number is None else str(number)
+
+
+def _system_serial(value: object) -> str | int | None:
+    """A module serial number as text or whole number; a number with a
+    fraction, null or another type counts as missing."""
+    return value if isinstance(value, str) else _whole(value)
+
+
+def _system_row(row: object) -> dict[str, Any] | None:
+    if not isinstance(row, dict):
+        return None
+    result: dict[str, Any] = {}
+    for key in _SYSTEM_KEYS:
+        if (text := _system_text(row.get(key))) is None:
+            return None
+        result[key] = text
+    for key in _SYSTEM_TEXTS:
+        if (text := _system_text(row.get(key))) is not None:
+            result[key] = text
+    if (serial := _system_serial(row.get("ModuleSerialNumber"))) is not None:
+        result["ModuleSerialNumber"] = serial
+    # Further fields stay for the validation copy, which leaves them out.
+    return {**{k: v for k, v in row.items() if k not in _ROW_FIELDS}, **result}
+
+
+def received_document(payload: dict[str, Any]) -> dict[str, Any]:
+    """The document as decoded: a tolerant reading of /system/basicInfo.
+
+    Only the gateway ID and the module list identify the gateway. The
+    timestamp (not used) is read as empty when its form is another, the
+    ``writeable`` and ``recordable`` flags as their meaning, the status
+    without case and spaces. In the module list a row without place or type
+    is left out, null or another type in a field counts as a missing field
+    and a whole number in a text field as its digits. Every other response
+    is returned unchanged.
+    """
+    if payload.get("type") != "systeminfo" or not isinstance(
+        payload.get("values"), list
+    ):
+        return payload
+    received = dict(payload)
+    for flag in ("writeable", "recordable"):
+        if flag in payload or flag == "writeable":
+            value = payload.get(flag)
+            received[flag] = 1 if value is True or (type(value) is int and value) else 0
+    timestamp = payload.get("timeStamp")
+    if not isinstance(timestamp, str) or _TIMESTAMP.fullmatch(timestamp) is None:
+        received["timeStamp"] = ""
+    status = payload.get("status")
+    received["status"] = status.strip().lower() if isinstance(status, str) else ""
+    received["values"] = [
+        row for row in map(_system_row, payload["values"]) if row is not None
+    ]
+    return received
 
 
 @cache

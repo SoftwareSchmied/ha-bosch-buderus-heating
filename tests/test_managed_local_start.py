@@ -37,7 +37,7 @@ from custom_components.bosch_buderus_heating.repairs import (
     LocalStartRepairFlow,
     async_create_fix_flow,
 )
-from tests.test_local_probe import response
+from tests.test_local_probe import K40_ROWS, response
 from tests.test_managed_local import prepared, wait_until  # noqa: F401
 
 INTEGRATION = Path(module.__file__).parent
@@ -58,10 +58,13 @@ def answer(context, gateway, kind):
             body = json.loads(row.body)
             body["status"] = "pending"
             row = replace(row, body=json.dumps(body).encode())
-        elif kind == "html" and path is ProbePath.BRAND:
+        elif kind == "html" and path is ProbePath.FIRMWARE:
             row = replace(row, body=b"<html>starting</html>")
-        elif kind in ("http_error", "auth", "busy") and path is ProbePath.BRAND:
-            status = {"http_error": 408, "auth": 401, "busy": 503}[kind]
+        elif kind == "http_error" and path is ProbePath.FIRMWARE:
+            rows.append(replace(row, status=408, body=b""))
+            break
+        elif kind in ("auth", "busy") and path is ProbePath.BRAND:
+            status = {"auth": 401, "busy": 503}[kind]
             rows.append(replace(row, status=status, body=b""))
             break
         elif kind in ("untrusted", "changed") and path is ProbePath.BRAND:
@@ -73,11 +76,21 @@ def answer(context, gateway, kind):
             rows.append(replace(row, status=None, body=b"", failure=failure))
             break
         elif kind == "brand" and path is ProbePath.BRAND:
+            # A brand answer of another form only leaves the brand unknown.
             row = response(path, context=context, value=1)
+        elif kind == "envelope" and path is ProbePath.SYSTEM:
+            row = response(path, context=context, gatewayId=gateway, values={})
         elif kind == "unknown_brand" and path is ProbePath.BRAND:
             row = response(path, context=context, value="unknown")
+        elif kind in ("old_firmware", "brand_and_old") and path is ProbePath.SYSTEM:
+            row = response(path, context=context, gatewayId=gateway, values=K40_ROWS)
         elif kind == "old_firmware" and path is ProbePath.FIRMWARE:
             row = response(path, context=context, value="14.00.01")
+        elif kind == "k40" and path is ProbePath.SYSTEM:
+            row = response(path, context=context, gatewayId=gateway, values=K40_ROWS)
+        elif kind == "old_other_gateway" and path is ProbePath.FIRMWARE:
+            # Another gateway counts its versions differently: no minimum.
+            row = response(path, context=context, value="01.00.00")
         elif kind == "brand_and_old" and path is not ProbePath.SYSTEM:
             row = response(
                 path,
@@ -141,7 +154,7 @@ async def running(hass, p):
         ("html", "invalid_json"),
         ("http_error", "http_error"),
         ("untrusted", "certificate_untrusted"),
-        ("brand", "invalid_response"),
+        ("envelope", "identity_invalid"),
     ],
 )
 async def test_a_transient_start_problem_is_retried_until_the_start_succeeds(
@@ -166,13 +179,28 @@ async def test_a_transient_start_problem_is_retried_until_the_start_succeeds(
     assert changes.count("unavailable") == 2 and changes[-1] == "ready"
 
 
-async def test_a_gateway_that_reports_no_known_brand_starts_at_once(hass, start):
+@pytest.mark.parametrize(
+    ("kind", "minimum"),
+    [
+        ("unknown_brand", False),
+        ("brand", False),
+        ("old_other_gateway", False),
+        ("k40", True),
+    ],
+)
+async def test_a_gateway_that_reports_no_known_brand_starts_at_once(
+    hass, start, kind, minimum
+):
+    # Also a brand answer of another form, and a version below the K30/K40
+    # minimum on a gateway that names no K30/K40. The running reads check a
+    # later firmware against the minimum only on a K30/K40-class gateway.
     p = start
-    p.plan = ["unknown_brand"]
+    p.plan = [kind]
     p.runtime.start()
     await running(hass, p)
     assert len(p.probes) == 1 and len(p.clients) == 1
     assert p.waits == [] and p.issue() is None
+    assert p.source().service._firmware_minimum is minimum
 
 
 @pytest.mark.parametrize(

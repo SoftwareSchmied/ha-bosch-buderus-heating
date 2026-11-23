@@ -18,11 +18,12 @@ An invalid secondary alias or a contradiction is an error. Unrelated fields
 such as model names and product serial numbers do not establish aliases.
 
 The K40/MX400 parser reads the original `/system/basicInfo` response. It requires
-that exact response path, type `systeminfo`, status `completed`, integer
-`writeable: 0`, the documented timestamp shape, an array in `values`, and a
-valid `gatewayId`. An empty timestamp is permitted by the published schema;
-the timestamp is not proof of response freshness. Module contents are outside
-this parser and are neither interpreted nor retained.
+that exact response path, type `systeminfo`, status `completed` (in any letter
+case, spaces at the ends ignored), an array in `values`, and a valid
+`gatewayId`. The timestamp and the `writeable` flag are not used, so their form
+(a timestamp in milliseconds, as a number or missing; any flag) does not
+matter; the timestamp is no proof of response freshness. Module contents are
+outside this parser and are neither interpreted nor retained.
 
 An identifier is an opaque, nonempty string. Whitespace and nonprintable
 characters are rejected. Leading zeros, case and Unicode composition are

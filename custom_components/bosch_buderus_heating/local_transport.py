@@ -30,6 +30,7 @@ from .local_probe import (
     ProbePath,
     ProbeResponse,
     TransportFailure,
+    brand_answer_optional,
     normalize_local_address,
 )
 
@@ -420,6 +421,14 @@ async def _read(
         return ProbeResponse(path, context, response.status, body), None
 
 
+def _read_on(response: ProbeResponse) -> bool:
+    """Whether the next setup resource is read after a failed one.
+
+    Only an error answer for the brand, which leaves just the brand unknown.
+    """
+    return response.path is ProbePath.BRAND and brand_answer_optional(response.status)
+
+
 async def read_local_probe(
     context: ProbeContext,
     token: str,
@@ -461,7 +470,7 @@ async def read_local_probe(
                             session, context, peer, pin, token, path, is_current
                         )
                     responses.append(response)
-                    if response.status != 200:
+                    if response.status != 200 and not _read_on(response):
                         break
     except LocalTransportError as error:
         failure = error.failure
@@ -530,7 +539,7 @@ async def _budgeted_probe(
                                 budget,
                             )
                         responses.append(response)
-                        if response.status != 200:
+                        if response.status != 200 and not _read_on(response):
                             break
     except LocalTransportError as error:
         failure = error.failure

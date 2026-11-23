@@ -113,15 +113,15 @@ def test_manual_endpoints_normalize_without_changing_fixed_port_roles(raw, expec
         "",
         " ",
         "a" * 321,
-        "https://gateway.local",
-        "gateway.local:9443",
+        "https://user:pass@gateway.local",
+        "gateway.local:8080",
+        "gateway.local:9443/path",
+        "ftp://gateway.local",
         "user:pass@gateway.local",
         "gateway/path",
         "gateway?token=private",
         "gateway#fragment",
         "gateway\\path",
-        "gateway\r\n",
-        "\tgateway",
         "gate way",
         "gateway\u200b.local",
         "gäteway.local",
@@ -131,7 +131,7 @@ def test_manual_endpoints_normalize_without_changing_fixed_port_roles(raw, expec
         "gateway-.local",
         "a" * 64 + ".local",
         "[gateway.local]",
-        "[2001:db8::7]:9443",
+        "[2001:db8::7]:8443",
         "[2001:db8::7",
         "0.0.0.0",
         "127.0.0.1",
@@ -164,6 +164,30 @@ def test_unsafe_or_ambiguous_host_fields_have_static_errors(value):
         normalize_local_address(value)
     assert str(error.value) == "invalid_address"
     assert repr(value) not in str(error.value)
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("https://gateway.local", "gateway.local"),
+        ("HTTPS://Gateway.Local/", "gateway.local"),
+        ("http://192.0.2.7/", "192.0.2.7"),
+        ("gateway.local:9443", "gateway.local"),
+        ("192.0.2.7:9442", "192.0.2.7"),
+        ("192.0.2.7:80", "192.0.2.7"),
+        ("https://192.0.2.7:443//", "192.0.2.7"),
+        ("[2001:db8::7]:9443", "2001:db8::7"),
+        ("https://[fe80::7%eth0]:9443/", "fe80::7%eth0"),
+        ("gateway\r\n", "gateway"),
+        ("\tgateway", "gateway"),
+    ],
+)
+def test_a_copied_web_address_or_a_known_port_is_left_out(raw, expected):
+    # Copied from a browser or typed with the port: the address alone is
+    # kept; the two fixed ports stay as they are.
+    endpoint = LocalEndpoint(raw)
+    assert endpoint.host == expected
+    assert endpoint.auth_port == 9442 and endpoint.resource_port == 9443
 
 
 def test_link_local_ipv6_requires_an_explicit_ha_interface():
@@ -232,41 +256,134 @@ def test_equivalent_numeric_firmware_versions(value):
     assert parse_firmware_version(value) == FirmwareVersion(15, 0, 1)
 
 
+# The module list of a K40-class gateway: its row at the gateway's place.
+K40_ROWS = [{"Tok": "72", "Id": "17", "Ver": "15.00.01", "ModuleHwIdentStr": "K40RF"}]
+
+
+def assess_k40(*changed):
+    """A probe whose system information names a K40-class gateway."""
+    by_path = {item.path: item for item in changed}
+    return assess_local_probe(
+        [
+            by_path.get(path)
+            or (
+                response(path, values=K40_ROWS)
+                if path == ProbePath.SYSTEM
+                else response(path)
+            )
+            for path in ProbePath
+        ],
+        current_context=CONTEXT,
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("15.1", FirmwareVersion(15, 1, 0)),
+        ("15", FirmwareVersion(15, 0, 0)),
+        ("v15.00.01", FirmwareVersion(15, 0, 1)),
+        ("15.00.01-beta", FirmwareVersion(15, 0, 1)),
+        ("16.00.00-rc1", FirmwareVersion(16, 0, 0)),
+        ("15.00.01+build.7", FirmwareVersion(15, 0, 1)),
+        (" 15.00.01 ", FirmwareVersion(15, 0, 1)),
+        ("15.00.01.2", FirmwareVersion(15, 0, 1)),
+        ("05.06.00", FirmwareVersion(5, 6, 0)),
+    ],
+)
+def test_other_version_forms_are_read_by_their_numbers(value, expected):
+    assert parse_firmware_version(value) == expected
+
+
 @pytest.mark.parametrize(
     "value",
     [
         None,
         15,
         "",
-        "15.1",
-        "v15.00.01",
-        "15.00.01-beta",
-        "15.00.01 ",
-        "15.00.01.2",
         "-15.00.01",
+        "15..1",
+        "15.00.01.2.3",
+        "version 15",
         "\uff11\uff15.\uff10\uff10.\uff10\uff11",
         "9999999.1.1",
     ],
 )
-def test_unknown_firmware_syntax_is_not_guessed(value):
-    result = assess_changed(response(ProbePath.FIRMWARE, value=value))
-    assert result.status == ProbeStatus.FAILED
-    assert result.identity is None
-    # Non-string resource values fail the resource envelope first.
-    expected = (
-        ProbeProblem.UNKNOWN_FIRMWARE
-        if isinstance(value, str)
-        else ProbeProblem.INVALID_RESPONSE
-    )
-    assert result.issues[0].problem == expected
+def test_an_unknown_firmware_format_never_stops_the_setup(value):
+    # Not a known version: the version stays unknown, no minimum is checked
+    # and nothing is guessed, even on a K40-class gateway.
+    result = assess_k40(response(ProbePath.FIRMWARE, value=value))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.issues == ()
+    assert result.firmware is None
+    assert result.identity is not None
 
 
 @pytest.mark.parametrize("value", ["01.00.00", "14.99.99", "15.00.00", "9.99.99"])
 def test_old_firmware_is_not_confused_with_authentication_failure(value):
-    result = assess_changed(response(ProbePath.FIRMWARE, value=value))
-    assert result.issues[0].problem == ProbeProblem.OLD_FIRMWARE
+    result = assess_k40(response(ProbePath.FIRMWARE, value=value))
+    assert result.issues == (ProbeIssue(ProbePath.FIRMWARE, ProbeProblem.OLD_FIRMWARE),)
     assert result.firmware == parse_firmware_version(value)
     assert result.identity is None
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        K40_ROWS,
+        [{"Tok": "72", "Id": "17", "Ver": "15.00.01"}],
+        [{"Tok": 75, "Id": 17, "ModuleHwIdentStr": "MX400"}],
+        [{"Tok": "72", "Id": "99", "ModuleHwIdentStr": "mx300"}],
+        [
+            {"Tok": "8", "Id": "8"},
+            {"Tok": "72", "Id": "4", "ModuleHwIdentStr": "K30RF"},
+        ],
+    ],
+)
+def test_the_minimum_firmware_applies_to_k30_and_k40_gateways(rows):
+    result = assess_local_probe(
+        [
+            response(ProbePath.BRAND),
+            response(ProbePath.FIRMWARE, value="14.00.01"),
+            response(ProbePath.SYSTEM, values=rows),
+        ],
+        current_context=CONTEXT,
+    )
+    assert result.issues == (ProbeIssue(ProbePath.FIRMWARE, ProbeProblem.OLD_FIRMWARE),)
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        [],
+        [{"Tok": "8", "Id": "17", "ModuleHwIdentStr": "K40RF"}],
+        [{"Tok": "72", "Id": "17", "ModuleHwIdentStr": "K21"}],
+        [{"Tok": "72", "Id": "5", "ModuleHwIdentStr": "CT200"}],
+        [{"Tok": "72", "Id": "5"}],
+        [{"Tok": True, "Id": "17", "ModuleHwIdentStr": "K40RF"}],
+        ["not a row"],
+    ],
+)
+def test_other_gateways_have_no_minimum_firmware(rows):
+    # The same local service exists on other gateways with their own
+    # version counting (for example 01.00.00 or 05.06.00).
+    result = assess_local_probe(
+        [
+            response(ProbePath.BRAND),
+            response(ProbePath.FIRMWARE, value="01.00.00"),
+            response(ProbePath.SYSTEM, values=rows),
+        ],
+        current_context=CONTEXT,
+    )
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.firmware == FirmwareVersion(1, 0, 0)
+    assert result.firmware_minimum is False
+
+
+def test_a_k40_with_the_minimum_firmware_notes_the_minimum():
+    result = assess_k40()
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.firmware_minimum is True
 
 
 @pytest.mark.parametrize("value", ["15.0.2", "15.10.1", "16.0.0", "100.0.0"])
@@ -309,26 +426,51 @@ def test_a_known_brand_with_spaces_is_still_recognized():
         {"value": 1},
         {"value": ["unknown"]},
         {"type": "floatValue"},
-        {"writeable": 1},
+        {"id": "/private-path"},
     ],
 )
-def test_a_malformed_brand_answer_stays_an_error(changes):
+def test_a_malformed_brand_answer_only_leaves_the_brand_unknown(changes):
     result = assess_changed(response(ProbePath.BRAND, **changes))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.issues == ()
+    assert result.brand is None and result.identity is not None
+    assert "private-path" not in repr(result)
+
+
+@pytest.mark.parametrize("status", [400, 403, 404, 405, 406, 410])
+def test_an_error_answer_for_the_brand_only_leaves_the_brand_unknown(status):
+    result = assess_changed(response(ProbePath.BRAND, status=status))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.brand is None and result.firmware == MINIMUM_FIRMWARE
+
+
+@pytest.mark.parametrize(
+    ("status", "problem"),
+    [
+        (401, ProbeProblem.AUTH_REJECTED),
+        (429, ProbeProblem.RATE_LIMITED),
+        (500, ProbeProblem.SERVICE_UNAVAILABLE),
+        (503, ProbeProblem.SERVICE_UNAVAILABLE),
+        (301, ProbeProblem.REDIRECT),
+        (204, ProbeProblem.HTTP_ERROR),
+    ],
+)
+def test_a_refused_token_or_a_pause_on_the_brand_still_counts(status, problem):
+    result = assess_changed(response(ProbePath.BRAND, status=status))
     assert result.status == ProbeStatus.FAILED
-    assert result.issues == (
-        ProbeIssue(ProbePath.BRAND, ProbeProblem.INVALID_RESPONSE),
-    )
-    assert result.identity is None
+    assert result.issues == (ProbeIssue(ProbePath.BRAND, problem),)
+
+
+@pytest.mark.parametrize("writeable", [1, True, None, "0"])
+def test_the_brand_is_read_whatever_its_writeable_flag(writeable):
+    result = assess_changed(response(ProbePath.BRAND, writeable=writeable))
+    assert result.brand == GatewayBrand.BUDERUS
 
 
 def test_an_unknown_brand_does_not_hide_the_firmware_check():
-    result = assess_local_probe(
-        [
-            response(ProbePath.BRAND, value="unknown"),
-            response(ProbePath.FIRMWARE, value="14.00.01"),
-            response(ProbePath.SYSTEM),
-        ],
-        current_context=CONTEXT,
+    result = assess_k40(
+        response(ProbePath.BRAND, value="unknown"),
+        response(ProbePath.FIRMWARE, value="14.00.01"),
     )
     assert result.issues == (ProbeIssue(ProbePath.FIRMWARE, ProbeProblem.OLD_FIRMWARE),)
     assert result.brand is None and result.identity is None
@@ -498,9 +640,13 @@ def test_inconsistent_transport_outcomes_are_rejected(changes):
     ],
 )
 def test_bad_json_and_body_limits(body, problem):
-    result = assess_changed(replace(response(ProbePath.BRAND), body=body))
+    result = assess_changed(replace(response(ProbePath.FIRMWARE), body=body))
     assert result.issues[0].problem == problem
     assert result.identity is None
+    # The same answer for the brand only leaves the brand unknown.
+    result = assess_changed(replace(response(ProbePath.BRAND), body=body))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.brand is None
 
 
 def test_valid_json_at_the_body_limit_is_allowed():
@@ -509,25 +655,29 @@ def test_valid_json_at_the_body_limit_is_allowed():
     assert assess_changed(item).status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
 
 
+def test_the_firmware_answer_must_belong_to_its_resource():
+    result = assess_changed(response(ProbePath.FIRMWARE, id="/private-path"))
+    assert result.status == ProbeStatus.FAILED
+    assert result.issues[0].problem == ProbeProblem.WRONG_RESOURCE
+    assert "private-path" not in repr(result)
+
+
 @pytest.mark.parametrize(
-    "changes",
+    ("changes", "firmware"),
     [
-        {"id": "/private-path"},
-        {"type": "floatValue"},
-        {"writeable": True},
-        {"writeable": 1},
-        {"value": 15},
+        ({"writeable": True}, MINIMUM_FIRMWARE),
+        ({"writeable": 1}, MINIMUM_FIRMWARE),
+        ({"writeable": None}, MINIMUM_FIRMWARE),
+        ({"type": "floatValue"}, None),
+        ({"value": 15}, None),
     ],
 )
-def test_string_resource_envelope_is_checked_before_values(changes):
-    result = assess_changed(response(ProbePath.BRAND, **changes))
-    assert result.status == ProbeStatus.FAILED
-    assert result.issues[0].problem == (
-        ProbeProblem.WRONG_RESOURCE
-        if "id" in changes
-        else ProbeProblem.INVALID_RESPONSE
-    )
-    assert "private-path" not in repr(result)
+def test_a_read_only_answer_is_read_whatever_its_flags(changes, firmware):
+    # The writeable flag of a value that is only read is not used; another
+    # form of the value only leaves the version unknown.
+    result = assess_k40(response(ProbePath.FIRMWARE, **changes))
+    assert result.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert result.firmware == firmware
 
 
 @pytest.mark.parametrize(
@@ -537,7 +687,8 @@ def test_string_resource_envelope_is_checked_before_values(changes):
         ({"gatewayId": 123}, ProbeProblem.INVALID_IDENTITY),
         ({"gatewayId": ""}, ProbeProblem.INVALID_IDENTITY),
         ({"values": {}}, ProbeProblem.INVALID_IDENTITY),
-        ({"timeStamp": "yesterday"}, ProbeProblem.INVALID_IDENTITY),
+        ({"status": "in_progress"}, ProbeProblem.INCOMPLETE_SYSTEM),
+        ({"status": None}, ProbeProblem.INCOMPLETE_SYSTEM),
     ],
 )
 def test_system_response_uses_existing_identity_rules(changes, problem):
@@ -572,7 +723,7 @@ def test_unrelated_finite_metadata_is_accepted_but_not_retained():
     "metadata", [[0] * MAX_JSON_VALUES, {"a": [0] * 5000, "b": [0] * 5000}]
 )
 def test_many_small_json_values_cannot_exceed_the_structure_budget(metadata):
-    result = assess_changed(response(ProbePath.BRAND, extra=metadata))
+    result = assess_changed(response(ProbePath.FIRMWARE, extra=metadata))
     assert result.issues[0].problem == ProbeProblem.INVALID_JSON
 
 

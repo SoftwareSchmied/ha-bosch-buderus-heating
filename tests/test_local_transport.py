@@ -366,8 +366,30 @@ async def test_non_success_stops_probe_without_redirects_or_error_body(
     _, requests, _, binding = await gateways(reply)
     exchange = await read(binding)
     assert problem(exchange) == expected
-    assert len(requests) == 1 and exchange.responses[0].body == b""
+    # An error answer for the brand only leaves the brand unknown: the next
+    # resource is read, and its answer ends the check.
+    reads = 2 if status in (403, 404) else 1
+    assert len(requests) == reads
+    assert all(item.body == b"" for item in exchange.responses)
     assert exchange.retry_after_seconds == (37 if status in (429, 503) else None)
+
+
+@pytest.mark.parametrize("status", [403, 404])
+async def test_an_error_answer_for_the_brand_does_not_stop_the_probe(gateways, status):
+    async def reply(raw, writer):
+        path = ProbePath(raw.split(b" ", 2)[1].decode())
+        if path is ProbePath.BRAND:
+            writer.write(wire_reply(b"no brand", status=status))
+        else:
+            writer.write(wire_reply(response(path).body))
+        await writer.drain()
+
+    _, requests, _, binding = await gateways(reply)
+    exchange = await read(binding)
+    assert [r.split(b" ")[1].decode() for r in requests] == [p.value for p in ProbePath]
+    assessment = assess_local_probe(exchange.responses, current_context=CONTEXT)
+    assert assessment.status == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
+    assert assessment.brand is None and assessment.identity is not None
 
 
 async def test_http_disconnect_does_not_send_hidden_retry(gateways):

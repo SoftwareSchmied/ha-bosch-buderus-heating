@@ -327,11 +327,18 @@ async def test_firmware_discovery_waits_for_the_circuit_breaker(
 
 
 @pytest.mark.parametrize(
-    ("new", "blocked"),
-    [("14.09.00", True), ("15.01.00", False), ("16.0.0-beta", False)],
+    ("new", "minimum", "blocked"),
+    [
+        ("14.09.00", True, True),
+        ("15.01.00", True, False),
+        ("16.0.0-beta", True, False),
+        # Not a K30/K40-class gateway: its versions have no minimum.
+        ("14.09.00", False, False),
+        ("01.00.01", False, False),
+    ],
 )
 async def test_local_firmware_change_below_the_minimum_pauses_access(
-    hass, tmp_path, monkeypatch, new, blocked
+    hass, tmp_path, monkeypatch, new, minimum, blocked
 ) -> None:
     from types import MappingProxyType
 
@@ -378,6 +385,7 @@ async def test_local_firmware_change_below_the_minimum_pauses_access(
         is_current=lambda: True,
         publish=lambda snapshot: None,
         clock=clock,
+        firmware_minimum=minimum,
     )
     no_discovery(service.planner)
     service.planner.hints((request,), clock())

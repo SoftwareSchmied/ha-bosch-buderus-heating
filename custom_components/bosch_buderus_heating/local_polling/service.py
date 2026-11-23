@@ -153,10 +153,13 @@ class LocalPollingService:
         access_key: str | None = None,
         floor: Callable[[ReadRequest], int | None] | None = None,
         period_token: Callable[[], tuple[object, ...]] | None = None,
+        firmware_minimum: bool = True,
     ) -> None:
         """``floor`` slows readings nobody shows (G3). ``period_token``
         returns objects that are replaced whenever ``cap`` or ``floor`` may
-        answer differently; without it every publication asks them again."""
+        answer differently; without it every publication asks them again.
+        ``firmware_minimum`` is set for a K30/K40-class gateway, whose
+        firmware must reach the minimum (other gateways have none)."""
         budget.check_scope(context)
         if context.identity.namespace is not GatewayNamespace.K40_LOCAL:
             raise ValueError("local_source_required")
@@ -177,6 +180,7 @@ class LocalPollingService:
         )
         self.planner.access_key = access_key
         self._identity_confirmed = False
+        self._firmware_minimum = firmware_minimum
         # Stops the reads until the source is replaced (sign-in, certificate,
         # configuration, identity, firmware).
         self._blocked: str | None = None
@@ -659,7 +663,9 @@ class LocalPollingService:
             self.planner.finish(work, result, self._clock())
             if firmware_changed:
                 self.planner.reconsider(self._clock())
-                if _below_minimum_firmware(result.observation):
+                if self._firmware_minimum and _below_minimum_firmware(
+                    result.observation
+                ):
                     # Below the reviewed minimum the local API is not trusted
                     # (P22): pause with the setup's cause instead of reading on.
                     self._blocked = "firmware_update_required"

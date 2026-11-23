@@ -131,6 +131,14 @@ class PendingEnrollment:
         }
 
 
+def _stored_endpoint(host: object) -> LocalEndpoint:
+    """A stored address is kept in its normalized form; any other is damage."""
+    endpoint = LocalEndpoint(host)  # type: ignore[arg-type]
+    if endpoint.host != host:
+        raise LocalEnrollmentError("invalid_enrollment_record")
+    return endpoint
+
+
 def _record(raw: object, *, version: int = 3) -> PendingEnrollment:
     fields = {
         "attempt_id",
@@ -200,7 +208,7 @@ def _record(raw: object, *, version: int = 3) -> PendingEnrollment:
         require_identifier(raw["replacing_connection_id"])
         if raw["replacing_connection_id"] is not None
         else None,
-        LocalEndpoint(raw["host"]),
+        _stored_endpoint(raw["host"]),
         _fingerprint(raw["basis_sha256"]),
         authentication,
         _timestamp(raw["started_at"]),

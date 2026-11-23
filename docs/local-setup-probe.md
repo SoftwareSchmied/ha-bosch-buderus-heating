@@ -10,8 +10,12 @@ create tokens, alter configuration, register devices or enable local polling.
 `LocalEndpoint` normalizes an IPv4 address, IPv6 address or ASCII DNS hostname.
 It accepts an optional trailing DNS root dot and brackets around IPv6. DNS
 hostnames are case-insensitive. Unicode hostnames must already use their ASCII
-DNS representation. Whole URLs, credentials, paths, ambiguous legacy numeric
-IPv4 forms, loopback, unspecified and multicast addresses are rejected.
+DNS representation. An address copied from a browser or typed with a port is
+taken as the address alone: spaces at either end, a leading `http://` or
+`https://`, closing slashes and one of the ports 80, 443, 9442 or 9443 are left
+out (the two service ports stay fixed). Another port, credentials, paths,
+ambiguous legacy numeric IPv4 forms, loopback, unspecified and multicast
+addresses are rejected.
 
 Link-local IPv6 requires a scope, such as `fe80::7%eth0`. The scope belongs to
 the Home Assistant host. This parser checks syntax; the later transport must
@@ -50,9 +54,16 @@ This context is provenance, not a substitute for a certificate trust binding.
 
 | Resource | Validation |
 | --- | --- |
-| `/gateway/brand` | Matching resource ID and read-only string envelope. One of the five documented brands is kept; `unknown`, an empty text or any other brand counts as not reported and does not stop the setup. |
-| `/gateway/versionFirmware` | Matching string envelope and numeric version at least 15.00.01. |
-| `/system/basicInfo` | Existing strict local identity parser, including completed status and an exact string gateway ID. |
+| `/gateway/brand` | Optional. One of the five documented brands is kept; `unknown`, an empty text, any other brand, another form of the answer or a client error answer (4xx other than 401, 407 and 429, for example 403 or 404) counts as not reported and does not stop the setup. The probe then reads the next resource. A refused token, a pause request, a redirect, a server error (which pauses the gateway's requests) and a transport failure still count. |
+| `/gateway/versionFirmware` | Matching resource ID. The version is read by its numbers: one to four dotted numbers, a leading `v` and a suffix after `-`, `+` or a space (for example `16.00.00-rc1`) are accepted; missing numbers count as 0. Another form leaves the version unknown and never stops the setup. The minimum 15.00.01 applies only to a K30/K40-class gateway (see below). |
+| `/system/basicInfo` | Local identity parser: completed status (any letter case) and an exact string gateway ID. The timestamp and the `writeable` flag are not used and may have any form. |
+
+The minimum firmware applies when the module list names a K30/K40-class
+gateway: the row at a gateway place (`Tok` 72 or 75) reports a hardware name
+starting with K30, K40, MX300 or MX400, or, without a hardware name, module
+type 17. Other gateways with the same local service count their versions
+differently and have no minimum. The running access applies the same rule to
+a firmware change.
 
 Responses may arrive in any order. Duplicate responses are rejected rather
 than choosing the first or last identity. Missing responses produce an
@@ -73,8 +84,7 @@ turned into a device by this assessment.
 ## Failure handling and bounds
 
 Results use fixed codes for missing resources, denied access, rejected tokens,
-rate limits, service failures, incomplete system data, old firmware and unknown
-firmware syntax. A redirect is rejected. Transport failures retain a separate
+rate limits, service failures, incomplete system data and old firmware. A redirect is rejected. Transport failures retain a separate
 category for DNS, connection, timeout, untrusted or changed certificates.
 
 The core never retries a request. The future transport remains responsible for

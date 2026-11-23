@@ -144,7 +144,10 @@ def test_added_row_fields_from_newer_firmware_do_not_reject_the_resource(
     assert all("newFirmwareField" in row for row in observation.document[field])
 
 
-@pytest.mark.parametrize(("path", "field", "kind"), _ROW_LISTS)
+@pytest.mark.parametrize(
+    ("path", "field", "kind"),
+    [row for row in _ROW_LISTS if row[0] != "/system/basicInfo"],
+)
 def test_tolerated_rows_keep_required_fields_and_types_strict(path, field, kind):
     raw = example(path)
     required = sorted(raw[field][0])[0]
@@ -229,23 +232,76 @@ def test_each_descriptive_module_field_may_be_missing(field):
 
 
 @pytest.mark.parametrize("field", ["Tok", "Id"])
-def test_a_module_without_its_key_is_still_rejected(field):
+@pytest.mark.parametrize("value", ["missing", None, [], True, 1.5])
+def test_a_module_without_its_key_is_left_out(field, value):
+    # Place and type identify a row; without them the row says nothing, and
+    # the other rows are read.
+    plain = read(example("/system/basicInfo")).data
     row = {**_BURNER_ROW}
-    del row[field]
-    with pytest.raises(LocalResourceError):
-        read(_basic_info(row))
+    if value == "missing":
+        del row[field]
+    else:
+        row[field] = value
+    assert read(_basic_info(row)).data.modules == plain.modules
 
 
-@pytest.mark.parametrize("field", _OPTIONAL_FIELDS)
-@pytest.mark.parametrize("value", [None, [], True])
-def test_a_wrongly_typed_descriptive_field_is_still_rejected(field, value):
-    with pytest.raises(LocalResourceError):
-        read(_basic_info({**_BURNER_ROW, "ModuleSerialNumber": "0001", field: value}))
+@pytest.mark.parametrize("field", ["Tok", "Id"])
+def test_a_whole_number_as_the_key_is_read_as_its_digits(field):
+    module = read(_basic_info({**_BURNER_ROW, field: int(_BURNER_ROW[field])}))
+    assert (module.data.modules[-1].token, module.data.modules[-1].id) == (
+        "8",
+        "65519",
+    )
 
 
-def test_a_fractional_serial_number_is_still_invalid_metadata():
-    with pytest.raises(LocalResourceError):
-        read(_basic_info({**_BURNER_ROW, "ModuleSerialNumber": 12.25}))
+@pytest.mark.parametrize("field", [*_OPTIONAL_FIELDS, "ProductName"])
+@pytest.mark.parametrize("value", [None, [], True, {"a": 1}, 1.5])
+def test_a_wrongly_typed_descriptive_field_counts_as_missing(field, value):
+    module = read(
+        _basic_info(
+            {
+                **_BURNER_ROW,
+                "ModuleSerialNumber": "0001",
+                "ProductName": "P",
+                field: value,
+            }
+        )
+    ).data.modules[-1]
+    attribute = {
+        "ModuleSerialNumber": "serial_number",
+        "ModuleHwIdentStr": "hardware",
+        "Ver": "version",
+        "ProductName": "product_name",
+    }[field]
+    assert getattr(module, attribute) is None
+    assert module.token == "8" and module.id == "65519"
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected"),
+    [
+        ("Ver", 15, "15"),
+        ("ProductName", 4711, "4711"),
+        ("ProductSerialNumber", 123456, "123456"),
+        ("ModuleHwIdentStr", 239, "239"),
+        ("ModuleSerialNumber", 1234, 1234),
+    ],
+)
+def test_a_whole_number_in_a_text_field_is_read_as_its_digits(field, value, expected):
+    module = read(_basic_info({**_BURNER_ROW, field: value})).data.modules[-1]
+    attribute = {
+        "ModuleSerialNumber": "serial_number",
+        "ModuleHwIdentStr": "hardware",
+        "Ver": "version",
+        "ProductName": "product_name",
+        "ProductSerialNumber": "product_serial",
+    }[field]
+    assert getattr(module, attribute) == expected
+
+
+def test_a_fractional_serial_number_counts_as_missing():
+    module = read(_basic_info({**_BURNER_ROW, "ModuleSerialNumber": 12.25}))
+    assert module.data.modules[-1].serial_number is None
 
 
 @pytest.mark.parametrize(

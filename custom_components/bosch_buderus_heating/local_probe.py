@@ -33,6 +33,10 @@ MAX_ADDRESS_CHECKS = 2
 _HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
 _NUMERIC_HOST = re.compile(r"(?:0x[0-9a-f]+|[0-9]+)(?:\.(?:0x[0-9a-f]+|[0-9]+))*")
 _SCOPE = re.compile(r"[A-Za-z0-9_.-]{1,64}")
+_SCHEME = re.compile(r"https?://", re.IGNORECASE)
+# The ports of the two local services and of a web address; such a port
+# typed after the address is left out (the ports used stay fixed).
+_TYPED_PORTS: Final = frozenset({"80", "443", "9442", "9443"})
 
 
 class ProbeProblem(StrEnum):
@@ -53,6 +57,7 @@ class ProbeProblem(StrEnum):
     WRONG_RESOURCE = "wrong_resource"
     # No longer raised: an unknown brand counts as not reported.
     UNKNOWN_BRAND = "unsupported_brand"
+    # No longer raised: an unknown version format leaves the version unknown.
     UNKNOWN_FIRMWARE = "firmware_unverified"
     OLD_FIRMWARE = "firmware_update_required"
     INCOMPLETE_SYSTEM = "system_information_incomplete"
@@ -79,6 +84,25 @@ class LocalProbeError(ValueError):
         super().__init__(problem.value)
 
 
+def _without_decoration(value: str) -> str:
+    """The address alone, as copied from a browser or typed with a port.
+
+    Spaces at either end, a leading ``http://`` or ``https://``, closing
+    slashes and one of the known ports (80, 443, 9442, 9443) are left out.
+    Anything else (another port, a path, a user name) stays and is rejected.
+    """
+    host = _SCHEME.sub("", value.strip(), count=1).rstrip("/")
+    if host.startswith("["):
+        bracket, separator, port = host.partition("]:")
+        if separator and port in _TYPED_PORTS:
+            host = bracket + "]"
+    elif host.count(":") == 1:
+        name, _, port = host.partition(":")
+        if port in _TYPED_PORTS:
+            host = name
+    return host
+
+
 def normalize_local_address(value: object) -> str:
     """Normalize a host field, without DNS, URL parsing or proof of LAN access.
 
@@ -87,7 +111,7 @@ def normalize_local_address(value: object) -> str:
     """
     if not isinstance(value, str) or not 0 < len(value) <= 320:
         raise LocalProbeError(ProbeProblem.INVALID_ADDRESS)
-    host = value.strip(" ")
+    host = _without_decoration(value)
     if not host or any(c.isspace() or not c.isprintable() for c in host):
         raise LocalProbeError(ProbeProblem.INVALID_ADDRESS)
     bracketed = host.startswith("[") and host.endswith("]")
@@ -338,17 +362,61 @@ class FirmwareVersion:
     patch: int
 
 
+# The first firmware of the K30/K40 gateways (MX300/MX400) whose local
+# resource service is used. Other gateways with the same service count
+# their versions differently and have no minimum here.
 MINIMUM_FIRMWARE = FirmwareVersion(15, 0, 1)
+_FIRMWARE = re.compile(r"[vV]?([0-9]{1,6}(?:\.[0-9]{1,6}){0,3})(?:[-+ ].*)?")
+# The module places of a gateway in the system information, and the names
+# and module type of the K30/K40 gateway class.
+_GATEWAY_PLACES: Final = frozenset({"72", "75"})
+_K30_K40 = re.compile(r"(?:K30|K40|MX300|MX400)", re.IGNORECASE)
+_K30_K40_TYPE: Final = "17"
 
 
 def parse_firmware_version(value: object) -> FirmwareVersion:
-    """Parse only a known dotted numeric version; never guess suffix semantics."""
-    if not isinstance(value, str) or not re.fullmatch(
-        r"[0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}", value
-    ):
+    """Read a dotted numeric version; anything else is not a known version.
+
+    One to four numbers are read (missing ones count as 0, a fourth is not
+    compared); a leading "v" and a suffix after "-", "+" or a space, such as
+    a build or release candidate mark, are left out.
+    """
+    match = _FIRMWARE.fullmatch(value.strip()) if isinstance(value, str) else None
+    if match is None:
         raise LocalProbeError(ProbeProblem.UNKNOWN_FIRMWARE)
-    major, minor, patch = map(int, value.split("."))
-    return FirmwareVersion(major, minor, patch)
+    numbers = [*map(int, match.group(1).split(".")), 0, 0][:3]
+    return FirmwareVersion(*numbers)
+
+
+def _module_text(value: object) -> str | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return str(value)
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def requires_minimum_firmware(rows: object) -> bool:
+    """Whether the system information names a K30/K40-class gateway.
+
+    The gateway's row (place 72 or 75) decides: its hardware name when it
+    reports one, otherwise its module type. Without such a row no minimum
+    firmware applies.
+    """
+    if not isinstance(rows, list):
+        return False
+    for row in rows:
+        if not isinstance(row, Mapping) or _module_text(row.get("Tok")) not in (
+            _GATEWAY_PLACES
+        ):
+            continue
+        hardware = _module_text(row.get("ModuleHwIdentStr"))
+        if hardware is not None:
+            if _K30_K40.match(hardware):
+                return True
+        elif _module_text(row.get("Id")) == _K30_K40_TYPE:
+            return True
+    return False
 
 
 def _payload(response: ProbeResponse) -> Mapping[str, object]:
@@ -372,15 +440,24 @@ def _payload(response: ProbeResponse) -> Mapping[str, object]:
 
 
 def _string_value(payload: Mapping[str, object]) -> str:
+    """The text of a read-only answer; its ``writeable`` flag is not used."""
     value = payload.get("value")
-    if (
-        payload.get("type") != "stringValue"
-        or type(payload.get("writeable")) is not int
-        or payload["writeable"] != 0
-        or not isinstance(value, str)
-    ):
+    if payload.get("type") != "stringValue" or not isinstance(value, str):
         raise LocalProbeError(ProbeProblem.INVALID_RESPONSE)
     return value
+
+
+def brand_answer_optional(status: object) -> bool:
+    """Whether an error answer for the brand only leaves the brand unknown.
+
+    The brand names the manufacturer and nothing else: a client error such
+    as 403 or 404 leaves it unknown. A refused token (401), a pause request
+    (429), a redirect and a server error (5xx, which pauses the gateway's
+    requests) still count.
+    """
+    return (
+        type(status) is int and 400 <= status <= 499 and status not in (401, 407, 429)
+    )
 
 
 def _check_status(response: ProbeResponse) -> None:
@@ -439,6 +516,8 @@ class ProbeAssessment:
     firmware: FirmwareVersion | None = None
     identity: GatewayIdentity | None = field(default=None, repr=False)
     reported_module_count: int | None = None
+    # A K30/K40-class gateway: its firmware must reach the minimum.
+    firmware_minimum: bool = False
 
 
 def assess_local_probe(
@@ -467,20 +546,24 @@ def assess_local_probe(
     firmware: FirmwareVersion | None = None
     identity: GatewayIdentity | None = None
     module_count: int | None = None
+    minimum = False
     for path in ProbePath:
         if path not in by_path:
             issues.append(ProbeIssue(path, ProbeProblem.MISSING_RESPONSE))
             continue
         response = by_path[path]
         try:
+            if path == ProbePath.BRAND:
+                brand = _brand(response)
+                continue
             _check_status(response)
             payload = _payload(response)
-            if path == ProbePath.BRAND:
-                brand = reported_brand(_string_value(payload))
-            elif path == ProbePath.FIRMWARE:
-                firmware = parse_firmware_version(_string_value(payload))
-                if firmware < MINIMUM_FIRMWARE:
-                    raise LocalProbeError(ProbeProblem.OLD_FIRMWARE)
+            if path == ProbePath.FIRMWARE:
+                # An unknown version format only leaves the version unknown.
+                try:
+                    firmware = parse_firmware_version(_string_value(payload))
+                except LocalProbeError:
+                    firmware = None
             else:
                 identity = parse_local_gateway_identity(
                     payload, context=current_context.identity
@@ -488,6 +571,7 @@ def assess_local_probe(
                 values = payload["values"]
                 assert isinstance(values, list)  # Validated by identity parser.
                 module_count = len(values)
+                minimum = requires_minimum_firmware(values)
         except LocalProbeError as error:
             issues.append(ProbeIssue(path, error.problem))
         except IdentityError as error:
@@ -497,6 +581,8 @@ def assess_local_probe(
                 else ProbeProblem.INVALID_IDENTITY
             )
             issues.append(ProbeIssue(path, problem))
+    if minimum and firmware is not None and firmware < MINIMUM_FIRMWARE:
+        issues.append(ProbeIssue(ProbePath.FIRMWARE, ProbeProblem.OLD_FIRMWARE))
     if issues:
         status = (
             ProbeStatus.FAILED
@@ -510,4 +596,20 @@ def assess_local_probe(
         firmware=firmware,
         identity=identity,
         reported_module_count=module_count,
+        firmware_minimum=minimum,
     )
+
+
+def _brand(response: ProbeResponse) -> GatewayBrand | None:
+    """The reported brand; an unusable answer only leaves it unknown.
+
+    A failed connection, a changed certificate, a refused token and a pause
+    request stay problems of the check.
+    """
+    if response.failure is None and brand_answer_optional(response.status):
+        return None
+    _check_status(response)
+    try:
+        return reported_brand(_string_value(_payload(response)))
+    except LocalProbeError:
+        return None
