@@ -758,6 +758,63 @@ def test_enum_translates_single_value_list_resource(hass: HomeAssistant) -> None
     assert sensor.entity_description.options == ["not_supported", "supported", "active"]
 
 
+_DEMAND_ALLOWED = ("", "ch", "dhw", "frost")
+_DEMAND_ALLOWED_WIDE = (
+    *_DEMAND_ALLOWED,
+    "ch_heat",
+    "ch_cool",
+    "dhw_exclusive",
+    "dhw_nonexclusive",
+    "pool",
+)
+
+
+@pytest.mark.parametrize(
+    ("values", "allowed", "expected"),
+    [
+        # A heat pump in the frost range reports only ``frost``.
+        (("frost",), _DEMAND_ALLOWED, "frost"),
+        (("",), _DEMAND_ALLOWED, "none"),
+        (("dhw", "", "ch"), _DEMAND_ALLOWED, "ch_dhw"),
+        (("ch_heat",), _DEMAND_ALLOWED_WIDE, "ch"),
+        (("dhw_exclusive",), _DEMAND_ALLOWED_WIDE, "dhw"),
+        (("dhw_nonexclusive", "ch_heat"), _DEMAND_ALLOWED_WIDE, "ch_dhw"),
+        # Declared entries without a state of their own show as reported.
+        (("pool",), _DEMAND_ALLOWED_WIDE, "pool"),
+        (("ch_cool",), _DEMAND_ALLOWED_WIDE, "ch_cool"),
+        # An active demand never shows as none: undeclared or mixed with a
+        # known part, the state is unknown.
+        (("pool",), _DEMAND_ALLOWED, None),
+        (("ch", "pool"), _DEMAND_ALLOWED_WIDE, None),
+    ],
+)
+def test_heat_demand_shows_every_reported_demand(
+    hass: HomeAssistant,
+    values: tuple[str, ...],
+    allowed: tuple[str, ...],
+    expected: str | None,
+) -> None:
+    metadata = ResourceMetadata(resource_type="arrayData", allowed_values=allowed)
+    resource = Resource(
+        path="/heatSources/actualHeatDemand",
+        values=(),
+        has_values=True,
+        metadata=metadata,
+    )
+    sensor = _sensor(hass, resource, value_key="values")
+    reported = Resource(
+        path=resource.path, values=values, has_values=True, metadata=metadata
+    )
+    sensor.coordinator.data = {
+        resource.path: ResourceSnapshot(reported, True, datetime.now(UTC))
+    }
+
+    assert sensor.native_value == expected
+    assert sensor.coordinator.unknown_enum_value_count(resource.path) == (
+        1 if expected is None else 0
+    )
+
+
 def test_known_array_entities_exist_when_empty_at_startup(
     hass: HomeAssistant,
 ) -> None:

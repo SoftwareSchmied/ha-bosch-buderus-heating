@@ -1317,6 +1317,13 @@ upwards while the refrigerant circuit was heating. During a defrost the value
 is `ch` for about a minute, then empty, then `ch` again. What the
 manufacturer means by it is not documented.
 
+Some controllers also declare `ch_heat`, `ch_cool`, `dhw_exclusive`,
+`dhw_nonexclusive` and `pool`. `ch_heat` shows as heating, the two `dhw_…`
+entries as hot water; `ch_cool` and `pool` show as reported. An active entry
+the device does not declare, or `ch_cool` or `pool` together with another
+demand, makes the state unknown instead of *None*; only an empty list or an
+empty entry means no demand.
+
 Checked against the recorded history of one heat pump (11 days with 14
 defrosts, 5 hot water charges and one controller restart): the *Electric
 auxiliary heater active (display)* signal was on exactly once, for one minute

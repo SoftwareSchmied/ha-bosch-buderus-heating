@@ -2798,22 +2798,37 @@ def _known_value_keys(path: str) -> tuple[str, ...]:
     return ()
 
 
+_HEAT_DEMAND_PARTS = ("ch", "dhw", "frost")
+_HEAT_DEMAND_ALIASES = {
+    "central_heating": "ch",
+    "heating": "ch",
+    "ch_heat": "ch",
+    "domestic_hot_water": "dhw",
+    "hot_water": "dhw",
+    "dhw_exclusive": "dhw",
+    "dhw_nonexclusive": "dhw",
+    "frost_protection": "frost",
+}
+
+
 def _heat_demand_state(resource: Resource) -> str:
-    """Combine the active PointT demand list into one stable enum state."""
-    aliases = {
-        "central_heating": "ch",
-        "heating": "ch",
-        "domestic_hot_water": "dhw",
-        "hot_water": "dhw",
-        "frost_protection": "frost",
-    }
+    """Combine the active PointT demand list into one stable enum state.
+
+    ``ch_heat`` is a heating demand, ``dhw_exclusive`` and
+    ``dhw_nonexclusive`` are hot water demands. An entry without a state of
+    its own (``ch_cool``, ``pool`` or a new one) keeps its spelling: alone
+    it shows as reported when the device declares it, otherwise the state is
+    unknown. Only an empty list or empty entries mean no demand.
+    """
     active: set[str] = set()
     for item in resource.values:
         if not isinstance(item, str):
             continue
         normalized = re.sub(r"[^a-z0-9]+", "_", item.casefold()).strip("_")
-        active.add(aliases.get(normalized, normalized))
-    ordered = tuple(item for item in ("ch", "dhw", "frost") if item in active)
+        if normalized:
+            active.add(_HEAT_DEMAND_ALIASES.get(normalized, normalized))
+    ordered = [item for item in _HEAT_DEMAND_PARTS if item in active]
+    ordered.extend(sorted(active.difference(_HEAT_DEMAND_PARTS)))
     return "_".join(ordered) if ordered else "none"
 
 
