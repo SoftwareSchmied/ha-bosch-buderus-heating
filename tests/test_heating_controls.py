@@ -204,8 +204,52 @@ async def test_mode_subset_and_unknown_values(hass):
         await entity.async_set_hvac_mode(HVACMode.OFF)
     await entity.async_set_hvac_mode(HVACMode.AUTO)
     assert coordinator._write_service.async_write_enum.await_args.args[2] == "auto"
+    # A mode that is not known stays shown without a mode; nothing is offered.
     change(coordinator, MODE, "vendor_future")
-    assert not entity.available and entity.hvac_mode is None
+    assert entity.available and entity.hvac_mode is None
+    assert entity.hvac_modes == []
+    assert entity.supported_features == ClimateEntityFeature(0)
+    assert entity.extra_state_attributes["write_lock"] == "mode"
+    coordinator._write_service.async_write_enum.reset_mock()
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_hvac_mode(HVACMode.AUTO)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=21)
+    coordinator._write_service.async_write_enum.assert_not_awaited()
+    coordinator._write_service.async_write_number.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("value", "shown"), [("MANUAL", HVACMode.HEAT), ("off", HVACMode.OFF)]
+)
+async def test_a_mode_outside_the_offer_is_shown_and_locked(hass, value, shown):
+    """S06: the mode is shown also when it is not advertised or differs in
+    case; only the advertised, exact values can be written."""
+    _, coordinator, entity = setup(hass, options=("manual", "auto"))
+    change(coordinator, MODE, value)
+    assert entity.available and entity.hvac_mode == shown
+    assert entity.hvac_modes == [shown]
+    assert entity.supported_features == ClimateEntityFeature(0)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_hvac_mode(HVACMode.AUTO)
+    coordinator._write_service.async_write_enum.assert_not_awaited()
+
+
+async def test_a_mode_that_is_not_writable_is_shown_and_locked(hass):
+    _, coordinator, entity = setup(hass)
+    old = coordinator.data[MODE]
+    coordinator.data[MODE] = replace(
+        old,
+        resource=replace(
+            old.resource, metadata=replace(old.resource.metadata, writable=False)
+        ),
+    )
+    assert entity.available and entity.hvac_mode == HVACMode.HEAT
+    assert entity.hvac_modes == [HVACMode.HEAT]
+    assert entity.native_target_temperature == 19
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=21)
+    coordinator._write_service.async_write_number.assert_not_awaited()
 
 
 @pytest.mark.parametrize(
@@ -220,14 +264,32 @@ async def test_mode_subset_and_unknown_values(hass):
     ],
 )
 async def test_cooling_context_never_controls_heating_target(hass, path, value):
+    """S03: in a cooling or unclear season the climate stays shown, with its
+    mode, target and room temperature, and every change is refused."""
     _, coordinator, entity = setup(hass)
     coordinator.data[path] = ResourceSnapshot(
         scalar(path, value), True, datetime.now(UTC)
     )
-    assert not entity.available
-    assert entity.hvac_modes == []
-    with pytest.raises(ServiceValidationError):
-        await entity.async_set_hvac_mode(HVACMode.HEAT)
+    assert entity.available
+    assert entity.hvac_mode == HVACMode.HEAT
+    assert entity.hvac_modes == [HVACMode.HEAT]
+    assert entity.native_current_temperature == 20
+    assert entity.native_target_temperature == 19
+    assert entity.supported_features == ClimateEntityFeature(0)
+    assert entity.extra_state_attributes["write_lock"] == "season"
+    for command in (
+        entity.async_set_hvac_mode(HVACMode.OFF),
+        entity.async_set_temperature(temperature=21),
+    ):
+        with pytest.raises(ServiceValidationError) as raised:
+            await command
+        assert raised.value.translation_key == "heating_climate_season_locked"
+    coordinator._write_service.async_write_enum.assert_not_awaited()
+    coordinator._write_service.async_write_number.assert_not_awaited()
+    # Back in the heating season, changes are offered again.
+    del coordinator.data[path]
+    assert entity.hvac_modes == [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
+    assert "write_lock" not in entity.extra_state_attributes
 
 
 async def test_changed_mode_on_gateway_blocks_temperature(hass):
@@ -304,12 +366,28 @@ def test_fahrenheit_conversion(hass):
     assert entity.target_temperature_step == pytest.approx(0.5 / 1.8)
 
 
+def test_a_circuit_mode_under_another_contract_shows_no_climate(hass):
+    """The climate shows only a mode under the heating circuit's own rules; a
+    room controller's circuit mode follows its contract instead."""
+    from custom_components.bosch_buderus_heating.writes import ControlAssessment
+
+    _, _coordinator, entity = setup(hass)
+    assert entity.available
+    with patch(
+        "custom_components.bosch_buderus_heating.heating_climate.assess_control",
+        return_value=ControlAssessment(None, "rrc_contract_conflict"),
+    ):
+        assert not entity.available
+        assert entity.hvac_mode is None
+
+
 async def test_climate_discovery_recovers_without_duplicates(hass):
-    entry, coordinator, entity = setup(hass, mode="unknown")
+    entry, coordinator, entity = setup(hass, mode="manual")
+    coordinator.data[MODE] = replace(coordinator.data[MODE], available=False)
     added = []
     track_heating_climates(entry, coordinator, added.extend)
     assert not added
-    change(coordinator, MODE, "manual")
+    coordinator.data[MODE] = replace(coordinator.data[MODE], available=True)
     coordinator.async_update_listeners()
     coordinator.async_update_listeners()
     assert len(added) == 1 and added[0].unique_id == entity.unique_id

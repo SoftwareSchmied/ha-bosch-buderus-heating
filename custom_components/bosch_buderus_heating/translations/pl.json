@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Zmień temperaturę i tryb pracy osobno, aby każdą zmianę można było potwierdzić."
     },
+    "heating_climate_season_locked": {
+      "message": "Tego obiegu grzewczego nie można teraz zmienić: chłodzi albo nie da się wiarygodnie odczytać jego sezonu. Jego wartości są nadal wyświetlane. Spróbuj ponownie po odczytaniu sezonu grzewczego."
+    },
     "heating_climate_command": {
       "message": "To polecenie termostatu nie jest obecnie dostępne. Temperatury można zmieniać tylko w ręcznym trybie grzania lub w trybie automatycznym, gdy obieg grzewczy oferuje tymczasową wartość zadaną. Wybierz tryb osobno i sprawdź, czy urządzenie dostarcza bieżące wartości."
     },

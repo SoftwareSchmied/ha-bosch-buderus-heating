@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Muuta lämpötilaa ja käyttötilaa erikseen, jotta kukin muutos voidaan vahvistaa."
     },
+    "heating_climate_season_locked": {
+      "message": "Tätä lämmityspiiriä ei voi muuttaa juuri nyt: se jäähdyttää, tai sen käyttökautta ei voida lukea luotettavasti. Sen arvot näytetään edelleen. Yritä uudelleen, kun lämmityskausi on luettu."
+    },
     "heating_climate_command": {
       "message": "Tämä termostaatin komento ei ole tällä hetkellä käytettävissä. Lämpötiloja voi muuttaa vain manuaalisessa lämmitystilassa tai automaattitilassa, kun lämmityspiiri tarjoaa väliaikaisen asetusarvon. Valitse tila erikseen ja tarkista, että laite antaa ajantasaisia arvoja."
     },

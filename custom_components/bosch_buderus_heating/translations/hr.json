@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Promijenite temperaturu i način rada zasebno kako bi se svaka promjena mogla potvrditi."
     },
+    "heating_climate_season_locked": {
+      "message": "Ovaj krug grijanja trenutno se ne može mijenjati: hladi ili se njegova sezona ne može pouzdano pročitati. Njegove se vrijednosti i dalje prikazuju. Pokušajte ponovno kada se sezona grijanja pročita."
+    },
     "heating_climate_command": {
       "message": "Ova naredba termostata trenutno nije dostupna. Temperature se mogu mijenjati samo u ručnom načinu grijanja ili u automatskom načinu kada krug grijanja nudi privremenu zadanu vrijednost. Odaberite način zasebno i provjerite pruža li uređaj trenutne vrijednosti."
     },

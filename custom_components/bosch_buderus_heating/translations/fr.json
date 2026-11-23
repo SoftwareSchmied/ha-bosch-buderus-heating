@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Veuillez modifier séparément la température et le mode de fonctionnement afin que chaque modification puisse être confirmée."
     },
+    "heating_climate_season_locked": {
+      "message": "Ce circuit de chauffage ne peut pas être modifié pour le moment : il refroidit, ou sa saison ne peut pas être lue de manière fiable. Ses valeurs restent affichées. Réessayez une fois la saison de chauffage lue."
+    },
     "heating_climate_command": {
       "message": "Cette commande de thermostat n'est actuellement pas disponible. Les températures ne peuvent être modifiées qu'en mode chauffage manuel, ou en mode automatique lorsque le circuit de chauffage propose une consigne temporaire. Sélectionnez le mode séparément et vérifiez que l'appareil fournit des valeurs actuelles."
     },

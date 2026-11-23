@@ -132,9 +132,10 @@ def _registered(
 ) -> bool:
     """C70: whether this climate already has a registry entry of this entry.
 
-    In a cooling context the climate is unavailable. A registered one is
+    Without a readable mode the climate is unavailable. A registered one is
     still added, unavailable, so that it does not appear as no longer
-    provided after a restart in summer. A new installation is unchanged.
+    provided after a restart. A cooling or unclear season no longer hides
+    it: it is shown, only its changes are locked.
     """
     registry = er.async_get(coordinator.hass)
     entity_id = registry.async_get_entity_id("climate", DOMAIN, entity.unique_id or "")
@@ -192,6 +193,40 @@ class HeatingCircuitClimate(
     def _mode(self) -> Resource | None:
         return self._checked_mode(strict=False)
 
+    @property
+    def _shown_mode(self) -> Resource | None:
+        """The mode reading as shown, apart from any right to change it.
+
+        Any text of a valid reading of this circuit's mode; a value without a
+        known mode shows no mode. A mode that is not writable, not advertised
+        or not known, or a cooling or unclear season, only locks the changes
+        (``_locked``); every change still uses ``_checked_mode``.
+        """
+        resource = self._resource("operationMode")
+        if (
+            resource is None
+            or resource.metadata.resource_type != "stringValue"
+            or resource.references
+            or not isinstance(resource.value, str)
+            or not resource.value.strip()
+            or assess_control(resource, context_of(self.coordinator)).policy
+            is not HEATING_CIRCUIT_OPERATION_MODE_POLICY
+        ):
+            return None
+        return resource
+
+    @property
+    def _locked(self) -> str | None:
+        """Why the climate is only shown now: ``season`` while the heating
+        context is not a heating one (cooling, an unknown or invalid season),
+        ``mode`` while the mode cannot be changed (not writable, not
+        advertised, not known); ``None`` when changes are possible."""
+        if self._heating_context is None:
+            return "season"
+        if self._mode is None:
+            return "mode"
+        return None
+
     def _checked_mode(self, *, strict: bool) -> Resource | None:
         resource = self._resource("operationMode", strict=strict)
         if resource is None:
@@ -244,12 +279,14 @@ class HeatingCircuitClimate(
 
     @property
     def available(self) -> bool:
-        return self._mode is not None and self._heating_context is not None
+        return self._shown_mode is not None
 
     @property
     def hvac_mode(self) -> HVACMode | None:
-        mode = self._mode
-        return _MODES.get(str(mode.value)) if self.available and mode else None
+        mode = self._shown_mode
+        if mode is None or not isinstance(mode.value, str):
+            return None
+        return _MODES.get(mode.value.strip().lower())
 
     @property
     def hvac_action(self) -> HVACAction | None:
@@ -307,7 +344,7 @@ class HeatingCircuitClimate(
     @property
     def hvac_modes(self) -> list[HVACMode]:
         mode = self._mode
-        if self._read_only_control():
+        if self._read_only_control() or self._locked is not None:
             current = self.hvac_mode
             return [current] if current is not None else []
         return (
@@ -371,6 +408,9 @@ class HeatingCircuitClimate(
             attributes["temporary_override"] = (
                 self.hvac_mode == HVACMode.AUTO and temporary.active
             )
+        if self.available and (lock := self._locked) is not None:
+            # Shown only: why no change is offered now.
+            attributes["write_lock"] = lock
         return attributes
 
     @property
@@ -391,7 +431,7 @@ class HeatingCircuitClimate(
 
     @property
     def supported_features(self) -> Feature:
-        if self._read_only_control():
+        if self._read_only_control() or self._locked is not None:
             return Feature(0)
         features = (
             Feature.TARGET_TEMPERATURE
@@ -469,9 +509,10 @@ class HeatingCircuitClimate(
         mode = self._checked_mode(strict=True)
         context = self._checked_context(strict=True)
         guard = self._control_type_guard()
+        if context is None:
+            raise _season_locked()
         if (
             mode is None
-            or context is None
             or guard is None
             or hvac_mode not in self.hvac_modes
             or self._read_only_control(strict=True)
@@ -494,6 +535,8 @@ class HeatingCircuitClimate(
         context = self._checked_context(strict=True)
         guard = self._control_type_guard()
         # A combined mode/temperature command must never partly change a mode.
+        if not set(kwargs) - _SERVICE_KEYS and context is None:
+            raise _season_locked()
         if (
             set(kwargs) - _SERVICE_KEYS
             or mode is None
@@ -964,4 +1007,11 @@ def valid_resource(
 def _invalid() -> ServiceValidationError:
     return ServiceValidationError(
         translation_domain=DOMAIN, translation_key="heating_climate_command"
+    )
+
+
+def _season_locked() -> ServiceValidationError:
+    """A change while the circuit's season is not a heating one."""
+    return ServiceValidationError(
+        translation_domain=DOMAIN, translation_key="heating_climate_season_locked"
     )

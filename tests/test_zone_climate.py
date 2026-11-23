@@ -220,14 +220,25 @@ async def test_manual_shows_the_manual_setpoint_and_off_none(hass, plant):
         {"available": False},
     ],
 )
-async def test_invalid_or_unused_mode_makes_the_climate_unavailable(
+async def test_invalid_or_unused_mode_keeps_the_zone_shown_and_locked(
     hass, plant, change
 ):
+    """S05/S18: the zone stays shown with its room temperature; a mode that is
+    not known, not advertised or not used now offers no change."""
     coordinator, cloud = plant
     entity = climate(hass, coordinator)
     changed(coordinator, cloud, MODE, **change)
-    assert not entity.available
-    assert entity.hvac_modes == []
+    assert entity.available
+    assert entity.native_current_temperature is not None
+    shown = entity.hvac_mode
+    assert (
+        shown is None
+        if change in ({"value": "unknown"}, {"used": False}, {"available": False})
+        else shown is not None
+    )
+    assert entity.hvac_modes == ([shown] if shown is not None else [])
+    assert not entity.supported_features & TARGET
+    assert entity.extra_state_attributes["write_lock"] == "mode"
     with pytest.raises(ServiceValidationError) as error:
         await entity.async_set_hvac_mode(HVACMode.HEAT)
     assert error.value.translation_key == (
@@ -236,11 +247,12 @@ async def test_invalid_or_unused_mode_makes_the_climate_unavailable(
     assert cloud.puts == []
 
 
-async def test_stale_mode_reading_hides_and_refuses(hass, plant):
+async def test_stale_mode_reading_shows_no_mode_and_refuses(hass, plant):
     coordinator, cloud = plant
     entity = climate(hass, coordinator)
     coordinator.data[MODE] = replace(coordinator.data[MODE], freshness=Freshness.STALE)
-    assert not entity.available
+    assert entity.available and entity.hvac_mode is None
+    assert entity.hvac_modes == []
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
     assert cloud.puts == []
@@ -490,11 +502,20 @@ async def test_cooling_season_switches_to_the_cooling_side(hass, plant):
     assert entity.extra_state_attributes["zone_side"] == "cooling"
 
 
-async def test_cooling_season_without_a_cooling_side_is_unavailable(hass, plant):
+async def test_cooling_season_without_a_cooling_mode_is_shown_and_locked(hass, plant):
     coordinator, cloud = plant
     cooling(coordinator, cloud, readable=False)
     entity = climate(hass, coordinator)
-    assert not entity.available
+    assert entity.available and entity.hvac_mode is None
+    assert entity.native_current_temperature is not None
+    assert entity.extra_state_attributes["zone_side"] == "cooling"
+    assert entity.extra_state_attributes["write_lock"] == "mode"
+    assert entity.supported_features == ClimateEntityFeature(0)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_temperature(temperature=24)
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_hvac_mode(HVACMode.OFF)
+    assert cloud.puts == []
 
 
 async def test_without_a_circuit_the_zone_stays_on_the_heating_side(hass, plant):
@@ -515,8 +536,12 @@ async def test_without_a_circuit_cooling_leaves_the_side_unknown(hass, plant):
     entity = climate(hass, coordinator)
     assert assigned_circuit(coordinator, Z1) is None
     assert entity._side() is None
-    assert not entity.available
-    assert entity.extra_state_attributes == {}
+    # Shown with the heating side's mode, the side unknown, nothing offered.
+    assert entity.available and entity.hvac_mode == HVACMode.AUTO
+    assert entity.hvac_modes == [HVACMode.AUTO]
+    assert entity.supported_features == ClimateEntityFeature(0)
+    assert entity.extra_state_attributes["zone_side"] == "unknown"
+    assert entity.extra_state_attributes["write_lock"] == "season"
     report = next(
         item
         for item in zone_climate_diagnostics(coordinator)

@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Athraigh teocht agus mód oibríochta ar leithligh le do thoil ionas gur féidir gach athrú a dheimhniú."
     },
+    "heating_climate_season_locked": {
+      "message": "Ní féidir an ciorcad téimh seo a athrú faoi láthair: tá sé ag fuarú, nó ní féidir a shéasúr a léamh go hiontaofa. Taispeántar a luachanna fós. Bain triail eile as nuair a bheidh an séasúr téimh léite."
+    },
     "heating_climate_command": {
       "message": "Níl an t-ordú teirmeastait seo ar fáil faoi láthair. Ní féidir teochtaí a athrú ach amháin sa mhód téimh láimhe, nó sa mhód uathoibríoch nuair a thairgeann an ciorcad téimh socphointe sealadach. Roghnaigh an mód ar leithligh agus seiceáil go bhfuil an trealamh ag soláthar luachanna reatha."
     },

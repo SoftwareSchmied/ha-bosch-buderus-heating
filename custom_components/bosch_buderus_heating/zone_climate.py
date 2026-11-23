@@ -100,6 +100,8 @@ from .zone_write_stats import counted_write, zone_write_stats
 
 HEAT_SIDE: Final = "heating"
 COOL_SIDE: Final = "cooling"
+# The side shown while it is not known now; nothing is changed then.
+UNKNOWN_SIDE: Final = "unknown"
 _ROOT = re.compile(r"^(/zones/zone([0-9]+))/heating/operationMode$")
 _TEMPORARY = re.compile(r"^(/zones/zone[0-9]+)/heating/temporaryRoomSetpoint$")
 _MODES: Final = {
@@ -349,11 +351,50 @@ class ZoneClimate(
         )
 
     def _shown(self) -> tuple[str, Resource] | None:
+        """The side and its valid mode reading: what a change starts from."""
         side = self._side()
         if side is None:
             return None
         mode = self._mode(side)
         return (side, mode) if mode is not None else None
+
+    def _shown_mode(self, side: str) -> Resource | None:
+        """A side's mode reading as shown: any text of a valid reading, also
+        one that is not advertised or not known (it shows no mode)."""
+        resource = self._reading(f"{self.root}/{side}/operationMode", strict=False)
+        if (
+            resource is None
+            or resource.has_values
+            or not isinstance(resource.value, str)
+            or not resource.value.strip()
+        ):
+            return None
+        return resource
+
+    def _display(self) -> tuple[str, Resource | None] | None:
+        """The side as shown and its mode reading; ``None``: unavailable.
+
+        A zone stays shown while its mode or its room temperature can be read.
+        A side that is not known now (a season reading that is not valid, or a
+        possibly cooling plant without the zone's circuit) shows the heating
+        side's mode as ``unknown``; a cooling side without a mode reading
+        shows none. Changes are then locked (``_shown``, ``_command``).
+        """
+        side = self._side()
+        mode = self._shown_mode(side or HEAT_SIDE)
+        if mode is None and self.native_current_temperature is None:
+            return None
+        return (side or UNKNOWN_SIDE, mode)
+
+    def _display_mode(self) -> HVACMode | None:
+        display = self._display()
+        if display is None:
+            return None
+        side, mode = display
+        if mode is None:
+            return None
+        value = str(mode.value).strip().lower()
+        return _MODES[side if side in _MODES else HEAT_SIDE].get(value)
 
     def _read_only_control(self, *, strict: bool = False) -> bool:
         """The circuit reports ``constants``; a stale reading keeps the lock."""
@@ -430,13 +471,13 @@ class ZoneClimate(
 
     @property
     def available(self) -> bool:
-        return self._shown() is not None
+        return self._display() is not None
 
     @property
     def hvac_mode(self) -> HVACMode | None:
         shown = self._shown()
         if shown is None:
-            return None
+            return self._display_mode()
         side, mode = shown
         return _MODES[side].get(str(mode.value))
 
@@ -444,7 +485,9 @@ class ZoneClimate(
     def hvac_modes(self) -> list[HVACMode]:
         shown = self._shown()
         if shown is None:
-            return []
+            # Only shown: the current mode, if known, and no change.
+            current = self._display_mode()
+            return [current] if current is not None else []
         side, mode = shown
         if not self._writable(mode) or self._read_only_control():
             current = _MODES[side].get(str(mode.value))
@@ -478,7 +521,10 @@ class ZoneClimate(
     def native_target_temperature(self) -> float | None:
         shown = self._shown()
         if shown is None:
-            return None
+            # Only shown: the zone's active setpoint, none while it is off.
+            if self._display() is None or self._display_mode() == HVACMode.OFF:
+                return None
+            return self._active_setpoint()
         side, mode = shown
         if mode.value == "manual":
             return temperature(self._manual(side))
@@ -576,12 +622,14 @@ class ZoneClimate(
 
     def _action(self) -> tuple[HVACAction | None, tuple[str, ...]]:
         """The calculated action and the readings it combines."""
-        shown = self._shown()
-        if shown is None:
+        display = self._display()
+        if display is None:
             return None, ()
-        _, mode = shown
+        _, mode = display
+        if mode is None:
+            return None, ()
         mode_path = mode.path
-        if mode.value == "off":
+        if str(mode.value).strip().lower() == "off":
             return HVACAction.OFF, (mode_path,)
         circuit = self._circuit()
         if circuit is None:
@@ -606,14 +654,18 @@ class ZoneClimate(
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         attributes: dict[str, Any] = {}
-        shown = self._shown()
-        if shown is None:
+        display = self._display()
+        if display is None:
             return attributes
-        side, mode = shown
+        side, mode = display
+        shown = self._shown()
         attributes["zone_side"] = side
-        if (
+        if shown is None:
+            # Only shown: why no change is offered now.
+            attributes["write_lock"] = "season" if side == UNKNOWN_SIDE else "mode"
+        if not self.supported_features & Feature.TARGET_TEMPERATURE and (
             self.hvac_mode == HVACMode.AUTO
-            and not self.supported_features & Feature.TARGET_TEMPERATURE
+            or (shown is None and self.native_target_temperature is not None)
         ):
             # The program's target, shown without a temperature command.
             attributes[ATTR_TEMPERATURE] = display_temp(
@@ -627,8 +679,8 @@ class ZoneClimate(
             attributes["active_setpoint"] = display_temp(
                 self.hass, active, temperature_unit(self), self.precision
             )
-        temporary = self._temporary(side)
-        if temporary is not None:
+        temporary = self._temporary(side) if side in _MODES else None
+        if temporary is not None and mode is not None:
             attributes["temporary_override"] = mode.value == "auto" and temporary.active
         lock = self._reading(f"{self.root}/{CHILD_LOCK}", strict=False)
         if lock is not None and lock.value in ("on", "off"):

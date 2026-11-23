@@ -40,6 +40,7 @@ def zone_plant(hass):
 
 
 HUMIDITY = f"{Z1}/averageActualHumidity"
+ROOM = f"{Z1}/averageCurrentTemperature"
 TARGET = ClimateEntityFeature.TARGET_TEMPERATURE
 
 
@@ -81,6 +82,7 @@ async def test_a_zone_stored_before_the_first_reading_is_added_unavailable(
 ):
     coordinator, _ = plant
     stale(coordinator, MODE)
+    stale(coordinator, ROOM)
     assert Z1 not in tracked(coordinator, unloaders)
     coordinator._stored_resources = {MODE: RESOURCES[MODE]}
     found = tracked(coordinator, unloaders)
@@ -93,10 +95,24 @@ async def test_a_stored_zone_that_would_not_be_created_normally_stays_out(
 ):
     coordinator, _ = plant
     stale(coordinator, MODE)
-    coordinator._stored_resources = {
-        MODE: replace(RESOURCES[MODE], value="no-such-mode")
-    }
+    stale(coordinator, ROOM)
+    coordinator._stored_resources = {MODE: replace(RESOURCES[MODE], value=7)}
     assert Z1 not in tracked(coordinator, unloaders)
+
+
+async def test_a_zone_with_only_its_room_temperature_is_added_and_locked(
+    plant, unloaders
+):
+    """S05: a zone whose mode cannot be read stays shown with its room
+    temperature, without any change."""
+    coordinator, cloud = plant
+    stale(coordinator, MODE)
+    found = tracked(coordinator, unloaders)
+    assert found[Z1].available and found[Z1].hvac_mode is None
+    assert found[Z1].native_current_temperature is not None
+    await _refused(
+        found[Z1].async_set_hvac_mode(HVACMode.HEAT), "zone_climate_command", cloud
+    )
 
 
 # Season of the circuit ----------------------------------------------------------------
@@ -111,7 +127,8 @@ async def test_without_a_season_reading_the_zone_is_on_the_heating_side(hass, pl
 
 
 @pytest.mark.parametrize("how", ["stale", "not_text", "invalid_mode"])
-async def test_an_unreadable_zone_shows_nothing_and_takes_no_command(hass, plant, how):
+async def test_an_unreadable_zone_is_only_shown_and_takes_no_command(hass, plant, how):
+    """S05/S18: an unknown season or mode leaves the zone shown, locked."""
     coordinator, cloud = plant
     entity = climate(hass, coordinator)
     if how == "stale":
@@ -120,14 +137,21 @@ async def test_an_unreadable_zone_shows_nothing_and_takes_no_command(hass, plant
         changed(coordinator, cloud, SEASON, value=7)
     else:
         changed(coordinator, cloud, MODE, value="unknown")
-    assert not entity.available
-    assert entity.hvac_mode is None
-    assert entity.hvac_modes == []
-    assert entity.hvac_action is None
-    assert entity.native_target_temperature is None
+    assert entity.available
+    assert entity.native_current_temperature is not None
+    if how == "invalid_mode":
+        assert entity.hvac_mode is None and entity.hvac_modes == []
+        assert entity.hvac_action is None
+    else:
+        # The heating side's mode, while the side itself is unknown.
+        assert entity.hvac_modes == [entity.hvac_mode]
     assert (entity.min_temp, entity.max_temp) == (0, 0)
     assert entity.target_temperature_step is None
-    assert entity.extra_state_attributes == {}
+    attributes = entity.extra_state_attributes
+    assert attributes["write_lock"] == ("mode" if how == "invalid_mode" else "season")
+    assert attributes["zone_side"] == (
+        "heating" if how == "invalid_mode" else "unknown"
+    )
     assert entity.supported_features == ClimateEntityFeature(0)
     await _refused(
         entity.async_set_hvac_mode(HVACMode.HEAT), "zone_climate_command", cloud

@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Zmeňte teplotu a prevádzkový režim samostatne, aby sa dala každá zmena potvrdiť."
     },
+    "heating_climate_season_locked": {
+      "message": "Tento vykurovací okruh teraz nemožno zmeniť: chladí, alebo sa jeho sezóna nedá spoľahlivo načítať. Jeho hodnoty sa naďalej zobrazujú. Skúste to znova, keď sa načíta vykurovacia sezóna."
+    },
     "heating_climate_command": {
       "message": "Tento príkaz termostatu momentálne nie je dostupný. Teploty sa dajú meniť iba v manuálnom režime vykurovania alebo v automatickom režime, ak vykurovací okruh ponúka dočasnú požadovanú hodnotu. Režim vyberte samostatne a skontrolujte, či zariadenie poskytuje aktuálne hodnoty."
     },

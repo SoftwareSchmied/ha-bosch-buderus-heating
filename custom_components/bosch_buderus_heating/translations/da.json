@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Ændr temperatur og driftsform hver for sig, så hver ændring kan bekræftes."
     },
+    "heating_climate_season_locked": {
+      "message": "Denne varmekreds kan ikke ændres lige nu: den køler, eller dens sæson kan ikke læses pålideligt. Dens værdier vises stadig. Prøv igen, når fyringssæsonen er blevet læst."
+    },
     "heating_climate_command": {
       "message": "Denne termostatkommando er ikke tilgængelig lige nu. Temperaturer kan kun ændres i manuel opvarmningsform eller i automatisk form, når varmekredsen tilbyder et midlertidigt sætpunkt. Vælg formen separat, og kontrollér, at apparatet leverer aktuelle værdier."
     },

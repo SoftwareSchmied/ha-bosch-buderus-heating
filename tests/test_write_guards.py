@@ -563,10 +563,44 @@ class _Lifecycle:
 
 
 @pytest.mark.parametrize("registered", [True, False])
-async def test_registered_climate_is_added_unavailable_in_cooling(hass, registered):
+async def test_climate_is_added_and_locked_in_cooling(hass, registered):
+    """S03: also a new installation in summer gets the climate, shown with
+    its readings and without any change."""
     entry, coordinator, _entity = setup(hass)
     cooling = scalar(ROOT + "/currentSuWiMode", "cooling", writable=False)
     coordinator.data[cooling.path] = ResourceSnapshot(cooling, True, datetime.now(UTC))
+    if registered:
+        er.async_get(hass).async_get_or_create(
+            "climate",
+            DOMAIN,
+            "gateway:heatingCircuits:hc2:climate",
+            config_entry=entry,
+        )
+    added = []
+    lifecycle = _Lifecycle()
+    track_heating_climates(lifecycle, coordinator, added.extend)
+    assert len(added) == 1
+    assert added[0].available
+    with pytest.raises(ServiceValidationError):
+        await added[0].async_set_hvac_mode(HVACMode.HEAT)
+    with pytest.raises(ServiceValidationError):
+        await added[0].async_set_temperature(temperature=21)
+    coordinator.client.put_resource_value.assert_not_awaited()
+    lifecycle.unload()
+    assert coordinator._unsub_refresh is None
+
+
+def _mode_unreadable(coordinator) -> None:
+    mode = coordinator.data[ROOT + "/operationMode"]
+    coordinator.data[mode.resource.path] = ResourceSnapshot(
+        mode.resource, False, datetime.now(UTC)
+    )
+
+
+@pytest.mark.parametrize("registered", [True, False])
+async def test_registered_climate_is_added_unavailable_without_a_mode(hass, registered):
+    entry, coordinator, _entity = setup(hass)
+    _mode_unreadable(coordinator)
     if registered:
         er.async_get(hass).async_get_or_create(
             "climate",
@@ -589,8 +623,7 @@ async def test_registered_climate_is_added_unavailable_in_cooling(hass, register
 
 async def test_climate_registered_for_another_entry_is_not_adopted(hass):
     _, coordinator, _entity = setup(hass)
-    cooling = scalar(ROOT + "/currentSuWiMode", "cooling", writable=False)
-    coordinator.data[cooling.path] = ResourceSnapshot(cooling, True, datetime.now(UTC))
+    _mode_unreadable(coordinator)
     er.async_get(hass).async_get_or_create(
         "climate", DOMAIN, "gateway:heatingCircuits:hc2:climate"
     )

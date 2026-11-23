@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Altere a temperatura e o modo de funcionamento em separado, para que cada alteração possa ser confirmada."
     },
+    "heating_climate_season_locked": {
+      "message": "Este circuito de aquecimento não pode ser alterado neste momento: está a arrefecer ou a sua estação não pode ser lida de forma fiável. Os seus valores continuam a ser mostrados. Tente novamente depois de a estação de aquecimento ter sido lida."
+    },
     "heating_climate_command": {
       "message": "Atualmente este comando do termóstato não está disponível. As temperaturas só podem ser alteradas no modo de aquecimento manual ou no modo automático, quando o circuito de aquecimento oferece um valor de referência temporário. Selecione o modo em separado e verifique se o equipamento está a fornecer valores atuais."
     },

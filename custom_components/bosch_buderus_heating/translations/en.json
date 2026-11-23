@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Please change temperature and operation mode separately so each change can be confirmed."
     },
+    "heating_climate_season_locked": {
+      "message": "This heating circuit cannot be changed at the moment: it is cooling, or its season cannot be read reliably. Its values are still shown. Try again once the heating season has been read."
+    },
     "heating_climate_command": {
       "message": "This thermostat command is not currently available. Temperatures can only be changed in manual heating mode, or in automatic mode when the heating circuit offers a temporary setpoint. Select the mode separately and check that the appliance is providing current values."
     },

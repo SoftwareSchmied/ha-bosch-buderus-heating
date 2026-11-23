@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Bitte ändere Temperatur und Betriebsart einzeln, damit jede Änderung bestätigt werden kann."
     },
+    "heating_climate_season_locked": {
+      "message": "Dieser Heizkreis lässt sich gerade nicht ändern: Er kühlt, oder seine Saison lässt sich nicht sicher lesen. Seine Werte werden weiter angezeigt. Versuche es erneut, sobald die Heizsaison gelesen wurde."
+    },
     "heating_climate_command": {
       "message": "Diese Thermostatänderung ist gerade nicht möglich. Temperaturen lassen sich nur im manuellen Heizbetrieb ändern oder im Automatikbetrieb, wenn der Heizkreis einen vorübergehenden Sollwert anbietet. Wähle die Betriebsart separat und prüfe, ob die Anlage aktuelle Werte liefert."
     },

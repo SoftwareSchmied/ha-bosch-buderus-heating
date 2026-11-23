@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Cambia la temperatura y el modo de funcionamiento por separado para que cada cambio se pueda confirmar."
     },
+    "heating_climate_season_locked": {
+      "message": "Este circuito de calefacción no se puede cambiar en este momento: está refrigerando o su temporada no se puede leer con fiabilidad. Sus valores se siguen mostrando. Vuelve a intentarlo cuando se haya leído la temporada de calefacción."
+    },
     "heating_climate_command": {
       "message": "Este comando del termostato no está disponible en este momento. Las temperaturas solo se pueden cambiar en el modo de calefacción manual o en el modo automático, cuando el circuito de calefacción ofrece una consigna temporal. Selecciona el modo por separado y comprueba que el equipo proporciona valores actuales."
     },

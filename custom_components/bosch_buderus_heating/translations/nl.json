@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Wijzig temperatuur en bedrijfsmodus afzonderlijk, zodat elke wijziging kan worden bevestigd."
     },
+    "heating_climate_season_locked": {
+      "message": "Dit verwarmingscircuit kan op dit moment niet worden gewijzigd: het koelt, of het seizoen kan niet betrouwbaar worden gelezen. De waarden blijven zichtbaar. Probeer het opnieuw zodra het stookseizoen is gelezen."
+    },
     "heating_climate_command": {
       "message": "Dit thermostaatcommando is momenteel niet beschikbaar. Temperaturen kunnen alleen in de handmatige verwarmingsmodus worden gewijzigd, of in de automatische modus als het verwarmingscircuit een tijdelijke instelwaarde aanbiedt. Selecteer de modus afzonderlijk en controleer of het apparaat actuele waarden levert."
     },

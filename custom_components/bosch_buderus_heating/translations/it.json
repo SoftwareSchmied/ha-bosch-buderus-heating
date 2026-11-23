@@ -1616,6 +1616,9 @@
     "bacon_separate_settings": {
       "message": "Modifica separatamente temperatura e modalità di funzionamento, così che ogni modifica possa essere confermata."
     },
+    "heating_climate_season_locked": {
+      "message": "Questo circuito di riscaldamento al momento non può essere modificato: sta raffrescando, oppure la sua stagione non può essere letta in modo affidabile. I suoi valori restano visibili. Riprova quando la stagione di riscaldamento sarà stata letta."
+    },
     "heating_climate_command": {
       "message": "Questo comando del termostato al momento non è disponibile. Le temperature possono essere modificate solo in modalità di riscaldamento manuale, oppure in modalità automatica quando il circuito di riscaldamento offre un setpoint temporaneo. Seleziona la modalità separatamente e controlla che l'apparecchio fornisca valori aggiornati."
     },
