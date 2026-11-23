@@ -96,10 +96,11 @@ in advance. The transport checks the binding again before transmitting credentia
 
 The read check verifies the three base resources. A gateway that still collects
 its system information (for some minutes after a start) is asked again by the
-check itself every 20 seconds, for about five minutes; only then does the
-dialog name the cause. The brand is optional and the firmware version is read
-by its numbers (see [local setup evidence](local-setup-probe.md)). Then the
-trusted provider must
+check itself every 15 seconds, for up to about a minute (a proxy in front of
+Home Assistant often ends a longer request); then the dialog names the cause,
+and **Continue with saved token** repeats the check. The brand is optional and
+the firmware version is read by its numbers (see
+[local setup evidence](local-setup-probe.md)). Then the trusted provider must
 supply an identity contract for this exact owner, target and gateway. Missing
 evidence is explained; the form has no override field or inferred global contract.
 Confirmation of the result triggers fresh reads and the guarded native handover.

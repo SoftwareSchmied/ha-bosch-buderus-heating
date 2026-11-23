@@ -104,10 +104,39 @@ async def test_the_wait_for_the_system_information_ends_with_its_cause(
     assert management.current() == before
 
 
-def test_the_wait_for_the_system_information_is_bounded():
-    # About five minutes in all, then the dialog names the cause.
+def test_the_wait_for_the_system_information_stays_within_a_minute():
+    # One form request waits less than the 60 seconds after which a proxy in
+    # front of Home Assistant often ends it; then the dialog names the cause.
     waited = (flow.INCOMPLETE_SYSTEM_CHECKS - 1) * flow.INCOMPLETE_SYSTEM_WAIT_SECONDS
-    assert 120 <= waited <= 330
+    assert 30 <= waited < 60
+    assert flow.INCOMPLETE_SYSTEM_LIMIT_SECONDS <= 60
+
+
+@pytest.mark.parametrize("seconds", [0.0, 0.5])
+async def test_the_wait_ends_at_its_time_limit_and_the_check_can_be_repeated(
+    hass, supported, journal, monkeypatch, seconds
+):
+    # The time is up after the first check although more checks are allowed
+    # (a wait that would end after the limit is not started): the dialog
+    # names the cause and offers to repeat the check.
+    monkeypatch.setattr(flow, "INCOMPLETE_SYSTEM_WAIT_SECONDS", seconds)
+    monkeypatch.setattr(flow, "INCOMPLETE_SYSTEM_LIMIT_SECONDS", seconds)
+    reads = reading(monkeypatch, [IN_PROGRESS, {}])
+    entry, management, _, target = registered(hass)
+    before = management.current()
+    manager = hass.config_entries.options
+    result = await imported(hass, entry, target)
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert len(reads) == 1
+    assert result["step_id"] == "local_pending"
+    assert result["errors"] == {"base": "local_incomplete_system"}
+    assert management.current() == before
+    # The gateway has completed its system information in the meantime.
+    result = await submit(hass, manager, result, {"action": "continue"})
+    assert result["step_id"] == "local_result", result.get("errors")
+    assert len(reads) == 2
+    result = await submit(hass, manager, result, {})
+    assert result["reason"] == "local_setup_complete"
 
 
 def _not_found(item):

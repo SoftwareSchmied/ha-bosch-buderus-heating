@@ -94,10 +94,13 @@ _INTERMEDIATE_STEPS = frozenset(
 # The unique ID of a discovery notice (never of an entry that holds an access).
 DISCOVERY_UNIQUE_ID_PREFIX = "local_discovery_"
 # A gateway still collecting its system information (for some minutes after
-# a start) is asked again by the read check itself: this often, with this
-# wait between two checks, before the dialog shows the cause.
-INCOMPLETE_SYSTEM_CHECKS = 16
-INCOMPLETE_SYSTEM_WAIT_SECONDS = 20.0
+# a start) is asked again by the read check itself: at most this often, with
+# this wait between two checks, and only within about a minute of the form
+# request (a proxy in front of Home Assistant often ends a request after 60
+# seconds). Then the dialog shows the cause, and the check can be repeated.
+INCOMPLETE_SYSTEM_CHECKS = 4
+INCOMPLETE_SYSTEM_WAIT_SECONDS = 15.0
+INCOMPLETE_SYSTEM_LIMIT_SECONDS = 60.0
 
 
 def local_error(error: object) -> str:
@@ -1265,13 +1268,16 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         self, management: ConfigurationManagement
     ) -> VerifiedLocalSetup:
         """The read check; a gateway still collecting its system information
-        is asked again after a wait, as often as INCOMPLETE_SYSTEM_CHECKS."""
+        is asked again after a wait, as often as INCOMPLETE_SYSTEM_CHECKS and
+        while the wait ends within INCOMPLETE_SYSTEM_LIMIT_SECONDS."""
         assert (
             self._local_edit is not None
             and self._local_resource_pin is not None
             and self._local_record is not None
             and self._local_record.credentials is not None
         )
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + INCOMPLETE_SYSTEM_LIMIT_SECONDS
         checks = 0
         while True:
             checks += 1
@@ -1289,6 +1295,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 if (
                     str(error) != "system_information_incomplete"
                     or checks >= INCOMPLETE_SYSTEM_CHECKS
+                    or loop.time() + INCOMPLETE_SYSTEM_WAIT_SECONDS >= deadline
                 ):
                     raise
             _LOGGER.debug(
