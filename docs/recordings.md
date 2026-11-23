@@ -171,7 +171,7 @@ the exception (see [the next section](#the-heat-pump-behind-an-icom-gateway)).
 | Recording | Asked on a plant with | Unit accepted | Name |
 |---|---|---|---|
 | `/recordings/swCircuits/sw1/sensor/water` | a softener circuit (`/swCircuits/sw1/...`) | L, m³ (shown in L) | *Water consumption* |
-| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh (in any case), Wh, MWh, kBtu | *Heating – Boiler energy* |
+| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh (in any case), Wh, MWh, kBtu; kW behind an iCom gateway only | *Heating – Boiler energy* |
 | `/recordings/heatSources/actualDHWPower` | as above | as above | *Hot water – Boiler energy* |
 | `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above, and a heat pump behind an iCom gateway | as above; kW behind an iCom gateway only | *Total – Energy consumed* |
 
@@ -187,9 +187,9 @@ power; see [samples of the mean power](#samples-of-the-mean-power).
 
 Expected, untested on a real installation: no answer of a softener or a boiler
 has been seen yet. The water and the boiler's heat for heating and hot water
-are sums per hour, day and month, as for the heat pump; the consumed energy
-is read as samples of the mean power (see
-[samples of the mean power](#samples-of-the-mean-power)). If a plant answers
+are sums per hour, day and month, as for the heat pump; the consumed energy,
+and behind an iCom gateway every one of them, is read as samples of the mean
+power (see [samples of the mean power](#samples-of-the-mean-power)). If a plant answers
 in another unit, the series is discarded (`unit` in the diagnostics), and a
 slot of a sum whose count does not fit is not taken (`answer_count_form`),
 rather than shown wrongly. Please report such a case on GitHub with the
@@ -221,6 +221,13 @@ example `KWh`), Wh, MWh, kBtu or kW gives no entity. The diagnostics
 show the unit each of the four answered in, whether it was taken or not.
 All four are read as samples of the mean power (see
 [the next section](#samples-of-the-mean-power)).
+
+When the electric heater recording has no data at all in a period (every
+slot without a count) while the compressor has, the electricity of that
+period counts the heater as 0, and its period entity has the attribute
+`parts_missing: [eheater]`. A period without compressor data stays without
+a value. This applies to this electricity only: the electricity of a K30 or
+K40 falls back on the counters instead.
 
 The consumed energy is the electricity of the heat pump as the gateway counts
 it. It is a measure of its own with its five period entities, disabled by
@@ -255,8 +262,14 @@ change of summer time) and the hours of the month for a month of the year
 interval. A slot still running counts the hours elapsed so far. A slot with
 `c` 0 stays a gap. Because the mean is a power, a unit of power (kW) is taken
 for these recordings behind an iCom gateway. kW is never taken from a K30, K40
-or other gateway (also not for the consumed energy of a boiler there) and
-never for any other recording.
+or other gateway (also not for the consumed energy of a boiler there).
+
+Behind an iCom gateway every energy recording is read this way, the boiler's
+heat for heating and hot water (`actualCHPower`, `actualDHWPower`) as well,
+and kW is taken for each of them there. A stored month of such a recording
+whose count is above its hours is corrected in the first run that knows the
+iCom gateway (`months_corrected`). A K30, K40 or other gateway reads its
+energy sums exactly as before.
 
 Up to 0.9.3-beta.5 the months of such a recording (the consumed energy)
 were taken with the sum as it was, up to about 60 times too high, and the hours
@@ -397,6 +410,26 @@ was off for some hours) is taken as it is; only a count above the hours of
 the day is discarded. Please report a plant that shows
 `answer_count_form` on GitHub with its diagnostics.
 
+A local recording is read slot by slot, like a cloud recording: a slot that
+is no pair of numbers or has a negative count is left out
+(`answer_invalid_value`), and a group whose end lies before its start is left
+out (`answer_reversed_group`); the other slots and groups are kept. A
+recording type other than `actual` does not drop the recording, and a group
+of another sample rate is left out as `answer_unknown_rate`.
+
+## Plausibility bound
+
+An energy value above the bound per hour (a day 25 times, a month 745 times
+the bound) is discarded as `implausible`; a discarded hour is a gap. The
+bound is 90 kWh per hour for the recordings of a heat pump. A recording that
+counts a boiler has 500 kWh per hour: the boiler recordings
+(`actualCHPower`, `actualDHWPower`, the consumed energy), a burner part and,
+on a boiler or a hybrid system (plant kind), every energy recording of the
+gateway itself. The bound is never below 1.5 times the nominal output the
+component table knows for the plant's heat generators. The diagnostics show
+the plant-wide bound as `plausibility_limit_kwh_per_hour`, and a different
+bound of a recording under that recording.
+
 ## Diagnostics
 
 The section `recordings` of each gateway shows, without values, dates or
@@ -435,6 +468,9 @@ a run reports
   days).
 - The days of the periods follow the plant. When the time zone of Home
   Assistant differs from the plant's, the attributes show the plant's days.
+- Tested with constructed answers; not yet confirmed on a real iCom boiler
+  or a plant above 60 kW: the samples of the mean of every energy recording
+  behind an iCom gateway, the heater counted as 0 and the boiler's bound.
 - A plant with more than one heat source records per heat source in paths
   the integration does not read yet. The same holds for a plant with more
   than one softener circuit: only `sw1` is read.

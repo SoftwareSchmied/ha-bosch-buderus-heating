@@ -24,6 +24,8 @@ class DataIssue(StrEnum):
     UNSUPPORTED_TEXT_ENCODING = "unsupported_text_encoding"
     # A value the pinned schema of a readable resource does not list.
     UNDECLARED_VALUE = "undeclared_value"
+    # A recording group whose end lies before its start (left out).
+    REVERSED_GROUP = "reversed_group"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -197,8 +199,9 @@ class UpdateReport:
 
 @dataclass(frozen=True, slots=True, repr=False)
 class RecordingSample:
-    value: Number
-    count: Number
+    # As reported: a slot that is no number stays as it is for the reader.
+    value: object
+    count: object
 
 
 @dataclass(frozen=True, slots=True, repr=False)

@@ -450,32 +450,42 @@ async def test_the_units_the_energy_monitoring_answers_in_are_taken(
     await coordinator.async_shutdown()
 
 
-async def test_an_icom_boiler_does_not_take_a_unit_of_power(
+async def test_an_icom_boiler_reads_its_energy_as_samples_of_the_mean(
     hass: HomeAssistant,
 ) -> None:
-    """The boiler's energy is no series of mean samples: kW stays unknown."""
+    """Strictness A5: behind an iCom gateway the boiler's energy is the mean
+    of its samples times the hours as well, so kW is taken: minute samples of
+    a mean of 2 kW give 48 kWh a day, and the bound of a boiler applies."""
     coordinator = await plant(hass, "issue_104_icom_boiler")
     ch = BY_KEY["ch_actual_power"].path
-    answers = {ch: lambda interval: recording(interval, 2.0, unit="kW")}
+    answers = {ch: lambda interval: recording(interval, 120.0, 60, unit="kW")}
     manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
     await manager.async_run("start")
-    assert "ch_actual_power" not in manager.available()
+    assert "ch_actual_power" in manager.available()
+    day = NOW.date() - timedelta(days=1)
+    assert manager.daily("ch_actual_power", day, day)[0].y == pytest.approx(48.0)
     series = manager.diagnostics()["series"]["ch_actual_power"]  # type: ignore[index]
-    assert series == {"local": None, "cloud": "unit", "unit": "kW"}
+    assert series["cloud"] == "ok" and series["unit"] == "kW"  # type: ignore[index]
+    assert series["plausibility_limit_kwh_per_hour"] == 500.0  # type: ignore[index]
     await coordinator.async_shutdown()
 
 
 async def test_the_unit_of_an_answer_taken_shows_for_samples_of_the_mean_only(
     hass: HomeAssistant,
 ) -> None:
-    """Other recordings show a unit only when it was not taken."""
-    coordinator = await plant(hass, "issue_104_icom_boiler")
-    ch = BY_KEY["ch_actual_power"].path
-    answers = {ch: lambda interval: recording(interval, 2.0, unit="kWh")}
+    """Other recordings show a unit only when it was not taken: the K40's
+    heat is a sum per slot, no samples of the mean, and keeps the bound of a
+    heat pump."""
+    coordinator = await plant(hass, "k40_own")
+    heat = BY_KEY["total_heat"].path
+    answers = {heat: lambda interval: recording(interval, 2.0, unit="kWh")}
     manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
     await manager.async_run("start")
-    series = manager.diagnostics()["series"]["ch_actual_power"]  # type: ignore[index]
+    series = manager.diagnostics()["series"]["total_heat"]  # type: ignore[index]
     assert series["cloud"] == "ok" and "unit" not in series  # type: ignore[index]
+    assert "plausibility_limit_kwh_per_hour" not in series  # type: ignore[operator]
+    day = NOW.date() - timedelta(days=1)
+    assert manager.daily("total_heat", day, day)[0].y == pytest.approx(48.0)
     await coordinator.async_shutdown()
 
 

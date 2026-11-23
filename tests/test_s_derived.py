@@ -290,7 +290,8 @@ async def test_a_counter_history_from_the_start_of_the_period_adds_nothing(
 
 def test_an_old_published_value_without_the_start_is_still_read() -> None:
     rec = SimpleNamespace(
-        published={"x": ["2026-01-01", "2027-01-01", 3.0, "counters", "hourly"]}
+        published={"x": ["2026-01-01", "2027-01-01", 3.0, "counters", "hourly"]},
+        _missing_parts={},
     )
     shown = RecordingsManager.shown(rec, SimpleNamespace(key="x"))  # type: ignore[arg-type]
     assert isinstance(shown, Shown) and shown.history_start is None

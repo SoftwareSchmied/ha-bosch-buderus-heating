@@ -64,6 +64,34 @@ def _without_extra_row_keys(payload: dict[str, Any]) -> dict[str, Any]:
     return {**payload, field: trimmed}
 
 
+_RECORDING_RATES = frozenset({"PT1H", "P1D", "P1M"})
+
+
+def _recording_for_validation(payload: dict[str, Any]) -> dict[str, Any]:
+    """A recording is judged slot by slot when it is read: the validation
+    copy checks its envelope and group times only. A slot that is no number
+    pair, a recording type other than ``actual`` and a sample rate of another
+    name (read as an unknown rate) do not reject the whole recording."""
+    copy = dict(payload)
+    if isinstance(copy.get("recordingType"), str):
+        copy["recordingType"] = "actual"
+    groups = copy.get("values")
+    if not isinstance(groups, list):
+        return copy
+    checked = []
+    for group in groups:
+        if isinstance(group, dict):
+            group = dict(group)
+            rate = group.get("sampleRate")
+            if isinstance(rate, str) and rate not in _RECORDING_RATES:
+                group["sampleRate"] = "PT1H"
+            if isinstance(group.get("recording"), list):
+                group["recording"] = [{"y": 0, "c": 0} for _ in group["recording"]]
+        checked.append(group)
+    copy["values"] = checked
+    return copy
+
+
 def response_for_validation(payload: dict[str, Any]) -> dict[str, Any]:
     """Return a schema-shaped copy without changing the received document.
 
@@ -77,6 +105,8 @@ def response_for_validation(payload: dict[str, Any]) -> dict[str, Any]:
     """
     if isinstance(payload.get("type"), str) and payload["type"] in _TOLERANT_ROWS:
         return _without_extra_row_keys(payload)
+    if payload.get("type") == "yRecordingExtended":
+        return _recording_for_validation(payload)
     if payload.get("type") in ("floatValue", "integerValue") and isinstance(
         payload.get("state"), dict
     ):

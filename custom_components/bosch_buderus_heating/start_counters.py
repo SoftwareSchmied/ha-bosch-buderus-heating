@@ -96,6 +96,12 @@ class StartCounterAssessment:
         )
 
 
+# The units of a plain count (compared without case and surrounding space).
+COUNT_WORDS = frozenset({"", "other", "count", "starts", "1", "x", "pcs"})
+# A value this close to a whole number is that whole number.
+_WHOLE_TOLERANCE = 1e-6
+
+
 def _count(value: object, metadata: ResourceMetadata) -> CounterReading:
     if not metadata.numeric_error_states_valid:
         return CounterReading(reason="invalid_error_metadata")
@@ -110,7 +116,9 @@ def _count(value: object, metadata: ResourceMetadata) -> CounterReading:
     if value < 0 or value > MAX_START_COUNT:
         return CounterReading(reason="out_of_range")
     if isinstance(value, float) and not value.is_integer():
-        return CounterReading(reason="not_integer")
+        if abs(value - round(value)) >= _WHOLE_TOLERANCE:
+            return CounterReading(reason="not_integer")
+        value = round(value)  # a whole count written with a rounding error
     return CounterReading(value=int(value))
 
 
@@ -125,10 +133,11 @@ def assess_start_counter(resource: Resource) -> StartCounterAssessment:
         or (resource.path == GLOBAL_START_COUNTER and not scalar)
     ):
         return StartCounterAssessment(False, "unsupported_schema")
-    # Some PointT gateways declare a blank, whitespace-only unit.
-    # Treat whitespace as absent while still rejecting real measurement units.
+    # Some PointT gateways declare a blank, whitespace-only unit, or a word
+    # for a plain count. Treat both as absent while still rejecting real
+    # measurement units.
     unit = resource.metadata.unit
-    if unit is not None and unit.strip() not in ("", "other"):
+    if unit is not None and unit.strip().casefold() not in COUNT_WORDS:
         return StartCounterAssessment(False, "unsupported_unit")
     if scalar:
         if resource.values or resource.has_values:

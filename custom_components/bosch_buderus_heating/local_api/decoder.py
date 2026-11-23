@@ -209,21 +209,30 @@ def _scalar(raw: dict[str, Any]) -> ScalarValue:
     )
 
 
+def _recording_sample(sample: object) -> RecordingSample:
+    """One slot as it came; a slot that is no number pair is kept as it is
+    and judged by the reader (``recordings.parse``: ``invalid_value``)."""
+    if not isinstance(sample, dict):
+        return RecordingSample(None, None)
+    return RecordingSample(sample.get("y"), sample.get("c"))
+
+
 def _recording(raw: dict[str, Any]) -> Recording:
+    """Slot by slot: a faulty slot never drops the recording, and a group
+    whose end lies before its start drops that group only."""
     groups = []
+    issues = list(_unit_issues(raw.get("unitOfMeasure"), required=True))
     for row in raw["values"]:
         start, end = iso_datetime(row["startTime"]), iso_datetime(row["endTime"])
-        if end < start or any(sample["c"] < 0 for sample in row["recording"]):
-            raise LocalResourceError(Problem.INVALID_METADATA)
+        if end < start:
+            issues.append(DataIssue.REVERSED_GROUP)
+            continue
         groups.append(
             RecordingGroup(
                 row["sampleRate"],
                 start,
                 end,
-                tuple(
-                    RecordingSample(sample["y"], sample["c"])
-                    for sample in row["recording"]
-                ),
+                tuple(_recording_sample(sample) for sample in row["recording"]),
             )
         )
     return Recording(
@@ -231,7 +240,7 @@ def _recording(raw: dict[str, Any]) -> Recording:
         raw["recordingType"],
         raw.get("unitOfMeasure"),
         tuple(groups),
-        _unit_issues(raw.get("unitOfMeasure"), required=True),
+        tuple(issues),
     )
 
 

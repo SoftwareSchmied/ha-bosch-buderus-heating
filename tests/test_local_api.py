@@ -488,10 +488,9 @@ def test_recording_preserves_groups_offsets_missing_samples_and_counts():
     "field,value",
     [
         ("startTime", "2026-11-01T00:00:00"),
-        ("endTime", "2020-01-01T00:00:00Z"),
-        ("sampleRate", "all"),
-        ("recording", [{"y": 1, "c": -1}]),
-        ("recording", [{"y": True, "c": 1}]),
+        ("endTime", "not a time"),
+        ("sampleRate", 5),
+        ("recording", 5),
     ],
 )
 def test_invalid_history_groups_are_not_partly_published(field, value):

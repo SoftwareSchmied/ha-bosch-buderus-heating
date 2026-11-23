@@ -34,18 +34,25 @@ documented in [P01: WDDW2 types](wddw2-types.md).
 
 I accept numeric, finite, non-negative whole counts with no unit or the
 dimensionless `other` unit. Integer and whole floating-point representations
-produce the same integer. Strings and booleans are rejected. I do not round,
-truncate, sum parts, fill missing values with zero or substitute another source.
+produce the same integer. Strings and booleans are rejected. I do not round
+(apart from the rounding error described below), truncate, sum parts, fill missing values with zero or substitute another source.
 Counts above `2**53 - 1` are rejected to avoid lossy downstream numeric storage;
 this is an integration precision limit, not an appliance-specific maximum.
 
 From 0.8.2-beta.4, I ignore surrounding whitespace in counter units before
 checking them. A single space, tabs and non-breaking spaces count as an empty
 unit; surrounding whitespace around `other` is accepted too. Actual units
-such as `C` and `kWh`, unexpected text and non-string unit fields are still
-rejected. This rule applies to both the general `floatValue` counter and the
-supported `emonValue` counters of individual heat sources. It does not change
-unit handling for other sensors.
+such as `C` and `kWh`, and unexpected text are still rejected. This rule
+applies to both the general counter and the supported `emonValue` counters of
+individual heat sources. It does not change unit handling for other sensors.
+
+From 0.9.3-beta.6, a word for a plain count counts as an empty unit as well,
+in any letter case: `other`, `count`, `starts`, `1`, `x` and `pcs`. A
+whole count may also come as `integerValue`. A value less than one millionth
+away from a whole number is that whole number (a count written with a rounding
+error); any other fraction stays `not_integer`. A unit field that is no text
+counts as not reported (see [validity of readings](reading-validity.md#reported-forms-read-tolerantly)).
+Tested with constructed answers; not yet confirmed on a real gateway.
 
 The optional `state` array contributes numeric error markers only for
 `short`, `open`, `overflow`, `underflow` and `invalid`. A matching marker makes

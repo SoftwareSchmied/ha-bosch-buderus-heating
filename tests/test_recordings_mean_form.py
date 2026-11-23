@@ -215,20 +215,22 @@ def test_the_energy_units_of_every_series(
 
 @pytest.mark.parametrize("unit", ["kW", "KW", "kw", " kW"])
 def test_a_unit_of_power_only_for_mean_samples_of_an_icom_gateway(unit: str) -> None:
-    """kW behind an iCom gateway only, for the series of mean samples; never
-    for a K30, K40 or other gateway and never for any other series."""
+    """kW behind an iCom gateway only, whose energy series are all samples of
+    the mean (strictness A5); never for a K30, K40 or other gateway."""
     assert series_unit_factor(CONSUMED, unit, icom=True) == 1.0
     assert series_unit_factor(MONITORING, unit, icom=True) == 1.0
+    assert series_unit_factor(HEAT, unit, icom=True) == 1.0
     assert series_unit_factor(CONSUMED, unit) is None
     assert series_unit_factor(MONITORING, unit) is None
-    assert series_unit_factor(HEAT, unit, icom=True) is None
+    assert series_unit_factor(HEAT, unit) is None
     assert unit_factor(Quantity.ENERGY, unit) is None
     rows = [{"y": 18.0, "c": 60}] * 24
-    assert parse_cloud(_cloud(rows, unit), HEAT, "2026-11-21", Z, icom=True) is None
+    assert parse_cloud(_cloud(rows, unit), HEAT, "2026-11-21", Z) is None
     assert parse_cloud(_cloud(rows, unit), CONSUMED, "2026-11-21", Z) is None
-    parsed = parse_cloud(_cloud(rows, unit), MONITORING, "2026-11-21", Z, icom=True)
-    assert parsed is not None
-    assert {(s.y, s.c) for s in parsed.samples} == {(0.3, 1.0)}
+    for series in (MONITORING, HEAT):
+        parsed = parse_cloud(_cloud(rows, unit), series, "2026-11-21", Z, icom=True)
+        assert parsed is not None
+        assert {(s.y, s.c) for s in parsed.samples} == {(0.3, 1.0)}
 
 
 def test_other_quantities_keep_their_units_as_written() -> None:

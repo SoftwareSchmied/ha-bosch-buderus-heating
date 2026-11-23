@@ -89,6 +89,7 @@ class RecordingPeriodSensor(SensorEntity):
             "method",
             "counter_history_start",
             "heat_generator",
+            "parts_missing",
         }
     )
 
@@ -191,4 +192,7 @@ class RecordingPeriodSensor(SensorEntity):
         if shown.history_start is not None:
             # A value from the counters covers the period only from here on.
             attributes["counter_history_start"] = shown.history_start.isoformat()
+        if shown.parts_missing:
+            # Parts without any data in the period, counted as 0.
+            attributes["parts_missing"] = list(shown.parts_missing)
         return attributes

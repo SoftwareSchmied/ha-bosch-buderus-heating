@@ -337,11 +337,21 @@ def unit_factor(
     return None
 
 
+def mean_samples(series: Series, *, icom: bool = False) -> bool:
+    """Whether a series' answer holds samples of the mean (``parse.mean_form``):
+    a series kept that way (``minute_sums``) on every gateway, and every
+    energy series behind an iCom gateway, the boiler's as well. A K30, K40 or
+    other gateway keeps its energy sums as they are."""
+    return series.minute_sums or (icom and series.quantity is Quantity.ENERGY)
+
+
 def series_unit_factor(
     series: Series, unit: str | None, *, icom: bool = False
 ) -> float | None:
     """The factor of a series' answer in ``unit``, or None for a unit it
-    does not take. ``icom``: the answer comes from an iCom gateway (kW for a
-    series kept as samples of the mean power); never for a K30, K40 or other
-    gateway."""
-    return unit_factor(series.quantity, unit, mean_power=icom and series.minute_sums)
+    does not take. ``icom``: the answer comes from an iCom gateway, whose
+    energy series are samples of the mean power (kW is taken as well); never
+    for a K30, K40 or other gateway."""
+    return unit_factor(
+        series.quantity, unit, mean_power=icom and mean_samples(series, icom=icom)
+    )

@@ -55,6 +55,9 @@ class PeriodValue:
     final: bool
     resolution: str
     sources: frozenset[str]
+    # Parts counted as 0 because they had no data at all in the period
+    # (``eheater``, see ``RecordingsManager.recorded``).
+    missing: frozenset[str] = frozenset()
 
     @property
     def gap(self) -> bool:
@@ -88,7 +91,8 @@ def combine(values: list[PeriodValue]) -> PeriodValue | None:
     if not values:
         return None
     first = values[0]
-    gap = any(item.gap for item in values)
+    # A part counted as 0 (``missing``) is no gap of the sum.
+    gap = any(item.gap and not item.missing for item in values)
     return PeriodValue(
         first.start,
         first.end,
@@ -97,6 +101,7 @@ def combine(values: list[PeriodValue]) -> PeriodValue | None:
         all(item.final for item in values),
         max((item.resolution for item in values), key=_RESOLUTIONS.index),
         frozenset().union(*(item.sources for item in values)),
+        frozenset().union(*(item.missing for item in values)),
     )
 
 

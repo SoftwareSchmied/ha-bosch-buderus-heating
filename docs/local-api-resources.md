@@ -107,8 +107,11 @@ Value-bearing result representations and exceptions do not echo these fields.
 - Reference URIs are data only. A URI cannot redirect a request to another host,
   change the selected HTTPS port or replace the validated resource ID.
 - Recordings preserve each sample rate, timezone offset, `y` value and `c` count,
-  including empty groups and zero-count samples. Negative counts, invalid
-  timestamps and reversed windows are rejected. No statistics are imported and
+  including empty groups and zero-count samples. Invalid timestamps reject the
+  recording. A slot is judged by the reader (a negative count or a slot that is
+  no pair of numbers is left out there), a group whose end lies before its
+  start is left out with the data issue `reversed_group`, and another
+  recording type or sample rate name does not reject the recording. No statistics are imported and
   no undocumented sample timing or aggregation semantics are inferred.
 - A response ID must match the request. Recording IDs may also include the
   requested query parameters, as the manufacturer examples do. Their values

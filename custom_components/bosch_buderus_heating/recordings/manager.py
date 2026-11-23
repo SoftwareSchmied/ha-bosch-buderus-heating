@@ -101,6 +101,7 @@ from .parse import (
     Rate,
     add_months,
     cloud_unit,
+    hourly_energy_limit,
     is_cloud_recording,
     local_midnight,
     month_start,
@@ -116,6 +117,7 @@ from .series import (
     SERIES,
     Quantity,
     Series,
+    mean_samples,
     series_unit_factor,
 )
 from .sources import Outcome, local_query, read_cloud, read_local
@@ -213,6 +215,8 @@ class Shown:
     # The first day of the counter's statistics when it lies after the start
     # of the period (a value from the counters then covers less).
     history_start: date | None = None
+    # Parts counted as 0 for want of any data in the period.
+    parts_missing: tuple[str, ...] = ()
 
 
 def _source_text(sources: frozenset[str]) -> str:
@@ -244,6 +248,9 @@ class RecordingsManager:
         self.local_paths: dict[str, list[Any]] = {}
         self.cloud_paths: dict[str, list[Any]] = {}
         self.published: dict[str, list[Any]] = {}
+        # Parts a published value counts as 0 (``recorded``); not stored,
+        # worked out again with the next publication.
+        self._missing_parts: dict[str, tuple[str, ...]] = {}
         self.cloud_done: set[str] = set()
         self.last_local_ok: float | None = None
         self.offset_mismatch: bool | None = None
@@ -476,6 +483,17 @@ class RecordingsManager:
                 ):
                     del known[path]
 
+    def _energy_limit(self, series: Series) -> float:
+        """The upper bound of one hour's energy of a series on this plant
+        (``parse.hourly_energy_limit``): higher for a series that counts a
+        boiler, never below 1.5 times the known nominal output."""
+        coordinator = self.coordinator()
+        return hourly_energy_limit(
+            series,
+            rated_kw=_rated_kw(coordinator),
+            boiler_plant=_boiler_plant(coordinator),
+        )
+
     def _data(self) -> dict[str, Any]:
         return {
             "series": {key: ledger.to_dict() for key, ledger in self.ledgers.items()},
@@ -685,11 +703,16 @@ class RecordingsManager:
             self.waiting = "no_heat_source_anchor"
             return
         self.running = True
-        if icom_gateway(coordinator):
-            # kW of the energy monitoring is taken behind an iCom gateway only.
-            self._recheck_units(icom=True)
         now = self._now()
         zone = dt_util.get_default_time_zone()
+        if icom_gateway(coordinator):
+            # kW of the energy series is taken behind an iCom gateway only,
+            # and each of its energy series holds samples of the mean: a
+            # stored month kept as a plain sum is corrected (idempotent).
+            self._recheck_units(icom=True)
+            for ledger in self.ledgers.values():
+                if mean_samples(ledger.series, icom=True):
+                    ledger.correct_mean_months(now, zone, mean=True)
         report: dict[str, Any] = {
             "reason": reason,
             "at": now.timestamp(),
@@ -907,7 +930,12 @@ class RecordingsManager:
                 self._note_unit(path, getattr(answer.data, "unit", None))
                 return False
             self._ledger(series).merge(
-                parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
+                parsed,
+                LOCAL,
+                read_at=read_at,
+                zone=zone,
+                full_history=whole,
+                energy_limit=self._energy_limit(series),
             )
             if parsed.offset is not None:
                 self.offset_mismatch = (
@@ -1194,8 +1222,14 @@ class RecordingsManager:
                     self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
                     self._note_unit(series.path, cloud_unit(answer.data))
                     continue
-                self._ledger(series).merge(parsed, CLOUD, read_at=read_at, zone=zone)
-                if series.minute_sums:
+                self._ledger(series).merge(
+                    parsed,
+                    CLOUD,
+                    read_at=read_at,
+                    zone=zone,
+                    energy_limit=self._energy_limit(series),
+                )
+                if mean_samples(series, icom=icom):
                     # The unit it was taken in, for the diagnostics.
                     self._note_unit(series.path, cloud_unit(answer.data))
                 self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
@@ -1525,16 +1559,55 @@ class RecordingsManager:
     def recorded(
         self, measure: Measure, period: Period, today: date
     ) -> PeriodValue | None:
-        values = []
+        """The recorded value of a measure's period: the sum of its parts.
+
+        Electricity without a counter to fall back on (the energy monitoring
+        of an iCom gateway): an electric heater part without any data in the
+        whole period counts as 0 when the compressor has data, and the value
+        names it (``missing``); a compressor gap stays a gap.
+        """
+        values: dict[str, PeriodValue | None] = {}
         for part in measure.parts:
             ledger = self.ledgers.get(part)
-            if ledger is None:
-                return None
-            value = period_value(ledger, period, today)
-            if value is None:
-                return None
-            values.append(value)
-        return combine(values)
+            values[part] = (
+                period_value(ledger, period, today) if ledger is not None else None
+            )
+        heater = next(
+            (part for part in measure.parts if BY_KEY[part].kind == "eheater"), None
+        )
+        found = values.get(heater) if heater is not None else None
+        others = [value for part, value in values.items() if part != heater]
+        if (
+            heater is not None
+            and measure.kind == "electricity"
+            and measure.counter is None
+            and (found is None or found.gap)
+            and self._answered(BY_KEY[heater].path)
+            and others
+            and all(value is not None and not value.gap for value in others)
+        ):
+            first = others[0]
+            assert first is not None
+            values[heater] = PeriodValue(
+                first.start,
+                first.end,
+                0.0,
+                0.0,
+                first.final,
+                first.resolution,
+                frozenset(),
+                frozenset({BY_KEY[heater].kind}),
+            )
+        if any(value is None for value in values.values()):
+            return None
+        return combine([value for value in values.values() if value is not None])
+
+    def _answered(self, path: str) -> bool:
+        """The path has answered (or answers 404): its state is known."""
+        return any(
+            (known := paths.get(path)) is not None and known[0] in ("ok", "missing")
+            for paths in (self.local_paths, self.cloud_paths)
+        )
 
     def _candidate(self, spec: EntitySpec, today: date) -> PeriodValue | None:
         recorded = self.recorded(spec.measure, spec.period, today)
@@ -1564,11 +1637,13 @@ class RecordingsManager:
                 # until then the last one shown stays (with its dates).
                 if not spec.period.past:
                     self.published.pop(spec.key, None)
+                    self._missing_parts.pop(spec.key, None)
                 continue
             value = candidate.value(spec.measure.mean)
             if value is None:
                 # A gap: no value rather than the last one or a zero.
                 self.published.pop(spec.key, None)
+                self._missing_parts.pop(spec.key, None)
                 continue
             item: list[Any] = [
                 candidate.start.isoformat(),
@@ -1585,6 +1660,10 @@ class RecordingsManager:
             if history is not None:
                 item.append(history.isoformat())
             self.published[spec.key] = item
+            if candidate.missing:
+                self._missing_parts[spec.key] = tuple(sorted(candidate.missing))
+            else:
+                self._missing_parts.pop(spec.key, None)
 
     def shown(self, spec: EntitySpec) -> Shown | None:
         item = self.published.get(spec.key)
@@ -1598,6 +1677,7 @@ class RecordingsManager:
                 str(item[3]),
                 str(item[4]),
                 date.fromisoformat(item[5]) if len(item) > 5 else None,
+                self._missing_parts.get(spec.key, ()),
             )
         except TypeError, ValueError:
             return None
@@ -1667,6 +1747,12 @@ class RecordingsManager:
                 # of the last answer taken of a series of mean samples.
                 report["unit"] = self.unit_texts[item.path]
             if ledger is not None:
+                if (
+                    item.quantity is Quantity.ENERGY
+                    and (limit := self._energy_limit(item)) != MAX_KWH_PER_HOUR
+                ):
+                    # A higher bound than the plant-wide one below.
+                    report["plausibility_limit_kwh_per_hour"] = limit
                 first = ledger.first_day()
                 imp = ledger.imp
                 report.update(
@@ -1736,6 +1822,43 @@ class RecordingsManager:
             ],
             "series": series,
         }
+
+
+def _rated_kw(coordinator: object) -> float | None:
+    """The nominal output the component table knows for the plant's heat
+    generators (the outdoor units' sum, else the heat sources'), or None."""
+    if coordinator is None:
+        return None
+    try:
+        from ..heat_generator_sensor import shown_by
+
+        shown = shown_by(coordinator)
+        if shown is None:
+            return None
+        for role in ("outdoor_unit", "heat_source"):
+            powers = [
+                float(item.power_kw)
+                for item in shown.generators
+                if item.role == role and item.power_kw is not None
+            ]
+            if powers:
+                return sum(powers)
+    except Exception:  # the bound falls back to the fixed one
+        return None
+    return None
+
+
+def _boiler_plant(coordinator: object) -> bool:
+    """A plant with a boiler: plant kind boiler or a hybrid system."""
+    if coordinator is None:
+        return False
+    try:
+        from ..plant_inputs import current_plant
+
+        plant = current_plant(coordinator)
+    except Exception:  # without a plant kind, the heat pump's bound
+        return False
+    return plant is not None and (plant.plant_kind == "boiler" or bool(plant.hybrid))
 
 
 def _unit_text(value: object) -> str | None:

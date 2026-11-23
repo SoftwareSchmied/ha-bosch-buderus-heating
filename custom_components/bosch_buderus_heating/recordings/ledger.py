@@ -44,6 +44,7 @@ from typing import Any, Final
 
 from .parse import (
     HOUR,
+    MAX_KWH_PER_HOUR,
     Parsed,
     Rate,
     Sample,
@@ -167,7 +168,9 @@ class Ledger:
                 row = rows.pop(0)
                 self.imp["base"] = [row[3], row[4], *row[5:9]]
 
-    def correct_mean_months(self, now: datetime, zone: tzinfo) -> int:
+    def correct_mean_months(
+        self, now: datetime, zone: tzinfo, *, mean: bool = False
+    ) -> int:
         """Months of a series kept as samples of the mean (``minute_sums``)
         as ``parse.mean_form`` reads them; returns how many changed.
 
@@ -179,8 +182,10 @@ class Ledger:
         already, or one value per hour or day, which earlier versions did not
         keep too high) stays as it is. An imported row made from a
         changed month is imported again (``redo``, within the rows kept).
+        ``mean``: the series is read as samples of the mean as well (every
+        energy series behind an iCom gateway, ``series.mean_samples``).
         """
-        if not self.series.minute_sums:
+        if not (self.series.minute_sums or mean):
             return 0
         changed: list[str] = []
         for key, cell in list(self.months.items()):
@@ -229,8 +234,10 @@ class Ledger:
         read_at: datetime,
         zone: tzinfo,
         full_history: bool = False,
+        energy_limit: float = MAX_KWH_PER_HOUR,
     ) -> None:
-        """Take the samples of one answer read at ``read_at``."""
+        """Take the samples of one answer read at ``read_at``;
+        ``energy_limit``: the upper bound of one hour's energy (kWh)."""
         floor = date.fromisoformat(self.floor) if self.floor else None
         accepted: list[Sample] = []
         for sample in parsed.samples:
@@ -240,7 +247,14 @@ class Ledger:
                 # A gap: the placeholder sum (often 1.0) is no energy.
                 accepted.append(Sample(sample.rate, sample.day, sample.hour, 0.0, 0.0))
                 continue
-            reason = rejection(sample, self.series, now=read_at, zone=zone, floor=floor)
+            reason = rejection(
+                sample,
+                self.series,
+                now=read_at,
+                zone=zone,
+                floor=floor,
+                energy_limit=energy_limit,
+            )
             if reason is not None:
                 self.stats[f"discarded_{reason}"] += 1
                 if sample.rate is Rate.HOUR and reason in _GAP_REASONS:

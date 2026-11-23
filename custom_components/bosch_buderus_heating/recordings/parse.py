@@ -33,13 +33,24 @@ from datetime import UTC, date, datetime, time, timedelta, tzinfo
 from enum import StrEnum
 from typing import Final
 
-from ..local_api.models import Recording, RecordingGroup
-from .series import Quantity, Series, series_unit_factor
+from ..local_api.models import DataIssue, Recording, RecordingGroup
+from .series import (
+    REQUIRES_BOILER,
+    Quantity,
+    Series,
+    mean_samples,
+    series_unit_factor,
+)
 
 HOUR: Final = 3600
 # A plausible upper bound of one hour's energy: 1.5 times a nominal output of
 # 60 kW. The nominal output of a plant is not reliably known here.
 MAX_KWH_PER_HOUR: Final = 1.5 * 60.0
+# Without a known nominal output, the bound of a boiler's series and of
+# every gateway series of a plant with a boiler: far above a household
+# boiler or a small cascade (the heat pump's 90 would cut off its full-load
+# hours).
+MAX_KWH_PER_HOUR_BOILER: Final = 500.0
 MAX_STARTS_PER_HOUR: Final = 60.0
 # A softener's water per hour, litres (a household line, far above any use).
 MAX_LITRES_PER_HOUR: Final = 10000.0
@@ -188,8 +199,10 @@ def mean_form(
     *,
     start: datetime | None = None,
     now: datetime | None = None,
+    icom: bool = False,
 ) -> tuple[float, float]:
-    """A slot of a series kept as samples of the mean (``minute_sums``).
+    """A slot of a series kept as samples of the mean (``minute_sums``, and
+    every energy series behind an iCom gateway: ``series.mean_samples``).
 
     ``y`` is the sum of ``c`` samples, whatever the sample rate (60 per
     hour, 4 per hour, one per hour): the energy of the slot is the mean
@@ -200,7 +213,7 @@ def mean_form(
     of the day or of the month), so ``count_fits`` takes it. A slot without
     data (``c`` 0) stays a gap; every other series stays as it is.
     """
-    if not series.minute_sums or c <= 0:
+    if not mean_samples(series, icom=icom) or c <= 0:
         return y, c
     full = slot_hours(rate, day, zone)
     hours = float(full)
@@ -316,6 +329,9 @@ def parse_local(recording: Recording, series: Series, zone: tzinfo) -> Parsed | 
     if factor is None:
         return None
     parsed = Parsed()
+    # A group whose end lies before its start was left out when decoding.
+    if reversed_groups := recording.issues.count(DataIssue.REVERSED_GROUP):
+        parsed.issues["reversed_group"] += reversed_groups
     newest: datetime | None = None
     for group in recording.groups:
         if group.sample_rate == "PT1H":
@@ -392,7 +408,9 @@ def parse_cloud(
                 parsed.issues["invalid_value"] += 1
                 continue
             begin = start + timedelta(hours=index) if placeable else None
-            item = mean_form(series, Rate.HOUR, *item, day, zone, start=begin, now=now)
+            item = mean_form(
+                series, Rate.HOUR, *item, day, zone, start=begin, now=now, icom=icom
+            )
             if not count_fits(series.quantity, Rate.HOUR, item[1], day, zone):
                 parsed.issues["count_form"] += 1
                 continue
@@ -419,6 +437,7 @@ def parse_cloud(
                 zone,
                 start=local_midnight(sample_day, zone).astimezone(UTC),
                 now=now,
+                icom=icom,
             )
             if not count_fits(series.quantity, Rate.DAY, item[1], sample_day, zone):
                 parsed.issues["count_form"] += 1
@@ -442,6 +461,7 @@ def parse_cloud(
             zone,
             start=local_midnight(month, zone).astimezone(UTC),
             now=now,
+            icom=icom,
         )
         parsed.samples.append(Sample(Rate.MONTH, month, None, *item))
     return parsed
@@ -462,6 +482,36 @@ def _hours_in(sample: Sample) -> float:
     return 24.0 * 31 + 1
 
 
+def boiler_series(series: Series, *, boiler_plant: bool = False) -> bool:
+    """A series that counts a boiler: the boiler series, a burner part, and
+    on a plant with a boiler (a boiler or a hybrid system) every energy series
+    of the gateway itself (``requires`` None; a hybrid system's heat pump
+    series under its heat source require a heat pump source)."""
+    return series.quantity is Quantity.ENERGY and (
+        series.requires == REQUIRES_BOILER
+        or series.kind == "burner"
+        or (boiler_plant and series.requires is None)
+    )
+
+
+def hourly_energy_limit(
+    series: Series, *, rated_kw: float | None = None, boiler_plant: bool = False
+) -> float:
+    """The upper bound of one hour's energy of a series, in kWh.
+
+    ``MAX_KWH_PER_HOUR`` for a heat pump's series, ``MAX_KWH_PER_HOUR_BOILER``
+    for a series that counts a boiler (``boiler_series``); never below 1.5
+    times the plant's known nominal output (``rated_kw``)."""
+    limit = (
+        MAX_KWH_PER_HOUR_BOILER
+        if boiler_series(series, boiler_plant=boiler_plant)
+        else MAX_KWH_PER_HOUR
+    )
+    if rated_kw is not None and math.isfinite(rated_kw) and rated_kw > 0:
+        limit = max(limit, 1.5 * rated_kw)
+    return limit
+
+
 def rejection(
     sample: Sample,
     series: Series,
@@ -469,8 +519,10 @@ def rejection(
     now: datetime,
     zone: tzinfo,
     floor: date | None,
+    energy_limit: float = MAX_KWH_PER_HOUR,
 ) -> str | None:
-    """Why a sample with data (``c > 0``) cannot be a real value, or None."""
+    """Why a sample with data (``c > 0``) cannot be a real value, or None.
+    ``energy_limit``: the upper bound of one hour's energy (kWh)."""
     if sample_start(sample, zone) > now + timedelta(hours=1):
         return "future"
     if sample.day < max(EARLIEST, floor or EARLIEST):
@@ -483,7 +535,7 @@ def rejection(
     if sample.y < 0:
         return "negative"
     limit = {
-        Quantity.ENERGY: MAX_KWH_PER_HOUR,
+        Quantity.ENERGY: energy_limit,
         Quantity.COUNT: MAX_STARTS_PER_HOUR,
         Quantity.DURATION: 1.01,
         Quantity.VOLUME: MAX_LITRES_PER_HOUR,

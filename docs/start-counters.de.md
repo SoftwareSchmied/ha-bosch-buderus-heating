@@ -33,17 +33,27 @@ Zuordnung und Prüfung stehen im [Bericht zu P01](wddw2-types.md).
 
 Ich akzeptiere endliche, nicht negative, ganzzahlige Zahlen ohne Einheit oder
 mit der einheitenlosen Angabe `other`. `1234` und `1234.0` ergeben denselben
-Zählerstand. Zeichenketten, Wahrheitswerte und Bruchteile werden zurückgewiesen.
+Zählerstand. Zeichenketten, Wahrheitswerte und Bruchteile werden zurückgewiesen
+(bis auf den unten beschriebenen Rundungsfehler).
 Die Obergrenze `2**53 - 1` verhindert Genauigkeitsverluste in nachgelagerter
 Zahlenspeicherung; sie ist keine behauptete Grenze der Heizungsanlage.
 
 Ab 0.8.2-beta.4 entferne ich vor der Einheitenprüfung umgebende Leerzeichen.
 Ein einzelnes Leerzeichen, Tabulatoren und geschützte Leerzeichen gelten als
 leere Einheit. Auch `other` mit umgebenden Leerzeichen wird akzeptiert.
-Tatsächliche Einheiten wie `C` und `kWh`, unbekannte Texte und Einheitenfelder
-mit anderen Datentypen bleiben unzulässig. Das gilt für den allgemeinen
-`floatValue`-Zähler und die unterstützten `emonValue`-Zähler einzelner
-Wärmeerzeuger. Die Einheitenprüfung anderer Sensoren bleibt unverändert.
+Tatsächliche Einheiten wie `C` und `kWh` und unbekannte Texte bleiben
+unzulässig. Das gilt für den allgemeinen Zähler und die unterstützten
+`emonValue`-Zähler einzelner Wärmeerzeuger. Die Einheitenprüfung anderer
+Sensoren bleibt unverändert.
+
+Ab 0.9.3-beta.6 gilt auch ein Wort für eine reine Anzahl als leere Einheit,
+unabhängig von Groß- und Kleinschreibung: `other`, `count`, `starts`, `1`,
+`x` und `pcs`. Eine ganze Startzahl darf auch als `integerValue` kommen. Ein
+Wert, der weniger als ein Millionstel von einer ganzen Zahl abweicht, ist diese
+ganze Zahl (eine Startzahl mit Rundungsfehler); jeder andere Bruchteil bleibt
+`not_integer`. Ein Einheitenfeld, das kein Text ist, gilt als nicht gemeldet.
+Getestet mit konstruierten Antworten; an einer echten Anlage noch nicht
+bestätigt.
 
 Die optionalen Metadaten `state` können Zahlen ausdrücklich als Fehlerwerte
 kennzeichnen: `short`, `open`, `overflow`, `underflow` und `invalid`. Solche
