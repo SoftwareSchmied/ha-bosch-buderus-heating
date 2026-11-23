@@ -57,8 +57,8 @@ mode and is never changed by the Eco preset.
 
 ## Timers and energy totals (expected, untested on a real unit)
 
-I added these in 0.9.2-beta.3 from the vendor app's behavior. I have not run
-them against a real unit.
+I added these in 0.9.2-beta.3 from documented and observed device behavior. I
+have not run them against a real unit.
 
 **Timers.** Two number entities, *Switch-on timer* and *Switch-off timer*
 (minutes, 0 stops the timer), both disabled by default. The unit stores each
@@ -183,8 +183,8 @@ bietet die Integration nicht an; Timer und Gesamtverbrauch stehen unten.
 
 ### Timer und Gesamtverbrauch (erwartet, am echten Gerät ungetestet)
 
-Ich habe beides in 0.9.2-beta.3 nach dem Verhalten der Hersteller-App
-ergänzt. Gegen ein echtes Gerät habe ich es nicht laufen lassen.
+Ich habe beides in 0.9.2-beta.3 nach dokumentiertem und beobachtetem
+Geräteverhalten ergänzt. Gegen ein echtes Gerät habe ich es nicht laufen lassen.
 
 **Timer.** Zwei Zahlen-Entitäten, *Einschalt-Timer* und *Ausschalt-Timer*
 (Minuten, 0 stoppt den Timer), beide standardmäßig deaktiviert. Das Gerät

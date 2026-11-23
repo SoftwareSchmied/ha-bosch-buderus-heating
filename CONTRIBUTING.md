@@ -57,4 +57,4 @@ do not upload the data; contact the maintainer privately first.
 This project is an independent implementation. A pull request that adapts code
 from another project must identify the source, exact scope, commit, and license
 and preserve every required notice. Do not submit proprietary application
-files, certificates, logos, secrets, or decompiled code.
+files, certificates, logos, secrets, or code taken from other vendors' software.
