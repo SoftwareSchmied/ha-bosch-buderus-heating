@@ -171,9 +171,9 @@ the exception (see [the next section](#the-heat-pump-behind-an-icom-gateway)).
 | Recording | Asked on a plant with | Unit accepted | Name |
 |---|---|---|---|
 | `/recordings/swCircuits/sw1/sensor/water` | a softener circuit (`/swCircuits/sw1/...`) | L, m³ (shown in L) | *Water consumption* |
-| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh, Wh, MWh, kBtu (kWh and Wh in any case) | *Heating – Boiler energy* |
+| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh (in any case), Wh, MWh, kBtu | *Heating – Boiler energy* |
 | `/recordings/heatSources/actualDHWPower` | as above | as above | *Hot water – Boiler energy* |
-| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above, and a heat pump behind an iCom gateway | as above, and kW | *Total – Energy consumed* |
+| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above, and a heat pump behind an iCom gateway | as above; kW behind an iCom gateway only | *Total – Energy consumed* |
 
 A plant with a softener circuit and no heat source reads only the water
 recording. On a plant with local access the water or boiler paths are asked
@@ -213,8 +213,8 @@ becomes the five period entities, and the electricity (compressor plus
 heater) a measure of its own; enabled by default are the heat produced and
 the electricity, as on a K40. There is no counter of the integration for
 them, so there is no *(calculated)* companion. A path that answers 404 is
-asked again once a day; one in a unit other than kWh, Wh, MWh, kBtu or kW
-(kWh, Wh and kW in any case, for example `KWh`) gives no entity, and the
+asked again once a day; one in a unit other than kWh (in any case, for
+example `KWh`), Wh, MWh, kBtu or kW gives no entity, and the
 diagnostics show the unit it answered in. All four are read as samples of
 the mean power (see [the next section](#samples-of-the-mean-power)).
 
@@ -248,7 +248,9 @@ rate: one hour for an hour, the hours of the day for a day (23 or 25 on a
 change of summer time) and the hours of the month for a month of the year
 interval. A slot still running counts the hours elapsed so far. A slot with
 `c` 0 stays a gap. Because the mean is a power, a unit of power (kW) is taken
-for these recordings; kW is not taken for any other recording.
+for these recordings behind an iCom gateway. kW is never taken from a K30, K40
+or other gateway (also not for the consumed energy of a boiler there) and
+never for any other recording.
 
 Up to 0.9.3-beta.5 the months of such a recording (the consumed energy)
 were taken with the sum as it was, up to about 60 times too high, and the hours
@@ -409,7 +411,9 @@ for a heat pump with counters of its own, `plant_kind` for a hybrid system
 without them), on an iCom heat pump `icom_heat_pump: true`
 with its recordings `monitoring_total_heat`, `monitoring_total_compressor`,
 `monitoring_total_eheater` and `sc1_solar_yield`, and per recording the
-`unit` it answered in when that unit was not taken (or for the solar yield);
+`unit` it answered in when that unit was not taken (or for the solar yield),
+as written and cut to 16 characters, left out when it holds a character that
+cannot be printed (the unit only, never a value);
 a recording left out for its unit is asked again as soon as a version takes
 that unit, and once when an earlier version kept no unit for it;
 a run reports

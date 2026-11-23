@@ -278,15 +278,36 @@ async def test_an_unknown_unit_gives_no_entity_and_shows_the_unit(
     await coordinator.async_shutdown()
 
 
-async def test_an_unsafe_unit_text_is_shown_as_other(hass: HomeAssistant) -> None:
+async def test_the_unit_text_of_a_refused_answer_is_shown_as_written(
+    hass: HomeAssistant,
+) -> None:
+    """The unit only, as written and cut to 16 characters; a unit with a
+    character that cannot be printed is left out."""
     coordinator = await plant(hass, "issue_467_icom_heat_pump")
     answers = heat_pump_answers()
     answers[HEAT] = lambda interval: recording(interval, 1.0, unit="kWh<script>")
+    eheater = MONITORING["monitoring_total_eheater"]
+    long_unit = "kilowatt hours per day"
+    answers[eheater] = lambda interval: recording(interval, 1.0, unit=long_unit)
+    compressor = MONITORING["monitoring_total_compressor"]
+    answers[compressor] = lambda interval: recording(interval, 1.0, unit="kWh\x00")
     manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
     await manager.async_run("start")
-    assert manager.diagnostics()["series"]["monitoring_total_heat"]["unit"] == "other"  # type: ignore[index]
-    manager._load({"units": {HEAT: "kWh<script>", "/not/a/recording": "kWh"}})
-    assert manager.unit_texts == {}
+    series = manager.diagnostics()["series"]
+    assert series["monitoring_total_heat"]["unit"] == "kWh<script>"  # type: ignore[index]
+    assert series["monitoring_total_eheater"]["unit"] == long_unit[:16]  # type: ignore[index]
+    assert series["monitoring_total_compressor"] == {"local": None, "cloud": "unit"}  # type: ignore[index]
+    manager._load(
+        {
+            "units": {
+                HEAT: "kWh<script>",
+                eheater: long_unit,
+                compressor: "kWh\x00",
+                "/not/a/recording": "kWh",
+            }
+        }
+    )
+    assert manager.unit_texts == {HEAT: "kWh<script>"}
     await coordinator.async_shutdown()
 
 
@@ -458,7 +479,8 @@ async def test_a_unit_left_out_by_an_earlier_version_is_asked_again(
         "units": {HEAT: "kW", eheater: "unit"},
     }
     manager._load(stored)
-    assert set(manager.cloud_paths) == {eheater}
+    # kW is checked again once the run knows the iCom gateway.
+    assert set(manager.cloud_paths) == {eheater, HEAT}
     calls.clear()
     await manager.async_run("start")
     asked = {path for path, _ in calls}
@@ -535,4 +557,29 @@ async def test_the_hour_still_running_counts_the_minutes_elapsed(
     cell = manager.ledgers["monitoring_total_heat"].hours[str(running)]
     assert cell[0] == pytest.approx(0.5 / 3)
     assert cell[1] == 1.0
+    await coordinator.async_shutdown()
+
+
+async def test_a_k40_does_not_take_kw_for_its_consumed_energy(
+    hass: HomeAssistant,
+) -> None:
+    """The consumed energy of a K30 or K40 without energy monitoring in kW is
+    refused and not asked again: kW is taken behind an iCom gateway only."""
+    coordinator = await plant(hass, "k40_own")
+    clock = Clock(NOW)
+    answers = {CONSUMED: lambda interval: recording(interval, 60.0, 60, unit="kW")}
+    manager, calls = await recordings(hass, coordinator, clock, answers)
+    await manager.async_run("start")
+    assert CONSUMED in {path for path, _ in calls}
+    assert "total_consumed" not in manager.available()
+    series = manager.diagnostics()["series"]["total_consumed"]  # type: ignore[index]
+    assert series == {"local": None, "cloud": "unit", "unit": "kW"}
+    clock.now += timedelta(days=2)
+    calls.clear()
+    manager._load(manager._data())
+    release = manager.acquire()  # another feature needs the recordings
+    await manager.async_run("hourly")
+    assert calls  # the run did read
+    assert CONSUMED not in {path for path, _ in calls}
+    release()
     await coordinator.async_shutdown()

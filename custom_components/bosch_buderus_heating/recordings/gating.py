@@ -91,6 +91,13 @@ def allowed(
     return False
 
 
+def icom_gateway(coordinator: BoschBuderusDataUpdateCoordinator | None) -> bool:
+    """The plant is behind an iCom gateway."""
+    if coordinator is None:
+        return False
+    return _icom(coordinator)
+
+
 def _icom(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
     from ..icom_profile import is_icom_device_type
 

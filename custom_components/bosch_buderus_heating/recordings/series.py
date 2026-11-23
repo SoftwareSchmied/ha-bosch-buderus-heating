@@ -110,7 +110,7 @@ class Series:
     # sum of ``c`` samples (about 60 per hour, about 1,440 per day, whatever
     # the sample rate), and the energy of a slot is the mean ``y / c`` times
     # the hours of the slot (``parse.mean_form``). A unit of power (kW) is
-    # therefore taken as well (``series_unit_factor``).
+    # therefore taken as well behind an iCom gateway (``series_unit_factor``).
     minute_sums: bool = False
     # A series of ``requires`` ``boiler`` that is asked on a heat pump behind an
     # iCom gateway as well (``gating``).
@@ -304,12 +304,12 @@ def kind_slug(kind: str) -> str | None:
     return found[0] if found is not None else None
 
 
-# Energy units the gateways write in other cases (``KWh``, ``kwh``, ``WH``):
-# compared without regard to case. ``MWh`` only as written (``mWh`` would be a
-# thousandth of a watt-hour).
-_ENERGY_ANY_CASE: Final[dict[str, float]] = {"kwh": 1.0, "wh": 0.001}
+# kWh in any case (``KWh``, ``kwh``, ``KWH``); every other unit only as the
+# unit table writes it (``mWh`` would be a thousandth of a watt-hour).
+_ENERGY_ANY_CASE: Final[dict[str, float]] = {"kwh": 1.0}
 # The mean of samples of power in kW times hours is energy in kWh: taken only
-# for a series kept as samples of the mean (``minute_sums``).
+# for a series kept as samples of the mean (``minute_sums``) behind an iCom
+# gateway, whose energy monitoring is read that way whatever its unit.
 _MEAN_POWER: Final[dict[str, float]] = {"kw": 1.0}
 
 
@@ -318,8 +318,8 @@ def unit_factor(
 ) -> float | None:
     """The factor to this module's unit, or None for an unknown unit.
 
-    ``mean_power``: the series is kept as samples of the mean power, so a
-    unit of power (kW) is taken as well.
+    ``mean_power``: the series is kept as samples of the mean power behind an
+    iCom gateway, so a unit of power (kW) is taken as well.
     """
     table = UNITS[quantity]
     if unit in table:
@@ -337,7 +337,11 @@ def unit_factor(
     return None
 
 
-def series_unit_factor(series: Series, unit: str | None) -> float | None:
+def series_unit_factor(
+    series: Series, unit: str | None, *, icom: bool = False
+) -> float | None:
     """The factor of a series' answer in ``unit``, or None for a unit it
-    does not take."""
-    return unit_factor(series.quantity, unit, mean_power=series.minute_sums)
+    does not take. ``icom``: the answer comes from an iCom gateway (kW for a
+    series kept as samples of the mean power); never for a K30, K40 or other
+    gateway."""
+    return unit_factor(series.quantity, unit, mean_power=icom and series.minute_sums)

@@ -353,17 +353,22 @@ def parse_cloud(
     interval: str,
     zone: tzinfo,
     now: datetime | None = None,
+    *,
+    icom: bool = False,
 ) -> Parsed | None:
     """The samples of a cloud answer to ``?interval=``; None when the answer
     is no recording or has an unknown unit. ``now``: when it was read (the
-    hours of a slot still running, ``mean_form``)."""
+    hours of a slot still running, ``mean_form``); ``icom``: the answer of an
+    iCom gateway (``series_unit_factor``)."""
     if not isinstance(payload, dict) or not is_cloud_recording(payload):
         return None
     rows = payload.get("recording")
     if not isinstance(rows, list) or not valid_interval(interval):
         return None
     unit = payload.get("unitOfMeasure")
-    factor = series_unit_factor(series, unit if isinstance(unit, str) else None)
+    factor = series_unit_factor(
+        series, unit if isinstance(unit, str) else None, icom=icom
+    )
     if factor is None:
         return None
     values: list[tuple[float, float] | None] = []

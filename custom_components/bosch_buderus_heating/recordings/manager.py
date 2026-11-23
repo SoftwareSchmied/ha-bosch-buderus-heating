@@ -54,7 +54,6 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
-import re
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -81,6 +80,7 @@ from .gating import (
     heat_pump_keys,
     heat_pump_source,
     heat_pump_source_basis,
+    icom_gateway,
     icom_heat_pump,
     softener_plant,
 )
@@ -162,7 +162,8 @@ VALUES_DELAY: Final = 1.0
 # (rule 5), so yesterday is shown then instead of after the hourly run.
 CONFIRM_DELAY: Final = 300.0
 # A unit text shown in the diagnostics.
-_UNIT: Final = re.compile(r"[A-Za-z0-9 _./%°³²-]{1,16}")
+# The unit text kept for the diagnostics: the unit only, never a value.
+UNIT_TEXT_LENGTH: Final = 16
 _MANAGERS: HassKey[dict[tuple[str, str], RecordingsManager]] = HassKey(
     f"{DOMAIN}_recordings"
 )
@@ -457,12 +458,13 @@ class RecordingsManager:
             for path, text in (units.items() if isinstance(units, dict) else ())
             if path in BY_PATH and isinstance(text, str) and _unit_text(text) == text
         }
-        self._recheck_units(data.get("units_rechecked") is True)
+        self._recheck_units(rechecked=data.get("units_rechecked") is True)
 
-    def _recheck_units(self, rechecked: bool) -> None:
+    def _recheck_units(self, *, rechecked: bool = True, icom: bool = False) -> None:
         """A recording left out for its unit is asked again when that unit is
         taken now, and once when an earlier version kept no unit text for it
-        (``units_rechecked``)."""
+        (``units_rechecked``). ``icom``: the plant is behind an iCom gateway
+        (checked again in each run, when the gateway is known)."""
         for known in (self.local_paths, self.cloud_paths):
             for path, item in list(known.items()):
                 if item[0] != "unit":
@@ -470,7 +472,7 @@ class RecordingsManager:
                 text = self.unit_texts.get(path)
                 if (text is None and not rechecked) or (
                     text is not None
-                    and series_unit_factor(BY_PATH[path], text) is not None
+                    and series_unit_factor(BY_PATH[path], text, icom=icom) is not None
                 ):
                     del known[path]
 
@@ -683,6 +685,9 @@ class RecordingsManager:
             self.waiting = "no_heat_source_anchor"
             return
         self.running = True
+        if icom_gateway(coordinator):
+            # kW of the energy monitoring is taken behind an iCom gateway only.
+            self._recheck_units(icom=True)
         now = self._now()
         zone = dt_util.get_default_time_zone()
         report: dict[str, Any] = {
@@ -1123,6 +1128,7 @@ class RecordingsManager:
             report["cloud"] = "no_heat_source"
             return False
         client = coordinator.client
+        icom = icom_gateway(coordinator)
         today = now.astimezone(zone).date()
         tasks = [(*task, False) for task in self._current_tasks(today, now, exclusive)]
         if self._backfill_allowed(reason, today):
@@ -1176,7 +1182,9 @@ class RecordingsManager:
             self._count_outcome(report, CLOUD, outcome)
             if outcome is Outcome.OK:
                 read_at = self._now()
-                parsed = parse_cloud(answer.data, series, interval, zone, read_at)
+                parsed = parse_cloud(
+                    answer.data, series, interval, zone, read_at, icom=icom
+                )
                 if parsed is None:
                     self.cloud_paths[series.path] = ["unit", read_at.timestamp()]
                     self._note_unit(series.path, cloud_unit(answer.data))
@@ -1727,10 +1735,11 @@ class RecordingsManager:
 
 
 def _unit_text(value: object) -> str | None:
-    """A unit as a safe text (``other`` for anything else); None without one."""
-    if not isinstance(value, str) or not value:
+    """The unit an answer named, as it was written (at most 16 characters);
+    None without one or with a character that cannot be printed."""
+    if not isinstance(value, str) or not value or not value.isprintable():
         return None
-    return value if _UNIT.fullmatch(value) else "other"
+    return value[:UNIT_TEXT_LENGTH]
 
 
 def _paths(value: object) -> dict[str, list[Any]]:
