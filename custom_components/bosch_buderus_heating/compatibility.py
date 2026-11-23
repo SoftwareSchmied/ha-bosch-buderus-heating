@@ -14,7 +14,7 @@ from .const import DOMAIN, FIRMWARE_ISSUE_PREFIX
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .pointt import Resource
 from .repair_scope import repair_data, repair_id
-from .unit_contracts import canonical_unit, read_types
+from .unit_contracts import canonical_unit, read_types, schema_units
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,8 +112,7 @@ def incompatible_capabilities(resources: dict[str, Resource]) -> tuple[str, ...]
             metadata = resource.metadata
             if metadata.resource_type not in read_types(rule.resource_types) or (
                 rule.units
-                and canonical_unit(metadata.unit)
-                not in {canonical_unit(unit) for unit in rule.units}
+                and canonical_unit(metadata.unit) not in schema_units(rule.units)
             ):
                 conflicts.append(path)
             break

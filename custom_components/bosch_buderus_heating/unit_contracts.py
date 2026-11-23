@@ -17,7 +17,7 @@ def read_types(resource_types: frozenset[str]) -> frozenset[str]:
 
 TEMPERATURE_UNITS = {
     **dict.fromkeys(("C", "degC", "°C", "ºC"), "°C"),
-    **dict.fromkeys(("F", "degF", "°F"), "°F"),
+    **dict.fromkeys(("F", "degF", "°F", "ºF"), "°F"),
     "K": "K",
 }
 DURATION_UNITS = {
@@ -65,6 +65,16 @@ def implied_unit(path: str, unit: str | None) -> str | None:
     if (unit is None or not unit.strip()) and _TARIFF_DELTA.fullmatch(path):
         return "K"
     return unit
+
+
+def schema_units(units: frozenset[str] | tuple[str, ...]) -> frozenset[str | None]:
+    """The canonical units a schema of ``units`` accepts. A schema in Celsius
+    also accepts Fahrenheit (the temperature family, never Kelvin): the
+    reading is converted where it is shown or written."""
+    accepted = {canonical_unit(unit) for unit in units}
+    if "°C" in accepted:
+        accepted.add("°F")
+    return frozenset(accepted)
 
 
 def energy_kwh_scale(unit: str | None) -> float | None:

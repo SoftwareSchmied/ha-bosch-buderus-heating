@@ -72,6 +72,41 @@ def test_compatibility_checks_optional_catalog_resource_schemas() -> None:
     )
 
 
+def test_fahrenheit_is_part_of_the_temperature_schema() -> None:
+    """S16: C and F (in every spelling) match a Celsius rule; K does not."""
+    from custom_components.bosch_buderus_heating.resource_catalog import (
+        _matches_optional_app_schema as matches_optional_schema,
+    )
+
+    path = "/system/sensors/temperatures/outdoor_t1"
+    for unit in ("C", "°C", "F", "°F", "ºF", "degF"):
+        assert (
+            incompatible_capabilities({path: _resource(path, "floatValue", unit)}) == ()
+        )
+    assert incompatible_capabilities({path: _resource(path, "floatValue", "K")}) == (
+        path,
+    )
+    passive = "/heatSources/passiveCooling/inflowTemp"
+    assert matches_optional_schema(_resource(passive, "floatValue", "ºF"))
+    assert not matches_optional_schema(_resource(passive, "floatValue", "K"))
+
+
+def test_a_fahrenheit_reading_of_a_celsius_rule_becomes_a_temperature_sensor() -> None:
+    from custom_components.bosch_buderus_heating.sensor import (
+        build_sensor_descriptions,
+    )
+
+    path = "/heatSources/hs1/brineCircuit/collectorInflowTemp"
+    resource = Resource(
+        path=path,
+        value=41.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="ºF"),
+    )
+    (description,) = build_sensor_descriptions({path: resource})
+    assert description.native_unit_of_measurement == "°F"
+
+
 def test_firmware_issue_is_created_and_removed_from_aggregate_result(
     hass: HomeAssistant,
 ) -> None:

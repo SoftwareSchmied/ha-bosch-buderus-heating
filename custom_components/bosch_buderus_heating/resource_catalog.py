@@ -22,7 +22,7 @@ from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_pa
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import is_static_startup_resource
 from .switch_programs import assess_switch_program, is_switch_program_path
-from .unit_contracts import canonical_unit, implied_unit, read_types
+from .unit_contracts import canonical_unit, implied_unit, read_types, schema_units
 from .water_softener import softener_capability, softener_schema_issue
 from .write_policies import rrc_kwargs
 
@@ -62,8 +62,7 @@ class _EntitySchemaRule:
         metadata = resource.metadata
         unit = implied_unit(resource.path, metadata.unit)
         return metadata.resource_type in read_types(self.resource_types) and (
-            not self.units
-            or canonical_unit(unit) in {canonical_unit(item) for item in self.units}
+            not self.units or canonical_unit(unit) in schema_units(self.units)
         )
 
 
