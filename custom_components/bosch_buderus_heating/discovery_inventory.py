@@ -109,6 +109,7 @@ def resource_to_data(resource: Resource) -> dict[str, Any]:
             "used": metadata.used,
             "available": metadata.available,
             "availability_flags_valid": metadata.availability_flags_valid,
+            "metadata_issues": list(metadata.metadata_issues),
         },
         "references": [
             {"path": reference.path, "name": reference.name}
@@ -162,6 +163,12 @@ def _flag(value: object) -> bool:
     if not isinstance(value, bool):
         raise _Invalid
     return value
+
+
+def _texts(value: object) -> tuple[str, ...]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise _Invalid
+    return tuple(value)
 
 
 def _scalars(value: object) -> tuple[Any, ...]:
@@ -237,6 +244,8 @@ def resource_from_data(data: object) -> Resource:
             used=_optional(metadata.get("used"), bool),
             available=_optional(metadata.get("available"), bool),
             availability_flags_valid=_flag(metadata.get("availability_flags_valid")),
+            # Stored by earlier versions without it.
+            metadata_issues=_texts(metadata.get("metadata_issues", [])),
         ),
         references=tuple(parsed_references),
         has_values=_flag(data.get("has_values")),

@@ -11,7 +11,7 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .held_readings import cloud_usable, held_snapshot
 from .pointt import Resource
-from .unit_contracts import TEMPERATURE_UNITS
+from .unit_contracts import NUMBER_TYPES, TEMPERATURE_UNITS
 
 
 def fresh_resource(
@@ -77,7 +77,7 @@ def temperature(resource: Resource | None) -> float | None:
     value, meta = resource.value, resource.metadata
     unit = TEMPERATURE_UNITS.get(meta.unit or "")
     if (
-        meta.resource_type != "floatValue"
+        meta.resource_type not in NUMBER_TYPES
         or unit is None
         or not meta.numeric_error_states_valid
         or isinstance(value, bool)

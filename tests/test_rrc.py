@@ -252,7 +252,7 @@ async def test_separate_rrc_readings_and_stable_identity(environment, path):
         ("available", False),
         ("used", False),
         ("used", 1),
-        ("used", "True"),
+        ("used", "yes"),
         ("available", "yes"),
     ],
 )

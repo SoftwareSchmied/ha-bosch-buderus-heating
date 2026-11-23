@@ -29,6 +29,7 @@ from .local_api.models import (
     ScalarValue,
     ValueArray,
 )
+from .pointt.parsers import NOT_AVAILABLE_PATHS, NOT_AVAILABLE_STATE
 from .resource_catalog import function_group_for_path
 from .unit_contracts import TEMPERATURE_UNITS
 from .unit_contracts import canonical_unit as contract_unit
@@ -303,7 +304,7 @@ def from_local_observation(
         unit = data.unit
         state_names = tuple(item.name for item in data.states)
         matched = tuple(data.matched_states)
-        if _local_error_marker(data):
+        if _local_error_marker(data, observation.request.path):
             status = ValueStatus.STATE_MARKER
         elif any(issue.value == "unknown_unit" for issue in data.issues):
             status = ValueStatus.UNKNOWN_UNIT
@@ -610,20 +611,26 @@ def canonical_unit(unit: str | None) -> str | None:
     return contract_unit(unit)
 
 
-def _local_error_marker(data: ScalarValue) -> bool:
+def _local_error_marker(data: ScalarValue, path: str = "") -> bool:
     """Error marker, also as the one-decimal value some devices report.
 
     The documented example of a return temperature reports an open sensor as
     -3276.8 next to the marker -32768: a float reading equal to a tenth of an
-    error marker is a marker, never a temperature.
+    error marker is a marker, never a temperature. On the system pressure the
+    state "na" (not available) is a marker as well, as in the cloud.
     """
     if not (type(data.value) is int or isinstance(data.value, Decimal)):
         return False
-    if ERROR_MARKERS.intersection(data.matched_states):
+    markers = (
+        ERROR_MARKERS | {NOT_AVAILABLE_STATE}
+        if path in NOT_AVAILABLE_PATHS
+        else ERROR_MARKERS
+    )
+    if markers.intersection(data.matched_states):
         return True
     value = Decimal(str(data.value))
     return any(
-        state.name in ERROR_MARKERS and value == Decimal(str(state.value)) / Decimal(10)
+        state.name in markers and value == Decimal(str(state.value)) / Decimal(10)
         for state in data.states
     )
 

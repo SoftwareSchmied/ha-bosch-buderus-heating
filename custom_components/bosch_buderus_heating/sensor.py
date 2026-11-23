@@ -171,7 +171,12 @@ from .switch_programs import (
     assess_switch_program,
     is_switch_program_path,
 )
-from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
+from .unit_contracts import (
+    DURATION_UNITS,
+    ENERGY_UNITS,
+    TEMPERATURE_UNITS,
+    implied_unit,
+)
 from .update_gate import untouched
 from .variable_tariff_entities import track_tariff_sensor
 from .wallbox_entities import track_wallbox_entities
@@ -1842,6 +1847,8 @@ class BoschBuderusSensor(
         if description.value_kind == "pressure_status":
             range_snapshot = self._pressure_range_snapshot
             pressure = _pressure_number(resource.value)
+            if resource.value in resource.metadata.numeric_error_values:
+                pressure = None  # a declared marker ("na", "invalid" ...)
             limits = (
                 _pressure_limits(range_snapshot.resource)
                 if range_snapshot is not None and range_snapshot.available
@@ -2539,7 +2546,7 @@ def _measurement_attributes(
     resource: Resource, value_key: str | None
 ) -> tuple[str | None, SensorDeviceClass | None, SensorStateClass | None, float]:
     path = resource.path
-    unit = resource.metadata.unit
+    unit = implied_unit(path, resource.metadata.unit)
     if (softener := softener_capability(path)) is not None:
         unit = softener_unit(resource)
         if softener.suffix == "sensor/availableWater":

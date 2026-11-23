@@ -1,5 +1,20 @@
 """Reviewed unit aliases shared by PointT measurements and controls."""
 
+import re
+
+# A number is read alike whether the gateway reports it as a whole number
+# (``integerValue``) or a decimal one (``floatValue``); writes keep their own
+# accepted types.
+NUMBER_TYPES = frozenset({"floatValue", "integerValue"})
+
+
+def read_types(resource_types: frozenset[str]) -> frozenset[str]:
+    """The types a reading may have: a decimal number also as a whole one."""
+    if "floatValue" in resource_types:
+        return resource_types | NUMBER_TYPES
+    return resource_types
+
+
 TEMPERATURE_UNITS = {
     **dict.fromkeys(("C", "degC", "°C", "ºC"), "°C"),
     **dict.fromkeys(("F", "degF", "°F"), "°F"),
@@ -36,6 +51,20 @@ def canonical_unit(unit: str | None) -> str | None:
     unit, so a schema that names "C" also accepts a reading reported in "°C".
     """
     return _SPELLINGS.get(unit or "", unit)
+
+
+# The price deltas of the variable tariff are temperature differences; a
+# gateway may report them without a unit (#81).
+_TARIFF_DELTA = re.compile(
+    r"/system/variableTariff/(?:ch|dhw)/(?:highPriceDelta|lowPriceDelta)"
+)
+
+
+def implied_unit(path: str, unit: str | None) -> str | None:
+    """The reported unit; a tariff price delta without one is in kelvin."""
+    if (unit is None or not unit.strip()) and _TARIFF_DELTA.fullmatch(path):
+        return "K"
+    return unit
 
 
 def energy_kwh_scale(unit: str | None) -> float | None:

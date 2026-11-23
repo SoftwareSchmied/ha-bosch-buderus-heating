@@ -45,6 +45,7 @@ from .heating_climate import valid_resource
 from .i18n import localize
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
+from .unit_contracts import NUMBER_TYPES
 from .writes import context_of
 from .zone_radio_time import PLACEHOLDER, connection_lost_time, printable_text
 
@@ -86,7 +87,7 @@ def signal_reading(resource: Resource | None) -> float | None:
     """The level in dB of a valid reading, ``None`` otherwise."""
     if (
         resource is None
-        or resource.metadata.resource_type != "floatValue"
+        or resource.metadata.resource_type not in NUMBER_TYPES
         or (resource.metadata.unit or "").casefold() != "db"
         or isinstance(resource.value, bool)
         or not isinstance(resource.value, int | float)

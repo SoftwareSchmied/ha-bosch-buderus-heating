@@ -13,6 +13,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from .pointt import Gateway, Resource
+from .unit_contracts import NUMBER_TYPES
 
 SOFTENER_ROOT = "/swCircuits"
 SOFTENER_CIRCUIT = re.compile(r"^/swCircuits/((?!list$)[^/]+)$")
@@ -179,8 +180,8 @@ def softener_schema_issue(resource: Resource) -> str | None:
     capability = softener_capability(resource.path)
     if capability is None:
         return "unknown_capability"
-    expected = "floatValue" if capability.kind == "number" else "stringValue"
-    if resource.metadata.resource_type != expected or resource.references:
+    expected = NUMBER_TYPES if capability.kind == "number" else {"stringValue"}
+    if resource.metadata.resource_type not in expected or resource.references:
         return "unsupported_resource_type"
     if resource.values or isinstance(resource.value, dict | list):
         return "unsupported_value_shape"

@@ -93,7 +93,7 @@ def test_structured_energy_uses_reported_unit(
         assert entity.native_value == pytest.approx(expected)
 
 
-@pytest.mark.parametrize("unit", ["W", "mystery", " "])
+@pytest.mark.parametrize("unit", ["W", "mystery"])
 def test_explicit_unknown_energy_unit_is_not_assumed_kwh(unit: str) -> None:
     resource = Resource(
         path="/heatSources/emon/totalConsumption",
@@ -101,6 +101,18 @@ def test_explicit_unknown_energy_unit_is_not_assumed_kwh(unit: str) -> None:
         metadata=ResourceMetadata(resource_type="emonValue", unit=unit),
     )
     assert _energy_values(resource) == {}
+
+
+@pytest.mark.parametrize("unit", ["", " ", "\t"])
+def test_a_blank_energy_unit_is_a_missing_one(unit: str) -> None:
+    """Strictness A4: blank is missing, as for the start counters."""
+    resource = Resource(
+        path="/heatSources/emon/totalConsumption",
+        values=({"compressor": 123},),
+        metadata=ResourceMetadata(resource_type="emonValue", unit=unit),
+    )
+    assert _energy_values(resource) == {"compressor": 123}
+    assert assess_energy(resource).unit_source == "legacy_unitless_kwh"
 
 
 def test_energy_conflicts_and_error_values_do_not_create_totals() -> None:

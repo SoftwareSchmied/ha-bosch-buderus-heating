@@ -1292,6 +1292,12 @@ def _capability_diagnostics(
         "allowed_values_count": len(resource.metadata.allowed_values),
         "has_minimum": resource.metadata.minimum is not None,
         "has_maximum": resource.metadata.maximum is not None,
+        # Metadata fields of the wrong type, read as not reported.
+        **(
+            {"metadata_not_reported": list(resource.metadata.metadata_issues)}
+            if resource.metadata.metadata_issues
+            else {}
+        ),
         "control": _control_diagnostics(resource, context),
         **(
             {

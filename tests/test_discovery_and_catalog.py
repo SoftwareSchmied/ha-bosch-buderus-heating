@@ -776,7 +776,8 @@ def test_optional_catalog_paths_require_the_expected_live_schema() -> None:
                 metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
             )
         )
-        is PollGroup.STATIC
+        # Strictness A4: read on, once an hour, instead of never again.
+        is PollGroup.HOURLY
     )
     assert supports_entity(
         Resource(

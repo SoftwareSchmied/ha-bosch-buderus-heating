@@ -1584,6 +1584,13 @@ contains `supported_without_value: true`. This distinction is useful for
 optional and hybrid equipment: it is different from an unsupported resource
 or a failed request.
 
+`metadata_not_reported` appears on a capability only when its answer had
+metadata of the wrong type, for example a `minValue` as text or a
+`writeable` of `"true"`. It lists the field names (`minValue`,
+`maxValue`, `unitOfMeasure`, `writeable`, `allowedValues`) that were
+read as not reported, never their content. The value itself is kept; such a
+resource is not writable (see [validity of readings](reading-validity.md#reported-forms-read-tolerantly)).
+
 `unknown_enum_values_detected` counts distinct enum values that appeared only
 after an entity had been created and were not part of its declared options.
 The entity reports `unknown` instead of passing an invalid state to Home

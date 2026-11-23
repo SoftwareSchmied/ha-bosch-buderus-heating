@@ -189,3 +189,37 @@ restart.
 Diagnostics show the base limits per group as `validity_limits_seconds` and the
 number of readings that are currently past their limit as `resources_expired`
 in each gateway `runtime`.
+
+## Reported forms read tolerantly
+
+A reading does not fail on a form that changes nothing about its meaning.
+Writing keeps its own strict checks (type, valid limits, step and options).
+
+- A decimal value may also come as a whole number: wherever a reading expects
+  `floatValue`, `integerValue` counts as well (catalog paths, temperatures,
+  run times, start counters, water softener values, radio signal and the
+  firmware repair check). A text never counts as a number.
+- Metadata of the wrong type counts as not reported, and the value stays:
+  `minValue` or `maxValue` that is not a finite number, a `unitOfMeasure`
+  that is not a text, a `writeable` other than a boolean or 0/1, and option
+  entries that are not plain values. Such a resource is never writable, and a
+  number control without valid limits is not offered. A reference entry
+  without a path is skipped. The flags `used` and `available` take
+  `true` and `false` in any letter case. Diagnostics name the fields read
+  as not reported in `metadata_not_reported`, never their content.
+- A blank unit of an energy collection is a missing one, as for the start
+  counters: the established "no unit means kWh" rule applies.
+- The firmware repair compares units in every reviewed spelling (`C`,
+  `°C`, `degC`, `ºC`), as the catalog does.
+- The high- and low-price deltas of the variable tariff
+  (`/system/variableTariff/ch|dhw/highPriceDelta|lowPriceDelta`) are
+  temperature differences. Without a unit they are read in kelvin (#81).
+- A path whose answer does not fit the expected schema is read once an hour
+  instead of only once. A later answer in the expected form is then known
+  without a new search; its entity appears with the next search or restart.
+- The system pressure (`/heatSources/systemPressure`) treats the state
+  `na` (not available) as a marker, on both connections: such a value is
+  no pressure and gives no pressure status. On other readings `na` stays an
+  ordinary named state.
+
+Tested with constructed answers; not yet confirmed on a real gateway.

@@ -246,13 +246,18 @@ def test_configuration_with_mode_objects_is_parsed():
 
 
 def test_heating_paths_keep_refusing_object_allowed_values():
+    """An object is never an option of a heating path; since strictness A4
+    it is left out (and named in the diagnostics) instead of rejecting the
+    whole resource."""
     payload = {
         "id": "/heatingCircuits/hc1/operationMode",
         "type": "stringValue",
         "allowedValues": [{"x": 1}],
     }
-    with pytest.raises(Exception, match="scalar"):
-        parse_resource(payload, path="/heatingCircuits/hc1/operationMode")
+    resource = parse_resource(payload, path="/heatingCircuits/hc1/operationMode")
+    assert resource.metadata.allowed_values == ()
+    assert resource.metadata.metadata_issues == ("allowedValues",)
+    assert "allowedValues" not in resource.program_fields
 
 
 # Rules from the configuration

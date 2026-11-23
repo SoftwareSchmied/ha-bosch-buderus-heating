@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 
 from .pointt import Resource
+from .unit_contracts import NUMBER_TYPES
 
 RUNTIME_PARTS = ("total", "ch", "cooling", "dhw")
 _SOURCE_RUNTIME = re.compile(r"^/heatSources/[^/:]+/(workingTime|operationHours)$")
@@ -79,7 +80,7 @@ def assess_runtime(resource: Resource) -> RuntimeAssessment:
     if not is_runtime_path(resource.path):
         return RuntimeAssessment(False, "not_runtime")
     multipart = resource.path.endswith("/workingTime")
-    expected = (None, "emonValue") if multipart else ("floatValue",)
+    expected = (None, "emonValue") if multipart else tuple(sorted(NUMBER_TYPES))
     if resource.references or resource.metadata.resource_type not in expected:
         return RuntimeAssessment(False, "unsupported_schema")
     if not multipart and (

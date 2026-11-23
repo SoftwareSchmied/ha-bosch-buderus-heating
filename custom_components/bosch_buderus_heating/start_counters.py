@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from .pointt.bulk import normalize_resource_path
 from .pointt.models import Resource, ResourceMetadata
+from .unit_contracts import NUMBER_TYPES
 
 GLOBAL_START_COUNTER = "/heatSources/numberOfStarts"
 START_COUNTER_KEYS = ("total", "ch", "cooling", "dhw", "pool")
@@ -117,10 +118,10 @@ def assess_start_counter(resource: Resource) -> StartCounterAssessment:
     """Validate known schemas without comparing or replacing other sources."""
     if not is_start_counter_path(resource.path):
         return StartCounterAssessment(False, "not_start_counter")
-    scalar = resource.metadata.resource_type == "floatValue"
+    scalar = resource.metadata.resource_type in NUMBER_TYPES
     if (
         resource.references
-        or resource.metadata.resource_type not in ("floatValue", "emonValue")
+        or resource.metadata.resource_type not in (*sorted(NUMBER_TYPES), "emonValue")
         or (resource.path == GLOBAL_START_COUNTER and not scalar)
     ):
         return StartCounterAssessment(False, "unsupported_schema")

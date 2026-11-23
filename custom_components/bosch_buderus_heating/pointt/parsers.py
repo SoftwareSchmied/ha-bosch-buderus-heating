@@ -193,21 +193,33 @@ def _parse_references(value: object) -> tuple[ResourceReference, ...]:
         if isinstance(item, str):
             parsed.append(ResourceReference(path=_response_resource_path(item)))
             continue
-        data = _mapping(item, message="Resource reference must be an object")
-        path = _required_string(
-            data.get("id", data.get("path")),
-            message="Resource reference did not contain a path",
-        )
+        if not isinstance(item, Mapping):
+            continue  # an entry without a path names nothing to read
+        data = item
+        path = data.get("id", data.get("path"))
+        if not isinstance(path, str) or not path:
+            continue  # an entry without a path names nothing to read
+        name = data.get("name")
         parsed.append(
             ResourceReference(
                 path=_response_resource_path(path),
-                name=_optional_string(data.get("name")),
+                name=name if isinstance(name, str) else None,
             )
         )
     return tuple(parsed)
 
 
-def _parse_numeric_error_states(value: object) -> tuple[tuple[int | float, ...], bool]:
+# The states that mark a numeric value as no reading.
+NUMERIC_ERROR_STATES = ("short", "open", "overflow", "underflow", "invalid")
+# Readings whose state "na" (not available) is a placeholder as well: a
+# system pressure without a valid measurement is no pressure of 0 bar.
+NOT_AVAILABLE_STATE = "na"
+NOT_AVAILABLE_PATHS = frozenset({"/heatSources/systemPressure"})
+
+
+def _parse_numeric_error_states(
+    value: object, keys: tuple[str, ...] = NUMERIC_ERROR_STATES
+) -> tuple[tuple[int | float, ...], bool]:
     """Retain only bounded numeric error markers, never arbitrary state data."""
     if value is None:
         return (), True
@@ -217,7 +229,7 @@ def _parse_numeric_error_states(value: object) -> tuple[tuple[int | float, ...],
     for item in value:
         if not isinstance(item, Mapping):
             return (), False
-        for key in ("short", "open", "overflow", "underflow", "invalid"):
+        for key in keys:
             marker = item.get(key)
             if marker is None:
                 continue
@@ -265,11 +277,62 @@ def _parse_availability_flag(
     raw = data[key]
     if isinstance(raw, bool):
         return raw, True
-    # The TC100.2 RRC controller sends the exact JSON strings
-    # "true"/"false". Other spellings and numbers remain malformed.
-    if isinstance(raw, str) and raw in ("true", "false"):
-        return raw == "true", True
+    # The TC100.2 RRC controller sends the JSON strings "true"/"false"; any
+    # letter case counts. Other texts and numbers remain malformed.
+    if isinstance(raw, str) and raw.strip().casefold() in ("true", "false"):
+        return raw.strip().casefold() == "true", True
     return None, False
+
+
+def _metadata_number(
+    data: Mapping[str, object], key: str, issues: list[str]
+) -> float | None:
+    """A limit of the wrong type is not reported (noted in ``issues``)."""
+    try:
+        return _optional_number(data.get(key))
+    except InvalidPayload:
+        issues.append(key)
+        return None
+
+
+def _metadata_unit(data: Mapping[str, object], issues: list[str]) -> str | None:
+    """A unit that is not a text is not reported (noted in ``issues``)."""
+    unit = data.get("unitOfMeasure")
+    if unit is None or isinstance(unit, str):
+        return unit
+    issues.append("unitOfMeasure")
+    return None
+
+
+def _metadata_writable(data: Mapping[str, object], issues: list[str]) -> bool:
+    """Only a boolean or 0/1 grants a write; anything else is not reported,
+    so the resource is read-only (noted in ``issues``)."""
+    raw = data.get("writeable", data.get("writable", False))
+    if isinstance(raw, bool | int) and raw in (0, 1):
+        return bool(raw)
+    issues.append("writeable")
+    return False
+
+
+def _metadata_allowed_values(
+    data: Mapping[str, object], issues: list[str]
+) -> tuple[JsonScalar, ...]:
+    """The scalar options; an entry that is no scalar is left out and an
+    option list that is no list offers nothing (noted in ``issues``)."""
+    raw = data.get("allowedValues")
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        issues.append("allowedValues")
+        return ()
+    options: list[JsonScalar] = []
+    for item in raw:
+        try:
+            options.append(_scalar(item))
+        except InvalidPayload:
+            if "allowedValues" not in issues:
+                issues.append("allowedValues")
+    return tuple(options)
 
 
 SWITCH_PROGRAM_FIELDS = (
@@ -323,13 +386,11 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             raise InvalidPayload("Resource ID did not match the requested path")
 
     aircon_configuration = _aircon_configuration(resource_path, data)
-    allowed_raw = data.get("allowedValues")
+    # Metadata of the wrong type counts as not reported; the value stays.
+    metadata_issues: list[str] = []
     allowed_values: tuple[JsonScalar, ...] = ()
-    if allowed_raw is not None and not aircon_configuration:
-        allowed_values = tuple(
-            _scalar(item)
-            for item in _sequence(allowed_raw, message="allowedValues must be an array")
-        )
+    if not aircon_configuration:
+        allowed_values = _metadata_allowed_values(data, metadata_issues)
 
     values_raw = data.get("values")
     values: tuple[JsonValue, ...] = ()
@@ -347,12 +408,16 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
                 )
             )
 
-    writable_raw = data.get("writeable", data.get("writable", False))
-    if not isinstance(writable_raw, (bool, int)) or writable_raw not in (0, 1):
-        raise InvalidPayload("writeable must be a boolean or 0/1")
+    writable = _metadata_writable(data, metadata_issues)
+    unit = _metadata_unit(data, metadata_issues)
+    minimum = _metadata_number(data, "minValue", metadata_issues)
+    maximum = _metadata_number(data, "maxValue", metadata_issues)
 
     numeric_error_values, numeric_error_states_valid = _parse_numeric_error_states(
-        data.get("state")
+        data.get("state"),
+        (*NUMERIC_ERROR_STATES, NOT_AVAILABLE_STATE)
+        if resource_path in NOT_AVAILABLE_PATHS
+        else NUMERIC_ERROR_STATES,
     )
     below_range_values = _parse_below_range_states(data.get("state"))
     if below_range_values:
@@ -395,12 +460,12 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         has_values=values_raw is not None,
         metadata=ResourceMetadata(
             resource_type=_optional_string(data.get("type")),
-            unit=_optional_string(data.get("unitOfMeasure")),
+            unit=unit,
             allowed_values=allowed_values,
             allowed_values_missing="allowedValues" not in data,
-            minimum=_optional_number(data.get("minValue")),
-            maximum=_optional_number(data.get("maxValue")),
-            writable=bool(writable_raw),
+            minimum=minimum,
+            maximum=maximum,
+            writable=writable,
             numeric_error_values=numeric_error_values,
             numeric_error_states_valid=numeric_error_states_valid,
             below_range_values=below_range_values,
@@ -409,6 +474,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             used=used,
             available=available,
             availability_flags_valid=used_valid and available_valid,
+            metadata_issues=tuple(metadata_issues),
         ),
         references=_parse_references(data.get("references")),
         program_fields=program_fields,

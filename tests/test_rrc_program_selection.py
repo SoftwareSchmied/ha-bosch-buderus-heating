@@ -237,7 +237,7 @@ async def test_program_selection_is_named_in_the_system_language(
 @pytest.mark.parametrize(
     "flags",
     [
-        {"used": "False"},  # not a valid flag value
+        {"used": "no"},  # not a valid flag value
         {"used": 0},
         {"available": "false"},
         {"available": False, "used": False},

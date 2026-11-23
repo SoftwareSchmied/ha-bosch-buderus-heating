@@ -185,6 +185,11 @@ WRITE_DELTAS: dict[str, dict[str, int]] = {}
 # water list names no circuit asks for the operation mode of dhw1 and dhw2 (R5).
 _SYSTEM_INFO: tuple[str, ...] = (r"/system/info",)
 _HOT_WATER: tuple[str, ...] = (r"/dhwCircuits/dhw[12]/operationMode",)
+# A path whose answer does not fit the expected schema is read once an hour
+# instead of never again (strictness A4): the battery state and the radio
+# signal of the zone fixture's room devices, which the generic catalog does
+# not show (their own radio entities read them).
+_RADIO_DEVICES: tuple[str, ...] = (r"/devices/device\d+/(?:battery|signal)",)
 EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
     **{
         name: {"requests": _SYSTEM_INFO}
@@ -223,7 +228,7 @@ EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
             "rrc_system",
         )
     },
-    "connectkey_zone_climate": {"requests": _HOT_WATER},
+    "connectkey_zone_climate": {"requests": (*_HOT_WATER, *_RADIO_DEVICES)},
     # The iCom fixture (icom/gateway-shapes.json) reports its boiler with the
     # heat source type GasBoiler; its constructed value BOILER_GAS before was
     # no value a device reports. With the plant kind boiler, the two

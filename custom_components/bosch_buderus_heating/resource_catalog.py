@@ -22,7 +22,7 @@ from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_pa
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import is_static_startup_resource
 from .switch_programs import assess_switch_program, is_switch_program_path
-from .unit_contracts import canonical_unit
+from .unit_contracts import canonical_unit, implied_unit, read_types
 from .water_softener import softener_capability, softener_schema_issue
 from .write_policies import rrc_kwargs
 
@@ -54,12 +54,16 @@ class _EntitySchemaRule:
     units: frozenset[str] = frozenset()
 
     def matches(self, resource: Resource) -> bool:
-        """Return whether a resource matches the narrowly accepted schema."""
+        """Return whether a resource matches the narrowly accepted schema.
+
+        A decimal number may also come as a whole number; a unit matches in
+        any reviewed spelling.
+        """
         metadata = resource.metadata
-        return metadata.resource_type in self.resource_types and (
+        unit = implied_unit(resource.path, metadata.unit)
+        return metadata.resource_type in read_types(self.resource_types) and (
             not self.units
-            or canonical_unit(metadata.unit)
-            in {canonical_unit(unit) for unit in self.units}
+            or canonical_unit(unit) in {canonical_unit(item) for item in self.units}
         )
 
 
@@ -398,6 +402,15 @@ _DEFAULT_ENABLED_PATTERNS = tuple(
 )
 
 _APP_RESOURCE_SCHEMA_RULES = (
+    # #81: the price deltas of the variable tariff are temperature
+    # differences, in kelvin when the gateway reports no unit.
+    _EntitySchemaRule(
+        re.compile(
+            r"^/system/variableTariff/(?:ch|dhw)/(?:highPriceDelta|lowPriceDelta)$"
+        ),
+        frozenset({"floatValue"}),
+        frozenset({"C", "K"}),
+    ),
     _EntitySchemaRule(
         re.compile(
             r"^/heatSources/(?:currentEmergencyMode|pvContactState|standbyMode)$"
@@ -1657,9 +1670,10 @@ def _poll_group(resource: Resource, rrc_plant: bool = False) -> PollGroup:
     ):
         return PollGroup.CONTROL
     if not _matches_optional_app_schema(resource):
-        # Keep the unexpected schema in redacted diagnostics without spending
-        # recurring cloud requests on a value that cannot produce an entity.
-        return PollGroup.STATIC
+        # The unexpected schema stays in redacted diagnostics. The path is
+        # read once an hour, so a corrected answer of a later firmware is
+        # seen without a new discovery.
+        return PollGroup.HOURLY
     if resource.path in {
         "/heatSources/additionalHeater/operationMode",
         "/heatSources/smartFunction/enabled",

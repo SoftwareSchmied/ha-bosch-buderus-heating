@@ -45,7 +45,6 @@ from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     BatchItemResult,
     Gateway,
-    InvalidPayload,
     RateLimited,
     RequestMetrics,
     RequestTimeout,
@@ -345,10 +344,12 @@ def test_start_counter_normalizes_surrounding_unit_whitespace(
 
 @pytest.mark.parametrize("path", [GLOBAL, SOURCE])
 @pytest.mark.parametrize("unit", [False, 0, 1, [], {}, [" "]])
-def test_malformed_counter_unit_is_rejected_by_parser(path, unit) -> None:
+def test_malformed_counter_unit_is_not_reported(path, unit) -> None:
+    """Strictness A4: a unit that is no text counts as not reported."""
     factory = global_resource if path == GLOBAL else source_resource
-    with pytest.raises(InvalidPayload, match="Expected a string field"):
-        factory(unitOfMeasure=unit)
+    resource = factory(unitOfMeasure=unit)
+    assert resource.metadata.unit is None
+    assert resource.metadata.metadata_issues == ("unitOfMeasure",)
 
 
 @pytest.mark.parametrize("path", [GLOBAL, SOURCE])

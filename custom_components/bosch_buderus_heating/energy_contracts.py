@@ -87,6 +87,8 @@ def assess_energy(resource: Resource) -> EnergyAssessment:
 
 def _assess_energy(resource: Resource) -> EnergyAssessment:
     unit = resource.metadata.unit
+    if unit is not None and not unit.strip():
+        unit = None  # a blank unit is a missing one, as for the start counters
     source = "legacy_unitless_kwh" if unit is None else "metadata"
     scale = 1.0 if unit is None else energy_kwh_scale(unit)
     reason = None if scale is not None else "unsupported_unit"

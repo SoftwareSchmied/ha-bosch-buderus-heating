@@ -167,12 +167,9 @@ def test_resource_parser_normalizes_structured_values_object() -> None:
     "payload",
     [
         [],
-        {"id": "/x", "writeable": "yes"},
-        {"id": "/x", "allowedValues": {}},
-        {"id": "/x", "minValue": True},
-        {"id": "/x", "references": [3]},
         {"id": "/x", "values": 3},
         {"id": "/x", "value": object()},
+        {"id": "/x", "references": 3},
     ],
 )
 def test_resource_parser_rejects_malformed_known_fields(payload: object) -> None:
@@ -184,11 +181,8 @@ def test_resource_parser_rejects_malformed_known_fields(payload: object) -> None
     "payload",
     [
         {"id": ""},
-        {"id": "/x", "unitOfMeasure": 3},
-        {"id": "/x", "minValue": float("inf")},
         {"id": "/x", "value": [object()]},
-        {"id": "/x", "allowedValues": [[1]]},
-        {"id": "/x", "references": [{}]},
+        {"id": "/x", "value": float("inf")},
     ],
 )
 def test_resource_parser_rejects_additional_invalid_shapes(payload: object) -> None:
@@ -196,10 +190,99 @@ def test_resource_parser_rejects_additional_invalid_shapes(payload: object) -> N
         parse_resource(payload)
 
 
+@pytest.mark.parametrize(
+    ("field", "raw", "issue"),
+    [
+        ("minValue", "5", "minValue"),
+        ("minValue", True, "minValue"),
+        ("minValue", float("inf"), "minValue"),
+        ("maxValue", {"value": 5}, "maxValue"),
+        ("unitOfMeasure", 3, "unitOfMeasure"),
+        ("writeable", "true", "writeable"),
+        ("writeable", "yes", "writeable"),
+        ("writeable", 2, "writeable"),
+        ("allowedValues", {}, "allowedValues"),
+        ("allowedValues", ["on", {"mode": "x"}, [1]], "allowedValues"),
+    ],
+)
+def test_metadata_of_the_wrong_type_is_not_reported(
+    field: str, raw: object, issue: str
+) -> None:
+    """Strictness A4: the resource and its value stay; the faulty field
+    counts as not reported and is named for the diagnostics."""
+    resource = parse_resource(
+        {
+            "id": "/x",
+            "type": "floatValue",
+            "value": 21.5,
+            "minValue": 5,
+            "maxValue": 30,
+            "unitOfMeasure": "C",
+            "writeable": 1,
+            field: raw,
+        }
+    )
+    metadata = resource.metadata
+    assert resource.value == 21.5
+    assert metadata.metadata_issues == (issue,)
+    expected = {
+        "minValue": ("minimum", None),
+        "maxValue": ("maximum", None),
+        "unitOfMeasure": ("unit", None),
+        # Never writable without a valid flag: nothing is written.
+        "writeable": ("writable", False),
+    }
+    if field in expected:
+        name, value = expected[field]
+        assert getattr(metadata, name) is value
+    if field == "allowedValues":
+        assert metadata.allowed_values == (("on",) if isinstance(raw, list) else ())
+        assert not metadata.allowed_values_missing
+
+
+def test_correct_metadata_reports_no_issue() -> None:
+    metadata = parse_resource(
+        {
+            "id": "/x",
+            "type": "floatValue",
+            "value": 1,
+            "minValue": 0,
+            "maxValue": 2,
+            "unitOfMeasure": "C",
+            "writeable": True,
+            "allowedValues": ["a"],
+        }
+    ).metadata
+    assert metadata.metadata_issues == ()
+    assert (metadata.minimum, metadata.maximum, metadata.unit) == (0, 2, "C")
+    assert metadata.writable is True
+
+
+def test_references_without_a_path_are_skipped() -> None:
+    resource = parse_resource(
+        {
+            "id": "/x",
+            "references": [3, {}, {"id": ""}, {"id": "/x/a", "name": 5}, "/x/b"],
+        }
+    )
+    assert [(item.path, item.name) for item in resource.references] == [
+        ("/x/a", None),
+        ("/x/b", None),
+    ]
+
+
 @pytest.mark.parametrize("field", ["used", "available"])
 @pytest.mark.parametrize(
     ("raw", "expected"),
-    [(True, True), (False, False), ("true", True), ("false", False)],
+    [
+        (True, True),
+        (False, False),
+        ("true", True),
+        ("false", False),
+        ("True", True),
+        ("FALSE", False),
+        (" true", True),
+    ],
 )
 def test_resource_parser_reads_boolean_and_observed_string_flags(
     field: str, raw: object, expected: bool
@@ -211,9 +294,7 @@ def test_resource_parser_reads_boolean_and_observed_string_flags(
 
 
 @pytest.mark.parametrize("field", ["used", "available"])
-@pytest.mark.parametrize(
-    "raw", [1, 0, "True", "FALSE", " true", "yes", "1", "", None, [], {}]
-)
+@pytest.mark.parametrize("raw", [1, 0, "yes", "1", "", None, [], {}])
 def test_resource_parser_keeps_other_flag_forms_malformed(
     field: str, raw: object
 ) -> None:

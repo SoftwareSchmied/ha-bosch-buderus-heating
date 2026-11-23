@@ -100,6 +100,9 @@ class ResourceMetadata:
     used: bool | None = None
     available: bool | None = None
     availability_flags_valid: bool = True
+    # Metadata fields of the wrong type, treated as not reported (for
+    # example "minValue" as text, "writeable" as "true").
+    metadata_issues: tuple[str, ...] = ()
 
 
 # O25: equal metadata objects are shared between resources and polls; the
