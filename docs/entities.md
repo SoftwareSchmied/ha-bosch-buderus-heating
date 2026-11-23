@@ -35,6 +35,13 @@ automations and scripts that set these numbers now use °F values; please
 check them after the update. Entity IDs, unique IDs and enablement stay as
 they were.
 
+Since 0.9.3 a gateway that reports a temperature in Fahrenheit (`F`, `°F`,
+`ºF`) gets the same temperature sensors as one in Celsius; Home Assistant
+converts the reading to the unit of your installation, and the firmware
+repair no longer counts Fahrenheit as an incompatible unit. Kelvin is no
+temperature unit for these readings. Tested with simulated readings only;
+not yet confirmed on a real gateway with Fahrenheit.
+
 The [controls dialog](heating-controls.md) groups settings and keeps edits as
 a draft until Apply. Individual device-page controls write immediately.
 The [PointT hot-water guide](pointt-hot-water.md) distinguishes the read-only

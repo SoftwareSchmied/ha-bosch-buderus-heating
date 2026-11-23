@@ -95,9 +95,11 @@ The supported PointT codes map as follows:
 | `auto` | Auto | Writes `temporaryRoomSetpoint` when the circuit offers it; otherwise exposes `currentRoomSetpoint` as the temperature attribute, changes disabled |
 | `off` | Off | No temperature command |
 
-Only advertised, understood codes appear. An unknown current mode makes
-the climate unavailable; the original select retains additional advertised
-codes. A temperature call never changes a mode. Combined mode/temperature
+Only advertised, understood codes can be chosen. A current mode that is not
+known, not advertised or not writable keeps the climate shown (an unknown
+mode as no mode) with every change locked; the state attribute
+`write_lock` then reads `mode`. The original select retains additional
+advertised codes. A temperature call never changes a mode. Combined mode/temperature
 calls are rejected before any write; select the mode separately first.
 Bounds and units come from that circuit. I convert temperatures and steps
 between the reported unit and Home Assistant's configured unit.
@@ -182,9 +184,12 @@ resource. I do not substitute a flow temperature, infer active heating from
 a temperature difference or claim that a winter-mode flag proves heat output.
 No heating-action state is invented.
 
-Cooling is outside this climate implementation. A reported cooling-only
-circuit, active cooling or stale/unknown heating context makes the climate
-unavailable. Existing individual controls remain available under their own
+Cooling is outside this climate implementation. While the circuit reports
+cooling only, active cooling or a stale or unknown heating context, the
+climate stays shown with its mode, target and room temperature, but offers
+no change (`write_lock` `season`); a change is refused with a message
+naming the season. Since 0.9.3 this also holds for a new installation in
+summer. Existing individual controls remain available under their own
 contracts. The mode, target and known heating context are checked again on
 the appliance before a climate write. Scheduling and cooling setpoints are
 not changed by this climate; a temporary setpoint only as described above.
@@ -259,8 +264,9 @@ Reports are welcome.
   (Automatic), `forced` (Heating only), `cooling` (Cooling only) and `off`
   (Off); another code is left out, as in the app. The central season
   switching of a K40 stays as it is (see [season switching](season-switching.md)).
-  After switching to cooling only, the circuit's climate becomes
-  unavailable while the circuit cools.
+  After switching to cooling only, the circuit's climate is only shown
+  while the circuit cools. A current code that is not known keeps the
+  selection, shown as unknown; only known advertised codes can be chosen.
 - **Heating limit and cooling threshold:** the outdoor temperatures where
   heating stops and cooling starts. The app shows them only in the mode
   automatic; I keep them writable in every mode, they take effect in the
@@ -319,16 +325,20 @@ and is confirmed by reading it back; nothing is sent again.
 
 | Setting | Path | Entity | Condition |
 | --- | --- | --- | --- |
-| Boost | `boostMode` | switch | the advertised list is exactly `on` and `off` |
+| Boost | `boostMode` | switch | the advertised list is exactly `on` and `off`, or there is no list and the current value is `on` or `off` |
 | Boost duration | `boostDuration` | number | minimum and maximum, a duration unit |
 | Boost temperature | `boostTemperature` | number | minimum and maximum; not on a plant with a heat pump, as in the app |
-| Cooling: operation mode | `cooling/operationMode` | select | the advertised modes `off`, `manual`, `auto` (at least two, the current one among them) |
-| Setpoint optimization | `setpointOptimization` | switch | the advertised list is exactly `on` and `off` |
+| Cooling: operation mode | `cooling/operationMode` | select | the advertised modes `off`, `manual`, `auto` (at least two; a current mode that is not known is shown as unknown) |
+| Setpoint optimization | `setpointOptimization` | switch | the advertised list is exactly `on` and `off`, or there is no list and the current value is `on` or `off` |
 | Open window detection | `openWindowDetection/enabled` | switch | only when the path is found |
 | Stop heating at outdoor temperature (central) | `/system/seasonOptimizer/heatingThreshold` | number | minimum and maximum |
 | Start cooling at outdoor temperature (central) | `/system/seasonOptimizer/coolingThreshold` | number | only when the path is found, with limits |
 | Start cooling at outdoor temperature (circuit) | `suWiCoolingThreshold` | number | only when the path is found, with limits |
 
+- **Switches without a list:** a gateway that reports no `allowedValues`
+  for a switch and a current `on` or `off` gets the switch with these two
+  values. Other advertised values are never taken for on or off; the
+  diagnostics list them (`switch.other_advertised_options`).
 - **Boost:** the switch starts and ends the circuit's boost; the duration and
   temperature are separate numbers. The remaining time stays a reading.
   A room controller (TC100.2, CT200) has its own boost (see
@@ -478,8 +488,10 @@ entity settings; they are in the *Configuration* category and also in the
   preferred* (the boiler only helps when the heat pump does not suffice and
   for defrosting; comfort can suffer), *Most climate friendly* (comfort can
   suffer), *Boiler only* (the heat pump stays off) and *Bivalent
-  alternative* (switching at the bivalence point). Without a list of
-  offered values or with fewer than two usable ones there is no selection.
+  alternative* (switching at the bivalence point; reported as
+  `bivalentAlternativeMode` or `bivalent_alternative`, both one option).
+  Without a list of offered values or with fewer than two usable ones there
+  is no selection.
 - **Electricity price**, **Gas price** (or **Oil price** when no gas price
   is reported, as in the app) and **Feed-in tariff** (numbers on the plant
   device): shown only when the system reports the price as writable with
@@ -529,7 +541,7 @@ entity IDs do not change).
 Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
 the weekly programs A and B of a heating circuit and program A of the hot
 water. I list a program only when the gateway reports it as writable and
-in use, it passes the strict program check, its type is a level program
+in use, it is read in its clean form, its type is a level program
 (`level`, from a current reading where the circuit reports its type), and
 every level it uses belongs to the circuit's reported temperature levels.
 The program type itself and the program names are never written.
@@ -576,7 +588,7 @@ gateway reports them:
 
 | Program | Path | Setpoints | Changeable when |
 |---|---|---|---|
-| Heating program A/B with temperatures | `/heatingCircuits/{hc}/switchPrograms/A` (`B`) with program type `absolute` | Temperature as text, such as `"21.5"`; `"0.0"` is off | the program reports `switchPointMin`, `switchPointMax` and `switchPointResolution`, and the program type reads `absolute` |
+| Heating program A/B with temperatures | `/heatingCircuits/{hc}/switchPrograms/A` (`B`) with program type `absolute` | Temperature as text, such as `"21.5"`; `"0.0"` is off | the program type reads `absolute`; range and step come from `switchPointMin`, `switchPointMax` and `switchPointResolution`, or are 5 to 30 °C in steps of 0.5 where they are not reported |
 | Cooling program | `/heatingCircuits/{hc}/cooling/switchPrograms/A` | `on` or `off` | the circuit's cooling level `cooling/temperatureLevels/on` can be read |
 | Zone programs | `/zones/{zone}/switchPrograms/heating` and `.../cooling` | Temperature as text (or as a number, as read) | range and step are reported |
 | Ventilation program | `/ventilation/zone1/switchPrograms/cp` | `min`, `red`, `nom`, `max`, `dem`, `off` | the levels are listed as references of `ventilationLevels`; only those are offered |
@@ -585,8 +597,23 @@ gateway reports them:
 
 Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
 `maxNbOfSwitchPointsPerDay`, `switchPointTimeRaster`); I never assume
-default values. A program without them is shown as a sensor,
-not offered for changes, and the diagnostics name the reason. A temperature
+default values for them. Only a heating circuit's program with temperatures
+takes 5 to 30 °C in steps of 0.5 when the gateway reports no range or step;
+the read-back after the write confirms what the circuit keeps. A program
+without the limits is shown as a sensor, not offered for changes, and the
+diagnostics name the reason.
+
+Since 0.9.3 programs are read tolerantly and changed only in their clean
+form. A program with further fields, points with further keys, a time such
+as `360.0`, a temperature in another form (`"21"`, `"21.50"`, a JSON
+number on a heating circuit), repeated points or more points than a change
+keeps to is shown, but not offered for changes; the diagnostics name the
+form (`notes`). A raster such as `15.0` counts as 15, larger point limits
+of the gateway are kept to 168 per week and 48 per day for a change, an
+empty program is shown empty and points can be added, and the hot water
+level `eco_plus` is read. The selection of the active program A or B needs
+only both programs read as programs; the gateway runs the selected one on
+its own. A point that cannot be read at all still hides its program. A temperature
 outside the range or off the step is refused, never rounded. Off (`"0.0"`)
 is offered only where the program already holds it. The cooling program is
 written as program `A` only, the zone heating and cooling programs
@@ -825,9 +852,11 @@ berücksichtigt. Bestehende Einzelentitäten bleiben für Automationen nutzbar.
 | `auto` | Automatisch | Aktueller Sollwert als Temperaturattribut, keine Temperaturänderung |
 | `off` | Aus | Kein Temperaturbefehl |
 
-Nur angebotene, verstandene Codes werden zugeordnet. Bei unbekannter
-aktueller Betriebsart ist die Klimaentität nicht verfügbar. Die ursprüngliche
-Auswahl bietet weiterhin zusätzliche gemeldete Codes an.
+Nur angebotene, verstandene Codes sind wählbar. Eine aktuelle Betriebsart,
+die unbekannt, nicht angeboten oder nicht schreibbar ist, lässt die
+Klimaentität sichtbar (eine unbekannte ohne Betriebsart), jede Änderung ist
+dann gesperrt; das Zustandsattribut `write_lock` lautet `mode`. Die
+ursprüngliche Auswahl bietet weiterhin zusätzliche gemeldete Codes an.
 Temperaturbefehle wechseln niemals die Betriebsart. Kombinierte Befehle für
 Betriebsart und Temperatur werden vor dem Schreiben abgewiesen.
 Grenzen und Einheiten stammen aus dem jeweiligen Heizkreis.
@@ -869,7 +898,10 @@ der Sommer-/Winterumschaltung abgeleitet.
 
 Kühlen gehört nicht zum Umfang dieser Klimaentität. Bei gemeldetem
 Kühlbetrieb, einem reinen Kühlkreis oder veralteten beziehungsweise unbekannten
-Angaben zum Heiz-/Kühlbetrieb wird sie nicht verfügbar. Die Einzelentitäten
+Angaben zum Heiz-/Kühlbetrieb bleibt sie mit Betriebsart, Sollwert und
+Raumtemperatur sichtbar, bietet aber keine Änderung an (`write_lock`
+`season`); eine Änderung wird mit einem Hinweis auf die Saison abgewiesen.
+Seit 0.9.3 gilt das auch für eine Neuinstallation im Sommer. Die Einzelentitäten
 bleiben nach ihren eigenen Regeln nutzbar. Vor einem Klimabefehl werden
 Betriebsart, Sollwert und bekannte Angaben zum Heiz-/Kühlbetrieb erneut
 gelesen. Zeitprogramme, temporäre Sollwerte und Kühlsollwerte bleiben erhalten.
@@ -947,8 +979,9 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
   und `off` (Aus); andere Codes werden wie in der App ausgelassen. Die
   zentrale Saisonumschaltung einer K40 bleibt unverändert (siehe
   [Saisonumschaltung](season-switching.md)). Nach dem Wechsel auf „Nur
-  Kühlbetrieb“ ist die Klimaentität des Kreises nicht verfügbar, solange er
-  kühlt.
+  Kühlbetrieb“ wird die Klimaentität des Kreises nur angezeigt, solange er
+  kühlt. Ein unbekannter aktueller Code lässt die Auswahl bestehen und wird
+  als unbekannt angezeigt; wählbar sind nur bekannte angebotene Codes.
 - **Heizgrenze und Kühlschwelle:** die Außentemperaturen, bei denen das
   Heizen endet und das Kühlen beginnt. Die App zeigt sie nur im Modus
   Automatisch; ich lasse sie in jedem Modus schreibbar, wirksam sind sie im
@@ -1010,11 +1043,11 @@ wird durch Zurücklesen bestätigt; nichts wird erneut gesendet.
 
 | Einstellung | Pfad | Entität | Bedingung |
 | --- | --- | --- | --- |
-| Boost | `boostMode` | Schalter | die gemeldete Liste ist genau `on` und `off` |
+| Boost | `boostMode` | Schalter | die gemeldete Liste ist genau `on` und `off`, oder es gibt keine Liste und der aktuelle Wert ist `on` oder `off` |
 | Boost-Dauer | `boostDuration` | Zahl | Minimum und Maximum, eine Zeiteinheit |
 | Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum; nicht bei einer Anlage mit Wärmepumpe, wie in der App |
-| Kühlen: Betriebsart | `cooling/operationMode` | Auswahl | die gemeldeten Betriebsarten `off`, `manual`, `auto` (mindestens zwei, die aktuelle darunter) |
-| Sollwertoptimierung | `setpointOptimization` | Schalter | die gemeldete Liste ist genau `on` und `off` |
+| Kühlen: Betriebsart | `cooling/operationMode` | Auswahl | die gemeldeten Betriebsarten `off`, `manual`, `auto` (mindestens zwei; eine unbekannte aktuelle wird als unbekannt angezeigt) |
+| Sollwertoptimierung | `setpointOptimization` | Schalter | die gemeldete Liste ist genau `on` und `off`, oder es gibt keine Liste und der aktuelle Wert ist `on` oder `off` |
 | Fenster-offen-Erkennung | `openWindowDetection/enabled` | Schalter | nur, wenn der Pfad gefunden wird |
 | Heizbetrieb bis Außentemperatur (zentral) | `/system/seasonOptimizer/heatingThreshold` | Zahl | Minimum und Maximum |
 | Kühlbetrieb ab Außentemperatur (zentral) | `/system/seasonOptimizer/coolingThreshold` | Zahl | nur, wenn der Pfad gefunden wird, mit Grenzen |
@@ -1179,8 +1212,9 @@ bedienen**.
   Wärmepumpe nicht reicht, und beim Abtauen; der Komfort kann leiden), *Am
   klimafreundlichsten* (der Komfort kann leiden), *Nur Kessel* (die
   Wärmepumpe bleibt aus) und *Bivalent alternativ* (Umschaltung am
-  Bivalenzpunkt). Ohne Liste der angebotenen Werte oder mit weniger als zwei
-  nutzbaren gibt es keine Auswahl.
+  Bivalenzpunkt; gemeldet als `bivalentAlternativeMode` oder
+  `bivalent_alternative`, beides eine Option). Ohne Liste der angebotenen
+  Werte oder mit weniger als zwei nutzbaren gibt es keine Auswahl.
 - **Strompreis**, **Gaspreis** (oder **Ölpreis**, wenn kein Gaspreis
   gemeldet wird, wie in der App) und **Einspeisevergütung** (Zahlen am Gerät
   der Anlage): nur sichtbar, wenn die Anlage den Preis als schreibbar mit
@@ -1217,7 +1251,7 @@ jetzt den übersetzten Namen der Strategie, und der PV-Preis heißt
 Seit 0.9.0-alpha.6 ändert **Konfigurieren > Zeitprogramme Heizung und
 Warmwasser** die Wochenprogramme A und B eines Heizkreises und das Programm A
 des Warmwassers. Angeboten wird ein Programm nur, wenn das Gateway es als
-schreibbar und in Gebrauch meldet, es die strenge Programmprüfung besteht,
+schreibbar und in Gebrauch meldet, es in sauberer Form gelesen wird,
 es ein Stufenprogramm (`level`) ist (aus einer aktuellen Lesung, wo der
 Kreis seine Programmart meldet) und jede verwendete Stufe zu den gemeldeten
 Temperaturstufen des Kreises gehört. Die Programmart und die Programmnamen
@@ -1283,7 +1317,23 @@ Temperatur und Lüfterstufe wie `cool 24.0 auto` oder `off`; siehe
 (`maxNbOfSwitchPoints`, `maxNbOfSwitchPointsPerDay`,
 `switchPointTimeRaster`) und, bei Temperaturen, mit gemeldetem Bereich und
 Schritt (`switchPointMin`, `switchPointMax`, `switchPointResolution`).
-Ersatzwerte nehme ich nie an. Ohne diese Angaben erscheint das
+Ersatzwerte nehme ich nicht an, mit einer Ausnahme: Ein Heizprogramm A/B mit
+Temperaturen ohne gemeldeten Bereich oder Schritt nimmt 5 bis 30 °C in
+Schritten von 0,5; das Rücklesen nach dem Schreiben bestätigt, was der Kreis
+übernimmt.
+
+Seit 0.9.3 lese ich Programme tolerant und ändere sie nur in sauberer Form.
+Ein Programm mit weiteren Feldern, Punkten mit weiteren Schlüsseln, einer
+Zeit wie `360.0`, einer Temperatur in anderer Form (`"21"`, `"21.50"`,
+eine JSON-Zahl im Heizkreis), doppelten Punkten oder mehr Punkten, als eine
+Änderung einhält, wird angezeigt, aber nicht zum Ändern angeboten; die
+Diagnose nennt die Form (`notes`). Ein Raster wie `15.0` zählt als 15,
+größere Punktgrenzen des Gateways werden beim Ändern auf 168 je Woche und 48
+je Tag begrenzt, ein leeres Programm erscheint leer und Punkte lassen sich
+hinzufügen, und die Warmwasserstufe `eco_plus` wird gelesen. Die Auswahl des
+aktiven Programms A oder B braucht nur beide Programme als Programme
+gelesen; das Gateway führt das gewählte selbst aus. Ein Punkt, der sich gar
+nicht lesen lässt, verbirgt sein Programm weiterhin. Ohne diese Angaben erscheint das
 Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
 außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
 gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das

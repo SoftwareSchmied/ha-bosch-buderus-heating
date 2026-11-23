@@ -21,8 +21,10 @@ heating mode, also when the mode is read-only; then it only shows the zone.
 | `auto` | Auto | the program's `currentRoomSetpoint`; a target set here goes to `temporaryRoomSetpoint` and lasts until the next switch point |
 
 - **Side:** the `heating` leaves normally; the `cooling` leaves while the
-  zone's heating circuit reports `currentSuWiMode` `cooling`. Without
-  readable cooling leaves the climate is then unavailable.
+  zone's heating circuit reports `currentSuWiMode` `cooling`. Without a
+  readable cooling mode the climate stays shown with its room temperature,
+  without a mode and without any change (`write_lock` `mode`). A mode that
+  is not known or not advertised is shown the same way.
 - **Heating circuit of a zone:** taken from the radio devices of the zone
   (`zoneId` and `assignedHC`). Devices naming different circuits, or a
   circuit the installation does not have, leave the zone without one; when
@@ -30,8 +32,10 @@ heating mode, also when the mode is read-only; then it only shows the zone.
   uses that one. Without a circuit the zone stays on the heating side only
   while no circuit (and not the global season) reports cooling and every
   season reading is valid. If one reports cooling, or a season reading is
-  not valid, the side is unknown: the climate is unavailable and sends
-  nothing, so a target never lands in the unused heating settings. The
+  not valid, the side is unknown: the climate shows the heating side's mode
+  with `zone_side` `unknown` and `write_lock` `season`, and sends
+  nothing, so a target never lands in the unused heating settings. A zone is
+  shown while its mode or its room temperature can be read. The
   zone's own select and number controls of the cooling side still work. The
   diagnostics show this as `circuit_unknown_cooling`.
 - **Changes:** right before its one request each change reads the zone's
@@ -275,9 +279,12 @@ schreibt -1. Die Kühlseite gilt, solange der Heizkreis
 der Zone die Kühlsaison meldet. Lässt sich der Heizkreis einer Zone nicht
 bestimmen und meldet ein Heizkreis (oder die globale Jahreszeit) Kühlen oder
 ist eine Jahreszeit nicht gültig lesbar, ist die Seite unbekannt: die
-Klimaentität ist dann nicht verfügbar und sendet nichts, damit ein Sollwert
+Klimaentität zeigt dann die Betriebsart der Heizseite mit `zone_side`
+`unknown` und `write_lock` `season` und sendet nichts, damit ein Sollwert
 nie in die ungenutzten Heizeinstellungen geschrieben wird (Diagnose:
-`circuit_unknown_cooling`). Vor jeder Änderung lese ich Betriebsart,
+`circuit_unknown_cooling`). Ohne lesbare Betriebsart der Kühlseite oder mit
+unbekannter Betriebsart bleibt die Zone mit Raumtemperatur sichtbar, ohne
+Betriebsart und ohne Änderung (`write_lock` `mode`). Vor jeder Änderung lese ich Betriebsart,
 Ziel, Jahreszeit und Regelungsart des Heizkreises frisch; danach genau ein
 PUT und Rücklesen. Die Kennzeichen `used`/`available` entscheiden an dieser
 frischen Lesung. Ein Ziel, dessen Kennzeichen mit der Betriebsart wechseln,

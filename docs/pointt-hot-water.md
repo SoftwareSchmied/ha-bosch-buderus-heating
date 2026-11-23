@@ -63,8 +63,10 @@ labels follow the existing PointT selectors and the user's profile language.
 | `eco` | Eco+ | Eco+ |
 | `HCprogram` | Follow heating schedule | Heizungszeitprogramm folgen |
 
-A read-only operating mode can still be displayed. A missing or unknown
-current mode makes the combined entity unavailable. Additional offered codes
+A read-only operating mode can still be displayed. A missing current mode
+makes the combined entity unavailable; a current mode that is not known
+keeps it with its temperatures, shows no operation (a known code in another
+case, such as `off`, is shown as that operation) and offers none. Additional offered codes
 remain accessible through the existing select entity under its own contract.
 I do not infer heating activity, charging, disinfection or holiday status from
 the selected operating mode or from a temperature difference.
@@ -149,8 +151,10 @@ bestätigt noch keinen neuen Sollwert.
 Die Tabelle oben zeigt die Betriebsarten und ihre deutschen Beschriftungen.
 Auswählbar sind nur bekannte Optionen, die der jeweilige Kreis tatsächlich
 anbietet und schreiben lässt. Eine nur lesbare Betriebsart bleibt sichtbar.
-Eine fehlende oder unbekannte aktuelle Betriebsart macht die gemeinsame
-Entität nicht verfügbar. Weitere angebotene Codes bleiben über das bisherige
+Eine fehlende aktuelle Betriebsart macht die gemeinsame Entität nicht
+verfügbar; eine unbekannte lässt sie mit ihren Temperaturen bestehen, zeigt
+keine Betriebsart (ein bekannter Code in anderer Schreibweise wie `off` wird
+als diese angezeigt) und bietet keine an. Weitere angebotene Codes bleiben über das bisherige
 Auswahlfeld erreichbar. Aus der gewählten Betriebsart wird keine aktive
 Aufheizung, Desinfektion oder Abwesenheit abgeleitet.
 

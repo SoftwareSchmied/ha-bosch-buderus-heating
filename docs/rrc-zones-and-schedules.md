@@ -35,6 +35,12 @@ I preserve temperature precision. I accept the reviewed Celsius unit
 spellings `C`, `°C` and `ºC`, without importing other families' conversion
 rules. False or malformed `used`/`available` flags, invalid values, numeric
 error markers and incompatible shapes do not produce a usable reading.
+Since 0.9.3 the measured room temperature (`temperatureActual`) and the
+active target (`temperatureHeatingSetpoint`) are shown also with `used`
+false and outside their reported `minValue`/`maxValue`; error markers,
+`available` false and values outside -50 to 100 °C still give none. A
+`userMode` with `used` false is shown and offers no change, and a mode
+that is not known keeps the zone's climate shown without a mode.
 I also accept the exact strings `"true"` and `"false"`, which the
 TC100.2 sends; other spellings and numbers remain malformed.
 The measured temperature and active target are enabled by default; the

@@ -203,7 +203,11 @@ Deletion is also confirmed by reading the holiday list back from PointT.
   **This and future events** range is rejected without writing anything.
 - Location and description are not stored by PointT.
 - If **Holiday periods** is read-only or **Manage holiday periods** is unavailable, the
-  gateway has not supplied a current, complete write configuration. Reload
+  gateway has not supplied a current, complete write configuration. Since
+  0.9.3 a configuration without a known date mode uses date and time on the
+  15-minute grid, and an unreadable option of a mode list leaves the other
+  options; a configuration without a circuit or with invalid temperature
+  limits still keeps the calendar read-only. Reload
   the integration and try again; unsupported systems remain safely read-only.
 - During a short cloud outage the calendar keeps showing the last periods
   within their validity, but offers no changes. A change tried meanwhile is
