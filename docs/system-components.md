@@ -255,11 +255,13 @@ Every entry of the table states how it is known:
 | `rule` | A fixed rule of the integration uses the entry, for example a hybrid manager (type number 248 or 16) at the place of the hybrid manager (83). Conditions of a rule, such as a minimum software version, are part of the rule, not of the table. |
 | `observed` | Seen in the component list of a real system. The entry carries a short note, for example "seen on a K40 gateway". |
 | `documented` | Stated in a manufacturer document. The entry carries the address of that document. |
+| `expected` | Follows from what a real system lists, but the reading that would confirm it has not been seen yet. The entry carries a short note on what is missing and is never shown as observed. |
 
-What the integration does follows only from entries with the basis `rule`,
-`observed` or `documented` and from what the devices report, never from a
-name. Most entries are known by their name only. A diagnostics download with
-a component list helps to raise an entry to `observed`.
+What the integration does follows only from entries whose basis is not
+`name` (`rule`, `observed`, `documented` or `expected`) and from what the
+devices report, never from a name. Most entries are known by their name
+only. A diagnostics download with a component list helps to raise an entry
+to `observed`.
 
 The table gives these roles; a role at a place only applies at that place:
 
@@ -270,10 +272,17 @@ The table gives these roles; a role at a place only applies at that place:
 | 17 | 72 | `gateway` | `observed` |
 | 17 | 75 | `gateway` | `observed` |
 | 158 | 16 | `system_controller` | `observed` |
-| 172 | 8 | `heat_source` | `observed` |
+| 172 | 8 | `heat_source` | `expected` |
 | 248 | 83 | `hybrid_manager` | `rule` |
 | 253 | 16 | `system_controller` | `observed` |
 | 65281 | 8 | `outdoor_unit` | `observed` |
+
+The heat pump controller `CUHP` (type number 172) was listed at the heat
+generator's place (8) on a real iCom heat pump, but that system's report did
+not hold the type of the first heat source (`hs1/type`). Its role is
+therefore `expected`: it is shown like any other role and decides nothing,
+and it becomes `observed` once a diagnostics download shows a heat pump type
+at `hs1/type` together with this component.
 
 Type number 240 carries the mark `hmi800_hp_light` (basis `rule`): it is the
 controller HMI800 HP Light, for which the holiday rules of iCom gateways in
@@ -352,8 +361,9 @@ Conflicts (shown in the diagnostics only):
 | `unknown_type_value` | A type value outside the known ones (for example `eBoiler`); it does not count. |
 | `component_rule_skipped` | A row at the hybrid place does not meet the rule (other gateway, firmware or version too old, or another type). |
 
-Component names never decide anything. Only entries whose basis is
-`rule`, `observed` or `documented` can give a component a role.
+Component names never decide anything. Only entries whose basis is not
+`name` (`rule`, `observed`, `documented` or `expected`) can give a
+component a role.
 
 Hybrid system through a hybrid manager component: tested with synthetic
 component lists; not yet confirmed on a real hybrid system with a hybrid
@@ -556,10 +566,11 @@ Jeder Eintrag der Tabelle nennt, woher er bekannt ist:
 | `rule` | Eine feste Regel der Integration verwendet den Eintrag, zum Beispiel ein Hybrid-Manager (Typnummer 248 oder 16) auf dem Platz des Hybrid-Managers (83). Bedingungen einer Regel, etwa eine Mindestversion der Software, gehören zur Regel, nicht zur Tabelle. |
 | `observed` | In der Komponentenliste einer echten Anlage gesehen. Der Eintrag hat eine kurze Notiz, zum Beispiel "seen on a K40 gateway". |
 | `documented` | In einer Unterlage des Herstellers genannt. Der Eintrag enthält die Adresse dieser Unterlage. |
+| `expected` | Ergibt sich aus der Liste einer echten Anlage, aber der Wert, der ihn bestätigen würde, wurde noch nicht gesehen. Der Eintrag hat eine kurze Notiz, was fehlt, und gilt nie als beobachtet. |
 
-Was die Integration tut, ergibt sich nur aus Einträgen mit der Grundlage
-`rule`, `observed` oder `documented` und aus den Meldungen der Geräte, nie
-aus einem Namen. Die meisten Einträge sind nur über ihren Namen bekannt. Ein
+Was die Integration tut, ergibt sich nur aus Einträgen, deren Grundlage nicht
+`name` ist (`rule`, `observed`, `documented` oder `expected`), und aus den
+Meldungen der Geräte, nie aus einem Namen. Die meisten Einträge sind nur über ihren Namen bekannt. Ein
 Diagnose-Download mit Komponentenliste hilft, einen Eintrag auf `observed` zu
 heben.
 
@@ -572,10 +583,17 @@ Die Tabelle vergibt diese Rollen; eine Rolle auf einem Platz gilt nur dort:
 | 17 | 72 | `gateway` | `observed` |
 | 17 | 75 | `gateway` | `observed` |
 | 158 | 16 | `system_controller` | `observed` |
-| 172 | 8 | `heat_source` | `observed` |
+| 172 | 8 | `heat_source` | `expected` |
 | 248 | 83 | `hybrid_manager` | `rule` |
 | 253 | 16 | `system_controller` | `observed` |
 | 65281 | 8 | `outdoor_unit` | `observed` |
+
+Der Wärmepumpenregler `CUHP` (Typnummer 172) stand bei einer echten
+iCom-Wärmepumpe auf dem Platz des Wärmeerzeugers (8), deren Bericht aber
+nicht den Typ der ersten Wärmequelle (`hs1/type`) enthielt. Seine Rolle ist
+deshalb `expected`: Sie wird wie jede andere Rolle gezeigt und entscheidet
+nichts. Sie wird `observed`, sobald ein Diagnose-Download zusammen mit
+dieser Komponente einen Wärmepumpentyp unter `hs1/type` zeigt.
 
 Typnummer 240 trägt die Markierung `hmi800_hp_light` (Grundlage `rule`): Sie
 ist der Regler HMI800 HP Light, für den die Urlaubsregeln für iCom-Gateways
@@ -654,8 +672,9 @@ Widersprüche (nur in der Diagnose):
 | `unknown_type_value` | Ein Typwert außerhalb der bekannten (zum Beispiel `eBoiler`); er zählt nicht. |
 | `component_rule_skipped` | Eine Zeile am Hybridplatz erfüllt die Regel nicht (anderes Gateway, Firmware oder Version zu alt oder ein anderer Typ). |
 
-Namen von Komponenten entscheiden nie etwas. Nur Einträge mit der Basis
-`rule`, `observed` oder `documented` können einer Komponente eine Rolle geben.
+Namen von Komponenten entscheiden nie etwas. Nur Einträge, deren Grundlage
+nicht `name` ist (`rule`, `observed`, `documented` oder `expected`), können
+einer Komponente eine Rolle geben.
 
 Hybridanlage über eine Hybrid-Manager-Komponente: Getestet mit synthetischen
 Komponentenlisten; an einer echten Hybridanlage mit Hybrid-Manager noch nicht

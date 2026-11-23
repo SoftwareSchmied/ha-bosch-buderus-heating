@@ -55,6 +55,7 @@ COMPONENT_LISTS = ROOT / "tests" / "fixtures" / "contracts" / "component_lists"
 TABLE_CONTENT_SHA256 = {
     1: "c2eaa6f1d225c215db852506c41616efe3a3232c438427db65ddebb9bcaa0040",
     2: "c70fdc33929ab1f1536c1044897b8d875c1954d513b4abf436cf21f0551e426f",
+    3: "2c0418d0c4e88dcfbcb855f40dbf0fbfb7b8ae028505cdc2ff8b541d26e4fcc6",
 }
 
 EXPECTED_PLACES = {
@@ -98,7 +99,8 @@ EXPECTED_ROLES = {
     (17, 72): ("gateway", "observed"),
     (17, 75): ("gateway", "observed"),
     (158, 16): ("system_controller", "observed"),
-    (172, 8): ("heat_source", "observed"),
+    # Listed at place 8 on a real iCom heat pump whose report held no hs1/type.
+    (172, 8): ("heat_source", "expected"),
     (248, 83): ("hybrid_manager", "rule"),
     (253, 16): ("system_controller", "observed"),
     (65281, 8): ("outdoor_unit", "observed"),
@@ -199,8 +201,8 @@ def test_the_19_places_and_their_keys(table: ComponentTable) -> None:
 
 
 def test_basis_values(table: ComponentTable) -> None:
-    assert BASIS_VALUES == ("name", "rule", "observed", "documented")
-    assert frozenset({"rule", "observed", "documented"}) == BEHAVIOUR_BASES
+    assert BASIS_VALUES == ("name", "rule", "observed", "documented", "expected")
+    assert frozenset({"rule", "observed", "documented", "expected"}) == BEHAVIOUR_BASES
     assert all(c.basis in BASIS_VALUES for c in table.components.values())
     assert all(p.basis in BASIS_VALUES for p in table.places.values())
     assert all(r.basis in BEHAVIOUR_BASES for r in table.roles)
@@ -263,7 +265,27 @@ def test_observed_entries_have_a_note_and_a_capture() -> None:
                 assert str(item["place"]) in places, item
             else:
                 assert str(item["type"]) in types, item
-    assert checked == 15
+    assert checked == 14
+
+
+def test_expected_entries_have_a_note_and_a_capture() -> None:
+    """An expected entry follows from a real list (its type at its place)
+    but is never counted as observed; it names what is missing."""
+    raw = raw_table()
+    rows = _capture_rows()
+    expected = [
+        (kind, item)
+        for kind in ("components", "places", "roles", "flags")
+        for item in raw[kind]
+        if item["basis"] == "expected"
+    ]
+    assert [(kind, item["type"], item.get("place")) for kind, item in expected] == [
+        ("roles", 172, 8)
+    ]
+    for kind, item in expected:
+        assert item.get("note") and "source" not in item, item
+        if kind == "roles":
+            assert (str(item["type"]), str(item["place"])) in rows, item
 
 
 def test_documented_entries_need_a_manufacturer_address() -> None:
@@ -431,6 +453,16 @@ def _broken_tables() -> Iterator[tuple[str, dict[str, Any]]]:
     yield changed(
         "observed without note",
         lambda t: t["components"][6].pop("note"),
+    )
+    yield changed(
+        "expected without note",
+        lambda t: t["roles"][0].update(basis="expected") or t["roles"][0].pop("note"),
+    )
+    yield changed(
+        "expected with an address",
+        lambda t: t["roles"][0].update(
+            basis="expected", source="https://www.buderus.de/de/produkte/manual"
+        ),
     )
     yield changed(
         "name basis without name",

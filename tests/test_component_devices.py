@@ -734,6 +734,7 @@ async def test_reports_count_and_describe_the_devices(hass: HomeAssistant) -> No
         "type_name": "HMI800_2_HP",
         "role": "system_controller",
         "basis": "observed",
+        "role_basis": "observed",
         "version": "4.5-FIELD",
         "reported": True,
         "count": 1,

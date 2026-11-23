@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "System component table, schema 1",
-  "description": "Type numbers and places of system components with their names, and the few roles and flags that change what the integration does. Roles and flags only have the basis rule, observed or documented.",
+  "description": "Type numbers and places of system components with their names, and the few roles and flags that change what the integration does. Roles and flags only have a basis other than name: rule, observed, documented or expected.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -91,7 +91,8 @@
               "name",
               "rule",
               "observed",
-              "documented"
+              "documented",
+              "expected"
             ]
           },
           "note": {
@@ -153,6 +154,28 @@
             "if": {
               "properties": {
                 "basis": {
+                  "const": "expected"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
                   "const": "documented"
                 }
               },
@@ -174,7 +197,8 @@
                   "enum": [
                     "name",
                     "rule",
-                    "observed"
+                    "observed",
+                    "expected"
                   ]
                 }
               },
@@ -237,7 +261,8 @@
               "name",
               "rule",
               "observed",
-              "documented"
+              "documented",
+              "expected"
             ]
           },
           "note": {
@@ -299,6 +324,28 @@
             "if": {
               "properties": {
                 "basis": {
+                  "const": "expected"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
                   "const": "documented"
                 }
               },
@@ -320,7 +367,8 @@
                   "enum": [
                     "name",
                     "rule",
-                    "observed"
+                    "observed",
+                    "expected"
                   ]
                 }
               },
@@ -381,7 +429,8 @@
             "enum": [
               "rule",
               "observed",
-              "documented"
+              "documented",
+              "expected"
             ]
           },
           "note": {
@@ -401,6 +450,28 @@
               "properties": {
                 "basis": {
                   "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "expected"
                 }
               },
               "required": [
@@ -442,7 +513,8 @@
                 "basis": {
                   "enum": [
                     "rule",
-                    "observed"
+                    "observed",
+                    "expected"
                   ]
                 }
               },
@@ -486,7 +558,8 @@
             "enum": [
               "rule",
               "observed",
-              "documented"
+              "documented",
+              "expected"
             ]
           },
           "note": {
@@ -506,6 +579,28 @@
               "properties": {
                 "basis": {
                   "const": "observed"
+                }
+              },
+              "required": [
+                "basis"
+              ]
+            },
+            "then": {
+              "required": [
+                "note"
+              ],
+              "not": {
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "basis": {
+                  "const": "expected"
                 }
               },
               "required": [
@@ -547,7 +642,8 @@
                 "basis": {
                   "enum": [
                     "rule",
-                    "observed"
+                    "observed",
+                    "expected"
                   ]
                 }
               },

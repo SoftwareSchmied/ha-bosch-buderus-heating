@@ -12,9 +12,14 @@ its basis:
   carries a short note.
 - ``documented``: stated in a manufacturer document; the entry carries its
   address.
+- ``expected``: follows from what a real system lists (for example a type
+  at a place), but the reading that would confirm it has not been seen yet;
+  the entry carries a short note on what is missing. It is never shown as
+  observed.
 
-Roles and flags only come from entries with the basis ``rule``,
-``observed`` or ``documented``. Nothing is derived from a name. Conditions
+Roles and flags only come from entries whose basis is not ``name``
+(``rule``, ``observed``, ``documented`` or ``expected``). Nothing is
+derived from a name. Conditions
 such as firmware or software limits live in code, not in the table.
 
 The table is read once on import (in the import executor), never in the
@@ -44,8 +49,9 @@ TABLE_SCHEMA: Final = 1
 
 _LOGGER = logging.getLogger(__name__)
 
-BASIS_VALUES: Final = ("name", "rule", "observed", "documented")
-BEHAVIOUR_BASES: Final = frozenset({"rule", "observed", "documented"})
+BASIS_VALUES: Final = ("name", "rule", "observed", "documented", "expected")
+# Every basis but a name may give a role or a flag.
+BEHAVIOUR_BASES: Final = frozenset(BASIS_VALUES) - {"name"}
 ROLE_VALUES: Final = (
     "heat_source",
     "outdoor_unit",
@@ -216,8 +222,8 @@ def _fields(item: object, allowed: frozenset[str]) -> Mapping[str, Any]:
 def _basis(
     item: Mapping[str, Any], sources: tuple[str, ...], allowed: tuple[str, ...]
 ) -> str:
-    """``observed`` needs a note; ``documented`` a note and the address of
-    a manufacturer page; no other basis carries an address."""
+    """``observed`` and ``expected`` need a note; ``documented`` a note and
+    the address of a manufacturer page; no other basis carries an address."""
     basis = item.get("basis")
     if basis not in allowed:
         raise ValueError("invalid_basis")
@@ -229,7 +235,7 @@ def _basis(
         or not _NAME.fullmatch(note)
     ):
         raise ValueError("invalid_note")
-    if basis in ("observed", "documented") and note is None:
+    if basis in ("observed", "documented", "expected") and note is None:
         raise ValueError("entry_without_note")
     if basis == "documented":
         if not manufacturer_source(source, sources):

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "table_version": 2,
+  "table_version": 3,
   "updated": "2026-11-23",
   "documented_sources": [
     "bosch-homecomfort.com",
@@ -220,7 +220,7 @@
     {"type": 17, "place": 72, "role": "gateway", "basis": "observed", "note": "seen on a K40 gateway"},
     {"type": 17, "place": 75, "role": "gateway", "basis": "observed", "note": "seen on a K40 gateway"},
     {"type": 158, "place": 16, "role": "system_controller", "basis": "observed", "note": "seen on an iCom gateway"},
-    {"type": 172, "place": 8, "role": "heat_source", "basis": "observed", "note": "seen on an iCom gateway"},
+    {"type": 172, "place": 8, "role": "heat_source", "basis": "expected", "note": "listed at this place on an iCom gateway; a heat pump type of hs1 not seen yet"},
     {"type": 248, "place": 83, "role": "hybrid_manager", "basis": "rule"},
     {"type": 253, "place": 16, "role": "system_controller", "basis": "observed", "note": "seen on a K40 gateway"},
     {"type": 65281, "place": 8, "role": "outdoor_unit", "basis": "observed", "note": "seen on a K40 gateway"}

@@ -570,6 +570,10 @@ def device_report(
             if kind is not None and kind.name
             else None
         )
+    shipped = load_table()
+    entry_of_role = (
+        shipped.role(type_id, place) if shipped is not None and role else None
+    )
     return {
         "place": place_key,
         "place_number": place,
@@ -577,6 +581,8 @@ def device_report(
         "type_name": model,
         "role": role,
         "basis": basis,
+        # How the role is known (``expected``: not confirmed by a reading yet).
+        "role_basis": entry_of_role.basis if entry_of_role is not None else None,
         "version": item.version if item is not None else None,
         "reported": item is not None,
         "count": item.count if item is not None else 0,
