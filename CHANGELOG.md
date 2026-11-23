@@ -5,13 +5,46 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.3-beta.6] - 2026-11-23
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - Pre-release for testing; 0.9.2 stays the stable release. Nothing to do after the update; component devices are off by default.
+> - The diagnostics use schema 49 with a new block `plant`. On a K40 heat pump with a complete module list only the heat generator sensor gets new attributes; other systems can get new entities.
+> - Month and year values of the energy monitoring could be too high since 0.9.3-beta.1; they are corrected once after the update, older imported statistics only with **Delete imported statistics** (see *Fixed*).
+> - Heating circuit and zone climates stay shown while cooling or in an unclear season and refuse changes instead of becoming unavailable.
+> - Going back to 0.9.3-beta.5 works: component devices stay until you delete them, and entities only this version provides show `unknown` or `unavailable`. Months of the energy monitoring and of iCom energy recordings it reads again are stored too high until the next update, and a local access whose gateway reported no usable scope asks to sign in again there.
+
+### Added
+
+- **Plant model and component table.** I added a table of 178 component type numbers and 19 places; a name alone never changes what the integration does. The type numbers and names in this table are as used in the manufacturer apps. From the components and type values I work out the plant kind, shown in the new diagnostics block `plant`; serial numbers are never kept. Tested with constructed plant cases and the component list of my own K40 heat pump; not yet confirmed on a real system other than mine.
+- **Component devices.** **Configure → System components → Show components as devices** adds a device per component below the gateway, without entities. Tested with the cloud capture of my own K40 heat pump and constructed component lists; not yet confirmed in a real Home Assistant installation.
+
 ### Improved
 
-- **Hybrid systems: month and year values of the heat pump from its own recordings.** On a hybrid system the gateway's energy recordings count the boiler's heat, and the gateway keeps recordings of the heat pump under its heat source (`/recordings/heatSources/hs2/emon/<total|ch|dhw>/<outputProduced|compressor>`). Where the heat pump reports counters of its own (`basis: heat_pump_counters`), I now read these recordings as well: through the local access where it answers them, otherwise from the cloud, with the same hourly reads, history back-fill and optional statistics import as the other recordings. The performance factors of yesterday, the months and the years come from them first (heat over compressor electricity), so a month or a year is complete back to the first recorded day instead of counting only the days the integration has seen itself. The counters' statistics count only where these recordings are missing; then a month or a year stays `unknown` (`reason: partial_period`) while its days with a value cover less than half of the period's days so far. The new attribute `coverage_percent` always shows that share, and `environmental_energy_kwh` gives the heat pump's environmental energy of the period (heat minus electricity, left out when negative). On such a plant the period entities of the gateway's heat get the attribute `heat_generator: boiler`. No entity is added or renamed, and a plant with a heat pump only is not affected. The diagnostics show the heat source (`heat_pump_source`) and each of these recordings as `ok` or `missing`. Thanks to markoox for pointing out in #138 that month and year were built only from the days recorded since the integration started. Tested with synthetic hybrid recordings; not yet confirmed on a real hybrid system.
+- **Hybrid systems.** A hybrid manager among the components, or a heat pump next to a boiler among the heat sources, now marks a hybrid system (**new entities** possible). The heat pump's own recordings (`hs2`) give its performance factors where it reports counters of its own; otherwise a month or year stays `unknown` while recorded days cover less than half of it. Thanks to markoox for pointing out in #138 that month and year were built only from the days recorded so far. Tested with constructed and synthetic hybrid systems; not yet confirmed on a real hybrid system.
+- **Heat generator sensor.** New attributes for cards such as `plant_kind` and `components`; earlier ones keep their values. Systems without product names, such as an iCom heat pump, now get it too (**new entity**). Thanks to albinnsa for the diagnostics of an iCom heat pump with its component list. Tested with the module list of my own K40 heat pump, the Heat Pump Hydraulic Card and a case shaped like that iCom list; not yet confirmed on a real iCom heat pump or boiler.
+- **Targeted discovery reads.** The cloud discovery also reads up to 48 known paths of areas the components or values show but the gateway does not list, so **new entities** can appear; my own K40 heat pump reads nothing more. Tested with synthetic plants and the cloud capture of my own K40; not yet confirmed on a real system with such an area.
+- **iCom energy recordings and units.** A heat pump behind an iCom gateway reads its own energy recordings; every iCom energy recording is read as mean power times hours, and units are taken in more spellings. *Total – Energy consumed* (disabled by default) is never added to the electricity; use only one of them in the energy dashboard. Tested with synthetic answers; not yet confirmed on a real iCom heat pump.
+- **Component table version 3 and heat source types.** Type 172 (`CUHP`) at place 8 is a `heat_source` with the basis `expected`, type 158 (`MID`) at place 16 the `system_controller`, and `/heatSources/type` values such as `Hybrid_Gas` are known. Tested with constructed values and that component list; not yet confirmed on a real iCom heat pump or room controller.
+- **Local setup is more tolerant.** A gateway still collecting its system information is asked again for up to about a minute, then the check can be repeated (#111). Details that only describe the gateway no longer stop it, the minimum firmware 15.00.01 applies to K30/K40 only, and one matching module is enough; a placeholder serial number such as `-1` or `N/A` never matches. On iCom gateways an unusable answer pauses only its path. Tested with constructed answers and a simulated iCom gateway; not yet confirmed on a real gateway with such answers.
+- **Values read more tolerantly.** Whole numbers, faulty metadata and blank energy units no longer drop a value; a faulty `writeable` flag makes it read-only, and a change still needs valid limits, unit and options. Paths with an unexpected answer are read again hourly; tariff deltas without a unit are kelvin (#81). Tested with constructed answers; not yet confirmed on a real gateway with such answers.
+- **Climates and time programs stay usable.** Climates also stay shown with an unknown mode, changes locked. Time programs in other forms are shown, only clean ones can be changed, and heating programs without a range take 5 to 30 °C (#131, #138). Tested with simulated readings; not yet confirmed on a real system with such answers.
+- **Current heat demand.** `ch_heat`, `dhw_exclusive` and `dhw_nonexclusive` show as heating or hot water instead of *None*. Tested with simulated data; not yet confirmed on a real device reporting these values.
+
+### Fixed
+
+- **System pressure `na`** no longer shows 0 bar or "critically low". Tested with constructed answers; not yet confirmed on a real gateway.
+- **Months of the energy monitoring (since 0.9.3-beta.1)** could be up to about 60 times too high, also in imported statistics. Each slot is now the mean of its samples times its hours. Stored months that were too high are corrected at start; statistics rows of the last eight days are imported again, older ones only after **Delete imported statistics** and switching the import on again. Tested with synthetic answers; not yet confirmed on a real plant with these recordings.
+- **A boiler with a hybrid control** whose outdoor unit is `NOT_CONNECTED` counts as a boiler when the first heat source reports a boiler. Tested with constructed systems; not yet confirmed on a real boiler with a hybrid control.
+- **eHybrid** with a heat pump at `hs1` is a heat pump with an additional heater and keeps its performance factors. Tested with constructed values; not yet confirmed on a real system with this system type.
+- **Outdoor unit without a hardware type (#138).** Such a module gets its role from its type number; "Outdoor unit software version" is created (**new entity**). Thanks to markoox for the module list in #138 that showed modules without a hardware type. Tested with a module list shaped like the one in #138; not yet confirmed on a real system.
+- **Current heat demand as a number.** A controller that reports the heat demand as one number (a percentage) gets a sensor with this number and its unit; before, Home Assistant refused to add this sensor. Tested with a synthetic answer on Home Assistant 2026.5, 2026.9 and 2026.11; not yet confirmed on a real controller reporting it this way.
 
 ### Documentation
 
-- The calculated values page (English and German), the plant recordings page and the diagnostics page describe the heat pump's own recordings on hybrid systems, the coverage rule and the new attributes.
+- New page "System components", ADR 0006 and JSON schemas.
 
 ## [0.9.3-beta.5] - 2026-11-22
 
