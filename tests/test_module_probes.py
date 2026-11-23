@@ -349,6 +349,9 @@ def test_r6_reads_the_unlisted_heat_pumps_of_a_cascade() -> None:
         ("heatpump_cascade", 1),
         ("heatpump_cascade", 7),
         ("heatpump_cascade", "two"),
+        # A superscript three and an Arabic-Indic three: no ASCII digit.
+        ("heatpump_cascade", chr(0xB3)),
+        ("heatpump_cascade", chr(0x663)),
         ("heatpump_single", 3),
     ],
 )

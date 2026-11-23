@@ -214,8 +214,10 @@ def _count(value: object) -> int | None:
         return value
     if isinstance(value, float) and value.is_integer():
         return int(value)
-    if isinstance(value, str) and value.strip().isdigit():
-        return int(value.strip())
+    if isinstance(value, str):
+        text = value.strip()
+        # ASCII digits only: a superscript digit passes isdigit() but not int().
+        return int(text) if text.isascii() and text.isdecimal() else None
     return None
 
 

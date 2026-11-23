@@ -735,8 +735,11 @@ async def async_discover_resources(
     probes = ModuleProbes(
         load_table(), never_read=is_never_read, limit=module_probe_limit
     )
-    for path, resource in (known_values or {}).items():
-        probes.observe(path, resource, None)
+    try:
+        for path, resource in (known_values or {}).items():
+            probes.observe(path, resource, None)
+    except Exception:  # the targeted reads never stop a discovery
+        _probes_failed(probes)
     started = monotonic()
     try:
         return await _async_discover(
@@ -755,7 +758,25 @@ async def async_discover_resources(
             probes=probes,
         )
     finally:
-        _finish_module_probes(report, probes, monotonic() - started)
+        try:
+            _finish_module_probes(report, probes, monotonic() - started)
+        except Exception:  # the report of the targeted reads is optional
+            _LOGGER.debug("Targeted reads not reportable", exc_info=True)
+
+
+def _probes_failed(probes: ModuleProbes) -> None:
+    """An unexpected error of the targeted reads ends only them (inactive
+    reason `error`); the discovery goes on as without them."""
+    _LOGGER.debug("Targeted reads stopped after an error", exc_info=True)
+    probes.deactivate("error")
+
+
+def _answered_circuit(probes: ModuleProbes, path: str) -> str | None:
+    try:
+        return probes.circuit_answered(path)
+    except Exception:  # the targeted reads never stop a discovery
+        _probes_failed(probes)
+        return None
 
 
 def _finish_module_probes(
@@ -990,10 +1011,15 @@ async def _async_discover(
         nonlocal probe_phase
         if any(queues[:-1]):
             return False
-        new = probes.plan(report.paths.__contains__)
+        try:
+            new = probes.plan(report.paths.__contains__)
+            over_limit = probes.over_limit
+        except Exception:  # the targeted reads never stop a discovery
+            _probes_failed(probes)
+            new, over_limit = [], {}
         if new:
             probe_phase = True
-        for over in probes.over_limit:
+        for over in over_limit:
             if over not in report.paths:
                 report.scheduled(over, DiscoveryPathSource.OPTIONAL)
                 report.paths[over].read_policy = LIMIT_POLICY
@@ -1310,7 +1336,10 @@ async def _async_discover(
             depth = frontier_entries[result.path]
             resource = result.resource
             identical.answered(result.path, result.status)
-            probes.observe(result.path, resource, result.status)
+            try:
+                probes.observe(result.path, resource, result.status)
+            except Exception:  # the targeted reads never stop a discovery
+                _probes_failed(probes)
             if resource is None:
                 schedule_direct(containers.refused(result.path, result.status, depth))
                 _LOGGER.debug(
@@ -1327,7 +1356,7 @@ async def _async_discover(
             discovered[result.path] = resource
             if extra_mode and not device_frontier:
                 extra_parents.add(result.path)
-            if (circuit := probes.circuit_answered(result.path)) is not None:
+            if (circuit := _answered_circuit(probes, result.path)) is not None:
                 # R5: a hot water circuit the gateway does not list answers.
                 schedule_direct(containers.probe_answered(circuit, depth - 1))
             if resource.path == ZONE_LIST and listed_ids(resource) is not None:
@@ -1492,6 +1521,16 @@ async def _recover_invalid_bulk_results(
                 # VER-01: a listed event list is not taken as missing; it
                 # stays unread, is searched again after the start and does
                 # not end the discovery (nor a series of other answers).
+                recovered.append(
+                    BatchItemResult(gateway_id, result.path, status, error=err)
+                )
+                continue
+            if status >= 500 and result.path == SYSTEM_INFO_PATH:
+                # The component list is optional: like a tariff leaf, its 5xx
+                # neither counts towards the outage series nor ends it.
+                diagnostics.paths[
+                    result.path
+                ].read_policy = "optional_5xx_assumed_missing"
                 recovered.append(
                     BatchItemResult(gateway_id, result.path, status, error=err)
                 )

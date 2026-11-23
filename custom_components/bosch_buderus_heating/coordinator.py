@@ -807,6 +807,9 @@ class BoschBuderusDataUpdateCoordinator(
         # P46: resources discovered before, and the search for missing ones.
         self.inventory: DiscoveryInventory | None = None
         self.discovery_recovery = DiscoveryRecovery()
+        # Fault sources of the last discovery whose read met a rate limit:
+        # read once more after the next cycle that returned data.
+        self._fault_candidates_pending: tuple[str, ...] = ()
         # P22: firmware versions seen and the discovery a change triggers.
         self.firmware = FirmwareWatch()
         self._discovery_cycle_failed = False
@@ -2363,6 +2366,11 @@ class BoschBuderusDataUpdateCoordinator(
                     # in addition in this cycle.
                     return snapshots
                 self._confirm_inventory(snapshots)
+                if (
+                    self._fault_candidates_pending
+                    and self._shared_pause_remaining() <= 0
+                ):
+                    await self._async_read_fault_candidates(snapshots)
                 # P46: search missing parts only after a cycle that returned
                 # data. During an outage the cycle fails first, so a search
                 # never uses up an attempt on it.
@@ -3797,6 +3805,7 @@ class BoschBuderusDataUpdateCoordinator(
             if path not in successful_resources
         )
         probe_results: tuple[BatchItemResult, ...] = ()
+        self._fault_candidates_pending = ()
         if candidates:
             try:
                 probe_results = await self.client.get_resources_bulk(
@@ -3804,12 +3813,19 @@ class BoschBuderusDataUpdateCoordinator(
                 )
             except AuthenticationError as err:
                 raise ConfigEntryAuthFailed from err
-            except PointTError:
+            except PointTError as err:
+                if isinstance(err, RateLimited):
+                    # A rate limit (also one the targeted reads met before):
+                    # the fault sources are read after the pause.
+                    self._fault_candidates_pending = candidates
                 _LOGGER.warning(
                     "Optional PointT fault-resource discovery failed; "
                     "continuing with the main resource tree"
                 )
             else:
+                self._fault_candidates_pending = _rate_limited_paths(
+                    candidates, probe_results
+                )
                 self.faults.record_results(probe_results)
                 for result in probe_results:
                     if result.resource is not None:
@@ -4383,6 +4399,95 @@ class BoschBuderusDataUpdateCoordinator(
         )
         if recovery.state == "given_up":
             self._forget_given_up()
+
+    async def _async_read_fault_candidates(
+        self, snapshots: dict[str, ResourceSnapshot]
+    ) -> None:
+        """Read the fault sources a rate limit kept from the discovery, once
+        the pause is over; a further rate limit moves them to a later cycle."""
+        candidates = tuple(
+            path
+            for path in self._fault_candidates_pending
+            if path not in self.resources
+        )
+        if not candidates:
+            self._fault_candidates_pending = ()
+            return
+        held_back = self._shared_pause_remaining() > 0
+        try:
+            results = await self.client.get_resources_bulk(
+                self.gateway.gateway_id, candidates
+            )
+        except AuthenticationError as err:
+            raise ConfigEntryAuthFailed from err
+        except RateLimited as err:
+            # The poll already succeeded; the brake applies from the next cycle.
+            self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
+            return
+        except PointTError:
+            self._fault_candidates_pending = ()
+            _LOGGER.warning(
+                "Optional PointT fault-resource discovery failed; "
+                "continuing with the main resource tree"
+            )
+            return
+        self._fault_candidates_pending = _rate_limited_paths(candidates, results)
+        self.faults.record_results(results)
+        added = {
+            result.path: result.resource
+            for result in results
+            if result.resource is not None and result.path not in self.resources
+        }
+        placeholders = {
+            result.path: Resource(path=result.path)
+            for result in results
+            if result.resource is None
+            and result.status in (403, 404)
+            and result.path not in self.resources
+        }
+        now_monotonic = monotonic()
+        for result in results:
+            if result.resource is not None:
+                continue
+            self._record_capability(
+                result.path,
+                _result_category(result.error, result.status),
+                SnapshotSource.DISCOVERY,
+            )
+            if result.status in (403, 404):
+                pause = FORBIDDEN_PAUSE if result.status == 403 else NOT_FOUND_PAUSE
+                self._negative_until[result.path] = (
+                    now_monotonic + pause.total_seconds()
+                )
+        if not added and not placeholders:
+            return
+        self.resources.update({**placeholders, **added})
+        self._rebuild_poll_groups()
+        updated_at = datetime.now(UTC)
+        for path in added:
+            self._record_capability(path, "success", SnapshotSource.DISCOVERY)
+            self._note_cloud_read(path, now_monotonic)
+        snapshots.update(
+            {
+                path: ResourceSnapshot(
+                    resource=resource,
+                    available=True,
+                    last_success=updated_at,
+                    last_attempt=updated_at,
+                    source=SnapshotSource.DISCOVERY,
+                )
+                for path, resource in added.items()
+            }
+        )
+        faults = {
+            path: resource
+            for path, resource in added.items()
+            if is_fault_resource_path(path)
+        }
+        if faults:
+            self.faults.process_resources(faults, successful_paths=set(faults))
+        if self.inventory is not None and added:
+            self.inventory.record(self.gateway, added)
 
     def _give_up_recovery(self, result: str) -> None:
         self.discovery_recovery.give_up(result)
@@ -5206,6 +5311,15 @@ def _result_category(error: PointTError | None, status: int | None) -> str:
         503: "service_unavailable",
         504: "service_unavailable",
     }.get(status, _pointt_result(error))
+
+
+def _rate_limited_paths(
+    paths: tuple[str, ...], results: tuple[BatchItemResult, ...]
+) -> tuple[str, ...]:
+    """The paths of a bulk read a rate limit left unanswered: answered 429,
+    or not answered at all because the read stopped at a 429."""
+    answered = {result.path for result in results if result.status != 429}
+    return tuple(path for path in paths if path not in answered)
 
 
 def _cycle_failure_category(results: list[BatchItemResult]) -> str:

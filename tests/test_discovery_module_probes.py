@@ -4,7 +4,9 @@ The discovery reads the paths of the rules of ``module_probes`` after every
 other path, as optional paths; ``/system/info`` comes with the first batch.
 The trees are synthetic; my own K40 comes from its cloud capture. Failures
 run through real coordinator cycles (``async_refresh``): an error of a
-targeted read never makes a reading unavailable and raises no repair. Not
+targeted read keeps every reading of the discovery and raises no repair; a
+rate limit pauses the cloud access as any 429 does, and the fault sources
+read after the discovery follow once the pause is over. Not
 yet confirmed on a real plant: a hybrid system without a listed heat pump,
 a hot water circuit without a list, a cascade, and pool, ventilation or
 solar found through a place.
@@ -57,6 +59,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceMetadata,
     ServiceUnavailable,
 )
+from custom_components.bosch_buderus_heating.pointt.transport import RateLimitBackoff
 from tests.ha_test_helpers import MockConfigEntry, flush_store
 from tests.helpers.rrc_cloud import RrcCloud, load_tree, with_containers
 
@@ -362,6 +365,54 @@ async def test_a_used_up_budget_leaves_every_other_read_as_it_was() -> None:
     assert report.extra_probes_requested > 0
 
 
+@pytest.mark.parametrize("info_answers", [True, False])
+async def test_a_server_error_of_the_component_list_counts_towards_no_series(
+    info_answers: bool,
+) -> None:
+    """``/system/info`` is read with the roots; like a tariff leaf, its 5xx is
+    taken as missing and never moves the limit of the roots' 5xx series."""
+    tree = plant(heating())
+    absent = [root for root in ROOT_RESOURCE_PATHS if root not in tree][:9]
+    assert len(absent) == 9
+    cloud = RrcCloud(tree, missing_as_500=False)
+    for root in absent:
+        cloud.down[root] = 500
+        cloud.get_errors[root] = ServiceUnavailable(500)
+    if not info_answers:
+        cloud.down["/system/info"] = 500
+        cloud.get_errors["/system/info"] = ServiceUnavailable(500)
+    found, report = await discover(cloud)
+    assert report.completed and report.stop_reason == "complete"
+    assert ("/system/info" in found) is info_answers
+    assert OUTDOOR in found
+    if not info_answers:
+        assert (
+            report.paths["/system/info"].read_policy == "optional_5xx_assumed_missing"
+        )
+
+
+@pytest.mark.parametrize("failing", ["observe", "plan", "circuit_answered"])
+async def test_an_error_of_the_targeted_reads_ends_only_them(failing: str) -> None:
+    tree = plant(heating(), hidden=(DHW1,))
+    baseline = RrcCloud(tree, missing_as_500=False)
+    with patch(
+        "custom_components.bosch_buderus_heating.discovery.ModuleProbes.plan",
+        lambda self, known: [],
+    ):
+        core, _report = await discover(baseline)
+    cloud = RrcCloud(tree, missing_as_500=False)
+    with patch(
+        f"custom_components.bosch_buderus_heating.discovery.ModuleProbes.{failing}",
+        side_effect=RuntimeError("probes"),
+    ):
+        found, report = await discover(cloud)
+    assert report.completed and report.stop_reason == "complete"
+    assert set(core) <= set(found)
+    if failing != "circuit_answered":
+        assert set(found) == set(core)
+    assert report.module_probes["inactive_reason"] == "error"  # type: ignore[index]
+
+
 # ------------------------------------------------------- real coordinator cycles
 
 
@@ -512,6 +563,106 @@ async def test_a_rate_limit_among_the_targeted_reads_keeps_the_readings(
     assert results["/heatSources/hs2/numberOfStarts"] == "ok"
     assert "/heatSources/hs2/numberOfStarts" in coordinator.data
     assert not _repairs(hass)
+    await coordinator.async_shutdown()
+
+
+class BrakedCloud(RrcCloud):
+    """The fake cloud behind the client's real brake: a 429 in a bulk answer
+    pauses every further request of the access, as the client does."""
+
+    def __init__(self, tree: dict[str, Resource], clock: Clock) -> None:
+        super().__init__(tree, missing_as_500=False)
+        self.backoff = RateLimitBackoff(clock=clock)
+
+    async def get_resources_bulk(self, gateway_id, paths, **kwargs):
+        self.backoff.raise_if_active()
+        results = await super().get_resources_bulk(gateway_id, paths, **kwargs)
+        if any(result.status == 429 for result in results):
+            self.backoff.activate(None)
+        return results
+
+    async def get_resource(self, gateway_id, path, **kwargs):
+        self.backoff.raise_if_active()
+        return await super().get_resource(gateway_id, path, **kwargs)
+
+
+ACTIVE_FAILURE = "/heatSources/hs1/activefailure"
+
+
+@pytest.fixture
+def brake_clock():
+    """The coordinator's clock only: the fault sources are really looked for."""
+    clock = Clock()
+    with patch(f"{COORDINATOR}.monotonic", clock):
+        yield clock
+
+
+def _braked_cloud(clock: Clock) -> BrakedCloud:
+    tree = _many_targets()
+    # Not listed by its heat source: read only as a fault source.
+    tree[ACTIVE_FAILURE] = Resource(
+        ACTIVE_FAILURE, value={"ccd": 6249, "fc": "12"}, has_value=True
+    )
+    cloud = BrakedCloud(tree, clock)
+    cloud.down["/ventilation"] = 403
+    cloud.down["/solarCircuits"] = 403
+    return cloud
+
+
+async def test_fault_sources_are_read_without_a_rate_limit(
+    hass: HomeAssistant, brake_clock: Clock
+) -> None:
+    cloud = _braked_cloud(brake_clock)
+    coordinator = _coordinator(hass, cloud)
+    await coordinator.async_refresh()
+    _healthy(coordinator)
+    assert cloud.requested(ACTIVE_FAILURE) == 1
+    assert ACTIVE_FAILURE in coordinator.resources
+    assert [fault.component_id for fault in coordinator.faults.active] == ["hs1"]
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize("limited", ["targeted read", "fault source"])
+async def test_a_rate_limit_among_the_targeted_reads_keeps_the_fault_sources(
+    hass: HomeAssistant, brake_clock: Clock, limited: str
+) -> None:
+    """The 429 of a targeted read pauses the access; the fault sources the
+    discovery reads afterwards are held back, kept and read in the first
+    cycle after the pause, not only after the next start. So is a fault
+    source that answers 429 itself."""
+    cloud = _braked_cloud(brake_clock)
+    first = VENTILATION_PATHS[0] if limited == "targeted read" else ACTIVE_FAILURE
+    cloud.down[first] = 429
+    coordinator = _coordinator(hass, cloud)
+    await coordinator.async_refresh()
+    _healthy(coordinator)
+    assert coordinator.discovery_diagnostics.completed
+    assert cloud.requested(ACTIVE_FAILURE) == (1 if limited == "fault source" else 0)
+    assert ACTIVE_FAILURE not in coordinator.resources
+    assert cloud.backoff.remaining > 0
+    cloud.down.pop(ACTIVE_FAILURE, None)
+    asked = cloud.requested(ACTIVE_FAILURE)
+
+    # Within the pause no request leaves (the brake of every 429).
+    brake_clock.now += 60
+    await coordinator.async_refresh()
+    assert cloud.requested(ACTIVE_FAILURE) == asked
+
+    # After the pause: the first cycle that returns data reads them.
+    for _ in range(6):
+        brake_clock.now += 301
+        await coordinator.async_refresh()
+        if coordinator.last_update_success:
+            break
+    _healthy(coordinator)
+    assert cloud.requested(ACTIVE_FAILURE) == asked + 1
+    assert ACTIVE_FAILURE in coordinator.resources
+    assert [fault.component_id for fault in coordinator.faults.active] == ["hs1"]
+    # Once read, they are not read again outside the regular polls.
+    requested = cloud.requested(ACTIVE_FAILURE)
+    brake_clock.now += 60
+    await coordinator.async_refresh()
+    assert cloud.requested(ACTIVE_FAILURE) <= requested + 1
     await coordinator.async_shutdown()
 
 
