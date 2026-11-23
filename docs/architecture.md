@@ -228,10 +228,19 @@ gateway runs. That is the job of three newer modules (see
   saved calculated values and offers `current_plant`, `components`,
   `describe`, `set_probe_results` and `plant_diagnostics` to the rest of the
   integration.
+- `module_probes.py` is pure: from the component rows and a few reported
+  values of a discovery it decides which paths of an area the gateway does
+  not list are read in addition (see
+  [request behavior](request-behavior.md#targeted-reads)). The discovery
+  reads them after every other path; their results go into the stored row
+  through `set_probe_results`, for the diagnostics only.
 
-In this stage the plant kind changes no entity, name, control or request; it
-is visible in the diagnostics (block `plant`) and in the stored row only.
-Without a result (`None`) every consumer behaves as before.
+The plant kind changes no entity, name or control. It may lead to reads
+only: the energy recordings of a heat pump behind an iCom gateway and the
+heat pump's own recordings of a hybrid system (`recordings/gating.py`, see
+[recordings](recordings.md)); entities then come only from answers. It is
+visible in the diagnostics (block `plant`) and in the stored row. Without a
+result (`None`) every consumer behaves as before.
 
 ## Gateway exchange
 

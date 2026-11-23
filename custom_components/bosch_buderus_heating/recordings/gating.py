@@ -15,9 +15,11 @@ what it belongs to, so that no other plant collects refusals for it:
   boiler series are read as before.
 
 The heat pump's own series of a hybrid system (``series.HEAT_SOURCE_SERIES``)
-are read, locally or from the cloud, only for a plant with a burner share
+are read, locally or from the cloud, for a plant with a burner share
 (``burner_share``) whose heat pump reports counters of its own under its heat
-source (``performance.heat_pump_root``), and only for that heat source.
+source (``performance.heat_pump_root``), and only for that heat source; and
+for a hybrid system (plant kind ``hybrid``) without such counters for ``hs2``,
+the heat source of a hybrid system's heat pump. Never for an iCom gateway.
 
 A path that does not answer there (404, 403, an unknown unit) yields no
 entity. See ``docs/recordings.md``.
@@ -47,6 +49,8 @@ SOFTENER_CIRCUIT: Final = "/swCircuits/sw1/"
 _HEAT_SOURCE: Final = "/heatSources"
 _EMON: Final = "/heatSources/emon"
 _HEAT_SOURCE_TOTAL: Final = re.compile(r"/heatSources/hs\d+/emon/totalConsumption")
+# The heat source of a hybrid system's heat pump.
+HYBRID_HEAT_SOURCE: Final = "hs2"
 
 
 def has_softener_circuit(paths: Iterable[str]) -> bool:
@@ -121,10 +125,41 @@ def heat_pump_source(
     """The heat source (``hs2``) of a hybrid system's heat pump whose own
     recordings are read: the plant shows a burner share, and the heat pump
     reports counters of its own (heat and electricity, no burner part) under
-    that heat source. ``None`` for any other plant."""
-    if coordinator is None or not any(
-        _HEAT_SOURCE_TOTAL.fullmatch(path) for path in _known(coordinator)
-    ):
+    that heat source; else ``hs2`` for a hybrid system without such counters
+    (``heat_pump_source_basis``). ``None`` for any other plant."""
+    if coordinator is None:
+        return None
+    source = _counted_source(coordinator)
+    if source is not None:
+        return source
+    return HYBRID_HEAT_SOURCE if hybrid_plant(coordinator) else None
+
+
+def heat_pump_source_basis(
+    coordinator: BoschBuderusDataUpdateCoordinator | None,
+) -> str | None:
+    """Why ``heat_pump_source`` names a heat source: ``counters`` (its own
+    counters with a burner share) or ``plant_kind`` (a hybrid system)."""
+    if coordinator is None:
+        return None
+    if _counted_source(coordinator) is not None:
+        return "counters"
+    return "plant_kind" if hybrid_plant(coordinator) else None
+
+
+def hybrid_plant(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    """A hybrid system (plant kind ``hybrid``) on another gateway than iCom."""
+    from ..plant_inputs import current_plant
+
+    if _icom(coordinator):
+        return False
+    plant = current_plant(coordinator)
+    return plant is not None and plant.hybrid
+
+
+def _counted_source(coordinator: BoschBuderusDataUpdateCoordinator) -> str | None:
+    """The heat source whose own counters show a hybrid system's heat pump."""
+    if not any(_HEAT_SOURCE_TOTAL.fullmatch(path) for path in _known(coordinator)):
         return None
     from ..burner_share import burner_share
     from ..performance import COLLECTIONS, heat_pump_root

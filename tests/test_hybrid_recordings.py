@@ -186,6 +186,7 @@ async def test_only_a_hybrid_heat_pump_with_counters_is_asked(
 ) -> None:
     plant = _hybrid(hass, freezer)
     assert gating.heat_pump_source(plant.coordinator) == "hs2"
+    assert gating.heat_pump_source_basis(plant.coordinator) == "counters"
     assert gating.heat_pump_keys(plant.coordinator) == HS2_KEYS
     assert gating.heat_pump_source(None) is None
 

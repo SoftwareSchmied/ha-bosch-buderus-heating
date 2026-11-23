@@ -241,12 +241,16 @@ gateway keeps recordings of the heat pump under its heat source:
 | `/recordings/heatSources/hs2/emon/total/outputProduced` (also `ch`, `dhw`) | Heat produced by the heat pump |
 | `/recordings/heatSources/hs2/emon/total/compressor` (also `ch`, `dhw`) | Electricity of its compressor (the heat pump of a hybrid system has no electric heater) |
 
-They are asked only for a plant with a burner share (burner energy in the
+They are asked for a plant with a burner share (burner energy in the
 gateway's counters, or a hybrid manager) whose heat pump reports counters of
 its own under that heat source (for example
 `/heatSources/hs2/emon/totalConsumption`, see
 [calculated values](calculated-values.md)), and only for that heat source
-(`hs2` to `hs6`). A plant with a heat pump only is never asked. With a local
+(`hs2` to `hs6`). A hybrid system without such counters (plant kind
+`hybrid`, see [system components](system-components.md)) is asked for those
+of `hs2`, the heat source of a hybrid system's heat pump; only the recordings
+that answer are kept. A plant with a heat pump only and an iCom gateway are
+never asked. With a local
 access they are read through the local data port like the other recordings;
 the cloud is asked only for those the local access does not answer. Without
 a local access the cloud reads them like the nine energy recordings, with
@@ -262,9 +266,10 @@ gateway's heat carry the attribute `heat_generator: boiler`.
 
 Expected, untested on a real installation: the paths follow the local data
 port's list of recordings for the heat sources hs2 to hs6; an answer of a
-real hybrid system has not been seen yet. Please report on GitHub with the
-diagnostics whether `hs2_total_heat` and `hs2_total_compressor` show `ok`
-there.
+real hybrid system has not been seen yet, with or without the heat pump's
+own counters (not yet confirmed on a real hybrid system without them, #138).
+Please report on GitHub with the diagnostics whether `hs2_total_heat` and
+`hs2_total_compressor` show `ok` there.
 
 ## Import into the statistics
 
@@ -362,7 +367,9 @@ history did not arrive in time) and `cloud_paths_left_out` (cloud
 recordings left out for a while after a failed read), and on a hybrid system
 `heat_pump_source` (the heat source whose own recordings are read, for
 example `hs2`, with its recordings listed as `hs2_total_heat`,
-`hs2_total_compressor` and so on), on an iCom heat pump `icom_heat_pump: true`
+`hs2_total_compressor` and so on, and `heat_pump_source_basis`: `counters`
+for a heat pump with counters of its own, `plant_kind` for a hybrid system
+without them), on an iCom heat pump `icom_heat_pump: true`
 with its recordings `monitoring_total_heat`, `monitoring_total_compressor`,
 `monitoring_total_eheater` and `sc1_solar_yield`, and per recording the
 `unit` it answered in when that unit was not taken (or for the solar yield);

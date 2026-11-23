@@ -80,6 +80,7 @@ from .gating import (
     allowed_keys,
     heat_pump_keys,
     heat_pump_source,
+    heat_pump_source_basis,
     icom_heat_pump,
     softener_plant,
 )
@@ -1650,6 +1651,7 @@ class RecordingsManager:
         if source is not None:
             # A hybrid system: the heat pump's own series are read too.
             found["heat_pump_source"] = source
+            found["heat_pump_source_basis"] = heat_pump_source_basis(self.coordinator())
         if icom_heat_pump(self.coordinator()):
             # A heat pump behind an iCom gateway: its own energy series.
             found["icom_heat_pump"] = True
