@@ -262,7 +262,13 @@ async def test_an_unknown_unit_gives_no_entity_and_shows_the_unit(
     }  # type: ignore[index]
     # Kept over a restart, and not asked again.
     data = manager._data()
-    assert data["units"] == {HEAT: "unit", SOLAR_YIELD.path: "kWh"}
+    assert data["units"] == {
+        HEAT: "unit",
+        SOLAR_YIELD.path: "kWh",
+        # The units of the answers taken show as well.
+        MONITORING["monitoring_total_compressor"]: "kWh",
+        MONITORING["monitoring_total_eheater"]: "kWh",
+    }
     spec = next(
         spec
         for spec in manager.specs()
@@ -422,7 +428,9 @@ async def test_an_icom_heat_pump_reads_its_consumed_energy_on_its_own(
         "monitoring_total_compressor",
         "monitoring_total_eheater",
     )
-    assert manager.diagnostics()["series"]["total_consumed"]["cloud"] == "ok"  # type: ignore[index]
+    consumed_report = manager.diagnostics()["series"]["total_consumed"]  # type: ignore[index]
+    # The unit an answer was taken in shows, to tell what the gateway sends.
+    assert consumed_report["cloud"] == "ok" and consumed_report["unit"] == "kW"  # type: ignore[index]
     await coordinator.async_shutdown()
 
 
@@ -436,7 +444,7 @@ async def test_the_units_the_energy_monitoring_answers_in_are_taken(
     await manager.async_run("start")
     assert "monitoring_total_heat" in manager.available()
     series = manager.diagnostics()["series"]["monitoring_total_heat"]  # type: ignore[index]
-    assert series["cloud"] == "ok" and "unit" not in series  # type: ignore[index]
+    assert series["cloud"] == "ok" and series["unit"] == unit  # type: ignore[index]
     day = NOW.date() - timedelta(days=1)
     assert manager.daily("monitoring_total_heat", day, day)[0].y == pytest.approx(72.0)
     await coordinator.async_shutdown()
@@ -454,6 +462,20 @@ async def test_an_icom_boiler_does_not_take_a_unit_of_power(
     assert "ch_actual_power" not in manager.available()
     series = manager.diagnostics()["series"]["ch_actual_power"]  # type: ignore[index]
     assert series == {"local": None, "cloud": "unit", "unit": "kW"}
+    await coordinator.async_shutdown()
+
+
+async def test_the_unit_of_an_answer_taken_shows_for_samples_of_the_mean_only(
+    hass: HomeAssistant,
+) -> None:
+    """Other recordings show a unit only when it was not taken."""
+    coordinator = await plant(hass, "issue_104_icom_boiler")
+    ch = BY_KEY["ch_actual_power"].path
+    answers = {ch: lambda interval: recording(interval, 2.0, unit="kWh")}
+    manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
+    await manager.async_run("start")
+    series = manager.diagnostics()["series"]["ch_actual_power"]  # type: ignore[index]
+    assert series["cloud"] == "ok" and "unit" not in series  # type: ignore[index]
     await coordinator.async_shutdown()
 
 
@@ -487,6 +509,8 @@ async def test_a_unit_left_out_by_an_earlier_version_is_asked_again(
     assert {CONSUMED, HEAT, compressor} <= asked
     assert eheater not in asked
     assert "total_consumed" in manager.available()
+    # The refused unit kept before gives way to the unit now taken.
+    assert manager.unit_texts[HEAT] == "kWh"
     # Once checked, a recording without a unit text is not asked again.
     data = manager._data()
     assert data["units_rechecked"] is True

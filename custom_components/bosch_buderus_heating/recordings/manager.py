@@ -1195,6 +1195,9 @@ class RecordingsManager:
                     self._note_unit(series.path, cloud_unit(answer.data))
                     continue
                 self._ledger(series).merge(parsed, CLOUD, read_at=read_at, zone=zone)
+                if series.minute_sums:
+                    # The unit it was taken in, for the diagnostics.
+                    self._note_unit(series.path, cloud_unit(answer.data))
                 self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
                 succeeded = True
                 if self._cloud_complete(series, interval, rate, today, zone):
@@ -1660,7 +1663,8 @@ class RecordingsManager:
                 else (cloud[0] if cloud else None),
             }
             if item.path in self.unit_texts:
-                # The unit of an answer not taken, or of a diagnostic series.
+                # The unit of an answer not taken, of a diagnostic series, or
+                # of the last answer taken of a series of mean samples.
                 report["unit"] = self.unit_texts[item.path]
             if ledger is not None:
                 first = ledger.first_day()

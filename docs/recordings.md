@@ -214,9 +214,9 @@ heater) a measure of its own; enabled by default are the heat produced and
 the electricity, as on a K40. There is no counter of the integration for
 them, so there is no *(calculated)* companion. A path that answers 404 is
 asked again once a day; one in a unit other than kWh (in any case, for
-example `KWh`), Wh, MWh, kBtu or kW gives no entity, and the
-diagnostics show the unit it answered in. All four are read as samples of
-the mean power (see [the next section](#samples-of-the-mean-power)).
+example `KWh`), Wh, MWh, kBtu or kW gives no entity. The diagnostics
+show the unit each of the four answered in, whether it was taken or not.
+All four are read as samples of the mean power (see [the next section](#samples-of-the-mean-power)).
 
 The consumed energy is the electricity of the heat pump as the gateway counts
 it. It is a measure of its own with its five period entities, disabled by
@@ -234,8 +234,9 @@ Tested with synthetic answers in the shape of the other cloud recordings;
 not yet confirmed on a real iCom heat pump: whether the heat, compressor and
 heater paths answer there, and in which unit and count form. The consumed
 energy has answered on a real iCom heat pump, in a unit earlier versions did
-not take; which unit that is shows in the diagnostics from this version on. Please report on GitHub with
-the diagnostics (`recordings.series`, `icom_heat_pump`).
+not take; the diagnostics show that unit from this version on, also when it
+is taken. Please report on GitHub with the diagnostics
+(`recordings.series`, `icom_heat_pump`).
 
 ## Samples of the mean power
 
@@ -411,7 +412,8 @@ for a heat pump with counters of its own, `plant_kind` for a hybrid system
 without them), on an iCom heat pump `icom_heat_pump: true`
 with its recordings `monitoring_total_heat`, `monitoring_total_compressor`,
 `monitoring_total_eheater` and `sc1_solar_yield`, and per recording the
-`unit` it answered in when that unit was not taken (or for the solar yield),
+`unit` it answered in when that unit was not taken (for the solar yield
+and the four recordings of the energy monitoring also when it was taken),
 as written and cut to 16 characters, left out when it holds a character that
 cannot be printed (the unit only, never a value);
 a recording left out for its unit is asked again as soon as a version takes
