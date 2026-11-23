@@ -457,6 +457,7 @@
             "rule",
             "observed",
             "documented",
+            "expected",
             null
           ]
         },

@@ -26,9 +26,10 @@ reports. Its inputs, its result and its output form are fixed as follows.
 - `system_components.json` names component types (`Id`) and places (`Tok`)
   and holds roles per type and place. Each entry has a basis: `name` (it only
   names), `rule` (a fixed rule of the plant uses it), `observed` (seen in a
-  real module list with the role proven by the same plant) or `documented`
-  (manufacturer documentation). Behaviour comes only from roles with the
-  basis `rule`, `observed` or `documented`, never from a name. Conditions
+  real module list with the role proven by the same plant), `documented`
+  (manufacturer documentation) or `expected` (follows from a real module
+  list, the confirming reading not seen yet; with a note). Behaviour comes
+  only from roles with a basis other than `name`, never from a name. Conditions
   such as firmware or version limits are code, not table data.
 - Place keys: `heat_generator_control` (8), `basic_controller` (9),
   `system_controller` (16), `pool` (17), `remote_hc1_legacy` to
@@ -41,6 +42,8 @@ reports. Its inputs, its result and its output form are fixed as follows.
   (observed); type 240 has the flag `hmi800_hp_light` (rule). Table
   version 2 adds two roles seen on an iCom gateway: 172 at place 8
   `heat_source` and 158 at place 16 `system_controller` (observed).
+  Table version 3 keeps the role of 172 at place 8 with the basis
+  `expected`: that system's report held no type of the first heat source.
 - A row of the gateway itself is recognized by place 72 or 75 or by type 17,
   never by a name.
 - A faulty or missing table is rejected as a whole with one warning; the

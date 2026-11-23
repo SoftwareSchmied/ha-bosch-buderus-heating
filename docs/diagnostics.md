@@ -140,7 +140,12 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   (`heating`, `dhw`, `cooling`, `zone`, `ventilation`, `wddw2`),
   `value_type` (`level`, `absolute` or `degrees`), `notes` (form tokens
   such as `program_limits_missing`, `program_range_missing`,
-  `program_step_missing`, `setpoint_property_missing`, `program_empty`) and
+  `program_step_missing`, `setpoint_property_missing`, `program_empty`;
+  `program_range_default` and `program_step_default` when a heating program
+  without a reported range or step uses 5 to 30 °C in steps of 0.5; tokens
+  such as `unknown_fields` or `program_over_limit` for a program that is
+  shown but cannot be changed, see
+  [heating controls](heating-controls.md)) and
   `point_shapes` (`reviewed` for the known `{dayOfWeek, setpoint, time}`
   form, otherwise its key names and value types, never values); further
   `edit_issue` tokens (`program_limits_missing`, `levels_unknown`,

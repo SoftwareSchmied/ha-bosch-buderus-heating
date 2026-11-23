@@ -365,9 +365,10 @@ of the month.
 - Hours without data (`c = 0`, for example while the plant was off) stay
   gaps, never zeros. Nothing is interpolated.
 - Values with a start more than an hour ahead, before the first recorded
-  day, below zero or above 90 kWh per hour (1.5 × 60 kW, days and months
-  scaled) are discarded and counted in the diagnostics. The bound only
-  catches obvious garbage; it is the same for every recording. A discarded
+  day, below zero or above the plausibility bound (90 kWh per hour for a
+  heat pump, 500 for a boiler, days and months scaled, see
+  [plausibility bound](#plausibility-bound)) are discarded and counted in
+  the diagnostics. The bound only catches obvious garbage. A discarded
   hour counts as a gap: the other hours of its day are imported, and the
   day is summed up without it.
 - A day whose hours cannot be placed on a change of summer time is imported

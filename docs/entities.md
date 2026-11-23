@@ -548,7 +548,7 @@ the list. The role comes from the hardware type. Since 0.9.3-beta.6 a module
 that the model table gives no role, for example one without a hardware type,
 gets the role that the [component table](system-components.md) gives its
 type number at its place, only from an entry with the basis `rule`,
-`observed` or `documented` (for example `outdoor_unit` for type 65281 at
+`observed`, `documented` or `expected` (for example `outdoor_unit` for type 65281 at
 place 8); the type number and place are not part of what a restart keeps,
 the plant model's stored row gives them back. Every table entry names its
 evidence: `observed` (seen in the module list of a real installation) or
@@ -645,8 +645,8 @@ published as [`schemas/heat-generator-sensor.v1.json`](schemas/heat-generator-se
 - Within a version a key keeps its name, type and meaning. Removing or
   renaming a key, changing its type or changing what the state means raises
   the version; the old keys then stay for at least one stable release.
-- Act only on component entries whose `basis` is `rule`, `observed` or
-  `documented`. An entry with the basis `name` is for display; its name
+- Act only on component entries whose `basis` is `rule`, `observed`,
+  `documented` or `expected`. An entry with the basis `name` is for display; its name
   never tells what a component does.
 - Read the other attributes only while the state is a real value (not
   `unknown` or `unavailable`), as the Heat Pump Hydraulic Card does.
@@ -659,7 +659,7 @@ published as [`schemas/heat-generator-sensor.v1.json`](schemas/heat-generator-se
 | `plant_kind_evidence` | The evidence of `plant_kind` as fixed codes, for example `reported_heat_source_type` or `hybrid_manager_component` (list on the same page). The code `stored` (an input taken from the stored row after a restart) appears in the diagnostics only, so a restart does not change the sensor. |
 | `fuel` | `gas`, `oil` or `unknown` for a boiler or a hybrid system, otherwise `null` |
 | `cascade` | `true` for a heat pump cascade, `false` for a single heat pump system, `null` when the system type does not tell |
-| `components` | One entry per component, sorted by place number, type number and product name (at most 32): `place` (place key, `null` for an unknown place), `place_number` (the place as reported), `type_number` (the type number as reported), `type_name` (the name in the component table, `null` without one), `role` (only from an entry with the basis `rule`, `observed` or `documented`, otherwise `null`), `basis` and `product_name` (`null` without one). The gateway's own rows (place 72 or 75, type 17) and rows without a valid type (0) are left out. No versions, no serial numbers. This attribute is not recorded in the history. |
+| `components` | One entry per component, sorted by place number, type number and product name (at most 32): `place` (place key, `null` for an unknown place), `place_number` (the place as reported), `type_number` (the type number as reported), `type_name` (the name in the component table, `null` without one), `role` (only from an entry with the basis `rule`, `observed`, `documented` or `expected`, otherwise `null`), `basis` and `product_name` (`null` without one). The gateway's own rows (place 72 or 75, type 17) and rows without a valid type (0) are left out. No versions, no serial numbers. This attribute is not recorded in the history. |
 | `components_source` | `cloud` or `local`: which access supplied `components`; `null` without a list or without a valid component table |
 | `components_table_version` | Version of the component table `system_components.json`; `null` when the table is missing or faulty (then `components` stays empty and the state is never a component name) |
 
@@ -696,7 +696,7 @@ components:
     basis: observed
     product_name: null
 components_source: cloud
-components_table_version: 2
+components_table_version: 3
 ```
 
 Tested with a test case in the shape of the component list of a real iCom

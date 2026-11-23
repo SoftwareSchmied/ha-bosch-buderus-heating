@@ -147,6 +147,8 @@ pinned schema is still rejected.
 | --- | --- | --- |
 | `/system/basicInfo` | a module row without `ModuleSerialNumber`, `ModuleHwIdentStr` or `Ver` (reported for a burner module of a K40RF on firmware 15.00.01) | accepted; the missing value stays missing, nothing is filled in. A module without a serial number is left out of the identity comparison |
 | `/system/basicInfo` | a `null` or another type in a module field, a whole number instead of a text, a row without `Tok` or `Id`, a timestamp of another form (for example in milliseconds), another `writeable` flag, the status in another letter case | accepted: `null`, a fraction or another type counts as a missing field, a whole number as its digits; a row without place or type is left out; the timestamp (not used) is read as empty. The gateway ID and the module list itself stay strict |
+| any readable resource | a value its pinned schema does not list yet, a unit in a spelling the cloud reads (for example `KWh`, `degC`) | read; such a value is counted as `undeclared_values` (see [local API resources](local-api-resources.md)). The answer of a setting keeps its strict list |
+| recordings | a faulty slot, a group whose end lies before its start | only that slot or group is left out (see [recordings](recordings.md)) |
 
 ## Checked systems
 

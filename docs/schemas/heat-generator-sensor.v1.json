@@ -301,12 +301,13 @@
           ]
         },
         "basis": {
-          "description": "How the type's entry is known; act only on rule, observed or documented.",
+          "description": "How the type's entry is known; act only on a basis other than name (rule, observed, documented or expected).",
           "enum": [
             "name",
             "rule",
             "observed",
             "documented",
+            "expected",
             null
           ]
         },
