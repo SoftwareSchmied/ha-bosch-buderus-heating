@@ -12,6 +12,10 @@ without times: an ``interval`` of a day holds its hours, of a month its days
 and of a year its months, counted from the start of the interval in the
 plant's time zone (the time zone of Home Assistant stands in for it).
 
+A series kept as samples of the mean (``minute_sums``, the energy monitoring
+of iCom gateways) is read as the mean ``y / c`` times the hours of each slot
+(``mean_form``), for hours, days and months alike.
+
 Hours are placed in UTC. A group whose number of hours fits neither the
 elapsed hours nor the hours on the clock is not used; a day whose hours
 cannot be placed (a change of summer time counted on the clock) is kept as
@@ -30,7 +34,7 @@ from enum import StrEnum
 from typing import Final
 
 from ..local_api.models import Recording, RecordingGroup
-from .series import Quantity, Series, unit_factor
+from .series import Quantity, Series, series_unit_factor
 
 HOUR: Final = 3600
 # A plausible upper bound of one hour's energy: 1.5 times a nominal output of
@@ -163,24 +167,48 @@ def count_fits(
     return True
 
 
-def minute_form(
-    series: Series, rate: Rate, y: float, c: float, day: date, zone: tzinfo
-) -> tuple[float, float]:
-    """A sum of minute values read as hours and days (``minute_sums`` series).
+def slot_hours(rate: Rate, day: date, zone: tzinfo) -> int:
+    """The hours of a slot: 1 for an hour, the hours of the day (23 to 25)
+    and of every day of a month."""
+    if rate is Rate.HOUR:
+        return 1
+    if rate is Rate.DAY:
+        return day_hours(day, zone)
+    days = calendar.monthrange(day.year, day.month)[1]
+    return sum(day_hours(day + timedelta(days=index), zone) for index in range(days))
 
-    A count above the usual one and up to the minutes of the slot is the
-    minute form: the energy is the sum divided by 60, and the slot counts as
-    one hour (or the hours of the day). Any other count stays as it is, so
-    ``count_fits`` judges it.
+
+def mean_form(
+    series: Series,
+    rate: Rate,
+    y: float,
+    c: float,
+    day: date,
+    zone: tzinfo,
+    *,
+    start: datetime | None = None,
+    now: datetime | None = None,
+) -> tuple[float, float]:
+    """A slot of a series kept as samples of the mean (``minute_sums``).
+
+    ``y`` is the sum of ``c`` samples, whatever the sample rate (60 per
+    hour, 4 per hour, one per hour): the energy of the slot is the mean
+    ``y / c`` times the hours of the slot, for an hour, a day and a month
+    alike. A slot still running at ``now`` counts the hours elapsed since
+    its UTC ``start`` (an hour that cannot be placed counts one hour). The
+    slot then counts as one value per hour (``c`` 1 for an hour, the hours
+    of the day or of the month), so ``count_fits`` takes it. A slot without
+    data (``c`` 0) stays a gap; every other series stays as it is.
     """
     if not series.minute_sums or c <= 0:
         return y, c
-    if rate is Rate.HOUR and 1 < c <= 60:
-        return y / 60, 1.0
-    hours = day_hours(day, zone)
-    if rate is Rate.DAY and max(24, hours) < c <= 60 * hours:
-        return y / 60, float(hours)
-    return y, c
+    full = slot_hours(rate, day, zone)
+    hours = float(full)
+    if now is not None and start is not None:
+        elapsed = (now - start).total_seconds() / HOUR
+        if 0 <= elapsed < full:
+            hours = elapsed
+    return y / c * hours, float(full)
 
 
 def _hour_group(
@@ -284,7 +312,7 @@ def _calendar_group(
 
 def parse_local(recording: Recording, series: Series, zone: tzinfo) -> Parsed | None:
     """The samples of a decoded local answer; None for an unknown unit."""
-    factor = unit_factor(series.quantity, recording.unit)
+    factor = series_unit_factor(series, recording.unit)
     if factor is None:
         return None
     parsed = Parsed()
@@ -320,17 +348,22 @@ def cloud_unit(payload: object) -> str | None:
 
 
 def parse_cloud(
-    payload: object, series: Series, interval: str, zone: tzinfo
+    payload: object,
+    series: Series,
+    interval: str,
+    zone: tzinfo,
+    now: datetime | None = None,
 ) -> Parsed | None:
     """The samples of a cloud answer to ``?interval=``; None when the answer
-    is no recording or has an unknown unit."""
+    is no recording or has an unknown unit. ``now``: when it was read (the
+    hours of a slot still running, ``mean_form``)."""
     if not isinstance(payload, dict) or not is_cloud_recording(payload):
         return None
     rows = payload.get("recording")
     if not isinstance(rows, list) or not valid_interval(interval):
         return None
     unit = payload.get("unitOfMeasure")
-    factor = unit_factor(series.quantity, unit if isinstance(unit, str) else None)
+    factor = series_unit_factor(series, unit if isinstance(unit, str) else None)
     if factor is None:
         return None
     values: list[tuple[float, float] | None] = []
@@ -353,13 +386,12 @@ def parse_cloud(
             if item is None:
                 parsed.issues["invalid_value"] += 1
                 continue
-            item = minute_form(series, Rate.HOUR, *item, day, zone)
+            begin = start + timedelta(hours=index) if placeable else None
+            item = mean_form(series, Rate.HOUR, *item, day, zone, start=begin, now=now)
             if not count_fits(series.quantity, Rate.HOUR, item[1], day, zone):
                 parsed.issues["count_form"] += 1
                 continue
-            hour = (
-                int((start + timedelta(hours=index)).timestamp()) if placeable else None
-            )
+            hour = int(begin.timestamp()) if begin is not None else None
             parsed.samples.append(Sample(Rate.HOUR, day, hour, *item))
         parsed.complete_days.add(day)
         return parsed
@@ -374,7 +406,15 @@ def parse_cloud(
                 parsed.issues["invalid_value"] += 1
                 continue
             sample_day = first + timedelta(days=index)
-            item = minute_form(series, Rate.DAY, *item, sample_day, zone)
+            item = mean_form(
+                series,
+                Rate.DAY,
+                *item,
+                sample_day,
+                zone,
+                start=local_midnight(sample_day, zone).astimezone(UTC),
+                now=now,
+            )
             if not count_fits(series.quantity, Rate.DAY, item[1], sample_day, zone):
                 parsed.issues["count_form"] += 1
                 continue
@@ -388,7 +428,17 @@ def parse_cloud(
         if item is None:
             parsed.issues["invalid_value"] += 1
             continue
-        parsed.samples.append(Sample(Rate.MONTH, add_months(first, index), None, *item))
+        month = add_months(first, index)
+        item = mean_form(
+            series,
+            Rate.MONTH,
+            *item,
+            month,
+            zone,
+            start=local_midnight(month, zone).astimezone(UTC),
+            now=now,
+        )
+        parsed.samples.append(Sample(Rate.MONTH, month, None, *item))
     return parsed
 
 

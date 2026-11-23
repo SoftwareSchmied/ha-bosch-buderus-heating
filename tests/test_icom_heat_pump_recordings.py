@@ -4,8 +4,11 @@ An iCom gateway whose plant kind is ``heat_pump`` (from ``hs1/type``) is
 asked for the heat produced, the compressor and the electric heater under
 the energy monitoring instead of the boiler series; an iCom boiler, a plant
 without a plant kind and every other gateway read as before. The solar
-yield is read for the diagnostics only (state and unit). Synthetic answers;
-not yet confirmed on a real iCom heat pump (#467).
+yield is read for the diagnostics only (state and unit). The consumed energy
+of the energy monitoring is asked as well: a measure of its own, disabled by
+default and never a part of the electricity. Energy units in any case and kW
+(samples of the mean power) are taken. Synthetic answers; not yet confirmed
+on a real iCom heat pump (#467).
 """
 
 from __future__ import annotations
@@ -50,6 +53,7 @@ from tests.test_recordings_manager import Clock
 ANCHOR = "/heatSources/numberOfStarts"
 MONITORING = {item.key: item.path for item in ICOM_HEAT_PUMP_SERIES}
 BOILER = {"ch_actual_power", "dhw_actual_power", "total_consumed"}
+CONSUMED = BY_KEY["total_consumed"].path
 HEAT = "/recordings/heatSources/total/energyMonitoring/outputProduced"
 NOW = local(2026, 11, 22, 10) + timedelta(minutes=20)
 
@@ -173,7 +177,7 @@ def test_the_series_and_measures_of_an_icom_heat_pump() -> None:
 @pytest.mark.parametrize(
     ("case", "expected"),
     [
-        ("issue_467_icom_heat_pump", {*MONITORING, SOLAR_YIELD.key}),
+        ("issue_467_icom_heat_pump", {*MONITORING, SOLAR_YIELD.key, "total_consumed"}),
         # An iCom boiler and an iCom plant without a plant kind: as before.
         ("issue_104_icom_boiler", BOILER),
         ("issue_467_icom_without_type", BOILER),
@@ -211,8 +215,8 @@ async def test_an_icom_heat_pump_reads_its_energy_and_no_boiler_series(
     manager, calls = await recordings(hass, coordinator, clock, heat_pump_answers())
     await manager.async_run("start")
     asked = {path for path, _ in calls}
-    assert asked == {*CLOUD_PATHS, *MONITORING.values(), SOLAR_YIELD.path}
-    assert not asked & {BY_KEY[key].path for key in BOILER}
+    assert asked == {*CLOUD_PATHS, *MONITORING.values(), SOLAR_YIELD.path, CONSUMED}
+    assert not asked & {BY_KEY[key].path for key in BOILER - {"total_consumed"}}
     assert set(manager.available()) == set(MONITORING)
     specs = {spec.measure.key for spec in manager.specs()}
     assert specs == {*MONITORING, "monitoring_total_electricity"}
@@ -227,7 +231,7 @@ async def test_an_icom_heat_pump_reads_its_energy_and_no_boiler_series(
     series = report["series"]
     assert series["monitoring_total_heat"]["cloud"] == "ok"  # type: ignore[index]
     assert series[SOLAR_YIELD.key] == {"local": None, "cloud": "ok", "unit": "kWh"}  # type: ignore[index]
-    assert "total_consumed" not in series  # type: ignore[operator]
+    assert series["total_consumed"]["cloud"] == "missing"  # type: ignore[index]
 
     # The solar yield answered: it is not read again.
     keep_reading(manager)
@@ -358,4 +362,177 @@ async def test_with_the_import_on_the_solar_yield_is_still_read_once(
     await manager.async_run("hourly")
     assert SOLAR_YIELD.path not in {path for path, _ in calls}
     assert HEAT in {path for path, _ in calls}
+    await coordinator.async_shutdown()
+
+
+# ------------------------------------------- consumed energy, units, stored
+
+
+def consumed_answers(unit: str = "kW") -> dict[str, Callable[[str], Any]]:
+    """The heat pump's answers plus the consumed energy, minute samples of a
+    mean of 1 kW (an hour of 60 samples summing to 60)."""
+    answers = heat_pump_answers()
+    answers[CONSUMED] = lambda interval: recording(interval, 60.0, 60, unit=unit)
+    return answers
+
+
+async def test_an_icom_heat_pump_reads_its_consumed_energy_on_its_own(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = await plant(hass, "issue_467_icom_heat_pump")
+    manager, calls = await recordings(hass, coordinator, Clock(NOW), consumed_answers())
+    await manager.async_run("start")
+    assert CONSUMED in {path for path, _ in calls}
+    assert set(manager.available()) == {*MONITORING, "total_consumed"}
+    day = NOW.date() - timedelta(days=1)
+    assert manager.daily("total_consumed", day, day)[0].y == pytest.approx(24.0)
+    specs = {spec.measure.key: spec for spec in manager.specs()}
+    consumed = [
+        spec for spec in manager.specs() if spec.measure.key == "total_consumed"
+    ]
+    assert len(consumed) == 5
+    assert not any(spec.enabled_default for spec in consumed)
+    assert consumed[0].measure.counter is None
+    assert "heatSources:total:energyMonitoring:consumedEnergy:yesterday" in {
+        spec.key for spec in consumed
+    }
+    # The electricity stays compressor plus heater: nothing counted twice.
+    assert specs["monitoring_total_electricity"].measure.parts == (
+        "monitoring_total_compressor",
+        "monitoring_total_eheater",
+    )
+    assert manager.diagnostics()["series"]["total_consumed"]["cloud"] == "ok"  # type: ignore[index]
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize("unit", ["kW", "KWh", "kwh"])
+async def test_the_units_the_energy_monitoring_answers_in_are_taken(
+    hass: HomeAssistant, unit: str
+) -> None:
+    coordinator = await plant(hass, "issue_467_icom_heat_pump")
+    answers = heat_pump_answers(unit=unit)
+    manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
+    await manager.async_run("start")
+    assert "monitoring_total_heat" in manager.available()
+    series = manager.diagnostics()["series"]["monitoring_total_heat"]  # type: ignore[index]
+    assert series["cloud"] == "ok" and "unit" not in series  # type: ignore[index]
+    day = NOW.date() - timedelta(days=1)
+    assert manager.daily("monitoring_total_heat", day, day)[0].y == pytest.approx(72.0)
+    await coordinator.async_shutdown()
+
+
+async def test_an_icom_boiler_does_not_take_a_unit_of_power(
+    hass: HomeAssistant,
+) -> None:
+    """The boiler's energy is no series of mean samples: kW stays unknown."""
+    coordinator = await plant(hass, "issue_104_icom_boiler")
+    ch = BY_KEY["ch_actual_power"].path
+    answers = {ch: lambda interval: recording(interval, 2.0, unit="kW")}
+    manager, _calls = await recordings(hass, coordinator, Clock(NOW), answers)
+    await manager.async_run("start")
+    assert "ch_actual_power" not in manager.available()
+    series = manager.diagnostics()["series"]["ch_actual_power"]  # type: ignore[index]
+    assert series == {"local": None, "cloud": "unit", "unit": "kW"}
+    await coordinator.async_shutdown()
+
+
+async def test_a_unit_left_out_by_an_earlier_version_is_asked_again(
+    hass: HomeAssistant,
+) -> None:
+    """Earlier versions kept no unit text: such a recording is asked once
+    more; one whose unit is taken now as well; an unknown one is not."""
+    coordinator = await plant(hass, "issue_467_icom_heat_pump")
+    clock = Clock(NOW)
+    answers = consumed_answers()
+    manager, calls = await recordings(hass, coordinator, clock, answers)
+    eheater = MONITORING["monitoring_total_eheater"]
+    compressor = MONITORING["monitoring_total_compressor"]
+    at = (NOW - timedelta(days=3)).timestamp()
+    stored = {
+        "cloud": {
+            CONSUMED: ["unit", at],
+            HEAT: ["unit", at],
+            eheater: ["unit", at],
+            compressor: ["unit", at],
+        },
+        "units": {HEAT: "kW", eheater: "unit"},
+    }
+    manager._load(stored)
+    assert set(manager.cloud_paths) == {eheater}
+    calls.clear()
+    await manager.async_run("start")
+    asked = {path for path, _ in calls}
+    assert {CONSUMED, HEAT, compressor} <= asked
+    assert eheater not in asked
+    assert "total_consumed" in manager.available()
+    # Once checked, a recording without a unit text is not asked again.
+    data = manager._data()
+    assert data["units_rechecked"] is True
+    data["cloud"][CONSUMED] = ["unit", at]
+    manager._load(data)
+    assert manager.cloud_paths[CONSUMED][0] == "unit"
+    await coordinator.async_shutdown()
+
+
+async def test_months_of_an_earlier_version_are_corrected_when_loaded(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = await plant(hass, "issue_467_icom_heat_pump")
+    manager, _calls = await recordings(
+        hass, coordinator, Clock(NOW), consumed_answers()
+    )
+    manager._load(
+        {
+            "series": {
+                "total_consumed": {
+                    "months": {"2026-09-01": [43200.0, 43200, "cloud", 2, True]}
+                },
+                "total_heat": {
+                    "months": {"2026-09-01": [43200.0, 43200, "cloud", 2, True]}
+                },
+            }
+        }
+    )
+    consumed = manager.ledgers["total_consumed"]
+    assert consumed.months["2026-09-01"][:2] == [pytest.approx(720.0), 720.0]
+    assert manager.ledgers["total_heat"].months["2026-09-01"][:2] == [43200.0, 43200]
+    events = manager.diagnostics()["series"]["total_consumed"]["events"]  # type: ignore[index]
+    assert events == {"months_corrected": 1}
+    await coordinator.async_shutdown()
+
+
+async def test_the_hour_still_running_counts_the_minutes_elapsed(
+    hass: HomeAssistant,
+) -> None:
+    """Today's recording is read with its read time: the hour still running
+    (20 samples at 10:20) is the mean times a third of an hour."""
+    coordinator = await plant(hass, "issue_467_icom_heat_pump")
+    answers = heat_pump_answers()
+    today = NOW.date().isoformat()
+
+    def heat(interval: str) -> dict[str, Any]:
+        if interval != today:
+            return recording(interval, 3.0)
+        rows = [{"y": 30.0, "c": 60}] * 10 + [{"y": 10.0, "c": 20}]
+        rows += [{"y": 1.0, "c": 0}] * 13
+        return {"type": "yRecording", "unitOfMeasure": "kW", "recording": rows}
+
+    answers[HEAT] = heat
+    clock = Clock(NOW)
+    manager, calls = await recordings(hass, coordinator, clock, answers)
+    await manager.async_run("start")
+    spec = next(
+        spec
+        for spec in manager.specs()
+        if spec.measure.key == "monitoring_total_heat"
+        and spec.period.value == "current_month"
+    )
+    manager.request(spec.key)
+    calls.clear()
+    await manager.async_run("hourly")
+    assert (HEAT, today) in calls
+    running = int(NOW.replace(minute=0).timestamp())
+    cell = manager.ledgers["monitoring_total_heat"].hours[str(running)]
+    assert cell[0] == pytest.approx(0.5 / 3)
+    assert cell[1] == 1.0
     await coordinator.async_shutdown()

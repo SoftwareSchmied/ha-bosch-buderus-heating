@@ -51,6 +51,7 @@ from .parse import (
     local_midnight,
     month_start,
     rejection,
+    slot_hours,
 )
 from .series import Series
 
@@ -165,6 +166,41 @@ class Ledger:
             while rows and rows[0][0] < limit:
                 row = rows.pop(0)
                 self.imp["base"] = [row[3], row[4], *row[5:9]]
+
+    def correct_mean_months(self, now: datetime, zone: tzinfo) -> int:
+        """Months of a series kept as samples of the mean (``minute_sums``)
+        as ``parse.mean_form`` reads them; returns how many changed.
+
+        Earlier versions kept such a month with the plant's sum and count as
+        they were (up to about 60 times the energy). A month that ended
+        becomes the mean times its hours, with its other fields; one still
+        running is dropped and read again. A month already in this form (its
+        count is its hours) stays as it is. An imported row made from a
+        changed month is imported again (``redo``, within the rows kept).
+        """
+        if not self.series.minute_sums:
+            return 0
+        changed: list[str] = []
+        for key, cell in list(self.months.items()):
+            first = date.fromisoformat(key)
+            hours = slot_hours(Rate.MONTH, first, zone)
+            if cell[1] <= 0 or math.isclose(cell[1], hours, abs_tol=_EPSILON):
+                continue
+            if _ts(local_midnight(add_months(first, 1), zone)) > _ts(now):
+                del self.months[key]
+            else:
+                cell[0] = float(cell[0]) / float(cell[1]) * hours
+                cell[1] = float(hours)
+            changed.append(key[:7])
+        if changed:
+            self.stats["months_corrected"] += len(changed)
+            rows = self.imp["rows"] if self.imp is not None else []
+            redo = [
+                int(row[0]) for row in rows if row[9] == "m" and row[4][:7] in changed
+            ]
+            if self.imp is not None and redo:
+                self.imp["redo"] = min(redo)
+        return len(changed)
 
     def settle(self, now: datetime, zone: tzinfo) -> None:
         """A slot read after its end and not changed for ``SETTLED`` is
@@ -630,10 +666,13 @@ class Ledger:
         imp["stale"] = keep
 
     def _rewind(self, imp: dict[str, Any], plan: Plan, can_clear: bool) -> None:
-        """Import again from the first row whose final slot changed."""
+        """Import again from the first row whose final slot changed, or from
+        the row ``redo`` names (a corrected month, ``correct_mean_months``)."""
         rows = imp["rows"]
+        redo = imp.pop("redo", None)
         for index, row in enumerate(rows):
             start, y, c, key, kind = row[0], row[1], row[2], row[4], row[9]
+            again = type(redo) is int and start >= redo
             if kind == "h":
                 cell = self.hours.get(str(start))
                 expected = (cell[0], cell[1]) if cell and cell[4] else None
@@ -648,11 +687,14 @@ class Ledger:
                 )
             else:
                 expected = None
-            if expected is None or (
-                math.isclose(expected[0], y, abs_tol=_EPSILON)
-                and (
-                    self.series.mean is False
-                    or math.isclose(expected[1], c, abs_tol=_EPSILON)
+            if not again and (
+                expected is None
+                or (
+                    math.isclose(expected[0], y, abs_tol=_EPSILON)
+                    and (
+                        self.series.mean is False
+                        or math.isclose(expected[1], c, abs_tol=_EPSILON)
+                    )
                 )
             ):
                 continue

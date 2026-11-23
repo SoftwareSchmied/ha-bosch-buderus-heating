@@ -9,8 +9,9 @@ what it belongs to, so that no other plant collects refusals for it:
   recordings are read for at all (``anchor``) but without the energy
   monitoring (``/heatSources/emon``) a heat pump has, except a heat pump
   behind an iCom gateway;
-- the series of a heat pump behind an iCom gateway (and, for the
-  diagnostics only, the solar yield) for an iCom gateway whose plant kind
+- the series of a heat pump behind an iCom gateway, the consumed energy of
+  the energy monitoring (``icom_heat_pump_too``) and, for the diagnostics
+  only, the solar yield for an iCom gateway whose plant kind
   (``plant_inputs.current_plant``) is ``heat_pump``; without a plant kind the
   boiler series are read as before.
 
@@ -81,7 +82,10 @@ def allowed(
         return has_softener_circuit(found)
     anchored = any(_ANCHOR.fullmatch(p) for p in found)
     if series.requires == REQUIRES_BOILER:
-        return not icom_heat_pump and has_boiler_shape(found) and anchored
+        if icom_heat_pump:
+            # Only the consumed energy (``icom_heat_pump_too``).
+            return series.icom_heat_pump_too and anchored
+        return has_boiler_shape(found) and anchored
     if series.requires == REQUIRES_ICOM_HEAT_PUMP:
         return icom_heat_pump and anchored
     return False

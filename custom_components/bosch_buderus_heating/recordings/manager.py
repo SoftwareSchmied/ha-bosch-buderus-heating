@@ -116,6 +116,7 @@ from .series import (
     SERIES,
     Quantity,
     Series,
+    series_unit_factor,
 )
 from .sources import Outcome, local_query, read_cloud, read_local
 
@@ -432,6 +433,10 @@ class RecordingsManager:
         }
         self.local_paths = _paths(data.get("local"))
         self.cloud_paths = _paths(data.get("cloud"))
+        zone = dt_util.get_default_time_zone()
+        now = self._now()
+        for ledger in self.ledgers.values():
+            ledger.correct_mean_months(now, zone)
         published = data.get("published")
         self.published = {
             key: value
@@ -452,6 +457,22 @@ class RecordingsManager:
             for path, text in (units.items() if isinstance(units, dict) else ())
             if path in BY_PATH and isinstance(text, str) and _unit_text(text) == text
         }
+        self._recheck_units(data.get("units_rechecked") is True)
+
+    def _recheck_units(self, rechecked: bool) -> None:
+        """A recording left out for its unit is asked again when that unit is
+        taken now, and once when an earlier version kept no unit text for it
+        (``units_rechecked``)."""
+        for known in (self.local_paths, self.cloud_paths):
+            for path, item in list(known.items()):
+                if item[0] != "unit":
+                    continue
+                text = self.unit_texts.get(path)
+                if (text is None and not rechecked) or (
+                    text is not None
+                    and series_unit_factor(BY_PATH[path], text) is not None
+                ):
+                    del known[path]
 
     def _data(self) -> dict[str, Any]:
         return {
@@ -462,6 +483,7 @@ class RecordingsManager:
             "cloud_done": sorted(self.cloud_done),
             "last_local_ok": self.last_local_ok,
             "units": dict(sorted(self.unit_texts.items())),
+            "units_rechecked": True,
         }
 
     def _save(self) -> None:
@@ -1154,7 +1176,7 @@ class RecordingsManager:
             self._count_outcome(report, CLOUD, outcome)
             if outcome is Outcome.OK:
                 read_at = self._now()
-                parsed = parse_cloud(answer.data, series, interval, zone)
+                parsed = parse_cloud(answer.data, series, interval, zone, read_at)
                 if parsed is None:
                     self.cloud_paths[series.path] = ["unit", read_at.timestamp()]
                     self._note_unit(series.path, cloud_unit(answer.data))

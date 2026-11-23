@@ -17,7 +17,10 @@ names their statistics.
 The series of a heat pump behind an iCom gateway (``monitoring_total_...``)
 have the measures of the total (heat, compressor, heater and their sum as
 electricity) without a counter of the integration: no *(calculated)*
-companion. A series read for the diagnostics only has no measure.
+companion. The consumed energy of the energy monitoring is a measure of its
+own there (``total_consumed``, disabled by default): it is never a part of
+the electricity, so nothing is counted twice. A series read for the
+diagnostics only has no measure.
 """
 
 from __future__ import annotations

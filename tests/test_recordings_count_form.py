@@ -129,13 +129,15 @@ def test_a_local_answer_with_minute_values_is_not_taken_either() -> None:
 CONSUMED = BY_KEY["total_consumed"]
 
 
-def test_energy_monitoring_minute_sums_are_divided_by_sixty() -> None:
+def test_energy_monitoring_minute_sums_are_read_as_mean_times_hours() -> None:
     """The energy monitoring of a plant without the local data port answers
-    the sum of minute values (a reporter compared a day of 420 with the app:
-    7 kWh); the form is recognised by its count."""
+    the sum of minute samples (a day of 420 from 1,439 samples is 7 kWh): the
+    mean times the hours of the slot."""
     day = parse_cloud(_cloud([{"y": 420.0, "c": 1439}] * 30), CONSUMED, MONTH, Z)
     assert day is not None and len(day.samples) == 30
-    assert {(s.y, s.c) for s in day.samples} == {(7.0, 24.0)}
+    assert {s.c for s in day.samples} == {24.0}
+    assert day.samples[0].y == pytest.approx(420.0 / 1439 * 24)
+    assert day.samples[0].y == pytest.approx(7.0, abs=0.01)
     hours = parse_cloud(
         _cloud([{"y": 30.0, "c": 60}] * 23 + [{"y": 1.0, "c": 0}]), CONSUMED, DAY, Z
     )
@@ -153,10 +155,16 @@ def test_energy_monitoring_in_the_usual_form_is_unchanged() -> None:
     assert {(s.y, s.c) for s in days.samples} == {(12.0, 24.0)}
 
 
-def test_an_odd_count_of_energy_monitoring_is_still_discarded() -> None:
+def test_any_sample_rate_of_energy_monitoring_is_the_mean_times_hours() -> None:
+    """Whatever the sample rate (every 17 seconds, every quarter of an hour),
+    the mean of the samples times the hours of the slot."""
     days = parse_cloud(_cloud([{"y": 420.0, "c": 5000}] * 30), CONSUMED, MONTH, Z)
-    assert days is not None and days.samples == []
-    assert days.issues["count_form"] == 30
+    assert days is not None and len(days.samples) == 30
+    assert not days.issues["count_form"]
+    assert days.samples[0].y == pytest.approx(420.0 / 5000 * 24)
+    quarter = parse_cloud(_cloud([{"y": 8.0, "c": 4}] * 24), CONSUMED, DAY, Z)
+    assert quarter is not None
+    assert {(s.y, s.c) for s in quarter.samples} == {(2.0, 1.0)}
 
 
 def test_other_series_are_never_divided() -> None:

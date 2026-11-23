@@ -17,6 +17,12 @@ from enum import StrEnum
 from typing import Final
 
 from ..local_api._data import OPERATIONS
+from ..unit_contracts import (
+    DURATION_UNITS,
+    ENERGY_UNITS,
+    TEMPERATURE_UNITS,
+    energy_kwh_scale,
+)
 
 PREFIX: Final = "/recordings"
 _EMON: Final = "/recordings/heatSources/emon/"
@@ -48,13 +54,26 @@ _KINDS: Final[dict[str, tuple[str, Quantity]]] = {
     "workingTime": ("working_time", Quantity.DURATION),
 }
 MODES: Final = ("total", "ch", "dhw", "cooling", "pool", "ventilation")
+# The factor of each canonical duration to hours.
+_HOURS: Final[dict[str, float]] = {"s": 1 / 3600, "min": 1 / 60, "h": 1.0, "d": 24.0}
 # Units each quantity accepts, with the factor to the unit kept here
-# (kWh, h, a plain count and °C). Any other unit: the series is not kept.
+# (kWh, h, a plain count and °C): the spellings of the shared unit table
+# (``unit_contracts``) plus MWh; temperatures in °C only (a recording in °F or
+# K is not converted). Any other unit: the series is not kept.
 UNITS: Final[dict[Quantity, dict[str | None, float]]] = {
-    Quantity.ENERGY: {"kWh": 1.0, "Wh": 0.001, "wh": 0.001, "MWh": 1000.0},
+    Quantity.ENERGY: {
+        **{
+            unit: scale
+            for unit in ENERGY_UNITS
+            if (scale := energy_kwh_scale(unit)) is not None
+        },
+        "MWh": 1000.0,
+    },
     Quantity.COUNT: {None: 1.0, "": 1.0, "count": 1.0},
-    Quantity.DURATION: {"s": 1 / 3600, "min": 1 / 60, "mins": 1 / 60, "h": 1.0},
-    Quantity.TEMPERATURE: {"C": 1.0, "°C": 1.0},
+    Quantity.DURATION: {unit: _HOURS[name] for unit, name in DURATION_UNITS.items()},
+    Quantity.TEMPERATURE: {
+        unit: 1.0 for unit, name in TEMPERATURE_UNITS.items() if name == "°C"
+    },
     Quantity.VOLUME: {"l": 1.0, "L": 1.0, "m3": 1000.0, "m³": 1000.0},
 }
 UNIT_OF: Final[dict[Quantity, str | None]] = {
@@ -87,9 +106,15 @@ class Series:
     # for a plant that shows ``requires`` (see ``gating``).
     cloud_only: bool = False
     requires: str | None = None
-    # The cloud answers this series with the sum of minute values (``c`` about
-    # 60 per hour, about 1440 per day): kWh is the sum divided by 60.
+    # The cloud answers this series as samples of the mean power: ``y`` is the
+    # sum of ``c`` samples (about 60 per hour, about 1,440 per day, whatever
+    # the sample rate), and the energy of a slot is the mean ``y / c`` times
+    # the hours of the slot (``parse.mean_form``). A unit of power (kW) is
+    # therefore taken as well (``series_unit_factor``).
     minute_sums: bool = False
+    # A series of ``requires`` ``boiler`` that is asked on a heat pump behind an
+    # iCom gateway as well (``gating``).
+    icom_heat_pump_too: bool = False
     # The heat source (``hs2``) whose own recording this is; ``None`` for
     # the gateway's series.
     heat_source: str | None = None
@@ -145,17 +170,20 @@ LOCAL_PATHS: Final = tuple(item.path for item in SERIES)
 # Series the local data port does not have. Each is read from the cloud
 # only when the plant shows what it belongs to (``gating``) and the path
 # answers there: the daily consumption of a water softener, and the energy
-# recordings of boilers and older firmware, which the app reads from other
-# paths than a heat pump's.
+# recordings of boilers and older firmware, which are kept under other paths
+# than a heat pump's.
 REQUIRES_SOFTENER: Final = "softener"
 REQUIRES_BOILER: Final = "boiler"
 # The heat pump behind an iCom gateway records its energy under other paths
 # than a heat pump of a K30 or K40 gateway: heat produced, compressor and
 # electric heater for the total. They are read instead of the boiler series
 # for an iCom gateway whose plant kind is ``heat_pump`` (``gating``), from the
-# cloud only. They are taken in the minute form as the energy monitoring's
-# consumed energy (``minute_sums``). The solar yield of the first solar
-# circuit is read on such a plant for the diagnostics only (state and unit).
+# cloud only, as samples of the mean like the energy monitoring's consumed
+# energy (``minute_sums``). The consumed energy itself is asked there as well
+# (``icom_heat_pump_too``): the electricity of the heat pump as the gateway
+# counts it, a measure of its own that is never added to the compressor and
+# the heater. The solar yield of the first solar circuit is read on such a
+# plant for the diagnostics only (state and unit).
 REQUIRES_ICOM_HEAT_PUMP: Final = "icom_heat_pump"
 _MONITORING: Final = "/recordings/heatSources/total/energyMonitoring/"
 ICOM_HEAT_PUMP_SERIES: Final = tuple(
@@ -218,6 +246,7 @@ CLOUD_ONLY: Final = (
         cloud_only=True,
         requires=REQUIRES_BOILER,
         minute_sums=True,
+        icom_heat_pump_too=True,
     ),
     *ICOM_HEAT_PUMP_SERIES,
     SOLAR_YIELD,
@@ -275,9 +304,40 @@ def kind_slug(kind: str) -> str | None:
     return found[0] if found is not None else None
 
 
-def unit_factor(quantity: Quantity, unit: str | None) -> float | None:
-    """The factor to this module's unit, or None for an unknown unit."""
+# Energy units the gateways write in other cases (``KWh``, ``kwh``, ``WH``):
+# compared without regard to case. ``MWh`` only as written (``mWh`` would be a
+# thousandth of a watt-hour).
+_ENERGY_ANY_CASE: Final[dict[str, float]] = {"kwh": 1.0, "wh": 0.001}
+# The mean of samples of power in kW times hours is energy in kWh: taken only
+# for a series kept as samples of the mean (``minute_sums``).
+_MEAN_POWER: Final[dict[str, float]] = {"kw": 1.0}
+
+
+def unit_factor(
+    quantity: Quantity, unit: str | None, *, mean_power: bool = False
+) -> float | None:
+    """The factor to this module's unit, or None for an unknown unit.
+
+    ``mean_power``: the series is kept as samples of the mean power, so a
+    unit of power (kW) is taken as well.
+    """
     table = UNITS[quantity]
     if unit in table:
         return table[unit]
+    if quantity is not Quantity.ENERGY or not isinstance(unit, str):
+        return None
+    text = unit.strip()
+    if text in table:
+        return table[text]
+    folded = text.casefold()
+    if folded in _ENERGY_ANY_CASE:
+        return _ENERGY_ANY_CASE[folded]
+    if mean_power and folded in _MEAN_POWER:
+        return _MEAN_POWER[folded]
     return None
+
+
+def series_unit_factor(series: Series, unit: str | None) -> float | None:
+    """The factor of a series' answer in ``unit``, or None for a unit it
+    does not take."""
+    return unit_factor(series.quantity, unit, mean_power=series.minute_sums)

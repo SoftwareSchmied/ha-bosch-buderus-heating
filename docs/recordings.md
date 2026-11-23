@@ -171,9 +171,9 @@ the exception (see [the next section](#the-heat-pump-behind-an-icom-gateway)).
 | Recording | Asked on a plant with | Unit accepted | Name |
 |---|---|---|---|
 | `/recordings/swCircuits/sw1/sensor/water` | a softener circuit (`/swCircuits/sw1/...`) | L, m³ (shown in L) | *Water consumption* |
-| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh, Wh, MWh | *Heating – Boiler energy* |
+| `/recordings/heatSources/actualCHPower` | a heat source with a reading a recording belongs to, without the energy monitoring (`/heatSources/emon`) a heat pump has | kWh, Wh, MWh, kBtu (kWh and Wh in any case) | *Heating – Boiler energy* |
 | `/recordings/heatSources/actualDHWPower` | as above | as above | *Hot water – Boiler energy* |
-| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above | as above | *Total – Energy consumed* |
+| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | as above, and a heat pump behind an iCom gateway | as above, and kW | *Total – Energy consumed* |
 
 A plant with a softener circuit and no heat source reads only the water
 recording. On a plant with local access the water or boiler paths are asked
@@ -182,12 +182,8 @@ path and day while they do not answer. The recordings take part in the
 import into the statistics like the others (water in litres, energy in kWh);
 no counter is calculated for them, so there is no *(calculated)* companion.
 
-The energy monitoring (*Total – Energy consumed*) has been reported to answer
-the sum of minute values: a count of about 60 per hour and about 1,440 per day,
-where the app shows the sum divided by 60 (a day of 420 as 7 kWh). I take that
-form as reported and divide such a slot by 60; I could not test it on a plant
-myself. Any other count that does not fit is not taken (see the next
-paragraph).
+The energy monitoring (*Total – Energy consumed*) answers samples of the mean
+power; see [samples of the mean power](#samples-of-the-mean-power).
 
 Expected, untested on a real installation: no answer of a softener or a boiler
 has been seen yet. The paths and the meaning of the values (energy summed per
@@ -206,29 +202,65 @@ monitoring instead of the paths of a K30 or K40 heat pump:
 | `/recordings/heatSources/total/energyMonitoring/outputProduced` | *Total – Heat produced* |
 | `/recordings/heatSources/total/energyMonitoring/compressor` | *Total – Compressor electricity* |
 | `/recordings/heatSources/total/energyMonitoring/eheater` | *Total – Electric heater electricity* |
+| `/recordings/heatSources/total/energyMonitoring/consumedEnergy` | *Total – Energy consumed* |
 
 They are read from the cloud for an iCom gateway whose plant kind is
 `heat_pump` (the heat source type `hs1/type` reports a heat pump, see
-[system components](system-components.md)); the three boiler paths are then
-not asked. An iCom boiler, an iCom gateway whose plant kind is not known yet
+[system components](system-components.md)); of the three boiler paths only
+the consumed energy is then asked. An iCom boiler, an iCom gateway whose plant kind is not known yet
 and every other gateway read exactly as before. Each recording that answers
 becomes the five period entities, and the electricity (compressor plus
 heater) a measure of its own; enabled by default are the heat produced and
 the electricity, as on a K40. There is no counter of the integration for
 them, so there is no *(calculated)* companion. A path that answers 404 is
-asked again once a day; one in a unit other than kWh, Wh or MWh gives no
-entity, and the diagnostics show the unit it answered in. The minute form
-is taken as for the consumed energy above.
+asked again once a day; one in a unit other than kWh, Wh, MWh, kBtu or kW
+(kWh, Wh and kW in any case, for example `KWh`) gives no entity, and the
+diagnostics show the unit it answered in. All four are read as samples of
+the mean power (see [the next section](#samples-of-the-mean-power)).
+
+The consumed energy is the electricity of the heat pump as the gateway counts
+it. It is a measure of its own with its five period entities, disabled by
+default, and it is never added to the electricity (compressor plus heater):
+whether it holds the heater as well is not known yet, so the two are kept
+apart and nothing is counted twice. Use either *Total – Electricity* or
+*Total – Energy consumed* in the energy dashboard, not both.
 
 On such a plant the solar yield of the first solar circuit
 (`/recordings/solarCircuits/sc1/solarYield`) is read as well, for the
 diagnostics only: its state and unit, no entity, no statistic. It is read
 once (one day) until it answers; a 404 is asked again once a day.
 
-Tested with synthetic answers in the shape of the other cloud recordings.
-Not yet confirmed on a real iCom heat pump: whether these paths answer
-there, in which unit and in which count form. Please report on GitHub with
+Tested with synthetic answers in the shape of the other cloud recordings;
+not yet confirmed on a real iCom heat pump: whether the heat, compressor and
+heater paths answer there, and in which unit and count form. The consumed
+energy has answered on a real iCom heat pump, in a unit earlier versions did
+not take; which unit that is shows in the diagnostics from this version on. Please report on GitHub with
 the diagnostics (`recordings.series`, `icom_heat_pump`).
+
+## Samples of the mean power
+
+The energy monitoring of an iCom gateway
+(`/recordings/heatSources/total/energyMonitoring/...`) answers each slot as the
+sum `y` of `c` samples of the mean power, for example about 60 per hour and
+about 1,440 per day: a day of 420 from 1,439 samples is 7 kWh. The energy of
+a slot is the mean `y / c` times the hours of the slot, whatever the sample
+rate: one hour for an hour, the hours of the day for a day (23 or 25 on a
+change of summer time) and the hours of the month for a month of the year
+interval. A slot still running counts the hours elapsed so far. A slot with
+`c` 0 stays a gap. Because the mean is a power, a unit of power (kW) is taken
+for these recordings; kW is not taken for any other recording.
+
+Up to 0.9.3-beta.5 the months of such a recording (the consumed energy)
+were taken with the sum as it was, up to about 60 times too high, and the hours
+and days only for a count of up to 60 per hour. When the recordings are loaded,
+a stored month of such a recording that ended is corrected to the mean times
+its hours, and the month still running is read again; the diagnostics count
+this as `months_corrected`. Days and hours stored before stay as they were
+(they differ only where samples were missing). With the import on, a row of
+the statistics that was made from such a month is imported again when it is
+still among the rows kept for comparison (the last eight days); an older one
+stays in the statistics. To replace it, use **Delete imported statistics** in
+the options and switch the import on again.
 
 ## The heat pump of a hybrid system
 
@@ -343,7 +375,8 @@ of the month.
 
 ## Counts that do not fit
 
-Energy, starts and working time are sums with one value per hour: the count
+Energy, starts and working time are sums with one value per hour (except the
+[samples of the mean power](#samples-of-the-mean-power)): the count
 `c` is 1 for an hour and, for a day, the number of hours with a value, at most
 the hours of the day (24, or 23 and 25 on a change of summer time). A gateway that answers minute values instead
 (`c` 60 per hour, `y` the sum of the minutes) would show about 60 times too
@@ -377,6 +410,8 @@ without them), on an iCom heat pump `icom_heat_pump: true`
 with its recordings `monitoring_total_heat`, `monitoring_total_compressor`,
 `monitoring_total_eheater` and `sc1_solar_yield`, and per recording the
 `unit` it answered in when that unit was not taken (or for the solar yield);
+a recording left out for its unit is asked again as soon as a version takes
+that unit, and once when an earlier version kept no unit for it;
 a run reports
 `cloud_paths_left_out`, `cloud_backfill_left` and
 `import_rows_not_on_the_hour` where they apply.

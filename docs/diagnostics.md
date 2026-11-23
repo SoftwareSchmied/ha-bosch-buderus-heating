@@ -64,7 +64,10 @@ Schema 48 (0.9.2) adds, again without readings, names or identifiers:
   [plant recordings](recordings.md#diagnostics)).
   The `events` of a recording count `answer_count_form`: slots of an answer
   whose count does not fit one value per hour, which are not taken (see
-  [counts that do not fit](recordings.md#counts-that-do-not-fit)).
+  [counts that do not fit](recordings.md#counts-that-do-not-fit)), and
+  `months_corrected`: months of a recording kept as samples of the mean that
+  an earlier version stored too high and that were corrected (see
+  [samples of the mean](recordings.md#samples-of-the-mean-power)).
 - `gateways[].performance`: the history behind the performance factors
   (see [calculated values](calculated-values.md#performance-factors)):
   `recordings_attached`, the number of counter entities found
