@@ -56,18 +56,30 @@ def _format(value: str, format_name: str | None) -> bool:
     return True
 
 
-def matches(value: Any, schema: dict[str, Any]) -> bool:
-    """Check source facets without inferring transport rights from writeable."""
+def matches(value: Any, schema: dict[str, Any], *, open_value: bool = False) -> bool:
+    """Check source facets without inferring transport rights from writeable.
+
+    With ``open_value``, the enum of a document's ``value`` is not checked
+    (every other facet is): a reading of a value the pinned schema does not
+    list yet.
+    """
     if "$ref" in schema:
         name = schema["$ref"].rsplit("/", 1)[-1]
         if name in {"ReadableResource", "WriteableResource"}:
             return True  # BaseResource still validates the reported 0/1 metadata.
-        return matches(value, SCHEMAS[name])
-    if "allOf" in schema and not all(matches(value, s) for s in schema["allOf"]):
+        return matches(value, SCHEMAS[name], open_value=open_value)
+    if "allOf" in schema and not all(
+        matches(value, s, open_value=open_value) for s in schema["allOf"]
+    ):
         return False
-    if "oneOf" in schema and sum(matches(value, s) for s in schema["oneOf"]) != 1:
+    if (
+        "oneOf" in schema
+        and sum(matches(value, s, open_value=open_value) for s in schema["oneOf"]) != 1
+    ):
         return False
-    if "anyOf" in schema and not any(matches(value, s) for s in schema["anyOf"]):
+    if "anyOf" in schema and not any(
+        matches(value, s, open_value=open_value) for s in schema["anyOf"]
+    ):
         return False
     kind = schema.get("type")
     if kind is None and ("properties" in schema or "required" in schema):
@@ -90,7 +102,12 @@ def matches(value: Any, schema: dict[str, Any]) -> bool:
         additional = schema.get("additionalProperties", True)
         for key, child in value.items():
             if key in properties:
-                if not matches(child, properties[key]):
+                facets = properties[key]
+                if open_value and key == "value" and "enum" in facets:
+                    facets = {
+                        name: item for name, item in facets.items() if name != "enum"
+                    }
+                if not matches(child, facets):
                     return False
             elif additional is False or (
                 isinstance(additional, dict) and not matches(child, additional)
@@ -133,3 +150,15 @@ def matches(value: Any, schema: dict[str, Any]) -> bool:
 def validate(value: object, schema: dict[str, Any]) -> None:
     if not matches(value, schema):
         raise LocalResourceError(Problem.INVALID_SCHEMA)
+
+
+def read_only(schema: dict[str, Any]) -> bool:
+    """The response contract of a resource the gateway reports as readable
+    only (never one of a setting)."""
+    parts = schema.get("allOf", ())
+    refs = {
+        str(part.get("$ref", "")).rsplit("/", 1)[-1]
+        for part in parts
+        if isinstance(part, dict)
+    }
+    return "ReadableResource" in refs and "WriteableResource" not in refs

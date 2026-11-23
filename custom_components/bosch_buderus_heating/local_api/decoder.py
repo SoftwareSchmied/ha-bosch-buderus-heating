@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 import math
+from dataclasses import replace
 from datetime import datetime
 from decimal import Decimal
 from types import MappingProxyType
@@ -12,6 +13,7 @@ from typing import Any, cast
 from urllib.parse import parse_qsl
 
 from ..gateway_identity import GatewayNamespace, IdentityContext
+from ..unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
 from .catalog import ReadRequest, response_schema, validate_path
 from .compatibility import response_for_validation
 from .errors import LocalResourceError, Problem
@@ -47,7 +49,7 @@ from .models import (
     UpdateStatus,
     ValueArray,
 )
-from .schema import is_number, iso_datetime, validate
+from .schema import is_number, iso_datetime, matches, read_only
 
 # Preserve the reported unit; normalization/conversion belongs to later adapters.
 _UNITS = frozenset(
@@ -85,6 +87,9 @@ _UNITS = frozenset(
 )
 
 
+_SCALAR_TYPES = frozenset({"floatValue", "integerValue", "stringValue"})
+
+
 def _freeze(value: Any) -> JsonValue:
     if isinstance(value, dict):
         return MappingProxyType({key: _freeze(child) for key, child in value.items()})
@@ -108,7 +113,18 @@ def _identifier(value: str | int | Decimal) -> str | int:
 def _unit_issues(unit: str | None, *, required: bool = False) -> tuple[DataIssue, ...]:
     if unit is None or unit == "":
         return (DataIssue.MISSING_UNIT,) if required else ()
-    return () if unit in _UNITS else (DataIssue.UNKNOWN_UNIT,)
+    return () if known_unit(unit) else (DataIssue.UNKNOWN_UNIT,)
+
+
+def known_unit(unit: str) -> bool:
+    """A local unit, or a spelling of the alias list the cloud reads too
+    (``KWh``, ``degC``, ``hours`` ...). Nothing is converted here."""
+    return (
+        unit in _UNITS
+        or unit in TEMPERATURE_UNITS
+        or unit in DURATION_UNITS
+        or unit in ENERGY_UNITS
+    )
 
 
 def _reference(raw: dict[str, Any]) -> ResourceReference:
@@ -349,8 +365,22 @@ def decode_resource(
         raise LocalResourceError(Problem.INVALID_SCHEMA)
     if not _response_id_matches(payload.get("id"), request):
         raise LocalResourceError(Problem.WRONG_RESOURCE)
-    validate(response_for_validation(payload), schema)
+    document = response_for_validation(payload)
+    undeclared = False
+    if not matches(document, schema):
+        # A value of a readable resource that the pinned schema does not list
+        # yet (a later firmware): read and marked, as by the cloud. A setting
+        # keeps the strict list.
+        if (
+            payload.get("type") not in _SCALAR_TYPES
+            or not read_only(schema)
+            or not matches(document, schema, open_value=True)
+        ):
+            raise LocalResourceError(Problem.INVALID_SCHEMA)
+        undeclared = True
     data = _decode(payload)
+    if undeclared and isinstance(data, ScalarValue):
+        data = replace(data, issues=(*data.issues, DataIssue.UNDECLARED_VALUE))
     return LocalObservation(
         request,
         context,

@@ -436,7 +436,9 @@ identifiers:
   `connection` or `other`), `response_times` (number of samples and the
   average, 95th percentile and maximum in milliseconds of the last 256 reads)
   and `deferred_reasons` (reads not sent, by reason, for example `busy` or
-  `paused`). A path that was read once but has no expiry of its own, such as
+  `paused`). `undeclared_values` appears once a readable resource answered
+  with a value its pinned schema does not list yet; it counts such readings,
+  never the values. A path that was read once but has no expiry of its own, such as
   the signal list, shows the freshness `read`;
 - `observation_pairs` adds the result `changed_between_reads`: a counter
   whose later reading is higher in at least one part and lower in none, read

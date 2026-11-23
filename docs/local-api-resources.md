@@ -84,8 +84,18 @@ Value-bearing result representations and exceptions do not echo these fields.
   A matching state marker is not returned as a numeric measurement.
 - Units remain source-specific. Scalar and recording units use `unitOfMeasure`;
   named values use `unit`. There is no implicit conversion, energy classification
-  or summation of totals and components. Unrecognized units remain visible as
-  data issues; scalars with those units are not exposed as measurements.
+  or summation of totals and components. The spellings of the alias list the
+  cloud reads count as known as well (for example `KWh`, `degC`, `ºC`,
+  `hours`, `sec`); `kW` and `MWh` are no energy spellings. Unrecognized
+  units remain visible as data issues; scalars with those units are not
+  exposed as measurements.
+- A readable resource may answer with a value its pinned schema does not list
+  yet (for example a new `overallStatus` or `/system/type` of a later
+  firmware). Only that list is open: type, required fields and every other
+  facet stay checked. The value is kept with the data issue
+  `undeclared_value` and counted in the access's `undeclared_values`; an
+  entity with fixed options shows it as unknown, as with the cloud. The
+  response of a setting keeps its strict list.
 - Duplicate named values or state names are rejected. Missing units on named
   values and recordings are explicitly marked. Unknown finite named fields can
   be preserved without assigning meaning to them.

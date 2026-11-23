@@ -22,6 +22,8 @@ class DataIssue(StrEnum):
     UNKNOWN_UNIT = "unknown_unit"
     MISSING_UNIT = "missing_unit"
     UNSUPPORTED_TEXT_ENCODING = "unsupported_text_encoding"
+    # A value the pinned schema of a readable resource does not list.
+    UNDECLARED_VALUE = "undeclared_value"
 
 
 @dataclass(frozen=True, slots=True, repr=False)

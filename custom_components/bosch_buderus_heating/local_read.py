@@ -22,7 +22,7 @@ from .local_api.catalog import ReadRequest, response_schema
 from .local_api.decoder import decode_resource
 from .local_api.errors import LocalResourceError
 from .local_api.json import DEFAULT_LIMITS, JsonLimits
-from .local_api.models import LocalObservation
+from .local_api.models import DataIssue, LocalObservation
 from .local_budget import (
     MINIMUM_START_GAP,
     BudgetDeferred,
@@ -236,6 +236,8 @@ class LocalReadClient:
         }
         self._failure_classes: Counter[str] = Counter()
         self._deferred_reasons: Counter[str] = Counter()
+        # Readings of a value the pinned schema does not list yet.
+        self._undeclared_values = 0
         # Path templates and error types already reported as a warning.
         self._decode_warned: set[tuple[str, str]] = set()
 
@@ -263,6 +265,11 @@ class LocalReadClient:
                 phase: _phase_times(samples) for phase, samples in self._phases.items()
             },
             "deferred_reasons": dict(sorted(self._deferred_reasons.items())),
+            **(
+                {"undeclared_values": self._undeclared_values}
+                if self._undeclared_values
+                else {}
+            ),
         }
 
     def connection_reuse(self) -> dict[str, object]:
@@ -588,6 +595,8 @@ class LocalReadClient:
                 http_requests=attempt.headers,
             )
         attempt.done = monotonic()
+        if DataIssue.UNDECLARED_VALUE in getattr(observation.data, "issues", ()):
+            self._undeclared_values += 1
         await asyncio.sleep(0)  # Deliver cancellation/expiry before publishing.
         self._current()
         return ReadResult(
