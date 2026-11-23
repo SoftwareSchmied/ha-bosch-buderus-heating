@@ -2,7 +2,7 @@
  "provenance": {
   "kind": "synthetic",
   "basis": "compatibility_mapping",
-  "reference": "RRC 2.0 room controller hot water circuits (synthetic_from_app_demo_shapes): operation modes high, off, Off and ownprogram; extra hot water usable, unavailable and locked; disinfection time as floatValue and as float; a hot water program with a further field",
+  "reference": "RRC 2.0 room controller hot water circuits (synthetic, documented shapes): operation modes high, off, Off and ownprogram; extra hot water usable, unavailable and locked; disinfection time as floatValue and as float; a hot water program with a further field",
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-10",

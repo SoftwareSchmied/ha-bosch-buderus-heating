@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Wybierz punkt przełączenia",
-        "description": "**{program}**\n\n{points}\n\nWybierz punkt przełączenia, aby go zmienić lub usunąć, albo dodaj nowy. Dzień ma najwyżej {per_day} punktów przełączenia (granica aplikacji producenta, niezgłaszana przez regulator); ostatni punkt przełączenia dnia pozostaje.",
+        "description": "**{program}**\n\n{points}\n\nWybierz punkt przełączenia, aby go zmienić lub usunąć, albo dodaj nowy. Dzień ma najwyżej {per_day} punktów przełączenia (stała granica, niezgłaszana przez regulator); ostatni punkt przełączenia dnia pozostaje.",
         "data": {
           "point": "Punkt przełączenia"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Zmień program ciepłej wody",
-        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nPoziomy są takie jak w programie regulatora pokojowego. Program obowiązuje, dopóki ciepła woda podąża za własnym programem. Najwyżej sześć punktów przełączenia na dzień to granica aplikacji producenta, a nie granica zgłaszana przez regulator.",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nPoziomy są takie jak w programie regulatora pokojowego. Program obowiązuje, dopóki ciepła woda podąża za własnym programem. Najwyżej sześć punktów przełączenia na dzień to stała granica, a nie granica zgłaszana przez regulator.",
         "data": {
           "action": "Następny krok",
           "day": "Dzień tygodnia",
@@ -986,7 +986,7 @@
           "wallbox_history": "Odczytuj historię ładowania"
         },
         "data_description": {
-          "wallbox_authentication": "Domyślnie wyłączone. Od oprogramowania 5.1.0 start najpierw się uwierzytelnia; przy starszym oprogramowaniu start jest wysyłany sam, tak jak w aplikacji producenta.",
+          "wallbox_authentication": "Domyślnie wyłączone. Od oprogramowania 5.1.0 start najpierw się uwierzytelnia; przy starszym oprogramowaniu start jest wysyłany sam.",
           "wallbox_authentication_name": "Nazwa, której aplikacja producenta używa do uwierzytelnienia; może pozostać pusta.",
           "wallbox_history": "Domyślnie wyłączone. Co ok. 30 minut (co 60 minut w profilu oszczędnym dla chmury) odczytywane jest ostatnie ładowanie (początek, koniec, czas, energia) oraz energia z sieci i ze słońca z bieżącego miesiąca. Nazwy kart, użytkowników ani uwierzytelniania nie są nigdy odczytywane."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Włącz również przełącznik „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte.",
       "switch_program_value": "Wpisz temperaturę od {minimum} do {maximum} °C w krokach co {step} °C.",
       "switch_program_day_emptied": "Dzień, który ma punkty przełączenia, zachowuje co najmniej jeden; nie wiadomo, co pusty dzień oznacza dla regulatora.",
-      "rrc_point_limit": "Ten dzień ma już największą liczbę punktów przełączenia, jaką dopuszcza aplikacja ({per_day}).",
+      "rrc_point_limit": "Ten dzień ma już największą dopuszczalną liczbę punktów przełączenia ({per_day}).",
       "rrc_point_last": "Ostatniego punktu przełączenia dnia nie można usunąć; nie wiadomo, co pusty dzień oznacza dla regulatora.",
       "rrc_point_duplicate": "Ten dzień ma już punkt przełączenia o tej godzinie.",
       "wallbox_name_invalid": "Nazwa może zawierać do 64 drukowalnych znaków.",
@@ -1879,7 +1879,7 @@
       "message": "Można używać tylko tych ustawień: {settings}. Ustawienie zapisuje się jako tryb, temperatura i prędkość wentylatora, na przykład „cool 24.0 auto”, lub „off”."
     },
     "switch_points_unit_not_ready": {
-      "message": "Podgrzewacz wody przyjmuje zmiany tego programu czasowego tylko wtedy, gdy jest włączony, pracuje w trybie programu i ma ustawioną strefę czasową, tak jak w aplikacji producenta. Nic nie zostało wysłane."
+      "message": "Podgrzewacz wody przyjmuje zmiany tego programu czasowego tylko wtedy, gdy jest włączony, pracuje w trybie programu i ma ustawioną strefę czasową. Nic nie zostało wysłane."
     }
   },
   "selector": {

@@ -2,12 +2,12 @@
  "provenance": {
   "kind": "synthetic",
   "basis": "compatibility_mapping",
-  "shapes": "synthetic_from_app_demo_shapes",
+  "shapes": "synthetic_documented_shapes",
   "reference": "RRC 2.0 room controller with eight radiator thermostats, a room thermostat and a repeater",
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-10",
-  "redaction": "Constructed values only. Leaf names, JSON types and write flags follow the anonymized TC100.2 device tree of issue 122 (no values there) and the manufacturer's demo shapes; etrv/status appears as a string array and as a list of objects. Names are Base64 placeholders; radio keys are obvious markers for leak tests.",
+  "redaction": "Constructed values only. Leaf names, JSON types and write flags follow the anonymized TC100.2 device tree of issue 122 (no values there) and the documented shapes; etrv/status appears as a string array and as a list of objects. Names are Base64 placeholders; radio keys are obvious markers for leak tests.",
   "physical_device_verified": false,
   "contract": "Missing leaves answer HTTP 500 as these controllers do; /devices/devN, homematicip, repeater/toggle, valveCalibration and temperatureGradient must never be requested."
  },

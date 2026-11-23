@@ -17,8 +17,8 @@ policy needs; without that path nothing is created.
 - The setpoint optimization of a circuit and, only when found, its open
   window detection, as switches.
 
-All of them are created disabled. They follow the manufacturer's app, which
-offers them; a room controller's circuit keeps its contracts. Pure data
+All of them are created disabled. They are settings of the heating circuit
+itself; a room controller's circuit keeps its contracts. Pure data
 without Home Assistant imports. Expected, untested on a real installation.
 """
 
@@ -208,7 +208,7 @@ def plant_has_heat_pump(coordinator: object) -> bool:
 
 def offered(path: str, heat_sources: Mapping[str, Resource]) -> bool:
     """Whether a control of ``path`` is offered: the boost temperature only
-    on a plant without a heat pump, as the manufacturer's app shows it. A
+    on a plant without a heat pump. A
     plant that reads no heat source type keeps it."""
     if re.fullmatch(BOOST_TEMPERATURE_PATTERN, path):
         return not has_heat_pump(heat_sources)

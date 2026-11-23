@@ -1,8 +1,8 @@
 """ZONE deep review: locks, the shown target and the window of RRC zones.
 
 Real setups and cycles against the fake cloud with the synthetic
-``zone_climate.json`` and patched readings in the shapes of the vendor demo
-data. Every behaviour here is expected, untested on hardware:
+``zone_climate.json`` and patched readings in the documented
+shapes. Every behaviour here is expected, untested on hardware:
 
 - ZONE-02: the active away mode locks the setpoints, not the mode.
 - ZONE-05: a zone or communication error, or a zone in standby, locks the

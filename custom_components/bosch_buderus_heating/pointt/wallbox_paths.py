@@ -106,7 +106,7 @@ HISTORY_SAMPLE_RATE: Final = "P31D"
 
 
 def _local_time(value: datetime) -> str:
-    """The app sends local date and time without an offset."""
+    """Local date and time, sent without an offset."""
     return value.replace(microsecond=0, tzinfo=None).isoformat()
 
 

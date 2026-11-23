@@ -152,7 +152,7 @@ async def test_entities_show_state_and_number(hass, key, state, number, chosen):
     assert sensor.unique_id == "gateway:application:tbso:electricity:tariffID"
     assert binary.available and binary.is_on is state
     assert sensor.available and sensor.native_value == number
-    # 5 is the value the app writes for "no tariff".
+    # 5 means "no tariff".
     assert sensor.extra_state_attributes == {"tariff_selected": chosen}
 
 

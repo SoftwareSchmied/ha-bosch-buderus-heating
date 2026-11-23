@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Výběr spínacího bodu",
-        "description": "**{program}**\n\n{points}\n\nZvolte spínací bod, který chcete změnit nebo smazat, nebo přidejte nový. Den má nejvýše {per_day} spínacích bodů (mez aplikace výrobce, regulátorem nehlášená); poslední spínací bod dne zůstává.",
+        "description": "**{program}**\n\n{points}\n\nZvolte spínací bod, který chcete změnit nebo smazat, nebo přidejte nový. Den má nejvýše {per_day} spínacích bodů (pevná mez, regulátorem nehlášená); poslední spínací bod dne zůstává.",
         "data": {
           "point": "Spínací bod"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Změna programu teplé vody",
-        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nÚrovně jsou ty z programu pokojového regulátoru. Program platí, dokud se teplá voda řídí vlastním programem. Nejvýše šest spínacích bodů za den je mez aplikace výrobce, nikoli mez hlášená regulátorem.",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nÚrovně jsou ty z programu pokojového regulátoru. Program platí, dokud se teplá voda řídí vlastním programem. Nejvýše šest spínacích bodů za den je pevná mez, nikoli mez hlášená regulátorem.",
         "data": {
           "action": "Další krok",
           "day": "Den v týdnu",
@@ -986,7 +986,7 @@
           "wallbox_history": "Číst historii nabíjení"
         },
         "data_description": {
-          "wallbox_authentication": "Ve výchozím stavu vypnuto. Od softwaru 5.1.0 se při startu nejprve provede ověření; u staršího softwaru se odešle jen start, stejně jako v aplikaci výrobce.",
+          "wallbox_authentication": "Ve výchozím stavu vypnuto. Od softwaru 5.1.0 se při startu nejprve provede ověření; u staršího softwaru se odešle jen start.",
           "wallbox_authentication_name": "Název, který aplikace výrobce používá k ověření; může zůstat prázdný.",
           "wallbox_history": "Standardně vypnuto. Přibližně každých 30 minut (60 minut v profilu šetrném k cloudu) se čte poslední nabíjení (začátek, konec, doba, energie) a energie za tento měsíc ze sítě a ze solárních zdrojů. Jména karet, uživatelů ani ověření se nikdy nečtou."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Zapněte i přepínač „Odstranit tento přístup“: token se odvolá jen spolu s odstraněním přístupu. Nic nebylo odesláno ani odstraněno.",
       "switch_program_value": "Zadejte teplotu od {minimum} do {maximum} °C v krocích po {step} °C.",
       "switch_program_day_emptied": "Den se spínacími body si ponechá alespoň jeden; co znamená prázdný den pro regulátor, není známo.",
-      "rrc_point_limit": "Tento den již má nejvyšší počet spínacích bodů, který aplikace dovoluje ({per_day}).",
+      "rrc_point_limit": "Tento den již má nejvyšší povolený počet spínacích bodů ({per_day}).",
       "rrc_point_last": "Poslední spínací bod dne nelze smazat; co znamená prázdný den pro regulátor, není známo.",
       "rrc_point_duplicate": "Tento den již má spínací bod v tento čas.",
       "wallbox_name_invalid": "Název smí obsahovat nejvýše 64 tisknutelných znaků.",
@@ -1879,7 +1879,7 @@
       "message": "Použít lze pouze tato nastavení: {settings}. Nastavení se zapisuje jako režim, teplota a rychlost ventilátoru, například „cool 24.0 auto“, nebo „off“."
     },
     "switch_points_unit_not_ready": {
-      "message": "Ohřívač vody přijímá změny tohoto časového programu jen tehdy, když je zapnutý, běží v režimu časového programu a má nastavené časové pásmo, stejně jako v aplikaci výrobce. Nic nebylo odesláno."
+      "message": "Ohřívač vody přijímá změny tohoto časového programu jen tehdy, když je zapnutý, běží v režimu časového programu a má nastavené časové pásmo. Nic nebylo odesláno."
     }
   },
   "selector": {

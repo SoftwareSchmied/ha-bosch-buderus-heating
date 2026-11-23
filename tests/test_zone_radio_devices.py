@@ -33,7 +33,7 @@ from custom_components.bosch_buderus_heating.zone_radio_devices import (
 from tests.ha_test_helpers import MockConfigEntry
 
 # The allowed values of a real device (the local API examples), plus the
-# further ones the manufacturer's app knows and plain words.
+# further known ones and plain words.
 BATTERY_VALUES = [
     "NO_BAT",
     "BAT_NORMAL",

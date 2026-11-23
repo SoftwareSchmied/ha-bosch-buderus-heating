@@ -9,7 +9,7 @@
     "capture_date": null,
     "created": "2026-11-15",
     "physical_device_verified": false,
-    "redaction": "Field names and value shapes follow the behaviour of the vendor app: a program holds switch points with dayOfWeek, time and parameters (operationMode, temperatureSetpoint, fanSpeed) and may report its limits, the configuration lists the modes with their temperature range and fan speeds. The type name of the configuration is not known and constructed here; every time, mode, range and limit is constructed. No device capture, no identifiers."
+    "redaction": "Field names and value shapes are the expected ones: a program holds switch points with dayOfWeek, time and parameters (operationMode, temperatureSetpoint, fanSpeed) and may report its limits, the configuration lists the modes with their temperature range and fan speeds. The type name of the configuration is not known and constructed here; every time, mode, range and limit is constructed. No device capture, no identifiers."
   },
   "resources": {
     "/airConditioning/switchPrograms/configuration": {

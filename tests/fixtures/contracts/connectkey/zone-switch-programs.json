@@ -8,10 +8,10 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the expected behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-10: zone programs hold absolute temperatures as text within switchPointMin/Max/Resolution and are written as a raw array, heating and cooling separately.",
-    "source": "behaviour of the manufacturer's app: zone programs per heating/cooling mode with free temperatures within switchPointMin/Max/Resolution"
+    "source": "expected behaviour: zone programs per heating/cooling mode with free temperatures within switchPointMin/Max/Resolution"
   },
   "resources": [
     {

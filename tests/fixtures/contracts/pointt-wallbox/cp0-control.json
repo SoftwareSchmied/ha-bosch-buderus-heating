@@ -9,7 +9,7 @@
     "capture_date": null,
     "created": "2026-11-15",
     "physical_device_verified": false,
-    "redaction": "Field names and value shapes follow the behaviour of the vendor app; every value is constructed. No device capture, no identifiers."
+    "redaction": "Field names and value shapes are the expected ones; every value is constructed. No device capture, no identifiers."
   },
   "telemetry": {
     "values": {

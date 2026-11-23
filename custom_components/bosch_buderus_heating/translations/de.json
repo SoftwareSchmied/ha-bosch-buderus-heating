@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Schaltpunkt auswählen",
-        "description": "**{program}**\n\n{points}\n\nWähle einen Schaltpunkt, um ihn zu ändern oder zu löschen, oder füge einen hinzu. Ein Tag hat höchstens {per_day} Schaltpunkte (die Grenze der Hersteller-App, vom Regler nicht gemeldet); der letzte Schaltpunkt eines Tages bleibt.",
+        "description": "**{program}**\n\n{points}\n\nWähle einen Schaltpunkt, um ihn zu ändern oder zu löschen, oder füge einen hinzu. Ein Tag hat höchstens {per_day} Schaltpunkte (eine feste Grenze, vom Regler nicht gemeldet); der letzte Schaltpunkt eines Tages bleibt.",
         "data": {
           "point": "Schaltpunkt"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Warmwasserprogramm ändern",
-        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDie Stufen sind die des Programms im Raumregler. Das Programm wirkt, solange das Warmwasser seinem eigenen Programm folgt. Höchstens sechs Schaltpunkte pro Tag ist die Grenze der Hersteller-App, nicht eine vom Regler gemeldete.",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDie Stufen sind die des Programms im Raumregler. Das Programm wirkt, solange das Warmwasser seinem eigenen Programm folgt. Höchstens sechs Schaltpunkte pro Tag ist eine feste Grenze, nicht eine vom Regler gemeldete.",
         "data": {
           "action": "Nächster Schritt",
           "day": "Wochentag",
@@ -986,7 +986,7 @@
           "wallbox_history": "Ladeverlauf lesen"
         },
         "data_description": {
-          "wallbox_authentication": "Standardmäßig aus. Ab Software 5.1.0 authentifiziert ein Start zuerst; bei älterer Software wird der Start allein gesendet, wie in der Hersteller-App.",
+          "wallbox_authentication": "Standardmäßig aus. Ab Software 5.1.0 authentifiziert ein Start zuerst; bei älterer Software wird der Start allein gesendet.",
           "wallbox_authentication_name": "Der Name, den die Hersteller-App zur Authentifizierung verwendet; darf leer bleiben.",
           "wallbox_history": "Standardmäßig aus. Etwa alle 30 Minuten (alle 60 Minuten im Cloud-schonenden Profil) wird die letzte Ladung (Beginn, Ende, Ladezeit, Energie) sowie die Energie dieses Monats aus dem Netz und aus Solarenergie gelesen. Namen von Karten, Nutzern oder Authentifizierung werden nie gelesen."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Schalte auch den Schalter „Diesen Zugang entfernen“ ein: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt.",
       "switch_program_value": "Gib eine Temperatur von {minimum} bis {maximum} °C in Schritten von {step} °C ein.",
       "switch_program_day_emptied": "Ein Tag mit Schaltpunkten behält mindestens einen; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
-      "rrc_point_limit": "Dieser Tag hat bereits die höchste Anzahl an Schaltpunkten, die die App erlaubt ({per_day}).",
+      "rrc_point_limit": "Dieser Tag hat bereits die höchste zulässige Anzahl an Schaltpunkten ({per_day}).",
       "rrc_point_last": "Der letzte Schaltpunkt eines Tages kann nicht gelöscht werden; was ein leerer Tag für den Regler bedeutet, ist nicht bekannt.",
       "rrc_point_duplicate": "Dieser Tag hat bereits einen Schaltpunkt zu dieser Uhrzeit.",
       "wallbox_name_invalid": "Der Name darf bis zu 64 druckbare Zeichen enthalten.",
@@ -1879,7 +1879,7 @@
       "message": "Nur diese Einstellungen sind möglich: {settings}. Eine Einstellung besteht aus Betriebsart, Temperatur und Lüfterstufe, zum Beispiel „cool 24.0 auto“, oder „off“."
     },
     "switch_points_unit_not_ready": {
-      "message": "Der Warmwasserbereiter nimmt Änderungen an diesem Zeitprogramm nur an, wenn er eingeschaltet ist, im Zeitprogrammbetrieb läuft und eine Zeitzone hat, wie in der Hersteller-App. Es wurde nichts gesendet."
+      "message": "Der Warmwasserbereiter nimmt Änderungen an diesem Zeitprogramm nur an, wenn er eingeschaltet ist, im Zeitprogrammbetrieb läuft und eine Zeitzone hat. Es wurde nichts gesendet."
     }
   },
   "selector": {

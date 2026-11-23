@@ -6,8 +6,7 @@ the zone's heating circuit reports the cooling season (``currentSuWiMode``
 ``cooling``). ``off`` is off, ``manual`` is heat (cool on the cooling side)
 with ``manualRoomSetpoint`` as its target, and ``auto`` follows the zone's
 program; a target set in ``auto`` is a temporary setpoint until the next
-switch point, and the clear button ends it (the value -1, as the
-manufacturer's app writes it).
+switch point, and the clear button ends it (the value -1).
 
 The zone's heating circuit comes from its radio devices (``zoneId`` and
 ``assignedHC``); when they name none, an installation with exactly one

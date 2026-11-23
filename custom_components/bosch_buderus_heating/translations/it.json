@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Scegli il punto di commutazione",
-        "description": "**{program}**\n\n{points}\n\nScegli un punto di commutazione per modificarlo o eliminarlo, oppure aggiungine uno. Un giorno ha al massimo {per_day} punti di commutazione (limite dell'app del produttore, non comunicato dal regolatore); l'ultimo punto di commutazione di un giorno rimane.",
+        "description": "**{program}**\n\n{points}\n\nScegli un punto di commutazione per modificarlo o eliminarlo, oppure aggiungine uno. Un giorno ha al massimo {per_day} punti di commutazione (limite fisso, non comunicato dal regolatore); l'ultimo punto di commutazione di un giorno rimane.",
         "data": {
           "point": "Punto di commutazione"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Modifica programma acqua calda",
-        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo; gli orari si ripetono ogni settimana nell'ora locale dell'impianto di riscaldamento. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.\n\nI livelli sono quelli del programma del regolatore ambiente. Il programma vale finché l'acqua calda segue il proprio programma. Al massimo sei punti di commutazione al giorno è il limite dell'app del produttore, non uno comunicato dal regolatore.",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo; gli orari si ripetono ogni settimana nell'ora locale dell'impianto di riscaldamento. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.\n\nI livelli sono quelli del programma del regolatore ambiente. Il programma vale finché l'acqua calda segue il proprio programma. Al massimo sei punti di commutazione al giorno è un limite fisso, non uno comunicato dal regolatore.",
         "data": {
           "action": "Passo successivo",
           "day": "Giorno della settimana",
@@ -986,7 +986,7 @@
           "wallbox_history": "Leggi la cronologia di ricarica"
         },
         "data_description": {
-          "wallbox_authentication": "Disattivato per impostazione predefinita. Dal software 5.1.0 un avvio si autentica prima; con software meno recente l'avvio viene inviato da solo, come nell'app del produttore.",
+          "wallbox_authentication": "Disattivato per impostazione predefinita. Dal software 5.1.0 un avvio si autentica prima; con software meno recente l'avvio viene inviato da solo.",
           "wallbox_authentication_name": "Il nome che l'app del produttore usa per l'autenticazione; può restare vuoto.",
           "wallbox_history": "Disattivato per impostazione predefinita. Circa ogni 30 minuti (ogni 60 minuti nel profilo leggero per il cloud) vengono letti l'ultima ricarica (inizio, fine, durata, energia) e l'energia di questo mese dalla rete e dal solare. Nomi di schede, utenti o autenticazione non vengono mai letti."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Attiva anche l'interruttore «Rimuovi questo accesso»: un token viene revocato solo insieme alla rimozione dell'accesso. Non è stato inviato né rimosso nulla.",
       "switch_program_value": "Inserisci una temperatura da {minimum} a {maximum} °C a passi di {step} °C.",
       "switch_program_day_emptied": "Un giorno che ha punti di commutazione ne mantiene almeno uno; non è noto cosa significhi un giorno vuoto per il regolatore.",
-      "rrc_point_limit": "Questo giorno ha già il numero massimo di punti di commutazione consentito dall'app ({per_day}).",
+      "rrc_point_limit": "Questo giorno ha già il numero massimo consentito di punti di commutazione ({per_day}).",
       "rrc_point_last": "L'ultimo punto di commutazione di un giorno non può essere eliminato; non è noto cosa significhi un giorno vuoto per il regolatore.",
       "rrc_point_duplicate": "Questo giorno ha già un punto di commutazione a quest'ora.",
       "wallbox_name_invalid": "Il nome può contenere fino a 64 caratteri stampabili.",
@@ -1879,7 +1879,7 @@
       "message": "Si possono usare solo queste impostazioni: {settings}. Un'impostazione si scrive come modalità, temperatura e velocità della ventola, ad esempio «cool 24.0 auto», oppure «off»."
     },
     "switch_points_unit_not_ready": {
-      "message": "Lo scaldacqua accetta modifiche a questo programma orario solo quando è acceso, funziona in modalità programma e ha un fuso orario, come nell'app del produttore. Non è stato inviato nulla."
+      "message": "Lo scaldacqua accetta modifiche a questo programma orario solo quando è acceso, funziona in modalità programma e ha un fuso orario. Non è stato inviato nulla."
     }
   },
   "selector": {

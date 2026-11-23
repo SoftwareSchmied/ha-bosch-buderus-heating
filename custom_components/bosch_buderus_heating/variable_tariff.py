@@ -2,16 +2,15 @@
 
 An iCom gateway reports whether its tariff optimisation is on
 (``/application/tbso/enable``, ``on``/``off``) and the number of the chosen
-tariff (``/application/tbso/electricity/tariffID``). The manufacturer's app
-takes the tariff's name from a separate cloud service of the manufacturer;
+tariff (``/application/tbso/electricity/tariffID``). The tariff's name
+comes from a separate cloud service of the manufacturer;
 this integration never asks that service, so only the number is shown. The
-number 5 is the value the app writes when it switches the tariff off: it
-means "no tariff chosen".
+number 5 means the tariff is switched off: "no tariff chosen".
 
 Both paths are probed once during discovery, only on an iCom gateway, and
 read with the static group afterwards. A refusal, a missing path or a
 server error counts as "not there" and changes nothing else. Nothing is
-ever written: setting a tariff in the app takes several requests and
+ever written: setting a tariff takes several requests and
 changes the heating circuits as well.
 
 The tariff values of a K30/K40 (``/system/variableTariff/*``) are read
@@ -31,7 +30,7 @@ TARIFF_ENABLE_PATH: Final = "/application/tbso/enable"
 TARIFF_ID_PATH: Final = "/application/tbso/electricity/tariffID"
 # Probed once during discovery, only on an iCom gateway.
 ICOM_TARIFF_PATHS: Final = (TARIFF_ENABLE_PATH, TARIFF_ID_PATH)
-# The tariff number the app writes when it switches the tariff off.
+# The tariff number that means the tariff is switched off.
 NO_TARIFF_ID: Final = 5
 
 

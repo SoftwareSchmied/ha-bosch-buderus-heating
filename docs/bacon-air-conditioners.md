@@ -67,7 +67,7 @@ the epoch, 0 for none); the entity shows the minutes that remain (rounded up,
 at most 1440) and sends one minute-aligned absolute time. A timer is offered
 only when the device declares the field writable (`ro=false`), reports a
 valid value and declares no step other than 60 seconds. Without that there is
-no entity. Like the app, the integration refuses a time in the past, more than
+no entity. The integration refuses a time in the past, more than
 one day ahead, and a switch-on and a switch-off time in the same minute. A
 time less than 10 seconds ahead moves to the next minute, so that it cannot
 be in the past when it reaches the unit. A
@@ -76,19 +76,18 @@ reads the state fresh, sends exactly one command, waits for the reported value
 and never repeats. Schedules (`racSchedule`) are not offered; Home Assistant
 automations can replace them.
 
-**Energy totals.** Six sensors in kWh per unit, all disabled by default:
-total electrical energy for heating, cooling, dehumidifying and fan only, and
-total thermal output for heating and cooling. They come from one read-only
-query to the history service of the same cloud (`history` host, `/graphql`),
-the same one the app uses for its totals. They have no `state_class`, because
-the range in which a counter may be reset is not documented; they therefore do
-not feed the Energy dashboard by themselves. Request budget: at most one query
-per unit every 30 minutes (as the app refreshes), none while no energy entity
-of that unit is enabled and none while the unit is offline. The query uses
-the same sign-in token, request limit and shared pause after a rate limit
-(429) as every other request of the account. If the service answers 404, 405,
-403 or a second 401, I stop the query for the rest of the session and log it
-once; the sensors stay unavailable. After other failures the query waits 5
+**Energy totals.** Six sensors in kWh per unit, all disabled by default: total
+electrical energy for heating, cooling, dehumidifying and fan only, and total
+thermal output for heating and cooling. They come from one read-only query to
+the history service of the same cloud (`history` host, `/graphql`). They have
+no `state_class`, because the range in which a counter may be reset is not
+documented; they therefore do not feed the Energy dashboard by themselves.
+Request budget: at most one query per unit every 30 minutes, none while no
+energy entity of that unit is enabled and none while the unit is offline. The
+query uses the same sign-in token, request limit and shared pause after a rate
+limit (429) as every other request of the account. If the service answers 404,
+405, 403 or a second 401, I stop the query for the rest of the session and log
+it once; the sensors stay unavailable. After other failures the query waits 5
 minutes, then longer each time, at most 30 minutes. Values older than two hours become
 unavailable. Warm-water heat pumps and air purifiers get no energy sensors.
 
@@ -123,8 +122,8 @@ but simultaneous external writes to the same field cannot be attributed
 exclusively to this client.
 
 Availability and freshness follow the connection foundation: the newest
-information message sets online status, which is enough for availability, as
-in the HomeCom Easy app (see [the connection foundation](bacon-connection.md)).
+information message sets online status, which is enough for availability
+(see [the connection foundation](bacon-connection.md)).
 Reported state fields age after 15 minutes and sensor fields after one hour;
 the integration's own state read every five minutes keeps the state current.
 A unit that sends no measurement for more than an hour shows its room
@@ -193,8 +192,8 @@ Sekunden seit der Epoche, 0 für keinen). Die Entität zeigt die verbleibenden
 Minuten (aufgerundet, höchstens 1440) und sendet eine auf die Minute gerundete
 absolute Zeit. Ein Timer wird nur angeboten, wenn das Gerät das Feld als
 beschreibbar (`ro=false`) meldet, einen gültigen Wert liefert und keine andere
-Schrittweite als 60 Sekunden angibt; sonst entsteht keine Entität. Wie die App
-lehne ich eine Zeit in der Vergangenheit, mehr als einen Tag Vorlauf und gleiche
+Schrittweite als 60 Sekunden angibt; sonst entsteht keine Entität. Ich
+lehne eine Zeit in der Vergangenheit, mehr als einen Tag Vorlauf und gleiche
 Minute für Ein- und Ausschalten ab. Eine Zeit mit weniger als 10 Sekunden
 Vorlauf rutscht auf die nächste Minute, damit sie beim Gerät nicht schon
 vergangen ist. Ein Timer kann das Gerät später ohne
@@ -207,10 +206,10 @@ Home Assistant können sie ersetzen.
 deaktiviert: elektrische Gesamtenergie für Heizen, Kühlen, Entfeuchten und
 nur Lüfter sowie abgegebene Wärme gesamt für Heizen und Kühlen. Sie kommen aus
 einer rein lesenden Abfrage beim Verlaufsdienst derselben Cloud (Host
-`history`, `/graphql`), den auch die App für ihre Summen nutzt. Sie haben keine
+`history`, `/graphql`). Sie haben keine
 `state_class`, weil der Bereich, in dem ein Zähler zurückgesetzt werden darf,
 nicht belegt ist; sie speisen das Energie-Dashboard daher nicht von selbst.
-Anfragebudget: höchstens eine Abfrage je Gerät alle 30 Minuten (wie die App),
+Anfragebudget: höchstens eine Abfrage je Gerät alle 30 Minuten,
 keine, solange keine Energie-Entität dieses Geräts aktiviert ist, und keine,
 solange das Gerät offline ist. Die Abfrage nutzt dasselbe Anmelde-Token, die
 Anfragebegrenzung und die gemeinsame Pause nach einer Ratenbegrenzung (429)

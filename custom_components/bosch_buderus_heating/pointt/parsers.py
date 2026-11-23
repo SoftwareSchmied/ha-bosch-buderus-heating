@@ -347,10 +347,10 @@ SWITCH_PROGRAM_FIELDS = (
     "switchPointResolution",
 )
 # The weekly programs of an air conditioner (``deviceType`` ``rac``) and their
-# configuration. The app reads a program into its switch-program model
-# without checking the ``type``, and the configuration lists one object per
-# operation mode in ``allowedValues``; both are kept for the program rules
-# instead of being refused. Only these exact paths, never a heating path.
+# configuration. A program is read without checking its ``type``, and the
+# configuration lists one object per operation mode in ``allowedValues``; both
+# are kept for the program rules instead of being refused. Only these exact
+# paths, never a heating path.
 _AIRCON_PROGRAM = re.compile(r"^/airConditioning/switchPrograms/program[1-9]$")
 AIRCON_PROGRAM_CONFIGURATION = "/airConditioning/switchPrograms/configuration"
 _AIRCON_CONFIGURATION_FIELDS = (

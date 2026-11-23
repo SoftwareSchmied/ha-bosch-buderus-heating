@@ -8,10 +8,10 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the expected behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-09: the cooling program A of a heating circuit is read as on/off points and written as a raw array within the reported limits.",
-    "source": "behaviour of the manufacturer's app: cooling program A of a heating circuit with the levels off and on"
+    "source": "expected behaviour: cooling program A of a heating circuit with the levels off and on"
   },
   "resources": [
     {

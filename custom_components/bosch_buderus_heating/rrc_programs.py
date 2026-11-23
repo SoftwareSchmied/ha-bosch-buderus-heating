@@ -319,8 +319,8 @@ def edit_point(
     return day_points
 
 
-# TP-17: the most switch points a day may have. A constant of the room
-# controller app, not reported by the controller; never more.
+# TP-17: the most switch points a day may have. A fixed limit, not reported
+# by the controller; never more.
 APP_MAX_POINTS_PER_DAY = 6
 
 

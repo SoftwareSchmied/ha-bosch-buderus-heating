@@ -2,12 +2,12 @@
  "provenance": {
   "kind": "synthetic",
   "basis": "compatibility_mapping",
-  "shapes": "synthetic_from_app_demo_shapes",
+  "shapes": "synthetic_documented_shapes",
   "reference": "System, maintenance and sensor leaves of an RRC 2.0 room controller, laid over ct200-shapes.json",
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-10",
-  "redaction": "Constructed values only. Leaf names and JSON types follow the expected RRC 2.0 demo shapes and the leaf list of the anonymized TC100.2 tree of issue 122 (names and types, no values). The pressure unit is bar, as in that tree; the demo shape has none.",
+  "redaction": "Constructed values only. Leaf names and JSON types follow the expected RRC 2.0 shapes and the leaf list of the anonymized TC100.2 tree of issue 122 (names and types, no values). The pressure unit is bar, as in that tree; the documented shape has none.",
   "physical_device_verified": false,
   "contract": "These resources replace the containers of the same path in ct200-shapes.json and add their leaves. Values are read only; nothing here is written."
  },

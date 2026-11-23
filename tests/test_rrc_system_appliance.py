@@ -2,7 +2,7 @@
 2.0 room controller through the real setup.
 
 The fake cloud answers with ``ct200-shapes.json`` and the system leaves of
-``system.json`` laid over it (synthetic, demo shapes and the leaf list of
+``system.json`` laid over it (synthetic, documented shapes and the leaf list of
 the TC100.2 tree of issue 122). Everything is read only and expected,
 untested on a CT200.
 """
@@ -197,7 +197,7 @@ async def test_unknown_units_and_unavailable_leaves_give_no_entity(
     hass: HomeAssistant,
 ) -> None:
     tree = system_tree()
-    # The demo shape: a pressure without a unit is never taken as bar (P10).
+    # The documented shape: a pressure without a unit is never taken as bar (P10).
     tree[f"{APPLIANCE}/systemPressure"] = load_tree("rrc/ct200-shapes.json")[
         f"{APPLIANCE}/systemPressure"
     ]

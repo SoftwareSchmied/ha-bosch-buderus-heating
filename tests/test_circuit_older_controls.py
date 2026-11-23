@@ -132,7 +132,7 @@ async def test_constant_values_set_on_the_gateway_meanwhile_send_nothing(hass):
 
 
 async def test_a_room_controller_does_not_lock_them(hass):
-    """ISRC locks the temporary target and its clearing, as in the app; the
+    """ISRC locks the temporary target and its clearing; the
     manual setpoint and the mode stay as on the climate entity."""
     coordinator, cloud = _setup(hass, "ISRC")
     await number_entity(hass, coordinator, MANUAL).async_set_native_value(22)

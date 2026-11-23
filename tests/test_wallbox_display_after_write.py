@@ -4,8 +4,8 @@ A wallbox whose configuration object follows its single values, as a device
 does. The select, the lock switch and the display name show the
 configuration object; after a confirmed write they show the confirmed value
 without waiting for the next read of that object (5 to 10 minutes) and
-without another request. A display name longer than the 32 characters of
-the app is still shown. Nothing here confirms behaviour on a real device.
+without another request. A display name longer than 32 characters
+is still shown. Nothing here confirms behaviour on a real device.
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ async def test_a_display_name_longer_than_the_app_allows_is_shown(hass):
     assert text.native_value == "L" * 40
     assert text.state == "L" * 40
     assert text.native_max == 40
-    # A write still keeps the app's 32 characters.
+    # A write still keeps the limit of 32 characters.
     with pytest.raises(WriteValidationError):
         await async_set_setting(coordinator, "label", "L" * 33, sleep=sleeper())
     assert fake.writes() == []

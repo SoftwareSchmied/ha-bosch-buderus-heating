@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Escolher ponto de comutação",
-        "description": "**{program}**\n\n{points}\n\nEscolha um ponto de comutação para o alterar ou eliminar, ou adicione um. Um dia tem no máximo {per_day} pontos de comutação (o limite da aplicação do fabricante, não comunicado pelo regulador); o último ponto de comutação de um dia permanece.",
+        "description": "**{program}**\n\n{points}\n\nEscolha um ponto de comutação para o alterar ou eliminar, ou adicione um. Um dia tem no máximo {per_day} pontos de comutação (um limite fixo, não comunicado pelo regulador); o último ponto de comutação de um dia permanece.",
         "data": {
           "point": "Ponto de comutação"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Alterar o programa da água quente",
-        "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nOs níveis são os do programa do regulador de ambiente. O programa aplica-se enquanto a água quente seguir o seu próprio programa. No máximo seis pontos de comutação por dia é o limite da aplicação do fabricante, não um limite comunicado pelo regulador.",
+        "description": "**{program}**\n\n{week}\n\nNo máximo {per_day} pontos de comutação por dia e {total} por semana, horas em passos de {raster} minutos. Cada ponto de comutação aplica-se até ao seguinte; as horas repetem-se semanalmente na hora local do sistema de aquecimento. Os dias marcados com * têm alterações ainda não guardadas. Nada é enviado antes do último passo.\n\nOs níveis são os do programa do regulador de ambiente. O programa aplica-se enquanto a água quente seguir o seu próprio programa. No máximo seis pontos de comutação por dia é um limite fixo, não um limite comunicado pelo regulador.",
         "data": {
           "action": "Passo seguinte",
           "day": "Dia da semana",
@@ -986,7 +986,7 @@
           "wallbox_history": "Ler o histórico de carregamento"
         },
         "data_description": {
-          "wallbox_authentication": "Desativado por predefinição. A partir do software 5.1.0 um arranque autentica-se primeiro; com software mais antigo o arranque é enviado sozinho, como na app do fabricante.",
+          "wallbox_authentication": "Desativado por predefinição. A partir do software 5.1.0 um arranque autentica-se primeiro; com software mais antigo o arranque é enviado sozinho.",
           "wallbox_authentication_name": "O nome que a aplicação do fabricante usa para a autenticação; pode ficar vazio.",
           "wallbox_history": "Desativado por predefinição. Aproximadamente a cada 30 minutos (a cada 60 minutos no perfil económico para a nuvem) são lidos o último carregamento (início, fim, duração, energia) e a energia deste mês da rede e do solar. Nomes de cartões, utilizadores ou de autenticação nunca são lidos."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Ative também o interruptor «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido.",
       "switch_program_value": "Introduza uma temperatura de {minimum} a {maximum} °C em passos de {step} °C.",
       "switch_program_day_emptied": "Um dia que tem pontos de comutação mantém pelo menos um; não se sabe o que um dia vazio significa para o regulador.",
-      "rrc_point_limit": "Este dia já tem o maior número de pontos de comutação que a aplicação permite ({per_day}).",
+      "rrc_point_limit": "Este dia já tem o maior número permitido de pontos de comutação ({per_day}).",
       "rrc_point_last": "O último ponto de comutação de um dia não pode ser eliminado; não se sabe o que um dia vazio significa para o regulador.",
       "rrc_point_duplicate": "Este dia já tem um ponto de comutação a esta hora.",
       "wallbox_name_invalid": "O nome pode conter até 64 caracteres imprimíveis.",
@@ -1879,7 +1879,7 @@
       "message": "Só se podem usar estas definições: {settings}. Uma definição escreve-se como modo, temperatura e velocidade do ventilador, por exemplo «cool 24.0 auto», ou «off»."
     },
     "switch_points_unit_not_ready": {
-      "message": "O esquentador só aceita alterações a este programa horário enquanto está ligado, funciona em modo de programa e tem um fuso horário, como na app do fabricante. Nada foi enviado."
+      "message": "O esquentador só aceita alterações a este programa horário enquanto está ligado, funciona em modo de programa e tem um fuso horário. Nada foi enviado."
     }
   },
   "selector": {

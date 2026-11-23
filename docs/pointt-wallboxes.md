@@ -115,7 +115,7 @@ default**; enable only what you need.
 | Grid supplement for solar charging, Maximum grid supplement, Minimum solar surplus | switch, number (W) | `conf/solarSurplus/*`; 0 to 11 000 W and 0 to 5 000 W in steps of 100 W | software 5.1.0, writable, external meter |
 | Prefer home battery | switch | `conf/strategy/powerOffset`: on = -100, off = 0; another value shows as unknown | software 5.0.0, writable, external meter |
 | Solar filter time | number (s) | `conf/strategy/filterTime`, 5 to 600 s | as above |
-| Current limiter, Power limiter, Current limit phase L1/L2/L3, Power limit | switch, number | `conf/overloadProtection/*`; phases 16 to 63 A, sent as the whole list of three; power 5 000 W up to 3 × 230 V × the meter's maximum current (43 000 W without it) | software 5.0.0, all four values writable, a connected external meter, a reported brand the app offers the function for |
+| Current limiter, Power limiter, Current limit phase L1/L2/L3, Power limit | switch, number | `conf/overloadProtection/*`; phases 16 to 63 A, sent as the whole list of three; power 5 000 W up to 3 × 230 V × the meter's maximum current (43 000 W without it) | software 5.0.0, all four values writable, a connected external meter, a reported brand that has the function |
 | Wallbox locked | switch | `conf/locked` | writable |
 | Display name | text | `conf/label`, 1 to 32 printable characters | writable |
 | Electricity price, Feed-in tariff | number | `conf/price`, `conf/feedinPrice`, 0 to 100 in steps of 0.01 | writable; the feed-in tariff with software 5.0.0 and a connected meter |
@@ -151,7 +151,7 @@ unknown.
   while the wallbox is being read.
 - Start is offered only while the vehicle is plugged in and waiting
   (`Preparing`, paused by the vehicle, or paused by the station for a
-  limiting source the app would also end); pause only while charging.
+  limiting source a start may end); pause only while charging.
 - A follower in a load-management group takes no command; a leader only
   start, pause and the charging current. While an energy manager controls
   the wallbox, current, boost, charging mode, solar, overload and price
@@ -176,8 +176,8 @@ installation is designed for it.
 on) starts only after an `authenticate` command. The integration sends it
 only when allowed under **Settings → Wallbox** (off by default). With
 software 5.1.0 or newer a start then sends `authenticate` followed by
-`start`; with older software it sends `start` alone, as the manufacturer's
-app does. Without a known software version nothing is sent. If the
+`start`; with older software it sends `start` alone.
+Without a known software version nothing is sent. If the
 authentication is refused or unclear, no start is sent. The
 optional authentication name is the name the vendor app uses; it stays in
 the entry options and never appears in diagnostics.
@@ -221,8 +221,7 @@ user data, meter serial numbers, session identifiers and costs are neither
 read nor stored, logged or put into the diagnostics, which show only whether
 each part is fresh, its error category and request counts. Switching the
 option off forgets the values at once; the sensors then stay as unavailable.
-The paths and the meaning of the fields come from the manufacturer's app.
-A user confirmed this on a Power Charge 7000i S with 0.9.2-beta.3 (discussion #111): both parts were fresh without errors; the energy of the last session (15.78 kWh) equals the rise of the wallbox's lifetime counter in that session, and its end matches start plus charging time, so the unit (kWh) and the time zone of the times are right; the monthly sum from the grid (221.69 kWh) equals the rise of the lifetime counter since the first of the month. The monthly solar sum showed 0.0, plausible without an external meter and not further verified. **Expected, not yet confirmed**: the date format of the query on other software versions and the aggregation of the solar samples. An answer larger than 2 MiB is refused and shows as an invalid answer in the diagnostics.
+A user confirmed the paths and the meaning of the fields on a Power Charge 7000i S with 0.9.2-beta.3 (discussion #111): both parts were fresh without errors; the energy of the last session (15.78 kWh) equals the rise of the wallbox's lifetime counter in that session, and its end matches start plus charging time, so the unit (kWh) and the time zone of the times are right; the monthly sum from the grid (221.69 kWh) equals the rise of the lifetime counter since the first of the month. The monthly solar sum showed 0.0, plausible without an external meter and not further verified. **Expected, not yet confirmed**: the date format of the query on other software versions and the aggregation of the solar samples. An answer larger than 2 MiB is refused and shows as an invalid answer in the diagnostics.
 
 ## Deutsch
 
@@ -329,7 +328,7 @@ sind **standardmäßig deaktiviert**; bitte nur aktivieren, was gebraucht wird.
 | Netzzuschuss beim Solarladen, Höchstleistung Netzzuschuss, Mindest-Solarüberschuss | Schalter, Zahl (W) | `conf/solarSurplus/*`; 0 bis 11 000 W und 0 bis 5 000 W in Schritten von 100 W | Software 5.1.0, schreibbar, externer Zähler |
 | Heimspeicher bevorzugen | Schalter | `conf/strategy/powerOffset`: an = -100, aus = 0; andere Werte erscheinen als unbekannt | Software 5.0.0, schreibbar, externer Zähler |
 | Solar-Filterzeit | Zahl (s) | `conf/strategy/filterTime`, 5 bis 600 s | wie oben |
-| Stromgrenzer, Leistungsgrenzer, Stromgrenze Phase L1/L2/L3, Leistungsgrenze | Schalter, Zahl | `conf/overloadProtection/*`; Phasen 16 bis 63 A, immer als ganze Liste aus drei Werten gesendet; Leistung 5 000 W bis 3 × 230 V × Höchststrom des Zählers (ohne Angabe 43 000 W) | Software 5.0.0, alle vier Werte schreibbar, ein verbundener externer Zähler, eine gemeldete Marke, für die die App die Funktion anbietet |
+| Stromgrenzer, Leistungsgrenzer, Stromgrenze Phase L1/L2/L3, Leistungsgrenze | Schalter, Zahl | `conf/overloadProtection/*`; Phasen 16 bis 63 A, immer als ganze Liste aus drei Werten gesendet; Leistung 5 000 W bis 3 × 230 V × Höchststrom des Zählers (ohne Angabe 43 000 W) | Software 5.0.0, alle vier Werte schreibbar, ein verbundener externer Zähler, eine gemeldete Marke, die die Funktion hat |
 | Wallbox gesperrt | Schalter | `conf/locked` | schreibbar |
 | Anzeigename | Text | `conf/label`, 1 bis 32 druckbare Zeichen | schreibbar |
 | Strompreis, Einspeisevergütung | Zahl | `conf/price`, `conf/feedinPrice`, 0 bis 100 in Schritten von 0,01 | schreibbar; die Einspeisevergütung mit Software 5.0.0 und verbundenem Zähler |
@@ -364,7 +363,7 @@ Codes bleiben unbekannt.
 - Zwischen zwei Befehlen liegen mindestens fünf Sekunden. Während die Wallbox gelesen wird, läuft keine Änderung.
 - Starten wird nur angeboten, solange das Fahrzeug angesteckt ist und wartet
   (`Preparing`, vom Fahrzeug pausiert oder von der Ladestation pausiert bei
-  einer Begrenzungsquelle, die auch die App beendet); Pausieren nur während
+  einer Begrenzungsquelle, die ein Start beenden darf); Pausieren nur während
   des Ladens.
 - Eine folgende Wallbox im Lastmanagement-Verbund nimmt keinen Befehl an,
   eine führende nur Start, Pause und Ladestrom. Steuert ein Energiemanager
@@ -394,7 +393,7 @@ die Installation dafür ausgelegt ist.
 Integration sendet ihn nur, wenn das unter **Einstellungen → Wallbox**
 erlaubt ist (standardmäßig aus). Ab Software 5.1.0 sendet ein Start dann
 `authenticate` und danach `start`; bei älterer Software sendet er nur
-`start`, wie die Hersteller-App. Ohne bekannte Softwareversion wird nichts
+`start`. Ohne bekannte Softwareversion wird nichts
 gesendet. Wird die
 Authentifizierung abgelehnt oder bleibt sie unklar, wird kein Start
 gesendet. Der optionale Authentifizierungsname ist der Name, den die
@@ -443,7 +442,6 @@ Karten- und Nutzerdaten, Zähler-Seriennummern, Ladekennungen und Kosten werden
 weder gelesen noch gespeichert, protokolliert oder in die Diagnose übernommen;
 die Diagnose zeigt nur, ob jeder Teil aktuell ist, seine Fehlerkategorie und
 Anfragezähler. Wird die Option ausgeschaltet, werden die Werte sofort
-vergessen; die Sensoren bleiben dann nicht verfügbar. Pfade und Bedeutung der
-Felder stammen aus der Hersteller-App.
-Ein Nutzer hat dies an einer Power Charge 7000i S mit 0.9.2-beta.3 bestätigt (Diskussion #111): Beide Teile waren aktuell und ohne Fehler; die Energie der letzten Ladung (15,78 kWh) entspricht dem Anstieg des Gesamtzählers der Wallbox in dieser Ladung, ihr Ende passt zu Beginn plus Ladezeit, also stimmen Einheit (kWh) und Zeitzone der Zeiten; die Monatssumme aus dem Netz (221,69 kWh) entspricht dem Anstieg des Gesamtzählers seit dem Monatsersten. Die Solar-Monatssumme zeigte 0,0, plausibel ohne externen Zähler und nicht weiter geprüft. **Erwartet, noch nicht bestätigt**: Datumsformat der Abfrage bei anderen Softwareständen und Aufsummierung der Solarwerte. Eine Antwort über
+vergessen; die Sensoren bleiben dann nicht verfügbar. Ein Nutzer hat
+Pfade und Bedeutung der Felder an einer Power Charge 7000i S mit 0.9.2-beta.3 bestätigt (Diskussion #111): Beide Teile waren aktuell und ohne Fehler; die Energie der letzten Ladung (15,78 kWh) entspricht dem Anstieg des Gesamtzählers der Wallbox in dieser Ladung, ihr Ende passt zu Beginn plus Ladezeit, also stimmen Einheit (kWh) und Zeitzone der Zeiten; die Monatssumme aus dem Netz (221,69 kWh) entspricht dem Anstieg des Gesamtzählers seit dem Monatsersten. Die Solar-Monatssumme zeigte 0,0, plausibel ohne externen Zähler und nicht weiter geprüft. **Erwartet, noch nicht bestätigt**: Datumsformat der Abfrage bei anderen Softwareständen und Aufsummierung der Solarwerte. Eine Antwort über
 2 MiB wird abgewiesen und erscheint in der Diagnose als ungültige Antwort.

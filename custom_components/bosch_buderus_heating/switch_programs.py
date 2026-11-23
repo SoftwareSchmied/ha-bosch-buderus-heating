@@ -40,7 +40,7 @@ MAX_SWITCH_POINTS_PER_DAY = 48
 _LEVEL_KEY = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 # A reported limit above this is not believed (a count of switch points).
 _LIMIT_SANITY = 10_000
-# A number as text, as the app writes it (``String.valueOf(float)``).
+# A number as text with one or two decimals (for example ``21.0``).
 _DECIMAL_TEXT = re.compile(r"^-?[0-9]{1,3}\.[0-9]{1,2}$")
 _INTEGER_TEXT = re.compile(r"^-?[0-9]{1,3}$")
 _POINT_FIELDS = frozenset({"dayOfWeek", "time", "setpoint"})
@@ -93,7 +93,7 @@ KINDS: Final[tuple[ProgramKind, ...]] = (
         "array",
         True,
     ),
-    # The app writes the cooling program as ``A`` only.
+    # The cooling program is written as ``A`` only.
     _kind(
         "cooling",
         r"^(?P<circuit>/heatingCircuits/hc[1-9][0-9]?)/cooling/switchPrograms/(?P<program>A)$",
@@ -125,7 +125,7 @@ KINDS: Final[tuple[ProgramKind, ...]] = (
         False,
     ),
     # An air conditioner's programs (``program1`` ... ``program9``, the
-    # number is the last character of the ID in the app): an object body,
+    # number is the last character of the ID): an object body,
     # no carry-over (the unit is off before the first point of a day).
     _kind(
         "aircon",
@@ -471,7 +471,7 @@ def _assess_further(resource: Resource, kind: ProgramKind) -> SwitchProgramAsses
 def _assess_aircon(resource: Resource, kind: ProgramKind) -> SwitchProgramAssessment:
     """An air conditioner's program: readable without limits or configuration.
 
-    The ``type`` is not checked (the app does not either); every point must
+    The ``type`` is not checked; every point must
     have the known form, otherwise the program is not shown at all.
     """
     if (

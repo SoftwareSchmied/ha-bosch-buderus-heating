@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Odabir točke uklapanja",
-        "description": "**{program}**\n\n{points}\n\nOdaberite točku uklapanja da je promijenite ili izbrišete, ili dodajte novu. Dan ima najviše {per_day} točaka uklapanja (granica aplikacije proizvođača, koju regulator ne prijavljuje); posljednja točka uklapanja u danu ostaje.",
+        "description": "**{program}**\n\n{points}\n\nOdaberite točku uklapanja da je promijenite ili izbrišete, ili dodajte novu. Dan ima najviše {per_day} točaka uklapanja (fiksna granica, koju regulator ne prijavljuje); posljednja točka uklapanja u danu ostaje.",
         "data": {
           "point": "Točka uklapanja"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Promjena programa tople vode",
-        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nRazine su one iz programa sobnog regulatora. Program vrijedi dok topla voda slijedi vlastiti program. Najviše šest točaka uklapanja dnevno granica je aplikacije proizvođača, a ne granica koju prijavljuje regulator.",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nRazine su one iz programa sobnog regulatora. Program vrijedi dok topla voda slijedi vlastiti program. Najviše šest točaka uklapanja dnevno fiksna je granica, a ne granica koju prijavljuje regulator.",
         "data": {
           "action": "Sljedeći korak",
           "day": "Dan u tjednu",
@@ -986,7 +986,7 @@
           "wallbox_history": "Čitaj povijest punjenja"
         },
         "data_description": {
-          "wallbox_authentication": "Zadano isključeno. Od softvera 5.1.0 pokretanje se najprije autentificira; sa starijim softverom pokretanje se šalje samo, kao u aplikaciji proizvođača.",
+          "wallbox_authentication": "Zadano isključeno. Od softvera 5.1.0 pokretanje se najprije autentificira; sa starijim softverom pokretanje se šalje samo.",
           "wallbox_authentication_name": "Naziv koji aplikacija proizvođača koristi za autentifikaciju; može ostati prazan.",
           "wallbox_history": "Prema zadanim postavkama isključeno. Otprilike svakih 30 minuta (svakih 60 minuta u profilu prilagođenom oblaku) čitaju se zadnje punjenje (početak, kraj, trajanje, energija) te energija ovog mjeseca iz mreže i iz sunca. Imena kartica, korisnika ili autentifikacije nikada se ne čitaju."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Uključite i prekidač „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno.",
       "switch_program_value": "Unesite temperaturu od {minimum} do {maximum} °C u koracima od {step} °C.",
       "switch_program_day_emptied": "Dan koji ima točke uklapanja zadržava barem jednu; nije poznato što prazan dan znači za regulator.",
-      "rrc_point_limit": "Ovaj dan već ima najveći broj točaka uklapanja koji aplikacija dopušta ({per_day}).",
+      "rrc_point_limit": "Ovaj dan već ima najveći dopušteni broj točaka uklapanja ({per_day}).",
       "rrc_point_last": "Posljednja točka uklapanja u danu ne može se izbrisati; nije poznato što prazan dan znači za regulator.",
       "rrc_point_duplicate": "Ovaj dan već ima točku uklapanja u to vrijeme.",
       "wallbox_name_invalid": "Naziv smije sadržavati najviše 64 ispisiva znaka.",
@@ -1879,7 +1879,7 @@
       "message": "Mogu se koristiti samo ove postavke: {settings}. Postavka se piše kao način rada, temperatura i brzina ventilatora, na primjer „cool 24.0 auto“, ili „off“."
     },
     "switch_points_unit_not_ready": {
-      "message": "Grijač vode prihvaća promjene ovog vremenskog programa samo dok je uključen, radi u načinu vremenskog programa i ima vremensku zonu, kao u aplikaciji proizvođača. Ništa nije poslano."
+      "message": "Grijač vode prihvaća promjene ovog vremenskog programa samo dok je uključen, radi u načinu vremenskog programa i ima vremensku zonu. Ništa nije poslano."
     }
   },
   "selector": {

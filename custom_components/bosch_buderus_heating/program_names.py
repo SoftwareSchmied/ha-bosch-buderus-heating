@@ -1,18 +1,17 @@
 """TP-05: the names of the weekly programs A and B (pure, no HA).
 
-``/heatingCircuits/hcN/switchPrograms/nameA`` (``nameB``) is a text the app
-codes as its ``valueConfig`` says: ``codingType`` ``base64`` means the text
+``/heatingCircuits/hcN/switchPrograms/nameA`` (``nameB``) is a text coded
+as its ``valueConfig`` says: ``codingType`` ``base64`` means the text
 in ``charset`` (UTF-8; UTF-16 and UTF-32 big-endian; ASCII) as Base64
-without line breaks, ``ascii`` the text itself. The app edits a name only
-with this coding; without it a name would be stored only on the phone, so
-the integration does not offer to change it.
+without line breaks, ``ascii`` the text itself. A name is editable only
+with this coding; without it the integration does not offer to change it.
 
 Writing: one PUT ``{"value": <coded text>}``, no automatic retry, read-back
 of the decoded name (``rrc_write.RrcStructWrite``). The name is read fresh
 and compared with the one shown before; a name changed in the app meanwhile
 sends nothing. The same name sends nothing. An empty name is not written
-(its meaning, a reset to the app's default name, is not proven). iCom
-gateways get no name control: their app does not write names.
+(its meaning, a reset to the default name, is not proven). iCom
+gateways get no name control: names are not written there.
 """
 
 from __future__ import annotations
@@ -33,7 +32,7 @@ from .write_policies import RRC_READ_BACK_DELAYS, ContractRejected
 NAME_PATTERN: Final = re.compile(
     r"^/heatingCircuits/hc[1-9][0-9]?/switchPrograms/name(?P<program>[AB])$"
 )
-# The charsets the app codes, by their normalized name, and the codec.
+# The known charsets, by their normalized name, and the codec.
 _CODECS: Final = {
     "UTF8": "utf-8",
     "UTF16": "utf-16-be",

@@ -279,7 +279,7 @@ def test_comfort_level_follows_the_advertised_step_on_a_room_controller() -> Non
 
 
 def test_disinfection_time_needs_a_float_value_in_minutes() -> None:
-    """P10: the demo's type "float" has no control (unsupported_resource_type)."""
+    """P10: the documented type "float" has no control (unsupported_resource_type)."""
     good = fixture(TIME)
     assessment = assess_control(good, RRC_CONTEXT)
     assert assessment.policy is rrc_contract_dhw.DISINFECTION_TIME_POLICY

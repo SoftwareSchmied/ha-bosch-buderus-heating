@@ -155,8 +155,8 @@ def test_a_day_of_gap_hours_only_has_no_value() -> None:
 
 def test_a_cloud_month_of_placeholders_uses_the_plants_month_value() -> None:
     """A month whose recording began on the 27th: 26 placeholder days and
-    five real ones. The month is the plant's month value (31 kWh, as the
-    manufacturer's app shows), not 26 placeholders plus 30 kWh."""
+    five real ones. The month is the plant's month value (31 kWh), not 26
+    placeholders plus 30 kWh."""
     ledger = Ledger(HEAT)
     read_at = local(2026, 11, 15, 12).astimezone(UTC)
     july = parse_cloud(

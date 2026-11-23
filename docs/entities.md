@@ -359,7 +359,7 @@ currently active, and whether it is an all-day period.
 Create, edit, and delete actions appear only when the list and configuration
 resources are current and the schema is fully understood. Editing in the
 calendar preserves all PointT behavior fields and changes only dates and the
-supported cloud name. New periods use the official-app defaults for affected
+supported cloud name. New periods use the standard defaults for affected
 circuits and holiday behavior. Recurrence, descriptions, and locations are not
 supported.
 
@@ -750,7 +750,7 @@ the entire Home Assistant session.
 
 ## Heating circuits
 
-The confirmed installation creates 14 core entities. Optional app capabilities add
+The confirmed installation creates 14 core entities. Optional capabilities add
 entities only when the gateway returns them. An empty optional name produces
 no entity; a configured name is added dynamically.
 
@@ -1520,7 +1520,7 @@ All values are cumulative energy in kWh, not instantaneous power.
 
 Calculated environmental energy is created only when all three required raw
 values are present and valid, for the total, heating, hot water and pool (the
-same formula in each area, as in the manufacturer's app). The entities of
+same formula in each area). The entities of
 heating, hot water and pool are disabled by default; cooling has no
 environmental energy. A negative or incomplete result is not exposed as a
 measurement and does not start a new meter cycle. If the collection reports

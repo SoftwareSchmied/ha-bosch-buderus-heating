@@ -1,7 +1,7 @@
 """The child lock of a zone as a switch (0.9.3).
 
 ``/zones/zoneN/childLock`` is a string resource with the two values
-``active`` and ``inactive``; the manufacturer's app offers it as a switch.
+``active`` and ``inactive``, shown as a switch.
 The switch exists only when the gateway reports the path as writable, with
 exactly these two advertised values and one of them as the current value;
 without that path nothing is created. It is enabled by default. Pure data

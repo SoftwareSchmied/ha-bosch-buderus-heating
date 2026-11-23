@@ -19,7 +19,7 @@ FIELDS: Final = {"on": "onTimestamp", "off": "offTimestamp"}
 STEP_SECONDS: Final = 60
 # The least time between the command and the timer time.
 MIN_LEAD_SECONDS: Final = 10
-# The app offers today and tomorrow; one day is the smallest span within that.
+# A timer lies today or tomorrow; one day is the smallest span within that.
 MAX_MINUTES: Final = 24 * 60
 # A reported time further away than this cannot come from a timer we can show.
 _MAX_ABSOLUTE: Final = 4_102_444_800
@@ -40,7 +40,7 @@ def stored(device: Device, field: str) -> int | None:
 def declared(device: Device, field: str) -> bool:
     """The timer exists on this device: writable declaration, valid value.
 
-    A declared step other than the 60 seconds the app uses is not offered.
+    A declared step other than 60 seconds is not offered.
     """
     meta = metadata(device, "state", field)
     if not writable(meta) or meta is None or stored(device, field) is None:
@@ -85,7 +85,7 @@ def command_valid(
 ) -> bool:
     """One timer field, from fresh state, never equal to the other timer's minute.
 
-    The app refuses two timers in the same minute and a time in the past.
+    Two timers in the same minute and a time in the past are not allowed.
     """
     if (
         not supported(device)

@@ -139,7 +139,7 @@ async def test_zone_manual_setpoint_between_two_steps_sends_nothing(environment,
 
 async def test_zone_manual_setpoint_without_a_step_takes_half_degrees(environment):
     """Without an advertised step the zone takes 0.5 steps counted from the
-    minimum, as the manufacturer's app sets it."""
+    minimum."""
     coordinator, client, _ = environment
     resource = replace(NUMBER, metadata=replace(NUMBER.metadata, step_size=None))
     coordinator.data = snapshots(resource)

@@ -78,7 +78,7 @@ untested on a real installation.
   `hvac_action`: a mode does not show whether the compressor runs.
 - **Extra controls** exist only when the unit reports their path as writable
   and, for the functions, lists them in `standardFunctions` or
-  `advancedFunctions`. Ionizer and similar functions the app cannot switch
+  `advancedFunctions`. Ionizer and similar functions that cannot be switched
   over PointT are never created.
 - **Timers:** only in steps of 30 minutes from the reported minimum, or 0 to
   stop. A timer can switch the unit on or off later without anyone present.
@@ -87,11 +87,11 @@ untested on a real installation.
   program and ending a temporary change. The switch points of the active
   program (day, time, mode, setpoint, fan) are shown in the attribute
   `switch_points` of the Active schedule select (kept out of the recorder);
-  a malformed program shows none. The app keeps program names on the phone
-  only, so none are shown.
+  a malformed program shows none. Program names are not stored on the unit,
+  so none are shown.
 - **Schedule sensors:** one per program the unit offers, showing the mode
-  the program sets now (`off` before the first switch point of a day, as in
-  the app), with the switch points, the scheduled temperature and fan
+  the program sets now (`off` before the first switch point of a day),
+  with the switch points, the scheduled temperature and fan
   speed, whether it is the active program and whether it can be changed.
   A program with a point in an unknown form gets no sensor.
 
@@ -105,18 +105,18 @@ level is written as `<mode> [<temperature>] [<fan speed>]`, for example
 `cool 24.0 auto`, `fanOnly low` or `off`. Each setting applies until the
 next switch point of the same day; before the first switch point of a day
 the unit is off. When the previous day ends with the unit on, the written
-week holds an explicit `off` at 00:00 for that day, as the app writes it.
+week holds an explicit `off` at 00:00 for that day.
 
 - A program is offered for changes only when the unit reports it as
   writable and the program configuration (`switchPrograms/configuration`)
   is readable; the configuration only describes, its own write flag does
-  not matter (as in the app). The modes, their temperature range (in °C
+  not matter. The modes, their temperature range (in °C
   when no unit is given) and the fan
   speeds come from that configuration; the number of switch points in all
   and per day and the time raster from the program, else from the
   configuration. Without them the program is shown, never changed.
 - A temperature is needed exactly where a mode reports a range, within it
-  and on its step (the configured step, else whole degrees as in the app),
+  and on its step (the configured step, else whole degrees),
   and only in Celsius between 10 and
   40 °C. A fan speed only from the mode's list. `off` carries neither.
   `internalCleaning` is never offered. A week without any switch point is
@@ -143,7 +143,7 @@ removes the control.
   mode is never sent together with a power change.
 - **Mode with a temperature in one call:** refused; change them separately.
 - **Solar operation:** while `/pv/enable` reads `on`, the modes auto and heat
-  are refused, as in the app. Without a readable solar state nothing is
+  are refused. Without a readable solar state nothing is
   blocked. The solar settings themselves are never written.
 - A change that was sent but not confirmed in time shows its own message; it
   may still take effect and is not sent again.
@@ -205,11 +205,11 @@ je nach Betriebsart, Temperatur und Lüfterstufe; in der Aktion als
 `cool 24.0 auto`, `fanOnly low` oder `off`. Er gilt bis zum nächsten
 Schaltpunkt desselben Tages, vor dem ersten Schaltpunkt eines Tages ist das
 Gerät aus; endet der Vortag mit eingeschaltetem Gerät, enthält die
-geschriebene Woche dafür ein ausdrückliches `off` um 00:00, wie es die App
-schreibt. Bearbeitbar ist ein Programm nur, wenn das Programm als schreibbar
+geschriebene Woche dafür ein ausdrückliches `off` um 00:00.
+Bearbeitbar ist ein Programm nur, wenn das Programm als schreibbar
 gemeldet ist und die lesbare Konfiguration die Betriebsarten mit Bereichen
 (ohne Einheit in °C) und Lüfterstufen sowie die Grenzen nennt; ohne
-gemeldeten Schritt gelten ganze Grad wie in der App. Die
+gemeldeten Schritt gelten ganze Grad. Die
 Änderung liest Programm und Konfiguration frisch, vergleicht das Programm
 direkt vor dem Senden noch einmal, sendet die ganze Woche genau einmal und
 liest sie zurück; nichts wird wiederholt.
@@ -217,4 +217,4 @@ liest sie zurück; nichts wird wiederholt.
 Jede Aktion schreibt genau einen Pfad: frisch lesen, genau ein PUT,
 Rücklesen nach 1, 2, 4 und 8 Sekunden, kein zweiter Versand. Ein
 Moduswechsel bei ausgeschaltetem Gerät wird abgelehnt ("zuerst einschalten").
-Im Solarbetrieb sind Automatik und Heizen gesperrt wie in der App.
+Im Solarbetrieb sind Automatik und Heizen gesperrt.

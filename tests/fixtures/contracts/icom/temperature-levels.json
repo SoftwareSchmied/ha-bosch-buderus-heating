@@ -7,7 +7,7 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "The heating and setback levels follow the shapes of gateway-shapes.json and the coupled limits of the K40 capture (heating minimum = setback value + 0.5, setback maximum = heating value - 0.5). The away and cooling levels follow the behaviour of the manufacturer's app. Every value and limit is constructed. No identifier.",
+    "redaction": "The heating and setback levels follow the shapes of gateway-shapes.json and the coupled limits of the K40 capture (heating minimum = setback value + 0.5, setback maximum = heating value - 0.5). The away and cooling levels follow the expected shapes. Every value and limit is constructed. No identifier.",
     "physical_device_verified": false
   },
   "contract": "Temperature levels of one heating circuit. Each variant replaces (set) or removes (remove) resources of the base.",

@@ -681,7 +681,7 @@ def _parse_period(
     start, start_is_date = start_result
     end, end_is_date = end_result
     if start_is_date and end_is_date:
-        # PointT/App end dates are inclusive; HA calendar end dates are exclusive.
+        # PointT end dates are inclusive; HA calendar end dates are exclusive.
         end += timedelta(days=1)
     if not (_MIN_YEAR <= start.year <= _MAX_YEAR):
         return None

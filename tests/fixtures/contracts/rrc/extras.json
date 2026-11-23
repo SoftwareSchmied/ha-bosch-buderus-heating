@@ -6,7 +6,7 @@
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-17",
-  "redaction": "Constructed values only. Leaf names, JSON types, units and the writeable flag follow the anonymized TC100.2 tree of issue 122 (names and types, no values). The wire format of the flags (\"true\"/\"false\") is the form the mobile app sends when it switches them; not confirmed on a controller. The list of users of the automatic absence is not part of this fixture.",
+  "redaction": "Constructed values only. Leaf names, JSON types, units and the writeable flag follow the anonymized TC100.2 tree of issue 122 (names and types, no values). The wire format of the flags (\"true\"/\"false\") is the expected form when they are switched; not confirmed on a controller. The list of users of the automatic absence is not part of this fixture.",
   "physical_device_verified": false,
   "contract": "These resources replace the containers of the same path in ct200-shapes.json and add their leaves."
  },

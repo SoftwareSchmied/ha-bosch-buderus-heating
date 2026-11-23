@@ -1428,7 +1428,7 @@ def supports_entity(resource: Resource, *, rrc_plant: bool = False) -> bool:
 
 
 def _matches_optional_app_schema(resource: Resource) -> bool:
-    """Reject optional app paths whose live type or unit is unexpected."""
+    """Reject optional paths whose live type or unit is unexpected."""
     if rrc.scalar_field(resource.path):
         return rrc.scalar_value(resource) is not None
     if is_runtime_path(resource.path):

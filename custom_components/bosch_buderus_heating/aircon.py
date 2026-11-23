@@ -10,8 +10,8 @@ read along in the same bulk request and changed through the shared program
 write (``switch_program_service``): fresh reading of the program and its
 configuration, one PUT of the whole week, read-back, no retry.
 
-Expected, untested on a real installation: the paths and their meaning come
-from the vendor app.
+Expected, untested on a real installation, including the paths and their
+meaning.
 """
 
 from __future__ import annotations
@@ -93,8 +93,9 @@ SYSTEM_TYPES: Final[tuple[SystemType, ...]] = (
     "sharp",
 )
 
-# The unit applies a change late (the app discards its first reading after
-# a command): read back after 1, 2, 4 and 8 seconds, never write twice.
+# The unit applies a change late (its first reading after a command can
+# still show the old value): read back after 1, 2, 4 and 8 seconds, never
+# write twice.
 READ_BACK_DELAYS: Final = RRC_READ_BACK_DELAYS
 # A write waits so long for a running poll, then is reported busy unsent.
 WRITE_LOCK_TIMEOUT: Final = 60.0
@@ -224,7 +225,7 @@ class AirconCoordinator(CloudHoldCoordinator[AirconSnapshot]):
         self.gateway = gateway
         self.system: SystemType | None = None
         # "pending" until both detection paths answered, then "detected" or
-        # "no_air_conditioner" (kept until the next start, as the app).
+        # "no_air_conditioner" (kept until the next start).
         self.detection = "pending"
         self.error: str | None = None
         self.data = AirconSnapshot()
@@ -344,8 +345,8 @@ class AirconCoordinator(CloudHoldCoordinator[AirconSnapshot]):
                 )
         if not resources:
             # Offline or unreachable: every entity becomes unavailable (after
-            # the hold over a short blip) and the unit is not detected again
-            # (as the app). An explicit refusal is never held.
+            # the hold over a short blip) and the unit is not detected again.
+            # An explicit refusal is never held.
             self.error = "no_reading"
             if any(explicit_refusal(item.status) for item in results):
                 self.hold_refuses()

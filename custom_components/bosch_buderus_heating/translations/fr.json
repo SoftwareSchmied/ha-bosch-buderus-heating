@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Choisir le point de commutation",
-        "description": "**{program}**\n\n{points}\n\nChoisissez un point de commutation pour le modifier ou le supprimer, ou ajoutez-en un. Un jour comporte au plus {per_day} points de commutation (limite de l'application du fabricant, non signalée par le régulateur) ; le dernier point de commutation d'un jour est conservé.",
+        "description": "**{program}**\n\n{points}\n\nChoisissez un point de commutation pour le modifier ou le supprimer, ou ajoutez-en un. Un jour comporte au plus {per_day} points de commutation (limite fixe, non signalée par le régulateur) ; le dernier point de commutation d'un jour est conservé.",
         "data": {
           "point": "Point de commutation"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Modifier le programme de l'eau chaude",
-        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nLes niveaux sont ceux du programme du régulateur d'ambiance. Le programme s'applique tant que l'eau chaude suit son propre programme. Six points de commutation au plus par jour est la limite de l'application du fabricant, et non une limite signalée par le régulateur.",
+        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nLes niveaux sont ceux du programme du régulateur d'ambiance. Le programme s'applique tant que l'eau chaude suit son propre programme. Six points de commutation au plus par jour est une limite fixe, et non une limite signalée par le régulateur.",
         "data": {
           "action": "Étape suivante",
           "day": "Jour de la semaine",
@@ -986,7 +986,7 @@
           "wallbox_history": "Lire l'historique de charge"
         },
         "data_description": {
-          "wallbox_authentication": "Désactivé par défaut. À partir du logiciel 5.1.0, un démarrage s'authentifie d'abord ; avec un logiciel plus ancien, le démarrage est envoyé seul, comme dans l'application du fabricant.",
+          "wallbox_authentication": "Désactivé par défaut. À partir du logiciel 5.1.0, un démarrage s'authentifie d'abord ; avec un logiciel plus ancien, le démarrage est envoyé seul.",
           "wallbox_authentication_name": "Le nom que l'application du fabricant utilise pour l'authentification ; peut rester vide.",
           "wallbox_history": "Désactivé par défaut. Environ toutes les 30 minutes (60 minutes dans le profil économe pour le cloud), la dernière charge (début, fin, durée, énergie) et l'énergie de ce mois provenant du réseau et du solaire sont lues. Les noms de cartes, d'utilisateurs ou d'authentification ne sont jamais lus."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Activez aussi l'interrupteur « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé.",
       "switch_program_value": "Saisissez une température de {minimum} à {maximum} °C par pas de {step} °C.",
       "switch_program_day_emptied": "Un jour qui a des points de commutation en garde au moins un ; on ne sait pas ce qu'un jour vide signifie pour le régulateur.",
-      "rrc_point_limit": "Ce jour a déjà le nombre maximal de points de commutation que l'application autorise ({per_day}).",
+      "rrc_point_limit": "Ce jour a déjà le nombre maximal autorisé de points de commutation ({per_day}).",
       "rrc_point_last": "Le dernier point de commutation d'un jour ne peut pas être supprimé ; on ne sait pas ce qu'un jour vide signifie pour le régulateur.",
       "rrc_point_duplicate": "Ce jour a déjà un point de commutation à cette heure.",
       "wallbox_name_invalid": "Le nom peut contenir jusqu'à 64 caractères imprimables.",
@@ -1879,7 +1879,7 @@
       "message": "Seuls ces réglages peuvent être utilisés : {settings}. Un réglage s'écrit sous la forme mode, température et vitesse du ventilateur, par exemple « cool 24.0 auto », ou « off »."
     },
     "switch_points_unit_not_ready": {
-      "message": "Le chauffe-eau n'accepte les modifications de ce programme horaire que s'il est allumé, fonctionne en mode programme et dispose d'un fuseau horaire, comme dans l'application du fabricant. Rien n'a été envoyé."
+      "message": "Le chauffe-eau n'accepte les modifications de ce programme horaire que s'il est allumé, fonctionne en mode programme et dispose d'un fuseau horaire. Rien n'a été envoyé."
     }
   },
   "selector": {

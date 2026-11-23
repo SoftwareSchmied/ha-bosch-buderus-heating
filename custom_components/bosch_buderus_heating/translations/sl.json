@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Izbira preklopne točke",
-        "description": "**{program}**\n\n{points}\n\nIzberite preklopno točko, da jo spremenite ali izbrišete, ali dodajte novo. Dan ima največ {per_day} preklopnih točk (meja aplikacije proizvajalca, ki je regulator ne sporoča); zadnja preklopna točka dneva ostane.",
+        "description": "**{program}**\n\n{points}\n\nIzberite preklopno točko, da jo spremenite ali izbrišete, ali dodajte novo. Dan ima največ {per_day} preklopnih točk (fiksna meja, ki je regulator ne sporoča); zadnja preklopna točka dneva ostane.",
         "data": {
           "point": "Preklopna točka"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Sprememba programa tople vode",
-        "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nRavni so tiste iz programa sobnega regulatorja. Program velja, dokler topla voda sledi svojemu programu. Največ šest preklopnih točk na dan je meja aplikacije proizvajalca, ne meja, ki bi jo sporočal regulator.",
+        "description": "**{program}**\n\n{week}\n\nNajveč {per_day} preklopnih točk na dan in {total} na teden, časi v korakih po {raster} minut. Vsaka preklopna točka velja do naslednje; časi se tedensko ponavljajo po lokalnem času ogrevalnega sistema. Dnevi, označeni z *, imajo še neshranjene spremembe. Pred zadnjim korakom se nič ne pošlje.\n\nRavni so tiste iz programa sobnega regulatorja. Program velja, dokler topla voda sledi svojemu programu. Največ šest preklopnih točk na dan je fiksna meja, ne meja, ki bi jo sporočal regulator.",
         "data": {
           "action": "Naslednji korak",
           "day": "Dan v tednu",
@@ -986,7 +986,7 @@
           "wallbox_history": "Beri zgodovino polnjenja"
         },
         "data_description": {
-          "wallbox_authentication": "Privzeto izklopljeno. Od programske opreme 5.1.0 se zagon najprej overi; pri starejši programski opremi se zagon pošlje sam, kot v aplikaciji proizvajalca.",
+          "wallbox_authentication": "Privzeto izklopljeno. Od programske opreme 5.1.0 se zagon najprej overi; pri starejši programski opremi se zagon pošlje sam.",
           "wallbox_authentication_name": "Ime, ki ga aplikacija proizvajalca uporablja za preverjanje pristnosti; lahko ostane prazno.",
           "wallbox_history": "Privzeto izklopljeno. Približno vsakih 30 minut (vsakih 60 minut v profilu, prijaznem do oblaka) se prebereta zadnje polnjenje (začetek, konec, čas, energija) ter energija tega meseca iz omrežja in iz sonca. Imena kartic, uporabnikov ali overitve se nikoli ne berejo."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Vklopite še stikalo »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno.",
       "switch_program_value": "Vnesite temperaturo od {minimum} do {maximum} °C v korakih po {step} °C.",
       "switch_program_day_emptied": "Dan, ki ima preklopne točke, obdrži vsaj eno; ni znano, kaj prazen dan pomeni za regulator.",
-      "rrc_point_limit": "Ta dan ima že največje število preklopnih točk, ki ga aplikacija dovoljuje ({per_day}).",
+      "rrc_point_limit": "Ta dan ima že največje dovoljeno število preklopnih točk ({per_day}).",
       "rrc_point_last": "Zadnje preklopne točke dneva ni mogoče izbrisati; ni znano, kaj prazen dan pomeni za regulator.",
       "rrc_point_duplicate": "Ta dan ima že preklopno točko ob tem času.",
       "wallbox_name_invalid": "Ime lahko vsebuje največ 64 natisljivih znakov.",
@@ -1879,7 +1879,7 @@
       "message": "Uporabiti je mogoče samo te nastavitve: {settings}. Nastavitev se zapiše kot način, temperatura in hitrost ventilatorja, na primer „cool 24.0 auto“, ali „off“."
     },
     "switch_points_unit_not_ready": {
-      "message": "Grelnik vode sprejema spremembe tega časovnega programa le, ko je vklopljen, deluje v načinu časovnega programa in ima časovni pas, kot v aplikaciji proizvajalca. Nič ni bilo poslano."
+      "message": "Grelnik vode sprejema spremembe tega časovnega programa le, ko je vklopljen, deluje v načinu časovnega programa in ima časovni pas. Nič ni bilo poslano."
     }
   },
   "selector": {

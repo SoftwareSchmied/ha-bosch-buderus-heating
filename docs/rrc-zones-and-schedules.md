@@ -98,17 +98,16 @@ them is expected, untested. Before the change, and when the change is read
 back, the integration compares only the day, time and temperature of each
 point; a different `name` does not stop the change, and it is not sent.
 
-The editor permits the reviewed five-minute time raster and 5 to 30 °C in
-0.5 °C steps. It changes one existing point and preserves the other points
-of that day. Since 0.9.2-beta.2 it also adds a point to a day (default
-12:00 and 15 °C, as in the manufacturer's app; five minutes later while the
-time is taken) and deletes one. A day holds at most six points: that is the
-limit of the manufacturer's room controller app, not one the controller
-reports. The last point of a day is not deleted, because what an empty day
-means for the controller is not known. Each change shows the day before and
-after and then sends the whole day once. Programs are not created, renamed
-or deleted. Empty, unsorted, duplicate or extended formats remain unchanged. Supported
-readable formats can be viewed; unknown fields, a point key other than `d`,
+The editor permits the reviewed five-minute time raster and 5 to 30 °C in 0.5
+°C steps. It changes one existing point and preserves the other points of that
+day. Since 0.9.2-beta.2 it also adds a point to a day (default 12:00 and 15 °C;
+five minutes later while the time is taken) and deletes one. A day holds at
+most six points: a fixed limit, not one the controller reports. The last point
+of a day is not deleted, because what an empty day means for the controller is
+not known. Each change shows the day before and after and then sends the whole
+day once. Programs are not created, renamed or deleted. Empty, unsorted,
+duplicate or extended formats remain unchanged. Supported readable formats can
+be viewed; unknown fields, a point key other than `d`,
 `t`, `Th` and `name`, or a `name` that is not a whole number prevent
 editing and survive an unchanged parser/encoder round trip. An unsupported shape is not
 presented as a valid schedule.
@@ -132,9 +131,9 @@ of the whole week, before and after, one PUT of the whole week as
 levels (high, off, low, eco), not temperatures: new points get `high` or
 `off`; `low` and `eco` stay where the program already uses them (their
 meaning depends on the heat source) and are never offered otherwise. A
-level as read is kept as read (`Off` stays `Off`). Six points per day (app
+level as read is kept as read (`Off` stays `Off`). Six points per day (fixed
 limit), five-minute times, and a day that has points keeps at least one.
-Only program 1 is changed, as in the app; unknown levels or fields keep the
+Only program 1 is changed; unknown levels or fields keep the
 program read-only. The program applies while the hot water follows its own
 program; this mode is not changed here.
 
@@ -334,8 +333,8 @@ Ein Punkt enthält Wochentag, Minuten seit Mitternacht und Celsius-Temperatur.
 Der Editor verwendet die belegten fünf Minuten sowie 5 bis 30 °C in
 0,5-°C-Schritten. Ich schreibe nur den betroffenen Tag und erhalte dessen
 übrige Punkte. Seit 0.9.2-beta.2 lassen sich auch Schaltpunkte hinzufügen
-(Vorgabe 12:00 und 15 °C wie in der App) und löschen. Ein Tag hat höchstens
-sechs Punkte; das ist die Grenze der Raumregler-App, nicht eine vom Regler
+(Vorgabe 12:00 und 15 °C) und löschen. Ein Tag hat höchstens
+sechs Punkte; das ist eine feste Grenze, nicht eine vom Regler
 gemeldete. Der letzte Punkt eines Tages wird nicht gelöscht, weil unklar ist,
 was ein leerer Tag für den Regler bedeutet. Jede Änderung zeigt den Tag
 vorher und nachher und sendet ihn dann einmal. Programme werden weder
@@ -358,9 +357,9 @@ Entwurf der ganzen Woche, mit Vorher/Nachher, einem PUT der ganzen Woche als
 `{"value": [...]}` und Zurücklesen. Die Stufen sind Programmstufen (hoch, aus,
 niedrig, eco), keine Temperaturen: Neue Punkte erhalten `high` oder `off`;
 `low` und `eco` bleiben nur, wo das Programm sie schon nutzt. Gelesene Werte
-bleiben unverändert (`Off` bleibt `Off`). Sechs Punkte pro Tag (Grenze der
-App), Fünf-Minuten-Zeiten, und ein Tag mit Punkten behält mindestens einen.
-Geändert wird nur Programm 1 wie in der App. Hinzufügen und Löschen von
+bleiben unverändert (`Off` bleibt `Off`). Sechs Punkte pro Tag (feste
+Grenze), Fünf-Minuten-Zeiten, und ein Tag mit Punkten behält mindestens einen.
+Geändert wird nur Programm 1. Hinzufügen und Löschen von
 Heizpunkten und das Warmwasserprogramm sind nur mit simulierten Daten
 geprüft und an einem echten Regler erwartet, ungetestet.
 

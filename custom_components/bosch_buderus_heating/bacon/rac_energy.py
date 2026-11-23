@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from .access import BaconAccess
 
 GRAPHQL_URL: Final = "https://history.euc1.bacon.bosch-tt-cw.com/graphql"
-# The app refreshes these totals every 30 minutes.
+# These totals are read at most every 30 minutes.
 INTERVAL: Final = 1800.0
 # Retry after a failed query, never faster than the pause the service named.
 RETRY_AFTER_FAILURE: Final = 300.0

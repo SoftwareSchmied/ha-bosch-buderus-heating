@@ -10,14 +10,14 @@
   levels (``temperatureLevels/comfort2`` and ``eco``, since 0.9.0), the away
   temperature (``awayTemperature``, also as a level) and the cooling level
   (``cooling/temperatureLevels/on``). Only these four level names are
-  operated, as in the manufacturer's app; any other level stays a reading.
+  operated; any other level stays a reading.
 
-The rules follow the manufacturer's app: no change while the circuit is
+The rules: no change while the circuit is
 run by a room controller (control type ``ISRC``); a temperature level not
 either while the circuit runs on constant values (``constants``, the rule of
 the climate entity). The cooling threshold exists only on a circuit whose
 summer/winter switching offers cooling. A cooling setpoint of 0 means "off"
-in the app and is never a target. The values lie within the limits the
+and is never a target. The values lie within the limits the
 gateway reports and on its step (1.0 for the thresholds and 0.5 for the
 temperatures without one), counted from the minimum.
 
@@ -60,12 +60,12 @@ ROOM_CONTROLLER: Final = "ISRC"
 CONSTANT_CONTROL: Final = "constants"
 
 SUMMER_WINTER_MODE: Final = "suWiSwitchMode"
-# The codes of the summer/winter switching known from the manufacturer's
-# app; any other advertised code is left out.
+# The known codes of the summer/winter switching; any other advertised code
+# is left out.
 SUMMER_WINTER_VALUES: Final = ("automatic", "forced", "cooling", "off")
 COOLING_OPTION: Final = "cooling"
 
-# The level names the manufacturer's app knows.
+# The known level names.
 HEATING_LEVELS: Final = ("comfort2", "eco", "awayTemperature")
 COOLING_LEVELS: Final = ("on",)
 
@@ -109,8 +109,8 @@ def _control_type(path: str, readings: Mapping[str, Resource]) -> object:
 def _circuit_check(
     resource: Resource, _value: JsonScalar, readings: Mapping[str, Resource]
 ) -> str | None:
-    """No change while a room controller runs the circuit (as the app).
-    Without a reported control type the app goes on, so does this."""
+    """No change while a room controller runs the circuit. Without a
+    reported control type the change goes on."""
     if _control_type(resource.path, readings) == ROOM_CONTROLLER:
         return ROOM_CONTROLLER_REFUSAL
     return None
@@ -142,7 +142,7 @@ def _constant_control_check(
 def _cooling_setpoint_check(
     resource: Resource, value: JsonScalar, readings: Mapping[str, Resource]
 ) -> str | None:
-    """0 switches the cooling off in the app; never a target here."""
+    """0 switches the cooling off; never a target here."""
     if (reason := _circuit_check(resource, value, readings)) is not None:
         return reason
     if isinstance(value, int | float) and not isinstance(value, bool) and value <= 0:
@@ -152,7 +152,7 @@ def _cooling_setpoint_check(
 
 def cooling_offered(path: str, readings: Mapping[str, Resource]) -> bool:
     """Whether the circuit's summer/winter switching offers cooling (the
-    app's rule for showing the cooling threshold)."""
+    cooling threshold exists only then)."""
     root = circuit_root(path)
     mode = readings.get(f"{root}/{SUMMER_WINTER_MODE}") if root is not None else None
     return mode is not None and COOLING_OPTION in mode.metadata.allowed_values
@@ -194,7 +194,7 @@ SUMMER_WINTER_MODE_POLICY: Final = EnumWritePolicy(
     min_options=2,
     value_check=_circuit_check,
 )
-# The heating limit: the advertised step, else 1.0 as in the app.
+# The heating limit: the advertised step, else 1.0.
 SUMMER_WINTER_THRESHOLD_POLICY: Final = NumberWritePolicy(
     SUMMER_WINTER_THRESHOLD_PATTERN,
     "C",
@@ -227,7 +227,7 @@ HEATING_LEVEL_POLICY: Final = NumberWritePolicy(
     write_grid=True,
     value_check=_level_check,
 )
-# The away temperature: the advertised step, else 0.5 as in the app.
+# The away temperature: the advertised step, else 0.5.
 AWAY_TEMPERATURE_POLICY: Final = NumberWritePolicy(
     AWAY_TEMPERATURE_PATTERN,
     "C",
@@ -304,7 +304,7 @@ def coupled_paths(path: str, policy: object) -> tuple[str, ...]:
 def offered(path: str, readings: Mapping[str, Resource]) -> bool:
     """Whether a control of ``path`` is offered with these readings: the
     cooling threshold only while cooling is offered, the away and cooling
-    levels only with a value (the app drops a level without one); every
+    levels only with a value (a level without one is not offered); every
     other path."""
     if re.fullmatch(COOLING_THRESHOLD_PATTERN, path):
         return cooling_offered(path, readings)
@@ -422,8 +422,8 @@ def room_controller_check_complete(
 
 
 def unknown_level_count(paths: Iterable[str]) -> int:
-    """How many temperature levels of the heating circuits have a name the
-    app does not know (they stay readings; the names are not reported)."""
+    """How many temperature levels of the heating circuits have an unknown
+    name (they stay readings; the names are not reported)."""
     count = 0
     for path in paths:
         match = _LEVEL_PATH.fullmatch(path)

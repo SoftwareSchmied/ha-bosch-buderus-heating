@@ -165,7 +165,7 @@ def softener_capability(path: str) -> SoftenerCapability | None:
 
 
 def softener_unit(resource: Resource) -> str | None:
-    """Accept explicit compatible units or a documented app default."""
+    """Accept explicit compatible units or a known default."""
     capability = softener_capability(resource.path)
     if capability is None or capability.kind != "number":
         return None

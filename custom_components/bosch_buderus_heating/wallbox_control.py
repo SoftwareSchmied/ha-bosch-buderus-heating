@@ -7,12 +7,10 @@ request (start after an allowed authentication is the only two-request
 action); then reading again every two seconds for up to twenty seconds.
 A request is never repeated, also not after a timeout: the reading decides.
 
-The rules follow the vendor app where it is stricter than nothing, and are
-stricter than the app where the app relies on its own screens: a setting is
-written only when the wallbox reports it writeable, a command is refused in
-a state the app would not offer it, and the app's own corrections (a hidden
-``limit 6`` after a start, raising a power limit below 5 kW while reading)
-are not reproduced.
+The rules: a setting is written only when the wallbox reports it writeable,
+a command is refused in a state where it does not apply, and no hidden
+correction is made (no ``limit 6`` after a start, no power limit below 5 kW
+raised while reading).
 """
 
 from __future__ import annotations
@@ -61,7 +59,7 @@ if TYPE_CHECKING:
 
 # Two-second read-back steps for up to twenty seconds.
 READ_BACK_DELAYS: Final = (2.0,) * 10
-# The vendor app waits five seconds after every command.
+# The wallbox expects five seconds between commands.
 COMMAND_SPACING: Final = 5.0
 LOCK_TIMEOUT: Final = 30.0
 TRANSACTION_DEADLINE: Final = 150.0
@@ -72,7 +70,7 @@ MAXIMUM_HARDWARE_CURRENT: Final = 63
 
 START_STATES: Final = frozenset({"Preparing", "SuspendedEV", "SuspendedEVSE"})
 # A station pause may be ended by a start only for these limiters; any
-# other reported limiter keeps the pause (the app offers "pause" there).
+# other reported limiter keeps the pause (only "pause" applies there).
 START_LIMITERS: Final = frozenset(
     {"none", "nocar", "app", "web", "watchdog", "paragraph14a", "pv", "dynLmm"}
 )
@@ -129,7 +127,7 @@ class WallboxView:
 
 @dataclass(frozen=True, slots=True)
 class SettingRule:
-    """One writable cp0 setting and the conditions of the vendor app."""
+    """One writable cp0 setting and its conditions."""
 
     path: str
     kind: Literal["on_off", "number", "text", "offset"]
@@ -266,7 +264,7 @@ def hardware_limit(view: WallboxView) -> int | None:
 
 
 def _load_management(view: WallboxView) -> bool:
-    """The app's "load management" limiter: a group member limited by the
+    """The "load management" limiter: a group member limited by the
     group's balancer."""
     return view.conf.get("role") in ("leader", "follower") and view.telemetry.get(
         "limiter_token"
@@ -295,7 +293,7 @@ def meter_issue(view: WallboxView, rule: MeterRule) -> str | None:
 
 
 def brand_excluded(view: WallboxView) -> bool | None:
-    """The app offers no overload protection for one brand; unknown: None."""
+    """One brand has no overload protection; unknown: None."""
     brand = view.leaf_value(BRAND_PATH)
     if not isinstance(brand, str):
         return None
@@ -414,8 +412,8 @@ def setting_issue(view: WallboxView, rule: SettingRule) -> str | None:
 def number_bounds(
     view: WallboxView, rule: SettingRule, leaf: Leaf | None
 ) -> tuple[float, float, float] | None:
-    """Minimum, maximum and step: the narrower of the app's range and the
-    range the wallbox reports; the reported step wins (none: the app's)."""
+    """Minimum, maximum and step: the narrower of the known range and the
+    range the wallbox reports; the reported step wins (none: the known one)."""
     if rule.minimum is None or rule.step is None:
         return None
     maximum = rule.maximum
@@ -641,8 +639,8 @@ async def async_start(
     """Start charging; with an allowed authentication first.
 
     With the authentication switched on, the option must allow it. From
-    firmware 5.1.0 ``authenticate`` goes first, then ``start``; below it the
-    app sends ``start`` alone, and so does this. Without a known firmware
+    firmware 5.1.0 ``authenticate`` goes first, then ``start``; below it
+    ``start`` goes alone. Without a known firmware
     nothing is sent.
     """
 

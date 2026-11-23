@@ -1,6 +1,6 @@
 """Switch points of an air conditioner's weekly programs (PointT ``rac``).
 
-Synthetic data in the form of the vendor app (``pointt-rac/switch-programs``):
+Synthetic data in the expected form (``pointt-rac/switch-programs``):
 reading, the rules from the program configuration, the single write with
 read-back, the action ``set_switch_points``, the program sensor and the
 options dialog. Nothing here confirms behaviour on a real unit.
@@ -170,7 +170,7 @@ def test_program_is_read_with_its_settings():
         "off",
         "fanOnly low",
     ]
-    # The raster the app reads as a float.
+    # The raster may come as a float.
     assert assessment.time_raster == 15
     assert program_kind(P1) is not None and program_kind(P1).body == "object"
 
@@ -471,7 +471,7 @@ async def test_dialog_write_sends_the_week_once_and_reads_it_back(hass):
     assert unit.gets == [P1, P1]
     assert sleeps.delays == [1]
     # Tuesday ends with the fan on: Wednesday (no points) starts with an
-    # explicit off at 00:00, as the app writes it.
+    # explicit off at 00:00.
     assert body["switchPoints"][-1] == {
         "dayOfWeek": "We",
         "time": 0,

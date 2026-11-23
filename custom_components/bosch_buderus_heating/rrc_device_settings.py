@@ -7,8 +7,8 @@ controller keeps the settings of a listed radio device below
 ``/devices/list``. Only these leaves are read, and only for listed devices.
 
 Evidence: path, type and write flag of every leaf were seen on a TC100.2
-(diagnostics of issue 122, without values); the value formats come from the
-manufacturer's demo shapes. Everything here is expected, untested on real
+(diagnostics of issue 122, without values); the value formats are the
+expected ones. Everything here is expected, untested on real
 hardware. Not offered at all: the valve calibration (a trigger without a
 readable state, so no read-back), the repeater switch and the radio keys.
 """

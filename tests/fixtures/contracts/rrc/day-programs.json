@@ -10,8 +10,8 @@
     "created": "2026-11-15",
     "redaction": "Point form {d,t,Th} with optional integer name as in the anonymized TC100.2 structure; every time and temperature is constructed. No identifiers.",
     "physical_device_verified": false,
-    "contract": "TP-17: add or delete a switch point of one day: the whole day {d,t,Th} once to /programs/pgN/<day>, at most six points per day (app limit), the last point of a day stays, read-back of the week.",
-    "source": "behaviour of the room controller app: at most 6 switch points per day, a new point at 12:00/15 C, day write {value:[{d,t,Th}]}"
+    "contract": "TP-17: add or delete a switch point of one day: the whole day {d,t,Th} once to /programs/pgN/<day>, at most six points per day (fixed limit), the last point of a day stays, read-back of the week.",
+    "source": "expected behaviour: at most 6 switch points per day, a new point at 12:00/15 C, day write {value:[{d,t,Th}]}"
   },
   "resources": [
     {

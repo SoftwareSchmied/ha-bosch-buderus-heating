@@ -9,7 +9,7 @@ a program it does not like is unknown, so nothing is left for it to judge.
 The rules follow what the gateway reports: the time raster, the points per
 day and in all, the levels of the circuit (``temperatureLevels``, the cooling
 level ``on``, the ventilation levels) or the range and step of an absolute
-program. Nothing is taken from the app's own fallback values: without a
+program. No fallback values are assumed: without a
 reported limit, level set or range a program is shown, never changed.
 
 A heating circuit program is changed only with a current reading of its
@@ -23,7 +23,7 @@ An air conditioner's program (``aircon_program_rules``) is changed only with
 a readable program configuration: its modes, temperature ranges and fan
 speeds, and the limits of the program. The WDDW2 hot water program is
 changed only while the unit is switched on, runs in schedule mode and has a
-time zone, as in the manufacturer's app (``wddw2_lock``).
+time zone (``wddw2_lock``).
 """
 
 from __future__ import annotations
@@ -57,10 +57,10 @@ from .switch_programs import (
 HEATING_LEVELS = frozenset({"eco", "comfort2"})
 # The hot water levels a program may use where the circuit lists them.
 DHW_LEVELS = frozenset({"off", "low", "eco", "eco_plus", "comfort", "high"})
-# The cooling program: ``off`` is fixed in the app, ``on`` needs the circuit's
+# The cooling program: ``off`` is always available, ``on`` needs the circuit's
 # cooling level ``on``.
 COOLING_LEVELS = frozenset({"on", "off"})
-# The ventilation levels the app knows as the endings of the references of
+# The known ventilation levels, as the endings of the references of
 # ``ventilationLevels``.
 VENTILATION_LEVELS = ("min", "red", "nom", "max", "dem", "off")
 # The program types whose setpoints are level keys.
@@ -72,7 +72,7 @@ _LEVEL_LEAF = re.compile(
     r"^(?P<circuit>/[^/]+/[^/]+)/temperatureLevels/(?P<key>[^/]+)$"
 )
 _WDDW2_RANGE = ("/dhwCircuits/dhw1/manualSetpoint", "/dhwCircuits/dhw1/manualsetpoint")
-# What the app checks before it offers the WDDW2 program for changes.
+# What must hold before the WDDW2 program can be changed.
 WDDW2_APPLIANCE = "/system/appliance/enabled"
 WDDW2_OPERATION_MODE = "/dhwCircuits/dhw1/operationMode"
 WDDW2_TIME_ZONE = "/gateway/tzInfo/timeZone"
@@ -226,7 +226,7 @@ def allowed_levels(
 
 
 def ventilation_levels(resource: Resource | None) -> tuple[str, ...]:
-    """The known ventilation levels a unit lists as references (in app order).
+    """The known ventilation levels a unit lists as references (usual order).
 
     An unknown ending is never offered; an empty list offers nothing.
     """
@@ -278,8 +278,8 @@ def _text(resources: Mapping[str, Resource], path: str) -> str | None:
 
 
 def wddw2_lock(resources: Mapping[str, Resource]) -> str | None:
-    """Why the WDDW2 water heater's program cannot be changed now, as the
-    manufacturer's app decides it, or ``None``: the unit must be switched on,
+    """Why the WDDW2 water heater's program cannot be changed now, or
+    ``None``: the unit must be switched on,
     run in schedule mode and have a time zone. Without a reading of one of
     them the program is shown, never changed."""
     if _text(resources, WDDW2_APPLIANCE) != "on":
@@ -633,7 +633,7 @@ def wire_week(path: str, points: Iterable[SwitchPoint]) -> tuple[SwitchPoint, ..
     """The week as it is written for the program ``path``, sorted.
 
     The two programs without carry-over start every day switched off, so
-    their weeks are written as the manufacturer's app writes them:
+    their weeks are written in the form the units accept:
 
     - WDDW2: an ``off`` point at 00:00 says nothing and is left out.
     - Air conditioner: a day whose first point lies after 00:00 (or that

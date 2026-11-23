@@ -8,10 +8,10 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the expected behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-13: absolute programs are read as numbers, written as text in the reading's form within switchPointMin/Max/Resolution, only while the program type reads absolute.",
-    "source": "behaviour of the manufacturer's app: absolute setpoints as text, off as 0.0; program types absolute and level"
+    "source": "expected behaviour: absolute setpoints as text, off as 0.0; program types absolute and level"
   },
   "resources": [
     {

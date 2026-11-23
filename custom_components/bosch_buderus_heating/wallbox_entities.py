@@ -1,10 +1,10 @@
 """Wallbox controls and the additional wallbox readings.
 
 Controls exist only when the wallbox reports what they need: the firmware
-from which the vendor app offers the function, a single value that answered
+from which the function exists, a single value that answered
 and (for settings) reported itself writeable, and a usable hardware current
 limit for the current controls. Once created, an entity stays; while a rule
-of the vendor app does not allow it (state, role in a load-management
+does not allow it (state, role in a load-management
 group, energy manager, missing meter) it is unavailable. Every control is
 disabled by default. Commands have no single value to report writeability;
 they follow the state rules and stay disabled until a user enables them.
@@ -194,8 +194,8 @@ def _setting_creatable(view: WallboxView, key: str) -> bool:
 
 
 def _overload_creatable(view: WallboxView) -> bool:
-    """Only with all four overload values writeable and a brand the app
-    offers the function for."""
+    """Only with all four overload values writeable and a brand that
+    has the function."""
     return (
         firmware_reaches(view.firmware, FW_OVERLOAD)
         and all(_writeable(view, path) for path in OVERLOAD_PATHS)
@@ -509,7 +509,7 @@ def _on_off(value: object) -> bool | None:
 def _authentication_allowed(coordinator: WallboxCoordinator, view: WallboxView) -> bool:
     """A start with the authentication on: allowed by the option, with a
     known firmware (``authenticate`` first from 5.1.0, ``start`` alone
-    below it, as the app)."""
+    below it)."""
     entry = coordinator.config_entry
     return (
         entry is not None
@@ -684,7 +684,7 @@ class WallboxText(WallboxEntity, TextEntity):
 
     @property
     def native_max(self) -> int:
-        """32 characters as in the app; a longer name the wallbox reports
+        """32 characters at most; a longer name the wallbox reports
         (up to 128) is still shown, while a write keeps the 32."""
         return max(SETTINGS["label"].max_length, len(self.native_value or ""))
 

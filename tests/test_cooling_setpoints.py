@@ -1,7 +1,7 @@
 """Cooling setpoint and cooling threshold of a heating circuit (0.9.2).
 
-Only heat pumps with cooling have them; the shapes follow the behaviour
-of the manufacturer's app (``fixtures/contracts/icom/season-circuit.json``),
+Only heat pumps with cooling have them; the shapes are the expected ones
+(``fixtures/contracts/icom/season-circuit.json``),
 every value is constructed. Nothing here confirms behaviour on a real
 installation.
 """
@@ -93,7 +93,7 @@ async def test_setpoint_outside_limits_or_grid_sends_nothing(hass, value):
 
 
 async def test_zero_is_never_a_target(hass):
-    """V10: the gateway's minimum is 0 ("off" in the app)."""
+    """V10: the gateway's minimum is 0 ("off")."""
     coordinator, cloud = _setup(hass, "V10")
     entity = number_entity(hass, coordinator, COOLING_SETPOINT)
     assert entity.native_min_value == 0.5
@@ -118,7 +118,7 @@ def test_lowest_offered_value_is_the_first_grid_value_above_zero(
 
 
 def test_no_setpoint_number_without_limits():
-    """V11: no fallback to 0 for missing limits (unlike the app)."""
+    """V11: no fallback to 0 for missing limits."""
     resources = variant(FIXTURE, "V11")
     assert assess_control(resources[COOLING_SETPOINT]).rejection_reason == (
         "missing_bounds"

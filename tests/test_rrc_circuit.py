@@ -4,7 +4,7 @@ The contract ``rrc_contract_circuit`` turns the heating curve, the supply
 limits, the room influence, the summer/winter and night switching, the
 season mode, the heat-up speed and the setpoint optimization into controls,
 and ``operatingSeason`` into a sensor (CT-G01, CT-G02). The fixture
-``circuit.json`` is synthetic: ``hc1`` in the demo shapes, ``hc2`` in the
+``circuit.json`` is synthetic: ``hc1`` in the documented shapes, ``hc2`` in the
 shapes of the TC100.2 diagnostics (#122) and with refusing metadata. Writes
 run through real coordinator cycles against ``tests/helpers/rrc_cloud.py``.
 Nothing of it reaches another gateway (S11).
@@ -129,7 +129,7 @@ def test_fixture_is_synthetic() -> None:
     )
     assert data["provenance"]["physical_device_verified"] is False
     assert data["provenance"]["basis"] == "compatibility_mapping"
-    assert "demo shapes" in data["provenance"]["redaction"]
+    assert "documented shapes" in data["provenance"]["redaction"]
 
 
 @pytest.mark.parametrize(
@@ -222,7 +222,7 @@ def test_settings_without_a_safe_contract_give_no_control(
 
 
 def test_room_influence_in_the_unit_other_is_a_whole_number_without_unit() -> None:
-    """#122 reports ``other``; the demo shapes report ""."""
+    """#122 reports ``other``; the documented shapes report ""."""
     for path in (INFLUENCE, f"{HC2}/roomInfluence"):
         assessment = assess_control(circuit_tree()[path], RRC_CONTEXT)
         assert assessment.eligible

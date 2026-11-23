@@ -6,7 +6,7 @@
 - The lower limit of the temporary target follows the manual setpoint's
   reading within its validity limit; a write still needs a fresh one.
 - The clear value -1 is written also when the advertised limits leave it
-  out (as the manufacturer's app does); any negative reading confirms it.
+  out; any negative reading confirms it.
 - Every generic write policy follows the ``used``/``available`` flags.
 
 The shapes follow an iCom gateway (limits 5 to 30, value -1) with
@@ -183,7 +183,7 @@ async def test_a_control_type_without_a_current_reading_refuses(hass, mode):
 
 
 async def test_isrc_allows_no_temporary_target_or_clearing(hass):
-    """As the manufacturer's app, for the temporary setpoint."""
+    """The lock covers the temporary setpoint."""
     coordinator, entity, cloud = _with_control_type(
         hass, "ISRC", temporary=_temporary(22.0, minimum=-1.0)
     )
@@ -198,7 +198,7 @@ async def test_isrc_allows_no_temporary_target_or_clearing(hass):
 
 
 async def test_isrc_keeps_the_manual_setpoint(hass):
-    """The app's rule covers the temporary setpoint, not the manual one."""
+    """The rule covers the temporary setpoint, not the manual one."""
     _, entity, cloud = _with_control_type(hass, "ISRC", mode="manual")
     assert entity.supported_features & TARGET_FEATURE
     await entity.async_set_temperature(temperature=20.5)
@@ -290,7 +290,7 @@ async def test_clear_outside_the_limits_writes_minus_one_once(hass):
 
 @pytest.mark.parametrize("reading", [-1.0, -2.0, -0.5])
 async def test_any_negative_reading_confirms_the_clear_value(hass, reading):
-    """The app takes ``>= 0`` as active, so any negative value
+    """``>= 0`` counts as active, so any negative value
     shows no temporary setpoint."""
     coordinator, _, cloud = _circuit(hass, temporary=_temporary(21.0))
 

@@ -1,7 +1,7 @@
 """TP-17: add and delete switch points of an RRC heating program.
 
 One day is written at a time ({d, t, Th} for every point of the day), at
-most six points per day (the app's limit), the last point of a day stays,
+most six points per day (a fixed limit), the last point of a day stays,
 read-back of the week. Every test counts the PUT requests.
 """
 

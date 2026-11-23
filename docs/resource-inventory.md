@@ -453,8 +453,8 @@ not part of 0.9.0.
 
 ## Wallbox paths (cp0)
 
-All paths below `/rest/v1/cp0/` of a wallbox are known only from the vendor
-app, none from a real wallbox or the official API description; every
+No path below `/rest/v1/cp0/` of a wallbox has been seen on a real wallbox
+or in the official API description; every
 control is expected but untested (see [wallboxes](pointt-wallboxes.md)).
 
 | Path | Use in the integration |

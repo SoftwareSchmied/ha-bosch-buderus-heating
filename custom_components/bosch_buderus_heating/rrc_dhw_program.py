@@ -1,14 +1,14 @@
 """TP-19: changing the hot water week program of an RRC 2.0 room controller.
 
 ``/dhwCircuits/dhwN/programs/pg1/week`` holds ``{d, t, dhw}`` points. The
-room controller app writes the whole week at once as
+whole week is written at once as
 ``{"value": [{d, t, dhw}, ...]}``, sorted by day and time, always program 1.
-The levels are program levels, not temperatures: the app offers ``high`` and
-``off`` for new points; ``low`` and ``eco`` are kept where the program
+The levels are program levels, not temperatures: ``high`` and ``off`` are
+offered for new points; ``low`` and ``eco`` are kept where the program
 already uses them (their meaning depends on the heat source) and never
 offered otherwise. A level as read is never re-coded.
 
-Limits: six points per day (a constant of the app, not reported by the
+Limits: six points per day (a fixed limit, not reported by the
 controller), times on the five-minute grid, one point per time and day. A
 day that has points keeps at least one: what an empty day means on the
 controller is not known. The week is read fresh and compared with the one
@@ -30,7 +30,7 @@ from .switch_program_edit import EditableProgram, week_issue
 from .switch_programs import DAYS, SwitchPoint
 from .write_policies import RRC_READ_BACK_DELAYS, ContractRejected
 
-# The levels a new point may have (app), and those kept only where used.
+# The levels a new point may have, and those kept only where used.
 NEW_LEVELS: Final = ("high", "off")
 KEPT_LEVELS: Final = ("low", "eco")
 # Levels as read, by the key the dialog uses ("Off" is read as "off").
@@ -48,7 +48,7 @@ def edit_issue(resource: Resource | None) -> str | None:
     if match is None:
         return "not_a_program"
     if match[2] != "1":
-        # The app writes program 1 only; another ID is never guessed.
+        # Only program 1 is written; another ID is never guessed.
         return "program_id_unexpected"
     program = parse_program(resource)
     if program is None:

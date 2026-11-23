@@ -2,7 +2,7 @@
 
 Every test runs without a device or network. A fake client records each
 request; the read-back delays are injected. These tests show that the rules
-hold for the shapes taken from the vendor app's behaviour, not that a
+hold for the expected shapes, not that a
 real wallbox behaves like this.
 """
 
@@ -395,9 +395,9 @@ async def test_authentication_needs_the_option_and_firmware(hass, software, allo
 
 
 async def test_start_below_software_5_1_sends_the_start_alone(hass):
-    """Below software 5.1.0 the manufacturer's app sends ``start`` without
-    ``authenticate`` to a station that requires authentication; so does the
-    integration, when the option allows starts with authentication."""
+    """Below software 5.1.0 the integration sends ``start`` without
+    ``authenticate`` to a station that requires authentication, when the
+    option allows starts with authentication."""
     data = fixture()
     data["info"]["values"]["softwareVersion"] = "5.0.0"
     coordinator, fake = await wallbox(

@@ -1,5 +1,5 @@
 """Single cp0 values of a wallbox: which exist, how they read, from which
-firmware on the vendor app offers them.
+firmware on they are available.
 
 A single value answers like any PointT resource (``value`` plus flags such
 as ``writeable``, ``minValue``, ``maxValue``, ``stepSize``, ``used``,
@@ -20,8 +20,7 @@ type LeafKind = Literal["on_off", "number", "text", "meter_state", "strategy", "
 type LeafValue = str | float | tuple[float, float, float] | None
 type Firmware = tuple[int, int, int]
 
-# Firmware thresholds of the vendor app (its local feature flags and fixed
-# checks); compared with ``info.softwareVersion``.
+# Firmware thresholds of the functions; compared with ``info.softwareVersion``.
 FW_BOOST: Final[Firmware] = (4, 0, 0)
 FW_SOLAR: Final[Firmware] = (4, 0, 0)
 FW_HOME_BATTERY: Final[Firmware] = (5, 0, 0)

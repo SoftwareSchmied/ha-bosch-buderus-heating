@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Valitse kytkentäpiste",
-        "description": "**{program}**\n\n{points}\n\nValitse kytkentäpiste muuttaaksesi tai poistaaksesi sen, tai lisää uusi. Päivällä on enintään {per_day} kytkentäpistettä (valmistajan sovelluksen raja, jota säädin ei ilmoita); päivän viimeinen kytkentäpiste säilyy.",
+        "description": "**{program}**\n\n{points}\n\nValitse kytkentäpiste muuttaaksesi tai poistaaksesi sen, tai lisää uusi. Päivällä on enintään {per_day} kytkentäpistettä (kiinteä raja, jota säädin ei ilmoita); päivän viimeinen kytkentäpiste säilyy.",
         "data": {
           "point": "Kytkentäpiste"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Muuta käyttöveden aikaohjelmaa",
-        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTasot ovat huonesäätimen ohjelman tasoja. Aikaohjelma on voimassa, kun käyttövesi noudattaa omaa ohjelmaansa. Enintään kuusi kytkentäpistettä päivässä on valmistajan sovelluksen raja, ei säätimen ilmoittama.",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTasot ovat huonesäätimen ohjelman tasoja. Aikaohjelma on voimassa, kun käyttövesi noudattaa omaa ohjelmaansa. Enintään kuusi kytkentäpistettä päivässä on kiinteä raja, ei säätimen ilmoittama.",
         "data": {
           "action": "Seuraava vaihe",
           "day": "Viikonpäivä",
@@ -986,7 +986,7 @@
           "wallbox_history": "Lue latushistoria"
         },
         "data_description": {
-          "wallbox_authentication": "Oletuksena pois. Ohjelmistosta 5.1.0 alkaen käynnistys tunnistautuu ensin; vanhemmalla ohjelmistolla käynnistys lähetetään yksin, kuten valmistajan sovelluksessa.",
+          "wallbox_authentication": "Oletuksena pois. Ohjelmistosta 5.1.0 alkaen käynnistys tunnistautuu ensin; vanhemmalla ohjelmistolla käynnistys lähetetään yksin.",
           "wallbox_authentication_name": "Nimi, jota valmistajan sovellus käyttää tunnistautumiseen; voi jäädä tyhjäksi.",
           "wallbox_history": "Oletuksena pois päältä. Noin 30 minuutin välein (60 minuutin välein pilviystävällisessä profiilissa) luetaan viimeinen lataus (alku, loppu, kesto, energia) sekä tämän kuun verkosta ja aurinkoenergialla ladattu energia. Korttien, käyttäjien tai tunnistautumisen nimiä ei lueta koskaan."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Kytke myös kytkin ”Poista tämä yhteys” päälle: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu.",
       "switch_program_value": "Anna lämpötila {minimum}–{maximum} °C {step} °C:n portain.",
       "switch_program_day_emptied": "Päivä, jolla on kytkentäpisteitä, säilyttää vähintään yhden; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
-      "rrc_point_limit": "Tällä päivällä on jo suurin sovelluksen sallima määrä kytkentäpisteitä ({per_day}).",
+      "rrc_point_limit": "Tällä päivällä on jo suurin sallittu määrä kytkentäpisteitä ({per_day}).",
       "rrc_point_last": "Päivän viimeistä kytkentäpistettä ei voi poistaa; ei tiedetä, mitä tyhjä päivä merkitsee säätimelle.",
       "rrc_point_duplicate": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
       "wallbox_name_invalid": "Nimessä voi olla enintään 64 tulostettavaa merkkiä.",
@@ -1879,7 +1879,7 @@
       "message": "Vain nämä asetukset ovat käytettävissä: {settings}. Asetus kirjoitetaan toimintatilana, lämpötilana ja puhaltimen nopeutena, esimerkiksi ”cool 24.0 auto”, tai ”off”."
     },
     "switch_points_unit_not_ready": {
-      "message": "Vedenlämmitin hyväksyy tämän aikaohjelman muutokset vain, kun se on päällä, toimii aikaohjelmatilassa ja sillä on aikavyöhyke, kuten valmistajan sovelluksessa. Mitään ei lähetetty."
+      "message": "Vedenlämmitin hyväksyy tämän aikaohjelman muutokset vain, kun se on päällä, toimii aikaohjelmatilassa ja sillä on aikavyöhyke. Mitään ei lähetetty."
     }
   },
   "selector": {

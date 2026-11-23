@@ -107,7 +107,7 @@ for heating, hot water, and ventilation. The integration probes only the three k
 | `/holidayMode/list` | R | Source and read-back for the Holiday periods calendar |
 | `/holidayMode/configuration` | R | Additional/fallback period configuration source |
 | `/holidayMode/activeModes` | R | Source for the Holiday mode active binary sensor |
-| `/holidayMode/activated`, `/holidayMode/enabled` | R | Optional app fallbacks for the active state |
+| `/holidayMode/activated`, `/holidayMode/enabled` | R | Optional fallbacks for the active state |
 | `/holidayMode` | W (POST) | Create one complete period; never retried automatically |
 | `/holidayMode/{id}` | W (PUT/DELETE) | Update or delete one numeric period; never retried automatically |
 
@@ -240,7 +240,7 @@ PointT codes and app display names for operation mode:
 | `/heatSources/{hs}/actualPower` | Current power | R | Instantaneous power in W or kW |
 | `/heatSources/{hs}/brineCircuit/collectorInflowTemp` | Brine outlet temperature | R | Fluid entering the ground collector, named from the heating-system perspective |
 | `/heatSources/{hs}/brineCircuit/collectorOutflowTemp` | Brine inlet temperature | R | Fluid returning to the heat pump, named from the heating-system perspective |
-| `/heatSources/{hs}/defrostActive` | Defrost active | R | Boolean or app status, depending on the gateway |
+| `/heatSources/{hs}/defrostActive` | Defrost active | R | Boolean or status value, depending on the gateway |
 | `/heatSources/{hs}/heatPumpType` | Heat-pump type | R | Diagnostic: air/water, brine/water, or exhaust-air/water |
 | `/heatSources/{hs}/numberOfStarts` | Starts by operation | R | Independent `emonValue` cumulative counters: `total`, `ch`, `cooling`, `dhw`, `pool`; validated whole numbers |
 | `/heatSources/{hs}/powerPercentage` | Current power percentage | R | Instantaneous measurement in % |
@@ -315,14 +315,13 @@ Derived total values:
 - **Environmental energy:**
   `outputProduced - compressor - eheater`, only for complete, finite,
   non-negative inputs and a non-negative result, for the total, heating, hot
-  water and pool collections alike (the same calculation the manufacturer's
-  app uses). The entities are named, for example, **Total – Environmental
-  energy (calculated)** so they cannot be confused with a value supplied
-  directly by PointT. A negative result (the parts are read at different
-  times, and standby consumption is allocated per area) is not shown and never
-  starts a new meter cycle. The entities of heating, hot water and pool are
-  created disabled; cooling has none, as its collection has no auxiliary
-  heater and the app shows no environmental energy for it.
+  water and pool collections alike. The entities are named, for example,
+  **Total – Environmental energy (calculated)** so they cannot be confused with
+  a value supplied directly by PointT. A negative result (the parts are read at
+  different times, and standby consumption is allocated per area) is not shown
+  and never starts a new meter cycle. The entities of heating, hot water and
+  pool are created disabled; cooling has none, as its collection has no
+  auxiliary heater.
 - A cooling response with HTTP 200 and only zero-valued counters does not prove
   that cooling equipment exists.
 

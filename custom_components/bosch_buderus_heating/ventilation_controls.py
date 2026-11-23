@@ -1,6 +1,6 @@
 """Controls of a ventilation unit: operating mode and filter run time.
 
-The operating mode is written the way the manufacturer's app writes it: one
+The operating mode is written as one
 string on ``/ventilation/<zone>/operationMode``, chosen from the values the
 device advertises. The fan level is read from ``exhaustFanLevel`` (a sensor)
 and changed through the operating mode, because the unit keeps the level
@@ -17,9 +17,8 @@ from typing import Final
 
 from .write_policies import EnumWritePolicy, NumberWritePolicy
 
-# The operating modes the app knows, in the order it lists them. Only the
-# advertised ones are offered; ``exhaustOnly`` (exhaust air only, bypass) is
-# left out because the app hides it from the list as well.
+# The known operating modes, in their usual order. Only the advertised ones
+# are offered; ``exhaustOnly`` (exhaust air only, bypass) is never offered.
 VENTILATION_OPERATION_MODES: Final = (
     "time",
     "off",

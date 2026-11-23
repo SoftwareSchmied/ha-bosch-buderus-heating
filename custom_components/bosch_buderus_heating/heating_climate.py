@@ -3,7 +3,7 @@
 ``heat`` is the mode ``manual``, whose target is ``manualRoomSetpoint``. In
 the mode ``auto`` the program sets the target; a circuit that offers a
 writable ``temporaryRoomSetpoint`` takes a target there for now, and a clear
-button ends it again (the value -1, as the manufacturer's app writes it; when
+button ends it again (the value -1; when
 the advertised limits leave -1 out, the button is created disabled). A
 reading of 0 or more is an active temporary setpoint, a negative one none. A
 room controller's zones have climates of their own (``rrc_climate``); their
@@ -75,7 +75,7 @@ _MODE_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/operationMode$")
 _TEMPORARY_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/temporaryRoomSetpoint$")
 TEMPORARY = "temporaryRoomSetpoint"
 # The value that ends a temporary setpoint; within the advertised limits it
-# must lie on their grid, outside them it is written as the app does.
+# must lie on their grid, outside them it is written all the same.
 CLEAR_VALUE = TEMPORARY_SETPOINT_CLEAR_VALUE
 _SERVICE_KEYS = frozenset(
     {ATTR_TEMPERATURE, ATTR_ENTITY_ID, "device_id", "area_id", "floor_id", "label_id"}
@@ -84,9 +84,8 @@ _MODES = {"off": HVACMode.OFF, "manual": HVACMode.HEAT, "auto": HVACMode.AUTO}
 # A circuit with this control type is not controlled here; the climate then
 # only shows it (expected, untested on a real device).
 _READ_ONLY_CONTROL_TYPES = frozenset({"constants"})
-# Neither a temporary target nor its clearing with these control types; the
-# manufacturer's app locks such settings of a circuit run by a room
-# controller (ISRC).
+# Neither a temporary target nor its clearing with these control types;
+# such settings of a circuit run by a room controller (ISRC) are locked.
 _NO_TEMPORARY_CONTROL_TYPES = frozenset({"constants", "ISRC"})
 
 
@@ -805,7 +804,7 @@ def takes_clear_value(
     policy: NumberWritePolicy = HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
 ) -> bool:
     """Whether -1 can be written: on the grid when it lies within the
-    advertised limits, or outside them as the manufacturer's app writes it
+    advertised limits, or outside them all the same
     (``clear_outside_limits``)."""
     minimum, maximum = resource.metadata.minimum, resource.metadata.maximum
     if minimum is None or maximum is None or not step or step <= 0:
@@ -836,8 +835,8 @@ def clear_button_descriptions(
 ) -> tuple[TemporaryClearDescription, ...]:
     """A circuit whose writable temporary setpoint takes -1 gets a clear
     button; never on a room controller. Created disabled when the limits
-    leave -1 out (written as the manufacturer's app does, expected,
-    untested on a real device)."""
+    leave -1 out (written all the same; expected, untested on a real
+    device)."""
     if context.rrc_plant:
         return ()
     descriptions = []

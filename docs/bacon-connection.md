@@ -90,9 +90,8 @@ Information without a device type keeps the known model. A changed type clears
 state, measurements and metadata of the previous model and requests the
 device's metadata and state again without reconnecting. Devices
 send information only on change and some stay silent for hours, so the
-online status of the newest information message is enough for availability, as
-in the HomeCom Easy app, which also takes online or offline from the stored
-information only. The stored message redelivered on a new connection counts.
+online status of the newest information message is enough for availability.
+The stored message redelivered on a new connection counts.
 There is no limit on its age. The state read every five minutes and the
 per-field limits (measurements one hour, reported state 15 minutes) decide how
 current values are. Messages from the device itself are still recorded as the
@@ -127,7 +126,7 @@ the planned renewal.
 While the connection stands and a device is selected, I report the account as
 an active client with a `POST` (JSON content type, body `{}`) to
 `https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, right after
-subscribing and then every 300 seconds, as HomeCom Easy does while it is open.
+subscribing and then every 300 seconds, as an open client does.
 It uses the same token, the shared request slot and the shared cloud pause. A
 429 starts the shared pause without ending the connection; a 404 or 405 stops
 the report for the rest of that connection, a 401 or 403 for the rest of the
@@ -276,7 +275,7 @@ Gerätetyp lässt das bekannte Modell unverändert; nach einem echten
 Modellwechsel fordere ich Metadaten und Zustand ohne Neuverbindung erneut an.
 Geräte senden Informationen nur bei Änderungen, manche stundenlang nichts. Für
 die Verfügbarkeit genügt deshalb der Online-Status der neuesten
-Informationsmeldung, wie in der HomeCom-Easy-App; die beim Wiederverbinden erneut
+Informationsmeldung; die beim Wiederverbinden erneut
 zugestellte gespeicherte Meldung zählt, ohne Altersgrenze. Wie aktuell Werte sind,
 bestimmen die Zustandsabfrage alle fünf Minuten und die Fristen je Wert (Messwerte
 eine Stunde, gemeldeter Zustand 15 Minuten). Meldungen des Geräts selbst
@@ -311,7 +310,7 @@ Erneuerung noch nicht beobachtet.
 Solange die Verbindung steht und ein Gerät ausgewählt ist, melde ich das Konto
 als aktiven Client mit einem `POST` (JSON-Inhaltstyp, Körper `{}`) an
 `https://claiming.euc1.bacon.bosch-tt-cw.com/v1/users/self/live`, direkt nach dem
-Abonnement und dann alle 300 Sekunden, wie HomeCom Easy bei geöffneter App. Dabei
+Abonnement und dann alle 300 Sekunden, wie ein geöffneter Client. Dabei
 gelten dasselbe Token, der gemeinsame Anfrageplatz und die gemeinsame Cloud-Pause.
 Ein 401 erneuert das Token einmal, ein 429 startet die gemeinsame Pause ohne die
 Verbindung zu beenden, ein 404, 405, 403 oder ein zweites 401 stoppt die Meldung

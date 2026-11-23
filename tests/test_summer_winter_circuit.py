@@ -1,7 +1,7 @@
 """Summer/winter switching and heating limit of one heating circuit (0.9.2).
 
 The shapes follow an iCom gateway (``fixtures/contracts/icom/
-season-circuit.json``) and the manufacturer's app; every value is
+season-circuit.json``) and expected variants; every value is
 constructed. Nothing here confirms behaviour on a real installation.
 """
 
@@ -198,7 +198,7 @@ async def test_control_type_without_a_current_reading_refuses(hass):
 
 
 async def test_without_a_control_type_the_write_goes_on(hass):
-    """As the app: a circuit without controlType is not refused."""
+    """A circuit without controlType is not refused."""
     resources = variant(FIXTURE, "V1")
     del resources[CONTROL_TYPE]
     coordinator = coordinator_for(hass, resources)
@@ -259,7 +259,7 @@ async def test_heating_limit_writes_once_on_the_grid(hass):
 
 @pytest.mark.parametrize("value", [9, 31, 17.3, 17.5])
 async def test_heating_limit_outside_limits_or_grid_sends_nothing(hass, value):
-    """Grid 1.0 from the minimum without an advertised step (as the app)."""
+    """Grid 1.0 from the minimum without an advertised step."""
     coordinator, cloud = _setup(hass, "V1")
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(

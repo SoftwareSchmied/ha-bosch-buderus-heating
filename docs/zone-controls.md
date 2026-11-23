@@ -124,7 +124,7 @@ not known yet; set the mode first, then the temperature.
 The child lock of a zone, `/zones/zone<N>/childLock`, is a text with the two
 values `active` and `inactive`. Its reading shows these as **Active** and
 **Inactive** in every shipped language (it showed the raw text before). The
-manufacturer's app offers the lock as a switch, so I added one: **Child
+lock has exactly two states, so I added a switch: **Child
 lock**, a configuration entity that is created **enabled**. It exists only
 when the controller reports the path as writable, advertises exactly the
 two values `active` and `inactive` and reads one of them; without that path
@@ -202,8 +202,8 @@ heating circuit or another zone.
 The numeric control uses the current `stepSize`, or 0.5 °C when it is
 absent. Invalid advertised steps block the control. Since 0.9.2 the step is
 a rule of the write: a value between two steps, counted from the minimum, is
-refused before anything is sent. Without `stepSize` the step is 0.5 °C, the
-one the manufacturer's app uses for the zone setpoint. The zone climate puts
+refused before anything is sent. Without `stepSize` the step is 0.5 °C.
+The zone climate puts
 a value converted from °F on the nearest step.
 Error markers, invalid samples, compound responses, missing bounds and
 unexpected units block writes. The narrow reviewed unit is `C`; no
@@ -321,7 +321,7 @@ Alles ist mit automatisierten Tests geprüft, am Gerät noch nicht bestätigt.
 Die Kindersicherung einer Zone (`/zones/zone<N>/childLock`) hat die beiden
 Werte `active` und `inactive`; die Lesung zeigt sie in allen
 ausgelieferten Sprachen als „Aktiv“ und „Inaktiv“ (vorher stand der Rohtext
-da). Die Hersteller-App bietet die Sperre als Schalter an, deshalb gibt es
+da). Die Sperre kennt genau zwei Zustände, deshalb gibt es
 seit 0.9.3 den Schalter „Kindersicherung“ (Konfiguration, **standardmäßig
 aktiviert**). Er entsteht nur, wenn der Regler den Pfad schreibbar meldet,
 genau die beiden Werte `active` und `inactive` anbietet und einen davon liest;
@@ -348,7 +348,7 @@ aktueller Modus sperrt das Bedienelement vorübergehend.
 
 Jeder manuelle Sollwert verwendet seine eigenen aktuellen Grenzen und die
 Einheit `C`. Die Schrittweite stammt aus `stepSize`; ohne diese Angabe
-beträgt sie 0,5 °C wie in der Hersteller-App. Eine fehlerhafte Angabe sperrt
+beträgt sie 0,5 °C. Eine fehlerhafte Angabe sperrt
 die Bedienung. Seit 0.9.2 ist die Schrittweite eine Vorgabe für das
 Schreiben: Ein Wert zwischen zwei Schritten, gezählt ab dem Minimum, wird
 vor jeder Anfrage abgewiesen. Die Zonen-Klimaentität legt einen aus °F

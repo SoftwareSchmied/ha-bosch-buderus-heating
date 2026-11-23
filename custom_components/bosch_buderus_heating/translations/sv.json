@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Välj växlingspunkt",
-        "description": "**{program}**\n\n{points}\n\nVälj en växlingspunkt för att ändra eller ta bort den, eller lägg till en. En dag har högst {per_day} växlingspunkter (gränsen i tillverkarens app, inte rapporterad av regulatorn); dagens sista växlingspunkt blir kvar.",
+        "description": "**{program}**\n\n{points}\n\nVälj en växlingspunkt för att ändra eller ta bort den, eller lägg till en. En dag har högst {per_day} växlingspunkter (en fast gräns, inte rapporterad av regulatorn); dagens sista växlingspunkt blir kvar.",
         "data": {
           "point": "Växlingspunkt"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Ändra tidsprogram för varmvatten",
-        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nNivåerna är de från rumsregulatorns program. Programmet gäller medan varmvattnet följer sitt eget program. Högst sex växlingspunkter per dag är gränsen i tillverkarens app, inte en gräns som regulatorn rapporterar.",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nNivåerna är de från rumsregulatorns program. Programmet gäller medan varmvattnet följer sitt eget program. Högst sex växlingspunkter per dag är en fast gräns, inte en gräns som regulatorn rapporterar.",
         "data": {
           "action": "Nästa steg",
           "day": "Veckodag",
@@ -986,7 +986,7 @@
           "wallbox_history": "Läs laddhistorik"
         },
         "data_description": {
-          "wallbox_authentication": "Avstängt som standard. Från programvara 5.1.0 autentiserar en start först; med äldre programvara skickas starten ensam, som i tillverkarens app.",
+          "wallbox_authentication": "Avstängt som standard. Från programvara 5.1.0 autentiserar en start först; med äldre programvara skickas starten ensam.",
           "wallbox_authentication_name": "Namnet som tillverkarens app använder för autentisering; får vara tomt.",
           "wallbox_history": "Av som standard. Ungefär var 30:e minut (var 60:e minut i molnvänlig profil) läses den senaste laddningen (start, slut, laddtid, energi) samt denna månads energi från nätet och från solenergi. Namn på kort, användare eller autentisering läses aldrig."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Slå även på omkopplaren ”Ta bort den här åtkomsten”: en token återkallas bara tillsammans med att åtkomsten tas bort. Ingenting skickades eller togs bort.",
       "switch_program_value": "Ange en temperatur från {minimum} till {maximum} °C i steg om {step} °C.",
       "switch_program_day_emptied": "En dag som har växlingspunkter behåller minst en; vad en tom dag betyder för regulatorn är inte känt.",
-      "rrc_point_limit": "Den här dagen har redan det högsta antal växlingspunkter som appen tillåter ({per_day}).",
+      "rrc_point_limit": "Den här dagen har redan det högsta tillåtna antalet växlingspunkter ({per_day}).",
       "rrc_point_last": "Dagens sista växlingspunkt kan inte tas bort; vad en tom dag betyder för regulatorn är inte känt.",
       "rrc_point_duplicate": "Den här dagen har redan en växlingspunkt vid den här tiden.",
       "wallbox_name_invalid": "Namnet får innehålla högst 64 utskrivbara tecken.",
@@ -1879,7 +1879,7 @@
       "message": "Bara dessa inställningar kan användas: {settings}. En inställning skrivs som läge, temperatur och fläkthastighet, till exempel ”cool 24.0 auto”, eller ”off”."
     },
     "switch_points_unit_not_ready": {
-      "message": "Varmvattenberedaren tar bara emot ändringar av det här tidsprogrammet när den är påslagen, går i tidsprogramdrift och har en tidszon, som i tillverkarens app. Inget skickades."
+      "message": "Varmvattenberedaren tar bara emot ändringar av det här tidsprogrammet när den är påslagen, går i tidsprogramdrift och har en tidszon. Inget skickades."
     }
   },
   "selector": {

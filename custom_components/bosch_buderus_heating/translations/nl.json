@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Schakelpunt kiezen",
-        "description": "**{program}**\n\n{points}\n\nKies een schakelpunt om het te wijzigen of te verwijderen, of voeg er een toe. Een dag heeft hoogstens {per_day} schakelpunten (de grens van de app van de fabrikant, niet gemeld door de regelaar); het laatste schakelpunt van een dag blijft staan.",
+        "description": "**{program}**\n\n{points}\n\nKies een schakelpunt om het te wijzigen of te verwijderen, of voeg er een toe. Een dag heeft hoogstens {per_day} schakelpunten (een vaste grens, niet gemeld door de regelaar); het laatste schakelpunt van een dag blijft staan.",
         "data": {
           "point": "Schakelpunt"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Warmwaterprogramma wijzigen",
-        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDe niveaus zijn die van het programma van de kamerregelaar. Het programma geldt zolang het warme water zijn eigen programma volgt. Hoogstens zes schakelpunten per dag is de grens van de app van de fabrikant, niet een grens die de regelaar meldt.",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDe niveaus zijn die van het programma van de kamerregelaar. Het programma geldt zolang het warme water zijn eigen programma volgt. Hoogstens zes schakelpunten per dag is een vaste grens, niet een grens die de regelaar meldt.",
         "data": {
           "action": "Volgende stap",
           "day": "Weekdag",
@@ -986,7 +986,7 @@
           "wallbox_history": "Laadgeschiedenis lezen"
         },
         "data_description": {
-          "wallbox_authentication": "Standaard uit. Vanaf software 5.1.0 authenticeert een start eerst; bij oudere software wordt de start alleen verzonden, zoals in de app van de fabrikant.",
+          "wallbox_authentication": "Standaard uit. Vanaf software 5.1.0 authenticeert een start eerst; bij oudere software wordt de start alleen verzonden.",
           "wallbox_authentication_name": "De naam die de app van de fabrikant voor authenticatie gebruikt; mag leeg blijven.",
           "wallbox_history": "Standaard uit. Ongeveer elke 30 minuten (elke 60 minuten in het cloudvriendelijke profiel) worden de laatste lading (start, einde, laadtijd, energie) en de energie van deze maand van het net en van zonne-energie gelezen. Namen van kaarten, gebruikers of authenticatie worden nooit gelezen."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Schakel ook de schakelaar „Deze toegang verwijderen” in: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd.",
       "switch_program_value": "Voer een temperatuur in van {minimum} tot {maximum} °C in stappen van {step} °C.",
       "switch_program_day_emptied": "Een dag met schakelpunten behoudt er minstens één; wat een lege dag voor de regelaar betekent, is niet bekend.",
-      "rrc_point_limit": "Deze dag heeft al het hoogste aantal schakelpunten dat de app toestaat ({per_day}).",
+      "rrc_point_limit": "Deze dag heeft al het hoogste toegestane aantal schakelpunten ({per_day}).",
       "rrc_point_last": "Het laatste schakelpunt van een dag kan niet worden verwijderd; wat een lege dag voor de regelaar betekent, is niet bekend.",
       "rrc_point_duplicate": "Deze dag heeft al een schakelpunt op dit tijdstip.",
       "wallbox_name_invalid": "De naam mag maximaal 64 afdrukbare tekens bevatten.",
@@ -1879,7 +1879,7 @@
       "message": "Alleen deze instellingen kunnen worden gebruikt: {settings}. Een instelling wordt geschreven als modus, temperatuur en ventilatorsnelheid, bijvoorbeeld “cool 24.0 auto”, of “off”."
     },
     "switch_points_unit_not_ready": {
-      "message": "De boiler accepteert wijzigingen van dit tijdprogramma alleen als hij is ingeschakeld, in programmabedrijf werkt en een tijdzone heeft, zoals in de app van de fabrikant. Er is niets verzonden."
+      "message": "De boiler accepteert wijzigingen van dit tijdprogramma alleen als hij is ingeschakeld, in programmabedrijf werkt en een tijdzone heeft. Er is niets verzonden."
     }
   },
   "selector": {

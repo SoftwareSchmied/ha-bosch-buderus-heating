@@ -7,8 +7,8 @@ checks, one after another and within ``READ_SECONDS``.
 
 Cloud: the ``interval`` form through the coordinator's client, with the
 integration's pacing, sign-in and pause rules; a rate limit pauses the
-whole cloud access (the transport does that). The bulk form of the
-manufacturer's app (``query=all&sampleRate=all``) was refused with 403 for
+whole cloud access (the transport does that). The bulk form
+(``query=all&sampleRate=all``) was refused with 403 for
 a real account, as a resource read and inside a bulk read, so it is not
 used.
 

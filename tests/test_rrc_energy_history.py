@@ -1,7 +1,7 @@
 """W5 (CT-G05): the energy history of an RRC 2.0 room controller, read in
 bounded cycles (``rrc_energy``, without Home Assistant).
 
-The records come from ``energy.json`` (synthetic, demo shapes). Everything
+The records come from ``energy.json`` (synthetic, documented shapes). Everything
 is expected, untested on real hardware.
 """
 

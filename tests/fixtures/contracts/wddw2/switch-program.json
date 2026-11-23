@@ -4,14 +4,14 @@
   "provenance": {
     "kind": "synthetic",
     "basis": "compatibility_mapping",
-    "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight); switched on, schedule mode and a time zone, which the app requires before it offers changes",
+    "reference": "Constructed WDDW2 water heater with its weekly program program1 (whole degrees or off; Sunday without points; first point after midnight); switched on, schedule mode and a time zone, which a change requires",
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the expected behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-12: the WDDW2 program is written as the object {switchPoints:[...]} with whole degrees in the manualSetpoint range or off.",
-    "source": "behaviour of the manufacturer's app: the WDDW2 program is written as {switchPoints:[...]} with whole degrees within the manualSetpoint range"
+    "source": "expected behaviour: the WDDW2 program is written as {switchPoints:[...]} with whole degrees within the manualSetpoint range"
   },
   "resources": [
     {

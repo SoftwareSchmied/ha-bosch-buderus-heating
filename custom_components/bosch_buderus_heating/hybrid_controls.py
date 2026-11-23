@@ -6,18 +6,18 @@ goes through the same validated transaction: the setting is read again
 right before the one request, then read back, never repeated.
 
 What a hybrid plant reports (``/heatSources/hybrid/controlStrategy`` and
-``/system/energyTariff/*``) follows the vendor app. Nothing here is confirmed
-on a real installation yet; the controls are created disabled.
+``/system/energyTariff/*``) is expected. Nothing here is confirmed on a
+real installation yet; the controls are created disabled.
 
 * The strategy is a select over the advertised values the integration knows
-  (the app offers only values it knows as well). Without ``allowedValues``,
+  (an unknown value is never offered). Without ``allowedValues``,
   or with fewer than two usable values, there is no control.
 * The prices are numbers on the grid and within the limits the plant
   reports. Both limits are required. A value off the grid is refused, not
   rounded: the plant would store it rounded and the read-back would never
   confirm it. The unit is the one the plant reports, no unit when it
   reports none; nothing is converted.
-* Gas and oil follow the app: the oil price only when no gas price is
+* Gas and oil: the oil price only when no gas price is
   reported. The feed-in tariff is the PV price (``energyTariff/pv``).
 * The bivalence point and the price reminder stay read-only.
 """
@@ -41,8 +41,8 @@ PRICE_PATHS: Final = (ELECTRICITY_PATH, GAS_PATH, OIL_PATH, FEED_IN_PATH)
 CONTROL_PATHS: Final = frozenset({STRATEGY_PATH, *PRICE_PATHS})
 
 # The wire value of each strategy and the option key Home Assistant shows
-# (lowercase, as the translation files need it). The meaning of each follows
-# the vendor app: "heatPumpOnly" is not "heat pump only" (the boiler still
+# (lowercase, as the translation files need it). The meaning of each:
+# "heatPumpOnly" is not "heat pump only" (the boiler still
 # helps when the heat pump does not suffice) and "boilerOnly" switches the
 # heat pump off.
 STRATEGY_KEYS: Final[Mapping[str, str]] = {
@@ -100,7 +100,7 @@ def is_price_path(path: str) -> bool:
 def offered(path: str, readings: Mapping[str, Resource]) -> bool:
     """Whether a control of ``path`` is offered with these readings.
 
-    As in the vendor app: the oil price only while no gas price is reported
+    The oil price only while no gas price is reported
     (a plant may report both, and only one of them is in use); every other
     path is not decided here.
     """

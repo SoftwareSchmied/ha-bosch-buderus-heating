@@ -801,7 +801,7 @@ async def test_a_boost_write_on_a_room_controller_circuit_sends_nothing(hass):
 
 
 def test_the_boost_temperature_is_not_offered_on_a_heat_pump():
-    """W-7: as the app, the boost temperature only without a heat pump."""
+    """W-7: the boost temperature only without a heat pump."""
     from custom_components.bosch_buderus_heating.pointt import Resource
 
     def reading(path: str, value: str) -> dict[str, Resource]:

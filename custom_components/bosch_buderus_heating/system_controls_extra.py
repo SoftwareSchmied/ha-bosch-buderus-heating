@@ -16,10 +16,9 @@ without that path nothing is created.
   heater for the pool (``/pool/additionalHeater/poolMode``), as a selection
   over the advertised values.
 
-All of them are created disabled. They follow the manufacturer's app, which
-offers them; no installation we know of reports the low-noise and the pool
-paths. Pure data without Home Assistant imports. Expected, untested on a
-real installation.
+All of them are created disabled. No installation we know of reports the
+low-noise and the pool paths. Pure data without Home Assistant imports.
+Expected, untested on a real installation.
 """
 
 from __future__ import annotations
@@ -36,7 +35,7 @@ _NUMBER_TYPES: Final = frozenset({"integerValue", "floatValue"})
 _STRING: Final = frozenset({"stringValue"})
 _MINUTES: Final = frozenset({"mins", "min", "minutes"})
 MINUTES_PER_DAY: Final = 1440.0
-# The steps the app takes when the gateway reports none: 15 minutes for the
+# The steps when the gateway reports none: 15 minutes for the
 # times of the window, 10 for the power reduction.
 TIME_STEP_MINUTES: Final = 15.0
 POWER_REDUCTION_STEP: Final = 10.0

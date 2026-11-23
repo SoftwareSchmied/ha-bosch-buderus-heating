@@ -7,7 +7,7 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "The base follows the shapes of suWiSwitchMode, suWiThreshold and controlType in gateway-shapes.json (an iCom gateway with a boiler controller). The heat pump and cooling variants follow the behaviour of the manufacturer's app (summer/winter codes automatic, forced, cooling, off; cooling threshold and cooling setpoint as floatValue). Every value and limit is constructed. No identifier.",
+    "redaction": "The base follows the shapes of suWiSwitchMode, suWiThreshold and controlType in gateway-shapes.json (an iCom gateway with a boiler controller). The heat pump and cooling variants follow the expected shapes (summer/winter codes automatic, forced, cooling, off; cooling threshold and cooling setpoint as floatValue). Every value and limit is constructed. No identifier.",
     "physical_device_verified": false
   },
   "contract": "Summer/winter switching and heating limit of one heating circuit, the cooling threshold and the cooling setpoint. Each variant replaces (set) or removes (remove) resources of the base.",
@@ -82,7 +82,7 @@
       "remove": ["/heatingCircuits/hc1/suWiSwitchMode", "/heatingCircuits/hc1/suWiThreshold"]
     },
     "V10": {
-      "note": "Cooling setpoint from 0 (0 switches the cooling off in the app).",
+      "note": "Cooling setpoint from 0 (0 switches the cooling off).",
       "set": [
         {"id": "/heatingCircuits/hc1/suWiSwitchMode", "type": "stringValue", "value": "automatic", "writeable": 1, "allowedValues": ["automatic", "forced", "cooling", "off"]},
         {"id": "/heatingCircuits/hc1/cooling/roomTempSetpoint", "type": "floatValue", "value": 25, "writeable": 1, "unitOfMeasure": "C", "minValue": 0, "maxValue": 30, "stepSize": 0.5, "state": [{"off": 0}]}

@@ -1,4 +1,4 @@
-"""App-shaped messages, field freshness and write acknowledgement regressions."""
+"""Realistic messages, field freshness and write acknowledgement regressions."""
 
 import copy
 from unittest.mock import patch

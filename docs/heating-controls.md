@@ -262,22 +262,20 @@ Reports are welcome.
 - **Summer/winter switching** of one circuit (iCom/KM200 gateways): the
   options are the codes the circuit offers among `automatic`
   (Automatic), `forced` (Heating only), `cooling` (Cooling only) and `off`
-  (Off); another code is left out, as in the app. The central season
+  (Off); another code is left out. The central season
   switching of a K40 stays as it is (see [season switching](season-switching.md)).
   After switching to cooling only, the circuit's climate is only shown
   while the circuit cools. A current code that is not known keeps the
   selection, shown as unknown; only known advertised codes can be chosen.
 - **Heating limit and cooling threshold:** the outdoor temperatures where
-  heating stops and cooling starts. The app shows them only in the mode
-  automatic; I keep them writable in every mode, they take effect in the
-  mode automatic. The cooling threshold exists only while the circuit's
-  summer/winter switching offers cooling.
+  heating stops and cooling starts. They take effect only in the mode
+  automatic; I keep them writable in every mode. The cooling threshold exists
+  only while the circuit's summer/winter switching offers cooling.
 - **Cooling setpoint:** the room target of the cooling (heat pumps with
-  cooling only). 0 means "off" in the
-  app and is never written; when the circuit reports a minimum of 0 or
-  below, the lowest value offered is the first value of the grid above 0.
-  Without reported limits there is no entity.
-- **Temperature levels:** only the four level names the app knows are
+  cooling only). 0 means "off" and is never written; when the circuit reports
+  a minimum of 0 or below, the lowest value offered is the first value of the
+  grid above 0. Without reported limits there is no entity.
+- **Temperature levels:** only the four known level names are
   operated: heating (`comfort2`), setback (`eco`), away (`awayTemperature`)
   and cooling (`on`). A level with another name stays a reading; the
   diagnostics count such names without showing them. A level without a
@@ -297,7 +295,7 @@ Reports are welcome.
   the heating and setback levels that exist since 0.9.0. The value is then
   confirmed by reading it back and never sent again.
 - **Locks:** with the control type `ISRC` (a room controller runs the
-  circuit) none of these settings is changed, as in the app. With the
+  circuit) none of these settings is changed. With the
   control type `constants` no temperature level is changed. A setting the
   circuit reports as not available gets no control; one it reports as not
   used refuses changes.
@@ -327,7 +325,7 @@ and is confirmed by reading it back; nothing is sent again.
 | --- | --- | --- | --- |
 | Boost | `boostMode` | switch | the advertised list is exactly `on` and `off`, or there is no list and the current value is `on` or `off` |
 | Boost duration | `boostDuration` | number | minimum and maximum, a duration unit |
-| Boost temperature | `boostTemperature` | number | minimum and maximum; not on a plant with a heat pump, as in the app |
+| Boost temperature | `boostTemperature` | number | minimum and maximum; not on a plant with a heat pump |
 | Cooling: operation mode | `cooling/operationMode` | select | the advertised modes `off`, `manual`, `auto` (at least two; a current mode that is not known is shown as unknown) |
 | Setpoint optimization | `setpointOptimization` | switch | the advertised list is exactly `on` and `off`, or there is no list and the current value is `on` or `off` |
 | Open window detection | `openWindowDetection/enabled` | switch | only when the path is found |
@@ -377,13 +375,13 @@ the path nothing is created.
 - **Silent mode: power reduction** (`/system/silentMode/powerReduction`), a
   whole percentage within the limits the gateway reports (both between 0 and
   100). Without a step reported by the gateway the value moves in steps of
-  10, as in the app. The silent mode switch itself already existed.
+  10. The silent mode switch itself already existed.
 - **Silent mode: start time** and **Silent mode: stop time**
   (`/system/silentMode/startTime` and `stopTime`), numbers in minutes with the
   limits the gateway reports (within one day). The integration does not
   assume from which moment these minutes count; the value is shown and
   written as the gateway reports it. Without a step reported by the gateway
-  the times move in steps of 15 minutes, as in the app. There is deliberately
+  the times move in steps of 15 minutes. There is deliberately
   no time entity.
 - **Low-noise operation mode** (`/system/lowNoise/mode`), a select over the
   values the gateway lists (at least two, the current one among them), and
@@ -427,8 +425,8 @@ both disabled by default. The tariff's name comes from a separate service
 of the manufacturer, which this integration does not use; the number 5
 means "no tariff chosen" and gives the attribute `tariff_selected: false`.
 A refusal, a missing path or a server error counts as "not there" and does
-not affect the rest of the discovery. Nothing is written: in the app,
-choosing a tariff takes several requests and also changes the heating
+not affect the rest of the discovery. Nothing is written: choosing a
+tariff takes several requests and also changes the heating
 circuits. The tariff readings of a K30/K40 (`/system/variableTariff/*`)
 stay as they were since 0.9.0, as disabled diagnostic sensors. Expected,
 untested on a real installation.
@@ -439,11 +437,11 @@ Where the gateway reports a ventilation unit (`/ventilation/{zone}`), since
 0.9.2-beta.3 the integration offers:
 
 - A select **Ventilation operating mode** on `/ventilation/{zone}/operationMode`,
-  with the modes the manufacturer's app knows: `time` (time program), `off`,
+  with the known modes: `time` (time program), `off`,
   `min`, `red`, `nom`, `max` (fan levels 1 to 4), `dem` (demand), `party`,
   `powerVent` (intensive ventilation), `fireplace`, `fallAsleep` and `freefct`
   (free function). Only modes the unit itself lists are offered; the mode
-  `exhaustOnly` (exhaust air only) is never offered, as the app hides it too.
+  `exhaustOnly` (exhaust air only) is never offered.
   The fan level is changed through this mode, not through `exhaustFanLevel`,
   which stays a read-only sensor. **This select is enabled by default**, unlike
   other new controls. Please note that `off` stops the ventilation of the
@@ -454,8 +452,8 @@ Where the gateway reports a ventilation unit (`/ventilation/{zone}`), since
   yet.
 - A number **Maximum filter run time** on `/ventilation/{zone}/filter/maxRunTime`
   (in months), disabled by default and only with the limits the unit reports.
-  The integration does not reset the filter: the app does that with a separate
-  command that is not read or written here.
+  The integration does not reset the filter: that takes a separate command,
+  which is not read or written here.
 
 Every change reads the setting from the gateway first, sends exactly one
 request and reads it back; a change is not sent again. Nothing is created
@@ -483,7 +481,7 @@ entity settings; they are in the *Configuration* category and also in the
 
 - **Hybrid control strategy** (a selection on the heat source device):
   offers the strategies the system reports that the integration knows. The
-  names follow the manufacturer's app: *Cost optimized* (the system chooses
+  strategies are *Cost optimized* (the system chooses
   by energy prices and efficiency), *Heat pump optimized*, *Heat pump
   preferred* (the boiler only helps when the heat pump does not suffice and
   for defrosting; comfort can suffer), *Most climate friendly* (comfort can
@@ -493,7 +491,7 @@ entity settings; they are in the *Configuration* category and also in the
   Without a list of offered values or with fewer than two usable ones there
   is no selection.
 - **Electricity price**, **Gas price** (or **Oil price** when no gas price
-  is reported, as in the app) and **Feed-in tariff** (numbers on the plant
+  is reported) and **Feed-in tariff** (numbers on the plant
   device): shown only when the system reports the price as writable with
   both limits. The limits, the step (a hundredth without one) and the unit
   are the ones the system reports; the number shows that unit and converts
@@ -592,7 +590,7 @@ gateway reports them:
 | Cooling program | `/heatingCircuits/{hc}/cooling/switchPrograms/A` | `on` or `off` | the circuit's cooling level `cooling/temperatureLevels/on` can be read |
 | Zone programs | `/zones/{zone}/switchPrograms/heating` and `.../cooling` | Temperature as text (or as a number, as read) | range and step are reported |
 | Ventilation program | `/ventilation/zone1/switchPrograms/cp` | `min`, `red`, `nom`, `max`, `dem`, `off` | the levels are listed as references of `ventilationLevels`; only those are offered |
-| WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range; the unit is switched on, runs in schedule mode and has a time zone (as in the manufacturer's app) |
+| WDDW2 hot water program | `/dhwCircuits/dhw1/switchPrograms/program1` | Whole degrees as text, or `off` | `manualSetpoint` reports its range; the unit is switched on, runs in schedule mode and has a time zone |
 | Air conditioner programs (PointT gateway of type `rac`) | `/airConditioning/switchPrograms/program1` ... `program9` | Mode, temperature and fan speed, such as `cool 24.0 auto`, or `off` | the program configuration is readable; see [air conditioners on a PointT gateway](pointt-air-conditioners.md#changing-switch-points) |
 
 Every one of them also needs the reported limits (`maxNbOfSwitchPoints`,
@@ -621,7 +619,7 @@ separately. The WDDW2 and air conditioner programs are sent as the object
 `{"switchPoints": [...]}`; all others go out as a raw array. A WDDW2 day
 without points has no setpoint and an air conditioner is off before the
 first point of a day; the others carry the previous day's last point over.
-These two are written as the manufacturer's app writes them: a WDDW2 `off`
+These two are written in the form the units accept: a WDDW2 `off`
 at 00:00 is left out, and an air conditioner day that follows a day ending
 with the unit on gets an explicit `off` at 00:00 (it counts against the
 limits).
@@ -655,7 +653,7 @@ program name** changes it (disabled by default, category configuration).
 The name is read again before the single write and compared with the one
 shown; the read-back compares the decoded name. Too long names and
 characters the coding cannot hold are refused; an empty name is not sent.
-iCom gateways get no name control: their app does not write names. Expected,
+iCom gateways get no name control. Expected,
 untested on a real installation.
 
 #### Action `bosch_buderus_heating.set_switch_points`
@@ -976,24 +974,22 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
 - **Sommer-/Winterumschaltung** eines Kreises (iCom/KM200-Gateways): Die
   Optionen sind die vom Kreis angebotenen Codes aus `automatic`
   (Automatisch), `forced` (Nur Heizbetrieb), `cooling` (Nur Kühlbetrieb)
-  und `off` (Aus); andere Codes werden wie in der App ausgelassen. Die
+  und `off` (Aus); andere Codes werden ausgelassen. Die
   zentrale Saisonumschaltung einer K40 bleibt unverändert (siehe
   [Saisonumschaltung](season-switching.md)). Nach dem Wechsel auf „Nur
   Kühlbetrieb“ wird die Klimaentität des Kreises nur angezeigt, solange er
   kühlt. Ein unbekannter aktueller Code lässt die Auswahl bestehen und wird
   als unbekannt angezeigt; wählbar sind nur bekannte angebotene Codes.
-- **Heizgrenze und Kühlschwelle:** die Außentemperaturen, bei denen das
-  Heizen endet und das Kühlen beginnt. Die App zeigt sie nur im Modus
-  Automatisch; ich lasse sie in jedem Modus schreibbar, wirksam sind sie im
-  Modus Automatisch. Die Kühlschwelle gibt es nur, solange die
-  Sommer-/Winterumschaltung des Kreises Kühlen anbietet.
-- **Kühl-Sollwert:** die Raum-Solltemperatur der Kühlung (nur Wärmepumpen
-  mit Kühlung). 0 bedeutet in der
-  App „aus“ und wird nie geschrieben; meldet der Kreis ein Minimum von 0
-  oder darunter, ist der kleinste angebotene Wert der erste Rasterwert über
-  0. Ohne gemeldete Grenzen gibt es keine Entität.
-- **Temperaturstufen:** Bedient werden nur die vier Stufen, die die App
-  kennt: Heizen (`comfort2`), Absenken (`eco`), Abwesend (`awayTemperature`)
+- **Heizgrenze und Kühlschwelle:** die Außentemperaturen, bei denen das Heizen
+  endet und das Kühlen beginnt. Wirksam sind sie nur im Modus Automatisch; ich
+  lasse sie in jedem Modus schreibbar. Die Kühlschwelle gibt es nur, solange
+  die Sommer-/Winterumschaltung des Kreises Kühlen anbietet.
+- **Kühl-Sollwert:** die Raum-Solltemperatur der Kühlung (nur Wärmepumpen mit
+  Kühlung). 0 bedeutet „aus“ und wird nie geschrieben; meldet der Kreis ein
+  Minimum von 0 oder darunter, ist der kleinste angebotene Wert der erste
+  Rasterwert über 0. Ohne gemeldete Grenzen gibt es keine Entität.
+- **Temperaturstufen:** Bedient werden nur die vier bekannten
+  Stufen: Heizen (`comfort2`), Absenken (`eco`), Abwesend (`awayTemperature`)
   und Kühlen (`on`). Eine Stufe mit anderem Namen bleibt ein Messwert; die
   Diagnose zählt solche Namen, ohne sie zu zeigen. Eine Stufe ohne Wert
   erhält keine Entität. Der Wert einer Stufe gilt für alle Schaltpunkte der
@@ -1014,7 +1010,7 @@ aber an einer echten Anlage ungetestet**. Rückmeldungen sind willkommen.
   Absenkstufe, die es seit 0.9.0 gibt. Danach wird der Wert durch Rücklesen
   bestätigt und nie erneut gesendet.
 - **Sperren:** Mit der Regelungsart `ISRC` (ein Raumregler führt den Kreis)
-  wird wie in der App keine dieser Einstellungen geändert. Mit der
+  wird keine dieser Einstellungen geändert. Mit der
   Regelungsart `constants` wird keine Temperaturstufe geändert. Eine als
   nicht verfügbar gemeldete Einstellung erhält keine Steuerung, eine als
   nicht genutzt gemeldete lehnt Änderungen ab.
@@ -1045,7 +1041,7 @@ wird durch Zurücklesen bestätigt; nichts wird erneut gesendet.
 | --- | --- | --- | --- |
 | Boost | `boostMode` | Schalter | die gemeldete Liste ist genau `on` und `off`, oder es gibt keine Liste und der aktuelle Wert ist `on` oder `off` |
 | Boost-Dauer | `boostDuration` | Zahl | Minimum und Maximum, eine Zeiteinheit |
-| Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum; nicht bei einer Anlage mit Wärmepumpe, wie in der App |
+| Boost-Temperatur | `boostTemperature` | Zahl | Minimum und Maximum; nicht bei einer Anlage mit Wärmepumpe |
 | Kühlen: Betriebsart | `cooling/operationMode` | Auswahl | die gemeldeten Betriebsarten `off`, `manual`, `auto` (mindestens zwei; eine unbekannte aktuelle wird als unbekannt angezeigt) |
 | Sollwertoptimierung | `setpointOptimization` | Schalter | die gemeldete Liste ist genau `on` und `off`, oder es gibt keine Liste und der aktuelle Wert ist `on` oder `off` |
 | Fenster-offen-Erkennung | `openWindowDetection/enabled` | Schalter | nur, wenn der Pfad gefunden wird |
@@ -1092,15 +1088,15 @@ sie meldet; ohne den Pfad entsteht nichts.
 - **Flüstermodus: Leistungsreduzierung** (`/system/silentMode/powerReduction`),
   ein ganzzahliger Prozentwert innerhalb der Grenzen, die das Gateway meldet
   (beide zwischen 0 und 100). Ohne eine vom Gateway gemeldete Schrittweite
-  geht der Wert in Schritten von 10, wie in der App. Der Schalter für den
+  geht der Wert in Schritten von 10. Der Schalter für den
   Flüstermodus selbst gab es schon.
 - **Flüstermodus: Startzeit** und **Flüstermodus: Endzeit**
   (`/system/silentMode/startTime` und `stopTime`), Zahlen in Minuten mit den
   Grenzen, die das Gateway meldet (innerhalb eines Tages). Die Integration
   nimmt nicht an, ab wann diese Minuten zählen; der Wert wird so angezeigt
   und geschrieben, wie das Gateway ihn meldet. Ohne eine vom Gateway
-  gemeldete Schrittweite gehen die Zeiten in Schritten von 15 Minuten, wie in
-  der App. Eine Zeit-Entität gibt es bewusst nicht.
+  gemeldete Schrittweite gehen die Zeiten in Schritten von 15 Minuten.
+  Eine Zeit-Entität gibt es bewusst nicht.
 - **Leiser Betrieb: Betriebsart** (`/system/lowNoise/mode`), ein Auswahlfeld
   über die Werte, die das Gateway auflistet (mindestens zwei, der aktuelle
   darunter), und **Leiser Betrieb: Dauer** (`/system/lowNoise/duration`), eine
@@ -1146,7 +1142,7 @@ liefert ein eigener Dienst des Herstellers, den diese Integration nicht
 nutzt; die Nummer 5 bedeutet „kein Tarif gewählt“ und ergibt das Attribut
 `tariff_selected: false`. Eine Ablehnung, ein fehlender Pfad oder ein
 Serverfehler gilt als „nicht vorhanden“ und beeinflusst die übrige Erkennung
-nicht. Geschrieben wird nichts: In der App braucht die Wahl eines Tarifs
+nicht. Geschrieben wird nichts: Die Wahl eines Tarifs braucht
 mehrere Anfragen und ändert dabei auch die Heizkreise. Die Tarifwerte einer
 K30/K40 (`/system/variableTariff/*`) bleiben wie seit 0.9.0 deaktivierte
 Diagnose-Sensoren. Erwartet, aber an einer echten Anlage ungetestet.
@@ -1157,12 +1153,12 @@ Meldet das Gateway eine Lüftungseinheit (`/ventilation/{zone}`), bietet die
 Integration seit 0.9.2-beta.3 an:
 
 - Ein Auswahlfeld **Lüftungsbetriebsart** auf `/ventilation/{zone}/operationMode`
-  mit den Betriebsarten, die die App des Herstellers kennt: `time`
+  mit den bekannten Betriebsarten: `time`
   (Zeitprogramm), `off`, `min`, `red`, `nom`, `max` (Lüfterstufen 1 bis 4),
   `dem` (Bedarf), `party`, `powerVent` (Intensivlüftung), `fireplace`,
   `fallAsleep` (Einschlafen) und `freefct` (freie Funktion). Angeboten werden
   nur Betriebsarten, die die Einheit selbst auflistet; `exhaustOnly` (nur
-  Abluft) wird nie angeboten, die App blendet es ebenfalls aus. Die
+  Abluft) wird nie angeboten. Die
   Lüfterstufe wird über diese Betriebsart geändert, nicht über
   `exhaustFanLevel`, das ein reiner Sensor bleibt. **Dieses Auswahlfeld ist
   standardmäßig aktiviert**, anders als andere neue Steuerungen. Bitte
@@ -1175,7 +1171,7 @@ Integration seit 0.9.2-beta.3 an:
 - Eine Zahl **Maximale Filterlaufzeit** auf `/ventilation/{zone}/filter/maxRunTime`
   (in Monaten), standardmäßig deaktiviert und nur mit den Grenzen, die die
   Einheit meldet. Der Filter wird von der Integration nicht zurückgesetzt:
-  Die App macht das mit einem eigenen Befehl, der hier weder gelesen noch
+  Dafür gibt es einen eigenen Befehl, der hier weder gelesen noch
   geschrieben wird.
 
 Jede Änderung liest die Einstellung zuerst vom Gateway, sendet genau eine
@@ -1206,7 +1202,7 @@ bedienen**.
 
 - **Hybrid-Regelungsstrategie** (Auswahl am Gerät des Wärmeerzeugers):
   bietet die Strategien an, die die Anlage meldet und die die Integration
-  kennt. Die Namen folgen der App des Herstellers: *Kostenoptimiert* (die
+  kennt. Die Strategien sind *Kostenoptimiert* (die
   Anlage wählt nach Energiepreisen und Wirkungsgrad), *Wärmepumpe
   optimiert*, *Wärmepumpe bevorzugt* (der Kessel hilft nur, wenn die
   Wärmepumpe nicht reicht, und beim Abtauen; der Komfort kann leiden), *Am
@@ -1216,7 +1212,7 @@ bedienen**.
   `bivalent_alternative`, beides eine Option). Ohne Liste der angebotenen
   Werte oder mit weniger als zwei nutzbaren gibt es keine Auswahl.
 - **Strompreis**, **Gaspreis** (oder **Ölpreis**, wenn kein Gaspreis
-  gemeldet wird, wie in der App) und **Einspeisevergütung** (Zahlen am Gerät
+  gemeldet wird) und **Einspeisevergütung** (Zahlen am Gerät
   der Anlage): nur sichtbar, wenn die Anlage den Preis als schreibbar mit
   beiden Grenzen meldet. Grenzen, Schrittweite (ein Hundertstel ohne Angabe)
   und Einheit sind die der Anlage; die Zahl zeigt diese Einheit und rechnet
@@ -1338,8 +1334,8 @@ Programm nur als Sensor, und die Diagnose nennt den Grund. Temperaturen
 außerhalb des Bereichs oder neben dem Schritt werden abgelehnt, nie
 gerundet; „aus“ (`"0.0"`) nur, wo das Programm es schon enthält. Das
 WDDW2-Programm und die Klimageräte-Programme gehen als Objekt
-`{"switchPoints": [...]}` hinaus, alle anderen als rohes Array. Wie in der
-Hersteller-App lasse ich beim WDDW2-Programm ein `off` um 00:00 weg, und ein
+`{"switchPoints": [...]}` hinaus, alle anderen als rohes Array. Beim
+WDDW2-Programm lasse ich ein `off` um 00:00 weg, und ein
 Klimageräte-Tag nach einem Tag, der mit eingeschaltetem Gerät endet, bekommt
 ein ausdrückliches `off` um 00:00 (es zählt zu den Grenzen). Das
 WDDW2-Programm ist nur änderbar, solange das Gerät eingeschaltet ist, im

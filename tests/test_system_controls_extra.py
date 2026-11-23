@@ -808,11 +808,11 @@ async def test_the_clock_sensor_finds_the_path_in_either_spelling(hass):
     assert len(_tracking(coordinator)) == 1
 
 
-# Fix round: the app's default steps ------------------------------------------
+# Fix round: the default steps ------------------------------------------------
 
 
 def test_the_window_and_the_power_reduction_take_the_apps_steps():
-    """W-4: without a reported step the app uses 15 minutes and 10 percent."""
+    """W-4: without a reported step 15 minutes and 10 percent."""
     assert extra.START_TIME_POLICY.step == 15.0
     assert extra.STOP_TIME_POLICY.step == 15.0
     assert extra.POWER_REDUCTION_POLICY.step == 10.0

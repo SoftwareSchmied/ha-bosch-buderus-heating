@@ -2,7 +2,7 @@
 
 The heating and setback levels (since 0.9.0) gain the level rules and the
 coupled limits; the away temperature and the cooling level are new. Only
-these four level names are operated, as in the manufacturer's app. The
+these four level names are operated. The
 shapes follow ``fixtures/contracts/icom/temperature-levels.json``; every
 value is constructed. Nothing here confirms behaviour on a real
 installation.
@@ -314,7 +314,7 @@ def _client(tree: dict[str, object]) -> AsyncMock:
 
 async def test_a_missing_or_failing_level_leaves_the_others():
     """404 on one listed level, 5xx on another: the rest is discovered and
-    the discovery completes (as the app skips a 404)."""
+    the discovery completes (a 404 is skipped)."""
     data = fixture(FIXTURE)
     raw = {item["id"]: item for item in data["base"]}
     raw[ROOT + "/temperatureLevels"] = {

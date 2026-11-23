@@ -26,7 +26,7 @@ well below 5,000 HTTP requests per day. Preserve successful batch items and
 per-resource last-good state with explicit freshness.
 
 Paths explicitly referenced by PointT are fully processed first, followed by
-the core heating-circuit catalog, then other optional app-path probes.
+the core heating-circuit catalog, then other optional path probes.
 Each discovery call submits only one batch; a malformed
 envelope triggers individual reads only for that batch. Every recoverable
 malformed or 5xx item can receive one logical individual read. Discovery has no

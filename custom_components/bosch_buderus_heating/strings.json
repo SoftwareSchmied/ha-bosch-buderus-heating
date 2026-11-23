@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Choose switch point",
-        "description": "**{program}**\n\n{points}\n\nChoose a switch point to change or delete it, or add one. A day holds at most {per_day} switch points (the limit of the manufacturer's app, not reported by the controller); the last switch point of a day stays.",
+        "description": "**{program}**\n\n{points}\n\nChoose a switch point to change or delete it, or add one. A day holds at most {per_day} switch points (a fixed limit, not reported by the controller); the last switch point of a day stays.",
         "data": {
           "point": "Switch point"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Change hot water schedule",
-        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe levels are those of the room controller's program. The schedule applies while the hot water follows its own program. At most six switch points per day is the limit of the manufacturer's app, not one reported by the controller.",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe levels are those of the room controller's program. The schedule applies while the hot water follows its own program. At most six switch points per day is a fixed limit, not one reported by the controller.",
         "data": {
           "action": "Next step",
           "day": "Weekday",
@@ -986,7 +986,7 @@
           "wallbox_history": "Read charging history"
         },
         "data_description": {
-          "wallbox_authentication": "Off by default. From software 5.1.0 a start authenticates first; with older software the start is sent alone, as in the manufacturer's app.",
+          "wallbox_authentication": "Off by default. From software 5.1.0 a start authenticates first; with older software the start is sent alone.",
           "wallbox_authentication_name": "The name the vendor app uses for authentication; may stay empty.",
           "wallbox_history": "Off by default. About every 30 minutes (60 minutes in the cloud-friendly profile) this reads the last charging session (start, end, charging time, energy) and this month's grid and solar energy. Names of cards, users or authentication are never read."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Turn on the “Remove this access” switch as well: a token is revoked only together with removing the access. Nothing was sent or removed.",
       "switch_program_value": "Enter a temperature from {minimum} to {maximum} °C in steps of {step} °C.",
       "switch_program_day_emptied": "A day that has switch points keeps at least one; what an empty day means for the controller is not known.",
-      "rrc_point_limit": "This day already has the highest number of switch points the app allows ({per_day}).",
+      "rrc_point_limit": "This day already has the highest number of switch points allowed ({per_day}).",
       "rrc_point_last": "The last switch point of a day cannot be deleted; what an empty day means for the controller is not known.",
       "rrc_point_duplicate": "This day already has a switch point at this time.",
       "wallbox_name_invalid": "The name may contain up to 64 printable characters.",
@@ -1879,7 +1879,7 @@
       "message": "Only these settings can be used: {settings}. Write a setting as mode, temperature and fan speed, for example \"cool 24.0 auto\", or \"off\"."
     },
     "switch_points_unit_not_ready": {
-      "message": "The water heater accepts changes to this time program only while it is switched on, runs in schedule mode and has a time zone, as in the manufacturer's app. Nothing was sent."
+      "message": "The water heater accepts changes to this time program only while it is switched on, runs in schedule mode and has a time zone. Nothing was sent."
     }
   },
   "selector": {

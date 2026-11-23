@@ -1661,7 +1661,7 @@ def _outside_rrc_device_scope(path: str) -> bool:
 
 
 def _optional_children(path: str) -> tuple[str, ...]:
-    """Return narrowly curated app paths below one discovered container."""
+    """Return narrowly curated optional paths below one discovered container."""
     fixed = OPAQUE_CONTAINER_CHILDREN.get(path, ())
     if path == "/system":
         fixed = (*fixed, ICOM_HOLIDAY_ROOT, WDDW2_HOLIDAY_PATH)

@@ -203,7 +203,7 @@ async def test_a_softener_plant_reads_only_its_water_series(
     assert [item.y for item in day] == [pytest.approx(240.0)]
     specs = rec.specs()
     assert {spec.period for spec in specs} == set(Period)
-    # Disabled by default; named after the app's meaning.
+    # Disabled by default; named after its meaning.
     assert not any(spec.enabled_default for spec in specs)
     assert specs[0].measure.anchor == "/swCircuits/sw1/sensor/saltLevel"
     names = {entity_name("en", spec) for spec in specs}

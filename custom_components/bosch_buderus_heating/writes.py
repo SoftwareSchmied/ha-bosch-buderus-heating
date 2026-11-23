@@ -252,8 +252,8 @@ def _temporary_floor_check(
 # clear button write it, so it has no number of its own and no row in the
 # controls dialog. A value lies within the advertised limits and on the
 # advertised step (0.5 without one), counted from the minimum. The clear
-# value -1 is also written when the limits leave it out, as the
-# manufacturer's app does; any negative reading confirms it. Expected,
+# value -1 is also written when the limits leave it out; any
+# negative reading confirms it. Expected,
 # untested on a real device.
 HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     r"^/heatingCircuits/[^/]+/temporaryRoomSetpoint$",
@@ -267,7 +267,7 @@ HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
 )
 # The temporary target of a ConnectKey zone in the mode auto, by the same
 # rules: only the zone's climate entity and its clear button write it (the
-# value -1 ends it, as the manufacturer's app writes it). Its used and
+# value -1 ends it). Its used and
 # available flags apply. Expected, untested on a real device.
 ZONE_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
     ZONE_TEMPORARY_PATTERN,
@@ -288,7 +288,7 @@ NUMBER_WRITE_POLICIES = (
         value_check=rrc_contract_zone.manual_value_check,
         honor_flags=False,
     ),
-    # The advertised step, else 0.5 as in the manufacturer's app, counted
+    # The advertised step, else 0.5, counted
     # from the minimum; the flags decide about each write.
     NumberWritePolicy(
         ZONE_MANUAL_PATTERN,

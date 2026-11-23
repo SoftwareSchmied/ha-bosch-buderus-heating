@@ -110,7 +110,7 @@ def test_stored_information_on_the_new_connection_makes_the_device_available():
     before = account.devices["serial-A"].alive_at
     emit(account, "topics/info", {"online": True, "timestamp": 2}, retained=True)
     # Stored state and rejections stay ignored; the stored information alone
-    # carries the online state, as in the app.
+    # carries the online state.
     emit(account, "shadows/state/get/accepted", state(10), retained=True)
     emit(account, "shadows/state/update/rejected", {}, retained=True)
     assert account.available("serial-A")

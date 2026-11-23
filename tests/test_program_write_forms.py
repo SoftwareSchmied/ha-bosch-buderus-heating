@@ -1,4 +1,4 @@
-"""Weekly programs written as the manufacturer's app writes them (synthetic).
+"""Weekly programs written in the form the units accept (synthetic).
 
 The air conditioner's program: the configuration only describes (its own
 write flag does not matter), a range without a unit is in °C, without a
@@ -189,7 +189,7 @@ def test_a_range_in_another_unit_is_not_used():
 
 
 def test_without_a_reported_step_a_point_takes_whole_degrees():
-    """As the app's program editor; the target's own step is not borrowed."""
+    """Whole degrees; the target's own step is not borrowed."""
     parsed = _configuration(stepSize=None)
     result = rules(parsed[P1], parsed)
     assert not isinstance(result, str)
@@ -265,7 +265,7 @@ async def test_wddw2_week_differing_only_by_the_midnight_off_sends_nothing(
     ],
 )
 def test_wddw2_is_changed_only_on_in_schedule_mode_with_a_time_zone(path, value, token):
-    """As the manufacturer's app: otherwise the program is shown only; a
+    """Otherwise the program is shown only; a
     missing reading counts as not given."""
     assert (
         edit_issue(program_readings("wddw2")[WDDW2], program_readings("wddw2")) is None

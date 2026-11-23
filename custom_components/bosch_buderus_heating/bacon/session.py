@@ -39,7 +39,7 @@ STATE_STALE_AFTER = 900
 # Devices may publish measurements and information only on change.
 SENSOR_STALE_AFTER = 3600
 RESYNC_INTERVAL = 300
-# Like the HomeCom Easy app in the foreground, report as an active client.
+# Report as an active client (one in the foreground).
 LIVE_REPORT_INTERVAL = 300
 # Over a planned token renewal or a short loss of the connection the devices
 # stay shown by the rules of every cloud family (``cloud_hold``): at most
@@ -623,7 +623,7 @@ class BaconAccount:
                 raise BaconError("invalid_information")
             # A reconnect is our own connection event, not device silence: the
             # redelivered information returns the device to this connection.
-            # Its online state is all the availability needs, as in the app.
+            # Its online state is all the availability needs.
             device.generation = self.generation
             self._device_confirmed()
             # A re-added device or regained membership starts without an online
@@ -722,7 +722,7 @@ class BaconAccount:
         self._device_confirmed()
 
     def available(self, serial: str) -> bool:
-        """Online state comes from the newest information message (as the app).
+        """Online state comes from the newest information message.
 
         Devices send information only on change and some stay silent for hours,
         so the online state of the information on the current connection is

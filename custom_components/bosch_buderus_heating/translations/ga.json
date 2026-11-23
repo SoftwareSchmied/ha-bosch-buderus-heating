@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Roghnaigh pointe lasctha",
-        "description": "**{program}**\n\n{points}\n\nRoghnaigh pointe lasctha chun é a athrú nó a scriosadh, nó cuir ceann leis. Tá {per_day} pointe lasctha ar a mhéad ag lá (teorainn aip an déantúsóra, nach dtuairiscíonn an rialaitheoir); fanann an pointe lasctha deireanach de lá.",
+        "description": "**{program}**\n\n{points}\n\nRoghnaigh pointe lasctha chun é a athrú nó a scriosadh, nó cuir ceann leis. Tá {per_day} pointe lasctha ar a mhéad ag lá (teorainn sheasta, nach dtuairiscíonn an rialaitheoir); fanann an pointe lasctha deireanach de lá.",
         "data": {
           "point": "Pointe lasctha"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Athraigh clár an uisce the",
-        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nIs iad na leibhéil iad siúd de chlár rialaitheoir an tseomra. Bíonn feidhm ag an gclár fad a leanann an t-uisce te a chlár féin. Is é sé phointe lasctha in aghaidh an lae ar a mhéad teorainn aip an déantúsóra, ní teorainn a thuairiscíonn an rialaitheoir.",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nIs iad na leibhéil iad siúd de chlár rialaitheoir an tseomra. Bíonn feidhm ag an gclár fad a leanann an t-uisce te a chlár féin. Is é sé phointe lasctha in aghaidh an lae ar a mhéad teorainn sheasta, ní teorainn a thuairiscíonn an rialaitheoir.",
         "data": {
           "action": "An chéad chéim eile",
           "day": "Lá na seachtaine",
@@ -986,7 +986,7 @@
           "wallbox_history": "Léigh stair an luchtaithe"
         },
         "data_description": {
-          "wallbox_authentication": "As de réir réamhshocraithe. Ó bhogearraí 5.1.0 ar aghaidh, fíordheimhníonn tosú ar dtús; le bogearraí níos sine seoltar an tosú leis féin, mar atá san aip ón monaróir.",
+          "wallbox_authentication": "As de réir réamhshocraithe. Ó bhogearraí 5.1.0 ar aghaidh, fíordheimhníonn tosú ar dtús; le bogearraí níos sine seoltar an tosú leis féin.",
           "wallbox_authentication_name": "An t-ainm a úsáideann aip an mhonaróra le haghaidh fíordheimhnithe; féadfaidh sé fanacht folamh.",
           "wallbox_history": "As de réir réamhshocraithe. Thart ar gach 30 nóiméad (gach 60 nóiméad sa phróifíl chairdiúil don scamall) léitear an luchtú deireanach (tús, deireadh, fad, fuinneamh) agus fuinneamh na míosa seo ón ngréasán agus ón ngrian. Ní léitear ainmneacha cártaí, úsáideoirí ná fíordheimhnithe choíche."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Cas air an lasc “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud.",
       "switch_program_value": "Cuir isteach teocht ó {minimum} go {maximum} °C i gcéimeanna {step} °C.",
       "switch_program_day_emptied": "Coinníonn lá a bhfuil pointí lasctha aige ceann amháin ar a laghad; ní fios cad is brí le lá folamh don rialaitheoir.",
-      "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaíonn an aip ag an lá seo cheana ({per_day}).",
+      "rrc_point_limit": "Tá an líon is mó pointí lasctha a cheadaítear ag an lá seo cheana ({per_day}).",
       "rrc_point_last": "Ní féidir an pointe lasctha deireanach de lá a scriosadh; ní fios cad is brí le lá folamh don rialaitheoir.",
       "rrc_point_duplicate": "Tá pointe lasctha ag an lá seo cheana ag an am seo.",
       "wallbox_name_invalid": "Féadfaidh suas le 64 carachtar inphriontáilte a bheith san ainm.",
@@ -1879,7 +1879,7 @@
       "message": "Ní féidir ach na socruithe seo a úsáid: {settings}. Scríobhtar socrú mar mhodh, teocht agus luas an lucht aeraithe, mar shampla “cool 24.0 auto”, nó “off”."
     },
     "switch_points_unit_not_ready": {
-      "message": "Ní ghlacann an téitheoir uisce le hathruithe ar an gclár ama seo ach amháin nuair atá sé ar siúl, ag rith i mód cláir agus crios ama aige, mar atá san aip ón monaróir. Níor seoladh aon rud."
+      "message": "Ní ghlacann an téitheoir uisce le hathruithe ar an gclár ama seo ach amháin nuair atá sé ar siúl, ag rith i mód cláir agus crios ama aige. Níor seoladh aon rud."
     }
   },
   "selector": {

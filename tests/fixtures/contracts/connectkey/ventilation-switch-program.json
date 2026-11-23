@@ -8,10 +8,10 @@
     "firmware": null,
     "capture_date": null,
     "created": "2026-11-15",
-    "redaction": "Field names and value shapes follow the app behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
+    "redaction": "Field names and value shapes follow the expected behaviour described in 'source'; every time, level, limit and value is constructed. No identifiers.",
     "physical_device_verified": false,
     "contract": "TP-11: the ventilation program uses only the levels listed as references of ventilationLevels and is written as a raw array.",
-    "source": "behaviour of the manufacturer's app: ventilation program with the level endings min, red, nom, max, dem and off"
+    "source": "expected behaviour: ventilation program with the level endings min, red, nom, max, dem and off"
   },
   "resources": [
     {

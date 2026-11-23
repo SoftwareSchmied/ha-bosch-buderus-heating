@@ -13,14 +13,13 @@ What a change may use comes from the unit only: the modes of the program
 configuration (``switchPrograms/configuration``, one entry per mode with its
 temperature range and fan speeds), the limits the program reports (points in
 all and per day, time raster) and the program's own write permission (the
-configuration only describes, as in the app). ``off`` ends the setting
-before the next point of the day, as in the app; before the first point of
-a day the unit is off, and a day whose previous day ends with the unit on
-gets an explicit ``off`` at 00:00 when written, as the app writes it
-(``encode_week``). Nothing is taken from the app's fallback limits: without
-a readable configuration and limits a program is shown, never changed.
+configuration only describes). ``off`` ends the setting before the next
+point of the day; before the first point of a day the unit is off, and a day
+whose previous day ends with the unit on gets an explicit ``off`` at 00:00
+when written (``encode_week``). No fallback limits are assumed: without a
+readable configuration and limits a program is shown, never changed.
 
-Expected, untested on a real installation: the shapes follow the vendor app.
+Expected, untested on a real installation, including the shapes.
 """
 
 from __future__ import annotations
@@ -36,15 +35,15 @@ from .unit_contracts import TEMPERATURE_UNITS
 CONFIGURATION: Final = "/airConditioning/switchPrograms/configuration"
 TEMPERATURE_SETPOINT: Final = "/airConditioning/temperatureSetpoint"
 OFF: Final = "off"
-# The operation modes the app puts into a program; ``internalCleaning`` is
-# never offered (the app filters it out as well).
+# The operation modes a program may hold; ``internalCleaning`` is never
+# offered (it is no program mode).
 MODES: Final = ("auto", "cool", "heat", "dry", "fanOnly")
 FAN_SPEEDS: Final = ("auto", "quiet", "low", "mid", "high", "turbo")
 # A room unit: a temperature outside this range is never written, even when
 # the reported range is wider (broken metadata), as for the target.
 PLAUSIBLE_C: Final = (10.0, 40.0)
 # Without a reported step the temperature of a point is a whole degree,
-# counted from the minimum: the app's program editor moves in steps of 1.
+# counted from the minimum (a step of 1).
 DEFAULT_STEP: Final = 1.0
 _POINT_FIELDS: Final = frozenset({"dayOfWeek", "time", "parameters"})
 _PARAMETER_FIELDS: Final = frozenset(
@@ -97,7 +96,7 @@ class AirconRules:
 
     @property
     def offered(self) -> tuple[str, ...]:
-        """The modes in the app's order, ``off`` last."""
+        """The modes in their usual order, ``off`` last."""
         return (*(mode for mode in MODES if mode in self.modes), OFF)
 
 
@@ -209,14 +208,14 @@ def _celsius(unit: object) -> bool:
 def _mode_rule(item: object, unit_fallback: object) -> ModeRule | None:
     """One configuration entry; ``None`` for an unknown or broken entry.
 
-    A range without a unit is in degrees Celsius (the app knows no other
-    unit there); a range in another unit is not used.
+    A range without a unit is in degrees Celsius (no other unit is used
+    there); a range in another unit is not used.
     """
     if not isinstance(item, Mapping):
         return None
     operation = item.get("operationMode")
     allowed = operation.get("allowedValues") if isinstance(operation, Mapping) else None
-    # The app takes the first allowed value as the mode of the entry.
+    # The first allowed value is the mode of the entry.
     mode = allowed[0] if isinstance(allowed, list) and allowed else None
     if mode not in MODES:
         return None
@@ -261,7 +260,7 @@ def _mode_rule(item: object, unit_fallback: object) -> ModeRule | None:
 
 def bounded_int(value: object, maximum: int) -> int | None:
     """A positive whole number up to ``maximum``; ``15.0`` counts as 15 (the
-    app reads the raster as a float)."""
+    raster may come as a float)."""
     if isinstance(value, bool):
         return None
     if isinstance(value, float) and value.is_integer():
@@ -274,8 +273,8 @@ def bounded_int(value: object, maximum: int) -> int | None:
 def program_limits(
     program: Resource, configuration: Resource | None
 ) -> tuple[int, int, int] | None:
-    """Points in all, per day and the raster: from the program as the app
-    reads them, else from the configuration; ``None`` when one is missing."""
+    """Points in all, per day and the raster: from the program, else from
+    the configuration; ``None`` when one is missing."""
     limits: list[int] = []
     for key, maximum in (
         ("maxNbOfSwitchPoints", 7 * 48),
@@ -348,7 +347,7 @@ def setting_issue(text: object, rules_: AirconRules) -> str | None:
 
 
 def wire_point(day: str, minute: int, text: str) -> dict[str, JsonValue]:
-    """One point in the form the app writes; the temperature as a number."""
+    """One point in the form the unit accepts; the temperature as a number."""
     setting = parse_setting(text)
     if setting is None:
         raise ValueError("Not an air-conditioner setting")

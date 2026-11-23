@@ -2,10 +2,10 @@
 
 A heating program: change, add (TP-17) or delete a switch point of one day;
 each change is shown before and after and sent once for that day. A day
-holds at most six points (the limit of the room controller app, not reported
-by the controller); its last point is not deleted. The hot water week of the
-controller (TP-19) is opened here and edited with the steps of the weekly
-programs (``switch_program_flow``), with its own write.
+holds at most six points (a fixed limit, not reported by the controller);
+its last point is not deleted. The hot water week of the controller (TP-19)
+is opened here and edited with the steps of the weekly programs
+(``switch_program_flow``), with its own write.
 """
 
 from __future__ import annotations
@@ -79,7 +79,7 @@ _DAY_ERRORS = {
     "rrc_point_last": "rrc_point_last",
     "rrc_point_duplicate": "rrc_point_duplicate",
 }
-# The default of a new point, as in the room controller app: 12:00, 15 °C.
+# The default of a new point: 12:00, 15 °C.
 _NEW_MINUTE = 12 * 60
 _NEW_TEMPERATURE = 15.0
 
@@ -446,7 +446,7 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
         taken = {point.minute for point in choice.schedule.day_points(day)}
         minute = _NEW_MINUTE
         while minute in taken and minute < 1435:
-            # As in the app: five minutes later until the time is free.
+            # Five minutes later until the time is free.
             minute += 5
         schema = vol.Schema(
             {

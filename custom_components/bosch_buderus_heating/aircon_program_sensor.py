@@ -81,7 +81,7 @@ class AirconProgramSensor(AirconEntity, SensorEntity):
             return None
         now = dt_util.now()
         level = assessment.active_level(now.weekday(), now.hour * 60 + now.minute)
-        # Before the first point of a day the unit is off (as in the app).
+        # Before the first point of a day the unit is off.
         return parse_setting(level if level is not None else OFF)
 
     @property

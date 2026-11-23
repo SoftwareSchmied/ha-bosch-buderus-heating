@@ -8,7 +8,7 @@
     "capture_date": null,
     "created": "2026-11-15",
     "physical_device_verified": false,
-    "redaction": "Fully constructed from the vendor app's value models (stringValue/floatValue leaves, refEnum function lists) and its fixed read list of the air-conditioner page; no device capture, no identifiers."
+    "redaction": "Fully constructed in the documented shapes (stringValue/floatValue leaves, refEnum function lists) and with the fixed read list of the air conditioner; no device capture, no identifiers."
   },
   "detection": {
     "midea": {

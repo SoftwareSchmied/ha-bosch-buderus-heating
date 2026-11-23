@@ -279,7 +279,7 @@ def test_off_and_clear_readings_show_the_program_target(hass, value, active):
 def test_clear_button_only_where_minus_one_can_be_written(hass):
     coordinator, _, _ = _circuit(hass)
     resources = {path: item.resource for path, item in coordinator.data.items()}
-    # Outside the limits (5 to 30): written as the app does, disabled.
+    # Outside the limits (5 to 30): written all the same, disabled.
     assert [
         item.entity_registry_enabled_default
         for item in clear_button_descriptions(resources, GENERIC_CONTEXT)

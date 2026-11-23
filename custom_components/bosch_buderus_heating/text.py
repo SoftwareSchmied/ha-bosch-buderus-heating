@@ -2,7 +2,7 @@
 
 Weekly program names (A and B) only where the gateway reports the name
 writable with a known coding (``valueConfig``), and never on an iCom gateway
-(its app does not write names). Disabled by default: changing a name has not
+(names are not written there). Disabled by default: changing a name has not
 been confirmed on a real installation. The display name of a wallbox comes
 from the wallbox entities (disabled by default as well).
 """
@@ -76,7 +76,7 @@ def _setup_entities(
     track_wallbox_entities(Platform.TEXT, entry, async_add_entities)
     for coordinator in entry.coordinators:
         if is_icom_gateway(coordinator.gateway):
-            # KC2: the app of an iCom gateway does not write names.
+            # KC2: no name control on an iCom gateway.
             continue
         track_control_entities(
             entry,

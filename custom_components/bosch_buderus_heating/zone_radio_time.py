@@ -4,7 +4,7 @@ A zone controller keeps the time as text. Without a connection loss it holds
 the fixed placeholder ``2000-00-00T00:00``, which is no date: nothing was
 lost, so there is no time. Digits may be single (``2026-1-5T7:3``), seconds
 are optional. The text carries no time zone as a rule; it is a local time of
-the controller, like the app reads it. A text with an offset (``Z`` or
+the controller. A text with an offset (``Z`` or
 ``+hh:mm``) keeps it; a text without one is read as time of the Home
 Assistant time zone. The entity shows the text as reported in its attributes.
 """

@@ -82,12 +82,12 @@ operation mode and target temperature; these additional actions need their
 own complete command and lifecycle evidence. A status indicator is not a
 promise that the corresponding action can be started from Home Assistant.
 
-I re-checked this for 0.9.2-beta.3 against the vendor app's command set for
-these water heaters: it offers only operation mode, target temperature, power
-on/off, card title and history export. Holiday, thermal disinfection and
-boost appear there as status only, without a command, field value or
-confirmation field to send. I therefore do not offer holiday, boost or
-disinfection controls; I will add them if a device shows a complete command.
+I checked this again for 0.9.2-beta.3: these water heaters accept commands only
+for operation mode, target temperature, power on/off, card title and history
+export. Holiday, thermal disinfection and boost exist as status only, without a
+command, field value or confirmation field to send. I therefore do not offer
+holiday, boost or disinfection controls; I will add them if a device shows a
+complete command.
 
 ## Writes and diagnostics
 
@@ -140,10 +140,10 @@ Urlaubsplanung, Boost sowie das Starten oder Abbrechen der Desinfektion und
 deren Temperatureinstellung bleiben offen. Dafür fehlt ein vollständig
 belegter Bedienablauf im geprüften Warmwasservertrag.
 
-Ich habe das für 0.9.2-beta.3 am Befehlsumfang der Hersteller-App für diese
-Warmwassergeräte erneut geprüft: Sie bietet nur Betriebsart, Zieltemperatur,
-Ein/Aus, Kartentitel und Verlaufsexport an. Urlaub, thermische Desinfektion
-und Boost erscheinen dort nur als Status, ohne Befehl, Feldwert oder
+Ich habe das für 0.9.2-beta.3 erneut geprüft: Diese Warmwassergeräte nehmen
+Befehle nur für Betriebsart, Zieltemperatur, Ein/Aus, Kartentitel und
+Verlaufsexport an. Urlaub, thermische Desinfektion und Boost gibt es nur als
+Status, ohne Befehl, Feldwert oder
 Bestätigungsfeld zum Senden. Deshalb biete ich keine Urlaubs-, Boost- oder
 Desinfektionssteuerung an; ich ergänze sie, sobald ein Gerät einen
 vollständigen Befehl zeigt.

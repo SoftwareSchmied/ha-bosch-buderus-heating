@@ -94,7 +94,7 @@ async def test_operation_mode_select_writes_and_confirms(hass, environment):  # 
     assert select.translation_key == "ventilation_operation_mode"
     # Enabled by default (explicit exception for this control).
     assert select.entity_description.entity_registry_enabled_default is True
-    # The app's order; HA-safe keys for the camel-case codes.
+    # The usual order; HA-safe keys for the camel-case codes.
     assert select.options == [
         "time",
         "off",
@@ -123,7 +123,7 @@ async def test_operation_mode_offers_only_what_both_the_unit_and_the_app_know(
     environment,  # noqa: F811
 ):
     coordinator, client, entry = environment
-    # exhaustOnly is hidden like in the app; an unknown code is never offered.
+    # exhaustOnly is never offered; an unknown code is never offered.
     coordinator.data = snapshots(
         text(MODE, ("off", "nom", "exhaustOnly", "vendorSpecial"), "off")
     )
@@ -465,7 +465,7 @@ def test_no_summer_bypass_control():
     # gateway advertises since 0.9.2 (``system_controls_extra``).
     for path, options in (("/ventilation/zone1/summerBypass/enable", ("on", "off")),):
         assert assess_control(text(path, options, options[0])).policy is None
-    # A ventilation mode list without any mode the app knows gives no control.
+    # A ventilation mode list without any known mode gives no control.
     assert not assess_control(
         text("/ventilation/zone1/operationMode", ("auto", "manual"), "auto")
     ).eligible

@@ -6,8 +6,8 @@ through the same validated transaction: fresh reading, exactly one PUT,
 read-back, no retry. The paths exist only on air-conditioner gateways
 (``deviceType`` ``rac``), never on a heating gateway.
 
-The behaviour follows the vendor app; nothing here is confirmed on a real
-installation yet.
+The rules describe the expected behaviour of the unit; nothing here is
+confirmed on a real installation yet.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ STANDARD_FUNCTIONS: Final = f"{BASE}/standardFunctions"
 ADVANCED_FUNCTIONS: Final = f"{BASE}/advancedFunctions"
 PV_ENABLE: Final = "/pv/enable"
 
-# The extra functions the app switches over PointT, one path each; the path
+# The extra functions switched over PointT, one path each; the path
 # is never put together from a free name (only these five).
 ADVANCED_FUNCTION_PATHS: Final = (
     FULL_POWER_MODE,
@@ -71,7 +71,7 @@ STANDARD_FUNCTION_PATHS: Final = frozenset(
 STRING_TYPES: Final = frozenset({"stringValue"})
 ON_OFF: Final = frozenset({"on", "off"})
 OPERATION_MODES: Final = frozenset({"auto", "cool", "heat", "dry", "fanOnly"})
-# The app refuses these modes while the unit runs on solar power.
+# These modes are not allowed while the unit runs on solar power.
 PV_BLOCKED_MODES: Final = frozenset({"auto", "heat"})
 FAN_SPEEDS: Final = frozenset({"auto", "quiet", "low", "mid", "high", "turbo"})
 VERTICAL_AIR_FLOWS: Final = frozenset(
@@ -89,13 +89,13 @@ QUICK_AIR_FLOW_VALUES: Final = frozenset(
         for column in ("Left", "Center", "Right")
     }
 )
-# The app takes the program number from the last character of its ID.
+# The program number is the last character of its ID.
 PROGRAM_IDS: Final = frozenset(f"program{index}" for index in range(1, 10))
 
 # A room unit: a setpoint outside this range is refused even when the
 # reported limits are wider (broken metadata).
 PLAUSIBLE_SETPOINT_C: Final = (10.0, 40.0)
-# The app sets timers in steps of 30 minutes.
+# Timers are set in steps of 30 minutes.
 TIMER_STEP_MIN: Final = 30.0
 # A running timer counts down between the PUT and the read-back.
 TIMER_READ_BACK_TOLERANCE_MIN: Final = 2.0
@@ -115,7 +115,7 @@ def operation_mode_check(
     resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
 ) -> str | None:
     """A mode change needs a switched-on unit (one path per command) and is
-    refused for auto and heat while solar operation is on (as the app).
+    refused for auto and heat while solar operation is on.
 
     A unit without an on/off setting has only its modes; a unit that has one
     but whose reading the write could not get is refused before this check
@@ -176,7 +176,7 @@ def timer_confirmed(read: object, requested: JsonScalar) -> bool:
 def temporary_setting_check(
     resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
 ) -> str | None:
-    """A temporary change of the schedule can only be ended (as the app)."""
+    """A temporary change of the schedule can only be ended."""
     return None if value == "off" else VALUE_NOT_ALLOWED
 
 
@@ -286,7 +286,7 @@ WRITE_GUARDS: Final[Mapping[str, tuple[str, ...]]] = {
     OPERATION_MODE: (AC_CONTROL, PV_ENABLE),
 }
 
-# Read in one bulk request per cycle (the app's fixed list without the
+# Read in one bulk request per cycle (the fixed list of the unit without the
 # solar commissioning details, which are neither shown nor written).
 POLL_PATHS: Final = (
     AC_CONTROL,

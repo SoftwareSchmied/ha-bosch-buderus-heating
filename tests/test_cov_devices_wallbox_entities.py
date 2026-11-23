@@ -127,8 +127,8 @@ async def test_number_range_falls_back_to_the_app_range_when_reported_one_clashe
     data["leaves"]["conf/overloadProtection/powerLimit"]["minValue"] = 90000
     coordinator, _ = await wallbox(hass, data)
     number = WallboxNumber(coordinator, _spec("power_limit"))
-    # The reported minimum is above the maximum the meter allows: the app's
-    # own minimum is shown instead of a nonsensical range.
+    # The reported minimum is above the maximum the meter allows: the known
+    # minimum is shown instead of a nonsensical range.
     assert (number.native_min_value, number.native_max_value) == (5000.0, 5000.0)
     assert number.native_step == 100.0
 

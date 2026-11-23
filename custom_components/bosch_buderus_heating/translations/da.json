@@ -395,7 +395,7 @@
       },
       "rrc_day": {
         "title": "Vælg koblingspunkt",
-        "description": "**{program}**\n\n{points}\n\nVælg et koblingspunkt for at ændre eller slette det, eller tilføj et. En dag har højst {per_day} koblingspunkter (grænsen i producentens app, ikke oplyst af regulatoren); dagens sidste koblingspunkt bliver stående.",
+        "description": "**{program}**\n\n{points}\n\nVælg et koblingspunkt for at ændre eller slette det, eller tilføj et. En dag har højst {per_day} koblingspunkter (en fast grænse, ikke oplyst af regulatoren); dagens sidste koblingspunkt bliver stående.",
         "data": {
           "point": "Koblingspunkt"
         }
@@ -952,7 +952,7 @@
       },
       "switch_program_week_rrc_dhw": {
         "title": "Ret tidsprogram for varmt brugsvand",
-        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nNiveauerne er dem fra rumregulatorens program. Programmet gælder, mens det varme brugsvand følger sit eget program. Højst seks koblingspunkter pr. dag er grænsen i producentens app, ikke en grænse oplyst af regulatoren.",
+        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nNiveauerne er dem fra rumregulatorens program. Programmet gælder, mens det varme brugsvand følger sit eget program. Højst seks koblingspunkter pr. dag er en fast grænse, ikke en grænse oplyst af regulatoren.",
         "data": {
           "action": "Næste trin",
           "day": "Ugedag",
@@ -986,7 +986,7 @@
           "wallbox_history": "Læs ladehistorik"
         },
         "data_description": {
-          "wallbox_authentication": "Slået fra som standard. Fra software 5.1.0 godkender en start først; med ældre software sendes starten alene, som i producentens app.",
+          "wallbox_authentication": "Slået fra som standard. Fra software 5.1.0 godkender en start først; med ældre software sendes starten alene.",
           "wallbox_authentication_name": "Navnet, som producentens app bruger til godkendelse; må være tomt.",
           "wallbox_history": "Fra som standard. Cirka hvert 30. minut (hvert 60. minut i den cloudvenlige profil) læses den seneste opladning (start, slut, ladetid, energi) samt denne måneds energi fra nettet og fra solenergi. Navne på kort, brugere eller godkendelse læses aldrig."
         }
@@ -1168,7 +1168,7 @@
       "connection_remove_unconfirmed": "Slå også kontakten „Fjern denne adgang“ til: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet.",
       "switch_program_value": "Indtast en temperatur fra {minimum} til {maximum} °C i trin på {step} °C.",
       "switch_program_day_emptied": "En dag med koblingspunkter beholder mindst ét; hvad en tom dag betyder for regulatoren, er ikke kendt.",
-      "rrc_point_limit": "Denne dag har allerede det højeste antal koblingspunkter, appen tillader ({per_day}).",
+      "rrc_point_limit": "Denne dag har allerede det højeste tilladte antal koblingspunkter ({per_day}).",
       "rrc_point_last": "Dagens sidste koblingspunkt kan ikke slettes; hvad en tom dag betyder for regulatoren, er ikke kendt.",
       "rrc_point_duplicate": "Denne dag har allerede et koblingspunkt på dette tidspunkt.",
       "wallbox_name_invalid": "Navnet må indeholde op til 64 tegn, der kan udskrives.",
@@ -1879,7 +1879,7 @@
       "message": "Kun disse indstillinger kan bruges: {settings}. En indstilling skrives som tilstand, temperatur og blæserhastighed, for eksempel „cool 24.0 auto“, eller „off“."
     },
     "switch_points_unit_not_ready": {
-      "message": "Vandvarmeren tager kun imod ændringer af dette tidsprogram, når den er tændt, kører i tidsprogramdrift og har en tidszone, som i producentens app. Der blev ikke sendt noget."
+      "message": "Vandvarmeren tager kun imod ændringer af dette tidsprogram, når den er tændt, kører i tidsprogramdrift og har en tidszone. Der blev ikke sendt noget."
     }
   },
   "selector": {
