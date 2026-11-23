@@ -784,7 +784,12 @@ async def test_an_icom_gateway_keeps_its_own_block(hass: HomeAssistant) -> None:
     plant = gateway["plant"]
     assert plant["plant_kind"] == "heat_pump"
     assert plant["inputs"]["platform"] == "icom"
-    assert [item["role"] for item in plant["components"]] == [None, None, None]
+    # 172 at place 8 and 158 at place 16 were seen on an iCom gateway.
+    assert [item["role"] for item in plant["components"]] == [
+        "heat_source",
+        "system_controller",
+        None,
+    ]
     assert plant["components"][0]["name"] == describe(ComponentRow(172, 8)).type_name
     await coordinator.async_shutdown()
 

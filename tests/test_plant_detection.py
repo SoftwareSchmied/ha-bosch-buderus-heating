@@ -249,15 +249,31 @@ def test_without_a_table_the_rule_is_skipped() -> None:
 
 
 def test_the_component_type_172_never_decides() -> None:
-    """W1: the controller of an iCom heat pump is a name only."""
+    """The controller of a heat pump seen on an iCom gateway (172 at place 8)
+    has the role of a heat source there; like every role it never decides
+    the plant kind, it only shows a contradiction to a boiler type."""
     table = load_table()
     assert table is not None
     rows = (ComponentRow(172, 8), ComponentRow(158, 16), ComponentRow(165, 56))
     assert resolve(PlantInputs(components=rows, bus="EMS2_0"), table).plant_kind is None
+    heat_pump = resolve(
+        PlantInputs(components=rows, heat_source_types=(("hs1", "Heatpump"),)), table
+    )
+    assert heat_pump.plant_kind == "heat_pump" and heat_pump.conflicts == ()
     boiler = resolve(
         PlantInputs(components=rows, heat_source_types=(("hs1", "OilBoiler"),)), table
     )
-    assert boiler.plant_kind == "boiler" and boiler.conflicts == ()
+    assert boiler.plant_kind == "boiler"
+    assert boiler.conflicts == ("heat_pump_component_on_boiler_plant",)
+    # Only at the heat generator's place.
+    elsewhere = resolve(
+        PlantInputs(
+            components=(ComponentRow(172, 16),),
+            heat_source_types=(("hs1", "OilBoiler"),),
+        ),
+        table,
+    )
+    assert elsewhere.conflicts == ()
 
 
 def _without(table: ComponentTable, type_id: int) -> ComponentTable:

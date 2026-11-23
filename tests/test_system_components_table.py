@@ -46,12 +46,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "docs" / "schemas" / "system-components.v1.json"
 DOC_PATH = ROOT / "docs" / "system-components.md"
 CAPTURES = ROOT / "tests" / "fixtures" / "contracts" / "captures"
+# Component lists of real systems kept on their own (type and place only).
+COMPONENT_LISTS = ROOT / "tests" / "fixtures" / "contracts" / "component_lists"
 
 # Each table version with the hash of its content (everything except
 # table_version and updated). A change of the content adds a new version
 # with its hash here; an existing line is never edited.
 TABLE_CONTENT_SHA256 = {
     1: "c2eaa6f1d225c215db852506c41616efe3a3232c438427db65ddebb9bcaa0040",
+    2: "c70fdc33929ab1f1536c1044897b8d875c1954d513b4abf436cf21f0551e426f",
 }
 
 EXPECTED_PLACES = {
@@ -82,6 +85,8 @@ EXPECTED_NOT_NAME_ONLY = {
     8: "observed",
     16: "rule",
     17: "observed",
+    158: "observed",
+    172: "observed",
     240: "rule",
     248: "rule",
     253: "observed",
@@ -92,6 +97,8 @@ EXPECTED_ROLES = {
     (16, 83): ("hybrid_manager", "rule"),
     (17, 72): ("gateway", "observed"),
     (17, 75): ("gateway", "observed"),
+    (158, 16): ("system_controller", "observed"),
+    (172, 8): ("heat_source", "observed"),
     (248, 83): ("hybrid_manager", "rule"),
     (253, 16): ("system_controller", "observed"),
     (65281, 8): ("outdoor_unit", "observed"),
@@ -227,7 +234,7 @@ def _capture_rows() -> set[tuple[str, str]]:
             for item in value:
                 visit(item)
 
-    for path in sorted(CAPTURES.glob("*.json")):
+    for path in sorted([*CAPTURES.glob("*.json"), *COMPONENT_LISTS.glob("*.json")]):
         data = json.loads(path.read_text(encoding="utf-8"))
         provenance = data.get("provenance", {})
         if provenance.get("basis") == "observed_structure" and provenance.get(
@@ -256,7 +263,7 @@ def test_observed_entries_have_a_note_and_a_capture() -> None:
                 assert str(item["place"]) in places, item
             else:
                 assert str(item["type"]) in types, item
-    assert checked == 11
+    assert checked == 15
 
 
 def test_documented_entries_need_a_manufacturer_address() -> None:
@@ -633,7 +640,13 @@ def test_shipped_roles(table: ComponentTable) -> None:
     assert role(253, 16) == "system_controller"
     assert role(17, 72) == "gateway"
     assert role(17, 75) == "gateway"
-    assert role(172, 8) is None
+    # Seen on an iCom gateway: the controller of a heat pump and the system
+    # controller, each only at its place.
+    assert role(172, 8) == "heat_source"
+    assert role(172, 16) is None
+    assert role(172, None) is None
+    assert role(158, 16) == "system_controller"
+    assert role(158, 8) is None
 
 
 def test_flags(table: ComponentTable) -> None:
@@ -684,7 +697,7 @@ def _behaviour(table: ComponentTable) -> tuple[object, ...]:
 def test_no_name_entry_changes_roles_flags_or_places(table: ComponentTable) -> None:
     expected = _behaviour(table)
     types = name_entry_types()
-    assert len(types) == 171
+    assert len(types) == 169
     removed = dict(each_name_entry_removed())
     alone = dict(each_name_entry_alone())
     assert sorted(removed) == sorted(alone) == sorted(types)
@@ -697,11 +710,11 @@ def test_no_name_entry_changes_roles_flags_or_places(table: ComponentTable) -> N
 
 def test_the_variant_helpers_keep_the_other_entries() -> None:
     raw = raw_table()
-    without = without_name_entry(raw, 172)
+    without = without_name_entry(raw, 165)
     assert len(without["components"]) == 177
-    only = with_only_name_entry(raw, 172)
+    only = with_only_name_entry(raw, 165)
     assert [c["type"] for c in only["components"]] == sorted(
-        [*EXPECTED_NOT_NAME_ONLY, 172]
+        [*EXPECTED_NOT_NAME_ONLY, 165]
     )
     with pytest.raises(AssertionError):
         without_name_entry(raw, 8)

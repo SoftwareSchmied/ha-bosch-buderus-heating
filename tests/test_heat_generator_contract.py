@@ -579,7 +579,9 @@ async def test_an_icom_heat_pump_gets_the_sensor_with_its_control_unit(
 ) -> None:
     """#467 (E1): no product name; the state is the name of the control
     unit at the heat generator's place, the plant kind comes from the heat
-    source type, never from the type number (172 decides nothing, M22)."""
+    source type, never from the type number (M22). The control unit (172 at
+    place 8) and the system controller (158 at place 16) were seen on an iCom
+    gateway and carry their roles; the remote control (165) is a name only."""
     case = load_case("issue_467_icom_heat_pump")
     coordinator = _coordinator(hass, case)
     await _start(hass, coordinator)
@@ -604,11 +606,19 @@ async def test_an_icom_heat_pump_gets_the_sensor_with_its_control_unit(
         (item["place_number"], item["type_number"], item["type_name"], item["basis"])
         for item in attributes["components"]
     ] == [
-        (tok, type_id, table.component(type_id).name, "name")  # type: ignore[union-attr]
-        for tok, type_id in ((8, 172), (16, 158), (56, 165))
+        (tok, type_id, table.component(type_id).name, basis)  # type: ignore[union-attr]
+        for tok, type_id, basis in (
+            (8, 172, "observed"),
+            (16, 158, "observed"),
+            (56, 165, "name"),
+        )
     ]
     assert attributes["components"][0]["type_name"] == "CUHP"
-    assert all(item["role"] is None for item in attributes["components"])
+    assert [item["role"] for item in attributes["components"]] == [
+        "heat_source",
+        "system_controller",
+        None,
+    ]
     assert not burner_share.hybrid_detected(coordinator)
     await coordinator.async_shutdown()
 

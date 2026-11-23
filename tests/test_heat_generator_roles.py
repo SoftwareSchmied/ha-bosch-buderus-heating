@@ -61,12 +61,15 @@ CASE_138: dict[str, Any] = {
         (ModuleRow("Unit", None, 8, 8), "heat_source"),
         (ModuleRow("Unit", None, 248, 83), "hybrid_manager"),
         (ModuleRow("Unit", None, 65281, 16), "other"),
-        (ModuleRow("Unit", None, 172, 8), "other"),
+        # Seen on an iCom gateway: the controller of a heat pump at place 8.
+        (ModuleRow("Unit", None, 172, 8), "heat_source"),
+        (ModuleRow("Unit", None, 172, 16), "other"),
         (ModuleRow("Unit", None, 253, 16), "other"),
+        (ModuleRow("Unit", None, 158, 16), "other"),
         (ModuleRow("Unit", None, 17, 72), "other"),
         (ModuleRow("Unit", None), "other"),
         # A name never gives a role.
-        (ModuleRow("WLW-10 MB AR", None, 172, 8), "other"),
+        (ModuleRow("WLW-10 MB AR", None, 165, 8), "other"),
         (ModuleRow("Logatherm WLW186i-12 E", None, 189, 8), "other"),
         # The hardware type comes first.
         (ModuleRow("Unit", "XCU_THH", 65281, 8), "heat_source"),

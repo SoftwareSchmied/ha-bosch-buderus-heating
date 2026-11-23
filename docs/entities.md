@@ -678,18 +678,18 @@ components:
     place_number: 8
     type_number: 172
     type_name: CUHP
-    role: null
-    basis: name
+    role: heat_source
+    basis: observed
     product_name: null
   - place: system_controller
     place_number: 16
     type_number: 158
     type_name: MID
-    role: null
-    basis: name
+    role: system_controller
+    basis: observed
     product_name: null
 components_source: cloud
-components_table_version: 1
+components_table_version: 2
 ```
 
 Tested with a test case in the shape of the component list from #467; not

@@ -36,7 +36,9 @@ reports. Its inputs, its result and its output form are fixed as follows.
 - Roles at the start: 248 and 16 at place 83 `hybrid_manager` (rule); 8 at
   place 8 `heat_source` and 65281 at place 8 `outdoor_unit` (observed); 253 at
   place 16 `system_controller` (observed); 17 at places 72 and 75 `gateway`
-  (observed); type 240 has the flag `hmi800_hp_light` (rule).
+  (observed); type 240 has the flag `hmi800_hp_light` (rule). Table
+  version 2 adds two roles seen on an iCom gateway: 172 at place 8
+  `heat_source` and 158 at place 16 `system_controller` (observed).
 - A row of the gateway itself is recognized by place 72 or 75 or by type 17,
   never by a name.
 - A faulty or missing table is rejected as a whole with one warning; the
@@ -81,7 +83,8 @@ gateways keeps its own parser.
   `-`, split at dots, a part that is not a number counts as 0, a missing
   version never passes. Other gateways (iCom, room controllers) show the row
   only. A boiler type with the outdoor status `NOT_CONNECTED` overrules the
-  rule. Type 172 never decides anything.
+  rule. A role never decides the plant kind: type 172 at place 8 only shows
+  a contradiction to a boiler type.
 - Evidence codes: `reported_system_type`, `reported_heat_source_type`,
   `reported_heat_pump_type`, `reported_outdoor_status`,
   `hybrid_manager_component`, `heat_source_types_combined`,

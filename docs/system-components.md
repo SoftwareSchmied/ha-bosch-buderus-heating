@@ -131,7 +131,7 @@ its number only.
 | 155 | `MX15_MC10_Junkers` | `name` |
 | 156 | `eS79_RC35_Sieger` | `name` |
 | 157 | `LOW` | `name` |
-| 158 | `MID` | `name` |
+| 158 | `MID` | `observed` |
 | 159 | `HC_ClipIn` | `name` |
 | 160 | `HC_A` | `name` |
 | 161 | `HC_B` | `name` |
@@ -145,7 +145,7 @@ its number only.
 | 169 | `BC40_HIS_for_FB` | `name` |
 | 170 | `MC40` | `name` |
 | 171 | `EMS2OT_converter_slave` | `name` |
-| 172 | `CUHP` | `name` |
+| 172 | `CUHP` | `observed` |
 | 189 | `iCOM_KM200_KM50` | `name` |
 | 190 | `HIS_X_Line_CUx_platform` | `name` |
 | 191 | `FR120` | `name` |
@@ -269,6 +269,8 @@ The table gives these roles; a role at a place only applies at that place:
 | 16 | 83 | `hybrid_manager` | `rule` |
 | 17 | 72 | `gateway` | `observed` |
 | 17 | 75 | `gateway` | `observed` |
+| 158 | 16 | `system_controller` | `observed` |
+| 172 | 8 | `heat_source` | `observed` |
 | 248 | 83 | `hybrid_manager` | `rule` |
 | 253 | 16 | `system_controller` | `observed` |
 | 65281 | 8 | `outdoor_unit` | `observed` |
@@ -547,6 +549,8 @@ Die Tabelle vergibt diese Rollen; eine Rolle auf einem Platz gilt nur dort:
 | 16 | 83 | `hybrid_manager` | `rule` |
 | 17 | 72 | `gateway` | `observed` |
 | 17 | 75 | `gateway` | `observed` |
+| 158 | 16 | `system_controller` | `observed` |
+| 172 | 8 | `heat_source` | `observed` |
 | 248 | 83 | `hybrid_manager` | `rule` |
 | 253 | 16 | `system_controller` | `observed` |
 | 65281 | 8 | `outdoor_unit` | `observed` |

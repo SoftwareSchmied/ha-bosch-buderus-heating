@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "table_version": 1,
-  "updated": "2026-11-22",
+  "table_version": 2,
+  "updated": "2026-11-23",
   "documented_sources": [
     "bosch-homecomfort.com",
     "bosch-thermotechnology.com",
@@ -132,7 +132,7 @@
     {"type": 155, "name": "MX15_MC10_Junkers", "basis": "name"},
     {"type": 156, "name": "eS79_RC35_Sieger", "basis": "name"},
     {"type": 157, "name": "LOW", "basis": "name"},
-    {"type": 158, "name": "MID", "basis": "name"},
+    {"type": 158, "name": "MID", "basis": "observed", "note": "seen on an iCom gateway"},
     {"type": 159, "name": "HC_ClipIn", "basis": "name"},
     {"type": 160, "name": "HC_A", "basis": "name"},
     {"type": 161, "name": "HC_B", "basis": "name"},
@@ -146,7 +146,7 @@
     {"type": 169, "name": "BC40_HIS_for_FB", "basis": "name"},
     {"type": 170, "name": "MC40", "basis": "name"},
     {"type": 171, "name": "EMS2OT_converter_slave", "basis": "name"},
-    {"type": 172, "name": "CUHP", "basis": "name"},
+    {"type": 172, "name": "CUHP", "basis": "observed", "note": "seen on an iCom gateway"},
     {"type": 189, "name": "iCOM_KM200_KM50", "basis": "name"},
     {"type": 190, "name": "HIS_X_Line_CUx_platform", "basis": "name"},
     {"type": 191, "name": "FR120", "basis": "name"},
@@ -219,6 +219,8 @@
     {"type": 16, "place": 83, "role": "hybrid_manager", "basis": "rule"},
     {"type": 17, "place": 72, "role": "gateway", "basis": "observed", "note": "seen on a K40 gateway"},
     {"type": 17, "place": 75, "role": "gateway", "basis": "observed", "note": "seen on a K40 gateway"},
+    {"type": 158, "place": 16, "role": "system_controller", "basis": "observed", "note": "seen on an iCom gateway"},
+    {"type": 172, "place": 8, "role": "heat_source", "basis": "observed", "note": "seen on an iCom gateway"},
     {"type": 248, "place": 83, "role": "hybrid_manager", "basis": "rule"},
     {"type": 253, "place": 16, "role": "system_controller", "basis": "observed", "note": "seen on a K40 gateway"},
     {"type": 65281, "place": 8, "role": "outdoor_unit", "basis": "observed", "note": "seen on a K40 gateway"}

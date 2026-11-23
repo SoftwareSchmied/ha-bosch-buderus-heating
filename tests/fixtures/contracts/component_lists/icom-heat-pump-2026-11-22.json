@@ -1,0 +1,35 @@
+{
+  "provenance": {
+    "kind": "anonymized_capture",
+    "basis": "observed_structure",
+    "reference": "iCom gateway of a heat pump, component list from a diagnostics file",
+    "firmware": "04.08.02",
+    "capture_date": "2026-11-22",
+    "created": "2026-11-23",
+    "redaction": "only the type and place numbers of the component list are kept; no identifier, serial number, version, name or value",
+    "physical_device_verified": true
+  },
+  "gateway": {
+    "device_type": "icom"
+  },
+  "contract": "The component list of a real iCom gateway: the controller of the heat pump (172) at the heat generator's place 8, the system controller (158) at place 16 and a remote control (165) at place 56. The roles of 172 at place 8 and 158 at place 16 rest on this list.",
+  "resources": {
+    "/system/info": {
+      "path": "/system/info",
+      "value": [
+        {
+          "Id": "172",
+          "Tok": "8"
+        },
+        {
+          "Id": "158",
+          "Tok": "16"
+        },
+        {
+          "Id": "165",
+          "Tok": "56"
+        }
+      ]
+    }
+  }
+}
