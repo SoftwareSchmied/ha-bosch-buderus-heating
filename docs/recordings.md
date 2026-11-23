@@ -256,8 +256,9 @@ never for any other recording.
 Up to 0.9.3-beta.5 the months of such a recording (the consumed energy)
 were taken with the sum as it was, up to about 60 times too high, and the hours
 and days only for a count of up to 60 per hour. When the recordings are loaded,
-a stored month of such a recording that ended is corrected to the mean times
-its hours, and the month still running is read again; the diagnostics count
+a stored month of such a recording whose count is above its hours (only such
+a month was kept too high) is corrected to the mean times its hours when it
+ended, and read again when it is still running; the diagnostics count
 this as `months_corrected`. Days and hours stored before stay as they were
 (they differ only where samples were missing). With the import on, a row of
 the statistics that was made from such a month is imported again when it is

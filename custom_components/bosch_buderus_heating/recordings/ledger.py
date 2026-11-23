@@ -172,10 +172,12 @@ class Ledger:
         as ``parse.mean_form`` reads them; returns how many changed.
 
         Earlier versions kept such a month with the plant's sum and count as
-        they were (up to about 60 times the energy). A month that ended
-        becomes the mean times its hours, with its other fields; one still
-        running is dropped and read again. A month already in this form (its
-        count is its hours) stays as it is. An imported row made from a
+        they were (up to about 60 times the energy): only a count above the
+        month's hours shows that. Such a month that ended becomes the mean
+        times its hours, with its other fields; one still running is dropped
+        and read again. A month with a count up to its hours (in this form
+        already, or one value per hour or day, which earlier versions did not
+        keep too high) stays as it is. An imported row made from a
         changed month is imported again (``redo``, within the rows kept).
         """
         if not self.series.minute_sums:
@@ -184,7 +186,7 @@ class Ledger:
         for key, cell in list(self.months.items()):
             first = date.fromisoformat(key)
             hours = slot_hours(Rate.MONTH, first, zone)
-            if cell[1] <= 0 or math.isclose(cell[1], hours, abs_tol=_EPSILON):
+            if cell[1] <= hours + _EPSILON:
                 continue
             if _ts(local_midnight(add_months(first, 1), zone)) > _ts(now):
                 del self.months[key]

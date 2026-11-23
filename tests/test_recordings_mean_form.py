@@ -253,6 +253,10 @@ def test_months_kept_by_an_earlier_version_are_corrected() -> None:
             "months": {
                 september: _cell(0.3 * 720 * 60, 720 * 60),
                 "2026-10-01": _cell(0.3 * 745, 745),
+                # A count up to the month's hours (one value per day or per
+                # hour) was never kept too high: it stays.
+                "2026-07-01": _cell(300.0, 31),
+                "2026-08-01": _cell(300.0, 700),
                 november: _cell(0.5 * 30000, 30000, final=False),
                 "2026-12-01": _cell(1.0, 0, final=False),
             }
@@ -261,6 +265,8 @@ def test_months_kept_by_an_earlier_version_are_corrected() -> None:
     assert ledger.correct_mean_months(NOW, Z) == 2
     assert ledger.months[september] == [pytest.approx(0.3 * 720), 720.0, CLOUD, 2, True]
     assert ledger.months["2026-10-01"] == _cell(0.3 * 745, 745)
+    assert ledger.months["2026-07-01"] == _cell(300.0, 31)
+    assert ledger.months["2026-08-01"] == _cell(300.0, 700)
     assert november not in ledger.months
     assert ledger.months["2026-12-01"] == _cell(0.0, 0, final=False)
     assert ledger.stats["months_corrected"] == 2
