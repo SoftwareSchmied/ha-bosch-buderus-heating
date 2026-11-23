@@ -536,7 +536,13 @@ name and the hardware type are always reported as the gateway sends them.
 Role, family, construction, power and brand family come only from the model
 table `heat_generator_models.json` and stay `null` without a matching entry;
 nothing is derived from parts of a name or from the position of a module in
-the list. The role comes from the hardware type. Every table entry names its
+the list. The role comes from the hardware type. Since 0.9.3-beta.6 a module
+that the model table gives no role, for example one without a hardware type,
+gets the role that the [component table](system-components.md) gives its
+type number at its place, only from an entry with the basis `rule`,
+`observed` or `documented` (for example `outdoor_unit` for type 65281 at
+place 8); the type number and place are not part of what a restart keeps,
+the plant model's stored row gives them back. Every table entry names its
 evidence: `observed` (seen in the module list of a real installation) or
 `documented` (stated in a datasheet or on a product page of the
 manufacturer; the entry keeps the address, and only the manufacturer sites
@@ -604,7 +610,7 @@ source it was shown with, so an answer of the other access alone writes no
 new state. When they disagree, the list shown last stays, and the diagnostics
 report the disagreement (`heat_generator.conflict`). Every gateway follows
 the same rules, iCom gateways included; a module whose hardware type has no
-table entry gets the role `other`. The entity is created once a module with
+table entry and whose type number has no role gets the role `other`. The entity is created once a module with
 a product name, evidence of the heat source type, a component at the heat
 generator's place (place 8) or a known plant kind (`heat_pump`, `hybrid`,
 `boiler`) is there; without any of them there is no entity and no log
@@ -1320,9 +1326,11 @@ names rest on the signal names, the manuals and the declared states.
 The outdoor unit's software version is the diagnostic sensor **Outdoor unit
 software version** since 0.9.2. It reads the module lists the integration
 already reads (the cloud's system information, the local system
-information), takes only a module the heat generator model table names as
-an outdoor unit, and shows its version with its product name and hardware
-type as attributes; serial numbers are never read. It keeps its last
+information), takes only a module whose role is `outdoor_unit` (from the
+heat generator model table, or since 0.9.3-beta.6 from its type number at its
+place, see [heat generator models](#heat-generator-models)), and shows its
+version with its product name and hardware type (`null` when the module
+reports none) as attributes; serial numbers are never read. It keeps its last
 version over a restart. On a real installation with a split air-to-water
 heat pump the version of the outdoor unit was found there; no controller
 signal reports it. A setpoint of the pressure of the heating circuit pump

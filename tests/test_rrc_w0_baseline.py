@@ -30,7 +30,11 @@ of an air conditioner) add no entity and no request to these three plants.
 purpose (targeted reads): the CT200 and TC100.2 trees, whose ``/system`` does
 not list it, read it once more at setup (the CT200 tree answers it with a
 server error, so it is read once more on its own); entities, the cycle and
-the K40 heat pump stay the same.
+the K40 heat pump stay the same. The capture of the K40 heat pump has the
+hardware type of every module blanked: since 0.9.3-beta.6 its outdoor unit
+gets its role from its type number, so it gets the outdoor unit software
+version sensor on purpose (as the K40 with hardware types has had since
+0.9.2); nothing else changes.
 """
 
 from __future__ import annotations

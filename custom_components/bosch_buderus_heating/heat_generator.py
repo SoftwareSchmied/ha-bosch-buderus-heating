@@ -1,18 +1,21 @@
 """Which heat generators a gateway reports, by role, from its module list.
 
 The cloud's ``/system/info`` and the local ``/system/basicInfo`` list the
-modules of a system. Only two fields of a module are read: the product name
-and the hardware type. Serial numbers, tokens, versions and type numbers are
-never read, kept or shown.
+modules of a system. Of a module the product name and the hardware type are
+read, and with them its type number (``Id``) and place (``Tok``). Serial
+numbers and versions are never read, kept or shown here, and the type number
+and place are not part of what a restart keeps.
 
 A module with a product name is a heat generator module (heat source, boiler,
 outdoor unit, hybrid manager or other). Rows without a product name (the
 gateway, the user interface) never count. The meaning of a module comes from
 the versioned data table ``heat_generator_models.json`` only: a role from its
 hardware type or product name, and family, construction, power and brand
-family where an entry proves them. Nothing is guessed from parts of a name;
-without an entry a value stays ``None``. A new model needs a new table entry
-and a test, never new code.
+family where an entry proves them. Without such a role, the component table
+(``system_components``) may give one for the type number at its place, but
+only from an entry whose basis is not a name. Nothing is guessed from parts
+of a name; without an entry a value stays ``None``. A new model needs a new
+table entry and a test, never new code.
 
 Pure logic without Home Assistant imports.
 """
@@ -97,10 +100,16 @@ def clean_text(value: object, limit: int = MAX_NAME_LENGTH) -> str | None:
 
 @dataclass(frozen=True, slots=True)
 class ModuleRow:
-    """The two fields of one module that are read, already cleaned."""
+    """The fields of one module that are read, already cleaned.
+
+    The type number and the place only help to find a role; they are not
+    compared and not kept over a restart.
+    """
 
     product_name: str | None
     hardware_type: str | None
+    type_id: int | None = field(default=None, compare=False)
+    tok: int | None = field(default=None, compare=False)
 
 
 def _identifiers(values: Iterable[object]) -> frozenset[str]:
@@ -125,12 +134,28 @@ def _shown(value: object, limit: int, identifiers: frozenset[str]) -> str | None
 
 
 def _row(
-    product_name: object, hardware_type: object, identifiers: frozenset[str]
+    product_name: object,
+    hardware_type: object,
+    identifiers: frozenset[str],
+    type_id: object = None,
+    tok: object = None,
 ) -> ModuleRow | None:
     name = _shown(product_name, MAX_NAME_LENGTH, identifiers)
     if name is None:
         return None  # the gateway, a user interface or an unnamed module
-    return ModuleRow(name, _shown(hardware_type, MAX_HARDWARE_LENGTH, identifiers))
+    return ModuleRow(
+        name,
+        _shown(hardware_type, MAX_HARDWARE_LENGTH, identifiers),
+        _number(type_id),
+        _number(tok),
+    )
+
+
+def _number(value: object) -> int | None:
+    """A type or place number (1 to 6 digits), else ``None``."""
+    from .component_rows import component_number
+
+    return component_number(value)
 
 
 def rows_from_cloud(values: Iterable[object]) -> tuple[ModuleRow, ...]:
@@ -142,7 +167,13 @@ def rows_from_cloud(values: Iterable[object]) -> tuple[ModuleRow, ...]:
         if not isinstance(item, Mapping):
             continue
         identifiers = _identifiers(item.get(key) for key in _SERIAL_FIELDS)
-        row = _row(item.get("ProductName"), item.get("ModuleHwIdentStr"), identifiers)
+        row = _row(
+            item.get("ProductName"),
+            item.get("ModuleHwIdentStr"),
+            identifiers,
+            item.get("Id"),
+            item.get("Tok"),
+        )
         if row is not None:
             rows.append(row)
     return tuple(rows)
@@ -164,6 +195,8 @@ def rows_from_local(modules: Iterable[object]) -> tuple[ModuleRow, ...]:
             getattr(module, "product_name", None),
             getattr(module, "hardware", None),
             identifiers,
+            getattr(module, "id", None),
+            getattr(module, "token", None),
         )
         if row is not None:
             rows.append(row)
@@ -496,9 +529,46 @@ class Generator:
         )
 
 
-def interpret_row(row: ModuleRow, table: ModelTable = TABLE) -> Generator:
+# The component table as the default of ``interpret_row``: the shipped one.
+SHIPPED_COMPONENTS: Final = object()
+
+
+def component_role(
+    row: ModuleRow, components: object = SHIPPED_COMPONENTS
+) -> str | None:
+    """The role the component table gives the type number at its place.
+
+    Only roles a heat generator module can have count, and only from entries
+    whose basis is not a name (``ComponentTable.role`` keeps to those).
+    Without a type number, without a table or without such an entry:
+    ``None``.
+    """
+    if row.type_id is None:
+        return None
+    from .system_components import ComponentTable, load_table
+
+    table = load_table() if components is SHIPPED_COMPONENTS else components
+    if not isinstance(table, ComponentTable):
+        return None
+    role = table.role(row.type_id, row.tok)
+    if role is None or role.role not in ROLES or role.role == OTHER:
+        return None
+    return role.role
+
+
+def interpret_row(
+    row: ModuleRow,
+    table: ModelTable = TABLE,
+    components: object = SHIPPED_COMPONENTS,
+) -> Generator:
     """The meaning of one module: per field, the most specific entry that
-    sets it; a module no entry describes is ``other`` without meaning."""
+    sets it; a module no entry describes is ``other`` without meaning.
+
+    The role comes from the product name or the hardware type first; without
+    such an entry from the type number at its place (see
+    ``component_role``, for example a module without a hardware type), else
+    it is ``other``.
+    """
     meaning: dict[str, object] = {}
     known = False
     for entry in table.entries:
@@ -507,6 +577,8 @@ def interpret_row(row: ModuleRow, table: ModelTable = TABLE) -> Generator:
         known = known or entry.names_product
         for key, value in entry.meaning.items():
             meaning.setdefault(key, value)
+    if "role" not in meaning and (role := component_role(row, components)):
+        meaning["role"] = role
     power = meaning.get("power_kw")
     return Generator(
         role=str(meaning.get("role", OTHER)),
@@ -599,6 +671,7 @@ def interpret(
     *,
     observed_at: datetime | None = None,
     table: ModelTable = TABLE,
+    components: object = SHIPPED_COMPONENTS,
 ) -> HeatGenerators | None:
     """The heat generators of one answer; ``None`` without any."""
     if source not in SOURCES:
@@ -607,7 +680,10 @@ def interpret(
         return None
     ordered = tuple(sorted(rows[:MAX_ROWS], key=_row_key))
     generators = tuple(
-        sorted((interpret_row(row, table) for row in ordered), key=Generator.sort_key)
+        sorted(
+            (interpret_row(row, table, components) for row in ordered),
+            key=Generator.sort_key,
+        )
     )
     return HeatGenerators(ordered, generators, source, table.version, observed_at)
 
@@ -632,6 +708,46 @@ def from_data(data: object, table: ModelTable = TABLE) -> HeatGenerators | None:
             return None
         rows.append(row)
     return interpret(rows, str(source), table=table)
+
+
+def with_places(
+    shown: HeatGenerators | None,
+    components: Iterable[object],
+    *,
+    table: ModelTable = TABLE,
+) -> HeatGenerators | None:
+    """Kept heat generators with the type number and place of each module.
+
+    A restart keeps only product names and hardware types; the plant model
+    keeps the component list with type numbers and places. A module gets
+    them when exactly one kind of component (place and type number) has its
+    product name and hardware type. Otherwise it stays without them.
+    """
+    if shown is None:
+        return None
+    found: dict[tuple[str | None, str | None], set[tuple[int, int | None]]] = {}
+    for item in components:
+        type_id = getattr(item, "type_id", None)
+        if not isinstance(type_id, int):
+            continue
+        key = (
+            getattr(item, "product_name", None),
+            getattr(item, "hardware_type", None),
+        )
+        found.setdefault(key, set()).add((type_id, getattr(item, "tok", None)))
+    rows: list[ModuleRow] = []
+    changed = False
+    for row in shown.rows:
+        places = found.get((row.product_name, row.hardware_type), set())
+        if row.type_id is None and len(places) == 1:
+            ((type_id, tok),) = places
+            rows.append(ModuleRow(row.product_name, row.hardware_type, type_id, tok))
+            changed = True
+        else:
+            rows.append(row)
+    if not changed:
+        return shown
+    return interpret(rows, shown.source, observed_at=shown.observed_at, table=table)
 
 
 def choose(

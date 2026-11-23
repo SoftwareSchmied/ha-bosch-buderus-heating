@@ -2,12 +2,14 @@
 
 The module lists the integration already reads (the cloud's
 ``/system/info``, the local ``/system/basicInfo``) give a version for every
-module. A module is the outdoor unit only when the heat generator model
-table says so (``role: outdoor_unit``, see ``heat_generator``); nothing is
-guessed from a name. Of such a module only the product name, the hardware
-type and the version are read; serial numbers, tokens and type numbers
-never are, and a version equal to one of the module's identifiers is never
-shown.
+module. A module is the outdoor unit only when its role says so
+(``role: outdoor_unit``, see ``heat_generator``): from the heat generator model
+table by its hardware type or product name, or, without such an entry, from
+the component table by its type number at its place (an entry whose basis
+is not a name, for example a module without a hardware type). Nothing is
+guessed from a name. Of such a module the product name, the hardware type,
+the type number, the place and the version are read; serial numbers never
+are, and a version equal to one of the module's identifiers is never shown.
 
 The sensor never sends a request. It keeps its last version over a restart
 and while no answer is current; without any outdoor unit no entity is
@@ -31,6 +33,7 @@ from homeassistant.helpers.restore_state import ExtraStoredData, RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import heat_generator
+from .component_rows import component_number
 from .const import DOMAIN
 from .control import track_entity_once
 from .device import device_info_for_resource, is_rrc_plant
@@ -65,15 +68,20 @@ _CLOUD_IDENTIFIERS: Final = ("ModuleSerialNumber", "ProductSerialNumber", "No")
 _STORED_KEY: Final = "outdoor_units"
 
 
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=True, slots=True)
 class OutdoorUnit:
-    """One outdoor unit module: the three fields that are read."""
+    """One outdoor unit module: the three fields that are shown."""
 
     product_name: str
-    hardware_type: str
+    # ``None`` for a module that reports none (its role then comes from its
+    # type number at its place).
+    hardware_type: str | None
     version: str
 
-    def attribute(self) -> dict[str, str]:
+    def sort_key(self) -> tuple[str, str, str]:
+        return self.product_name, self.hardware_type or "", self.version
+
+    def attribute(self) -> dict[str, str | None]:
         return {
             "product_name": self.product_name,
             "hardware_type": self.hardware_type,
@@ -151,24 +159,31 @@ def outdoor_unit(
     hardware_type: object,
     version: object,
     identifiers: frozenset[str],
+    type_id: object = None,
+    tok: object = None,
 ) -> OutdoorUnit | None:
-    """The module as an outdoor unit, if the model table makes it one."""
+    """The module as an outdoor unit, if its role makes it one: from the
+    model table, else from its type number at its place."""
     name = _text(product_name, heat_generator.MAX_NAME_LENGTH, identifiers)
     hardware = _text(hardware_type, MAX_HARDWARE_LENGTH, identifiers)
-    if hardware is None:
-        return None  # the table matches outdoor units by their hardware type
-    if interpret_row(ModuleRow(name, hardware)).role != OUTDOOR_UNIT:
+    shown_name = name or hardware
+    if shown_name is None:
+        return None
+    row = ModuleRow(name, hardware, component_number(type_id), component_number(tok))
+    if interpret_row(row).role != OUTDOOR_UNIT:
         return None
     shown = clean_version(version, identifiers)
     if shown is None:
         return None
-    return OutdoorUnit(name or hardware, hardware, shown)
+    return OutdoorUnit(shown_name, hardware, shown)
 
 
 def _collect(
     units: Iterable[OutdoorUnit | None], source: str, observed_at: datetime | None
 ) -> OutdoorUnits | None:
-    found = sorted({unit for unit in units if unit is not None})
+    found = sorted(
+        {unit for unit in units if unit is not None}, key=OutdoorUnit.sort_key
+    )
     if not found:
         return None
     return OutdoorUnits(tuple(found[:MAX_OUTDOOR_UNITS]), source, observed_at)
@@ -191,6 +206,8 @@ def from_cloud(
                 item.get("ModuleHwIdentStr"),
                 item.get("Ver"),
                 identifiers,
+                item.get("Id"),
+                item.get("Tok"),
             )
         )
     return _collect(units, "cloud", observed_at)
@@ -217,6 +234,8 @@ def from_local(
                 getattr(module, "hardware", None),
                 getattr(module, "version", None),
                 identifiers,
+                getattr(module, "id", None),
+                getattr(module, "token", None),
             )
         )
     return _collect(units, "local", observed_at)
@@ -236,7 +255,11 @@ def from_data(data: object) -> OutdoorUnits | None:
         name = _text(item[0], heat_generator.MAX_NAME_LENGTH, frozenset())
         hardware = _text(item[1], MAX_HARDWARE_LENGTH, frozenset())
         version = clean_version(item[2])
-        if name is None or hardware is None or version is None:
+        if (
+            name is None
+            or version is None
+            or (hardware is None and item[1] is not None)
+        ):
             return None
         units.append(OutdoorUnit(name, hardware, version))
     return _collect(units, str(data["source"]), None)

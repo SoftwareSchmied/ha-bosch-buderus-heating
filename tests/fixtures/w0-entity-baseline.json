@@ -7881,6 +7881,18 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": null,
+     "original_name": "Outdoor unit software version",
+     "translation_key": "outdoor_unit_software_version",
+     "unique_id": "gateway-one:outdoor_unit_software_version",
+     "unit": null
+    },
+    {
      "capabilities": {
       "options": [
        "off",

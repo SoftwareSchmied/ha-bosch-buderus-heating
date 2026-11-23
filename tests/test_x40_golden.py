@@ -72,6 +72,13 @@ is meant to change:
 - ``POSITION_FREE``: request paths that may move to another bulk request; the
   number of bulk requests and the reads of every path stay the same
   (``/system/info``, I3).
+- ``CAPTURE_ROLE_PLANTS``: the one exception for K40 plants (E3, #138). The
+  capture behind ``k40_cloud`` and ``k40_cloud_local`` has every hardware
+  type blanked; with the role from the type number these two plants show the
+  roles, outdoor unit, outdoor power and outdoor unit software version entity
+  my own K40 (``k40_own_cloud``) shows. Exactly these values are listed;
+  everything else stays forbidden, and ``k40_own_cloud`` and
+  ``k40_local_view`` stay unchanged (tests check both).
 
 A new plant gets its golden file with ``X40_GOLDEN_UPDATE=1`` (that run writes
 the files and fails on purpose). Recording an existing plant again is only for
@@ -204,6 +211,27 @@ EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
     "connectkey_zone_climate": {"requests": _HOT_WATER},
 }
 POSITION_FREE: frozenset[str] = frozenset({"/system/info"})
+# E3 (#138): the capture behind k40_cloud and k40_cloud_local
+# (captures/k40-cloud-2026-11-05.json) has the hardware type
+# (ModuleHwIdentStr) of every module blanked. Since 0.9.3-beta.6 a module
+# without a hardware type gets its role from its type number at its place, so
+# these two plants now show the roles my own K40 with hardware types
+# (k40_own_cloud) shows already. Exactly these differences are allowed there,
+# nothing else; k40_own_cloud and k40_local_view stay unchanged.
+CAPTURE_ROLE_PLANTS: frozenset[str] = frozenset({"k40_cloud", "k40_cloud_local"})
+CAPTURE_ROLE_SENSOR = "sensor gateway-one:heat_generator"
+# heat_generators[].role: other -> this role, per product name.
+CAPTURE_ROLES: dict[str, str] = {
+    "Logatherm WLW176i-12 TP70": "heat_source",
+    "WLW-10 MB AR": "outdoor_unit",
+}
+# outdoor_unit: null -> this product name.
+CAPTURE_OUTDOOR_UNIT = "WLW-10 MB AR"
+# primary.outdoor_power_kw: null -> this power.
+CAPTURE_OUTDOOR_POWER_KW = 10
+# The new entity: the outdoor unit software version, with the state of my own
+# K40 and its attributes without a hardware type.
+CAPTURE_NEW_ENTITY = "gateway-one:outdoor_unit_software_version"
 
 # Measured with the real clock of the test run, never the same twice.
 VOLATILE_STATES: tuple[str, ...] = (
@@ -1140,10 +1168,54 @@ def _request_differences(
     return found
 
 
+def _with_capture_roles(expected: dict[str, Any]) -> dict[str, Any]:
+    """The golden state of a capture plant with exactly the changes E3 makes
+    (see ``CAPTURE_ROLE_PLANTS``); the new entity as on my own K40."""
+    changed = copy.deepcopy(expected)
+    sensor = changed["states"][CAPTURE_ROLE_SENSOR]
+    attributes = sensor["attributes"]
+    for item in attributes["heat_generators"]:
+        if item["role"] == "other" and item["product_name"] in CAPTURE_ROLES:
+            item["role"] = CAPTURE_ROLES[item["product_name"]]
+    if attributes["outdoor_unit"] is None:
+        attributes["outdoor_unit"] = CAPTURE_OUTDOOR_UNIT
+    if attributes["primary"]["outdoor_power_kw"] is None:
+        attributes["primary"]["outdoor_power_kw"] = CAPTURE_OUTDOOR_POWER_KW
+    own = json.loads(_path("k40_own_cloud").read_text(encoding="utf-8"))
+    key = f"sensor {CAPTURE_NEW_ENTITY}"
+    row = next(
+        item
+        for item in own["entities"]
+        if (item["platform"], item["unique_id"]) == ("sensor", CAPTURE_NEW_ENTITY)
+    )
+    # Entity ID and name follow the device of this plant ("Heating").
+    generator = next(
+        item
+        for item in changed["entities"]
+        if item["unique_id"] == CAPTURE_ROLE_SENSOR.split(" ", 1)[1]
+    )
+    prefix = sensor["attributes"]["friendly_name"].removesuffix("Heat generator")
+    changed["entities"].append(
+        {
+            **row,
+            "entity_id": generator["entity_id"].removesuffix("heat_generator")
+            + "outdoor_unit_software_version",
+        }
+    )
+    state = copy.deepcopy(own["states"][key])
+    state["attributes"]["friendly_name"] = prefix + row["original_name"]
+    state["attributes"]["hardware_type"] = None
+    changed["states"][key] = state
+    changed["writes"][key] = dict(own["writes"][key])
+    return changed
+
+
 def differences(
     name: str, expected: dict[str, Any], actual: dict[str, Any]
 ) -> list[str]:
     """Everything that differs beyond the allowances, as readable lines."""
+    if name in CAPTURE_ROLE_PLANTS:
+        expected = _with_capture_roles(expected)
     new = EXPECTED_NEW.get(name, {})
     found = _entity_differences(
         expected["entities"], actual["entities"], new.get("entities", ())
@@ -1234,6 +1306,65 @@ def test_the_k40_plants_never_get_new_entities_or_requests() -> None:
         assert set(allowance) <= {"entities", "devices", "requests"}
 
 
+def test_the_capture_exception_covers_the_two_capture_plants_only() -> None:
+    """E3: only the plants of the capture with blanked hardware types, and
+    only towards what my own K40 with hardware types shows."""
+    assert frozenset({"k40_cloud", "k40_cloud_local"}) == CAPTURE_ROLE_PLANTS
+    assert "k40_own_cloud" not in CAPTURE_ROLE_PLANTS
+    assert "k40_local_view" not in CAPTURE_ROLE_PLANTS
+    own = json.loads(_path("k40_own_cloud").read_text(encoding="utf-8"))
+    attributes = own["states"][CAPTURE_ROLE_SENSOR]["attributes"]
+    assert {
+        item["product_name"]: item["role"] for item in attributes["heat_generators"]
+    } == CAPTURE_ROLES
+    assert attributes["outdoor_unit"] == CAPTURE_OUTDOOR_UNIT
+    assert attributes["primary"]["outdoor_power_kw"] == CAPTURE_OUTDOOR_POWER_KW
+    for name in CAPTURE_ROLE_PLANTS:
+        before = json.loads(_path(name).read_text(encoding="utf-8"))
+        # The golden files themselves keep the state before E3.
+        assert {
+            item["role"]
+            for item in before["states"][CAPTURE_ROLE_SENSOR]["attributes"][
+                "heat_generators"
+            ]
+        } == {"other"}
+        assert f"sensor {CAPTURE_NEW_ENTITY}" not in before["states"]
+
+
+def test_the_capture_exception_allows_nothing_else() -> None:
+    """Another role, another value or the same change on another K40 plant
+    is still a difference."""
+    for name in ("k40_own_cloud", "k40_local_view"):
+        golden = json.loads(_path(name).read_text(encoding="utf-8"))
+        changed = copy.deepcopy(golden)
+        (sensor,) = (key for key in golden["states"] if key.endswith(":heat_generator"))
+        changed["states"][sensor]["attributes"]["known"] = "X"
+        assert differences(name, golden, changed) == [
+            f"attribute changed: {sensor}: known"
+        ]
+    golden = json.loads(_path("k40_cloud").read_text(encoding="utf-8"))
+    allowed = _with_capture_roles(golden)
+    assert differences("k40_cloud", golden, allowed) == []
+    wrong = copy.deepcopy(allowed)
+    wrong["states"][CAPTURE_ROLE_SENSOR]["attributes"]["heat_generators"][0]["role"] = (
+        "boiler"
+    )
+    assert differences("k40_cloud", golden, wrong) == [
+        f"attribute changed: {CAPTURE_ROLE_SENSOR}: heat_generators"
+    ]
+    wrong = copy.deepcopy(allowed)
+    wrong["states"][f"sensor {CAPTURE_NEW_ENTITY}"]["state"] = "1.0"
+    assert differences("k40_cloud", golden, wrong) == [
+        f"state changed: sensor {CAPTURE_NEW_ENTITY}: "
+        f"{allowed['states'][f'sensor {CAPTURE_NEW_ENTITY}']['state']!r} -> '1.0'"
+    ]
+    wrong = copy.deepcopy(allowed)
+    wrong["states"][CAPTURE_ROLE_SENSOR]["attributes"]["primary"]["family"] = "x"
+    assert differences("k40_cloud", golden, wrong) == [
+        f"attribute changed: {CAPTURE_ROLE_SENSOR}: primary"
+    ]
+
+
 def test_the_allowances_start_empty_or_name_planned_keys() -> None:
     """Only the keys the plant model adds to the heat generator sensor, and
     the keys of 0.9.1 to 0.9.3-beta.5 its contract 1 always shows."""
@@ -1291,7 +1422,7 @@ def test_the_comparison_finds_each_kind_of_difference() -> None:
         },
     }
     base["requests"]["cloud"]["setup"]["reads"]["/b"] = 1
-    assert differences("k40_cloud", base, copy.deepcopy(base)) == []
+    assert differences("k40_own_cloud", base, copy.deepcopy(base)) == []
     changed = copy.deepcopy(base)
     changed["entities"].pop(0)
     changed["states"]["sensor gw:heat_generator"]["attributes"]["plant_kind"] = None
@@ -1301,7 +1432,7 @@ def test_the_comparison_finds_each_kind_of_difference() -> None:
     changed["devices"][0]["name"] = "Other"
     # The comparison itself, without the allowances of the plant model.
     with patch.dict(NEW_ATTRIBUTES, {}, clear=True):
-        found = differences("k40_cloud", base, changed)
+        found = differences("k40_own_cloud", base, changed)
     assert "entity gone: sensor gw:a" in found
     assert "new attributes: sensor gw:heat_generator: plant_kind" in found
     assert "state changed: sensor gw:heat_generator: 'X' -> 'Y'" in found
@@ -1311,20 +1442,20 @@ def test_the_comparison_finds_each_kind_of_difference() -> None:
     # /system/info may move to another bulk request (I3), nothing else.
     moved = copy.deepcopy(base)
     moved["requests"]["cloud"]["setup"]["bulks"] = [["/a", "/system/info"], ["/b"]]
-    assert differences("k40_cloud", base, moved) == []
+    assert differences("k40_own_cloud", base, moved) == []
     regrouped = copy.deepcopy(base)
     regrouped["requests"]["cloud"]["setup"]["bulks"] = [["/a", "/b", "/system/info"]]
     regrouped["requests"]["cloud"]["setup"]["bulk_count"] = 1
-    assert differences("k40_cloud", base, regrouped) == [
+    assert differences("k40_own_cloud", base, regrouped) == [
         "cloud setup bulk requests: 1 instead of 2",
         "cloud setup bulk requests: other paths together",
     ]
     with patch.dict(NEW_ATTRIBUTES, {r".*:heat_generator": frozenset({"plant_kind"})}):
         allowed = copy.deepcopy(base)
         allowed["states"]["sensor gw:heat_generator"]["attributes"]["plant_kind"] = None
-        assert differences("k40_cloud", base, allowed) == []
-    with patch.dict(WRITE_DELTAS, {"k40_cloud": {"gw:a": 1}}):
-        assert differences("k40_cloud", base, base) == [
+        assert differences("k40_own_cloud", base, allowed) == []
+    with patch.dict(WRITE_DELTAS, {"k40_own_cloud": {"gw:a": 1}}):
+        assert differences("k40_own_cloud", base, base) == [
             "state writes: sensor gw:a: cycle: 0 instead of 1",
             "state writes: sensor gw:a: setup: 1 instead of 2",
         ]

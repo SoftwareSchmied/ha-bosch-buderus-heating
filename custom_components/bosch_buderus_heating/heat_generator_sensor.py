@@ -60,6 +60,7 @@ from .heat_generator import (
     rows_from_local,
     unnamed_hardware_cloud,
     unnamed_hardware_local,
+    with_places,
 )
 from .heat_source_kind import KINDS, SourceKind, classify
 from .local_api.models import SystemInfo
@@ -505,8 +506,12 @@ class BoschBuderusHeatGeneratorSensor(
         await self._plant_loaded()
         if (stored := await self.async_get_last_extra_data()) is not None:
             restored = _Stored.from_dict(stored.as_dict())
-            # Worked out again with the table of this version.
+            # Worked out again with the table of this version, with the type
+            # numbers and places the plant model keeps.
             self._shown = from_data(restored.data)
+            shown = components(self.coordinator)
+            if self._shown is not None and shown is not None:
+                self._shown = with_places(self._shown, shown.rows)
             self._remember()
             if restored.kind is not None:
                 # Shown until the evidence is read again (no evidence paths).
