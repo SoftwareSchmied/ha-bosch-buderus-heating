@@ -36,6 +36,7 @@ from homeassistant.const import (
 
 from .i18n import localize
 from .observations import ERROR_MARKERS, Observation, ValueStatus, canonical_unit
+from .plant_detection import outdoor_unit_disconnected
 
 TEMPERATURE = "temperature"
 POWER = "power"
@@ -1675,6 +1676,7 @@ def below_measuring_range(observation: Observation) -> bool:
 # that its volume flows are unverified.
 HYBRID_MANAGER_SIGNALS = "/signals/HYBMAN."
 _HYBRID_RESOURCES = "/heatSources/hybrid/"
+_OUTDOOR_STATUS = "/heatSources/hybrid/outdoorStatus"
 _SYSTEM_TYPE_PATH = "/system/type"
 _HEAT_SOURCE_TYPE = re.compile(r"/heatSources(?:/hs[^/]+)?/type")
 _NOT_LETTER = re.compile(r"[^a-z]")
@@ -1714,6 +1716,21 @@ def hybrid_evidence(
     return tuple(sorted(found))
 
 
+def hybrid_detected_from(
+    readings: Iterable[tuple[str, object]], plant_evidence: Iterable[str] = ()
+) -> bool:
+    """Whether the readings show a hybrid system: any hybrid evidence, unless
+    a boiler type is reported with the outdoor status ``NOT_CONNECTED`` of
+    the hybrid control (such a plant is never a hybrid system)."""
+    found = tuple(readings)
+    if not hybrid_evidence(found, plant_evidence):
+        return False
+    return not outdoor_unit_disconnected(
+        next((value for path, value in found if path == _OUTDOOR_STATUS), None),
+        (value for path, value in found if _HEAT_SOURCE_TYPE.fullmatch(path)),
+    )
+
+
 def hybrid_path_counts(path: str) -> bool:
     """Whether the hybrid evidence can find anything for this path.
 
@@ -1730,8 +1747,9 @@ def hybrid_path_counts(path: str) -> bool:
 
 def hybrid_path_needs_value(path: str) -> bool:
     """Whether the hybrid evidence looks at the value of this path (the
-    types do; the other paths count by their name alone)."""
-    return not (
+    types and the outdoor status do; the other paths count by their name
+    alone)."""
+    return path == _OUTDOOR_STATUS or not (
         path.startswith(HYBRID_MANAGER_SIGNALS) or path.startswith(_HYBRID_RESOURCES)
     )
 

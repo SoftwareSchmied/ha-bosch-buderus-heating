@@ -2,7 +2,9 @@
 
 - Status: Accepted
 - Date: 2026-11-22
-- Amended: 2026-11-23 (later stages of 0.9.3-beta.6)
+- Amended: 2026-11-23 (later stages of 0.9.3-beta.6; a boiler with the
+  outdoor unit not connected, heat source types of room controllers, roles
+  seen on an iCom gateway, `eHybrid`)
 
 ## Context
 
@@ -77,6 +79,15 @@ gateways keeps its own parser.
   it is no hybrid evidence (neither in the model nor in the evidence used
   before, nor for the targeted reads), and the heat source types decide
   (`hs1` = `Heatpump` gives `heat_pump`).
+- A boiler type with the outdoor status `NOT_CONNECTED` is never a hybrid
+  system: every piece of hybrid evidence is overruled (the evidence used
+  before, a heat pump type next to the boiler, the hybrid manager at the
+  hybrid place), the plant is a `boiler`, and the conflict
+  `hybrid_evidence_vs_outdoor_status` names it. The hybrid detection of the
+  burner share and of the hybrid diagnostics follows the same rule, so such
+  a plant is no hybrid system there either; the recordings of `hs2` follow
+  the plant kind. Without a boiler type the evidence counts as
+  before.
 - Heat source types: `Heatpump`, `GasBoiler`, `OilBoiler`, `unknownBoiler`,
   `No_Appliance`, and the values of `/heatSources/type` of a room controller
   `Boiler` (boiler, fuel not stated), `Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`
@@ -84,9 +95,10 @@ gateways keeps its own parser.
   appliance; written so by the devices). Other values such as `eBoiler`
   stay unknown.
 - Order: a bus still detecting gives no result (the known kind is kept);
-  then hybrid evidence; then the heat source types, then the system type (a
-  contradiction gives `None`); heat sources without an appliance give
-  `ventilation` with a Modbus bus or a component at place 81, else `none`.
+  then a boiler with the outdoor unit not connected; then hybrid evidence;
+  then the heat source types, then the system type (a contradiction gives
+  `None`); heat sources without an appliance give `ventilation` with a
+  Modbus bus or a component at place 81, else `none`.
 - Hybrid manager at the hybrid place: only the first row at place 83 counts,
   with type 248 from version 06.01 on or type 16; only on K30 gateways (K30,
   K30RF, MX300) from firmware 08.02.02 and K40 gateways (K40, K40RF, MX400)
@@ -102,10 +114,12 @@ gateways keeps its own parser.
   `hybrid_resources`, `hybrid_manager_signals`, `stored`.
 - Conflict codes (diagnostics only): `system_type_vs_heat_source_type`,
   `components_vs_outdoor_status`, `heat_pump_component_on_boiler_plant`,
-  `hybrid_name_rule_only`, `cloud_local_components_differ`,
-  `unknown_type_value`, `component_rule_skipped`.
+  `hybrid_name_rule_only`, `hybrid_evidence_vs_outdoor_status`,
+  `cloud_local_components_differ`, `unknown_type_value`,
+  `component_rule_skipped`.
 - `MODEL_VERSION` (now 1) is the version of these rules; a stored result of
-  another version is worked out again from its stored inputs.
+  another version is worked out again from its stored inputs. The rules of
+  version 1 were amended before their first release, so the version stays.
 
 ### Inputs, stored row and failures
 

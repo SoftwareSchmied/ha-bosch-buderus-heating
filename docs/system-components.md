@@ -298,7 +298,7 @@ answers.
 |---|---|
 | `heat_pump` | The plant reports a heat pump (heat source type `Heatpump`, a heat pump type such as `air_water`, or the system type `heatpump_single`/`heatpump_cascade`). |
 | `hybrid` | A heat pump and a boiler work together (see the evidence below). |
-| `boiler` | The plant reports a gas, oil or other boiler only (`GasBoiler`, `OilBoiler`, `unknownBoiler`, or `Boiler` of a room controller). |
+| `boiler` | The plant reports a gas, oil or other boiler only (`GasBoiler`, `OilBoiler`, `unknownBoiler`, or `Boiler` of a room controller), or a boiler whose hybrid control reports the outdoor unit as not connected. |
 | `ventilation` | No heat appliance; a ventilation unit (Modbus bus or a component at the ventilation place 81). |
 | `none` | No heat appliance and no ventilation unit (`No_Appliance`, or `No_Applicance` of a room controller). |
 | `null` | Not known; everything behaves as before. |
@@ -312,6 +312,14 @@ with the values `Boiler` (a boiler), `Hybrid`, `Hybrid_Gas` and `Hybrid_Oil`
 appliance; the devices write it so). The system type `eHybrid` is a heat
 pump with an additional heater, not a hybrid system: the heat source types
 decide, and it is no evidence of a hybrid system.
+
+A boiler type with the outdoor status `NOT_CONNECTED` of the hybrid control
+is never a hybrid system: no hybrid evidence counts, also not the resources
+of the hybrid control, the signals of a hybrid manager, a hybrid manager at
+place 83, a type text or a heat pump type next to the boiler. The plant is a
+boiler, and the conflict `hybrid_evidence_vs_outdoor_status` names the
+evidence that did not count. A plant without a boiler type keeps its
+evidence.
 
 Evidence (why the plant has this kind):
 
@@ -335,6 +343,7 @@ Conflicts (shown in the diagnostics only):
 | `components_vs_outdoor_status` | A hybrid manager is listed, but a boiler type is reported with the outdoor unit not connected; the hybrid manager does not count. |
 | `heat_pump_component_on_boiler_plant` | Heat pump components are listed, but only a boiler type is reported. |
 | `hybrid_name_rule_only` | Only the names of paths or signals or a type text point to a hybrid system. The plant still counts as hybrid, as before. |
+| `hybrid_evidence_vs_outdoor_status` | A boiler type is reported with the outdoor unit not connected; the hybrid evidence present does not count, and the plant is a boiler. |
 | `cloud_local_components_differ` | The cloud and the local access list different components (the gateway's own rows are not compared). |
 | `unknown_type_value` | A type value outside the known ones (for example `eBoiler`); it does not count. |
 | `component_rule_skipped` | A row at the hybrid place does not meet the rule (other gateway, firmware or version too old, or another type). |
@@ -344,7 +353,9 @@ Component names never decide anything. Only entries whose basis is
 
 Hybrid system through a hybrid manager component: tested with synthetic
 component lists; not yet confirmed on a real hybrid system with a hybrid
-manager (#138).
+manager (#138). A boiler with the outdoor unit not connected, the heat source
+types of room controllers and the system type `eHybrid`: tested with
+constructed values; not yet confirmed on a real plant.
 
 ### Heat generator sensor
 
@@ -585,7 +596,7 @@ Entitäten entstehen nur aus Daten, die die Anlage beantwortet.
 |---|---|
 | `heat_pump` | Die Anlage meldet eine Wärmepumpe (Wärmequellentyp `Heatpump`, einen Wärmepumpentyp wie `air_water` oder den Systemtyp `heatpump_single`/`heatpump_cascade`). |
 | `hybrid` | Wärmepumpe und Kessel arbeiten zusammen (siehe Belege unten). |
-| `boiler` | Die Anlage meldet nur einen Gas-, Öl- oder sonstigen Kessel (`GasBoiler`, `OilBoiler`, `unknownBoiler` oder `Boiler` eines Raumreglers). |
+| `boiler` | Die Anlage meldet nur einen Gas-, Öl- oder sonstigen Kessel (`GasBoiler`, `OilBoiler`, `unknownBoiler` oder `Boiler` eines Raumreglers), oder einen Kessel, dessen Hybridsteuerung die Außeneinheit als nicht verbunden meldet. |
 | `ventilation` | Kein Wärmeerzeuger; ein Lüftungsgerät (Modbus-Bus oder eine Komponente am Lüftungsplatz 81). |
 | `none` | Weder Wärmeerzeuger noch Lüftungsgerät (`No_Appliance` oder `No_Applicance` eines Raumreglers). |
 | `null` | Nicht bekannt; alles verhält sich wie bisher. |
@@ -599,6 +610,14 @@ den Werten `Boiler` (ein Kessel), `Hybrid`, `Hybrid_Gas` und `Hybrid_Oil`
 Wärmeerzeuger; die Geräte schreiben es so). Der Systemtyp `eHybrid` ist eine
 Wärmepumpe mit Zusatzheizer, keine Hybridanlage: Es entscheiden die
 Wärmequellentypen, und er ist kein Beleg für eine Hybridanlage.
+
+Ein Kesseltyp mit dem Status `NOT_CONNECTED` der Außeneinheit an der
+Hybridsteuerung ist nie eine Hybridanlage: Kein Hybrid-Beleg zählt, auch nicht
+die Ressourcen der Hybridsteuerung, die Signale eines Hybrid-Managers, ein
+Hybrid-Manager an Platz 83, ein Typtext oder ein Wärmepumpentyp neben dem
+Kessel. Die Anlage ist ein Kessel, und der Widerspruch
+`hybrid_evidence_vs_outdoor_status` nennt die Belege, die nicht zählten. Eine
+Anlage ohne Kesseltyp behält ihre Belege.
 
 Belege (warum die Anlage diese Art hat):
 
@@ -622,6 +641,7 @@ Widersprüche (nur in der Diagnose):
 | `components_vs_outdoor_status` | Ein Hybrid-Manager steht in der Liste, aber ein Kesseltyp wird mit nicht verbundener Außeneinheit gemeldet; der Hybrid-Manager zählt nicht. |
 | `heat_pump_component_on_boiler_plant` | Wärmepumpen-Komponenten stehen in der Liste, gemeldet wird aber nur ein Kesseltyp. |
 | `hybrid_name_rule_only` | Nur Namen von Pfaden oder Signalen oder ein Typtext deuten auf eine Hybridanlage. Die Anlage zählt weiter als Hybrid, wie bisher. |
+| `hybrid_evidence_vs_outdoor_status` | Ein Kesseltyp wird mit nicht verbundener Außeneinheit gemeldet; die vorhandenen Hybrid-Belege zählen nicht, und die Anlage ist ein Kessel. |
 | `cloud_local_components_differ` | Cloud und lokaler Zugang listen verschiedene Komponenten (die Zeilen des Gateways selbst werden nicht verglichen). |
 | `unknown_type_value` | Ein Typwert außerhalb der bekannten (zum Beispiel `eBoiler`); er zählt nicht. |
 | `component_rule_skipped` | Eine Zeile am Hybridplatz erfüllt die Regel nicht (anderes Gateway, Firmware oder Version zu alt oder ein anderer Typ). |
@@ -631,7 +651,9 @@ Namen von Komponenten entscheiden nie etwas. Nur Einträge mit der Basis
 
 Hybridanlage über eine Hybrid-Manager-Komponente: Getestet mit synthetischen
 Komponentenlisten; an einer echten Hybridanlage mit Hybrid-Manager noch nicht
-bestätigt (#138).
+bestätigt (#138). Ein Kessel mit nicht verbundener Außeneinheit, die
+Wärmequellentypen von Raumreglern und der Systemtyp `eHybrid`: Getestet mit
+konstruierten Werten; an einer echten Anlage noch nicht bestätigt.
 
 ### Wärmeerzeuger-Sensor
 

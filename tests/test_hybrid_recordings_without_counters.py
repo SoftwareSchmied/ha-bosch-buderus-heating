@@ -17,7 +17,9 @@ from typing import Any
 import pytest
 from homeassistant.core import HomeAssistant
 
+from custom_components.bosch_buderus_heating import burner_share
 from custom_components.bosch_buderus_heating.plant_detection import PlantResult
+from custom_components.bosch_buderus_heating.plant_inputs import current_plant
 from custom_components.bosch_buderus_heating.recordings import (
     Period as RecordingPeriod,
 )
@@ -66,8 +68,11 @@ def answers() -> dict[str, Any]:
         ("issue_138_hybrid_manager_new", "hs2"),
         # A heat pump only, an iCom heat pump, no plant kind: not asked.
         ("k40_own", None),
-        # eHybrid is a heat pump with an additional heater: not asked.
+        # eHybrid is a heat pump with an additional heater; a boiler whose
+        # outdoor unit is not connected is no hybrid system: not asked.
         ("ehybrid", None),
+        ("boiler_outdoor_not_connected", None),
+        ("contradiction_outdoor", None),
         ("icom_hybrid_place", None),
         ("bus_detecting", None),
     ],
@@ -165,6 +170,31 @@ async def test_the_gateways_heat_is_the_boilers_only_with_an_answered_series(
     assert gating.heat_pump_source_basis(coordinator) == "plant_kind"
     attributes = _heat_attributes(coordinator, manager)
     assert attributes.get("heat_generator") == ("boiler" if answered else None)
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize(
+    ("case", "hybrid"),
+    [
+        ("boiler_outdoor_not_connected", False),
+        ("boiler_outdoor_not_connected_hybman", False),
+        ("contradiction_outdoor", False),
+        ("ehybrid", False),
+        ("outdoor_connected", True),
+        ("hybman", True),
+    ],
+)
+async def test_the_burner_share_follows_the_plant_kind(
+    hass: HomeAssistant, case: str, hybrid: bool
+) -> None:
+    """A boiler whose outdoor unit is not connected and an eHybrid (a heat
+    pump with an additional heater) are no hybrid system: no burner share
+    from the evidence, no recordings of hs2."""
+    coordinator = await plant(hass, case)
+    result = current_plant(coordinator)
+    assert result is not None and result.hybrid is hybrid
+    assert burner_share.hybrid_detected(coordinator) is hybrid
+    assert gating.hybrid_plant(coordinator) is hybrid
     await coordinator.async_shutdown()
 
 

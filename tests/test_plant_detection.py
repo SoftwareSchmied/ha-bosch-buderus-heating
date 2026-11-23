@@ -326,6 +326,53 @@ def test_a_boiler_and_a_hybrid_type_with_different_fuels() -> None:
 
 
 @pytest.mark.parametrize(
+    ("hybrid_evidence", "gate_row"),
+    [
+        (("hybrid_resources",), None),
+        (("hybrid_manager_signals",), None),
+        (("system_type", "heat_source_type"), None),
+        ((), ComponentRow(16, 83)),
+        (("hybrid_resources",), ComponentRow(248, 83, "06.02")),
+    ],
+)
+@pytest.mark.parametrize("outdoor", ["NOT_CONNECTED", "not_connected", "NotConnected"])
+def test_a_boiler_with_its_outdoor_unit_not_connected_is_no_hybrid(
+    hybrid_evidence: tuple[str, ...], gate_row: ComponentRow | None, outdoor: str
+) -> None:
+    """Every kind of hybrid evidence is overruled; the conflict names it."""
+    inputs = PlantInputs(
+        gateway_class="k40",
+        gateway_firmware="15.00.01",
+        heat_source_types=(("hs1", "GasBoiler"), ("hs2", "Heatpump")),
+        outdoor_status=outdoor,
+        components=(gate_row,) if gate_row is not None else (),
+        hybrid_evidence=hybrid_evidence,
+    )
+    result = resolve(inputs, load_table())
+    assert (result.plant_kind, result.fuel) == ("boiler", "gas")
+    assert not result.hybrid
+    assert "hybrid_evidence_vs_outdoor_status" in result.conflicts
+    assert result.evidence == ("reported_heat_source_type",)
+    connected = resolve(replace(inputs, outdoor_status="CONNECTED"), load_table())
+    assert connected.plant_kind == "hybrid"
+    assert "hybrid_evidence_vs_outdoor_status" not in connected.conflicts
+
+
+def test_not_connected_without_a_boiler_type_changes_nothing() -> None:
+    for types in ((("hs1", "Heatpump"),), ()):
+        result = resolve(
+            PlantInputs(
+                heat_source_types=types,
+                outdoor_status="NOT_CONNECTED",
+                hybrid_evidence=("hybrid_resources",),
+            ),
+            None,
+        )
+        assert result.plant_kind == "hybrid"
+        assert result.conflicts == ("hybrid_name_rule_only",)
+
+
+@pytest.mark.parametrize(
     ("types", "kind"),
     [
         ((("hs1", "Heatpump"),), "heat_pump"),

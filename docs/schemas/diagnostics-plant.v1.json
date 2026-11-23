@@ -88,6 +88,7 @@
           "components_vs_outdoor_status",
           "heat_pump_component_on_boiler_plant",
           "hybrid_name_rule_only",
+          "hybrid_evidence_vs_outdoor_status",
           "cloud_local_components_differ",
           "unknown_type_value",
           "component_rule_skipped"

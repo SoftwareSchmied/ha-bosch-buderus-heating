@@ -12,9 +12,10 @@ The share counts as present when the energy collection reports a burner
 part above zero, or when a hybrid manager is detected (its signals, the
 hybrid control resources, or a system or heat source type that names a
 hybrid system; the system type ``eHybrid`` is a heat pump with an
-additional heater and does not count). The plant model adds two pieces of
-evidence: a hybrid manager at the hybrid place of the component list under
-its fixed rule, and
+additional heater and does not count). A boiler type with the outdoor
+status ``NOT_CONNECTED`` of the hybrid control is never a hybrid system,
+whatever else is present. The plant model adds two pieces of evidence: a hybrid
+manager at the hybrid place of the component list under its fixed rule, and
 a heat source that reports a heat pump next to one that reports a boiler.
 They only add to the evidence above; without a result of the plant model
 (before its stored row is read) everything is as before. A plant with a
@@ -28,7 +29,7 @@ from typing import TYPE_CHECKING, Final
 
 from .derived_inputs import energy_part, local_only_paths, read
 from .local_only import (
-    hybrid_evidence,
+    hybrid_detected_from,
     hybrid_path_counts,
     hybrid_path_needs_value,
 )
@@ -84,7 +85,7 @@ def _hybrid_detected(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
             continue
         reading = read(coordinator, path)
         readings.append((path, reading.value if reading is not None else None))
-    return bool(hybrid_evidence(readings, _plant_evidence(coordinator)))
+    return hybrid_detected_from(readings, _plant_evidence(coordinator))
 
 
 def _plant_evidence(coordinator: object) -> tuple[str, ...]:

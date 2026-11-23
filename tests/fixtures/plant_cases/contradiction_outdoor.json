@@ -25,15 +25,15 @@
     "/heatSources/hybrid/outdoorStatus": "NOT_CONNECTED"
   },
   "expected": {
-    "plant_kind": "hybrid",
+    "plant_kind": "boiler",
     "fuel": "gas",
     "cascade": null,
     "evidence": [
-      "hybrid_resources"
+      "reported_heat_source_type"
     ],
     "conflicts": [
       "components_vs_outdoor_status",
-      "hybrid_name_rule_only"
+      "hybrid_evidence_vs_outdoor_status"
     ],
     "gate": "passed"
   }

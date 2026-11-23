@@ -55,7 +55,7 @@ from .holidays import (
 from .humidity_reading import humidity_state
 from .icom_diagnostics import icom_diagnostics
 from .icom_profile import is_icom_gateway
-from .local_only import hybrid_evidence, volume_flow_path
+from .local_only import hybrid_detected_from, hybrid_evidence, volume_flow_path
 from .local_only_heal import diagnostics as local_only_heal_diagnostics
 from .local_probe import GatewayBrand
 from .local_setup_history import cloud_sign_in_history, local_setup_history
@@ -581,15 +581,16 @@ def _hybrid_volume_flow(
         if not readings:
             continue
         evidence = hybrid_evidence(readings, plant_evidence)
+        detected = hybrid_detected_from(readings, plant_evidence)
         reports.append(
             {
                 "target": number,
-                "hybrid_detected": bool(evidence),
+                "hybrid_detected": detected,
                 "evidence": list(evidence),
                 "volume_flow_readings": len(
                     {path for path, _ in readings if volume_flow_path(path)}
                 ),
-                "volume_flow": "unverified" if evidence else "as_reported",
+                "volume_flow": "unverified" if detected else "as_reported",
             }
         )
     return reports

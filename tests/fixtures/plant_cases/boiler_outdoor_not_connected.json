@@ -1,0 +1,35 @@
+{
+  "header": {
+    "device_class": "k30",
+    "firmware_family": "15",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "boiler with the resources of a hybrid control and the outdoor status not connected"
+  },
+  "gateway": {
+    "device_type": "k30",
+    "firmware": "15.00.01"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "GasBoiler",
+    "/heatSources/hybrid/outdoorStatus": "NOT_CONNECTED"
+  },
+  "named_paths": [
+    "/heatSources/hybrid/controlStrategy",
+    "/heatSources/hybrid/activeHeatSource"
+  ],
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [
+      "hybrid_evidence_vs_outdoor_status"
+    ],
+    "gate": "not_applicable"
+  }
+}

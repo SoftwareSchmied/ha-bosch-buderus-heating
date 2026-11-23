@@ -327,8 +327,10 @@ defrosts, so the heat taken back from the water is netted.
   one that reports a boiler. These two only add to the evidence; a component
   name never counts, and until the plant model's stored row is read after a
   start the evidence is the one used before. The system type `eHybrid` is a
-  heat pump with an additional heater and no evidence of a hybrid system.
-  Such a hybrid system without a
+  heat pump with an additional heater and no evidence of a hybrid system. A
+  plant that reports a boiler type while its hybrid control reports the
+  outdoor unit as not connected (`NOT_CONNECTED`) is never a hybrid system,
+  whatever else is present. Such a hybrid system without a
   burner counter gets the factors of its heat pump when the heat pump reports
   counters of its own (see below); the recordings of `hs2` are read for a
   hybrid system without them as well (see
@@ -449,7 +451,10 @@ die einen Kessel meldet. Diese beiden Belege kommen nur hinzu; ein
 Komponentenname zählt nie, und bis die gespeicherte Zeile des Anlagenmodells
 nach einem Start gelesen ist, gelten die bisherigen Belege. Der Systemtyp
 `eHybrid` ist eine Wärmepumpe mit Zusatzheizer und kein Beleg für eine
-Hybridanlage. Eine solche
+Hybridanlage. Eine Anlage, die einen Kesseltyp meldet, während ihre
+Hybridsteuerung die Außeneinheit als nicht verbunden meldet
+(`NOT_CONNECTED`), ist nie eine Hybridanlage, was sonst auch vorhanden ist.
+Eine solche
 Hybridanlage ohne Brennerzähler erhält die Arbeitszahlen ihrer Wärmepumpe,
 wenn die Wärmepumpe eigene Zähler meldet (siehe unten); die Aufzeichnungen
 von `hs2` werden für eine Hybridanlage auch ohne sie gelesen (siehe

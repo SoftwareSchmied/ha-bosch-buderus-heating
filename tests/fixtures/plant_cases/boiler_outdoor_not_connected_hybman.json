@@ -1,0 +1,35 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "boiler with the system type hybman, the signals of a hybrid manager and the outdoor status not connected"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/system/type": "hybman",
+    "/heatSources/hs1/type": "OilBoiler",
+    "/heatSources/hybrid/outdoorStatus": "NOT_CONNECTED"
+  },
+  "named_paths": [
+    "/signals/HYBMAN.PumpOn"
+  ],
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "oil",
+    "cascade": false,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [
+      "hybrid_evidence_vs_outdoor_status"
+    ],
+    "gate": "not_applicable"
+  }
+}

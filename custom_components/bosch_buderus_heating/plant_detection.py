@@ -12,17 +12,21 @@ a hybrid manager at the hybrid place.
 Rules (in this order):
 
 1. A bus that is still detecting gives no result.
-2. The plant is a hybrid system when any evidence says so: a heat source
-   type of a hybrid system (``Hybrid``, ``Hybrid_Gas``, ``Hybrid_Oil``), a
-   heat pump type and a boiler type in the same plant, the outdoor status
-   ``CONNECTED``, a hybrid manager at the hybrid place (see below), or the
-   hybrid evidence the integration used before (signals of a hybrid
-   manager, resources of the hybrid control, a type that names a hybrid
-   system). Evidence of the last kind alone is reported as the conflict
-   ``hybrid_name_rule_only``.
-3. Otherwise the heat source types decide (heat pump or boiler), then the
+2. A boiler type with the outdoor status ``NOT_CONNECTED`` is never a
+   hybrid system: no hybrid evidence counts, and the plant is a boiler (the
+   evidence it overrules is reported as the conflict
+   ``hybrid_evidence_vs_outdoor_status``).
+3. Otherwise the plant is a hybrid system when any evidence says so: a heat
+   source type of a hybrid system (``Hybrid``, ``Hybrid_Gas``,
+   ``Hybrid_Oil``), a heat pump type and a boiler type in the same plant,
+   the outdoor status ``CONNECTED``, a hybrid manager at the hybrid place
+   (see below), or the hybrid evidence the integration used before (signals
+   of a hybrid manager, resources of the hybrid control, a type that names a
+   hybrid system). Evidence of the last kind alone is reported as the
+   conflict ``hybrid_name_rule_only``.
+4. Otherwise the heat source types decide (heat pump or boiler), then the
    system type; if they contradict each other the kind stays unknown.
-4. Heat sources that report no appliance give ``ventilation`` with a
+5. Heat sources that report no appliance give ``ventilation`` with a
    Modbus bus or a component at the ventilation place, else ``none``.
 
 The system type ``eHybrid`` is a heat pump with an additional heater, not
@@ -45,7 +49,7 @@ Pure logic without Home Assistant imports.
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Final
 
@@ -74,6 +78,7 @@ CONFLICT_CODES: Final = (
     "components_vs_outdoor_status",
     "heat_pump_component_on_boiler_plant",
     "hybrid_name_rule_only",
+    "hybrid_evidence_vs_outdoor_status",
     "cloud_local_components_differ",
     "unknown_type_value",
     "component_rule_skipped",
@@ -161,6 +166,16 @@ def normalize(value: object) -> str | None:
         return None
     text = _NOT_ALNUM.sub("", value.casefold())
     return text or None
+
+
+def outdoor_unit_disconnected(
+    outdoor_status: object, heat_source_types: Iterable[object]
+) -> bool:
+    """A boiler type with the outdoor status ``NOT_CONNECTED`` of the hybrid
+    control: such a plant is never a hybrid system."""
+    return normalize(outdoor_status) == "notconnected" and any(
+        normalize(value) in BOILER_TYPES for value in heat_source_types
+    )
 
 
 def version_parts(text: str) -> tuple[int, ...]:
@@ -383,8 +398,11 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         None if system_type in (None, "unknown") else system_type == "heatpumpcascade"
     )
     fuel = (fuels[0] if len(set(fuels)) == 1 else "unknown") if fuels else None
+    # 2. A boiler whose hybrid control reports the outdoor unit as not
+    # connected is never a hybrid system.
+    disconnected = bool(boilers) and outdoor == "notconnected"
 
-    # 2. Hybrid evidence.
+    # 3. Hybrid evidence.
     rule_evidence: set[str] = set()
     if hybrids:
         rule_evidence.add("reported_heat_source_type")
@@ -393,7 +411,7 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
     if outdoor == "connected":
         rule_evidence.add("reported_outdoor_status")
     if gate.result == "passed":
-        if boilers and outdoor == "notconnected":
+        if disconnected:
             conflicts.add("components_vs_outdoor_status")
         else:
             rule_evidence.add("hybrid_manager_component")
@@ -404,7 +422,10 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         for code in inputs.hybrid_evidence
         if code in _PREVIOUS_CODES
     }
-    if rule_evidence or previous:
+    if disconnected:
+        if rule_evidence or previous:
+            conflicts.add("hybrid_evidence_vs_outdoor_status")
+    elif rule_evidence or previous:
         if not rule_evidence:
             conflicts.add("hybrid_name_rule_only")
         return PlantResult(
@@ -416,7 +437,7 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
             gates,
         )
 
-    # 3. Heat source types, then the system type.
+    # 4. Heat source types, then the system type.
     by_system = (
         "heat_pump"
         if system_type in ("heatpumpsingle", "heatpumpcascade")
@@ -425,7 +446,9 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         else None
     )
     by_heat_source: str | None = None
-    if names_heat_pump:
+    if disconnected:
+        by_heat_source = "boiler"
+    elif names_heat_pump:
         by_heat_source = "heat_pump"
     elif boilers:
         by_heat_source = "boiler"

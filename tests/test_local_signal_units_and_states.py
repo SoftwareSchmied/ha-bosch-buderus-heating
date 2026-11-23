@@ -22,7 +22,9 @@ from custom_components.bosch_buderus_heating.local_api.models import DataIssue
 from custom_components.bosch_buderus_heating.local_only import (
     GENERIC,
     STATE,
+    hybrid_detected_from,
     hybrid_evidence,
+    hybrid_path_needs_value,
     native_value,
     state_class,
     volume_flow_path,
@@ -123,6 +125,84 @@ def test_hybrid_evidence_names_its_reasons() -> None:
             ("/signals/HYBMAN.CAN.DefrostActive", "false"),
         ]
     ) == ("hybrid_manager_signals", "system_type")
+
+
+@pytest.mark.parametrize(
+    ("readings", "detected", "blocked"),
+    [
+        # A boiler whose hybrid control reports the outdoor unit as not
+        # connected is never a hybrid system, whatever else is present.
+        (
+            [
+                ("/heatSources/hs1/type", "GasBoiler"),
+                ("/heatSources/hybrid/outdoorStatus", "NOT_CONNECTED"),
+                ("/heatSources/hybrid/controlStrategy", None),
+                ("/signals/HYBMAN.PumpOn", "true"),
+                ("/system/type", "hybman"),
+            ],
+            False,
+            True,
+        ),
+        (
+            [
+                ("/heatSources/type", "Boiler"),
+                ("/heatSources/hybrid/outdoorStatus", "not_connected"),
+            ],
+            False,
+            True,
+        ),
+        # The same with the outdoor unit connected, or without a status.
+        (
+            [
+                ("/heatSources/hs1/type", "GasBoiler"),
+                ("/heatSources/hybrid/outdoorStatus", "CONNECTED"),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                ("/heatSources/hs1/type", "OilBoiler"),
+                ("/heatSources/hybrid/controlStrategy", None),
+            ],
+            True,
+            False,
+        ),
+        # Not connected without a boiler type: the evidence counts as before.
+        (
+            [
+                ("/heatSources/hs1/type", "Heatpump"),
+                ("/heatSources/hybrid/outdoorStatus", "NOT_CONNECTED"),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                ("/heatSources/hybrid/outdoorStatus", "NOT_CONNECTED"),
+                ("/heatSources/hybrid/activeHeatSource", None),
+            ],
+            True,
+            False,
+        ),
+        ([("/heatSources/hs1/type", "GasBoiler")], False, False),
+    ],
+)
+def test_a_boiler_with_its_outdoor_unit_not_connected_is_no_hybrid(
+    readings: list[tuple[str, object]], detected: bool, blocked: bool
+) -> None:
+    assert hybrid_detected_from(readings) is detected
+    # The plant model's own evidence only adds where nothing blocks it.
+    assert hybrid_detected_from(readings, ("heat_source_types_combined",)) is (
+        not blocked
+    )
+
+
+def test_the_outdoor_status_needs_its_value() -> None:
+    assert hybrid_path_needs_value("/heatSources/hybrid/outdoorStatus")
+    assert not hybrid_path_needs_value("/heatSources/hybrid/controlStrategy")
+    assert not hybrid_path_needs_value("/signals/HYBMAN.PumpOn")
+    assert hybrid_path_needs_value("/heatSources/hs1/type")
 
 
 @pytest.mark.parametrize(
@@ -229,11 +309,23 @@ async def test_diagnostics_note_a_hybrid_from_the_cloud(hass) -> None:
         resource("/system/type", "heatpump_single"),
         resource("/heatSources/hs1/pumpVolumeFlow", 800.0, "l/h", "floatValue"),
     )
-    runtime = _runtime(
-        {"a": _binding("one", "pointt"), "b": _binding("two", "pointt")},
-        sources={"a": hybrid, "b": heat_pump},
+    # A boiler whose outdoor unit is not connected: the evidence is shown,
+    # but it is no hybrid system.
+    boiler = _coordinator(
+        hass,
+        resource("/heatSources/hs1/type", "GasBoiler"),
+        resource("/heatSources/hybrid/outdoorStatus", "NOT_CONNECTED"),
+        resource("/heatSources/hs1/pumpVolumeFlow", 900.0, "l/h", "floatValue"),
     )
-    report = _hybrid_volume_flow(runtime, {"one": 1, "two": 2, "three": 3})
+    runtime = _runtime(
+        {
+            "a": _binding("one", "pointt"),
+            "b": _binding("two", "pointt"),
+            "c": _binding("four", "pointt"),
+        },
+        sources={"a": hybrid, "b": heat_pump, "c": boiler},
+    )
+    report = _hybrid_volume_flow(runtime, {"one": 1, "two": 2, "three": 3, "four": 4})
     assert report == [
         {
             "target": 1,
@@ -249,11 +341,19 @@ async def test_diagnostics_note_a_hybrid_from_the_cloud(hass) -> None:
             "volume_flow_readings": 1,
             "volume_flow": "as_reported",
         },
+        {
+            "target": 4,
+            "hybrid_detected": False,
+            "evidence": ["hybrid_resources"],
+            "volume_flow_readings": 1,
+            "volume_flow": "as_reported",
+        },
     ]
     # The value itself is never touched.
     assert hybrid.data["/heatSources/hs1/pumpVolumeFlow"].resource.value == 2.0
     await hybrid.async_shutdown()
     await heat_pump.async_shutdown()
+    await boiler.async_shutdown()
 
 
 # ------------------------------------------------------ gateway state texts
