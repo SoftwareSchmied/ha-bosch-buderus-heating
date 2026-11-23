@@ -80,6 +80,23 @@ is meant to change:
   The two /system/info variants of the iCom fixture gain the heat generator
   sensor: the fixture now reports its boiler as ``GasBoiler`` (the value a
   device reports), and the plant kind boiler gives the sensor.
+- ``CHANGED_ATTRIBUTES``: plant -> unique ID pattern -> attribute keys whose
+  value may change. Only for fixture plants, never a K40 plant (a test checks
+  this). The CT200 fixture reports the room temperature of zones 3, 6 and 9
+  with ``used`` false and a valid value; a measured zone value is shown
+  whatever ``used`` says, so these climates show it as their current
+  temperature (before: none).
+- Reading tolerantly, changing strictly (0.9.3, ``EXPECTED_NEW`` entities):
+  the same three room temperatures become sensors on the CT200 fixture; the
+  boost switch of the absence fixture and the setpoint optimization switch of
+  the circuit fixture report no ``allowedValues`` and a current ``off``/
+  ``on``, so on and off stand for both (neither fixture is recognised as a
+  room controller in this harness, which would keep both as readings); the
+  hot water circuit 2 of the RRC hot water fixture (``off`` where this
+  harness expects ``Off``, shown as off) and the hot water circuit of the
+  WDDW2 program fixture (``scheduling``, shown as no operation) report a
+  mode not known to the water heater, which now stays shown with its
+  temperatures and offers no operation.
 - ``POSITION_FREE``: request paths that may move to another bulk request; the
   number of bulk requests and the reads of every path stay the same
   (``/system/info``, I3).
@@ -237,6 +254,20 @@ EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
     **{
         name: {"entities": (r"gateway-one:heat_generator",)}
         for name in ("icom_gateway_circuit_token_16", "icom_gateway_hmi800_hp_light")
+    },
+}
+# Reading tolerantly, changing strictly (0.9.3): see the module docstring.
+for _plant, _entities in {
+    "rrc_absence": (r"gateway-one:heatingCircuits:hc1:boostMode:control",),
+    "rrc_circuit": (r"gateway-one:heatingCircuits:hc1:setpointOptimization:control",),
+    "rrc_ct200": (r"gateway-one:zones:zn[369]:temperatureActual",),
+    "rrc_dhw": (r"gateway-one:dhwCircuits:dhw2:water_heater",),
+    "wddw2_switch_program": (r"gateway-one:dhwCircuits:dhw1:water_heater",),
+}.items():
+    EXPECTED_NEW[_plant] = {**EXPECTED_NEW.get(_plant, {}), "entities": _entities}
+CHANGED_ATTRIBUTES: dict[str, dict[str, frozenset[str]]] = {
+    "rrc_ct200": {
+        r"gateway-one:zones:zn[369]:climate": frozenset({"current_temperature"})
     },
 }
 POSITION_FREE: frozenset[str] = frozenset({"/system/info"})
@@ -1105,7 +1136,11 @@ def _device_differences(
     return found
 
 
-def _state_differences(expected: dict[str, Any], actual: dict[str, Any]) -> list[str]:
+def _state_differences(
+    expected: dict[str, Any],
+    actual: dict[str, Any],
+    changed: dict[str, frozenset[str]] | None = None,
+) -> list[str]:
     found = []
     for key, before in expected.items():
         after = actual.get(key)
@@ -1119,7 +1154,10 @@ def _state_differences(expected: dict[str, Any], actual: dict[str, Any]) -> list
         for name, value in before["attributes"].items():
             if name not in after["attributes"]:
                 found.append(f"attribute gone: {key}: {name}")
-            elif after["attributes"][name] != value:
+            elif after["attributes"][name] != value and not any(
+                name in keys and re.fullmatch(pattern, _unique_id(key))
+                for pattern, keys in (changed or {}).items()
+            ):
                 found.append(f"attribute changed: {key}: {name}")
         allowed = frozenset().union(
             *(
@@ -1311,7 +1349,9 @@ def differences(
     found += _device_differences(
         expected["devices"], actual["devices"], new.get("devices", ())
     )
-    found += _state_differences(expected["states"], actual["states"])
+    found += _state_differences(
+        expected["states"], actual["states"], CHANGED_ATTRIBUTES.get(name)
+    )
     known = {_key(row["platform"], row["unique_id"]) for row in expected["entities"]}
     found += _write_differences(name, expected["writes"], actual["writes"], known)
     for channel in sorted(expected["requests"].keys() | actual["requests"].keys()):
@@ -1389,6 +1429,7 @@ def test_every_plant_has_its_golden_file_and_nothing_else() -> None:
 
 def test_the_k40_plants_never_get_new_entities_or_requests() -> None:
     assert not [name for name in EXPECTED_NEW if name.startswith("k40")]
+    assert not [name for name in CHANGED_ATTRIBUTES if name.startswith("k40")]
     assert set(EXPECTED_NEW) <= set(PLANTS)
     assert set(WRITE_DELTAS) <= set(PLANTS)
     for allowance in EXPECTED_NEW.values():
