@@ -55,7 +55,9 @@ Assistant makes itself are taken out of the golden state before comparing:
 the state attribute ``temperature_unit`` of climate and water heater entities
 and the area in front of a generated entity ID. Both are detected by the
 feature (``HA_TEMPERATURE_UNIT``, ``HA_AREA_IN_ENTITY_ID``); on 2026.11
-nothing is taken out. Recording needs 2026.11.
+nothing is taken out, on 2026.9 only the temperature unit. Each run checks
+that the detected temperature unit is what the running Home Assistant shows.
+Recording needs 2026.11.
 
 Instructions for packages
 -------------------------
@@ -317,8 +319,9 @@ NUMBER_HEAT_DEMAND_STATE: dict[str, Any] = {
 # to the minimum version (2026.5) differ in two things Home Assistant does
 # itself, never the integration:
 # - the state attribute ``temperature_unit`` of climate and water heater
-#   entities (newer versions have ClimateEntityStateAttribute and
-#   WaterHeaterStateAttribute and show the unit; older ones do not);
+#   entities (newer versions list TEMPERATURE_UNIT in ClimateEntityStateAttribute
+#   and WaterHeaterStateAttribute and show the unit; older ones do not, also
+#   2026.9, which has both enums already but without this member);
 # - the area of an entity's device in front of a generated entity ID (newer
 #   versions have EntityNamePart; older ones build the entity ID from the
 #   device and entity name only).
@@ -327,8 +330,13 @@ NUMBER_HEAT_DEMAND_STATE: dict[str, Any] = {
 # state before comparing (``for_this_home_assistant``); with the feature
 # nothing is taken out, so the comparison on 2026.11 stays complete.
 HA_TEMPERATURE_UNIT: dict[str, bool] = {
-    "climate": hasattr(climate_const, "ClimateEntityStateAttribute"),
-    "water_heater": hasattr(water_heater_const, "WaterHeaterStateAttribute"),
+    "climate": hasattr(
+        getattr(climate_const, "ClimateEntityStateAttribute", None), "TEMPERATURE_UNIT"
+    ),
+    "water_heater": hasattr(
+        getattr(water_heater_const, "WaterHeaterStateAttribute", None),
+        "TEMPERATURE_UNIT",
+    ),
 }
 HA_AREA_IN_ENTITY_ID: bool = hasattr(er, "EntityNamePart")
 # Recording needs the Home Assistant the golden files describe.
@@ -1451,6 +1459,13 @@ async def test_the_plant_matches_the_state_before_the_plant_model(
         if record.getMessage().startswith("Error adding entity")
     ]
     assert not refused, f"{name}:\n" + "\n".join(refused)
+    # The detected feature is what this Home Assistant shows: every climate
+    # and water heater shows the temperature unit exactly when it is detected.
+    for key, state in actual["states"].items():
+        domain = key.split(" ", 1)[0]
+        if domain in HA_TEMPERATURE_UNIT:
+            shown = "temperature_unit" in state["attributes"]
+            assert shown is HA_TEMPERATURE_UNIT[domain], f"{key}: temperature_unit"
     if UPDATE:
         assert HA_AS_RECORDED, "record only on the Home Assistant of the golden files"
         text = json.dumps(
