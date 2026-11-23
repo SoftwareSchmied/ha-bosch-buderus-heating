@@ -284,31 +284,49 @@ class ComponentDevices:
             return 0
         if self._last is not None and self._last == (shown.rows, parent.id):
             return 0
-        self._last = (shown.rows, parent.id)
         language = self.hass.config.language
         created = 0
+        complete = True
         for key, item in device_components(shown.rows).items():
-            wanted = (DOMAIN, identifier(self.gateway, *key))
-            device = device_by_identifier(registry, wanted, entry_id)
-            if device is not None:
-                self._handled.add(key)
-                self._refresh(registry, device, item, parent)
-                continue
-            if key in self._handled:
-                continue  # deleted by the user: back at the next start
-            self._handled.add(key)
-            registry.async_get_or_create(
-                config_entry_id=entry_id,
-                identifiers={wanted},
-                manufacturer=parent.manufacturer,
-                model=item.model,
-                model_id=str(item.type_id),
-                name=device_name(item, language),
-                sw_version=item.version,
-                **via_device(registry, (DOMAIN, self.gateway), entry_id),
-            )
-            created += 1
+            try:
+                created += self._sync_one(registry, key, item, parent, language)
+            except Exception:  # one component never stops the others
+                complete = False
+                _LOGGER.debug("Component device not updated", exc_info=True)
+        # Done for this list only when every component was handled; else the
+        # next update tries the failed ones again.
+        self._last = (shown.rows, parent.id) if complete else None
         return created
+
+    def _sync_one(
+        self,
+        registry: dr.DeviceRegistry,
+        key: ComponentKey,
+        item: ComponentDevice,
+        parent: dr.DeviceEntry,
+        language: str,
+    ) -> int:
+        entry_id = self.entry.entry_id
+        wanted = (DOMAIN, identifier(self.gateway, *key))
+        device = device_by_identifier(registry, wanted, entry_id)
+        if device is not None:
+            self._handled.add(key)
+            self._refresh(registry, device, item, parent)
+            return 0
+        if key in self._handled:
+            return 0  # deleted by the user: back at the next start
+        registry.async_get_or_create(
+            config_entry_id=entry_id,
+            identifiers={wanted},
+            manufacturer=parent.manufacturer,
+            model=item.model,
+            model_id=str(item.type_id),
+            name=device_name(item, language),
+            sw_version=item.version,
+            **via_device(registry, (DOMAIN, self.gateway), entry_id),
+        )
+        self._handled.add(key)
+        return 1
 
     def _link(self, registry: dr.DeviceRegistry, parent: dr.DeviceEntry) -> None:
         """Connect devices that were created without their gateway's device."""
@@ -387,10 +405,14 @@ def track_component_devices(
 
     async def after_load() -> None:
         # The plant model reads its stored row first; then the start.
-        await tracker.async_load()
-        manager.update()
+        try:
+            await tracker.async_load()
+        finally:
+            manager.update()
 
-    hass.async_create_task(after_load(), eager_start=True)
+    entry.async_create_background_task(
+        hass, after_load(), "component devices start", eager_start=True
+    )
     return manager
 
 
@@ -415,7 +437,10 @@ def enable(hass: HomeAssistant, entry: ConfigEntry[Any]) -> int:
     created = 0
     for manager in managers_of(hass, entry.entry_id):
         manager.reset()
-        created += manager.sync()
+        try:
+            created += manager.sync()
+        except Exception:  # the options are saved; the next update tries again
+            _LOGGER.debug("Component devices not created", exc_info=True)
     return created
 
 
@@ -456,7 +481,11 @@ def offered(hass: HomeAssistant, entry: ConfigEntry[Any]) -> bool:
     entry lists components."""
     if enabled(entry):
         return True
-    return any(manager.listed() for manager in managers_of(hass, entry.entry_id))
+    try:
+        return any(manager.listed() for manager in managers_of(hass, entry.entry_id))
+    except Exception:  # the options menu never fails on the plant model
+        _LOGGER.debug("Component devices not offered", exc_info=True)
+        return False
 
 
 def listing(hass: HomeAssistant, entry: ConfigEntry[Any]) -> str:

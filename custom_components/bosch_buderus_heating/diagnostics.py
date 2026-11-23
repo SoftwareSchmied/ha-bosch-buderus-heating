@@ -812,9 +812,7 @@ def _gateway_diagnostics(
         else "generic",
         "rrc_profile": _rrc_profile_diagnostics(coordinator),
         # The plant's recordings: reads, series and import, without values.
-        "recordings": recordings.diagnostics(
-            coordinator.hass, coordinator.gateway.gateway_id
-        ),
+        "recordings": _recordings_diagnostics(coordinator),
         "softener_entities": _softener_entity_registration(coordinator),
         "runtime": {
             **coordinator.diagnostics_summary(),
@@ -1684,6 +1682,16 @@ def _value_shape(resource: Resource) -> str:
     if isinstance(value, list):
         return "array"
     return "object"
+
+
+def _recordings_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    try:
+        return recordings.diagnostics(coordinator.hass, coordinator.gateway.gateway_id)
+    except Exception:  # the rest of the report stays available
+        _LOGGER.debug("Recordings not reportable", exc_info=True)
+        return {"error": "unavailable"}
 
 
 def _local_brand(target: Any) -> str:

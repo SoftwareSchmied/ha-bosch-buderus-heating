@@ -45,7 +45,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Final
-from weakref import WeakKeyDictionary
+from weakref import WeakKeyDictionary, ref
 
 from homeassistant.core import callback
 from homeassistant.util import dt as dt_util
@@ -134,7 +134,10 @@ def _iso(moment: datetime) -> str:
 def _parse_time(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
-    return dt_util.parse_datetime(value)
+    try:
+        return dt_util.parse_datetime(value)
+    except ValueError, TypeError:  # a damaged stored time counts as missing
+        return None
 
 
 # ------------------------------------------------------------------ inputs
@@ -732,7 +735,8 @@ class PlantTracker:
         coordinator: BoschBuderusDataUpdateCoordinator,
         store: DerivedStore | None,
     ) -> None:
-        self._coordinator = coordinator
+        # Weak: the tracker never keeps a coordinator alive (_TRACKERS).
+        self._coordinator = ref(coordinator)
         self._store = store
         self._key = row_key(coordinator.gateway.gateway_id)
         self._readings = _Readings()
@@ -783,7 +787,10 @@ class PlantTracker:
         """Follow the coordinator's updates for the lifetime of ``entry``."""
         if self._unsubscribe is not None:
             return
-        remove = self._coordinator.async_add_listener(self.update)
+        coordinator = self._coordinator()
+        if coordinator is None:
+            return
+        remove = coordinator.async_add_listener(self.update)
 
         def unsubscribe() -> None:
             remove()
@@ -793,44 +800,67 @@ class PlantTracker:
         entry.async_on_unload(unsubscribe)
 
     async def async_load(self) -> None:
-        """Read the stored row once, then work the result out."""
+        """Read the stored row once, then work the result out.
+
+        Never fails: a row that cannot be read counts as missing, and the
+        model starts without it."""
         if self._loaded or self._store is None:
             return
-        await self._store.async_load()
+        try:
+            await self._store.async_load()
+            if self._loaded:
+                return
+            self._read_row(self._store.get(self._key))
+        except Exception:  # the plant model never stops a setup
+            self._note_failure("Stored plant row not read")
         if self._loaded:
             return
-        row = self._store.get(self._key)
-        self._stored = parse_row(row)
-        if self._stored is not None and row is not None:
-            self._row = row
-            self.changes = self._stored.changes
-            self.probes = self._stored.probes
-            self._components = {
-                key: dict(value) for key, value in self._stored.components.items()
-            }
-            self._updated_at = self._stored.updated_at
         if self._fresh_probes is not None:
             self.probes = _same_times(self.probes, self._fresh_probes)
             self._fresh_probes = None
         self._loaded = True
-        self.refresh()
+        try:
+            self.refresh()
+        except Exception:  # the plant model never stops a setup
+            self._note_failure("Plant model not worked out")
+
+    def _read_row(self, row: dict[str, Any] | None) -> None:
+        stored = parse_row(row)
+        if stored is None or row is None:
+            return
+        components = {key: dict(value) for key, value in stored.components.items()}
+        self._stored = stored
+        self._row = row
+        self.changes = stored.changes
+        self.probes = stored.probes
+        self._components = components
+        self._updated_at = stored.updated_at
+
+    def _note_failure(self, message: str) -> None:
+        if not self._failed:
+            self._failed = True
+            _LOGGER.debug(message, exc_info=True)
 
     @callback
     def update(self) -> None:
         """Follow an update of the coordinator; never disturbs it."""
+        self.safe_current()
+
+    def safe_current(self) -> PlantResult | None:
+        """``current`` for every caller outside the model: an unexpected
+        error gives no result (behave as before the plant model)."""
         try:
-            self.current()
-        except Exception:  # the plant model must never stop an update
-            if not self._failed:
-                self._failed = True
-                _LOGGER.debug("Plant model not worked out", exc_info=True)
+            return self.current()
+        except Exception:  # the plant model must never stop its callers
+            self._note_failure("Plant model not worked out")
+            return None
 
     def current(self) -> PlantResult | None:
         """The result of this update pass: worked out once per pass, as the
         hybrid evidence is (every caller asks within the same pass)."""
         from .local_selection import LocalSelection
 
-        selection = getattr(self._coordinator, "local_selection", None)
+        selection = getattr(self._coordinator(), "local_selection", None)
         if isinstance(selection, LocalSelection):
             return selection._cached(("plant_model", id(self)), self.refresh)
         return self.refresh()
@@ -838,9 +868,10 @@ class PlantTracker:
     def refresh(self) -> PlantResult | None:
         """Work the result out from the current readings; ``None`` before
         the stored row is read."""
-        if not self._loaded:
-            return None
-        gathered = _gather(self._coordinator, self._readings)
+        coordinator = self._coordinator()
+        if not self._loaded or coordinator is None:
+            return self.result if coordinator is None else None
+        gathered = _gather(coordinator, self._readings)
         stored = self._stored
         restored: set[str] = set()
         sources: dict[str, SourceRows] = {}
@@ -1171,7 +1202,7 @@ def current_plant(coordinator: object) -> PlantResult | None:
     tracker = existing_tracker(coordinator)
     if tracker is None or not tracker.loaded:
         return None
-    return tracker.current()
+    return tracker.safe_current()
 
 
 def components(coordinator: object) -> ShownComponents | None:
@@ -1179,15 +1210,19 @@ def components(coordinator: object) -> ShownComponents | None:
     tracker = existing_tracker(coordinator)
     if tracker is None or not tracker.loaded:
         return None
-    tracker.current()
-    shown = tracker.shown
-    table = load_table()
-    return ShownComponents(
-        shown.source if shown is not None else None,
-        shown.rows if shown is not None else (),
-        shown is not None and not shown.current,
-        table.table_version if table is not None else None,
-    )
+    try:
+        tracker.current()
+        shown = tracker.shown
+        table = load_table()
+        return ShownComponents(
+            shown.source if shown is not None else None,
+            shown.rows if shown is not None else (),
+            shown is not None and not shown.current,
+            table.table_version if table is not None else None,
+        )
+    except Exception:  # the plant model must never stop its callers
+        tracker._note_failure("Plant components not worked out")
+        return None
 
 
 def set_probe_results(

@@ -995,6 +995,35 @@ def test_invalid_stored_rows_are_ignored() -> None:
     assert stored.inputs["heat_source_types"] == {"hs1": "Heatpump"}
     assert stored.inputs["allowed_values"] == {"/system/bus": ("EMS2_0",)}
     assert stored.inputs["hybrid_evidence"] == ("hybrid_resources",)
+    # A time that is no date counts as missing and never fails the row.
+    damaged = parse_row(
+        {
+            "v": 1,
+            "updated_at": "2026-13-45T00:00:00",
+            "components": {"8/8": {"first_seen": "2026-02-30T25:61:00"}},
+        }
+    )
+    assert damaged is not None and damaged.updated_at is None
+
+
+def test_the_model_keeps_no_coordinator_alive() -> None:
+    """The trackers of the gateways are kept per coordinator; a coordinator
+    that is no longer used goes, and its tracker with it."""
+    import gc
+
+    class Owner:
+        gateway = Gateway("gateway-gone")
+
+    owner = Owner()
+    plant_inputs._TRACKERS[owner] = PlantTracker(owner, None)  # type: ignore[arg-type]
+    assert existing_tracker(owner) is not None
+    del owner
+    gc.collect()
+    assert not [
+        tracker
+        for key, tracker in list(plant_inputs._TRACKERS.items())
+        if isinstance(key, Owner)
+    ]
 
 
 def test_the_gateway_class_matches_the_diagnostics() -> None:
