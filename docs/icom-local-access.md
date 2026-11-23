@@ -116,16 +116,19 @@ therefore:
   them after three missed periods or from the second pause on;
 - stops completely, without further requests, when two answers in a row cannot
   be decrypted (wrong or changed password; a single one, also right after a
-  restart, is only looked at again after a minute). An answer that decrypts to
-  readable text is not counted as such, even when it is no JSON object. The access then shows
-  "sign-in required" or "not reachable" until you enter the data again;
+  restart, is only looked at again after a minute). The access then shows
+  "sign-in required" or "not reachable" until you enter the data again; an
+  answer that decrypts to readable text is not counted as such, even when it
+  is no JSON object;
 - judges a gateway set up by its own ID that later reports no ID, an ID that
   says nothing (empty or a placeholder such as -1) or another ID, and one
   recognised by a stored version value that later reports none or another one
-  (for example after a firmware update), by its values, as at setup: only a clear contradiction pauses the access (its values are
-  withdrawn and it looks again after the pause); otherwise it reads on,
-  confirmed by the values or unverified. A firmware update therefore never
-  stops the access. The diagnostics show the last such check (`identity_check`); an unverified access checks no ID at all;
+  (for example after a firmware update), by its values, as at setup: only a
+  clear contradiction pauses the access (its values are withdrawn and it
+  looks again after the pause); otherwise it reads on, confirmed by the values
+  or unverified. A firmware update therefore never stops the access. The
+  diagnostics show the last such check (`identity_check`); an unverified
+  access checks no ID at all;
 - makes no request while no cloud connection supplies the system any more (for
   example after the cloud connection was removed), and goes on by itself when
   one does again;

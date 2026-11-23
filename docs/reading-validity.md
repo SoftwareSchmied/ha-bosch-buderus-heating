@@ -202,11 +202,13 @@ Writing keeps its own strict checks (type, valid limits, step and options).
 - Metadata of the wrong type counts as not reported, and the value stays:
   `minValue` or `maxValue` that is not a finite number, a `unitOfMeasure`
   that is not a text, a `writeable` other than a boolean or 0/1, and option
-  entries that are not plain values. Such a resource is never writable, and a
-  number control without valid limits is not offered. A reference entry
-  without a path is skipped. The flags `used` and `available` take
-  `true` and `false` in any letter case. Diagnostics name the fields read
-  as not reported in `metadata_not_reported`, never their content.
+  entries that are not plain values. A `writeable` other than a boolean or
+  0/1 makes the resource read-only; a control still needs valid limits, unit
+  and options, so a number control without valid limits is not offered. A
+  reference entry without a path is skipped. The flags `used` and
+  `available` take `true` and `false` in any letter case. Diagnostics name
+  the fields read as not reported in `metadata_not_reported`, never their
+  content.
 - A blank unit of an energy collection is a missing one, as for the start
   counters: the established "no unit means kWh" rule applies.
 - The firmware repair compares units in every reviewed spelling (`C`,

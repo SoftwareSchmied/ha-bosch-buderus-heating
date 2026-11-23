@@ -124,9 +124,10 @@ wird. Der lokale Zugang
 - hält ganz an, ohne weitere Anfragen, wenn sich zwei Antworten hintereinander
   nicht entschlüsseln lassen (falsches oder geändertes Passwort; eine einzelne,
   auch direkt nach einem Neustart, wird erst nach einer Minute noch einmal
-  angesehen). Eine Antwort, die sich zu lesbarem Text entschlüsseln lässt, zählt
-  dabei nicht mit, auch wenn sie kein JSON-Objekt ist. Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
-  erreichbar“, bis du die Daten neu eingibst;
+  angesehen). Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht erreichbar“,
+  bis du die Daten neu eingibst; eine Antwort, die sich zu lesbarem Text
+  entschlüsseln lässt, zählt dabei nicht mit, auch wenn sie kein JSON-Objekt
+  ist;
 - beurteilt ein Gateway, das an seiner eigenen Kennung erkannt wurde und später
   keine Kennung, eine Kennung ohne Aussage (leer oder ein Platzhalter wie -1)
   oder eine andere Kennung meldet, und eines, das an einem gespeicherten
