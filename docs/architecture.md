@@ -240,12 +240,19 @@ gateway runs. That is the job of three newer modules (see
   reads them after every other path; their results go into the stored row
   through `set_probe_results`, for the diagnostics only.
 
-The plant kind changes no entity, name or control. It may lead to reads
-only: the energy recordings of a heat pump behind an iCom gateway and the
-heat pump's own recordings of a hybrid system (`recordings/gating.py`, see
-[recordings](recordings.md)); entities then come only from answers. It is
-visible in the diagnostics (block `plant`) and in the stored row. Without a
-result (`None`) every consumer behaves as before.
+The plant kind changes no name, control or unique ID. It reaches the rest of
+the integration in four places only: the heat generator sensor shows it with
+the components (`heat_generator_sensor.py`, contract 1 of its attributes,
+and a sensor for a plant without a named module); its hybrid evidence counts
+for the burner share (`burner_share.py`), so the performance factors of a
+hybrid system follow; it leads to reads (the energy recordings of a heat pump
+behind an iCom gateway and the heat pump's own recordings of a hybrid system,
+`recordings/gating.py`, see [recordings](recordings.md)), whose entities come
+only from answers; and the optional component devices list the components
+(`component_devices.py`). A module without a hardware type takes its role
+from the component table (`heat_generator.py`). The plant kind is visible in
+the diagnostics (block `plant`) and in the stored row. Without a result
+(`None`) every consumer behaves as before.
 
 ## Gateway exchange
 

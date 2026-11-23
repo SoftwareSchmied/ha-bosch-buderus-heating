@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-22
+- Amended: 2026-11-23 (later stages of 0.9.3-beta.6)
 
 ## Context
 
@@ -48,7 +49,8 @@ sw_update_type, sw_ident, article_number)`; every field is optional and
 checked. Type and place numbers have 1 to 6 digits (a boolean, a fraction, an
 empty or negative value, or more digits is no number). A version follows the
 rule of the software version of the outdoor unit and is left out when it
-equals an identifier of the same row. A product name that holds a serial
+equals an identifier of the same row; a version with a control or other
+unprintable character, or longer than 64 characters, is dropped as a whole. A product name that holds a serial
 number or only digits is left out. Hardware type, update type, software
 identifier (`SwIdenStr`) and article number of the model (`ProductTtn`,
 else `ModuleTtn`) are kept only as safe texts. `No`,
@@ -125,7 +127,9 @@ gateways keeps its own parser.
 
 Versions, software identifiers and article numbers of the model are kept in
 the stored row and shown in the diagnostics. They never appear in entity
-attributes or in the log. Serial numbers, UUIDs, the `No` field, gateway IDs
+attributes or in the log. The one exception is the software version of a
+component device, which the device registry shows while the optional
+component devices are on. Serial numbers, UUIDs, the `No` field, gateway IDs
 and entry IDs never appear anywhere.
 
 ### Diagnostics
@@ -135,8 +139,8 @@ Schema 49 adds `gateways[].plant` and `views_without_cloud[].plant`
 including iCom gateways and room controllers (with their full rows), not for
 water softeners, air conditioners or wallboxes. The iCom block
 `icom.system_components` stays. The anonymized inventory keeps only
-`plant_kind`. A placeholder for optional component devices is not part of
-schema 49; its stage adds its own field.
+`plant_kind`. The optional component devices add the field
+`component_devices` (`enabled`, `count`) to the block within schema 49.
 
 ### Interface for later stages
 
@@ -160,10 +164,94 @@ schema 49; its stage adds its own field.
   flags).
 - `plant_diagnostics(coordinator)`: the diagnostics block.
 
+## Later stages (0.9.3-beta.6)
+
+The stages after the model use only the interface above and treat `None`
+as "behave as before".
+
+### Heat generator sensor (contract 1)
+
+- The attributes of the heat generator sensor are a versioned interface for
+  cards (`contract_version: 1`, `docs/schemas/heat-generator-sensor.v1.json`):
+  every key is always present; the keys of 0.9.1 to 0.9.3-beta.5 keep their
+  meaning; new are `state_basis` (`product_name` or `component_type`),
+  `plant_kind`, `plant_kind_evidence`, `fuel`, `cascade`, `components`
+  (at most 32: place, place number, type number, type name, role, basis and
+  product name, without the gateway's own rows, rows without a valid type,
+  versions and serial numbers), `components_source` and
+  `components_table_version`.
+- `stored` stays in the diagnostics and is never part of
+  `plant_kind_evidence`, so a restart does not change the attribute.
+  `components` is not recorded in the history. The restore data keep the
+  form of 0.9.3-beta.5.
+- Without a module with a product name the state is the name of the
+  component at the heat generator's place (a component with a role first,
+  then the smallest type number). The entity is created for a named module,
+  evidence of the heat source kind, a component at the heat generator's
+  place or the plant kind `heat_pump`, `hybrid` or `boiler`; never for a
+  room controller.
+- The sensor reads the stored row before it writes its first state.
+- The evidence `hybrid_manager_component` and `heat_source_types_combined`
+  also counts for the hybrid detection of the burner share and of the
+  hybrid diagnostics; it only adds to the evidence used before.
+- A module that the model table gives no role (for example one without a
+  hardware type) gets the role the component table gives its type number at
+  its place, only from an entry whose basis is not a name. Type number and
+  place are not part of the restore data; the stored row gives them back.
+
+### Targeted reads (`module_probes`)
+
+- Fixed rules R1 to R6 on the component rows and a few reported values plan
+  reads of areas the gateway does not list: the heat pump at `hs2` of a
+  hybrid system, pool, ventilation and solar by their places, the operation
+  mode of `dhw1` and `dhw2` without a listed hot water circuit (and the
+  known children of a circuit that answers), the heat pumps `hs1` to `hsN`
+  of a cascade. Only places and roles with a basis other than `name` count.
+- `/system/info` is read in the first batch of the discovery; its later
+  place stays empty, so every other path keeps its batch. The targeted reads
+  come after every other path in batches of their own, at most 48 per
+  discovery (`module_probe_limit`), never a path of the list of paths that
+  are never read. They are off on iCom gateways, room controllers, water
+  softeners and in the search for missing parts.
+- An error of a targeted read (a series of server errors, 429, a timeout)
+  ends only the targeted reads; the discovery stays complete and no reading
+  becomes unavailable.
+- The results of the last run are kept in the stored row (`probes`, per path
+  rule, result class and time, written only when they change). They are
+  shown in the diagnostics and never skip a read.
+
+### Recordings
+
+- R7: an iCom gateway whose plant kind is `heat_pump` reads the energy
+  monitoring of the total (heat produced, compressor, electric heater)
+  instead of the boiler series; the solar yield of `sc1` is read for the
+  diagnostics only.
+- Option B: a plant of the kind `hybrid` whose heat pump reports no counters
+  of its own reads the heat pump's recordings at `hs2`
+  (`heat_pump_source_basis: plant_kind`); a heat pump with counters keeps
+  its heat source (`counters`). Never on an iCom gateway.
+
+### Component devices (`component_devices`)
+
+- The option `component_devices` (off by default, no change of the entry
+  version) adds one device per place and type number of the component list
+  shown, identified by `(DOMAIN, "<gateway>:component:<place>:<type>")`,
+  connected through the gateway's device, without entities. Model: the type
+  name; model ID: the type number; software version: the whole version text
+  of the list (none when two components of one kind report different ones);
+  never a serial number. The gateway's own rows and rows without a valid type
+  get no device.
+- A view from local readings alone never changes the registry. Switching
+  the option off removes these devices; a gateway without a stored system
+  loses them at setup (also after a gateway exchange).
+- The device diagnostics of a component device add the block `component`.
+
 ## Consequences
 
-- The plant kind is visible and stored, but in this stage it changes no
-  entity, name, control or request.
+- The plant model alone (the first stage) changed no entity, name, control
+  or request; the later stages above use it for the heat generator sensor,
+  the hybrid detection, targeted reads, recordings and the optional
+  component devices, and change no name, control or unique ID.
 - Later stages read the plant kind and the components through this
   interface only and treat `None` as "behave as before".
 - A new rule or role needs a code change with tests, or a table entry with a

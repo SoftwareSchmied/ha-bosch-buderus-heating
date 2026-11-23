@@ -783,8 +783,9 @@ entity counts by domain and by state (`value`, `unknown`, `unavailable`,
 `disabled`, `not_loaded`), and one row per entity (at most 500; then
 `entities_truncated` is true) with its domain, its translation key, its
 entity category, why it is disabled and the kind of its state. It contains no
-reading, name, entity ID, unique ID, serial number or firmware text. The
-schema number stays 48.
+reading, name, entity ID, unique ID or serial number, and no firmware text
+except the software version of a component device (below). Its schema number
+is the one of the report of the integration (49 since 0.9.3-beta.6).
 
 The report of an optional component device (0.9.3-beta.6, see
 [System components](system-components.md#component-devices-optional)) adds

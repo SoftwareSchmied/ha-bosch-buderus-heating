@@ -287,7 +287,8 @@ hybrid place and a heat pump reported next to a boiler count as a hybrid
 system, and the performance factors, the environmental energy and the
 recordings of the heat pump of a hybrid system follow that (see
 [Calculated values](calculated-values.md#performance-factors)). The plant
-kind may also start additional reads (targeted reads, recordings). It never
+kind may also start additional reads ([targeted reads](#targeted-reads),
+recordings). It never
 changes a name or a control; entities only come from data the plant
 answers.
 
@@ -344,6 +345,40 @@ the component at the heat generator's place as its state. The attributes are
 a versioned interface for cards, see
 [interface for cards (contract 1)](entities.md#interface-for-cards-contract-1).
 
+### Targeted reads
+
+Some areas of a plant are not listed by the gateway, or their container
+refuses the read, although a component or a reported value shows them. The
+cloud discovery then reads a few known paths of such an area, after every
+other path and at most 48 per discovery:
+
+- a hybrid manager at place 83, the system type `eHybrid`, or a boiler at
+  `hs1` with the outdoor status `CONNECTED`: the heat pump at `hs2`
+  (never with the outdoor status `NOT_CONNECTED`);
+- a component at place 17 (pool), 81 (ventilation) or 48 (solar) whose area
+  the gateway does not list: the known values of that area;
+- no hot water circuit listed on a heating plant: the operation mode of
+  `dhw1` and `dhw2`, and the circuit that answers;
+- the system type `heatpump_cascade` with 2 to 6 refrigerant circuits: the
+  heat pumps `hs1` to `hsN` the gateway does not list.
+
+Only places and roles with a basis other than `name` count; a component
+known by its name only, a remote control (places 56 to 59) and a mixing
+module never lead to a read. Nothing is read on iCom gateways, room
+controllers and water softeners. An error of such a read never makes a
+reading unavailable. The diagnostics show every rule, its evidence and its
+results (`discovery.module_probes`); the results of the last run are kept
+in the stored plant row. Details: [request behavior](request-behavior.md#targeted-reads).
+
+The plant kind also decides two reads of recordings: a heat pump behind an
+iCom gateway reads its energy monitoring, and a hybrid system reads the
+recordings of its heat pump at `hs2` (see [recordings](recordings.md)).
+
+Not yet confirmed on a real plant: a hybrid system without a listed heat
+pump, a hot water circuit without a list, a cascade, ventilation, pool and
+solar found through their place, and the energy recordings of an iCom heat
+pump.
+
 ### Stored data
 
 The integration keeps one row per gateway in its saved calculated values
@@ -361,6 +396,39 @@ The row never contains serial numbers, UUIDs or the `No` field. It is
 deleted with the gateway when no entry uses the gateway any more. Its form
 is described in [`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.json).
 
+### Component devices (optional)
+
+**Configure → System components** lists the components the systems of the
+entry report. The setting **Show components as devices** (off by default)
+adds one Home Assistant device per component, connected through the
+gateway's device. Such a device shows the product name the component
+reports, or else the name of its place with its component name, the
+component name as its model, its type number as its model ID and the
+software version the component reports, as a whole (for example `12.11.1`
+with its build suffix). It holds no entities: every entity stays on the
+gateway's device, so entity IDs, areas, labels and automations that target
+the gateway's device stay as they are.
+
+- A device is identified by its gateway, its place and its type number,
+  never by a serial number. Two components of the same type at the same
+  place, for example in a cascade, share one device; if they report
+  different software versions, the device shows none.
+- The gateway's own rows of the list (places 72 and 75, type 17) and rows
+  without a valid type get no device; the gateway's device stands for them.
+- Device names follow the language of the Home Assistant server when the
+  device is created; a name you give it stays.
+- A component that is no longer reported keeps its device until you delete
+  it; a device without entities can be deleted at any time. While the
+  setting is on and the component is still reported, a deleted device comes
+  back at the next start.
+- Switching the setting off removes these devices, also renamed ones. Home
+  Assistant keeps their names, areas and labels for 30 days, so switching it
+  on again within that time restores them.
+- After a gateway exchange the devices of the old gateway are removed and
+  the new gateway gets new ones; names and areas given to the old ones do
+  not move.
+- A system shown from its local readings alone gets no component devices.
+
 ### Privacy
 
 - Read and kept: type number, place number, version, product name, hardware
@@ -372,7 +440,8 @@ is described in [`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.j
 - Versions, software identifiers and article numbers appear in the stored
   row and in the diagnostics (block `plant`, see
   [diagnostics](diagnostics.md#plant-model)), never in entity attributes or
-  the log.
+  the log. With the optional component devices on, each such device also
+  shows the software version of its component.
 - The anonymized inventory keeps only the plant kind.
 
 ## Deutsch
@@ -486,8 +555,8 @@ und eine Wärmepumpe neben einem Kessel zählen als Hybridanlage, und danach
 richten sich die Arbeitszahlen, die Umweltenergie und die Aufzeichnungen der
 Wärmepumpe einer Hybridanlage (siehe
 [berechnete Werte](calculated-values.md#deutsch-leistungszahl-und-arbeitszahlen)).
-Die Anlagenart darf außerdem zusätzliche Lesungen auslösen (gezielte
-Lesungen, Aufzeichnungen). Namen und Bedienelemente ändert sie nie;
+Die Anlagenart darf außerdem zusätzliche Lesungen auslösen ([gezieltes
+Lesen](#gezieltes-lesen), Aufzeichnungen). Namen und Bedienelemente ändert sie nie;
 Entitäten entstehen nur aus Daten, die die Anlage beantwortet.
 
 | Wert | Bedeutung |
@@ -544,6 +613,42 @@ Attribute sind eine versionierte Schnittstelle für Karten, siehe
 [Interface for cards (contract 1)](entities.md#interface-for-cards-contract-1)
 (englisch).
 
+### Gezieltes Lesen
+
+Manche Bereiche einer Anlage listet das Gateway nicht, oder ihr Container
+verweigert das Lesen, obwohl eine Komponente oder ein gemeldeter Wert sie
+zeigt. Die Cloud-Discovery liest dann einige bekannte Pfade dieses
+Bereichs, nach allen anderen Pfaden und höchstens 48 je Discovery:
+
+- ein Hybrid-Manager an Platz 83, der Systemtyp `eHybrid` oder ein Kessel an
+  `hs1` mit dem Außeneinheit-Status `CONNECTED`: die Wärmepumpe an `hs2`
+  (nie beim Status `NOT_CONNECTED`);
+- eine Komponente an Platz 17 (Pool), 81 (Lüftung) oder 48 (Solar), deren
+  Bereich das Gateway nicht listet: die bekannten Werte dieses Bereichs;
+- kein Warmwasserkreis gelistet bei einer Heizungsanlage: die Betriebsart
+  von `dhw1` und `dhw2` und der Kreis, der antwortet;
+- der Systemtyp `heatpump_cascade` mit 2 bis 6 Kältekreisen: die
+  Wärmepumpen `hs1` bis `hsN`, die das Gateway nicht listet.
+
+Es zählen nur Plätze und Rollen mit einer anderen Basis als `name`; eine
+nur namentlich bekannte Komponente, eine Fernbedienung (Plätze 56 bis 59)
+und ein Mischermodul führen nie zu einer Lesung. Auf iCom-Gateways,
+Raumreglern und Enthärtern wird nichts gelesen. Ein Fehler einer solchen
+Lesung macht nie einen Wert unverfügbar. Die Diagnose zeigt jede Regel,
+ihren Beleg und ihre Ergebnisse (`discovery.module_probes`); die Ergebnisse
+des letzten Laufs stehen in der gespeicherten Anlagenzeile. Einzelheiten:
+[Abfrageverhalten](request-behavior.md#targeted-reads).
+
+Die Anlagenart entscheidet außerdem über zwei Lesungen von Aufzeichnungen:
+Eine Wärmepumpe hinter einem iCom-Gateway liest ihre Energieüberwachung,
+und eine Hybridanlage liest die Aufzeichnungen ihrer Wärmepumpe an `hs2`
+(siehe [Aufzeichnungen](recordings.md)).
+
+Noch nicht an einer realen Anlage bestätigt: eine Hybridanlage ohne
+gelistete Wärmepumpe, ein Warmwasserkreis ohne Liste, eine Kaskade,
+Lüftung, Pool und Solar über ihren Platz sowie die Energieaufzeichnungen
+einer iCom-Wärmepumpe.
+
 ### Gespeicherte Daten
 
 Die Integration hält je Gateway eine Zeile in ihren gespeicherten berechneten
@@ -561,6 +666,40 @@ Die Zeile enthält nie Seriennummern, UUIDs oder das Feld `No`. Sie wird mit
 dem Gateway gelöscht, sobald kein Eintrag das Gateway mehr nutzt. Ihr Aufbau
 steht in [`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.json).
 
+### Komponenten-Geräte (optional)
+
+**Konfigurieren → Anlagenkomponenten** listet die Komponenten, die die
+Anlagen des Eintrags melden. Die Einstellung **Komponenten als Geräte
+anzeigen** (standardmäßig aus) legt je Komponente ein Home-Assistant-Gerät an,
+verbunden über das Gerät des Gateways. Ein solches Gerät zeigt den
+Produktnamen, den die Komponente meldet, sonst den Namen ihres Platzes mit
+ihrem Komponentennamen, den Komponentennamen als Modell, die Typnummer als
+Modell-ID und die Softwareversion, die die Komponente meldet, vollständig
+(zum Beispiel `12.11.1` mit ihrem Build-Zusatz). Es hat keine Entitäten: Jede Entität
+bleibt am Gerät des Gateways, Entitäts-IDs, Bereiche, Labels und
+Automationen mit dem Gerät des Gateways als Ziel bleiben unverändert.
+
+- Ein Gerät wird über sein Gateway, seinen Platz und seine Typnummer
+  erkannt, nie über eine Seriennummer. Zwei Komponenten desselben Typs am
+  selben Platz, etwa in einer Kaskade, teilen sich ein Gerät; melden sie
+  verschiedene Softwareversionen, zeigt das Gerät keine.
+- Die eigenen Zeilen des Gateways (Plätze 72 und 75, Typ 17) und Zeilen ohne
+  gültigen Typ erhalten kein Gerät; für sie steht das Gerät des Gateways.
+- Gerätenamen folgen beim Anlegen der Sprache des Home-Assistant-Servers;
+  ein eigener Name bleibt.
+- Eine Komponente, die nicht mehr gemeldet wird, behält ihr Gerät, bis es
+  gelöscht wird; ein Gerät ohne Entitäten lässt sich jederzeit löschen. Solange die
+  Einstellung an ist und die Komponente weiter gemeldet wird, kommt ein
+  gelöschtes Gerät beim nächsten Start wieder.
+- Ausschalten entfernt diese Geräte, auch umbenannte. Home Assistant behält
+  ihre Namen, Bereiche und Labels 30 Tage; wird die Einstellung in dieser
+  Zeit wieder eingeschaltet, sind sie wieder da.
+- Nach einem Gateway-Tausch werden die Geräte des alten Gateways entfernt,
+  und das neue Gateway erhält neue; Namen und Bereiche der alten ziehen nicht
+  um.
+- Eine Anlage, die allein aus ihren lokalen Werten gezeigt wird, erhält keine
+  Komponenten-Geräte.
+
 ### Datenschutz
 
 - Gelesen und gespeichert: Typnummer, Platznummer, Version, Produktname,
@@ -572,5 +711,6 @@ steht in [`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.json).
 - Versionen, Software-Kennungen und Artikelnummern stehen in der
   gespeicherten Zeile und in der Diagnose (Block `plant`, siehe
   [Diagnose](diagnostics.md#plant-model)), nie in Entitätsattributen oder im
-  Log.
+  Log. Mit eingeschalteten Komponenten-Geräten zeigt jedes dieser Geräte
+  zusätzlich die Softwareversion seiner Komponente.
 - Das anonymisierte Inventar behält nur die Anlagenart.
