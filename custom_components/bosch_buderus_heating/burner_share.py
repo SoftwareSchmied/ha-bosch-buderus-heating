@@ -12,8 +12,9 @@ The share counts as present when the energy collection reports a burner
 part above zero, or when a hybrid manager is detected (its signals, the
 hybrid control resources, or a system or heat source type that names a
 hybrid system; the system type ``eHybrid`` is a heat pump with an
-additional heater and does not count). A boiler type with the outdoor
-status ``NOT_CONNECTED`` of the hybrid control is never a hybrid system,
+additional heater and does not count). A boiler type of the first heat
+source with the outdoor status ``NOT_CONNECTED`` of the hybrid control is
+never a hybrid system,
 whatever else is present. The plant model adds two pieces of evidence: a hybrid
 manager at the hybrid place of the component list under its fixed rule, and
 a heat source that reports a heat pump next to one that reports a boiler.

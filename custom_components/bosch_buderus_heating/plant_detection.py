@@ -12,7 +12,8 @@ a hybrid manager at the hybrid place.
 Rules (in this order):
 
 1. A bus that is still detecting gives no result.
-2. A boiler type with the outdoor status ``NOT_CONNECTED`` is never a
+2. A boiler type of the first heat source (``hs1`` or
+   ``/heatSources/type``) with the outdoor status ``NOT_CONNECTED`` is never a
    hybrid system: no hybrid evidence counts, and the plant is a boiler (the
    evidence it overrules is reported as the conflict
    ``hybrid_evidence_vs_outdoor_status``).
@@ -30,15 +31,18 @@ Rules (in this order):
    Modbus bus or a component at the ventilation place, else ``none``.
 
 The system type ``eHybrid`` is a heat pump with an additional heater, not
-a hybrid system: it is no hybrid evidence, and the heat source types decide.
+a hybrid system: it is no hybrid evidence, and the type of the first heat
+source decides (a boiler type of another heat source is that heater and
+does not count; a heat pump type counts only without a type of the first
+heat source).
 
 A hybrid manager at the hybrid place counts only for the first row at
 place 83, with the type 248 from version 06.01 on or with the type 16, and
 only on K30 and K40 gateways from firmware 08.02.02 (K30) or 11.00.00 (K40)
 on. A version is compared by the part before its first ``-``, split at
 dots; a part that is not a number counts as 0; a missing version never
-passes. Other gateways never use the rule. A boiler type with the outdoor
-status ``NOT_CONNECTED`` overrules it.
+passes. Other gateways never use the rule. A boiler type of the first heat
+source with the outdoor status ``NOT_CONNECTED`` overrules it.
 
 Component names never decide anything: only roles with a basis of
 ``rule``, ``observed`` or ``documented`` count.
@@ -131,6 +135,9 @@ _HYBRIDS: Final[Mapping[str, str | None]] = {
     "hybridoil": "oil",
 }
 _NO_APPLIANCE: Final = frozenset({"noappliance", "noapplicance"})
+# The name of the first heat source; with ``/heatSources/type`` its type
+# decides on the outdoor status and on ``eHybrid``.
+FIRST_HEAT_SOURCE: Final = "hs1"
 
 # The hybrid manager rule.
 HYBRID_PLACE: Final = 83
@@ -171,8 +178,10 @@ def normalize(value: object) -> str | None:
 def outdoor_unit_disconnected(
     outdoor_status: object, heat_source_types: Iterable[object]
 ) -> bool:
-    """A boiler type with the outdoor status ``NOT_CONNECTED`` of the hybrid
-    control: such a plant is never a hybrid system."""
+    """A boiler type of the first heat source (``hs1`` or
+    ``/heatSources/type``; the caller passes only these) with the outdoor
+    status ``NOT_CONNECTED`` of the hybrid control: such a plant is never a
+    hybrid system."""
     return normalize(outdoor_status) == "notconnected" and any(
         normalize(value) in BOILER_TYPES for value in heat_source_types
     )
@@ -359,14 +368,16 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
     system_type, flag = _known(inputs.system_type, SYSTEM_TYPES)
     unknown |= flag
     heat_sources: list[str] = []
-    for value in (
-        *(value for _name, value in inputs.heat_source_types),
-        inputs.heat_sources_type,
-    ):
+    # The type of the first heat source (``hs1`` or ``/heatSources/type``).
+    first: list[str] = []
+    sources = (*inputs.heat_source_types, (None, inputs.heat_sources_type))
+    for name, value in sources:
         known, flag = _known(value, HEAT_SOURCE_TYPES)
         unknown |= flag
         if known is not None:
             heat_sources.append(known)
+            if name in (None, FIRST_HEAT_SOURCE):
+                first.append(known)
     heat_pump_types: list[str] = []
     for _name, value in inputs.heat_pump_types:
         known, flag = _known(value, HEAT_PUMP_TYPES)
@@ -386,21 +397,27 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
             None, conflicts=tuple(sorted(conflicts)), gates=gates, transient=True
         )
 
-    boilers = [item for item in heat_sources if item in _BOILERS]
-    hybrids = [item for item in heat_sources if item in _HYBRIDS]
+    # eHybrid (a heat pump with an additional heater): the type of the first
+    # heat source decides; another heat source's type is that heater.
+    ehybrid = system_type == "ehybrid"
+    deciding = first if ehybrid else heat_sources
+    boilers = [item for item in deciding if item in _BOILERS]
+    hybrids = [item for item in deciding if item in _HYBRIDS]
     fuels = [
         fuel
-        for item in heat_sources
+        for item in deciding
         if (fuel := _BOILERS.get(item) or _HYBRIDS.get(item)) is not None
     ]
-    names_heat_pump = "heatpump" in heat_sources or bool(heat_pump_types)
+    names_heat_pump = "heatpump" in deciding or (
+        bool(heat_pump_types) and not (ehybrid and deciding)
+    )
     cascade = (
         None if system_type in (None, "unknown") else system_type == "heatpumpcascade"
     )
     fuel = (fuels[0] if len(set(fuels)) == 1 else "unknown") if fuels else None
-    # 2. A boiler whose hybrid control reports the outdoor unit as not
-    # connected is never a hybrid system.
-    disconnected = bool(boilers) and outdoor == "notconnected"
+    # 2. A first heat source of a boiler type whose hybrid control reports
+    # the outdoor unit as not connected is never a hybrid system.
+    disconnected = outdoor == "notconnected" and any(item in _BOILERS for item in first)
 
     # 3. Hybrid evidence.
     rule_evidence: set[str] = set()
@@ -452,7 +469,7 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         by_heat_source = "heat_pump"
     elif boilers:
         by_heat_source = "boiler"
-    elif heat_sources and all(item in _NO_APPLIANCE for item in heat_sources):
+    elif deciding and all(item in _NO_APPLIANCE for item in deciding):
         by_heat_source = "no_appliance"
     evidence: set[str] = set()
     kind: str | None
@@ -471,7 +488,7 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         evidence.add("reported_heat_source_type")
     else:
         kind = by_heat_source or by_system
-        if kind == "heat_pump" and "heatpump" in heat_sources:
+        if kind == "heat_pump" and "heatpump" in deciding:
             evidence.add("reported_heat_source_type")
         if kind == "heat_pump" and heat_pump_types:
             evidence.add("reported_heat_pump_type")

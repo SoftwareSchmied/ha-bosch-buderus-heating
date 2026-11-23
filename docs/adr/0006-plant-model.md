@@ -77,17 +77,21 @@ gateways keeps its own parser.
   values do not count.
 - `eHybrid` is a heat pump with an additional heater, not a hybrid system:
   it is no hybrid evidence (neither in the model nor in the evidence used
-  before, nor for the targeted reads), and the heat source types decide
-  (`hs1` = `Heatpump` gives `heat_pump`).
-- A boiler type with the outdoor status `NOT_CONNECTED` is never a hybrid
-  system: every piece of hybrid evidence is overruled (the evidence used
+  before, nor for the targeted reads), and the type of the first heat
+  source (`hs1` or `/heatSources/type`) decides (`hs1` = `Heatpump` gives
+  `heat_pump`, also with a boiler type at `hs2`, which is the additional
+  heater); a heat pump type counts only without a type of the first heat
+  source.
+- A boiler type of the first heat source (`hs1` or `/heatSources/type`)
+  with the outdoor status `NOT_CONNECTED` is never a hybrid system: every piece of hybrid evidence is overruled (the evidence used
   before, a heat pump type next to the boiler, the hybrid manager at the
   hybrid place), the plant is a `boiler`, and the conflict
   `hybrid_evidence_vs_outdoor_status` names it. The hybrid detection of the
   burner share and of the hybrid diagnostics follows the same rule, so such
   a plant is no hybrid system there either; the recordings of `hs2` follow
-  the plant kind. Without a boiler type the evidence counts as
-  before.
+  the plant kind. Without a boiler type at the first heat source (for
+  example a heat pump at `hs1` and a boiler at `hs2`) the evidence counts
+  as before.
 - Heat source types: `Heatpump`, `GasBoiler`, `OilBoiler`, `unknownBoiler`,
   `No_Appliance`, and the values of `/heatSources/type` of a room controller
   `Boiler` (boiler, fuel not stated), `Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`
@@ -105,8 +109,8 @@ gateways keeps its own parser.
   from firmware 11.00.00 on. Versions compare by the part before the first
   `-`, split at dots, a part that is not a number counts as 0, a missing
   version never passes. Other gateways (iCom, room controllers) show the row
-  only. A boiler type with the outdoor status `NOT_CONNECTED` overrules the
-  rule. A role never decides the plant kind: type 172 at place 8 only shows
+  only. A boiler type of the first heat source with the outdoor status
+  `NOT_CONNECTED` overrules the rule. A role never decides the plant kind: type 172 at place 8 only shows
   a contradiction to a boiler type.
 - Evidence codes: `reported_system_type`, `reported_heat_source_type`,
   `reported_heat_pump_type`, `reported_outdoor_status`,

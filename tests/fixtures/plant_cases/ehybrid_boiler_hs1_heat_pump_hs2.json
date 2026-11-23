@@ -1,0 +1,30 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "system type eHybrid with a gas boiler at hs1 and a heat pump at hs2: the type of hs1 decides"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/system/type": "eHybrid",
+    "/heatSources/hs1/type": "GasBoiler",
+    "/heatSources/hs2/type": "Heatpump"
+  },
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "gas",
+    "cascade": false,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

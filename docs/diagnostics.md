@@ -193,7 +193,8 @@ section, which holds no values, paths, names or identifiers:
   system; the system type `eHybrid`, a heat pump with an additional heater,
   does not), and since 0.9.3-beta.6 `hybrid_manager_component` and
   `heat_source_types_combined` from the plant kind (see
-  [plant model](#plant-model)). A boiler type with the outdoor status
+  [plant model](#plant-model)). A boiler type of the first heat source
+  (`hs1` or `/heatSources/type`) with the outdoor status
   `NOT_CONNECTED` of the hybrid control is never a hybrid system:
   `hybrid_detected` is then `false` while `evidence` still lists what is
   present. Product names and other readings are never
@@ -1067,7 +1068,7 @@ rest of the report stays complete.
   `components_vs_outdoor_status`, `heat_pump_component_on_boiler_plant`,
   `hybrid_name_rule_only` (only the names of paths, signals or a type text
   point to a hybrid system), `hybrid_evidence_vs_outdoor_status` (a boiler
-  type with the outdoor status `NOT_CONNECTED`: the hybrid evidence present
+  type of the first heat source with the outdoor status `NOT_CONNECTED`: the hybrid evidence present
   does not count, the plant is a boiler), `cloud_local_components_differ`,
   `unknown_type_value` (a type value outside the known ones; it does not
   count) and `component_rule_skipped` (a row at the hybrid place that the

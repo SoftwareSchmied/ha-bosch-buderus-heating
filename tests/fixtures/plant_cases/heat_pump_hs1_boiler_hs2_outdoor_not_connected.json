@@ -1,0 +1,31 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "heat pump at hs1 and a gas boiler at hs2 with the outdoor status of a hybrid control not connected: only the type of hs1 decides on the outdoor status"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/heatSources/hs1/type": "Heatpump",
+    "/heatSources/hs2/type": "GasBoiler",
+    "/heatSources/hybrid/outdoorStatus": "NOT_CONNECTED"
+  },
+  "expected": {
+    "plant_kind": "hybrid",
+    "fuel": "gas",
+    "cascade": null,
+    "evidence": [
+      "heat_source_types_combined",
+      "hybrid_resources"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

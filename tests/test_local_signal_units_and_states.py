@@ -168,6 +168,17 @@ def test_hybrid_evidence_names_its_reasons() -> None:
             True,
             False,
         ),
+        # A boiler type of another heat source than the first does not
+        # decide: the evidence counts as before.
+        (
+            [
+                ("/heatSources/hs1/type", "Heatpump"),
+                ("/heatSources/hs2/type", "GasBoiler"),
+                ("/heatSources/hybrid/outdoorStatus", "NOT_CONNECTED"),
+            ],
+            True,
+            False,
+        ),
         # Not connected without a boiler type: the evidence counts as before.
         (
             [

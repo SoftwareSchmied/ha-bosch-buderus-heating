@@ -1679,6 +1679,8 @@ _HYBRID_RESOURCES = "/heatSources/hybrid/"
 _OUTDOOR_STATUS = "/heatSources/hybrid/outdoorStatus"
 _SYSTEM_TYPE_PATH = "/system/type"
 _HEAT_SOURCE_TYPE = re.compile(r"/heatSources(?:/hs[^/]+)?/type")
+# The type of the first heat source: only it decides on the outdoor status.
+_FIRST_HEAT_SOURCE_TYPES = ("/heatSources/hs1/type", "/heatSources/type")
 _NOT_LETTER = re.compile(r"[^a-z]")
 
 
@@ -1720,14 +1722,15 @@ def hybrid_detected_from(
     readings: Iterable[tuple[str, object]], plant_evidence: Iterable[str] = ()
 ) -> bool:
     """Whether the readings show a hybrid system: any hybrid evidence, unless
-    a boiler type is reported with the outdoor status ``NOT_CONNECTED`` of
-    the hybrid control (such a plant is never a hybrid system)."""
+    the first heat source (``hs1`` or ``/heatSources/type``) reports a boiler
+    type with the outdoor status ``NOT_CONNECTED`` of the hybrid control
+    (such a plant is never a hybrid system)."""
     found = tuple(readings)
     if not hybrid_evidence(found, plant_evidence):
         return False
     return not outdoor_unit_disconnected(
         next((value for path, value in found if path == _OUTDOOR_STATUS), None),
-        (value for path, value in found if _HEAT_SOURCE_TYPE.fullmatch(path)),
+        (value for path, value in found if path in _FIRST_HEAT_SOURCE_TYPES),
     )
 
 
