@@ -68,10 +68,17 @@ gateways keeps its own parser.
   `None`. `None` means: behave as before the plant model.
 - `hybrid` is the effective kind: a plant is hybrid exactly when the hybrid
   evidence the integration used before or a new piece of evidence says so.
-  New evidence: the system type `eHybrid`, a heat pump type and a boiler
-  type in the same plant, the outdoor status `CONNECTED`, a hybrid manager at
-  the hybrid place. `eHybrid`, `hybman` and `hybridBoiler` stay hybrid;
-  `eBoiler` and unknown values do not count.
+  New evidence: the system type `eHybrid`, a heat source type of a hybrid
+  system (`Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`), a heat pump type and a
+  boiler type in the same plant, the outdoor status `CONNECTED`, a hybrid
+  manager at the hybrid place. `eHybrid`, `hybman` and `hybridBoiler` stay
+  hybrid; `eBoiler` and unknown values do not count.
+- Heat source types: `Heatpump`, `GasBoiler`, `OilBoiler`, `unknownBoiler`,
+  `No_Appliance`, and the values of `/heatSources/type` of a room controller
+  `Boiler` (boiler, fuel not stated), `Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`
+  (hybrid system, fuel not stated, gas or oil) and `No_Applicance` (no
+  appliance; written so by the devices). Other values such as `eBoiler`
+  stay unknown.
 - Order: a bus still detecting gives no result (the known kind is kept);
   then hybrid evidence; then the heat source types, then the system type (a
   contradiction gives `None`); heat sources without an appliance give

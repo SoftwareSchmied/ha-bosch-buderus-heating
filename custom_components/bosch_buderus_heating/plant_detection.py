@@ -13,12 +13,13 @@ Rules (in this order):
 
 1. A bus that is still detecting gives no result.
 2. The plant is a hybrid system when any evidence says so: the system type
-   ``eHybrid``, a heat pump type and a boiler type in the same plant, the
-   outdoor status ``CONNECTED``, a hybrid manager at the hybrid place (see
-   below), or the hybrid evidence the integration used before (signals of
-   a hybrid manager, resources of the hybrid control, a type that names a
-   hybrid system). Evidence of the last kind alone is reported as the
-   conflict ``hybrid_name_rule_only``.
+   ``eHybrid``, a heat source type of a hybrid system (``Hybrid``,
+   ``Hybrid_Gas``, ``Hybrid_Oil``), a heat pump type and a boiler type in the
+   same plant, the outdoor status ``CONNECTED``, a hybrid manager at the
+   hybrid place (see below), or the hybrid evidence the integration used
+   before (signals of a hybrid manager, resources of the hybrid control, a
+   type that names a hybrid system). Evidence of the last kind alone is
+   reported as the conflict ``hybrid_name_rule_only``.
 3. Otherwise the heat source types decide (heat pump or boiler), then the
    system type; if they contradict each other the kind stays unknown.
 4. Heat sources that report no appliance give ``ventilation`` with a
@@ -88,12 +89,40 @@ SYSTEM_TYPES: Final = frozenset(
     }
 )
 HEAT_SOURCE_TYPES: Final = frozenset(
-    {"heatpump", "gasboiler", "oilboiler", "unknownboiler", "noappliance"}
+    {
+        "heatpump",
+        "gasboiler",
+        "oilboiler",
+        "unknownboiler",
+        "noappliance",
+        # The heat source types of a room controller (``/heatSources/type``):
+        # Boiler, Hybrid, Hybrid_Gas, Hybrid_Oil and No_Applicance (the
+        # devices write it so).
+        "boiler",
+        "hybrid",
+        "hybridgas",
+        "hybridoil",
+        "noapplicance",
+    }
 )
 HEAT_PUMP_TYPES: Final = frozenset({"airwater", "liquidwater", "exhaustairwater"})
 BUSES: Final = frozenset({"ems10", "ems20", "can", "modbus", "nobus", "detecting"})
 OUTDOOR_STATUSES: Final = frozenset({"connected", "notconnected"})
-_BOILERS: Final = {"gasboiler": "gas", "oilboiler": "oil", "unknownboiler": "unknown"}
+# The boiler types with their fuel (None: the type states none).
+_BOILERS: Final[Mapping[str, str | None]] = {
+    "gasboiler": "gas",
+    "oilboiler": "oil",
+    "unknownboiler": "unknown",
+    "boiler": None,
+}
+BOILER_TYPES: Final = frozenset(_BOILERS)
+# The types of a hybrid system with their fuel (None: the type states none).
+_HYBRIDS: Final[Mapping[str, str | None]] = {
+    "hybrid": None,
+    "hybridgas": "gas",
+    "hybridoil": "oil",
+}
+_NO_APPLIANCE: Final = frozenset({"noappliance", "noapplicance"})
 
 # The hybrid manager rule.
 HYBRID_PLACE: Final = 83
@@ -339,17 +368,25 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
             None, conflicts=tuple(sorted(conflicts)), gates=gates, transient=True
         )
 
-    boilers = [_BOILERS[item] for item in heat_sources if item in _BOILERS]
+    boilers = [item for item in heat_sources if item in _BOILERS]
+    hybrids = [item for item in heat_sources if item in _HYBRIDS]
+    fuels = [
+        fuel
+        for item in heat_sources
+        if (fuel := _BOILERS.get(item) or _HYBRIDS.get(item)) is not None
+    ]
     names_heat_pump = "heatpump" in heat_sources or bool(heat_pump_types)
     cascade = (
         None if system_type in (None, "unknown") else system_type == "heatpumpcascade"
     )
-    fuel = (boilers[0] if len(set(boilers)) == 1 else "unknown") if boilers else None
+    fuel = (fuels[0] if len(set(fuels)) == 1 else "unknown") if fuels else None
 
     # 2. Hybrid evidence.
     rule_evidence: set[str] = set()
     if system_type == "ehybrid":
         rule_evidence.add("reported_system_type")
+    if hybrids:
+        rule_evidence.add("reported_heat_source_type")
     if names_heat_pump and boilers:
         rule_evidence.add("heat_source_types_combined")
     if outdoor == "connected":
@@ -391,7 +428,7 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
         by_heat_source = "heat_pump"
     elif boilers:
         by_heat_source = "boiler"
-    elif heat_sources and all(item == "noappliance" for item in heat_sources):
+    elif heat_sources and all(item in _NO_APPLIANCE for item in heat_sources):
         by_heat_source = "no_appliance"
     evidence: set[str] = set()
     kind: str | None

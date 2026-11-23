@@ -56,7 +56,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from .component_rows import ComponentRow, parse_cloud_rows
-from .plant_detection import normalize
+from .plant_detection import BOILER_TYPES, normalize
 from .pointt import Resource
 from .system_components import BEHAVIOUR_BASES, ComponentTable
 
@@ -81,7 +81,6 @@ CONTAINERS: Final = (
     "/pool",
 )
 _CIRCUIT_ID: Final = re.compile(r"[a-z]{1,8}[0-9]{1,3}", re.IGNORECASE)
-_BOILERS: Final = frozenset({"gasboiler", "oilboiler", "unknownboiler"})
 MAX_CASCADE: Final = 6
 
 HYBRID_PATHS: Final = (
@@ -315,7 +314,7 @@ class ModuleProbes:
         outdoor = normalize(self._values.get(OUTDOOR_STATUS_PATH))
         evidence: list[str] = []
         if (
-            normalize(self._values.get(FIRST_HEAT_SOURCE_TYPE_PATH)) in _BOILERS
+            normalize(self._values.get(FIRST_HEAT_SOURCE_TYPE_PATH)) in BOILER_TYPES
             and outdoor == "connected"
         ):
             evidence.append("outdoor_status_connected")

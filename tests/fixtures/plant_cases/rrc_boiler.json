@@ -1,0 +1,29 @@
+{
+  "header": {
+    "device_class": "rrc2",
+    "firmware_family": "05",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "room controller with a boiler"
+  },
+  "gateway": {
+    "device_type": "rrc2",
+    "firmware": "5.4.1"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/heatSources/type": "Boiler"
+  },
+  "platform": "rrc",
+  "expected": {
+    "plant_kind": "boiler",
+    "fuel": "unknown",
+    "cascade": null,
+    "evidence": [
+      "reported_heat_source_type"
+    ],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

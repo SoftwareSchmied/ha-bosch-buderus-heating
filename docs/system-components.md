@@ -298,13 +298,18 @@ answers.
 |---|---|
 | `heat_pump` | The plant reports a heat pump (heat source type `Heatpump`, a heat pump type such as `air_water`, or the system type `heatpump_single`/`heatpump_cascade`). |
 | `hybrid` | A heat pump and a boiler work together (see the evidence below). |
-| `boiler` | The plant reports a gas, oil or other boiler only. |
+| `boiler` | The plant reports a gas, oil or other boiler only (`GasBoiler`, `OilBoiler`, `unknownBoiler`, or `Boiler` of a room controller). |
 | `ventilation` | No heat appliance; a ventilation unit (Modbus bus or a component at the ventilation place 81). |
-| `none` | No heat appliance and no ventilation unit. |
+| `none` | No heat appliance and no ventilation unit (`No_Appliance`, or `No_Applicance` of a room controller). |
 | `null` | Not known; everything behaves as before. |
 
 `fuel` (`gas`, `oil` or `unknown`) belongs to a boiler or a hybrid system.
 `cascade` is `true` when the system type is `heatpump_cascade`.
+
+A room controller reports the kind of its heat sources as `/heatSources/type`
+with the values `Boiler` (a boiler), `Hybrid`, `Hybrid_Gas` and `Hybrid_Oil`
+(a hybrid system, with gas or oil as its fuel) and `No_Applicance` (no heat
+appliance; the devices write it so).
 
 Evidence (why the plant has this kind):
 
@@ -578,13 +583,18 @@ Entitäten entstehen nur aus Daten, die die Anlage beantwortet.
 |---|---|
 | `heat_pump` | Die Anlage meldet eine Wärmepumpe (Wärmequellentyp `Heatpump`, einen Wärmepumpentyp wie `air_water` oder den Systemtyp `heatpump_single`/`heatpump_cascade`). |
 | `hybrid` | Wärmepumpe und Kessel arbeiten zusammen (siehe Belege unten). |
-| `boiler` | Die Anlage meldet nur einen Gas-, Öl- oder sonstigen Kessel. |
+| `boiler` | Die Anlage meldet nur einen Gas-, Öl- oder sonstigen Kessel (`GasBoiler`, `OilBoiler`, `unknownBoiler` oder `Boiler` eines Raumreglers). |
 | `ventilation` | Kein Wärmeerzeuger; ein Lüftungsgerät (Modbus-Bus oder eine Komponente am Lüftungsplatz 81). |
-| `none` | Weder Wärmeerzeuger noch Lüftungsgerät. |
+| `none` | Weder Wärmeerzeuger noch Lüftungsgerät (`No_Appliance` oder `No_Applicance` eines Raumreglers). |
 | `null` | Nicht bekannt; alles verhält sich wie bisher. |
 
 `fuel` (`gas`, `oil` oder `unknown`) gehört zu einem Kessel oder einer
 Hybridanlage. `cascade` ist `true`, wenn der Systemtyp `heatpump_cascade` ist.
+
+Ein Raumregler meldet die Art seiner Wärmequellen als `/heatSources/type` mit
+den Werten `Boiler` (ein Kessel), `Hybrid`, `Hybrid_Gas` und `Hybrid_Oil`
+(eine Hybridanlage, mit Gas oder Öl als Brennstoff) und `No_Applicance` (kein
+Wärmeerzeuger; die Geräte schreiben es so).
 
 Belege (warum die Anlage diese Art hat):
 

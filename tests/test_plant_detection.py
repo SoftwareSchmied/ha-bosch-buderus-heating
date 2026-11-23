@@ -276,6 +276,55 @@ def test_the_component_type_172_never_decides() -> None:
     assert elsewhere.conflicts == ()
 
 
+@pytest.mark.parametrize(
+    ("value", "kind", "fuel"),
+    [
+        ("Boiler", "boiler", "unknown"),
+        ("boiler", "boiler", "unknown"),
+        ("Hybrid", "hybrid", "unknown"),
+        ("Hybrid_Gas", "hybrid", "gas"),
+        ("Hybrid_Oil", "hybrid", "oil"),
+        ("HYBRID-GAS", "hybrid", "gas"),
+        ("No_Applicance", "none", None),
+        ("No_Appliance", "none", None),
+    ],
+)
+def test_the_heat_source_types_of_room_controllers(
+    value: str, kind: str, fuel: str | None
+) -> None:
+    """The values of ``/heatSources/type`` of a room controller are known
+    values with a meaning (``No_Applicance`` is written so by the devices)."""
+    result = resolve(PlantInputs(heat_sources_type=value, platform="rrc"), None)
+    assert (result.plant_kind, result.fuel) == (kind, fuel)
+    assert result.evidence == ("reported_heat_source_type",)
+    assert "unknown_type_value" not in result.conflicts
+    assert "hybrid_name_rule_only" not in result.conflicts
+
+
+@pytest.mark.parametrize("value", ["BOILER_GAS", "eBoiler", "Hybridd", "NONE"])
+def test_other_heat_source_type_values_stay_unknown(value: str) -> None:
+    result = resolve(PlantInputs(heat_source_types=(("hs1", value),)), None)
+    assert result.plant_kind is None
+    assert result.conflicts == ("unknown_type_value",)
+
+
+def test_a_boiler_and_a_hybrid_type_with_different_fuels() -> None:
+    result = resolve(
+        PlantInputs(
+            heat_source_types=(("hs1", "OilBoiler"),), heat_sources_type="Hybrid_Gas"
+        ),
+        None,
+    )
+    assert (result.plant_kind, result.fuel) == ("hybrid", "unknown")
+    alone = resolve(
+        PlantInputs(
+            heat_source_types=(("hs1", "Boiler"),), heat_sources_type="Hybrid_Oil"
+        ),
+        None,
+    )
+    assert (alone.plant_kind, alone.fuel) == ("hybrid", "oil")
+
+
 def _without(table: ComponentTable, type_id: int) -> ComponentTable:
     components = dict(table.components)
     components.pop(type_id)

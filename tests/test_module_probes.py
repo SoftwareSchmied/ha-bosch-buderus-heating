@@ -125,6 +125,13 @@ def planned(run: ModuleProbes, known: Iterable[str] = ()) -> dict[str, str]:
         ((info((8, 8), (248, 83, "05.00.00")),), ["tok83_id248"]),
         ((info((16, 83)),), ["tok83_id16"]),
         ((value("/system/type", "eHybrid"),), ["system_type_ehybrid"]),
+        (
+            (
+                value("/heatSources/hs1/type", "Boiler"),
+                value("/heatSources/hybrid/outdoorStatus", "CONNECTED"),
+            ),
+            ["outdoor_status_connected"],
+        ),
     ],
 )
 def test_r1_reads_the_heat_pump_of_a_hybrid_system(
