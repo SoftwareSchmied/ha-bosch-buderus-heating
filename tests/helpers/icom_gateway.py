@@ -69,6 +69,9 @@ class SimulatedIcomGateway:
         self.plain: bytes | None = None
         self.stream: int = 0
         self.path_status: dict[str, int] = {}
+        # Per path: a plain text encrypted as it is, or a raw body.
+        self.path_plain: dict[str, bytes] = {}
+        self.path_raw: dict[str, bytes] = {}
         self.fail_after: int | None = None
         self.headers_seen: list[dict[str, str]] = []
         self._runner: web.AppRunner | None = None
@@ -106,6 +109,10 @@ class SimulatedIcomGateway:
                 return web.Response(status=self.status, headers=headers)
             if path in self.path_status:
                 return web.Response(status=self.path_status[path])
+            if path in self.path_raw:
+                return web.Response(body=self.path_raw[path])
+            if path in self.path_plain:
+                return web.Response(body=encrypt(self.key, self.path_plain[path]))
             if self.stream:
                 # No Content-Length: the size is only known while reading.
                 response = web.StreamResponse()

@@ -28,6 +28,8 @@ from tests.test_connection_runtime import Harness, entry_for, settle
 GATEWAY_PASSWORD = "abcd-efgh-ijkl-mnop"
 PRIVATE_PASSWORD = "private-secret"
 PERIOD = 0.5
+PRESSURE = "/heatSources/systemPressure"
+OUTDOOR = "/system/sensors/temperatures/outdoor_t1"
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations", "socket_enabled")
 
 
@@ -285,6 +287,27 @@ async def test_another_id_at_the_start_is_judged_by_the_values(
         }
         assert "reading on: unverified" in caplog.text
         assert "999999" not in caplog.text and "000123" not in caplog.text
+    finally:
+        await p.runtime.close()
+
+
+async def test_a_value_the_gateway_answers_unusably_is_left_out_of_the_identity_check(
+    hass, gateway, fast, monkeypatch
+):
+    # Another own ID: the values decide. A server error for one of them only
+    # leaves that value out; the others still decide, and the access reads on.
+    agree(monkeypatch)
+    gateway.documents[UUID_PATH]["value"] = "999999"
+    gateway.path_status[OUTDOOR] = 500
+    p = build(hass, gateway)
+    p.runtime.start()
+    try:
+        await until(hass, lambda: state(p) and state(p).current_observations)
+        assert state(p).condition is LocalCondition.READY
+        check = source(p).diagnostics()["identity_check"]
+        assert check["values_verdict"] != "contradiction"
+        assert check["values_read"] >= 1
+        assert source(p).diagnostics()["pauses"]["total"] == 0
     finally:
         await p.runtime.close()
 
@@ -581,6 +604,97 @@ async def test_server_errors_count_like_lost_requests(hass, gateway, running):
     await until(hass, lambda: source(p).pause_reason == "connection")
     gateway.status = None
     await until(hass, lambda: state(p).condition is LocalCondition.READY, seconds=10)
+
+
+@pytest.mark.parametrize(
+    ("answer", "code"),
+    [
+        ({"path_status": 500}, "http_error"),
+        ({"path_plain": b"[1, 2, 3]"}, "unusable_answer"),
+        (
+            {"path_plain": b'{"id": "/heatSources/systemPressure", "va'},
+            "unusable_answer",
+        ),
+        ({"path_raw": b""}, "empty_answer"),
+    ],
+)
+async def test_an_unusable_answer_of_one_path_fails_only_this_path(
+    hass, gateway, running, answer, code
+):
+    # A server error, a list, a cut-off text or an empty answer of one path:
+    # the other paths read on, the access neither pauses nor asks for the
+    # passwords again.
+    p = running
+    for attribute, value in answer.items():
+        getattr(gateway, attribute)[PRESSURE] = value
+    asked = gateway.count(PRESSURE)
+    # More unusable answers of this path than pause the access in a row: the
+    # usable answers of the other paths between them keep it reading.
+    more = icom_source.PATH_FAILURES_BEFORE_PAUSE + 1
+    await until(hass, lambda: gateway.count(PRESSURE) >= asked + more, seconds=15)
+    gateway.value(OUTDOOR, -3.5)
+
+    def outdoor():
+        item = {o.request.path: o for o in state(p).current_observations}
+        return item.get(OUTDOOR)
+
+    await until(hass, lambda: outdoor() is not None and outdoor().data.value == -3.5)
+    assert state(p).condition is LocalCondition.READY and state(p).problem is None
+    diagnostics = source(p).diagnostics()
+    assert diagnostics["pauses"]["total"] == 0
+    assert diagnostics["failures_by_class"][code] >= 3
+    item = next(r for r in diagnostics["resources"] if r["path"] == PRESSURE)
+    assert item["problem"] == code
+    # The path itself is asked again and reads on once it answers usably.
+    for attribute in answer:
+        getattr(gateway, attribute).pop(PRESSURE)
+
+    def pressure_problem():
+        return next(
+            r["problem"]
+            for r in source(p).diagnostics()["resources"]
+            if r["path"] == PRESSURE
+        )
+
+    await until(hass, lambda: pressure_problem() is None)
+    # Published with the end of the reading round.
+    await until(
+        hass,
+        lambda: PRESSURE in {o.request.path for o in state(p).current_observations},
+    )
+
+
+async def test_unusable_answers_everywhere_pause_but_never_ask_for_the_passwords(
+    hass, gateway, running
+):
+    # Readable texts of this gateway that are no JSON object: the key fits,
+    # so the passwords are not in question; nothing usable comes back, so
+    # the access pauses and reads on when the gateway answers usably again.
+    p = running
+    gateway.plain = b"[1, 2, 3]"
+    await until(hass, lambda: source(p).pause_reason is not None, seconds=15)
+    await asyncio.sleep(1.0)
+    assert state(p).condition is not LocalCondition.AUTH_REQUIRED
+    assert state(p).problem != "auth_required"
+    gateway.plain = None
+    await until(hass, lambda: state(p).condition is LocalCondition.READY, seconds=15)
+
+
+async def test_noise_after_unusable_answers_is_still_a_wrong_password(
+    hass, gateway, running
+):
+    # The key check stays: noise of another key twice in a row stops the
+    # access, whatever came before it.
+    p = running
+    gateway.path_plain[PRESSURE] = b"[1]"
+    asked = gateway.count(PRESSURE)
+    await until(hass, lambda: gateway.count(PRESSURE) >= asked + 1)
+    gateway.path_plain.pop(PRESSURE)
+    gateway.noise_next = 2
+    await until(
+        hass, lambda: state(p).condition is LocalCondition.AUTH_REQUIRED, seconds=15
+    )
+    assert state(p).problem == "auth_required"
 
 
 async def test_an_unreachable_gateway_starts_with_pauses_and_connects_later(

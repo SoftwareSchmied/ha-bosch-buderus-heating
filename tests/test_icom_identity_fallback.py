@@ -13,6 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from custom_components.bosch_buderus_heating import icom_setup
 from custom_components.bosch_buderus_heating import managed_local as module
 from custom_components.bosch_buderus_heating.connection_runtime import (
     ConnectionRuntime,
@@ -31,6 +32,7 @@ from custom_components.bosch_buderus_heating.icom_setup import (
     prepare_icom_configuration,
 )
 from custom_components.bosch_buderus_heating.local_state import LocalCondition
+from tests.helpers.options_menu import outcome
 from tests.test_connection_runtime import Harness, entry_for
 from tests.test_icom_setup import (
     CLOUD,
@@ -38,6 +40,7 @@ from tests.test_icom_setup import (
     GATEWAY_PASSWORD,
     HARDWARE,
     PRIVATE_PASSWORD,
+    open_icom,
     proof,
     verify,
 )
@@ -45,7 +48,8 @@ from tests.test_icom_setup import gateway as gateway
 from tests.test_icom_setup import session as session
 from tests.test_icom_source import fast as fast
 from tests.test_icom_source import source, state, until
-from tests.test_local_setup import starting
+from tests.test_local_flow import supported as supported
+from tests.test_local_setup import registered, starting
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations", "socket_enabled")
 CONTRADICTION = {**CLOUD, FIRMWARE: CloudReading("09.09.09", 30.0)}
@@ -198,6 +202,47 @@ async def test_a_gateway_without_the_id_path_is_set_up_too(gateway, session):
     proof_ = await verify(session, gateway)
     assert proof_.method == "unverified"
     assert proof_.check["uuid"] == {"kind": "not_offered"}
+
+
+@pytest.mark.parametrize("reported", ["000123\n", " 000123 ", "000 123", "00-01\t23"])
+async def test_the_cloud_s_id_with_spaces_is_set_up_and_stored_in_a_usable_form(
+    hass, supported, gateway, reported
+):
+    # The gateway's own ID with a line break, spaces or separators is still
+    # the cloud's: the dialog saves the access (by its ID) and it loads.
+    gateway.value(UUID_PATH, reported)
+    entry, management, _cloud, _target = registered(hass)
+    manager, result = await open_icom(hass, entry)
+    original = icom_setup.verify_icom_access
+
+    async def on_test_port(*args, **kwargs):
+        return await original(*args, **{**kwargs, "port": gateway.port})
+
+    import custom_components.bosch_buderus_heating.icom_flow as dialog
+
+    dialog_verify = dialog.verify_icom_access
+    dialog.verify_icom_access = on_test_port
+    try:
+        done = await manager.async_configure(
+            result["flow_id"],
+            {
+                "host": "127.0.0.1",
+                "gateway_password": GATEWAY_PASSWORD,
+                "private_password": PRIVATE_PASSWORD,
+            },
+        )
+    finally:
+        dialog.verify_icom_access = dialog_verify
+    assert await outcome(hass, done) == "icom_connected"
+    data = next(
+        c.to_data()
+        for c in management.current().connections.values()
+        if "icom_access" in c.to_data()
+    )
+    access = load_icom_access(data)
+    assert access.identity_method == "uuid"
+    assert not any(character.isspace() for character in access.local_id)
+    assert access.confirms(reported)
 
 
 # ----------------------------------------------------------- stored access

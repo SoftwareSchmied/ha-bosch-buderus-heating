@@ -47,10 +47,23 @@ class IcomProblem(StrEnum):
     FORBIDDEN = "forbidden"
     BUSY = "service_unavailable"
     HTTP_ERROR = "http_error"
+    # An answer without any text.
+    EMPTY = "empty_answer"
+    # A text of this gateway (the key fits) that is no JSON object: a list,
+    # a single value or a cut-off text.
+    UNUSABLE = "unusable_answer"
 
 
 # Only these end a path without a failure of the gateway as a whole.
 PATH_PROBLEMS: Final = frozenset({IcomProblem.NOT_FOUND, IcomProblem.FORBIDDEN})
+# The gateway answered, but not usably for this path (a server error, an
+# empty answer, a text that is no JSON object): a failure of this path only.
+PATH_FAILURES: Final = frozenset(
+    {IcomProblem.HTTP_ERROR, IcomProblem.EMPTY, IcomProblem.UNUSABLE}
+)
+# A text counts as one of the gateway when it starts like a JSON document and
+# at most this share of its characters is unreadable: a wrong key gives noise.
+_UNREADABLE_SHARE: Final = 0.1
 
 
 class IcomError(Exception):
@@ -82,26 +95,50 @@ class IcomReply:
     document: dict[str, Any] = field(repr=False)
 
 
+def _readable(text: str) -> bool:
+    """Whether a decrypted text that is no JSON object is still the
+    gateway's own text: it starts like a JSON document and is readable."""
+    content = text.lstrip()
+    if not content.startswith(("{", "[")):
+        return False
+    unreadable = sum(
+        1
+        for character in content
+        if character == "\ufffd"
+        or (not character.isprintable() and character not in "\t\n\r")
+    )
+    return unreadable <= _UNREADABLE_SHARE * len(content)
+
+
 def decode_answer(key: bytes, body: bytes) -> IcomReply:
     """Decrypt one answer of the gateway into its document.
 
-    Raises IcomError: INVALID_RESPONSE for no encrypted text at all,
-    UNDECRYPTABLE (with the answer kept) when the key gives no JSON object.
+    Raises IcomError: EMPTY for an answer without text, INVALID_RESPONSE for
+    no encrypted text at all, UNUSABLE for a readable text that is no JSON
+    object (the key fits; only this answer is unusable), UNDECRYPTABLE (with
+    the answer kept) when the key gives noise.
     """
+    if not body.strip():
+        raise IcomError(IcomProblem.EMPTY, 200)
     try:
         text = decrypt(key, body)
     except IcomCryptoError:
         raise IcomError(IcomProblem.INVALID_RESPONSE, 200) from None
+    # A control character or a byte of another encoding inside a text is the
+    # gateway's own content, not a sign of a wrong key.
+    content = text.decode("utf-8", errors="replace")
+    if not content.strip():
+        raise IcomError(IcomProblem.EMPTY, 200)
     try:
-        # A control character or a byte of another encoding inside a text
-        # is the gateway's own content, not a sign of a wrong key.
-        document = json.loads(text.decode("utf-8", errors="replace"), strict=False)
+        document = json.loads(content, strict=False)
     except ValueError, RecursionError:
-        # A whole number of blocks that is no JSON: the key is wrong.
-        raise IcomError(IcomProblem.UNDECRYPTABLE, 200, answer=body) from None
-    if not isinstance(document, dict):
-        raise IcomError(IcomProblem.UNDECRYPTABLE, 200, answer=body)
-    return IcomReply(text, document)
+        document = None
+    if isinstance(document, dict):
+        return IcomReply(text, document)
+    if _readable(content):
+        raise IcomError(IcomProblem.UNUSABLE, 200)
+    # Noise that is no JSON text: the key is wrong.
+    raise IcomError(IcomProblem.UNDECRYPTABLE, 200, answer=body)
 
 
 # How the private password fits the gateway (diagnostics; never the password).

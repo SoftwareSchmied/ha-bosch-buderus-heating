@@ -133,7 +133,8 @@ async def test_invalid_passwords_are_named_before_any_request(gateway, session):
 
 
 @pytest.mark.parametrize(
-    "host", ["", "127.0.0.1", "localhost", "fe80::1%eth0", "http://x", "a b", None]
+    "host",
+    ["", "127.0.0.1", "localhost", "fe80::1%eth0", "http://x/path", "a b", None],
 )
 def test_the_address_must_be_a_usable_local_address(host):
     with pytest.raises(IcomSetupError, match="icom_invalid_host"):
@@ -142,6 +143,8 @@ def test_the_address_must_be_a_usable_local_address(host):
 
 def test_ordinary_addresses_are_accepted():
     assert normalize_icom_host(" 192.168.1.5 ") == "192.168.1.5"
+    # Copied from a browser: the address alone.
+    assert normalize_icom_host("http://192.168.1.5:80/") == "192.168.1.5"
     assert normalize_icom_host("Gateway.Example.lan") == "gateway.example.lan"
 
 
@@ -508,17 +511,27 @@ async def test_a_clear_contradiction_is_another_gateway(gateway, session, cloud)
         await verify(session, gateway, cloud_readings=cloud)
 
 
-async def test_a_failing_read_of_the_fallback_is_a_cause_of_its_own(gateway, session):
+@pytest.mark.parametrize("status", [404, 500])
+async def test_a_failing_read_of_one_value_only_leaves_this_value_out(
+    gateway, session, status
+):
+    # A path the gateway does not offer or answers with a server error is
+    # only left out: firmware and hardware alone (no live value) are too
+    # little, so the access is unverified.
     gateway.value("/gateway/uuid", "-1")
-    gateway.path_status[OUTDOOR] = 500
-    with pytest.raises(IcomSetupError, match="icom_cannot_connect"):
-        await verify(session, gateway, cloud_readings=CLOUD)
-    # A path the gateway does not offer is only left out: firmware and
-    # hardware alone (no live value) are too little, so the access is unverified.
-    gateway.path_status[OUTDOOR] = 404
+    gateway.path_status[OUTDOOR] = status
     proof = await verify(session, gateway, cloud_readings=CLOUD)
     assert proof.method == "unverified"
     assert proof.fingerprint == (HARDWARE, "fixture-hw")
+
+
+async def test_a_busy_gateway_during_the_value_check_is_a_cause_of_its_own(
+    gateway, session
+):
+    gateway.value("/gateway/uuid", "-1")
+    gateway.path_status[OUTDOOR] = 503
+    with pytest.raises(IcomSetupError, match="icom_busy"):
+        await verify(session, gateway, cloud_readings=CLOUD)
 
 
 def test_the_fallback_is_stored_with_its_fingerprint_and_read_back():

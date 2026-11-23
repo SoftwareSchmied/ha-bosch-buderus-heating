@@ -41,6 +41,7 @@ from .icom_access import (
     IDENTITY_UNVERIFIED,
     IDENTITY_UUID,
     IDENTITY_VALUES,
+    MAX_ID_LENGTH,
     comparable_id,
     describe_reported_id,
     gateway_ids_match,
@@ -49,6 +50,7 @@ from .icom_access import (
 )
 from .icom_client import (
     EXACT,
+    PATH_FAILURES,
     PATH_PROBLEMS,
     RESET,
     IcomClient,
@@ -234,10 +236,20 @@ async def verify_icom_access(
         else None
     )
     if own_id is not None:
-        check["uuid_matches_cloud"] = any(
-            gateway_ids_match(own_id, expected)
-            for expected in (gateway_id, *also_accepted)
+        matching = next(
+            (
+                expected
+                for expected in (gateway_id, *also_accepted)
+                if gateway_ids_match(own_id, expected)
+            ),
+            None,
         )
+        check["uuid_matches_cloud"] = matching is not None
+        # Kept to check later: an ID with spaces, a line break or other
+        # unreadable characters is kept as the matching ID of the cloud
+        # (both compare the same).
+        if matching is not None and not _storable_id(own_id):
+            own_id = matching
     if own_id is None or check["uuid_matches_cloud"] is not True:
         # No ID, an unusable one (empty, a number, "-1") or another one than
         # the cloud's: compare values.
@@ -265,6 +277,15 @@ async def verify_icom_access(
         private_password_variant=reads.variant,
         identity_method=IDENTITY_UUID,
         check=check,
+    )
+
+
+def _storable_id(value: str) -> bool:
+    """Whether a reported ID can be kept as it is (readable, no spaces)."""
+    return (
+        0 < len(value) <= MAX_ID_LENGTH
+        and value.isprintable()
+        and not any(character.isspace() for character in value)
     )
 
 
@@ -307,7 +328,8 @@ async def _verify_by_values(
         try:
             reply = await reads.get(path)
         except IcomError as error:
-            if error.problem in PATH_PROBLEMS:
+            if error.problem in PATH_PROBLEMS or error.problem in PATH_FAILURES:
+                # Only this value is missing from the comparison.
                 continue
             raise IcomSetupError(_code(error)) from None
         local[path] = reply.document.get("value")

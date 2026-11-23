@@ -154,7 +154,6 @@ async def test_noise_of_another_key_is_undecryptable(gateway, session):
     "body",
     [
         pytest.param(b"<html>busy</html>", id="html"),
-        pytest.param(b"", id="empty"),
         pytest.param(b"QUJD", id="short"),
         pytest.param(b"A" * 300_000, id="oversized"),
     ],
@@ -180,7 +179,32 @@ async def test_a_json_list_is_not_a_document(gateway, session):
     gateway.raw = encrypt(gateway.key, b"[1,2,3]")
     with pytest.raises(IcomError) as raised:
         await client_for(gateway, session).get("/gateway/uuid")
-    assert raised.value.problem is IcomProblem.UNDECRYPTABLE
+    # A readable text of this gateway: the key fits, only this answer fails.
+    assert raised.value.problem is IcomProblem.UNUSABLE
+    assert raised.value.problem in icom_client.PATH_FAILURES
+    assert raised.value.answer is None
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param(b"", id="empty"),
+        pytest.param(b" \r\n", id="spaces"),
+    ],
+)
+async def test_an_answer_without_text_is_empty(gateway, session, body):
+    gateway.raw = body
+    with pytest.raises(IcomError) as raised:
+        await client_for(gateway, session).get("/gateway/uuid")
+    assert raised.value.problem is IcomProblem.EMPTY
+    assert raised.value.problem in icom_client.PATH_FAILURES
+
+
+async def test_an_encrypted_empty_text_is_empty(gateway, session):
+    gateway.plain = b"  \n"
+    with pytest.raises(IcomError) as raised:
+        await client_for(gateway, session).get("/x")
+    assert raised.value.problem is IcomProblem.EMPTY
 
 
 @pytest.mark.parametrize("path", ["gateway", "/a?refresh=true", "/a#b"])
@@ -229,11 +253,41 @@ async def test_a_byte_of_another_encoding_is_no_wrong_password(gateway, session)
     )
 
 
-@pytest.mark.parametrize("plain", [b"not json at all.....", b"[1, 2]", b'{"a": '])
-async def test_text_that_is_no_json_object_is_still_a_wrong_password(
+@pytest.mark.parametrize(
+    "plain",
+    [
+        b"not json at all.....",
+        b"{" + bytes(range(1, 32)) + bytes(range(0x80, 0xA0)),
+        b"[\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\x01\x02\x03",
+    ],
+)
+async def test_noise_that_is_no_readable_json_text_is_still_a_wrong_password(
     gateway, session, plain
 ):
+    # What a wrong key gives: no JSON text, or a first bracket followed by
+    # unreadable bytes.
     gateway.plain = plain
     with pytest.raises(IcomError) as raised:
         await client_for(gateway, session).get("/x")
     assert raised.value.problem is IcomProblem.UNDECRYPTABLE
+    assert raised.value.answer is not None
+
+
+@pytest.mark.parametrize(
+    "plain",
+    [
+        b"[1, 2]",
+        b'{"a": ',
+        b'  {"id":"/x","value":[1,2',
+        b'["K\xfchlwasser", "Heizung"]',
+    ],
+)
+async def test_a_readable_text_that_is_no_json_object_fails_only_this_answer(
+    gateway, session, plain
+):
+    # A list, a cut-off text: the key fits, the answer of this path is not
+    # usable.
+    gateway.plain = plain
+    with pytest.raises(IcomError) as raised:
+        await client_for(gateway, session).get("/x")
+    assert raised.value.problem is IcomProblem.UNUSABLE

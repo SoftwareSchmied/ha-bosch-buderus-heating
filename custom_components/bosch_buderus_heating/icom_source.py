@@ -10,10 +10,14 @@ requests, so the access is careful:
 * each reading has the period of the K40 polling policy, at least the
   configured local interval and never below 120 s;
 * a path the gateway does not offer (404, 403) is asked again after a week;
-* two failed requests in a row (timeout, no connection, server error) pause
-  the whole access; each further pause in a row is longer (1, 2, 5, 10, 20,
-  30 minutes) until a reading works again; an overload answer (429, 503)
-  pauses for at least its Retry-After;
+* two failed requests in a row (timeout, no connection, no answer of the
+  gateway) pause the whole access; each further pause in a row is longer
+  (1, 2, 5, 10, 20, 30 minutes) until a reading works again; an overload
+  answer (429, 503) pauses for at least its Retry-After;
+* a path the gateway answers unusably (a server error, an empty answer, a
+  text that is no JSON object) fails alone and is asked again after a
+  minute; only six such answers in a row, without any usable one, pause the
+  access;
 * a wrong password (answers that cannot be decrypted) stops the access for
   good until the passwords are entered again;
 * the gateway ID read locally must stay the cloud's gateway ID; it is checked
@@ -59,6 +63,7 @@ from .icom_access import (
     load_icom_access,
 )
 from .icom_client import (
+    PATH_FAILURES,
     PATH_PROBLEMS,
     RESET,
     IcomClient,
@@ -98,6 +103,9 @@ IDLE_MAX = 30.0
 PAUSES = (60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0)
 # Failed requests in a row (nothing usable came back) that pause the access.
 FAILURES_BEFORE_PAUSE = 2
+# Unusable answers of single paths in a row (no usable answer between them)
+# that pause the access: the gateway answers, but nothing it says is usable.
+PATH_FAILURES_BEFORE_PAUSE = 6
 # Answers that cannot be decrypted in a row that stop the access for good;
 # a single one (after a restart too) is looked at again after RETRY_SECONDS.
 UNDECRYPTABLE_BEFORE_STOP = 2
@@ -113,7 +121,6 @@ _TRANSPORT = frozenset(
     {
         IcomProblem.CONNECT,
         IcomProblem.TIMEOUT,
-        IcomProblem.HTTP_ERROR,
         IcomProblem.INVALID_RESPONSE,
     }
 )
@@ -224,6 +231,7 @@ class IcomSource:
         self._problem: str | None = None
         self._closed = False
         self._failures_in_row = 0
+        self._path_failures_in_row = 0
         self._undecryptable = 0
         # The last undecryptable answer fits an empty private password: the
         # gateway's private password was reset (checked offline only).
@@ -687,6 +695,14 @@ class IcomSource:
             return _OK
         if problem is IcomProblem.BUSY:
             return self._pause_for(error)
+        if problem in PATH_FAILURES:
+            # The gateway answered: no failure of the connection.
+            self._failures_in_row = 0
+            self._path_failures_in_row += 1
+            if self._path_failures_in_row >= PATH_FAILURES_BEFORE_PAUSE:
+                self._path_failures_in_row = 0
+                return self._pause_for(error)
+            return _OK
         if problem in _TRANSPORT:
             self._failures_in_row += 1
             if self._failures_in_row >= FAILURES_BEFORE_PAUSE or first_check:
@@ -696,6 +712,7 @@ class IcomSource:
 
     def _succeeded(self) -> None:
         self._failures_in_row = 0
+        self._path_failures_in_row = 0
         self._undecryptable = 0
         self._reset_seen = False
 
@@ -774,7 +791,8 @@ class IcomSource:
             try:
                 reply = await client.get(path)
             except IcomError as error:
-                if error.problem in PATH_PROBLEMS:
+                if error.problem in PATH_PROBLEMS or error.problem in PATH_FAILURES:
+                    # Only this value is missing from the comparison.
                     continue
                 raise
             local[path] = reply.document.get("value")
@@ -889,8 +907,9 @@ class IcomSource:
             # does not offer the path still answered.
             self._identity_confirmed()
             return _OK
-        if error.problem in PATH_PROBLEMS:
-            # A gateway without an ID cannot be confirmed: tried again later.
+        if error.problem in PATH_PROBLEMS or error.problem in PATH_FAILURES:
+            # A gateway without an ID (or an unusable answer for it) cannot be
+            # confirmed: tried again later.
             return self._pause_for(error, "identity_unavailable")
         verdict = self._failed(error, first_check=True)
         if verdict is _OK:

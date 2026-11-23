@@ -1671,8 +1671,9 @@ schema unchanged. Counts, ages and fixed codes only:
   changes with time and reason);
 - `request_metrics`: `requests`, `answered` and `last_duration_ms`; `failures_by_class`:
   failed requests by `request_timeout`, `connection_failed`, `undecryptable`,
-  `invalid_response`, `not_found`, `forbidden`, `service_unavailable` and
-  `http_error`;
+  `invalid_response`, `not_found`, `forbidden`, `service_unavailable`,
+  `http_error`, `empty_answer` and `unusable_answer` (the last three fail
+  only their path);
 - `pauses`: `in_a_row` (the current series), `total`, `remaining_seconds` and
   the `reason` (`connection`, `rate_limited`, `identity_unavailable`,
   `identity_contradiction` or `undecryptable`); a `condition_changes` reason `no_cloud_system` means that no

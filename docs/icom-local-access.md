@@ -101,16 +101,22 @@ therefore:
   hourly and identifiers daily (the access's **local polling frequency** can only
   make this slower; values below two minutes count as two minutes);
 - stops asking a path that answered 404 or 403 for a week;
+- treats a path the gateway answers unusably (a server error, an empty
+  answer, a text that is no JSON object such as a list or a cut-off text) as a
+  failure of that path only: the other values read on, and the path is asked
+  again after a minute. Only six such answers in a row, without any usable one
+  between them, pause the access;
 - pauses all reading after two failed requests in a row (no answer within
-  10 seconds, no connection, a server error): first for a minute, then two,
-  five, ten, twenty and finally thirty minutes for as long as the failures
-  continue. An overload answer (429, 503) pauses for at least its Retry-After
-  time. A reading that works again ends the series;
+  10 seconds, no connection, an answer that is no encrypted text): first for a
+  minute, then two, five, ten, twenty and finally thirty minutes for as long as
+  the failures continue. An overload answer (429, 503) pauses for at least its
+  Retry-After time. A reading that works again ends the series;
 - keeps the values of a confirmed access during the first pause, but withdraws
   them after three missed periods or from the second pause on;
 - stops completely, without further requests, when two answers in a row cannot
   be decrypted (wrong or changed password; a single one, also right after a
-  restart, is only looked at again after a minute). The access then shows
+  restart, is only looked at again after a minute). An answer that decrypts to
+  readable text is not counted as such, even when it is no JSON object. The access then shows
   "sign-in required" or "not reachable" until you enter the data again;
 - judges a gateway set up by its own ID that later reports no ID, an ID that
   says nothing (empty or a placeholder such as -1) or another ID, and one

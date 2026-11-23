@@ -105,8 +105,15 @@ wird. Der lokale Zugang
   Kennungen täglich (die **lokale Abfragefrequenz** des Zugangs kann das nur
   verlangsamen; Werte unter zwei Minuten gelten als zwei Minuten);
 - fragt einen Pfad, der mit 404 oder 403 antwortet, eine Woche lang nicht mehr ab;
+- wertet einen Pfad, den das Gateway unbrauchbar beantwortet (ein Serverfehler,
+  eine leere Antwort, ein Text, der kein JSON-Objekt ist, etwa eine Liste oder
+  ein abgeschnittener Text), als Fehler nur dieses Pfads: Die anderen Werte
+  werden weiter gelesen, der Pfad wird nach einer Minute wieder gefragt. Erst
+  sechs solche Antworten in Folge, ohne eine brauchbare dazwischen, pausieren
+  den Zugang;
 - pausiert alles Lesen nach zwei fehlgeschlagenen Anfragen in Folge (keine
-  Antwort innerhalb von 10 Sekunden, keine Verbindung, ein Serverfehler): zuerst
+  Antwort innerhalb von 10 Sekunden, keine Verbindung, eine Antwort, die kein
+  verschlüsselter Text ist): zuerst
   eine Minute, dann zwei, fünf, zehn, zwanzig und zuletzt dreißig Minuten, solange
   die Fehler andauern. Eine Überlastungsantwort (429, 503) pausiert mindestens so
   lange wie ihr Retry-After. Ein wieder funktionierender Wert beendet die Folge;
@@ -115,7 +122,8 @@ wird. Der lokale Zugang
 - hält ganz an, ohne weitere Anfragen, wenn sich zwei Antworten hintereinander
   nicht entschlüsseln lassen (falsches oder geändertes Passwort; eine einzelne,
   auch direkt nach einem Neustart, wird erst nach einer Minute noch einmal
-  angesehen). Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
+  angesehen). Eine Antwort, die sich zu lesbarem Text entschlüsseln lässt, zählt
+  dabei nicht mit, auch wenn sie kein JSON-Objekt ist. Der Zugang zeigt dann „Anmeldung nötig“ oder „nicht
   erreichbar“, bis du die Daten neu eingibst;
 - beurteilt ein Gateway, das an seiner eigenen Kennung erkannt wurde und später
   keine Kennung, eine Kennung ohne Aussage (leer oder ein Platzhalter wie -1)
