@@ -602,6 +602,7 @@ def _period_sensor(plant: Plant, key: str) -> RecordingPeriodSensor:
         coordinator=lambda: plant.coordinator,
         shown=lambda _spec: None,
         counter_entities={},
+        heat_source_answered=lambda _source: False,
     )
     return RecordingPeriodSensor(plant.coordinator, stub, spec)  # type: ignore[arg-type]
 

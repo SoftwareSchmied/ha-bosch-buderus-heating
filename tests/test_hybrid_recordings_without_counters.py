@@ -18,9 +18,19 @@ import pytest
 from homeassistant.core import HomeAssistant
 
 from custom_components.bosch_buderus_heating.plant_detection import PlantResult
+from custom_components.bosch_buderus_heating.recordings import (
+    Period as RecordingPeriod,
+)
 from custom_components.bosch_buderus_heating.recordings import gating
 from custom_components.bosch_buderus_heating.recordings.manager import (
     RECHECK_MISSING,
+)
+from custom_components.bosch_buderus_heating.recordings.measures import (
+    EntitySpec,
+    measures,
+)
+from custom_components.bosch_buderus_heating.recordings.sensor import (
+    RecordingPeriodSensor,
 )
 from custom_components.bosch_buderus_heating.recordings.series import (
     BY_KEY,
@@ -125,6 +135,34 @@ async def test_the_six_series_are_read_and_a_404_is_kept(hass: HomeAssistant) ->
     await manager.async_run("hourly")
     assert HS2["hs2_ch_heat"] in {path for path, _ in calls}
     release()
+    await coordinator.async_shutdown()
+
+
+def _heat_attributes(coordinator: Any, manager: Any) -> dict[str, Any]:
+    measure = next(
+        item for item in measures(("total_heat",)) if item.key == "total_heat"
+    )
+    spec = EntitySpec(measure, RecordingPeriod.YESTERDAY, measure.primary)
+    return dict(
+        RecordingPeriodSensor(coordinator, manager, spec).extra_state_attributes
+    )
+
+
+@pytest.mark.parametrize("answered", [True, False])
+async def test_the_gateways_heat_is_the_boilers_only_with_an_answered_series(
+    hass: HomeAssistant, answered: bool
+) -> None:
+    """Known from its plant kind alone, a hybrid system's gateway heat keeps
+    its meaning until a series of the heat pump has answered (every one 404:
+    no attribute)."""
+    coordinator = await plant(hass, "ehybrid")
+    manager, _calls = await recordings(
+        hass, coordinator, Clock(NOW), answers() if answered else {}
+    )
+    await manager.async_run("start")
+    assert gating.heat_pump_source_basis(coordinator) == "plant_kind"
+    attributes = _heat_attributes(coordinator, manager)
+    assert attributes.get("heat_generator") == ("boiler" if answered else None)
     await coordinator.async_shutdown()
 
 

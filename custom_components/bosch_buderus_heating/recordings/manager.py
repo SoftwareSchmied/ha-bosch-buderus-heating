@@ -622,6 +622,14 @@ class RecordingsManager:
                 keys.append(series.key)
         return tuple(keys)
 
+    def heat_source_answered(self, source: str) -> bool:
+        """Whether a series of the heat source `source` has answered."""
+        answered = set(self.available())
+        return any(
+            series.heat_source == source and series.key in answered
+            for series in ALL_SERIES
+        )
+
     def measures(self) -> tuple[Measure, ...]:
         return measures(self.available())
 

@@ -26,7 +26,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from ..device import device_info_for_resource, grouped_entity_name
 from ..platform_scope import DiscoveryLifecycle
-from .gating import heat_pump_source
+from .gating import heat_pump_source, heat_pump_source_basis
 from .manager import RecordingsManager, manager_for
 from .measures import EntitySpec, entity_name
 from .series import Quantity
@@ -143,6 +143,19 @@ class RecordingPeriodSensor(SensorEntity):
         shown = self._manager.shown(self._spec)
         return shown.value if shown is not None else None
 
+    def _heat_pump_recorded(self) -> bool:
+        """A hybrid system whose heat pump's own heat is shown apart: its own
+        counters show it, or a series of its heat source has answered. A
+        hybrid system known only from its plant kind, without an answered
+        series, keeps the gateway's heat as it was."""
+        coordinator = self._manager.coordinator()
+        source = heat_pump_source(coordinator)
+        if source is None:
+            return False
+        return heat_pump_source_basis(
+            coordinator
+        ) == "counters" or self._manager.heat_source_answered(source)
+
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         shown = self._manager.shown(self._spec)
@@ -151,7 +164,7 @@ class RecordingPeriodSensor(SensorEntity):
         if (
             measure.kind == "heat"
             and measure.mode in ("total", "ch", "dhw")
-            and heat_pump_source(self._manager.coordinator()) is not None
+            and self._heat_pump_recorded()
         ):
             # A hybrid system: the gateway's heat is the boiler's; the heat
             # pump's own heat is recorded under its heat source.
