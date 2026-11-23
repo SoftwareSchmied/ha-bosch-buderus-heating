@@ -47,7 +47,9 @@ gesondert eingeordnet.
 I added the explicit `heating` and `cooling` zone resource variants and
 the DHW device-type reading. Existing shorter
 variants and entity identities remain unchanged. Temperature readings require
-numeric Celsius resources (a reading in Fahrenheit counts as well); modes and the device type require scalar strings.
+numeric Celsius resources, as the zone controls write and confirm them in
+Celsius (a Fahrenheit answer is no valid value there); modes and the device
+type require scalar strings.
 Every update validates the current schema and value, and stale readings
 become unavailable. Heating and cooling use distinct localized names.
 

@@ -52,6 +52,10 @@ class _EntitySchemaRule:
     pattern: re.Pattern[str]
     resource_types: frozenset[str]
     units: frozenset[str] = frozenset()
+    # Whether a Celsius rule also takes Fahrenheit: only for a reading whose
+    # entity takes its unit from the answer, never for one shown or written
+    # in a fixed unit.
+    fahrenheit: bool = True
 
     def matches(self, resource: Resource) -> bool:
         """Return whether a resource matches the narrowly accepted schema.
@@ -61,18 +65,26 @@ class _EntitySchemaRule:
         """
         metadata = resource.metadata
         unit = implied_unit(resource.path, metadata.unit)
+        units = (
+            schema_units(self.units)
+            if self.fahrenheit
+            else frozenset(canonical_unit(item) for item in self.units)
+        )
         return metadata.resource_type in read_types(self.resource_types) and (
-            not self.units or canonical_unit(unit) in schema_units(self.units)
+            not self.units or canonical_unit(unit) in units
         )
 
 
 _ADDITIONAL_SCALAR_RULES = (
+    # The zone setpoints are shown in °C, written by the zone controls and
+    # climates and confirmed by their number: Fahrenheit is no valid value.
     _EntitySchemaRule(
         re.compile(
             r"^/zones/zone[^/]+/(?:heating|cooling)/(?:manualRoomSetpoint|temporaryRoomSetpoint)$"
         ),
         frozenset({"floatValue"}),
         frozenset({"C"}),
+        fahrenheit=False,
     ),
     _EntitySchemaRule(
         re.compile(r"^/zones/zone[^/]+/(?:heating|cooling)/operationMode$"),

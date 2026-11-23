@@ -39,7 +39,9 @@ Since 0.9.3 a gateway that reports a temperature in Fahrenheit (`F`, `°F`,
 `ºF`) gets the same temperature sensors as one in Celsius; Home Assistant
 converts the reading to the unit of your installation, and the firmware
 repair no longer counts Fahrenheit as an incompatible unit. Kelvin is no
-temperature unit for these readings. Tested with simulated readings only;
+temperature unit for these readings. The manual and temporary setpoints of a
+zone stay in Celsius only, as the zone controls write them in Celsius.
+Tested with simulated readings only;
 not yet confirmed on a real gateway with Fahrenheit.
 
 The [controls dialog](heating-controls.md) groups settings and keeps edits as
