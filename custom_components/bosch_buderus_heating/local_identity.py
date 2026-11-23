@@ -43,14 +43,52 @@ def _module_text(value: object) -> str | None:
     return value.strip()
 
 
+# A serial number needs at least this many letters or digits (leading zeros
+# not counted) to identify a module. A shorter one is one of a few thousand
+# values at most and the usual form of a placeholder ("0", "1", "-1"); the
+# serial numbers modules report are far longer.
+_SERIAL_MIN_CHARACTERS = 4
+# Words reported in place of a serial number, in lower case without other
+# characters than letters and digits.
+_SERIAL_PLACEHOLDERS = frozenset(
+    {
+        "default",
+        "empty",
+        "invalid",
+        "none",
+        "notavailable",
+        "notset",
+        "null",
+        "serial",
+        "serialnumber",
+        "undefined",
+        "unknown",
+    }
+)
+
+
 def _module_serial(value: object) -> str | None:
-    """A serial number as its digits or text; a number with a fraction, a
-    placeholder of zeros and an empty text identify nothing. Digits are
-    compared without leading zeros, which a number cannot carry."""
+    """A serial number as its digits or text, or None when it identifies
+    nothing: a number with a fraction, a negative number or a text with a
+    leading minus, fewer than four letters or digits besides leading zeros
+    (an empty text, "N/A", "-"), one character repeated and a known
+    placeholder word. Digits are compared without leading zeros, which a
+    number cannot carry."""
     if isinstance(value, bool) or not isinstance(value, str | int):
         return None
     text = str(value).strip()
-    if not text or not text.strip("0") or len(text) > 1024:
+    if len(text) > 1024 or text.startswith("-"):
+        return None
+    significant = "".join(
+        character
+        for character in text.lstrip("0")
+        if character.isascii() and character.isalnum()
+    ).casefold()
+    if (
+        len(significant) < _SERIAL_MIN_CHARACTERS
+        or len(set(significant)) == 1
+        or significant in _SERIAL_PLACEHOLDERS
+    ):
         return None
     return text.lstrip("0") if text.isascii() and text.isdigit() else text
 
@@ -73,8 +111,9 @@ def compare_systems(local: SystemInfo, cloud: object, gateway: str) -> None:
     place and type (Tok, Id); a row without them, a key that occurs more
     than once and a row without serial number or hardware name on either
     side are left out. A serial number counts as its digits, whether it is
-    reported as text or as a whole number; a number with a fraction never
-    establishes identity. One matching module is enough. Another serial
+    reported as text or as a whole number; a number with a fraction and a
+    placeholder (negative, too short, one repeated character, a word such as
+    "unknown") never establish identity. One matching module is enough. Another serial
     number or hardware name at the gateway's own place, or only
     contradicting modules without any match, reject the relationship.
     Firmware versions and measured values are not IDs.

@@ -141,7 +141,7 @@ def test_a_system_with_only_unreported_modules_proves_no_identity():
 
 
 GATEWAY_ROW = SystemModule("72", "17", "15.00.01", "4711", "K40RF", None, None)
-INDOOR = SystemModule("8", "8", "1.0", "000999", "XCU_THH", None, None)
+INDOOR = SystemModule("8", "8", "1.0", "0009876", "XCU_THH", None, None)
 TOLERANT_LOCAL = replace(SYSTEM, modules=(MODULE, GATEWAY_ROW, INDOOR))
 
 
@@ -161,7 +161,7 @@ def tolerant_cloud(**gateway_row):
         {
             "Tok": "8",
             "Id": "8",
-            "ModuleSerialNumber": "000111",
+            "ModuleSerialNumber": "0001234",
             "ModuleHwIdentStr": "XCU_THH",
         },
         # Two rows with the same place and type say nothing.
@@ -222,9 +222,64 @@ def test_a_place_and_type_reported_twice_compare_nothing():
     compare_systems(twice, tolerant_cloud(ModuleSerialNumber=4712), "000123")
 
 
+@pytest.mark.parametrize(
+    ("local", "cloud"),
+    [
+        (-1, -1),
+        ("-1", "-1"),
+        (-1, "-1"),
+        (0, "0"),
+        ("0000", 0),
+        (1, "1"),
+        ("123", 123),
+        ("0001", 1),
+        ("000123", "000123"),
+        ("N/A", "N/A"),
+        ("n/a", "NA"),
+        ("-", "-"),
+        ("--", "--"),
+        ("", ""),
+        ("unknown", "Unknown"),
+        ("NONE", "none"),
+        ("not available", "Not Available"),
+        ("1111", 1111),
+        ("FFFFFFFF", "ffffffff"),
+        ("-12345678", -12345678),
+    ],
+)
+def test_a_placeholder_serial_number_identifies_no_module(local, cloud):
+    # The same placeholder and hardware name on both sides prove nothing:
+    # with no other module, the check asks for evidence instead of accepting.
+    module = replace(MODULE, serial_number=local)
+    system = cloud_system()
+    system["values"][0]["ModuleSerialNumber"] = cloud
+    with pytest.raises(ConfigurationError, match="identity_contract_required"):
+        compare_systems(replace(SYSTEM, modules=(module,)), system, "000123")
+
+
+@pytest.mark.parametrize("serial", ["4711", 4711, "A1B2", "0004711"])
+def test_four_letters_or_digits_identify_a_module(serial):
+    module = replace(MODULE, serial_number=serial)
+    system = cloud_system()
+    system["values"][0]["ModuleSerialNumber"] = serial
+    compare_systems(replace(SYSTEM, modules=(module,)), system, "000123")
+
+
+@pytest.mark.parametrize("placeholder", [-1, "N/A", "unknown"])
+def test_a_placeholder_at_the_gateway_place_neither_proves_nor_contradicts(
+    placeholder,
+):
+    # Another module still proves the system; without it nothing does.
+    cloud = tolerant_cloud(ModuleSerialNumber=placeholder)
+    compare_systems(TOLERANT_LOCAL, cloud, "000123")
+    only_gateway = replace(SYSTEM, modules=(GATEWAY_ROW,))
+    with pytest.raises(ConfigurationError, match="identity_contract_required"):
+        compare_systems(only_gateway, cloud, "000123")
+
+
 def test_only_contradicting_modules_are_another_system():
     cloud = cloud_system()
-    cloud["values"][0]["ModuleSerialNumber"] = "00099999999999999999999999"
+    cloud["values"][0]["ModuleSerialNumber"] = "00098765432109876543210987"
     with pytest.raises(ConfigurationError, match="local_identity_conflict"):
         compare_systems(SYSTEM, cloud, "000123")
 

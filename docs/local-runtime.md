@@ -23,7 +23,10 @@ The gateway identifiers must agree exactly. At least one module identified by
 its token and ID must have the same serial number and hardware identifier; a
 serial number counts as its digits, whether a side reports it as text or as a
 whole number (leading zeros aside). Serials with a fraction, empty or zero
-identifiers cannot establish a match. Rows without token or ID and module keys
+identifiers and placeholders cannot establish a match: a negative number or a
+text with a leading minus, fewer than four letters or digits besides leading
+zeros (such as `1`, `-1` or `N/A`), one character repeated and words such
+as `unknown` or `none`. Such rows, rows without token or ID and module keys
 that occur more than once on a side are left out of the comparison. One match
 is enough; another serial number or hardware identifier at the gateway's own
 place (token 72 or 75) rejects the link, and so do contradicting modules
