@@ -27,6 +27,7 @@ from homeassistant.helpers import entity_registry as er
 from custom_components.bosch_buderus_heating import recordings
 from custom_components.bosch_buderus_heating.component_devices import (
     OPTION,
+    ComponentDevices,
     component_identifier,
 )
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -219,29 +220,64 @@ async def test_a_failed_device_is_created_with_the_next_update(
     devices nor, with the next update, the one that failed."""
     freezer.move_to(golden.FROZEN)
     original = dr.DeviceRegistry.async_get_or_create
+    original_sync = ComponentDevices.sync
     failed: list[str] = []
+    passes = [0]
+    # (pass of the devices, component identifier, created)
+    calls: list[tuple[int, str, bool]] = []
+
+    def counted(self: ComponentDevices) -> int:
+        passes[0] += 1
+        return original_sync(self)
 
     def flaky(self: dr.DeviceRegistry, **kwargs: Any) -> dr.DeviceEntry:
-        names = [item[1] for item in kwargs.get("identifiers", ())]
-        if not failed and any(":component:" in name for name in names):
+        names = [
+            item[1]
+            for item in kwargs.get("identifiers", ())
+            if ":component:" in item[1]
+        ]
+        if names and not failed:
             failed.extend(names)
+            calls.append((passes[0], names[0], False))
             raise RuntimeError("registry")
+        if names:
+            calls.append((passes[0], names[0], True))
         return original(self, **kwargs)
 
     with (
         _k40(hass, option=True) as (entry, clock),
         patch.object(dr.DeviceRegistry, "async_get_or_create", flaky),
+        patch.object(ComponentDevices, "sync", counted),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await wait_for_sources(hass, entry, 1)
         await hass.async_block_till_done()
-        # The others at once; the failed one is missing until the next update.
+        # The devices follow the plant model's start, a task of its own, and
+        # need the gateway's device first: the first attempt can come with the
+        # start or with a later update. Passes of the devices are told apart.
+        for _ in range(4):
+            if failed:
+                break
+            clock.now += 3600
+            await golden.source_of(entry).async_refresh()
+            await hass.async_block_till_done()
         assert failed
-        assert len(_component_devices(hass, entry)) == 2
+        (failed_pass,) = {item for item, _, created in calls if not created}
+        # The others in the same pass; the failed one only in a later one.
+        assert {
+            name for item, name, created in calls if created and item == failed_pass
+        } == {name for _, name, _ in calls} - {failed[0]}
+        assert len({name for _, name, _ in calls}) == 3
+        assert all(
+            item > failed_pass
+            for item, name, created in calls
+            if name == failed[0] and created
+        )
         clock.now += 3600
         await golden.source_of(entry).async_refresh()
         await hass.async_block_till_done()
         assert _component_devices(hass, entry) == ["16:253", "8:65281", "8:8"]
+        assert any(name == failed[0] and created for _, name, created in calls)
         assert await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()
 
