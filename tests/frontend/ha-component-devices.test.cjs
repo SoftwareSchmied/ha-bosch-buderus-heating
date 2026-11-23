@@ -55,13 +55,31 @@ const assert = require("node:assert/strict");
       // gateway's own row is not listed.
       await page.getByText("Systemregler HMI800_2_HP").first().waitFor();
       await page.getByText("Testgerät 7").first().waitFor();
+      await page
+        .getByText("Komponenten als Geräte anzeigen", { exact: true })
+        .first()
+        .waitFor();
     };
-    const toggle = () =>
-      page.getByRole("switch", { name: "Komponenten als Geräte anzeigen" });
+    // Closed with the dialog's close button, so no options flow stays open.
+    const close = async () => {
+      await page
+        .getByRole("button", { name: /schließen|close/i })
+        .first()
+        .click();
+      await menuItem(entryName).waitFor({ state: "hidden" });
+    };
+    // The step has one yes/no field (a checkbox in the form).
+    const toggle = () => page.getByRole("checkbox").first();
+    // Its drawn box lies above the input; the keyboard works as for a user.
+    const flip = async (checked) => {
+      await toggle().focus();
+      await page.keyboard.press("Space");
+      assert.equal(await toggle().isChecked(), checked);
+    };
 
     await openStep();
     assert.equal(await toggle().isChecked(), false);
-    await toggle().click();
+    await flip(true);
     await page.getByRole("button", { name: submit }).first().click();
     await page
       .getByText("Die Komponenten werden jetzt als Geräte", { exact: false })
@@ -70,11 +88,11 @@ const assert = require("node:assert/strict");
     // OK leads back to the main menu of the same dialog.
     await page.getByRole("button", { name: submit }).first().click();
     await menuItem(entryName).waitFor();
-    await page.keyboard.press("Escape");
+    await close();
 
     await openStep();
     assert.equal(await toggle().isChecked(), true);
-    await toggle().click();
+    await flip(false);
     await page.getByRole("button", { name: submit }).first().click();
     await page
       .getByText("Komponenten-Geräte entfernt: 2", { exact: false })
@@ -82,8 +100,7 @@ const assert = require("node:assert/strict");
       .waitFor();
     await page.getByRole("button", { name: submit }).first().click();
     await menuItem(entryName).waitFor();
-    await page.keyboard.press("Escape");
-    await menuItem(entryName).waitFor({ state: "hidden" });
+    await close();
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();
