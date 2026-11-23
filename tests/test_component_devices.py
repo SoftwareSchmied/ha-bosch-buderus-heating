@@ -467,6 +467,26 @@ async def test_a_component_no_longer_listed_keeps_its_device(
     assert set(_components(hass, entry)) == EXPECTED
 
 
+async def test_a_component_reported_later_gets_its_device_at_once(
+    hass: HomeAssistant,
+) -> None:
+    """A component that appears in a later update gets its device in that
+    update, also when the others already have theirs."""
+    entry = _entry(hass)
+    _gateway(hass, entry)
+    coordinator, _, _ = await _start(hass, entry)
+    assert set(_components(hass, entry)) == EXPECTED
+    later = ComponentRow(4, 59, "2.0")
+    coordinator.cycle([*ROWS, later])
+    assert set(_components(hass, entry)) == {*EXPECTED, f"{GW}:component:59:4"}
+    coordinator.cycle([*ROWS, later, ComponentRow(3, 56)])
+    assert set(_components(hass, entry)) == {
+        *EXPECTED,
+        f"{GW}:component:59:4",
+        f"{GW}:component:56:3",
+    }
+
+
 async def test_versions_follow_the_shown_list(hass: HomeAssistant) -> None:
     entry = _entry(hass)
     _gateway(hass, entry)
