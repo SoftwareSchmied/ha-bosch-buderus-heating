@@ -48,6 +48,14 @@ a sorted list of sorted path lists; everything else is sorted by key.
 Not part of the golden master: diagnostics (own tests), log output, the
 restore cache.
 
+Home Assistant versions: the files are recorded on 2026.11. On an older
+Home Assistant (down to the minimum version 2026.5) two parts that Home
+Assistant makes itself are taken out of the golden state before comparing:
+the state attribute ``temperature_unit`` of climate and water heater entities
+and the area in front of a generated entity ID. Both are detected by the
+feature (``HA_TEMPERATURE_UNIT``, ``HA_AREA_IN_ENTITY_ID``); on 2026.11
+nothing is taken out. Recording needs 2026.11.
+
 Instructions for packages
 -------------------------
 Run ``tests/test_x40_golden.py``. A difference fails with a list of what
@@ -101,10 +109,14 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from homeassistant.components.climate import const as climate_const
+from homeassistant.components.water_heater import const as water_heater_const
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, StateMachine
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.util import slugify
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.data import tokens_to_data
@@ -232,6 +244,28 @@ CAPTURE_OUTDOOR_POWER_KW = 10
 # The new entity: the outdoor unit software version, with the state of my own
 # K40 and its attributes without a hardware type.
 CAPTURE_NEW_ENTITY = "gateway-one:outdoor_unit_software_version"
+
+# ------------------------------------------------- Home Assistant versions
+# The golden files are recorded on Home Assistant 2026.11. Older versions down
+# to the minimum version (2026.5) differ in two things Home Assistant does
+# itself, never the integration:
+# - the state attribute ``temperature_unit`` of climate and water heater
+#   entities (newer versions have ClimateEntityStateAttribute and
+#   WaterHeaterStateAttribute and show the unit; older ones do not);
+# - the area of an entity's device in front of a generated entity ID (newer
+#   versions have EntityNamePart; older ones build the entity ID from the
+#   device and entity name only).
+# Each is detected by the feature, not by a version number. On a Home
+# Assistant without the feature exactly that part is taken out of the golden
+# state before comparing (``for_this_home_assistant``); with the feature
+# nothing is taken out, so the comparison on 2026.11 stays complete.
+HA_TEMPERATURE_UNIT: dict[str, bool] = {
+    "climate": hasattr(climate_const, "ClimateEntityStateAttribute"),
+    "water_heater": hasattr(water_heater_const, "WaterHeaterStateAttribute"),
+}
+HA_AREA_IN_ENTITY_ID: bool = hasattr(er, "EntityNamePart")
+# Recording needs the Home Assistant the golden files describe.
+HA_AS_RECORDED: bool = all(HA_TEMPERATURE_UNIT.values()) and HA_AREA_IN_ENTITY_ID
 
 # Measured with the real clock of the test run, never the same twice.
 VOLATILE_STATES: tuple[str, ...] = (
@@ -651,9 +685,21 @@ def _snapshot(
     entity_rows = []
     states: dict[str, Any] = {}
     written: dict[str, dict[str, int]] = {}
+    # Only on a Home Assistant without the area in generated entity IDs: the
+    # area of each entity's device (see ``for_this_home_assistant``).
+    areas: dict[str, str] = {}
     for item in er.async_entries_for_config_entry(entities, entry.entry_id):
         unique_id = normal(item.unique_id)
         key = _key(item.domain, unique_id)
+        if not HA_AREA_IN_ENTITY_ID:
+            device = devices.async_get(item.device_id) if item.device_id else None
+            area = (
+                ar.async_get(hass).async_get_area(device.area_id)
+                if device is not None and device.area_id
+                else None
+            )
+            if area is not None:
+                areas[key] = slugify(area.name)
         entity_rows.append(
             {
                 "platform": item.domain,
@@ -693,6 +739,7 @@ def _snapshot(
         "devices": device_rows,
         "states": dict(sorted(states.items())),
         "writes": dict(sorted(written.items())),
+        **({"areas": dict(sorted(areas.items()))} if areas else {}),
     }
 
 
@@ -1210,10 +1257,34 @@ def _with_capture_roles(expected: dict[str, Any]) -> dict[str, Any]:
     return changed
 
 
+def for_this_home_assistant(
+    expected: dict[str, Any], areas: dict[str, str]
+) -> dict[str, Any]:
+    """The golden state as the running Home Assistant shows it: without the
+    parts an older Home Assistant does not make (see ``HA_TEMPERATURE_UNIT``
+    and ``HA_AREA_IN_ENTITY_ID``); unchanged on the recorded version.
+    ``areas``: the area of each entity's device in this run (slug)."""
+    if HA_AS_RECORDED:
+        return expected
+    changed = copy.deepcopy(expected)
+    for key, state in changed["states"].items():
+        domain = key.split(" ", 1)[0]
+        if not HA_TEMPERATURE_UNIT.get(domain, True):
+            state["attributes"].pop("temperature_unit", None)
+    if not HA_AREA_IN_ENTITY_ID:
+        for row in changed["entities"]:
+            area = areas.get(_key(row["platform"], row["unique_id"]))
+            domain, _, object_id = row["entity_id"].partition(".")
+            if area and object_id.startswith(f"{area}_"):
+                row["entity_id"] = f"{domain}.{object_id.removeprefix(f'{area}_')}"
+    return changed
+
+
 def differences(
     name: str, expected: dict[str, Any], actual: dict[str, Any]
 ) -> list[str]:
     """Everything that differs beyond the allowances, as readable lines."""
+    expected = for_this_home_assistant(expected, actual.get("areas", {}))
     if name in CAPTURE_ROLE_PLANTS:
         expected = _with_capture_roles(expected)
     new = EXPECTED_NEW.get(name, {})
@@ -1275,6 +1346,7 @@ async def test_the_plant_matches_the_state_before_the_plant_model(
     plant = PLANTS[name]
     actual = await build_snapshot(hass, plant)
     if UPDATE:
+        assert HA_AS_RECORDED, "record only on the Home Assistant of the golden files"
         text = json.dumps(
             {"provenance": _provenance(plant), **actual},
             indent=1,
@@ -1331,6 +1403,7 @@ def test_the_capture_exception_covers_the_two_capture_plants_only() -> None:
         assert f"sensor {CAPTURE_NEW_ENTITY}" not in before["states"]
 
 
+@pytest.mark.usefixtures("recorded_home_assistant")
 def test_the_capture_exception_allows_nothing_else() -> None:
     """Another role, another value or the same change on another K40 plant
     is still a difference."""
@@ -1363,6 +1436,76 @@ def test_the_capture_exception_allows_nothing_else() -> None:
     assert differences("k40_cloud", golden, wrong) == [
         f"attribute changed: {CAPTURE_ROLE_SENSOR}: primary"
     ]
+
+
+@pytest.fixture
+def recorded_home_assistant() -> Iterator[None]:
+    """Tests that compare golden files with each other: as recorded."""
+    with _home_assistant(recorded=True):
+        yield
+
+
+@contextmanager
+def _home_assistant(recorded: bool) -> Iterator[None]:
+    """Compare as on the recorded Home Assistant, or as on an older one."""
+    with (
+        patch.dict(HA_TEMPERATURE_UNIT, dict.fromkeys(HA_TEMPERATURE_UNIT, recorded)),
+        patch(f"{__name__}.HA_AREA_IN_ENTITY_ID", recorded),
+        patch(f"{__name__}.HA_AS_RECORDED", recorded),
+    ):
+        yield
+
+
+def test_an_older_home_assistant_differs_only_in_its_own_parts() -> None:
+    """Without the two features exactly their parts are taken out; every
+    other difference stays one, also on an older Home Assistant."""
+    golden = json.loads(_path("rrc_ct200").read_text(encoding="utf-8"))
+    units = [
+        key
+        for key, state in golden["states"].items()
+        if key.split(" ", 1)[0] in ("climate", "water_heater")
+        and "temperature_unit" in state["attributes"]
+    ]
+    assert units
+    entity = next(row for row in golden["entities"] if row["entity_id"].count("_") >= 2)
+    domain, _, object_id = entity["entity_id"].partition(".")
+    area, _, rest = object_id.partition("_")
+    key = _key(entity["platform"], entity["unique_id"])
+    # The same plant as an older Home Assistant shows it.
+    older = copy.deepcopy(golden)
+    for unit in units:
+        del older["states"][unit]["attributes"]["temperature_unit"]
+    next(row for row in older["entities"] if row["unique_id"] == entity["unique_id"])[
+        "entity_id"
+    ] = f"{domain}.{rest}"
+    older["areas"] = {key: area}
+    with _home_assistant(recorded=True):
+        assert differences("rrc_ct200", golden, golden) == []
+        found = differences("rrc_ct200", golden, older)
+        assert f"entity changed: {key}: entity_id" in found
+        assert {f"attribute gone: {unit}: temperature_unit" for unit in units} <= set(
+            found
+        )
+    with _home_assistant(recorded=False):
+        assert differences("rrc_ct200", golden, older) == []
+        # Another area, another attribute or another unit stays a difference.
+        wrong = copy.deepcopy(older)
+        wrong["areas"] = {key: "other"}
+        assert differences("rrc_ct200", golden, wrong) == [
+            f"entity changed: {key}: entity_id"
+        ]
+        wrong = copy.deepcopy(older)
+        attributes = wrong["states"][units[0]]["attributes"]
+        name = next(item for item in sorted(attributes) if item != "friendly_name")
+        attributes[name] = "changed"
+        assert differences("rrc_ct200", golden, wrong) == [
+            f"attribute changed: {units[0]}: {name}"
+        ]
+        wrong = copy.deepcopy(older)
+        wrong["states"][units[0]]["attributes"]["temperature_unit"] = "°F"
+        assert differences("rrc_ct200", golden, wrong) == [
+            f"new attributes: {units[0]}: temperature_unit"
+        ]
 
 
 def test_the_allowances_start_empty_or_name_planned_keys() -> None:
