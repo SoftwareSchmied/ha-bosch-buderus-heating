@@ -678,6 +678,18 @@
     "LED switch-off time": "LEDien sammutusaika",
     "Automatic updates": "Automaattiset päivitykset",
     "Last update check": "Viimeisin päivitystarkistus",
-    "Last update": "Viimeisin päivitys"
+    "Last update": "Viimeisin päivitys",
+    "Heat generator control unit": "Lämmönlähteen ohjausyksikkö",
+    "Basic controller": "Perussäädin",
+    "System controller": "Järjestelmäsäädin",
+    "Pool module": "Allasmoduuli",
+    "Remote control heating circuit": "Lämmityspiirin kaukosäädin",
+    "Fresh water station": "Raikasvesiasema",
+    "Solar module": "Aurinkomoduuli",
+    "Radio module": "Radiomoduuli",
+    "Ventilation unit": "Ilmanvaihtolaite",
+    "Hybrid manager": "Hybridiohjain",
+    "Component": "Komponentti",
+    "No components reported": "Komponentteja ei ilmoitettu"
   }
 }

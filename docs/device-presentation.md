@@ -67,6 +67,26 @@ these effects, preserve user changes and handle temporary device absence.
 
 No split or migration has been implemented as part of this decision.
 
+### Component devices (since 0.9.3-beta.6, optional)
+
+The decision above stays: entities stay on the gateway's device. An optional
+setting (**Configure → System components → Show components as devices**,
+off by default) adds one device per reported component, connected through
+the gateway's device and without entities (see
+[System components](system-components.md#component-devices-optional)).
+Because no entity changes its device, entity IDs, areas, labels and device
+targets stay as they are. Assigning entities to component devices is not
+part of this release; it would need the migration described above.
+
+Such a device is identified by its gateway, its place and its type number,
+never by a serial number. Two components of the same type at the same place
+share one device. The gateway's own rows of the component list get none.
+Switching the setting off removes these devices again, also renamed ones;
+Home Assistant restores their names and areas when the setting is switched
+on again within 30 days. After a gateway exchange the old gateway's
+component devices are removed and the new gateway gets new ones. A view of
+a system from its local readings alone does not change any device.
+
 ## Deutsch
 
 Ich behalte ein gemeinsames Gerät je PointT-Heizungs-Gateway bei. Zusätzliche
@@ -124,3 +144,24 @@ Auswirkungen erklären, Benutzereinstellungen bewahren und vorübergehend
 fehlende Geräte berücksichtigen.
 
 Mit dieser Entscheidung ist keine Aufteilung oder Migration umgesetzt worden.
+
+### Komponenten-Geräte (ab 0.9.3-beta.6, optional)
+
+Die Entscheidung oben gilt weiter: Entitäten bleiben am Gerät des Gateways.
+Eine optionale Einstellung (**Konfigurieren → Anlagenkomponenten → Komponenten
+als Geräte anzeigen**, standardmäßig aus) legt je gemeldeter Komponente ein
+Gerät an, verbunden über das Gerät des Gateways und ohne Entitäten (siehe
+[Anlagenkomponenten](system-components.md#komponenten-geräte-optional)).
+Weil keine Entität ihr Gerät wechselt, bleiben Entitäts-IDs, Bereiche, Labels
+und Geräteziele unverändert. Entitäten an Komponenten-Geräte zu hängen, ist
+nicht Teil dieser Version; dafür wäre die oben beschriebene Migration nötig.
+
+Ein solches Gerät wird über sein Gateway, seinen Platz und seine Typnummer
+erkannt, nie über eine Seriennummer. Zwei Komponenten desselben Typs am
+selben Platz teilen sich ein Gerät. Die eigenen Zeilen des Gateways in der
+Komponentenliste erhalten keins. Ausschalten entfernt diese Geräte wieder,
+auch umbenannte; Home Assistant stellt ihre Namen und Bereiche wieder her,
+wenn die Einstellung innerhalb von 30 Tagen wieder eingeschaltet wird. Nach
+einem Gateway-Tausch werden die Komponenten-Geräte des alten Gateways
+entfernt, und das neue Gateway erhält neue. Eine Ansicht der Anlage allein
+aus ihren lokalen Werten ändert keine Geräte.

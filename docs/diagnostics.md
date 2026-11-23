@@ -786,6 +786,17 @@ entity category, why it is disabled and the kind of its state. It contains no
 reading, name, entity ID, unique ID, serial number or firmware text. The
 schema number stays 48.
 
+The report of an optional component device (0.9.3-beta.6, see
+[System components](system-components.md#component-devices-optional)) adds
+the block `component`: `place` (place key), `place_number`, `type_number`,
+`type_name` (from the component table), `role`, `basis`, `version` (the
+software version shown at the device: digits and dots only, from the list
+shown, none when two components of the same type at the same place report
+different ones), `reported` (listed now) and `count` (rows of this type at
+this place). With a version, the privacy block sets
+`contains_raw_resource_values: true` with
+`raw_resource_values_scope: allowlisted_technical_metadata`.
+
 ### System health
 
 Home Assistant's **System health** (**Settings → System → Repairs → ⋮ →
@@ -1081,6 +1092,9 @@ rest of the report stays complete.
 - `stored`, `restored` and `stored_age_seconds`: whether a stored plant row
   exists, whether the result rests on it, and the age of its last change;
   `changes`: how often a new reading changed the plant kind;
+- `component_devices` (configuration entry diagnostics only): `enabled`
+  (the option **Show components as devices**) and `count`, the number of
+  component devices of this gateway;
 - `probes`: the results of the last run of targeted reads (per path the
   rule, the result class and the time; at most 48), see
   [targeted reads](#targeted-reads-in-the-discovery). They are written only

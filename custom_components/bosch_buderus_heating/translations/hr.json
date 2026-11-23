@@ -256,6 +256,7 @@
           "local_setup": "Postavljanje lokalnog pristupa",
           "rescan": "Ponovno pretraživanje sustava",
           "recordings": "Zapisi sustava",
+          "components": "Komponente sustava",
           "wallbox": "Zidni punjač"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Da, izbriši prenesenu statistiku"
         }
       },
+      "components": {
+        "title": "Komponente sustava",
+        "description": "Sustavi ovog unosa prijavljuju ove komponente:\n\n{components}\n\nKad je **Prikaži komponente kao uređaje** uključeno, svaka komponenta dobiva vlastiti uređaj, povezan preko uređaja pristupnika. Ti uređaji nemaju entitete; svaki entitet ostaje na uređaju pristupnika. Isključivanje ponovno uklanja te uređaje; ako se ponovno uključi u roku od 30 dana, zadržavaju svoje nazive i područja. Popis i nazivi uređaja slijede jezik poslužitelja Home Assistant.",
+        "data": {
+          "component_devices": "Prikaži komponente kao uređaje"
+        },
+        "data_description": {
+          "component_devices": "Zadano isključeno. Komponenta prijavljena kasnije dobiva svoj uređaj kad se pojavi. Uređaj koji izbrišete vraća se pri sljedećem pokretanju dok je ovo uključeno."
+        }
+      },
       "local_tokens": {
         "title": "Tokeni na pristupniku",
         "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Pristupnik opoziva samo token kojim je prijavljen sam zahtjev, pa se ovdje može odabrati samo taj token. Stariji tokeni ove integracije i tokeni drugih pristupa ili aplikacija ne mogu se opozvati iz Home Assistanta i ostaju na pristupniku. Bez odabira ništa se ne mijenja.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Rezultat",
         "description": "Ništa nije izbrisano."
+      },
+      "result_component_devices_on": {
+        "title": "Rezultat",
+        "description": "Komponente se sada prikazuju kao uređaji ispod uređaja pristupnika. Nemaju entitete."
+      },
+      "result_component_devices_off": {
+        "title": "Rezultat",
+        "description": "Uklonjeni uređaji komponenti: {count}. Ako se ponovno uključi u roku od 30 dana, vraćaju se sa svojim nazivima i područjima."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Promjena programa tople vode",

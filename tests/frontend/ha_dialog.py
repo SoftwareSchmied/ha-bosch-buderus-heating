@@ -136,3 +136,92 @@ async def test_real_frontend(
         ("gateway", (TARGET,)),
         ("gateway", (HOT_WATER,)),
     ]
+
+
+async def test_component_devices_dialog(
+    recorder_mock,
+    hass,
+    hass_client,
+    hass_access_token,
+    enable_custom_integrations,
+):
+    """S4: the step "Anlagenkomponenten" switches the component devices on
+    and off (prepared for the final browser run of the release)."""
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from homeassistant.helpers import device_registry as dr
+
+    from custom_components.bosch_buderus_heating.component_devices import (
+        OPTION,
+        component_identifier,
+        track_component_devices,
+    )
+    from custom_components.bosch_buderus_heating.component_rows import ComponentRow
+    from custom_components.bosch_buderus_heating.const import DOMAIN
+    from custom_components.bosch_buderus_heating.plant_inputs import ShownComponents
+
+    hass.config.language = "de"
+    entry, coordinator, _ = setup(hass)
+    coordinator.update_interval = None
+    registry = dr.async_get(hass)
+    registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, "gateway")},
+        manufacturer="Buderus",
+        name="Heizung",
+    )
+    rows = (
+        ComponentRow(8, 8, "1.2.3", "Testgerät 7"),
+        ComponentRow(253, 16, "4.5"),
+        ComponentRow(17, 72),
+    )
+    shown = ShownComponents("cloud", rows, False, 1)
+    tracker = SimpleNamespace(async_load=AsyncMock())
+    module = "custom_components.bosch_buderus_heating.component_devices"
+    with (
+        patch(f"{module}.components", return_value=shown),
+        patch(f"{module}.existing_tracker", return_value=tracker),
+    ):
+        track_component_devices(
+            SimpleNamespace(async_on_unload=lambda _unload: None), coordinator
+        )
+        for component in (
+            "homeassistant",
+            "frontend",
+            "config",
+            "brands",
+            "labs",
+            "logger",
+            "persistent_notification",
+        ):
+            assert await async_setup_component(hass, component, {})
+        hass.data["onboarding"].onboarded = True
+        await hass.async_block_till_done()
+        client = await hass_client()
+        environment = dict(
+            os.environ,
+            CONTROLS_URL=str(client.make_url("/")),
+            CONTROLS_TOKEN=hass_access_token,
+        )
+        process = await asyncio.create_subprocess_exec(
+            "node",
+            str(Path(__file__).with_name("ha-component-devices.test.cjs")),
+            env=environment,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+        try:
+            async with asyncio.timeout(90):
+                output, _ = await process.communicate()
+        finally:
+            if process.returncode is None:
+                process.kill()
+                await process.wait()
+        assert process.returncode == 0, output.decode()
+    # Switched on and off again in the browser: no component device is left,
+    # the gateway's device stays.
+    assert entry.options[OPTION] is False
+    devices = dr.async_entries_for_config_entry(registry, entry.entry_id)
+    assert [component_identifier(device) for device in devices] == [None]
+    assert hass.config_entries.options.async_progress() == []

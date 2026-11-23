@@ -678,6 +678,18 @@
     "LED switch-off time": "Am múchta LED",
     "Automatic updates": "Nuashonruithe uathoibríocha",
     "Last update check": "An seiceáil nuashonraithe is déanaí",
-    "Last update": "An nuashonrú is déanaí"
+    "Last update": "An nuashonrú is déanaí",
+    "Heat generator control unit": "Aonad rialaithe na foinse teasa",
+    "Basic controller": "Rialaitheoir bunúsach",
+    "System controller": "Rialaitheoir córais",
+    "Pool module": "Modúl linn snámha",
+    "Remote control heating circuit": "Cianrialtán an chiorcaid téimh",
+    "Fresh water station": "Stáisiún fíoruisce",
+    "Solar module": "Modúl gréine",
+    "Radio module": "Modúl raidió",
+    "Ventilation unit": "Aonad aerála",
+    "Hybrid manager": "Bainisteoir hibrideach",
+    "Component": "Comhpháirt",
+    "No components reported": "Níor tuairiscíodh aon chomhpháirt"
   }
 }

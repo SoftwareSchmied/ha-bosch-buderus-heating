@@ -37,6 +37,8 @@ RESULT_PREFIX: Final = "result_"
 # Every outcome a finished action can report, each with its own page text.
 RESULT_REASONS: Final = frozenset(
     {
+        "component_devices_off",
+        "component_devices_on",
         "connection_removed",
         "connection_saved",
         "holiday_created",

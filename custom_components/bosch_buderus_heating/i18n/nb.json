@@ -678,6 +678,18 @@
     "LED switch-off time": "LED-avslagstid",
     "Automatic updates": "Automatiske oppdateringer",
     "Last update check": "Siste oppdateringssjekk",
-    "Last update": "Siste oppdatering"
+    "Last update": "Siste oppdatering",
+    "Heat generator control unit": "Varmekildens styreenhet",
+    "Basic controller": "Basisregulator",
+    "System controller": "Systemregulator",
+    "Pool module": "Bassengmodul",
+    "Remote control heating circuit": "Fjernkontroll varmekrets",
+    "Fresh water station": "Ferskvannsstasjon",
+    "Solar module": "Solmodul",
+    "Radio module": "Radiomodul",
+    "Ventilation unit": "Ventilasjonsaggregat",
+    "Hybrid manager": "Hybridstyring",
+    "Component": "Komponent",
+    "No components reported": "Ingen komponenter meldt"
   }
 }

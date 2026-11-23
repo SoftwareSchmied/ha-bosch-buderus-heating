@@ -256,6 +256,7 @@
           "local_setup": "Configurar el acceso local",
           "rescan": "Volver a buscar en la instalación",
           "recordings": "Registros de la instalación",
+          "components": "Componentes de la instalación",
           "wallbox": "Punto de recarga"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Sí, eliminar las estadísticas importadas"
         }
       },
+      "components": {
+        "title": "Componentes de la instalación",
+        "description": "Las instalaciones de esta entrada informan de estos componentes:\n\n{components}\n\nCon **Mostrar los componentes como dispositivos** activado, cada componente obtiene un dispositivo propio, conectado a través del dispositivo de la pasarela. Estos dispositivos no tienen entidades; cada entidad permanece en el dispositivo de la pasarela. Al desactivarlo se eliminan de nuevo estos dispositivos; si se vuelve a activar en un plazo de 30 días, conservan sus nombres y áreas. La lista y los nombres de los dispositivos siguen el idioma del servidor de Home Assistant.",
+        "data": {
+          "component_devices": "Mostrar los componentes como dispositivos"
+        },
+        "data_description": {
+          "component_devices": "Desactivado por defecto. Un componente del que se informe más tarde obtiene su dispositivo cuando aparece. Un dispositivo que elimines vuelve en el siguiente inicio mientras esto esté activado."
+        }
+      },
       "local_tokens": {
         "title": "Tokens en la pasarela",
         "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. La pasarela solo revoca el token con el que la propia solicitud está autenticada, por lo que aquí solo se puede elegir ese token. Los tokens más antiguos de esta integración y los de otros accesos o aplicaciones no se pueden revocar desde Home Assistant y permanecen en la pasarela. Sin elección no cambia nada.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Resultado",
         "description": "No se eliminó nada."
+      },
+      "result_component_devices_on": {
+        "title": "Resultado",
+        "description": "Los componentes se muestran ahora como dispositivos bajo el dispositivo de la pasarela. No tienen entidades."
+      },
+      "result_component_devices_off": {
+        "title": "Resultado",
+        "description": "Dispositivos de componentes eliminados: {count}. Si se vuelve a activar en un plazo de 30 días, vuelven con sus nombres y áreas."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Cambiar el programa del agua caliente",

@@ -256,6 +256,7 @@
           "local_setup": "Nastavi lokalni dostop",
           "rescan": "Ponovno preišči sistem",
           "recordings": "Zapisi sistema",
+          "components": "Komponente sistema",
           "wallbox": "Stenska polnilnica"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Da, izbriši preneseno statistiko"
         }
       },
+      "components": {
+        "title": "Komponente sistema",
+        "description": "Sistemi tega vnosa sporočajo te komponente:\n\n{components}\n\nKo je vklopljeno **Prikaži komponente kot naprave**, vsaka komponenta dobi svojo napravo, povezano prek naprave prehoda. Te naprave nimajo entitet; vsaka entiteta ostane pri napravi prehoda. Izklop te naprave znova odstrani; če se v 30 dneh znova vklopi, ohranijo svoja imena in območja. Seznam in imena naprav sledijo jeziku strežnika Home Assistant.",
+        "data": {
+          "component_devices": "Prikaži komponente kot naprave"
+        },
+        "data_description": {
+          "component_devices": "Privzeto izklopljeno. Komponenta, sporočena pozneje, dobi svojo napravo, ko se pojavi. Naprava, ki jo izbrišete, se vrne ob naslednjem zagonu, dokler je to vklopljeno."
+        }
+      },
       "local_tokens": {
         "title": "Žetoni na prehodu",
         "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Prehod prekliče samo žeton, s katerim je prijavljena sama zahteva, zato je tukaj mogoče izbrati le ta žeton. Starejših žetonov te integracije in žetonov drugih dostopov ali aplikacij ni mogoče preklicati iz Home Assistanta in ostanejo na prehodu. Brez izbire se nič ne spremeni.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Rezultat",
         "description": "Nič ni bilo izbrisano."
+      },
+      "result_component_devices_on": {
+        "title": "Rezultat",
+        "description": "Komponente so zdaj prikazane kot naprave pod napravo prehoda. Nimajo entitet."
+      },
+      "result_component_devices_off": {
+        "title": "Rezultat",
+        "description": "Odstranjene naprave komponent: {count}. Če se v 30 dneh znova vklopi, se vrnejo s svojimi imeni in območji."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Sprememba programa tople vode",

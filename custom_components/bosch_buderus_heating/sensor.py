@@ -62,6 +62,7 @@ from .bacon.purifier_entities import (
 )
 from .bacon.rac_entities import track_entities as track_rac_entities
 from .burner_share import BURNER_SHARE, burner_reported, hybrid_detected
+from .component_devices import track_component_devices
 from .control import HeldCapabilities, track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
 from .derived import (
@@ -625,6 +626,8 @@ def _setup_entities(
         # The plant model (no entity of its own): its stored row is read
         # before its first result.
         track_plant(entry, coordinator)
+        # Optional devices per component (off by default; no entities).
+        track_component_devices(entry, coordinator)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_outdoor_unit_software_sensor(entry, coordinator, async_add_entities)
         track_tariff_sensor(entry, coordinator, async_add_entities)

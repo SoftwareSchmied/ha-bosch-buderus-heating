@@ -168,6 +168,11 @@ retains `(domain, gateway_id)` for every resource, including unknown paths.
 Account-wide statistics and the separate additional-cloud and wallbox device
 adapters keep their existing assignments.
 
+The optional component devices (`component_devices.py`, off by default) are
+information devices below the gateway's device, one per place and type number
+of the component list (see [system components](system-components.md)). They
+own no resource and no entity, so the binding above stays as it is.
+
 `PlantKey` contains the configuration owner's `entry_id` and the stored
 target of the system; the gateway is only the identifier of the device. The
 older entry format has no targets, so there the gateway ID stands in. `GroupKey`

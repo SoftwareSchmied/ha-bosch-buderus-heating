@@ -256,6 +256,7 @@
           "local_setup": "Sett opp lokal tilgang",
           "rescan": "Søk i anlegget på nytt",
           "recordings": "Anleggets registrering",
+          "components": "Anleggets komponenter",
           "wallbox": "Ladeboks"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Ja, slett den overførte statistikken"
         }
       },
+      "components": {
+        "title": "Anleggets komponenter",
+        "description": "Anleggene i denne oppføringen melder disse komponentene:\n\n{components}\n\nMed **Vis komponenter som enheter** slått på får hver komponent sin egen enhet, koblet via gatewayens enhet. Disse enhetene har ingen entiteter; hver entitet blir værende på gatewayens enhet. Når det slås av, fjernes enhetene igjen; slås det på igjen innen 30 dager, beholder de navn og områder. Listen og enhetsnavnene følger språket på Home Assistant-serveren.",
+        "data": {
+          "component_devices": "Vis komponenter som enheter"
+        },
+        "data_description": {
+          "component_devices": "Av som standard. En komponent som meldes senere, får sin enhet når den dukker opp. En enhet du sletter, kommer tilbake ved neste start så lenge dette er slått på."
+        }
+      },
       "local_tokens": {
         "title": "Tokens på gatewayen",
         "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Gatewayen tilbakekaller bare tokenet som selve forespørselen er logget inn med, så bare det tokenet kan velges her. Eldre tokens fra denne integrasjonen og tokens fra andre tilganger eller apper kan ikke tilbakekalles fra Home Assistant og blir værende på gatewayen. Uten et valg endres ingenting.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Resultat",
         "description": "Ingenting ble slettet."
+      },
+      "result_component_devices_on": {
+        "title": "Resultat",
+        "description": "Komponentene vises nå som enheter under gatewayens enhet. De har ingen entiteter."
+      },
+      "result_component_devices_off": {
+        "title": "Resultat",
+        "description": "Komponentenheter fjernet: {count}. Slås det på igjen innen 30 dager, kommer de tilbake med navn og områder."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Endre tidsprogram for varmtvann",

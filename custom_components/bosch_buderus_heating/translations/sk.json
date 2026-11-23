@@ -256,6 +256,7 @@
           "local_setup": "Nastaviť lokálny prístup",
           "rescan": "Znova vyhľadať systém",
           "recordings": "Záznam systému",
+          "components": "Komponenty systému",
           "wallbox": "Nabíjacia stanica"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Áno, vymazať prevzatú štatistiku"
         }
       },
+      "components": {
+        "title": "Komponenty systému",
+        "description": "Systémy tejto položky hlásia tieto komponenty:\n\n{components}\n\nKeď je zapnuté **Zobraziť komponenty ako zariadenia**, každý komponent dostane vlastné zariadenie pripojené cez zariadenie brány. Tieto zariadenia nemajú žiadne entity; každá entita zostáva pri zariadení brány. Vypnutie tieto zariadenia opäť odstráni; po opätovnom zapnutí do 30 dní si zachovajú svoje názvy a oblasti. Zoznam aj názvy zariadení sa riadia jazykom servera Home Assistant.",
+        "data": {
+          "component_devices": "Zobraziť komponenty ako zariadenia"
+        },
+        "data_description": {
+          "component_devices": "Predvolene vypnuté. Komponent nahlásený neskôr dostane svoje zariadenie, keď sa objaví. Odstránené zariadenie sa vráti pri ďalšom spustení, kým je toto zapnuté."
+        }
+      },
       "local_tokens": {
         "title": "Tokeny na bráne",
         "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iné aplikácie** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Token vytvorený krátko predtým je zvyčajne ten, ktorý tento prístup práve používa; je v zozname označený a jeho odvolaním sa lokálny prístup skončí. Brána odvolá iba token, ktorým je prihlásená samotná požiadavka, preto sa tu dá vybrať len tento token. Staršie tokeny tejto integrácie a tokeny iných prístupov alebo aplikácií sa z Home Assistanta nedajú odvolať a zostávajú v bráne. Bez výberu sa nič nezmení.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Výsledok",
         "description": "Nič nebolo vymazané."
+      },
+      "result_component_devices_on": {
+        "title": "Výsledok",
+        "description": "Komponenty sa teraz zobrazujú ako zariadenia pod zariadením brány. Nemajú žiadne entity."
+      },
+      "result_component_devices_off": {
+        "title": "Výsledok",
+        "description": "Odstránené zariadenia komponentov: {count}. Po opätovnom zapnutí do 30 dní sa vrátia so svojimi názvami a oblasťami."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Zmena programu teplej vody",

@@ -256,6 +256,7 @@
           "local_setup": "Skonfiguruj dostęp lokalny",
           "rescan": "Wyszukaj instalację ponownie",
           "recordings": "Zapisy instalacji",
+          "components": "Komponenty instalacji",
           "wallbox": "Stacja ładowania"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Tak, usuń przeniesione statystyki"
         }
       },
+      "components": {
+        "title": "Komponenty instalacji",
+        "description": "Instalacje tego wpisu zgłaszają następujące komponenty:\n\n{components}\n\nGdy **Pokaż komponenty jako urządzenia** jest włączone, każdy komponent otrzymuje własne urządzenie, połączone przez urządzenie bramki. Te urządzenia nie mają encji; każda encja pozostaje przy urządzeniu bramki. Wyłączenie ponownie usuwa te urządzenia; po ponownym włączeniu w ciągu 30 dni zachowują swoje nazwy i obszary. Lista i nazwy urządzeń są w języku serwera Home Assistant.",
+        "data": {
+          "component_devices": "Pokaż komponenty jako urządzenia"
+        },
+        "data_description": {
+          "component_devices": "Domyślnie wyłączone. Komponent zgłoszony później otrzymuje swoje urządzenie, gdy się pojawi. Usunięte urządzenie wraca przy następnym uruchomieniu, dopóki to jest włączone."
+        }
+      },
       "local_tokens": {
         "title": "Tokeny na bramce",
         "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Brama unieważnia tylko token, którym zalogowane jest samo żądanie, dlatego tutaj można wybrać tylko ten token. Starszych tokenów tej integracji ani tokenów innych dostępów lub aplikacji nie można unieważnić z Home Assistanta i pozostają one w bramie. Bez wyboru nic się nie zmienia.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Wynik",
         "description": "Nic nie zostało usunięte."
+      },
+      "result_component_devices_on": {
+        "title": "Wynik",
+        "description": "Komponenty są teraz pokazywane jako urządzenia pod urządzeniem bramki. Nie mają encji."
+      },
+      "result_component_devices_off": {
+        "title": "Wynik",
+        "description": "Usunięte urządzenia komponentów: {count}. Po ponownym włączeniu w ciągu 30 dni wracają ze swoimi nazwami i obszarami."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Zmień program ciepłej wody",

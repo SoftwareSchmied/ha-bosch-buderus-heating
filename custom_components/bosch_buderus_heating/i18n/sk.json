@@ -678,6 +678,18 @@
     "LED switch-off time": "Čas vypnutia LED",
     "Automatic updates": "Automatické aktualizácie",
     "Last update check": "Posledná kontrola aktualizácií",
-    "Last update": "Posledná aktualizácia"
+    "Last update": "Posledná aktualizácia",
+    "Heat generator control unit": "Riadiaca jednotka zdroja tepla",
+    "Basic controller": "Základný regulátor",
+    "System controller": "Systémový regulátor",
+    "Pool module": "Bazénový modul",
+    "Remote control heating circuit": "Diaľkové ovládanie vykurovacieho okruhu",
+    "Fresh water station": "Stanica čerstvej vody",
+    "Solar module": "Solárny modul",
+    "Radio module": "Rádiový modul",
+    "Ventilation unit": "Vetracia jednotka",
+    "Hybrid manager": "Hybridný manažér",
+    "Component": "Komponent",
+    "No components reported": "Neboli hlásené žiadne komponenty"
   }
 }

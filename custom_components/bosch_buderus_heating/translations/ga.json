@@ -256,6 +256,7 @@
           "local_setup": "Socraigh rochtain áitiúil",
           "rescan": "Cuardaigh an córas arís",
           "recordings": "Taifeadtaí an chórais",
+          "components": "Comhpháirteanna an chórais",
           "wallbox": "Luchtaire balla"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Is ea, scrios na staitisticí iompórtáilte"
         }
       },
+      "components": {
+        "title": "Comhpháirteanna an chórais",
+        "description": "Tuairiscíonn córais na hiontrála seo na comhpháirteanna seo:\n\n{components}\n\nNuair atá **Taispeáin comhpháirteanna mar ghléasanna** ar siúl, faigheann gach comhpháirt a gléas féin, ceangailte trí ghléas an gheata. Níl aonáin ar bith ag na gléasanna seo; fanann gach aonán ar ghléas an gheata. Baineann múchadh na gléasanna seo arís; má chuirtear ar siúl arís é laistigh de 30 lá, coinníonn siad a n-ainmneacha agus a limistéir. Leanann an liosta agus ainmneacha na ngléasanna teanga fhreastalaí Home Assistant.",
+        "data": {
+          "component_devices": "Taispeáin comhpháirteanna mar ghléasanna"
+        },
+        "data_description": {
+          "component_devices": "Múchta de réir réamhshocraithe. Faigheann comhpháirt a thuairiscítear níos déanaí a gléas nuair a thagann sí chun solais. Tagann gléas a scriosann tú ar ais ag an gcéad tosú eile fad atá sé seo ar siúl."
+        }
+      },
       "local_tokens": {
         "title": "Comharthaí ar an ngeata",
         "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Aipeanna eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Is gnách gurb é an comhartha a cruthaíodh go gearr roimhe sin an ceann a úsáideann an rochtain seo anois; tá sé marcáilte sa liosta, agus má chúlghairmeann tú é, críochnaíonn an rochtain áitiúil. Ní chúlghairmeann an tairseach ach an comhartha lena bhfuil an t-iarratas féin sínithe isteach, mar sin ní féidir ach an comhartha sin a roghnú anseo. Ní féidir comharthaí níos sine den chomhtháthú seo ná comharthaí rochtana nó aipeanna eile a chúlghairm ó Home Assistant agus fanann siad ar an tairseach. Gan rogha ní athraíonn aon rud.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Toradh",
         "description": "Níor scriosadh aon rud."
+      },
+      "result_component_devices_on": {
+        "title": "Toradh",
+        "description": "Taispeántar na comhpháirteanna anois mar ghléasanna faoi ghléas an gheata. Níl aonáin ar bith acu."
+      },
+      "result_component_devices_off": {
+        "title": "Toradh",
+        "description": "Gléasanna comhpháirte bainte: {count}. Má chuirtear ar siúl arís é laistigh de 30 lá, tagann siad ar ais lena n-ainmneacha agus a limistéir."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Athraigh clár an uisce the",

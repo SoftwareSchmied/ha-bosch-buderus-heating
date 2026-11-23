@@ -256,6 +256,7 @@
           "local_setup": "Konfigurera lokal åtkomst",
           "rescan": "Sök igen i anläggningen",
           "recordings": "Anläggningens registrering",
+          "components": "Anläggningens komponenter",
           "wallbox": "Laddbox"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Ja, radera den överförda statistiken"
         }
       },
+      "components": {
+        "title": "Anläggningens komponenter",
+        "description": "Anläggningarna i den här posten rapporterar dessa komponenter:\n\n{components}\n\nMed **Visa komponenter som enheter** påslaget får varje komponent en egen enhet, ansluten via gatewayens enhet. Dessa enheter har inga entiteter; varje entitet stannar på gatewayens enhet. När det stängs av tas enheterna bort igen; slås det på igen inom 30 dagar behåller de sina namn och områden. Listan och enhetsnamnen följer språket på Home Assistant-servern.",
+        "data": {
+          "component_devices": "Visa komponenter som enheter"
+        },
+        "data_description": {
+          "component_devices": "Avstängt som standard. En komponent som rapporteras senare får sin enhet när den dyker upp. En enhet som du tar bort kommer tillbaka vid nästa start så länge detta är påslaget."
+        }
+      },
       "local_tokens": {
         "title": "Tokens på gatewayen",
         "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan, och återkallar du den upphör den lokala åtkomsten. Gatewayen återkallar bara den token som själva begäran är inloggad med, så bara den token kan väljas här. Äldre tokens från den här integrationen och tokens från andra åtkomster eller appar kan inte återkallas från Home Assistant och blir kvar på gatewayen. Utan ett val ändras ingenting.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Resultat",
         "description": "Inget raderades."
+      },
+      "result_component_devices_on": {
+        "title": "Resultat",
+        "description": "Komponenterna visas nu som enheter under gatewayens enhet. De har inga entiteter."
+      },
+      "result_component_devices_off": {
+        "title": "Resultat",
+        "description": "Komponentenheter borttagna: {count}. Slås det på igen inom 30 dagar kommer de tillbaka med sina namn och områden."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Ändra tidsprogram för varmvatten",

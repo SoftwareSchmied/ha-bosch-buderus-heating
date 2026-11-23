@@ -274,6 +274,24 @@
       "items": {
         "$ref": "#/$defs/probe"
       }
+    },
+    "component_devices": {
+      "description": "The optional component devices of the gateway (configuration entry diagnostics only): whether the option is on and how many component devices the gateway has.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "count"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
   },
   "$defs": {

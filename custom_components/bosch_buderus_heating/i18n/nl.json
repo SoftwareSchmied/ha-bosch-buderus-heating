@@ -678,6 +678,18 @@
     "LED switch-off time": "LED-uitschakeltijd",
     "Automatic updates": "Automatische updates",
     "Last update check": "Laatste updatecontrole",
-    "Last update": "Laatste update"
+    "Last update": "Laatste update",
+    "Heat generator control unit": "Besturingseenheid van de warmteopwekker",
+    "Basic controller": "Basisregelaar",
+    "System controller": "Systeemregelaar",
+    "Pool module": "Zwembadmodule",
+    "Remote control heating circuit": "Afstandsbediening verwarmingscircuit",
+    "Fresh water station": "Verswaterstation",
+    "Solar module": "Zonnemodule",
+    "Radio module": "Radiomodule",
+    "Ventilation unit": "Ventilatie-unit",
+    "Hybrid manager": "Hybride manager",
+    "Component": "Component",
+    "No components reported": "Geen componenten gemeld"
   }
 }

@@ -52,6 +52,8 @@ from .cloud_configuration import (
     renew_cloud_claim,
 )
 from .cloud_options_flow import CloudOptionsFlow
+from .component_devices import offered as component_devices_offered
+from .component_devices_flow import ComponentDevicesOptionsFlow
 from .configuration import CLOUD_KIND, ConfigurationError, load_configuration
 from .configuration_access import CredentialContext, EntryConfiguration
 from .configuration_management import (
@@ -1022,6 +1024,7 @@ class BoschBuderusOptionsFlow(
     RrcScheduleOptionsFlow,
     SwitchProgramOptionsFlow,
     RecordingsOptionsFlow,
+    ComponentDevicesOptionsFlow,
     WallboxOptionsFlow,
     CloudOptionsFlow,
 ):
@@ -1108,6 +1111,11 @@ class BoschBuderusOptionsFlow(
                 *(
                     ["recordings"]
                     if managers_of(self.hass, self._entry.entry_id)
+                    else []
+                ),
+                *(
+                    ["components"]
+                    if component_devices_offered(self.hass, self._entry)
                     else []
                 ),
                 *(["wallbox"] if wallboxes_of(self._entry) else []),

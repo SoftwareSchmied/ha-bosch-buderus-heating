@@ -224,15 +224,22 @@ async def async_get_device_diagnostics(
     """Return the entity kinds and states of one device, without readings."""
     from .device_diagnostics import device_report
 
+    report = device_report(hass, entry, device)
+    privacy: dict[str, Any] = {
+        "contains_raw_resource_values": False,
+        "contains_credentials": False,
+        "contains_stable_identifiers": False,
+        "contains_user_defined_names": False,
+    }
+    component = report.get("component")
+    if isinstance(component, dict) and component.get("version") is not None:
+        # A component device shows the software version of its component.
+        privacy["contains_raw_resource_values"] = True
+        privacy["raw_resource_values_scope"] = "allowlisted_technical_metadata"
     return {
         "diagnostics_schema": DIAGNOSTICS_SCHEMA_VERSION,
-        "privacy": {
-            "contains_raw_resource_values": False,
-            "contains_credentials": False,
-            "contains_stable_identifiers": False,
-            "contains_user_defined_names": False,
-        },
-        **device_report(hass, entry, device),
+        "privacy": privacy,
+        **report,
     }
 
 
@@ -642,7 +649,7 @@ def _views_without_cloud(
                     ),
                     # Schema 49: as in the gateway report.
                     **(
-                        {"plant": plant}
+                        {"plant": _with_component_devices(plant, view)}
                         if (plant := plant_diagnostics(view)) is not None
                         else {}
                     ),
@@ -652,6 +659,16 @@ def _views_without_cloud(
             _LOGGER.debug("View without a cloud not reportable", exc_info=True)
             reports.append({"target": targets.get(target_id), "error": "unavailable"})
     return sorted(reports, key=lambda item: (item["target"] or 0, item.get("kind", "")))
+
+
+def _with_component_devices(plant: dict[str, Any], view: Any) -> dict[str, Any]:
+    """The block ``plant`` with ``component_devices`` (whether the option is
+    on and how many component devices the gateway has)."""
+    from .component_devices import diagnostics as component_devices
+
+    if "error" in plant or (devices := component_devices(view)) is None:
+        return plant
+    return {**plant, "component_devices": devices}
 
 
 def _view_kind(view: Any) -> str:
@@ -851,7 +868,7 @@ def _gateway_diagnostics(
         # its evidence); never serial numbers. Water softeners get none.
         # Guarded: an error gives a fixed note.
         **(
-            {"plant": plant}
+            {"plant": _with_component_devices(plant, coordinator)}
             if (plant := plant_diagnostics(coordinator)) is not None
             else {}
         ),

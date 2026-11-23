@@ -678,6 +678,18 @@
     "LED switch-off time": "Време за изключване на LED",
     "Automatic updates": "Автоматични актуализации",
     "Last update check": "Последна проверка за актуализация",
-    "Last update": "Последна актуализация"
+    "Last update": "Последна актуализация",
+    "Heat generator control unit": "Управление на топлинния източник",
+    "Basic controller": "Основен регулатор",
+    "System controller": "Системен регулатор",
+    "Pool module": "Модул за басейн",
+    "Remote control heating circuit": "Дистанционно управление на отоплителен кръг",
+    "Fresh water station": "Станция за прясна вода",
+    "Solar module": "Соларен модул",
+    "Radio module": "Безжичен модул",
+    "Ventilation unit": "Вентилационен уред",
+    "Hybrid manager": "Хибриден мениджър",
+    "Component": "Компонент",
+    "No components reported": "Няма съобщени компоненти"
   }
 }

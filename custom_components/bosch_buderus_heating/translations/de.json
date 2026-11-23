@@ -256,6 +256,7 @@
           "local_setup": "Lokalen Zugang einrichten",
           "rescan": "Anlage neu durchsuchen",
           "recordings": "Anlagenaufzeichnung",
+          "components": "Anlagenkomponenten",
           "wallbox": "Wallbox"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Ja, übernommene Statistik löschen"
         }
       },
+      "components": {
+        "title": "Anlagenkomponenten",
+        "description": "Die Anlagen dieses Eintrags melden diese Komponenten:\n\n{components}\n\nMit **Komponenten als Geräte anzeigen** erhält jede Komponente ein eigenes Gerät, verbunden über das Gerät des Gateways. Diese Geräte haben keine Entitäten; jede Entität bleibt am Gerät des Gateways. Ausschalten entfernt diese Geräte wieder; innerhalb von 30 Tagen wieder eingeschaltet, behalten sie ihre Namen und Bereiche. Liste und Gerätenamen folgen der Sprache des Home-Assistant-Servers.",
+        "data": {
+          "component_devices": "Komponenten als Geräte anzeigen"
+        },
+        "data_description": {
+          "component_devices": "Standardmäßig aus. Eine später gemeldete Komponente erhält ihr Gerät, sobald sie erscheint. Ein gelöschtes Gerät kommt beim nächsten Start wieder, solange dies eingeschaltet ist."
+        }
+      },
       "local_tokens": {
         "title": "Tokens auf dem Gateway",
         "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert, und widerrufst du ihn, endet der lokale Zugang. Das Gateway widerruft nur den Token, mit dem die Anfrage selbst angemeldet ist; deshalb lässt sich hier nur dieser Token auswählen. Ältere Tokens dieser Integration und Tokens anderer Zugänge oder Apps lassen sich aus Home Assistant nicht widerrufen und bleiben auf dem Gateway. Ohne Auswahl ändert sich nichts.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Ergebnis",
         "description": "Es wurde nichts gelöscht."
+      },
+      "result_component_devices_on": {
+        "title": "Ergebnis",
+        "description": "Die Komponenten werden jetzt als Geräte unter dem Gerät des Gateways angezeigt. Sie haben keine Entitäten."
+      },
+      "result_component_devices_off": {
+        "title": "Ergebnis",
+        "description": "Komponenten-Geräte entfernt: {count}. Innerhalb von 30 Tagen wieder eingeschaltet, kommen sie mit ihren Namen und Bereichen zurück."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Warmwasserprogramm ändern",

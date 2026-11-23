@@ -840,7 +840,8 @@ def _remove_unconfigured_gateway_entries(
     A deselected or forgotten system keeps its target, devices and entities
     (it may be selected again, is shown from its local access or moves to an
     exchanged gateway), so only a gateway that belongs to no stored system
-    loses its entries, and only those the user never customised. Entries of
+    loses its entries, and only those the user never customised (its
+    optional component devices go in any case). Entries of
     other cloud devices and of the access statistics are never touched.
     Nothing happens when a system's gateway cannot be told.
     """
@@ -877,6 +878,12 @@ def _remove_unconfigured_gateway_entries(
         value = locator.get("value") if isinstance(locator, dict) else None
         if isinstance(value, str):
             gateways.add(value)
+    # The optional component devices of such a gateway go as well, also
+    # those the user customised (they hold no entities). After a gateway
+    # exchange the new gateway gets new ones; nothing moves.
+    from .component_devices import remove_for_other_gateways
+
+    remove_for_other_gateways(hass, entry, gateways)
     registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         unique_id = entity.unique_id

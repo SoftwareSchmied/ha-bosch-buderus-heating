@@ -678,6 +678,18 @@
     "LED switch-off time": "Χρόνος απενεργοποίησης LED",
     "Automatic updates": "Αυτόματες ενημερώσεις",
     "Last update check": "Τελευταίος έλεγχος ενημέρωσης",
-    "Last update": "Τελευταία ενημέρωση"
+    "Last update": "Τελευταία ενημέρωση",
+    "Heat generator control unit": "Μονάδα ελέγχου πηγής θερμότητας",
+    "Basic controller": "Βασικός ελεγκτής",
+    "System controller": "Ελεγκτής συστήματος",
+    "Pool module": "Μονάδα πισίνας",
+    "Remote control heating circuit": "Τηλεχειρισμός κυκλώματος θέρμανσης",
+    "Fresh water station": "Σταθμός φρέσκου νερού",
+    "Solar module": "Ηλιακή μονάδα",
+    "Radio module": "Ασύρματη μονάδα",
+    "Ventilation unit": "Μονάδα αερισμού",
+    "Hybrid manager": "Διαχειριστής υβριδικού",
+    "Component": "Εξάρτημα",
+    "No components reported": "Δεν αναφέρθηκαν εξαρτήματα"
   }
 }

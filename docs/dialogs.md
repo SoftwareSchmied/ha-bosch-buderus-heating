@@ -108,6 +108,20 @@ as messages. Sign-in, device checks and the confirmation after a change can
 add requests outside this schedule. If a polling cycle takes longer than its
 interval, the next one starts later.
 
+## System components
+
+**Configure → System components** lists the components the systems of the
+entry report, by their device name: the product name where the system
+reports one, else the name of the place with the component name. The menu
+offers the step once a system has reported its component list, or while the
+setting is on. The list follows the language of the Home Assistant server.
+**Show components as devices** (off by default) adds one device per
+component below the gateway's device; it holds no entities and the entry is
+not reloaded. Switching it off removes these devices again; the outcome page
+names how many. See
+[System components](system-components.md#component-devices-optional) and
+[device presentation](device-presentation.md).
+
 ## Wallbox
 
 With a wallbox the settings menu has the step **Wallbox**. It allows the

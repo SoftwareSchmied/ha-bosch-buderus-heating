@@ -678,6 +678,18 @@
     "LED switch-off time": "Čas izklopa LED",
     "Automatic updates": "Samodejne posodobitve",
     "Last update check": "Zadnje preverjanje posodobitev",
-    "Last update": "Zadnja posodobitev"
+    "Last update": "Zadnja posodobitev",
+    "Heat generator control unit": "Krmilna enota vira toplote",
+    "Basic controller": "Osnovni regulator",
+    "System controller": "Sistemski regulator",
+    "Pool module": "Bazenski modul",
+    "Remote control heating circuit": "Daljinski upravljalnik ogrevalnega kroga",
+    "Fresh water station": "Postaja sveže vode",
+    "Solar module": "Solarni modul",
+    "Radio module": "Brezžični modul",
+    "Ventilation unit": "Prezračevalna enota",
+    "Hybrid manager": "Hibridni upravitelj",
+    "Component": "Komponenta",
+    "No components reported": "Ni sporočenih komponent"
   }
 }

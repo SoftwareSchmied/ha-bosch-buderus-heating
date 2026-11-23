@@ -256,6 +256,7 @@
           "local_setup": "Configura l'accesso locale",
           "rescan": "Cerca di nuovo nell'impianto",
           "recordings": "Registrazioni dell'impianto",
+          "components": "Componenti dell'impianto",
           "wallbox": "Wallbox"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Sì, elimina le statistiche importate"
         }
       },
+      "components": {
+        "title": "Componenti dell'impianto",
+        "description": "Gli impianti di questa voce segnalano questi componenti:\n\n{components}\n\nCon **Mostra i componenti come dispositivi** attivo, ogni componente riceve un proprio dispositivo, collegato tramite il dispositivo del gateway. Questi dispositivi non hanno entità; ogni entità resta sul dispositivo del gateway. La disattivazione rimuove di nuovo questi dispositivi; se riattivata entro 30 giorni, mantengono i loro nomi e le loro aree. L'elenco e i nomi dei dispositivi seguono la lingua del server di Home Assistant.",
+        "data": {
+          "component_devices": "Mostra i componenti come dispositivi"
+        },
+        "data_description": {
+          "component_devices": "Disattivato per impostazione predefinita. Un componente segnalato in seguito riceve il suo dispositivo quando compare. Un dispositivo eliminato torna al prossimo avvio finché questa opzione è attiva."
+        }
+      },
       "local_tokens": {
         "title": "Token sul gateway",
         "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. Il gateway revoca solo il token con cui la richiesta stessa è autenticata, quindi qui si può scegliere solo quel token. I token più vecchi di questa integrazione e i token di altri accessi o app non possono essere revocati da Home Assistant e restano sul gateway. Senza una scelta non cambia nulla.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Risultato",
         "description": "Non è stato eliminato nulla."
+      },
+      "result_component_devices_on": {
+        "title": "Risultato",
+        "description": "I componenti sono ora mostrati come dispositivi sotto il dispositivo del gateway. Non hanno entità."
+      },
+      "result_component_devices_off": {
+        "title": "Risultato",
+        "description": "Dispositivi dei componenti rimossi: {count}. Se riattivata entro 30 giorni, tornano con i loro nomi e le loro aree."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Modifica programma acqua calda",

@@ -256,6 +256,7 @@
           "local_setup": "Set up local access",
           "rescan": "Search the system again",
           "recordings": "Plant recordings",
+          "components": "System components",
           "wallbox": "Wallbox"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Yes, delete the imported statistics"
         }
       },
+      "components": {
+        "title": "System components",
+        "description": "The systems of this entry report these components:\n\n{components}\n\nWith **Show components as devices** on, each component gets a device of its own, connected through the gateway's device. These devices hold no entities; every entity stays on the gateway's device. Switching it off removes these devices again; switched on again within 30 days, they keep their names and areas. The list and the device names follow the language of the Home Assistant server.",
+        "data": {
+          "component_devices": "Show components as devices"
+        },
+        "data_description": {
+          "component_devices": "Off by default. A component reported later gets its device when it appears. A device you delete comes back at the next start while this is on."
+        }
+      },
       "local_tokens": {
         "title": "Tokens on the gateway",
         "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other apps** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. The token created shortly before that is usually the one this access uses now; it is marked in the list, and revoking it ends the local access. The gateway revokes only the token that the request itself is signed in with, so only that token can be chosen here. Older tokens of this integration and tokens of other accesses or apps cannot be revoked from Home Assistant and stay on the gateway. Without a choice nothing changes.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Result",
         "description": "Nothing was deleted."
+      },
+      "result_component_devices_on": {
+        "title": "Result",
+        "description": "The components are now shown as devices below the gateway's device. They hold no entities."
+      },
+      "result_component_devices_off": {
+        "title": "Result",
+        "description": "Component devices removed: {count}. Switched on again within 30 days, they come back with their names and areas."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Change hot water schedule",

@@ -256,6 +256,7 @@
           "local_setup": "Määritä paikallinen yhteys",
           "rescan": "Etsi järjestelmä uudelleen",
           "recordings": "Järjestelmän tallenteet",
+          "components": "Järjestelmän komponentit",
           "wallbox": "Latausasema"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Kyllä, poista siirretyt tilastot"
         }
       },
+      "components": {
+        "title": "Järjestelmän komponentit",
+        "description": "Tämän merkinnän järjestelmät ilmoittavat nämä komponentit:\n\n{components}\n\nKun **Näytä komponentit laitteina** on päällä, jokainen komponentti saa oman laitteen, joka on liitetty yhdyskäytävän laitteen kautta. Näillä laitteilla ei ole entiteettejä; jokainen entiteetti pysyy yhdyskäytävän laitteessa. Pois kytkeminen poistaa nämä laitteet jälleen; jos se kytketään uudelleen päälle 30 päivän kuluessa, laitteet säilyttävät nimensä ja alueensa. Luettelo ja laitteiden nimet noudattavat Home Assistant -palvelimen kieltä.",
+        "data": {
+          "component_devices": "Näytä komponentit laitteina"
+        },
+        "data_description": {
+          "component_devices": "Oletuksena pois päältä. Myöhemmin ilmoitettu komponentti saa laitteensa, kun se ilmestyy. Poistamasi laite palaa seuraavassa käynnistyksessä, kun tämä on päällä."
+        }
+      },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
         "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Yhdyskäytävä peruuttaa vain tunnuksen, jolla itse pyyntö on kirjattu sisään, joten tässä voi valita vain sen tunnuksen. Tämän integraation vanhempia tunnuksia sekä muiden käyttöoikeuksien tai sovellusten tunnuksia ei voi peruuttaa Home Assistantista, ja ne jäävät yhdyskäytävään. Ilman valintaa mikään ei muutu.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Tulos",
         "description": "Mitään ei poistettu."
+      },
+      "result_component_devices_on": {
+        "title": "Tulos",
+        "description": "Komponentit näytetään nyt laitteina yhdyskäytävän laitteen alla. Niillä ei ole entiteettejä."
+      },
+      "result_component_devices_off": {
+        "title": "Tulos",
+        "description": "Komponenttilaitteita poistettu: {count}. Jos tämä kytketään uudelleen päälle 30 päivän kuluessa, ne palaavat nimineen ja alueineen."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Muuta käyttöveden aikaohjelmaa",

@@ -256,6 +256,7 @@
           "local_setup": "Lokale toegang instellen",
           "rescan": "De installatie opnieuw zoeken",
           "recordings": "Registraties van de installatie",
+          "components": "Componenten van de installatie",
           "wallbox": "Laadpaal"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Ja, overgenomen statistieken verwijderen"
         }
       },
+      "components": {
+        "title": "Componenten van de installatie",
+        "description": "De installaties van deze vermelding melden deze componenten:\n\n{components}\n\nMet **Componenten als apparaten tonen** ingeschakeld krijgt elke component een eigen apparaat, verbonden via het apparaat van de gateway. Deze apparaten hebben geen entiteiten; elke entiteit blijft bij het apparaat van de gateway. Uitschakelen verwijdert deze apparaten weer; binnen 30 dagen opnieuw ingeschakeld, behouden ze hun namen en ruimtes. De lijst en de apparaatnamen volgen de taal van de Home Assistant-server.",
+        "data": {
+          "component_devices": "Componenten als apparaten tonen"
+        },
+        "data_description": {
+          "component_devices": "Standaard uit. Een component die later wordt gemeld, krijgt zijn apparaat zodra hij verschijnt. Een apparaat dat je verwijdert, komt bij de volgende start terug zolang dit is ingeschakeld."
+        }
+      },
       "local_tokens": {
         "title": "Tokens op de gateway",
         "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd en als je het intrekt, eindigt de lokale toegang. De gateway trekt alleen het token in waarmee het verzoek zelf is aangemeld, dus alleen dat token kan hier worden gekozen. Oudere tokens van deze integratie en tokens van andere toegangen of apps kunnen niet vanuit Home Assistant worden ingetrokken en blijven op de gateway staan. Zonder keuze verandert er niets.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Resultaat",
         "description": "Er is niets verwijderd."
+      },
+      "result_component_devices_on": {
+        "title": "Resultaat",
+        "description": "De componenten worden nu als apparaten onder het apparaat van de gateway getoond. Ze hebben geen entiteiten."
+      },
+      "result_component_devices_off": {
+        "title": "Resultaat",
+        "description": "Componentapparaten verwijderd: {count}. Binnen 30 dagen opnieuw ingeschakeld, komen ze terug met hun namen en ruimtes."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Warmwaterprogramma wijzigen",

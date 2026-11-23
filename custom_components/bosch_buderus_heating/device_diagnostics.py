@@ -1,4 +1,9 @@
-"""Diagnostics of one device: entity kinds and states, never readings or names."""
+"""Diagnostics of one device: entity kinds and states, never readings or names.
+
+An optional component device (``component_devices``) adds the block
+``component``: its place and type number, the names of the component table,
+role, basis and the software version shown at the device.
+"""
 
 from __future__ import annotations
 
@@ -74,7 +79,7 @@ def device_report(
                     "state": kind,
                 }
             )
-    return {
+    report: dict[str, Any] = {
         "device": {
             "has_parent_device": device.via_device_id is not None,
             "disabled": device.disabled_by is not None,
@@ -86,3 +91,8 @@ def device_report(
         "entities": listed,
         "entities_truncated": len(entities) > MAX_LISTED_ENTITIES,
     }
+    from .component_devices import device_report as component_report
+
+    if (component := component_report(hass, entry, device)) is not None:
+        report["component"] = component
+    return report

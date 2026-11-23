@@ -256,6 +256,7 @@
           "local_setup": "Configurer l'accès local",
           "rescan": "Rechercher à nouveau dans l'installation",
           "recordings": "Enregistrements de l'installation",
+          "components": "Composants de l'installation",
           "wallbox": "Borne de recharge"
         }
       },
@@ -778,6 +779,16 @@
           "confirm": "Oui, supprimer les statistiques importées"
         }
       },
+      "components": {
+        "title": "Composants de l'installation",
+        "description": "Les installations de cette entrée signalent ces composants :\n\n{components}\n\nAvec **Afficher les composants comme appareils** activé, chaque composant obtient son propre appareil, relié par l'appareil de la passerelle. Ces appareils n'ont aucune entité ; chaque entité reste sur l'appareil de la passerelle. La désactivation supprime à nouveau ces appareils ; réactivés dans les 30 jours, ils conservent leurs noms et leurs pièces. La liste et les noms des appareils suivent la langue du serveur Home Assistant.",
+        "data": {
+          "component_devices": "Afficher les composants comme appareils"
+        },
+        "data_description": {
+          "component_devices": "Désactivé par défaut. Un composant signalé plus tard obtient son appareil dès qu'il apparaît. Un appareil que vous supprimez revient au prochain démarrage tant que cette option est activée."
+        }
+      },
       "local_tokens": {
         "title": "Jetons sur la passerelle",
         "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. La passerelle ne révoque que le jeton avec lequel la requête elle-même est authentifiée ; seul ce jeton peut donc être choisi ici. Les jetons plus anciens de cette intégration et les jetons d'autres accès ou applications ne peuvent pas être révoqués depuis Home Assistant et restent sur la passerelle. Sans choix, rien ne change.{note}",
@@ -930,6 +941,14 @@
       "result_recordings_delete_kept": {
         "title": "Résultat",
         "description": "Rien n'a été supprimé."
+      },
+      "result_component_devices_on": {
+        "title": "Résultat",
+        "description": "Les composants sont désormais affichés comme appareils sous l'appareil de la passerelle. Ils n'ont aucune entité."
+      },
+      "result_component_devices_off": {
+        "title": "Résultat",
+        "description": "Appareils de composants supprimés : {count}. Réactivés dans les 30 jours, ils reviennent avec leurs noms et leurs pièces."
       },
       "switch_program_week_rrc_dhw": {
         "title": "Modifier le programme de l'eau chaude",

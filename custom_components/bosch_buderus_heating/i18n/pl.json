@@ -678,6 +678,18 @@
     "LED switch-off time": "Czas wyłączenia diod LED",
     "Automatic updates": "Aktualizacje automatyczne",
     "Last update check": "Ostatnie sprawdzenie aktualizacji",
-    "Last update": "Ostatnia aktualizacja"
+    "Last update": "Ostatnia aktualizacja",
+    "Heat generator control unit": "Moduł sterujący źródła ciepła",
+    "Basic controller": "Regulator podstawowy",
+    "System controller": "Regulator systemowy",
+    "Pool module": "Moduł basenu",
+    "Remote control heating circuit": "Zdalne sterowanie obiegu grzewczego",
+    "Fresh water station": "Stacja świeżej wody",
+    "Solar module": "Moduł solarny",
+    "Radio module": "Moduł radiowy",
+    "Ventilation unit": "Urządzenie wentylacyjne",
+    "Hybrid manager": "Menedżer hybrydowy",
+    "Component": "Komponent",
+    "No components reported": "Nie zgłoszono żadnych komponentów"
   }
 }

@@ -54,7 +54,9 @@ conflicts, and the results of targeted reads. It never holds serial numbers,
 UUIDs or the `No` field. The row is written only when its content changes;
 it holds no running time stamps. After a restart it gives the plant kind
 before the module list is read again. Versions appear here and in the
-diagnostics only, never in entity attributes or the log. The form is
+diagnostics only, never in entity attributes or the log; with the optional
+component devices on, a device also shows the digits and dots of its
+component's software version. The form is
 [`schemas/plant-store-row.v1.json`](schemas/plant-store-row.v1.json).
 
 The test cases of the plant model in `tests/fixtures/plant_cases/` are
