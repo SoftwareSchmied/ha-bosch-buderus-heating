@@ -7,6 +7,7 @@ from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
+from homeassistant.components.climate import ClimateEntityFeature, HVACMode
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 
@@ -159,7 +160,6 @@ async def test_entries_outside_the_limits_are_refused_by_the_entity(
 async def test_an_unsupported_mode_is_refused_by_the_entity(
     hass: HomeAssistant,
 ) -> None:
-    from homeassistant.components.climate import HVACMode
 
     cloud = zone_cloud()
     entry, _coordinator, _sleeps, stack, _clock = await setup(hass, cloud)
@@ -188,9 +188,11 @@ async def test_the_mode_already_set_is_not_written_again(
 
 
 # ------------------------------------------------- an unavailable zone
-async def test_a_zone_with_an_unknown_mode_shows_nothing_and_offers_nothing(
+async def test_a_zone_with_an_unknown_mode_shows_no_mode_and_offers_nothing(
     hass: HomeAssistant,
 ) -> None:
+    """S18, over a real coordinator cycle: the zone stays shown with its room
+    temperature, shows no mode and offers no change."""
     cloud = zone_cloud()
     entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
     try:
@@ -198,12 +200,43 @@ async def test_a_zone_with_an_unknown_mode_shows_nothing_and_offers_nothing(
         cloud.tree[mode] = replace(cloud.tree[mode], value="eco")  # no mode
         await refresh(hass, coordinator, clock, 301)
         zone = entity(hass, 1)
-        assert not zone.available
-        assert zone.hvac_action is None
-        assert zone.native_target_temperature is None
-        assert zone.native_current_temperature is None
-        assert zone.extra_state_attributes == {}
+        assert zone.available
+        assert zone.hvac_mode is None
+        # The action still follows the zone's own status reading.
+        assert zone.native_current_temperature is not None
         assert zone.hvac_modes == []
+        assert zone.supported_features == ClimateEntityFeature(0)
+        with pytest.raises(ServiceValidationError):
+            await zone.async_set_hvac_mode(HVACMode.HEAT)
+        assert cloud.written("PUT") == []
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_an_unused_mode_is_shown_and_refuses_every_change(
+    hass: HomeAssistant,
+) -> None:
+    """S07, over a real coordinator cycle: a zone mode the controller does not
+    use now (``used`` false) stays shown, and nothing is sent."""
+    cloud = zone_cloud()
+    entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
+    try:
+        mode = path(1, MODE)
+        cloud.tree[mode] = replace(
+            cloud.tree[mode],
+            metadata=replace(cloud.tree[mode].metadata, used=False),
+        )
+        await refresh(hass, coordinator, clock, 301)
+        zone = entity(hass, 1)
+        assert zone.available and zone.hvac_mode == HVACMode.HEAT
+        assert zone.hvac_modes == [HVACMode.HEAT]
+        assert not zone.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
+        with pytest.raises(ServiceValidationError) as raised:
+            await zone.async_set_hvac_mode(HVACMode.AUTO)
+        assert raised.value.translation_key == "control_unused"
+        with pytest.raises(ServiceValidationError):
+            await zone.async_set_temperature(temperature=22.0)
+        assert cloud.written("PUT") == []
     finally:
         await teardown(hass, entry, stack)
 

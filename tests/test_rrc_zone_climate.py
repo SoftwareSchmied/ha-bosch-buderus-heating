@@ -534,7 +534,8 @@ async def test_room_temperature_outage_keeps_the_climate(
     entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
     try:
         actual = path(1, "temperatureActual")
-        cloud.tree[actual] = replace(cloud.tree[actual], value=99.0)  # off range
+        # Outside -50 to 100 °C (min/max are not checked on a measured value).
+        cloud.tree[actual] = replace(cloud.tree[actual], value=120.0)
         await refresh(hass, coordinator, clock, 61)
         state = hass.states.get(climate(hass, 1))
         assert state.state == "heat"
@@ -543,7 +544,9 @@ async def test_room_temperature_outage_keeps_the_climate(
         mode = path(1, MODE)
         cloud.tree[mode] = replace(cloud.tree[mode], value="eco")  # no mode
         await refresh(hass, coordinator, clock, 301)
-        assert hass.states.get(climate(hass, 1)).state == "unavailable"
+        # S18: shown without a mode; nothing is offered.
+        assert hass.states.get(climate(hass, 1)).state == "unknown"
+        assert hass.states.get(climate(hass, 1)).attributes["hvac_modes"] == []
         cloud.tree[mode] = replace(cloud.tree[mode], value="manual")
         cloud.tree[actual] = replace(cloud.tree[actual], value=20.0)
         await refresh(hass, coordinator, clock, 301)

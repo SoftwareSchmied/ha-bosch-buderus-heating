@@ -46,6 +46,9 @@ TEMPERATURES = (
     "manualTemperatureHeating",
     "clockOverride/temperatureHeating",
 )
+# Measured, never written: shown whatever ``minValue``, ``maxValue`` and
+# ``used`` say; the error markers and -50 to 100 °C still apply.
+MEASURED = frozenset({"temperatureActual", "temperatureHeatingSetpoint"})
 # W1 adds zone leaves through its contract (``rrc_contract_zone.zone_fields``).
 ZONE_FIELDS = (*TEMPERATURES, "userMode", "clockProgram", *rrc_contracts.zone_fields())
 # W1: the zone details. Only the zone entities (``rrc_zone_entities``) read
@@ -141,6 +144,28 @@ def mode_locked(resource: Resource) -> bool:
     )
 
 
+def mode_unused(resource: Resource) -> bool:
+    """A zone mode the controller does not use now (``used`` false, not
+    unavailable): its value stays shown, and no change is offered."""
+    metadata = resource.metadata
+    return (
+        scalar_field(resource.path) == "userMode"
+        and metadata.availability_flags_valid
+        and metadata.used is False
+        and metadata.available is not False
+    )
+
+
+def _measured_shown(resource: Resource) -> bool:
+    """A measured zone value is shown also while ``used`` is false."""
+    metadata = resource.metadata
+    return (
+        scalar_field(resource.path) in MEASURED
+        and metadata.availability_flags_valid
+        and metadata.available is not False
+    )
+
+
 def program_unused(resource: Resource) -> bool:
     """#113 (RRC-03): an assigned program that does not act at the moment.
 
@@ -183,7 +208,11 @@ def scalar_value(resource: Resource) -> str | int | float | None:
         field is None
         or field in DETAIL_FIELDS
         or not (
-            available(resource) or mode_locked(resource) or program_unused(resource)
+            available(resource)
+            or mode_locked(resource)
+            or mode_unused(resource)
+            or program_unused(resource)
+            or _measured_shown(resource)
         )
         or not resource.has_value
         or resource.has_values
@@ -210,13 +239,14 @@ def scalar_value(resource: Resource) -> str | int | float | None:
         or value in metadata.numeric_error_values
     ):
         return None
-    for bound in (metadata.minimum, metadata.maximum):
-        if bound is not None and not math.isfinite(bound):
+    if field not in MEASURED:
+        for bound in (metadata.minimum, metadata.maximum):
+            if bound is not None and not math.isfinite(bound):
+                return None
+        if (metadata.minimum is not None and value < metadata.minimum) or (
+            metadata.maximum is not None and value > metadata.maximum
+        ):
             return None
-    if (metadata.minimum is not None and value < metadata.minimum) or (
-        metadata.maximum is not None and value > metadata.maximum
-    ):
-        return None
     if field == "clockProgram":
         return (
             int(value)

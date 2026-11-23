@@ -221,6 +221,28 @@ class RrcZoneClimate(
         resource = self._scalar(MODE, strict=strict)
         return resource if resource is not None and resource.value in MODES else None
 
+    def _shown_mode(self) -> Resource | None:
+        """The mode reading as shown: a known mode, or a text the zone reports
+        that is not known here (it shows no mode and offers no change)."""
+        if (mode := self._mode()) is not None:
+            return mode
+        resource = self._reading(MODE)
+        if (
+            resource is None
+            or resource.metadata.resource_type != "stringValue"
+            or resource.has_values
+            or resource.references
+            or not isinstance(resource.value, str)
+            or not resource.value.strip()
+            or not (
+                rrc.available(resource)
+                or rrc.mode_locked(resource)
+                or rrc.mode_unused(resource)
+            )
+        ):
+            return None
+        return resource
+
     def _value(self, leaf: str) -> float | None:
         resource = self._scalar(leaf)
         return _number(resource.value) if resource is not None else None
@@ -293,7 +315,8 @@ class RrcZoneClimate(
         of 0 clears it, so its lower limit is the manual setpoint's minimum.
         """
         mode = self._mode(strict=strict)
-        if mode is None:
+        if mode is None or rrc.mode_unused(mode):
+            # A mode the zone does not use now takes no target here.
             return None
         leaf = MANUAL if mode.value == "manual" else OVERRIDE
         resource = self._scalar(leaf, strict=strict)
@@ -327,19 +350,25 @@ class RrcZoneClimate(
     # ------------------------------------------------------ entity state
     @property
     def available(self) -> bool:
-        # ZONE-07: the room temperature may be unknown (``used`` false).
-        return self._mode() is not None
+        # ZONE-07: the room temperature may be unknown (``used`` false). A
+        # mode that is not known keeps the zone shown, without a mode.
+        return self._shown_mode() is not None
 
     @property
     def hvac_mode(self) -> HVACMode | None:
-        mode = self._mode()
-        return MODES[str(mode.value)] if self.available and mode else None
+        mode = self._shown_mode()
+        if mode is None:
+            return None
+        return MODES.get(str(mode.value).strip().lower())
 
     @property
     def hvac_modes(self) -> list[HVACMode]:
         mode = self._mode()
         if not self.available or mode is None:
             return []
+        if rrc.mode_unused(mode):
+            # Shown only: the zone does not use its mode now.
+            return [MODES[str(mode.value)]]
         # P03: the TC100.2 advertises no options; the fallback is manual and
         # clock. P04: a locked mode keeps its modes shown; writing is refused.
         offered = [raw for raw in rrc.allowed_values(mode) if raw in MODES]
@@ -474,6 +503,10 @@ class RrcZoneClimate(
         if (down := cloud_down_error(self.coordinator)) is not None:
             raise down
         mode = self._mode(strict=True)
+        if mode is not None and rrc.mode_unused(mode):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="control_unused"
+            )
         if mode is None or hvac_mode not in self.hvac_modes:
             raise _invalid()
         raw = next(raw for raw, mapped in MODES.items() if mapped == hvac_mode)

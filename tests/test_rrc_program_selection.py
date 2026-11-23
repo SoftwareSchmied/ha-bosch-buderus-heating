@@ -254,13 +254,51 @@ def test_unusable_program_selection_flags_stay_rejected(flags):
     "path",
     ["/zones/zn1/userMode", "/zones/zn1/temperatureActual"],
 )
-def test_only_the_program_selection_keeps_its_value_when_unused(path):
+def test_unused_mode_and_room_temperature_keep_their_value(path):
+    """S07: a measured value and a mode the zone does not use now stay shown;
+    only the program selection is an unused program."""
     resource = (
         wire(path, type="stringValue", used="false", writeable=1, value="clock")
         if path.endswith("userMode")
         else wire(path, type="floatValue", used="false", unitOfMeasure="C", value=20.5)
     )
     assert not rrc.program_unused(resource)
+    assert rrc.scalar_value(resource) == (
+        "clock" if path.endswith("userMode") else 20.5
+    )
+    assert rrc.mode_unused(resource) is path.endswith("userMode")
+
+
+@pytest.mark.parametrize(
+    ("fields", "shown"),
+    [
+        ({"value": 35.5, "maxValue": 30.0}, 35.5),
+        ({"value": 3.0, "minValue": 5.0}, 3.0),
+        ({"value": 120.0}, None),
+        ({"value": -60.0}, None),
+        ({"value": 20.0, "available": "false"}, None),
+    ],
+)
+def test_measured_zone_values_ignore_min_and_max(fields, shown):
+    resource = wire(
+        "/zones/zn1/temperatureActual",
+        type="floatValue",
+        unitOfMeasure="C",
+        **{"minValue": 5.0, "maxValue": 30.0, **fields},
+    )
+    assert rrc.scalar_value(resource) == shown
+
+
+def test_a_writable_setpoint_keeps_its_limits():
+    resource = wire(
+        "/zones/zn1/manualTemperatureHeating",
+        type="floatValue",
+        unitOfMeasure="C",
+        writeable=1,
+        minValue=5.0,
+        maxValue=30.0,
+        value=35.0,
+    )
     assert rrc.scalar_value(resource) is None
 
 
