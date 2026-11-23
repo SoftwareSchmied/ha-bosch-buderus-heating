@@ -77,6 +77,9 @@ is meant to change:
   "requests": (...)}`` with patterns of new entities (unique ID), new devices
   (one identifier joined with ``:``) and new request paths. Only for fixture
   plants; the K40 plants (``k40_*``) never get an entry (a test checks this).
+  The two /system/info variants of the iCom fixture gain the heat generator
+  sensor: the fixture now reports its boiler as ``GasBoiler`` (the value a
+  device reports), and the plant kind boiler gives the sensor.
 - ``POSITION_FREE``: request paths that may move to another bulk request; the
   number of bulk requests and the reads of every path stay the same
   (``/system/info``, I3).
@@ -221,6 +224,15 @@ EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
         )
     },
     "connectkey_zone_climate": {"requests": _HOT_WATER},
+    # The iCom fixture (icom/gateway-shapes.json) reports its boiler with the
+    # heat source type GasBoiler; its constructed value BOILER_GAS before was
+    # no value a device reports. With the plant kind boiler, the two
+    # /system/info variants without a component at the heat generator's place
+    # get the heat generator sensor the base variant already has.
+    **{
+        name: {"entities": (r"gateway-one:heat_generator",)}
+        for name in ("icom_gateway_circuit_token_16", "icom_gateway_hmi800_hp_light")
+    },
 }
 POSITION_FREE: frozenset[str] = frozenset({"/system/info"})
 # E3 (#138): the capture behind k40_cloud and k40_cloud_local

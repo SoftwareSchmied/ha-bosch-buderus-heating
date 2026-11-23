@@ -655,7 +655,8 @@ async def test_without_evidence_there_is_no_sensor(
         "gateway": {"device_type": "icom", "firmware": "4.1.2"},
         "cloud": rows,
         "local": None,
-        "values": {"/heatSources/hs1/type": "BOILER_GAS", "/system/bus": "EMS2_0"},
+        # A type value without a meaning for the plant model: no plant kind.
+        "values": {"/heatSources/hs1/type": "eBoiler", "/system/bus": "EMS2_0"},
     }
     coordinator = _coordinator(hass, case)
     await _start(hass, coordinator)

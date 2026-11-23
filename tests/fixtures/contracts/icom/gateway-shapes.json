@@ -488,14 +488,14 @@
     {
       "id": "/heatSources/hs1/type",
       "type": "stringValue",
-      "value": "BOILER_GAS",
+      "value": "GasBoiler",
       "writeable": 0,
       "allowedValues": [
-        "BOILER_GAS",
-        "BOILER_OIL",
-        "BOILER_UNKNOWN",
-        "HEATPUMP",
-        "NONE"
+        "No_Appliance",
+        "Heatpump",
+        "OilBoiler",
+        "GasBoiler",
+        "unknownBoiler"
       ]
     },
     {

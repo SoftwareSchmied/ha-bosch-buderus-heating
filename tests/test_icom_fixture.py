@@ -89,6 +89,31 @@ def test_fixture_is_synthetic_without_identifiers() -> None:
             )
 
 
+def test_the_boiler_reports_a_heat_source_type_a_device_reports() -> None:
+    """The heat source type uses the values a device reports (the five
+    values of ``/heatSources/hs1/type``), so the plant model knows the
+    boiler and its fuel."""
+    from custom_components.bosch_buderus_heating.plant_detection import (
+        PlantInputs,
+        resolve,
+    )
+
+    resource = RESOURCES["/heatSources/hs1/type"]
+    assert resource.value == "GasBoiler"
+    assert tuple(resource.metadata.allowed_values) == (
+        "No_Appliance",
+        "Heatpump",
+        "OilBoiler",
+        "GasBoiler",
+        "unknownBoiler",
+    )
+    result = resolve(
+        PlantInputs(heat_source_types=(("hs1", resource.value),), platform="icom"),
+        None,
+    )
+    assert (result.plant_kind, result.fuel, result.conflicts) == ("boiler", "gas", ())
+
+
 def test_holiday_slots_have_five_slots_and_the_app_order_shape() -> None:
     assert icom_slots(RESOURCES) == SLOTS
     # The slot parents and every delete answer 403, fixTemperature 404.
