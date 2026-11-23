@@ -1324,7 +1324,8 @@ Some controllers also declare `ch_heat`, `ch_cool`, `dhw_exclusive`,
 entries as hot water; `ch_cool` and `pool` show as reported. An active entry
 the device does not declare, or `ch_cool` or `pool` together with another
 demand, makes the state unknown instead of *None*; only an empty list or an
-empty entry means no demand.
+empty entry means no demand. A controller that reports the heat demand as one
+number (a percentage) gets a sensor with this number and its unit instead.
 
 Checked against the recorded history of one heat pump (11 days with 14
 defrosts, 5 hot water charges and one controller restart): the *Electric

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -34,6 +37,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 )
 from custom_components.bosch_buderus_heating.pointt.metrics import RequestMetrics
 from custom_components.bosch_buderus_heating.pointt.models import JsonValue
+from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusActiveFaultsSensor,
     BoschBuderusActiveNotificationsSensor,
@@ -47,6 +51,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     build_sensor_descriptions,
 )
 from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.rrc_cloud import load_tree
 
 
 def _sensor(
@@ -813,6 +818,168 @@ def test_heat_demand_shows_every_reported_demand(
     assert sensor.coordinator.unknown_enum_value_count(resource.path) == (
         1 if expected is None else 0
     )
+
+
+def test_heat_demand_reported_as_a_number_is_a_measurement(
+    hass: HomeAssistant,
+) -> None:
+    """A heat demand reported as a number (here 30 %, as in the zone climate
+    fixture of the ConnectKey) is a measurement with its unit, never a state of
+    the demand list: Home Assistant does not add a sensor with a unit and the
+    device class enum. The unique ID stays the one of the list."""
+    resource = Resource(
+        path="/heatSources/actualHeatDemand",
+        value=30.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+    )
+    sensor = _sensor(hass, resource, value_key="values")
+    description = sensor.entity_description
+
+    assert description.unique_key == "heatSources:actualHeatDemand:values"
+    assert description.value_kind == "value"
+    assert description.device_class is None
+    assert description.native_unit_of_measurement == PERCENTAGE
+    assert description.state_class is SensorStateClass.MEASUREMENT
+    assert description.options is None
+    assert description.translation_key is None
+    assert sensor.native_value == 30.0
+
+
+def test_heat_demand_list_stays_a_state_without_a_unit(hass: HomeAssistant) -> None:
+    """The list of demands stays the enum state, also when the device names a
+    unit for it."""
+    metadata = ResourceMetadata(
+        resource_type="arrayData", unit="%", allowed_values=_DEMAND_ALLOWED
+    )
+    resource = Resource(
+        path="/heatSources/actualHeatDemand",
+        values=("frost",),
+        has_values=True,
+        metadata=metadata,
+    )
+    sensor = _sensor(hass, resource, value_key="values")
+    description = sensor.entity_description
+
+    assert description.unique_key == "heatSources:actualHeatDemand:values"
+    assert description.value_kind == "heat_demand"
+    assert description.device_class is SensorDeviceClass.ENUM
+    assert description.native_unit_of_measurement is None
+    assert description.state_class is None
+    assert description.translation_key == "heat_demand"
+    assert sensor.native_value == "frost"
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        {
+            "id": "/heatSources/actualHeatDemand",
+            "type": "stringArray",
+            "values": ["ch"],
+            "unitOfMeasure": "%",
+        },
+        {
+            "id": "/system/variableTariff/supportStatus",
+            "type": "stringArray",
+            "values": ["supported"],
+            "unitOfMeasure": "kWh",
+        },
+        {
+            "id": "/heatingCircuits/hc1/operationMode",
+            "type": "stringValue",
+            "value": "auto",
+            "unitOfMeasure": "C",
+        },
+        {
+            "id": "/dhwCircuits/dhw1/operationMode",
+            "type": "stringValue",
+            "value": "high",
+            "unitOfMeasure": "%",
+        },
+    ],
+)
+def test_a_state_from_a_list_of_options_never_has_a_unit(raw: dict[str, Any]) -> None:
+    """A unit the device names for a textual reading is dropped: a sensor
+    with a unit and the device class enum is one Home Assistant refuses."""
+    resource = parse_resource(raw)
+    descriptions = build_sensor_descriptions({resource.path: resource})
+
+    enum = [
+        item for item in descriptions if item.device_class is SensorDeviceClass.ENUM
+    ]
+    assert enum
+    assert all(item.native_unit_of_measurement is None for item in enum)
+    assert all(item.state_class is None for item in enum)
+
+
+_CONTRACTS = Path(__file__).parent / "fixtures" / "contracts"
+
+
+def _wire_tree(rows: object) -> dict[str, Resource] | None:
+    if not isinstance(rows, list) or not rows:
+        return None
+    if not all(isinstance(row, dict) and "id" in row for row in rows):
+        return None
+    return {row["id"]: parse_resource(row) for row in rows}
+
+
+def _contract_trees(relative: str) -> list[dict[str, Resource]]:
+    """The resource trees of a contract fixture: its wire resources (a list,
+    keyed by path, or a base of variants), each payload of its cases, or its
+    stored inventory; none for another shape (devices of other protocols)."""
+    data = json.loads((_CONTRACTS / relative).read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        return []
+    items = data.get("resources")
+    rows = list(items.values()) if isinstance(items, dict) else items
+    if (tree := _wire_tree(rows) or _wire_tree(data.get("base"))) is not None:
+        return [tree]
+    if isinstance(cases := data.get("cases"), list):
+        payloads = [case.get("payload") for case in cases if isinstance(case, dict)]
+        return [tree for item in payloads if (tree := _wire_tree([item]))]
+    if isinstance(items, dict):
+        try:
+            return [load_tree(relative)]
+        except Exception:
+            return []  # another shape (component lists)
+    return []
+
+
+_CONTRACT_FIXTURES = [
+    relative
+    for path in sorted(_CONTRACTS.rglob("*.json"))
+    if _contract_trees(relative := path.relative_to(_CONTRACTS).as_posix())
+]
+
+
+def test_the_fixture_sweep_covers_the_contract_fixtures() -> None:
+    assert len(_CONTRACT_FIXTURES) >= 35
+    assert {
+        "connectkey/zone-climate.json",
+        "connectkey/readings.json",
+        "captures/k40-cloud-2026-11-05.json",
+        "icom/tbso.json",
+        "rrc/ct200-shapes.json",
+    } <= set(_CONTRACT_FIXTURES)
+
+
+@pytest.mark.parametrize("relative", _CONTRACT_FIXTURES)
+@pytest.mark.parametrize("rrc_plant", [False, True])
+def test_no_sensor_of_a_fixture_has_a_unit_and_the_device_class_enum(
+    relative: str, rrc_plant: bool
+) -> None:
+    """Every sensor built from the contract fixtures is one Home Assistant
+    adds: a state from a list of options never has a unit."""
+    for resources in _contract_trees(relative):
+        descriptions = build_sensor_descriptions(resources, rrc_plant=rrc_plant)
+
+        assert not [
+            (item.key, item.native_unit_of_measurement)
+            for item in descriptions
+            if item.device_class is SensorDeviceClass.ENUM
+            and item.native_unit_of_measurement is not None
+        ]
 
 
 def test_known_array_entities_exist_when_empty_at_startup(

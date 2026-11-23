@@ -45,8 +45,9 @@ the request metrics measures real time; its state becomes ``<volatile>``
 (``VOLATILE_STATES``, attribute keys in ``VOLATILE``). Bulk requests are kept as
 a sorted list of sorted path lists; everything else is sorted by key.
 
-Not part of the golden master: diagnostics (own tests), log output, the
-restore cache.
+Not part of the golden master: diagnostics (own tests), log output (only
+checked for entities Home Assistant refuses to add: none may be), the restore
+cache.
 
 Home Assistant versions: the files are recorded on 2026.11. On an older
 Home Assistant (down to the minimum version 2026.5) two parts that Home
@@ -97,6 +98,10 @@ is meant to change:
   WDDW2 program fixture (``scheduling``, shown as no operation) report a
   mode not known to the water heater, which now stays shown with its
   temperatures and offers no operation.
+- ``NUMBER_HEAT_DEMAND_PLANTS``: fixture plants whose heat demand is a number
+  (0.9.3-beta.6). Its sensor is a measurement now; before, Home Assistant
+  refused it (unit and device class enum), so the recorded file has no state
+  for it. Never a K40 plant (a test checks this).
 - ``POSITION_FREE``: request paths that may move to another bulk request; the
   number of bulk requests and the reads of every path stay the same
   (``/system/info``, I3).
@@ -292,6 +297,20 @@ CAPTURE_OUTDOOR_POWER_KW = 10
 # The new entity: the outdoor unit software version, with the state of my own
 # K40 and its attributes without a hardware type.
 CAPTURE_NEW_ENTITY = "gateway-one:outdoor_unit_software_version"
+# 0.9.3-beta.6: the zone climate fixture of the ConnectKey reports the heat
+# demand as a number (30 %), not as a list of demands. Its sensor had the unit
+# % and the device class enum, which Home Assistant refuses to add: the
+# recorded file has its registry row only, with no state and no write. As a
+# number it is a measurement now. Exactly this row, this state and these
+# writes are expected (``_with_number_heat_demand``), nothing else.
+NUMBER_HEAT_DEMAND_PLANTS: frozenset[str] = frozenset({"connectkey_zone_climate"})
+NUMBER_HEAT_DEMAND = "sensor gateway-one:heatSources:actualHeatDemand:values"
+# Its state; the friendly name is the device name "Heating" and the
+# recorded entity name.
+NUMBER_HEAT_DEMAND_STATE: dict[str, Any] = {
+    "state": "30.0",
+    "attributes": {"state_class": "measurement", "unit_of_measurement": "%"},
+}
 
 # ------------------------------------------------- Home Assistant versions
 # The golden files are recorded on Home Assistant 2026.11. Older versions down
@@ -1312,6 +1331,26 @@ def _with_capture_roles(expected: dict[str, Any]) -> dict[str, Any]:
     return changed
 
 
+def _with_number_heat_demand(expected: dict[str, Any]) -> dict[str, Any]:
+    """The golden state with the heat demand reported as a number shown as a
+    measurement (see ``NUMBER_HEAT_DEMAND_PLANTS``)."""
+    changed = copy.deepcopy(expected)
+    row = next(
+        item
+        for item in changed["entities"]
+        if _key(item["platform"], item["unique_id"]) == NUMBER_HEAT_DEMAND
+    )
+    assert row["translation_key"] == "heat_demand"
+    assert NUMBER_HEAT_DEMAND not in changed["states"]
+    assert NUMBER_HEAT_DEMAND not in changed["writes"]
+    row["translation_key"] = None
+    state = copy.deepcopy(NUMBER_HEAT_DEMAND_STATE)
+    state["attributes"]["friendly_name"] = f"Heating {row['original_name']}"
+    changed["states"][NUMBER_HEAT_DEMAND] = state
+    changed["writes"][NUMBER_HEAT_DEMAND] = {"cycle": 1, "setup": 1}
+    return changed
+
+
 def for_this_home_assistant(
     expected: dict[str, Any], areas: dict[str, str]
 ) -> dict[str, Any]:
@@ -1342,6 +1381,8 @@ def differences(
     expected = for_this_home_assistant(expected, actual.get("areas", {}))
     if name in CAPTURE_ROLE_PLANTS:
         expected = _with_capture_roles(expected)
+    if name in NUMBER_HEAT_DEMAND_PLANTS:
+        expected = _with_number_heat_demand(expected)
     new = EXPECTED_NEW.get(name, {})
     found = _entity_differences(
         expected["entities"], actual["entities"], new.get("entities", ())
@@ -1397,11 +1438,19 @@ def _provenance(plant: Plant) -> dict[str, Any]:
 @pytest.mark.parametrize("name", sorted(PLANTS))
 @pytest.mark.usefixtures("enable_custom_integrations")
 async def test_the_plant_matches_the_state_before_the_plant_model(
-    hass: HomeAssistant, freezer: Any, name: str
+    hass: HomeAssistant, freezer: Any, caplog: pytest.LogCaptureFixture, name: str
 ) -> None:
     freezer.move_to(FROZEN)
     plant = PLANTS[name]
     actual = await build_snapshot(hass, plant)
+    # Home Assistant adds every entity of the plant: none is refused, for
+    # example a sensor with a unit and the device class enum.
+    refused = [
+        record.getMessage()
+        for record in caplog.records
+        if record.getMessage().startswith("Error adding entity")
+    ]
+    assert not refused, f"{name}:\n" + "\n".join(refused)
     if UPDATE:
         assert HA_AS_RECORDED, "record only on the Home Assistant of the golden files"
         text = json.dumps(
@@ -1430,6 +1479,8 @@ def test_every_plant_has_its_golden_file_and_nothing_else() -> None:
 def test_the_k40_plants_never_get_new_entities_or_requests() -> None:
     assert not [name for name in EXPECTED_NEW if name.startswith("k40")]
     assert not [name for name in CHANGED_ATTRIBUTES if name.startswith("k40")]
+    assert not [name for name in NUMBER_HEAT_DEMAND_PLANTS if name.startswith("k40")]
+    assert set(NUMBER_HEAT_DEMAND_PLANTS) <= set(PLANTS)
     assert set(EXPECTED_NEW) <= set(PLANTS)
     assert set(WRITE_DELTAS) <= set(PLANTS)
     for allowance in EXPECTED_NEW.values():

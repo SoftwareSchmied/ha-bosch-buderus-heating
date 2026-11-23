@@ -1235,7 +1235,15 @@ def build_sensor_descriptions(
             descriptions.append(_description(resource, None, "system_info"))
             continue
         if resource.path == "/heatSources/actualHeatDemand":
-            descriptions.append(_description(resource, "values", "heat_demand"))
+            # A list of demands is one state; a number (a percentage) is a
+            # measurement. Both keep the unique ID of the list.
+            descriptions.append(
+                _description(
+                    resource,
+                    "values",
+                    "value" if _heat_demand_is_number(resource) else "heat_demand",
+                )
+            )
             continue
         if resource.path == "/system/variableTariff/supportStatus":
             descriptions.append(_description(resource, "values", "enum_values"))
@@ -1454,8 +1462,10 @@ def _description(
     if enum_translation_key == "softener_regeneration_phase":
         enum_options = list(PHASES)
     if enum_options is not None:
+        # A state from a list of options has no unit: Home Assistant does not
+        # add a sensor with a unit and the device class enum.
         device_class = SensorDeviceClass.ENUM
-        state_class = None
+        unit, state_class, scale = None, None, 1.0
     category = _entity_category(resource)
     if rrc.scalar_field(path):
         category = None
@@ -2716,7 +2726,7 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
     ):
         return "support_status"
     if resource.path == "/heatSources/actualHeatDemand" and value_key == "values":
-        return "heat_demand"
+        return None if _heat_demand_is_number(resource) else "heat_demand"
     if value_key is not None or not isinstance(resource.value, str):
         return None
     path = resource.path
@@ -2809,6 +2819,16 @@ _HEAT_DEMAND_ALIASES = {
     "dhw_nonexclusive": "dhw",
     "frost_protection": "frost",
 }
+
+
+def _heat_demand_is_number(resource: Resource) -> bool:
+    """The heat demand reported as one number (for example a percentage)
+    instead of a list of demands."""
+    return (
+        not resource.has_values
+        and isinstance(resource.value, int | float)
+        and not isinstance(resource.value, bool)
+    )
 
 
 def _heat_demand_state(resource: Resource) -> str:
