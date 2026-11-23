@@ -145,16 +145,24 @@ inventory), I read a few known paths of such an area, by fixed rules:
   uses the value read last (or the one the inventory keeps), so on a new
   plant it applies from the next discovery on.
 - An error of a targeted read (HTTP 5xx, 429, 428, a timeout) never ends the
-  discovery and never makes a reading unavailable: ten single reads in a row
+  discovery and keeps every reading it found: ten single reads in a row
   that answer HTTP 5xx, a rate limit or a timeout end only the targeted
-  reads (the rate limit pauses the cloud access as usual), and a 428 answer
-  raises no repair.
+  reads, and a 428 answer raises no repair. A rate limit pauses the cloud
+  access as any 429 does, so the updates within that pause fail as usual;
+  the fault sources that are read right after the discovery and were held
+  back by the pause are read in the first update after it.
+- An unexpected error in the rules of the targeted reads ends only them
+  (`inactive_reason` `error` in the diagnostics); the discovery goes on as
+  without them.
 - A path that answers becomes an entity like any discovered path; an
   unknown path stays a diagnostic. The results of the last run are kept for
   the diagnostics only and never skip a read.
 - `/system/info` is read in the first batch, right after the roots, so the
   components are known early, also when `/system` itself cannot be listed.
-  Every other path keeps its batch.
+  Every other path keeps its batch. A server error (HTTP 5xx) of
+  `/system/info` counts as missing (read policy
+  `optional_5xx_assumed_missing`) and, like a tariff leaf of an iCom gateway,
+  neither counts towards a series of server errors nor ends the discovery.
 
 On my own K40 no rule applies: the same paths are read, each as often and in
 the same batches; only `/system/info` moves to the first batch. Tested with

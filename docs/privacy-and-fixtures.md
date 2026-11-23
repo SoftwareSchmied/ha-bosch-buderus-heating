@@ -29,11 +29,13 @@ Locally displayed identity diagnostics do not relax this policy. Serial
 numbers, UUIDs, country data, and sanitized system information are disabled by
 default in Home Assistant and must never be copied into issues, fixtures, logs,
 or diagnostic exports without explicit redaction. The `Tok` field of system
-information is the place number of a component on the bus, not a secret; it
+information is the place number of a component, not a secret; it
 appears with the type number in the diagnostics block `plant` and in the
-attribute `components` of the heat generator sensor. The serial
-number fields of system information (`No`, `ProductSerialNumber`,
-`ModuleSerialNumber`) and `ProductUuid` are never exposed.
+attribute `components` of the heat generator sensor. The plant model only
+compares the serial number fields of system information (`No`,
+`ProductSerialNumber`, `ModuleSerialNumber`) and `ProductUuid` with the
+other fields of a row, to leave out a text equal to them; it never keeps or
+shows them. The gateway's own device shows its serial number as before.
 
 ## Stored plant row
 
@@ -53,8 +55,10 @@ inputs of the hybrid manager rule, the plant kind with its evidence and
 conflicts, and the results of targeted reads. It never holds serial numbers,
 UUIDs or the `No` field. The row is written only when its content changes;
 it holds no running time stamps. After a restart it gives the plant kind
-before the module list is read again. Versions appear here and in the
-diagnostics only, never in entity attributes or the log; with the optional
+before the module list is read again. Versions of the plant model appear
+here and in the diagnostics only, never in the attributes of the heat
+generator sensor or in the log (the diagnostic sensor Outdoor unit software
+version shows the version of the outdoor unit since 0.9.2); with the optional
 component devices on, a device also shows the software version its
 component reports, as the component list keeps it (a text with a control
 character, longer than 64 characters or equal to an identifier of its row

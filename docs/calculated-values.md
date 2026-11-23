@@ -327,8 +327,13 @@ defrosts, so the heat taken back from the water is netted.
   one that reports a boiler. These two only add to the evidence; a component
   name never counts, and until the plant model's stored row is read after a
   start the evidence is the one used before. Such a hybrid system without a
-  burner counter gets the factors and the recordings of its heat pump when
-  the heat pump reports counters of its own (see below). The rule looks at the burner counter of the collection
+  burner counter gets the factors of its heat pump when the heat pump reports
+  counters of its own (see below); the recordings of `hs2` are read for a
+  hybrid system without them as well (see
+  [plant recordings](recordings.md#the-heat-pump-of-a-hybrid-system)).
+  Hybrid system through a hybrid manager component: tested with synthetic
+  component lists; not yet confirmed on a real hybrid system with a hybrid
+  manager (#138). The rule looks at the burner counter of the collection
   (since commissioning), not at a single period: once a plant has reported
   burner energy, its factors stay unknown. A heat pump without a burner
   share is not affected.
@@ -441,9 +446,13 @@ einem K30-Gateway ab Firmware 08.02.02 oder einem K40-Gateway ab Firmware
 die einen Kessel meldet. Diese beiden Belege kommen nur hinzu; ein
 Komponentenname zählt nie, und bis die gespeicherte Zeile des Anlagenmodells
 nach einem Start gelesen ist, gelten die bisherigen Belege. Eine solche
-Hybridanlage ohne Brennerzähler erhält die Arbeitszahlen und die
-Aufzeichnungen ihrer Wärmepumpe, wenn die Wärmepumpe eigene Zähler meldet
-(siehe unten).
+Hybridanlage ohne Brennerzähler erhält die Arbeitszahlen ihrer Wärmepumpe,
+wenn die Wärmepumpe eigene Zähler meldet (siehe unten); die Aufzeichnungen
+von `hs2` werden für eine Hybridanlage auch ohne sie gelesen (siehe
+[Anlagenaufzeichnungen](recordings.md#the-heat-pump-of-a-hybrid-system)).
+Hybridanlage über eine Hybrid-Manager-Komponente: Getestet mit synthetischen
+Komponentenlisten; an einer echten Hybridanlage mit Hybrid-Manager noch nicht
+bestätigt (#138).
 
 Meldet die Wärmepumpe eines Hybridsystems eigene Zähler unter ihrer
 Wärmequelle (zum Beispiel `/heatSources/hs2/emon/totalConsumption` mit

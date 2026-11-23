@@ -54,8 +54,9 @@ unprintable character, or longer than 64 characters, is dropped as a whole. A pr
 number or only digits is left out. Hardware type, update type, software
 identifier (`SwIdenStr`) and article number of the model (`ProductTtn`,
 else `ModuleTtn`) are kept only as safe texts. `No`,
-`ProductSerialNumber`, `ModuleSerialNumber` and `ProductUuid` are never
-read. At most 64 rows of an answer are read. The holiday rule of iCom
+`ProductSerialNumber`, `ModuleSerialNumber` and `ProductUuid` are only
+compared to leave out a text equal to them; they are never kept or shown.
+At most 64 rows of an answer are read. The holiday rule of iCom
 gateways keeps its own parser.
 
 ### Plant kind
@@ -126,11 +127,16 @@ gateways keeps its own parser.
 ### Privacy
 
 Versions, software identifiers and article numbers of the model are kept in
-the stored row and shown in the diagnostics. They never appear in entity
-attributes or in the log. The one exception is the software version of a
-component device, which the device registry shows while the optional
-component devices are on. Serial numbers, UUIDs, the `No` field, gateway IDs
-and entry IDs never appear anywhere.
+the stored row and shown in the diagnostics. They never appear in the
+attributes of the heat generator sensor or in the log. The software version
+of a component device is shown by the device registry while the optional
+component devices are on; the existing diagnostic sensor Outdoor unit
+software version (since 0.9.2) keeps showing the version of the outdoor
+unit. Serial numbers, UUIDs and the `No` field of a component row are never
+part of states, attributes, diagnostics, stored values or the log; the
+gateway's own device shows its serial number as before. The key of the
+stored row and the identifier of a component device begin with the gateway
+ID like every key of the integration.
 
 ### Diagnostics
 

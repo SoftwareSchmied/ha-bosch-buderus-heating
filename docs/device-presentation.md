@@ -87,6 +87,9 @@ on again within 30 days. After a gateway exchange the old gateway's
 component devices are removed and the new gateway gets new ones. A view of
 a system from its local readings alone does not change any device.
 
+Tested in automated tests with the component list of my own K40 and with
+synthetic lists; not yet confirmed on a real installation.
+
 ## Deutsch
 
 Ich behalte ein gemeinsames Gerät je PointT-Heizungs-Gateway bei. Zusätzliche
@@ -165,3 +168,7 @@ wenn die Einstellung innerhalb von 30 Tagen wieder eingeschaltet wird. Nach
 einem Gateway-Tausch werden die Komponenten-Geräte des alten Gateways
 entfernt, und das neue Gateway erhält neue. Eine Ansicht der Anlage allein
 aus ihren lokalen Werten ändert keine Geräte.
+
+Getestet in automatisierten Tests mit der Komponentenliste meines eigenen
+K40-Gateways und mit synthetischen Listen; an einer echten Installation noch
+nicht bestätigt.

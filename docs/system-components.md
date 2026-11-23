@@ -333,6 +333,10 @@ Conflicts (shown in the diagnostics only):
 Component names never decide anything. Only entries whose basis is
 `rule`, `observed` or `documented` can give a component a role.
 
+Hybrid system through a hybrid manager component: tested with synthetic
+component lists; not yet confirmed on a real hybrid system with a hybrid
+manager (#138).
+
 ### Heat generator sensor
 
 The heat generator sensor of each gateway shows the plant kind with its
@@ -429,19 +433,26 @@ the gateway's device stay as they are.
   not move.
 - A system shown from its local readings alone gets no component devices.
 
+Tested in automated tests with the component list of my own K40 and with
+synthetic lists; not yet confirmed on a real installation.
+
 ### Privacy
 
 - Read and kept: type number, place number, version, product name, hardware
   type, update type, software identifier and the article number of the model
   of each component. A text equal to a serial number of the same row, or a
   name made only of digits, is left out.
-- Never read or kept: `No`, `ProductSerialNumber`, `ModuleSerialNumber`,
-  `ProductUuid`.
+- Never kept or shown by the plant model: `No`, `ProductSerialNumber`,
+  `ModuleSerialNumber`, `ProductUuid`; they are only compared to leave out
+  a text equal to them. The gateway's own device shows its serial number as
+  before (see [entities](entities.md#gateway-and-system)).
 - Versions, software identifiers and article numbers appear in the stored
   row and in the diagnostics (block `plant`, see
-  [diagnostics](diagnostics.md#plant-model)), never in entity attributes or
-  the log. With the optional component devices on, each such device also
-  shows the software version of its component.
+  [diagnostics](diagnostics.md#plant-model)), never in the attributes of the
+  heat generator sensor or in the log. The diagnostic sensor **Outdoor unit
+  software version** shows the version of the outdoor unit (since 0.9.2).
+  With the optional component devices on, each such device also shows the
+  software version of its component.
 - The anonymized inventory keeps only the plant kind.
 
 ## Deutsch
@@ -600,6 +611,10 @@ Widersprüche (nur in der Diagnose):
 Namen von Komponenten entscheiden nie etwas. Nur Einträge mit der Basis
 `rule`, `observed` oder `documented` können einer Komponente eine Rolle geben.
 
+Hybridanlage über eine Hybrid-Manager-Komponente: Getestet mit synthetischen
+Komponentenlisten; an einer echten Hybridanlage mit Hybrid-Manager noch nicht
+bestätigt (#138).
+
 ### Wärmeerzeuger-Sensor
 
 Der Wärmeerzeuger-Sensor jedes Gateways zeigt die Anlagenart mit ihren
@@ -700,17 +715,26 @@ Automationen mit dem Gerät des Gateways als Ziel bleiben unverändert.
 - Eine Anlage, die allein aus ihren lokalen Werten gezeigt wird, erhält keine
   Komponenten-Geräte.
 
+Getestet in automatisierten Tests mit der Komponentenliste meines eigenen
+K40-Gateways und mit synthetischen Listen; an einer echten Installation noch
+nicht bestätigt.
+
 ### Datenschutz
 
 - Gelesen und gespeichert: Typnummer, Platznummer, Version, Produktname,
   Hardwaretyp, Update-Typ, Software-Kennung und die Artikelnummer des Modells
   jeder Komponente. Ein Text, der einer Seriennummer derselben Zeile gleicht,
   oder ein Name nur aus Ziffern wird weggelassen.
-- Nie gelesen oder gespeichert: `No`, `ProductSerialNumber`,
-  `ModuleSerialNumber`, `ProductUuid`.
+- Vom Anlagenmodell nie gespeichert oder gezeigt: `No`,
+  `ProductSerialNumber`, `ModuleSerialNumber`, `ProductUuid`; sie werden
+  nur verglichen, um einen gleichen Text wegzulassen. Das Gerät des Gateways
+  zeigt seine Seriennummer wie bisher (siehe
+  [Entitäten](entities.md#gateway-and-system)).
 - Versionen, Software-Kennungen und Artikelnummern stehen in der
   gespeicherten Zeile und in der Diagnose (Block `plant`, siehe
-  [Diagnose](diagnostics.md#plant-model)), nie in Entitätsattributen oder im
-  Log. Mit eingeschalteten Komponenten-Geräten zeigt jedes dieser Geräte
-  zusätzlich die Softwareversion seiner Komponente.
+  [Diagnose](diagnostics.md#plant-model)), nie in den Attributen des
+  Wärmeerzeuger-Sensors oder im Log. Der Diagnosesensor **Außeneinheit –
+  Softwareversion** zeigt die Version der Außeneinheit (seit 0.9.2). Mit
+  eingeschalteten Komponenten-Geräten zeigt jedes dieser Geräte zusätzlich
+  die Softwareversion seiner Komponente.
 - Das anonymisierte Inventar behält nur die Anlagenart.

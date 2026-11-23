@@ -262,7 +262,11 @@ performance factors and the environmental energy of the heat pump use them
 for yesterday, the months and the years, and the import into the statistics
 takes them like the others (named for example *Heat pump – Total – Heat
 produced (system recording)*). On such a plant the period entities of the
-gateway's heat carry the attribute `heat_generator: boiler`.
+gateway's heat (total, heating, hot water) carry the attribute
+`heat_generator: boiler` when the heat pump reports counters of its own or
+at least one recording under its heat source has answered. A hybrid system
+without such counters whose `hs2` recordings have not answered (for
+example all with 404) gets no such attribute.
 
 Expected, untested on a real installation: the paths follow the local data
 port's list of recordings for the heat sources hs2 to hs6; an answer of a

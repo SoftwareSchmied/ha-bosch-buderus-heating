@@ -105,6 +105,17 @@ Room controller terms added in 0.9.0-alpha.5:
 | room influence | influenza dell'ambiente |
 | energy statistics, unit not confirmed | (kWh, non confermato) |
 
+System component terms added in 0.9.3-beta.6:
+
+| English | Italian |
+| --- | --- |
+| plant kind | tipo di impianto |
+| component, system components | componente, componenti dell'impianto |
+| hybrid manager | gestore ibrido |
+| fresh water station | modulo acqua calda sanitaria istantanea |
+| component devices | dispositivi dei componenti |
+| interface version (contract) | versione dell'interfaccia |
+
 Control names shorten the group with the abbreviation in brackets, for
 example "HC 1: Operating mode".
 

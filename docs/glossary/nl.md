@@ -109,6 +109,16 @@ Room controller terms added in 0.9.0-alpha.5:
 | radio device | radioapparaat |
 | energy statistics, unit not confirmed | (kWh, onbevestigd) |
 
+System component terms added in 0.9.3-beta.6:
+
+| English | Dutch |
+| --- | --- |
+| plant kind | installatietype |
+| component, system components | component, componenten van de installatie |
+| hybrid manager | hybride manager |
+| component devices | componentapparaten |
+| interface version (contract) | interfaceversie |
+
 Product, standard and preset names stay as they are: Home Comfort, Eco, Eco+,
 Boost, SG Ready, Smart Function, Power Guard, PV, SingleKey ID. Labels of the
 Chrome developer tools quoted in the sign-in steps stay in English.

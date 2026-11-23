@@ -340,7 +340,7 @@ Derived total values:
 | `/system/seasonOptimizer/mode` | Season switching | R/W when advertised | Select with individually advertised options; known codes: `off`, `automatic`, `forcedHeat`, `forcedCool` |
 | `/system/globalSeasonOptimizer/currentMode` | Current heating/cooling status | R | Actual status: `off`, `heating`, `cooling`; legacy mode codes remain recognized; disabled by default |
 | `/system/iSRC/supportStatus` | iSRC support | R | Static diagnostic status, disabled by default |
-| `/system/info` | System information | R | Static text diagnostic sensor with module names and versions; sanitized details as attributes, internal token fields discarded |
+| `/system/info` | System information | R | Static text diagnostic sensor with module names and versions; sanitized details as attributes, internal token fields discarded there. The plant model reads the type number (`Id`) and place (`Tok`) of each row: attribute `components` of the heat generator sensor, diagnostics block `plant` |
 | `/system/silentMode/enabled` | Silent mode | R/W | Select: Off, Automatic, On; only for the exact live capability |
 | `/system/sensors` | System sensors | R | Internal: discovery |
 | `/system/sensors/temperatures` | Temperature sensors | R | Internal: discovery |

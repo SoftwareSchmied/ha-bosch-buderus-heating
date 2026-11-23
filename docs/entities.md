@@ -508,8 +508,9 @@ read, and it writes its state only when what it shows changes. It shows the
 product name, the hardware type, the type number and the place of the
 modules (see [System components](system-components.md)). Versions are kept
 only in the diagnostics and in the private stored row of the plant model,
-never in the sensor's attributes or the log; serial numbers are never read,
-shown, stored or logged. Rows without a product name (the gateway, the user
+never in the sensor's attributes or the log; serial numbers are only
+compared to leave out a text equal to them and are never shown, stored or
+logged by the plant model. Rows without a product name (the gateway, the user
 interface) do not count as heat generators; since 0.9.3-beta.6 the
 components among them appear in `components`.
 
@@ -690,6 +691,9 @@ components:
 components_source: cloud
 components_table_version: 1
 ```
+
+Tested with a test case in the shape of the component list from #467; not
+yet confirmed on a real iCom heat pump (#467).
 
 On the installation of the example above, the new keys read
 `contract_version: 1`, `state_basis: product_name`, `plant_kind: heat_pump`

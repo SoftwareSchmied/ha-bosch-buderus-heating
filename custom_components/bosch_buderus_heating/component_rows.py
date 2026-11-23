@@ -2,14 +2,15 @@
 
 The cloud's ``/system/info`` and the local ``/system/basicInfo`` list the
 components of a system, one row each. A row gives the type number of the
-component (``Id``), its place (``Tok``, the place number on the bus), its
+component (``Id``), its place (``Tok``, the place number of a component), its
 software version, product name, hardware type, update type, software
 identifier and the article number of its model. Every field is checked and
 kept only in a safe form; a field that does not pass is left out.
 
-Never read: serial numbers (``No``, ``ProductSerialNumber``,
-``ModuleSerialNumber``) and ``ProductUuid``. A text equal to one of them
-(a serial number in a name or version field) is left out as well.
+Never kept or shown: serial numbers (``No``, ``ProductSerialNumber``,
+``ModuleSerialNumber``) and ``ProductUuid``; they are only compared, so that
+a text equal to one of them (a serial number in a name or version field) is
+left out as well.
 
 Pure logic without Home Assistant imports.
 """

@@ -37,7 +37,9 @@ The inventory contains only:
 - path templates containing `{hc}`, `{dhw}`, and `{hs}`;
 - data types, units, polling groups, and maturity levels;
 - writeability and the presence of limits or selectable values;
-- aggregated counts per capability class.
+- aggregated counts per capability class;
+- the plant kind of each gateway (`plant_kind`, schema 49), never its
+  components, versions or type values.
 
 It discards raw values, runtime and request metrics, discovery details, concrete
 diagnostic paths, display names, gateway and

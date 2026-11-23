@@ -205,6 +205,12 @@ applies to every text that uses it.
 | temperature offset | Temperatur-Offset | temperaturjustering | temperaturjustering | lämpötilakorjaus | temperaturjustering |
 | radio device | Funkgerät | radioenhet | radioenhet | radiolaite | radioenhed |
 | energy statistics, unit not confirmed | (kWh erwartet) | (kWh, ej bekräftat) | (kWh, ikke bekreftet) | (kWh, ei vahvistettu) | (kWh, ikke bekræftet) |
+| plant kind | Anlagenart | anläggningstyp | anleggstype | laitteistotyyppi | anlægstype |
+| component, system components | Komponente, Anlagenkomponenten | komponent, anläggningens komponenter | komponent, anleggets komponenter | komponentti, järjestelmän komponentit | komponent, anlæggets komponenter |
+| hybrid manager | Hybrid-Manager | hybridstyrning | hybridstyring | hybridiohjain | hybridmanager |
+| fresh water station | Frischwasserstation | färskvattenstation | ferskvannsstasjon | raikasvesiasema | ferskvandsstation |
+| component devices | Komponenten-Geräte | komponentenheter | komponentenheter | komponenttilaitteet | komponentenheder |
+| interface version (contract) | Schnittstellenversion | gränssnittsversion | grensesnittversjon | rajapinnan versio | grænsefladeversion |
 
 Control names shorten the group, for example "HC 1: Operating mode". The
 short forms are given in brackets in the first rows of the table.

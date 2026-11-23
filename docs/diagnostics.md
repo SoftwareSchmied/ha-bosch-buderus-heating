@@ -1101,9 +1101,12 @@ rest of the report stays complete.
   [targeted reads](#targeted-reads-in-the-discovery). They are written only
   when they change.
 
-A version, hardware type, software identifier or article number equal to a
-serial number of the same row is left out, as is a name field that holds a
-serial number or only digits. Serial numbers (`No`, `ProductSerialNumber`,
+A version, hardware type, update type, software identifier or article number
+equal to a serial number of the same row is left out, as is a name field
+that holds a serial number or only digits. A version, hardware type, update
+type, software identifier or article number with a control or other
+unprintable character is dropped as a whole, and so is a version longer than
+64 characters (never shown cut). Serial numbers (`No`, `ProductSerialNumber`,
 `ModuleSerialNumber`), `ProductUuid`, gateway IDs and entry IDs are never
 part of the block. Because versions and type values are included, the
 privacy block then sets `contains_raw_resource_values: true` with
@@ -1430,7 +1433,7 @@ These fields are separate from the `plant` block:
   was `found`; `remote_places` (components at places 56 to 59) and
   `heating_circuits_listed`.
 - `module_probes`: `active` and `inactive_reason` (`icom`,
-  `room_controller`, `water_softener`, `search_for_missing_parts`),
+  `room_controller`, `water_softener`, `search_for_missing_parts`, `error`),
   `limit` (48), `planned`, `over_limit`, `never_read`; per rule (`R1` to
   `R6`) in `rules` its `area`, the `evidence` (`outdoor_status_connected`,
   `tok83_id248`, `tok83_id16`, `system_type_ehybrid`, `tok17`, `tok48`,
