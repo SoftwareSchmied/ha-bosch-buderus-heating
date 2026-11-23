@@ -1179,6 +1179,7 @@
       "icom_busy": "The gateway is busy. Try again in a few minutes.",
       "icom_no_identity": "The gateway could not be matched with the system: it reports no usable ID, and its values do not agree closely enough with the cloud values. Try again in a few minutes.",
       "icom_other_gateway": "This is not the gateway of the selected system. Check the address.",
+      "invalid_icom_identity": "The gateway was recognised, but the ID it reports could not be stored in a usable form. Nothing was changed. Try again; if this message stays, please report it.",
       "icom_invalid_host": "Enter an IP address or hostname of your home network.",
       "invalid_gateway_password": "Enter the gateway password from the device sticker.",
       "invalid_private_password": "Enter the private password from the device app."

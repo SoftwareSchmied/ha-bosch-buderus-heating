@@ -1179,6 +1179,7 @@
       "icom_busy": "La passerelle est occupée. Réessayez dans quelques minutes.",
       "icom_no_identity": "La passerelle n'a pas pu être associée à l'installation : elle ne communique pas d'identifiant utilisable, et ses valeurs ne concordent pas assez avec celles du cloud. Réessayez dans quelques minutes.",
       "icom_other_gateway": "Ce n'est pas la passerelle de l'installation sélectionnée. Vérifiez l'adresse.",
+      "invalid_icom_identity": "La passerelle a été reconnue, mais l'identifiant qu'elle communique n'a pas pu être enregistré sous une forme utilisable. Rien n'a été modifié. Réessayez ; si le message persiste, signalez le problème.",
       "icom_invalid_host": "Saisissez une adresse IP ou un nom d'hôte de votre réseau domestique.",
       "invalid_gateway_password": "Saisissez le mot de passe de la passerelle figurant sur l'étiquette.",
       "invalid_private_password": "Saisissez le mot de passe privé de l'application de l'appareil."

@@ -1179,6 +1179,7 @@
       "icom_busy": "Brána je zaneprázdněná. Zkuste to znovu za několik minut.",
       "icom_no_identity": "Bránu nelze přiřadit k soustavě: nehlásí použitelné ID a její hodnoty se dostatečně přesně neshodují s hodnotami z cloudu. Zkuste to znovu za pár minut.",
       "icom_other_gateway": "Toto není brána vybrané soustavy. Zkontrolujte adresu.",
+      "invalid_icom_identity": "Brána byla rozpoznána, ale ID, které hlásí, nelze uložit v použitelné podobě. Nic nebylo změněno. Zkuste to znovu; pokud zpráva zůstane, nahlaste prosím problém.",
       "icom_invalid_host": "Zadejte IP adresu nebo název hostitele ve své domácí síti.",
       "invalid_gateway_password": "Zadejte heslo brány ze štítku na zařízení.",
       "invalid_private_password": "Zadejte soukromé heslo z aplikace zařízení."

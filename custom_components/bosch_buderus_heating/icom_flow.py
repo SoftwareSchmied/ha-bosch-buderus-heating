@@ -47,6 +47,7 @@ _FORM_ERRORS = frozenset(
         "icom_no_identity",
         "icom_other_gateway",
         "icom_invalid_host",
+        "invalid_icom_identity",
         "invalid_gateway_password",
         "invalid_private_password",
     }

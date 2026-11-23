@@ -1179,6 +1179,7 @@
       "icom_busy": "Brama jest zajęta. Spróbuj ponownie za kilka minut.",
       "icom_no_identity": "Nie można przypisać bramy do instalacji: nie podaje użytecznego identyfikatora, a jej wartości nie zgadzają się dostatecznie dokładnie z wartościami z chmury. Spróbuj ponownie za kilka minut.",
       "icom_other_gateway": "To nie jest brama wybranej instalacji. Sprawdź adres.",
+      "invalid_icom_identity": "Brama została rozpoznana, ale podawanego przez nią identyfikatora nie udało się zapisać w użytecznej postaci. Nic nie zostało zmienione. Spróbuj ponownie; jeśli komunikat nie zniknie, zgłoś problem.",
       "icom_invalid_host": "Podaj adres IP lub nazwę hosta w swojej sieci domowej.",
       "invalid_gateway_password": "Podaj hasło bramy z naklejki na urządzeniu.",
       "invalid_private_password": "Podaj hasło prywatne z aplikacji urządzenia."

@@ -1179,6 +1179,7 @@
       "icom_busy": "De gateway is bezet. Probeer het over enkele minuten opnieuw.",
       "icom_no_identity": "De gateway kon niet aan de installatie worden gekoppeld: hij meldt geen bruikbaar ID en zijn waarden komen niet nauwkeurig genoeg overeen met de cloudwaarden. Probeer het over een paar minuten opnieuw.",
       "icom_other_gateway": "Dit is niet de gateway van de gekozen installatie. Controleer het adres.",
+      "invalid_icom_identity": "De gateway is herkend, maar het ID dat hij meldt kon niet in een bruikbare vorm worden opgeslagen. Er is niets gewijzigd. Probeer het opnieuw; blijft de melding staan, meld het probleem dan.",
       "icom_invalid_host": "Voer een IP-adres of hostnaam van je thuisnetwerk in.",
       "invalid_gateway_password": "Voer het gatewaywachtwoord van het etiket op het apparaat in.",
       "invalid_private_password": "Voer het privéwachtwoord van de apparaat-app in."

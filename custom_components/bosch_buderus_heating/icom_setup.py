@@ -246,10 +246,11 @@ async def verify_icom_access(
         )
         check["uuid_matches_cloud"] = matching is not None
         # Kept to check later: an ID with spaces, a line break or other
-        # unreadable characters is kept as the matching ID of the cloud
-        # (both compare the same).
+        # unreadable characters is kept as the matching ID of the cloud, or
+        # as its comparable form when the cloud reports it the same way (all
+        # compare the same).
         if matching is not None and not _storable_id(own_id):
-            own_id = matching
+            own_id = matching if _storable_id(matching) else comparable_id(own_id)
     if own_id is None or check["uuid_matches_cloud"] is not True:
         # No ID, an unusable one (empty, a number, "-1") or another one than
         # the cloud's: compare values.

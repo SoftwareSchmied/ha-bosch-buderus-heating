@@ -1179,6 +1179,7 @@
       "icom_busy": "Prehod je zaseden. Poskusi znova čez nekaj minut.",
       "icom_no_identity": "Prehoda ni mogoče povezati s sistemom: ne sporoča uporabnega ID, njegove vrednosti pa se ne ujemajo dovolj natančno z vrednostmi iz oblaka. Poskusi znova čez nekaj minut.",
       "icom_other_gateway": "To ni prehod izbranega sistema. Preveri naslov.",
+      "invalid_icom_identity": "Prehod je bil prepoznan, vendar ID-ja, ki ga sporoča, ni bilo mogoče shraniti v uporabni obliki. Nič ni bilo spremenjeno. Poskusi znova; če sporočilo ostane, prijavi težavo.",
       "icom_invalid_host": "Vnesi naslov IP ali ime gostitelja v svojem domačem omrežju.",
       "invalid_gateway_password": "Vnesi geslo prehoda z nalepke na napravi.",
       "invalid_private_password": "Vnesi zasebno geslo iz aplikacije naprave."

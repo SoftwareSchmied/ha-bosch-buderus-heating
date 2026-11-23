@@ -1179,6 +1179,7 @@
       "icom_busy": "Il gateway è occupato. Riprova tra qualche minuto.",
       "icom_no_identity": "Il gateway non può essere associato all'impianto: non comunica un ID utilizzabile e i suoi valori non coincidono abbastanza con quelli del cloud. Riprova tra qualche minuto.",
       "icom_other_gateway": "Questo non è il gateway dell'impianto selezionato. Controlla l'indirizzo.",
+      "invalid_icom_identity": "Il gateway è stato riconosciuto, ma l'ID che comunica non può essere salvato in una forma utilizzabile. Non è stato modificato nulla. Riprova; se il messaggio rimane, segnala il problema.",
       "icom_invalid_host": "Inserisci un indirizzo IP o un nome host della tua rete domestica.",
       "invalid_gateway_password": "Inserisci la password del gateway riportata sull'etichetta del dispositivo.",
       "invalid_private_password": "Inserisci la password privata dell'app del dispositivo."

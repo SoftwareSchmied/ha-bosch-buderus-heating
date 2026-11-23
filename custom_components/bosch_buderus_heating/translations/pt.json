@@ -1179,6 +1179,7 @@
       "icom_busy": "O gateway está ocupado. Tente novamente dentro de alguns minutos.",
       "icom_no_identity": "Não foi possível associar o gateway à instalação: não indica um ID utilizável e os seus valores não coincidem o suficiente com os da cloud. Tente novamente dentro de alguns minutos.",
       "icom_other_gateway": "Este não é o gateway da instalação selecionada. Verifique o endereço.",
+      "invalid_icom_identity": "O gateway foi reconhecido, mas o ID que indica não pôde ser guardado numa forma utilizável. Nada foi alterado. Tente novamente; se a mensagem se mantiver, comunique o problema.",
       "icom_invalid_host": "Introduza um endereço IP ou nome de anfitrião da sua rede doméstica.",
       "invalid_gateway_password": "Introduza a palavra-passe do gateway da etiqueta do aparelho.",
       "invalid_private_password": "Introduza a palavra-passe privada da aplicação do aparelho."

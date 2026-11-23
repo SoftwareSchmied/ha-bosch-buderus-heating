@@ -1179,6 +1179,7 @@
       "icom_busy": "Tá an geata gnóthach. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_no_identity": "Níorbh fhéidir an geata a mheaitseáil leis an gcóras: ní thuairiscíonn sé aitheantas úsáidte, agus ní réitíonn a luachanna go leor le luachanna na scamall. Bain triail eile as i gceann cúpla nóiméad.",
       "icom_other_gateway": "Ní hé seo geata an chórais roghnaithe. Seiceáil an seoladh.",
+      "invalid_icom_identity": "Aithníodh an geata, ach níorbh fhéidir an t-aitheantas a thuairiscíonn sé a shábháil i bhfoirm inúsáidte. Níor athraíodh aon rud. Bain triail eile as; má fhanann an teachtaireacht, tuairiscigh an fhadhb le do thoil.",
       "icom_invalid_host": "Cuir isteach seoladh IP nó óstainm de do líonra baile.",
       "invalid_gateway_password": "Cuir isteach pasfhocal an gheata ó lipéad an ghléis.",
       "invalid_private_password": "Cuir isteach an pasfhocal príobháideach ó aip an ghléis."

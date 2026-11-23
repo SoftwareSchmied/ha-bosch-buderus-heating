@@ -1179,6 +1179,7 @@
       "icom_busy": "La pasarela está ocupada. Inténtelo de nuevo en unos minutos.",
       "icom_no_identity": "No se pudo asignar la pasarela a la instalación: no informa de un ID utilizable y sus valores no coinciden lo bastante con los de la nube. Inténtelo de nuevo en unos minutos.",
       "icom_other_gateway": "Esta no es la pasarela de la instalación seleccionada. Compruebe la dirección.",
+      "invalid_icom_identity": "Se reconoció la pasarela, pero el ID que informa no se pudo guardar de forma utilizable. No se ha cambiado nada. Inténtelo de nuevo; si el mensaje persiste, informe del problema.",
       "icom_invalid_host": "Introduzca una dirección IP o un nombre de host de su red doméstica.",
       "invalid_gateway_password": "Introduzca la contraseña de la pasarela de la etiqueta del aparato.",
       "invalid_private_password": "Introduzca la contraseña privada de la aplicación del aparato."

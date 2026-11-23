@@ -1179,6 +1179,7 @@
       "icom_busy": "Gatewayen är upptagen. Försök igen om några minuter.",
       "icom_no_identity": "Gatewayen kunde inte kopplas till anläggningen: den rapporterar inget användbart ID och dess värden stämmer inte tillräckligt väl med molnets värden. Försök igen om några minuter.",
       "icom_other_gateway": "Det här är inte gatewayen för den valda anläggningen. Kontrollera adressen.",
+      "invalid_icom_identity": "Gatewayen kändes igen, men det ID den rapporterar kunde inte sparas i en användbar form. Inget ändrades. Försök igen; om meddelandet finns kvar, rapportera problemet.",
       "icom_invalid_host": "Ange en IP-adress eller ett värdnamn i ditt hemnätverk.",
       "invalid_gateway_password": "Ange gatewaylösenordet från enhetens etikett.",
       "invalid_private_password": "Ange det privata lösenordet från enhetsappen."

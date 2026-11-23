@@ -1179,6 +1179,7 @@
       "icom_busy": "Yhdyskäytävä on varattu. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_no_identity": "Yhdyskäytävää ei voitu yhdistää järjestelmään: se ei ilmoita käyttökelpoista tunnusta, eivätkä sen arvot täsmää riittävän tarkasti pilven arvoihin. Yritä uudelleen muutaman minuutin kuluttua.",
       "icom_other_gateway": "Tämä ei ole valitun järjestelmän yhdyskäytävä. Tarkista osoite.",
+      "invalid_icom_identity": "Yhdyskäytävä tunnistettiin, mutta sen ilmoittamaa tunnusta ei voitu tallentaa käyttökelpoisessa muodossa. Mitään ei muutettu. Yritä uudelleen; jos ilmoitus ei poistu, ilmoita ongelmasta.",
       "icom_invalid_host": "Anna kotiverkkosi IP-osoite tai isäntänimi.",
       "invalid_gateway_password": "Anna laitteen tarrassa oleva yhdyskäytävän salasana.",
       "invalid_private_password": "Anna laitesovelluksen yksityinen salasana."

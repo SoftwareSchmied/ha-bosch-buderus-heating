@@ -245,6 +245,71 @@ async def test_the_cloud_s_id_with_spaces_is_set_up_and_stored_in_a_usable_form(
     assert access.confirms(reported)
 
 
+async def _save_in_dialog(hass, gateway, monkeypatch, *, cloud_ids=(), verify=None):
+    """Fill in the iCom dialog once; the simulated gateway on its own port."""
+    import custom_components.bosch_buderus_heating.icom_flow as dialog
+
+    entry, management, _cloud, target = registered(hass)
+    manager, result = await open_icom(hass, entry)
+    original = icom_setup.verify_icom_access
+
+    async def on_test_port(*args, **kwargs):
+        return await original(*args, **{**kwargs, "port": gateway.port})
+
+    monkeypatch.setattr(dialog, "verify_icom_access", verify or on_test_port)
+    monkeypatch.setattr(dialog, "cloud_gateway_ids", lambda *_args: cloud_ids)
+    done = await manager.async_configure(
+        result["flow_id"],
+        {
+            "host": "127.0.0.1",
+            "gateway_password": GATEWAY_PASSWORD,
+            "private_password": PRIVATE_PASSWORD,
+        },
+    )
+    return done, management, target
+
+
+@pytest.mark.parametrize("reported", ["ab 99 77\n", "AB-99-77 ", "ab\t9977"])
+async def test_an_id_the_cloud_also_reports_with_spaces_is_stored_in_a_usable_form(
+    hass, supported, gateway, monkeypatch, reported
+):
+    # The gateway's own ID is not the cloud's gateway ID, but the cloud's
+    # reading of the same path, and both have spaces or a line break: the
+    # access is saved by this ID in its comparable form and loads.
+    gateway.value(UUID_PATH, reported)
+    done, management, _target = await _save_in_dialog(
+        hass, gateway, monkeypatch, cloud_ids=(reported,)
+    )
+    assert await outcome(hass, done) == "icom_connected"
+    data = next(
+        c.to_data()
+        for c in management.current().connections.values()
+        if "icom_access" in c.to_data()
+    )
+    access = load_icom_access(data)
+    assert access.identity_method == "uuid"
+    assert access.local_id == "ab9977"
+    assert access.confirms(reported) and not access.confirms("ab9978")
+
+
+async def test_an_id_that_cannot_be_stored_has_a_message_of_its_own(
+    hass, supported, gateway, monkeypatch
+):
+    # Should a checked ID still not be storable, the dialog says so instead
+    # of naming the connection, and nothing is saved.
+    async def unstorable(*_args, target_id, **_kwargs):
+        return proof(target_id, local_id="ab 99 77")
+
+    done, management, _target = await _save_in_dialog(
+        hass, gateway, monkeypatch, verify=unstorable
+    )
+    assert done["step_id"] == "icom_access"
+    assert done["errors"] == {"base": "invalid_icom_identity"}
+    assert not any(
+        "icom_access" in c.to_data() for c in management.current().connections.values()
+    )
+
+
 # ----------------------------------------------------------- stored access
 
 

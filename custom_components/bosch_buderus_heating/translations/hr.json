@@ -1179,6 +1179,7 @@
       "icom_busy": "Pristupnik je zauzet. Pokušaj ponovno za nekoliko minuta.",
       "icom_no_identity": "Pristupnik se ne može povezati sa sustavom: ne javlja upotrebljiv ID, a njegove se vrijednosti ne podudaraju dovoljno točno s vrijednostima iz clouda. Pokušaj ponovno za nekoliko minuta.",
       "icom_other_gateway": "Ovo nije pristupnik odabranog sustava. Provjeri adresu.",
+      "invalid_icom_identity": "Pristupnik je prepoznat, ali ID koji javlja nije se mogao spremiti u upotrebljivom obliku. Ništa nije promijenjeno. Pokušaj ponovno; ako poruka ostane, prijavi problem.",
       "icom_invalid_host": "Unesi IP adresu ili naziv hosta u svojoj kućnoj mreži.",
       "invalid_gateway_password": "Unesi lozinku pristupnika s naljepnice na uređaju.",
       "invalid_private_password": "Unesi privatnu lozinku iz aplikacije uređaja."

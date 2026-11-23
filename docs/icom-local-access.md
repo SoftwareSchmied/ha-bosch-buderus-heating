@@ -45,8 +45,9 @@ and a read-back as before. German version: [icom-local-access.de.md](icom-local-
 4. Enter the address, the gateway password and the private password.
 
 The setup reads the gateway's own ID once. If it is the gateway ID the cloud
-knows for that system, the gateway is recognised by it. A wrong password is
-named separately.
+knows for that system, the gateway is recognised by it. Spaces, separators,
+line breaks and letter case in the ID do not count, and it is kept without
+spaces. A wrong password is named separately.
 
 How a gateway's own ID relates to the cloud's is not known for every gateway.
 So if the gateway reports no usable ID (none at all, empty or a placeholder such
@@ -157,6 +158,7 @@ access on again.
 | No private password stored | The gateway answers as one whose private password was reset. Set it once in the old device app (phone in the same Wi-Fi as the gateway), then try again. The connection test of an existing access names this too. |
 | The gateway is busy | It answered with an overload message; try again later. |
 | Not the gateway of the selected system | The gateway's own ID is not the cloud's, and its values clearly contradict the cloud's (another version, type or brand, or a live value far off). |
+| The ID could not be stored | The gateway was recognised, but its ID could not be kept in a usable form. Nothing was changed; please report it. |
 
 ## Reporting
 

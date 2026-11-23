@@ -1179,6 +1179,7 @@
       "icom_busy": "Das Gateway ist ausgelastet. Versuche es in ein paar Minuten erneut.",
       "icom_no_identity": "Das Gateway lässt sich der Anlage nicht zuordnen: Es meldet keine brauchbare Kennung, und seine Werte stimmen nicht genau genug mit den Cloud-Werten überein. Versuche es in ein paar Minuten erneut.",
       "icom_other_gateway": "Das ist nicht das Gateway der gewählten Anlage. Prüfe die Adresse.",
+      "invalid_icom_identity": "Das Gateway wurde erkannt, aber die gemeldete Kennung ließ sich nicht in brauchbarer Form speichern. Es wurde nichts geändert. Versuche es erneut; bleibt die Meldung, melde das Problem bitte.",
       "icom_invalid_host": "Gib eine IP-Adresse oder einen Hostnamen deines Heimnetzes ein.",
       "invalid_gateway_password": "Gib das Gateway-Passwort vom Geräteaufkleber ein.",
       "invalid_private_password": "Gib das private Passwort aus der Geräte-App ein."

@@ -46,7 +46,9 @@ Rücklesen wie bisher. Englische Fassung: [icom-local-access.md](icom-local-acce
 
 Die Einrichtung liest einmal die eigene Kennung des Gateways. Ist sie die
 Gateway-Kennung, die die Cloud für diese Anlage kennt, wird das Gateway daran
-erkannt. Ein falsches Passwort wird gesondert genannt.
+erkannt. Leerzeichen, Trennzeichen, Zeilenumbrüche und Groß-/Kleinschreibung in
+der Kennung zählen nicht, gespeichert wird sie ohne Leerzeichen. Ein falsches
+Passwort wird gesondert genannt.
 
 Wie die eigene Kennung eines Gateways mit der der Cloud zusammenhängt, ist nicht
 für jedes Gateway bekannt. Meldet das Gateway deshalb keine brauchbare Kennung
@@ -169,6 +171,7 @@ wieder ein.
 | Kein privates Passwort gespeichert | Das Gateway antwortet wie eines, dessen privates Passwort zurückgesetzt wurde. Lege es einmal in der alten Geräte-App fest (Handy im selben WLAN wie das Gateway) und versuche es dann erneut. Auch der Verbindungstest eines bestehenden Zugangs nennt das. |
 | Das Gateway ist ausgelastet | Es hat mit einer Überlastungsmeldung geantwortet; später erneut versuchen. |
 | Nicht das Gateway der gewählten Anlage | Die eigene Kennung des Gateways ist nicht die der Cloud, und seine Werte widersprechen den Cloud-Werten eindeutig (andere Version, anderer Typ oder andere Marke oder ein weit abweichender Livewert). |
+| Die Kennung ließ sich nicht speichern | Das Gateway wurde erkannt, seine Kennung ließ sich aber nicht in brauchbarer Form speichern. Es wurde nichts geändert; bitte melde das. |
 
 ## Rückmeldung
 
