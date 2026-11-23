@@ -13,6 +13,11 @@ The heat pump's own series of a hybrid system (``heat_source``) have
 measures, with the compressor alone as their electricity, but no entities:
 the performance factors use them (``RecordingsView``), and the import
 names their statistics.
+
+The series of a heat pump behind an iCom gateway (``monitoring_total_...``)
+have the measures of the total (heat, compressor, heater and their sum as
+electricity) without a counter of the integration: no *(calculated)*
+companion. A series read for the diagnostics only has no measure.
 """
 
 from __future__ import annotations
@@ -24,7 +29,15 @@ from typing import Final
 
 from ..i18n import localize
 from .periods import Period
-from .series import BY_KEY, MODES, Quantity, Series
+from .series import (
+    BY_KEY,
+    ICOM_HEAT_PUMP_SERIES,
+    MODES,
+    REQUIRES_ICOM_HEAT_PUMP,
+    Quantity,
+    Series,
+    kind_slug,
+)
 
 RECORDING: Final = "recording"
 CALCULATED: Final = "calculated"
@@ -133,10 +146,25 @@ class EntitySpec:
 
     @property
     def enabled_default(self) -> bool:
-        return self.primary and self.measure.key in ("total_heat", "total_electricity")
+        return self.primary and self.measure.key in _ENABLED
+
+
+# The measures whose primary entities are enabled by default.
+_ENABLED: Final = frozenset(
+    {
+        "total_heat",
+        "total_electricity",
+        "monitoring_total_heat",
+        "monitoring_total_electricity",
+    }
+)
+# The electricity of a heat pump behind an iCom gateway: compressor and heater.
+_MONITORING_ELECTRICITY: Final = "monitoring_total_electricity"
 
 
 def _kind_slug(series: Series) -> str:
+    if series.requires == REQUIRES_ICOM_HEAT_PUMP:
+        return kind_slug(series.kind) or series.kind
     if series.heat_source is not None:
         return series.key.removeprefix(f"{series.heat_source}_{series.mode}_")
     if series.mode:
@@ -182,7 +210,7 @@ def measures(available: Iterable[str]) -> tuple[Measure, ...]:
     found: list[Measure] = []
     for key in sorted(keys):
         series = BY_KEY.get(key)
-        if series is None:
+        if series is None or series.diagnostic:
             continue
         kind = _kind_slug(series)
         if series.heat_source is not None:
@@ -211,8 +239,28 @@ def measures(available: Iterable[str]) -> tuple[Measure, ...]:
                 series.quantity,
                 (key,),
                 _path_id(series.path),
-                _counter(series.mode, kind),
+                None
+                if series.requires == REQUIRES_ICOM_HEAT_PUMP
+                else _counter(series.mode, kind),
                 primary,
+            )
+        )
+    monitoring = tuple(
+        item.key
+        for item in ICOM_HEAT_PUMP_SERIES
+        if item.kind in ("compressor", "eheater") and item.key in keys
+    )
+    if monitoring:
+        found.append(
+            Measure(
+                _MONITORING_ELECTRICITY,
+                "total",
+                "electricity",
+                Quantity.ENERGY,
+                monitoring,
+                "heatSources:total:energyMonitoring:electricity",
+                None,
+                RECORDING,
             )
         )
     for mode in MODES:

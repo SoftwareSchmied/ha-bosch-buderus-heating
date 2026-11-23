@@ -313,6 +313,12 @@ def is_cloud_recording(payload: object) -> bool:
     )
 
 
+def cloud_unit(payload: object) -> str | None:
+    """The unit a cloud answer names (``unitOfMeasure``), as it is."""
+    unit = payload.get("unitOfMeasure") if isinstance(payload, dict) else None
+    return unit if isinstance(unit, str) else None
+
+
 def parse_cloud(
     payload: object, series: Series, interval: str, zone: tzinfo
 ) -> Parsed | None:

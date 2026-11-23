@@ -54,6 +54,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
+import re
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -79,6 +80,7 @@ from .gating import (
     allowed_keys,
     heat_pump_keys,
     heat_pump_source,
+    icom_heat_pump,
     softener_plant,
 )
 from .ledger import CLOUD, LOCAL, DailyValue, Ledger
@@ -97,6 +99,7 @@ from .parse import (
     MAX_KWH_PER_HOUR,
     Rate,
     add_months,
+    cloud_unit,
     is_cloud_recording,
     local_midnight,
     month_start,
@@ -156,6 +159,8 @@ VALUES_DELAY: Final = 1.0
 # much later: a past hour counts only after two reads with the same value
 # (rule 5), so yesterday is shown then instead of after the hourly run.
 CONFIRM_DELAY: Final = 300.0
+# A unit text shown in the diagnostics.
+_UNIT: Final = re.compile(r"[A-Za-z0-9 _./%°³²-]{1,16}")
 _MANAGERS: HassKey[dict[tuple[str, str], RecordingsManager]] = HassKey(
     f"{DOMAIN}_recordings"
 )
@@ -245,6 +250,9 @@ class RecordingsManager:
         self._cloud_read_at: dict[str, float] = {}
         # Cloud paths left out after a failed read, until then (not stored).
         self._cloud_deferred: dict[str, float] = {}
+        # The unit a recording answered in, per path, when it was not taken
+        # (``unit``) or read for the diagnostics only (stored).
+        self.unit_texts: dict[str, str] = {}
         # The day of the last cloud rate limit: no back-fill until the next.
         self._cloud_limited: date | None = None
         self._cloud_runs_ok = 0
@@ -437,6 +445,12 @@ class RecordingsManager:
         )
         last = data.get("last_local_ok")
         self.last_local_ok = float(last) if isinstance(last, int | float) else None
+        units = data.get("units")
+        self.unit_texts = {
+            path: text
+            for path, text in (units.items() if isinstance(units, dict) else ())
+            if path in BY_PATH and isinstance(text, str) and _unit_text(text) == text
+        }
 
     def _data(self) -> dict[str, Any]:
         return {
@@ -446,6 +460,7 @@ class RecordingsManager:
             "published": self.published,
             "cloud_done": sorted(self.cloud_done),
             "last_local_ok": self.last_local_ok,
+            "units": dict(sorted(self.unit_texts.items())),
         }
 
     def _save(self) -> None:
@@ -585,7 +600,10 @@ class RecordingsManager:
         reachable, no local reading yet); stored answers anchor the run then.
         """
         return any(
-            row and row[0] == "ok" and not path.startswith(SOFTENER_CIRCUIT)
+            row
+            and row[0] == "ok"
+            and not path.startswith(SOFTENER_CIRCUIT)
+            and not (path in BY_PATH and BY_PATH[path].diagnostic)
             for known in (self.local_paths, self.cloud_paths)
             for path, row in known.items()
         )
@@ -850,6 +868,7 @@ class RecordingsManager:
             parsed = parse_local(answer.data, series, zone)
             if parsed is None:
                 self.local_paths[path] = ["unit", read_at.timestamp()]
+                self._note_unit(path, getattr(answer.data, "unit", None))
                 return False
             self._ledger(series).merge(
                 parsed, LOCAL, read_at=read_at, zone=zone, full_history=whole
@@ -934,6 +953,11 @@ class RecordingsManager:
             )
             and (CLOUD, series.path) not in self._forbidden
             and (self.cloud_paths.get(series.path) or [None])[0] != "unit"
+            # A series for the diagnostics only: until it answered once.
+            and not (
+                series.diagnostic
+                and (self.cloud_paths.get(series.path) or [None])[0] == "ok"
+            )
             and self._cloud_deferred.get(series.path, 0.0) <= now.timestamp()
         ]
 
@@ -948,6 +972,10 @@ class RecordingsManager:
         yesterday = today - timedelta(days=1)
         tasks: list[tuple[Series, str, Rate]] = []
         for series in self._cloud_candidates(now, exclusive):
+            if series.diagnostic:
+                # Its state and unit only: one day, until it answers.
+                tasks.append((series, yesterday.isoformat(), Rate.HOUR))
+                continue
             if series.key in running:
                 tasks.append((series, today.isoformat(), Rate.HOUR))
             if series.key in needed or series.path not in self.cloud_paths:
@@ -965,7 +993,7 @@ class RecordingsManager:
         later: list[tuple[Series, str, Rate]] = []
         first = month_start(today)
         for series in self._cloud_candidates(now, exclusive):
-            if series.key not in needed:
+            if series.key not in needed or series.diagnostic:
                 continue
             for month in (first, add_months(first, -1)):
                 later.append((series, f"{month.year:04d}-{month.month:02d}", Rate.DAY))
@@ -1120,6 +1148,12 @@ class RecordingsManager:
                 parsed = parse_cloud(answer.data, series, interval, zone)
                 if parsed is None:
                     self.cloud_paths[series.path] = ["unit", read_at.timestamp()]
+                    self._note_unit(series.path, cloud_unit(answer.data))
+                    continue
+                if series.diagnostic:
+                    # Read for its state and unit only: no values are kept.
+                    self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
+                    self._note_unit(series.path, cloud_unit(answer.data))
                     continue
                 self._ledger(series).merge(parsed, CLOUD, read_at=read_at, zone=zone)
                 self.cloud_paths[series.path] = ["ok", read_at.timestamp()]
@@ -1155,6 +1189,12 @@ class RecordingsManager:
             item for item in self.cloud_done if item.rpartition("|")[2] >= limit
         }
         return succeeded
+
+    def _note_unit(self, path: str, unit: object) -> None:
+        """Keep the unit a recording answered in, as a safe text."""
+        text = _unit_text(unit)
+        if text is not None:
+            self.unit_texts[path] = text
 
     # -------------------------------------------------------------- import
     def recorder_ready(self) -> bool:
@@ -1580,6 +1620,9 @@ class RecordingsManager:
                 if (CLOUD, item.path) in self._forbidden
                 else (cloud[0] if cloud else None),
             }
+            if item.path in self.unit_texts:
+                # The unit of an answer not taken, or of a diagnostic series.
+                report["unit"] = self.unit_texts[item.path]
             if ledger is not None:
                 first = ledger.first_day()
                 imp = ledger.imp
@@ -1607,6 +1650,9 @@ class RecordingsManager:
         if source is not None:
             # A hybrid system: the heat pump's own series are read too.
             found["heat_pump_source"] = source
+        if icom_heat_pump(self.coordinator()):
+            # A heat pump behind an iCom gateway: its own energy series.
+            found["icom_heat_pump"] = True
         return found | {
             "confirmation": "unconfirmed",
             "import_enabled": import_enabled(self.entry),
@@ -1646,6 +1692,13 @@ class RecordingsManager:
             ],
             "series": series,
         }
+
+
+def _unit_text(value: object) -> str | None:
+    """A unit as a safe text (``other`` for anything else); None without one."""
+    if not isinstance(value, str) or not value:
+        return None
+    return value if _UNIT.fullmatch(value) else "other"
 
 
 def _paths(value: object) -> dict[str, list[Any]]:

@@ -119,6 +119,12 @@ def test_the_series_without_a_local_path_stay_out_of_the_local_catalogue() -> No
         "ch_actual_power",
         "dhw_actual_power",
         "total_consumed",
+        # A heat pump behind an iCom gateway (and its solar yield, read for
+        # the diagnostics only).
+        "monitoring_total_heat",
+        "monitoring_total_compressor",
+        "monitoring_total_eheater",
+        "sc1_solar_yield",
     }
     assert all(item.cloud_only and item.requires for item in CLOUD_ONLY)
     assert not any(item.path in LOCAL_PATHS for item in CLOUD_ONLY)

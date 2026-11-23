@@ -165,7 +165,8 @@ controller and every plant without the matching readings are not asked for
 these paths. A heat pump of an older firmware without `/heatSources/emon` that
 shows a heat pump reading counts as a boiler here: its three boiler paths are
 asked (a 404 is remembered, at most one read per path and day), and an entity
-exists only for a path that answers.
+exists only for a path that answers. A heat pump behind an iCom gateway is
+the exception (see [the next section](#the-heat-pump-behind-an-icom-gateway)).
 
 | Recording | Asked on a plant with | Unit accepted | Name |
 |---|---|---|---|
@@ -194,6 +195,40 @@ hour, day and month, as for the heat pump) follow the recordings the
 manufacturer's app reads; if a plant answers in another form, the series is
 discarded (`unit` or a count mismatch in the diagnostics) rather than shown
 wrongly. Please report such a case on GitHub with the diagnostics.
+
+## The heat pump behind an iCom gateway
+
+A heat pump behind an iCom gateway records its energy under the energy
+monitoring instead of the paths of a K30 or K40 heat pump:
+
+| Recording | Name |
+|---|---|
+| `/recordings/heatSources/total/energyMonitoring/outputProduced` | *Total – Heat produced* |
+| `/recordings/heatSources/total/energyMonitoring/compressor` | *Total – Compressor electricity* |
+| `/recordings/heatSources/total/energyMonitoring/eheater` | *Total – Electric heater electricity* |
+
+They are read from the cloud for an iCom gateway whose plant kind is
+`heat_pump` (the heat source type `hs1/type` reports a heat pump, see
+[system components](system-components.md)); the three boiler paths are then
+not asked. An iCom boiler, an iCom gateway whose plant kind is not known yet
+and every other gateway read exactly as before. Each recording that answers
+becomes the five period entities, and the electricity (compressor plus
+heater) a measure of its own; enabled by default are the heat produced and
+the electricity, as on a K40. There is no counter of the integration for
+them, so there is no *(calculated)* companion. A path that answers 404 is
+asked again once a day; one in a unit other than kWh, Wh or MWh gives no
+entity, and the diagnostics show the unit it answered in. The minute form
+is taken as for the consumed energy above.
+
+On such a plant the solar yield of the first solar circuit
+(`/recordings/solarCircuits/sc1/solarYield`) is read as well, for the
+diagnostics only: its state and unit, no entity, no statistic. It is read
+once (one day) until it answers; a 404 is asked again once a day.
+
+Tested with synthetic answers in the shape of the other cloud recordings.
+Not yet confirmed on a real iCom heat pump: whether these paths answer
+there, in which unit and in which count form. Please report on GitHub with
+the diagnostics (`recordings.series`, `icom_heat_pump`).
 
 ## The heat pump of a hybrid system
 
@@ -327,7 +362,11 @@ history did not arrive in time) and `cloud_paths_left_out` (cloud
 recordings left out for a while after a failed read), and on a hybrid system
 `heat_pump_source` (the heat source whose own recordings are read, for
 example `hs2`, with its recordings listed as `hs2_total_heat`,
-`hs2_total_compressor` and so on); a run reports
+`hs2_total_compressor` and so on), on an iCom heat pump `icom_heat_pump: true`
+with its recordings `monitoring_total_heat`, `monitoring_total_compressor`,
+`monitoring_total_eheater` and `sc1_solar_yield`, and per recording the
+`unit` it answered in when that unit was not taken (or for the solar yield);
+a run reports
 `cloud_paths_left_out`, `cloud_backfill_left` and
 `import_rows_not_on_the_hour` where they apply.
 

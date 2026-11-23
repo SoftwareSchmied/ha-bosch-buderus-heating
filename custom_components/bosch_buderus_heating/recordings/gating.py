@@ -7,7 +7,12 @@ what it belongs to, so that no other plant collects refusals for it:
   (``/swCircuits/sw1/...``);
 - the boiler series (energy of older firmware and boilers) for a plant the
   recordings are read for at all (``anchor``) but without the energy
-  monitoring (``/heatSources/emon``) a heat pump has.
+  monitoring (``/heatSources/emon``) a heat pump has, except a heat pump
+  behind an iCom gateway;
+- the series of a heat pump behind an iCom gateway (and, for the
+  diagnostics only, the solar yield) for an iCom gateway whose plant kind
+  (``plant_inputs.current_plant``) is ``heat_pump``; without a plant kind the
+  boiler series are read as before.
 
 The heat pump's own series of a hybrid system (``series.HEAT_SOURCE_SERIES``)
 are read, locally or from the cloud, only for a plant with a burner share
@@ -30,6 +35,7 @@ from .series import (
     HEAT_SOURCE_IDS,
     HEAT_SOURCE_SERIES,
     REQUIRES_BOILER,
+    REQUIRES_ICOM_HEAT_PUMP,
     REQUIRES_SOFTENER,
     Series,
 )
@@ -58,17 +64,42 @@ def has_boiler_shape(paths: Iterable[str]) -> bool:
     return heat_source
 
 
-def allowed(series: Series, paths: Iterable[str]) -> bool:
+def allowed(
+    series: Series, paths: Iterable[str], *, icom_heat_pump: bool = False
+) -> bool:
     """Whether a plant with these resources is asked for the series (a
-    boiler needs a reading a recording belongs to, as for any read)."""
+    boiler or a heat pump needs a reading a recording belongs to, as for any
+    read). ``icom_heat_pump``: a heat pump behind an iCom gateway."""
     if series.requires is None:
         return True
     found = tuple(paths)
     if series.requires == REQUIRES_SOFTENER:
         return has_softener_circuit(found)
+    anchored = any(_ANCHOR.fullmatch(p) for p in found)
     if series.requires == REQUIRES_BOILER:
-        return has_boiler_shape(found) and any(_ANCHOR.fullmatch(p) for p in found)
+        return not icom_heat_pump and has_boiler_shape(found) and anchored
+    if series.requires == REQUIRES_ICOM_HEAT_PUMP:
+        return icom_heat_pump and anchored
     return False
+
+
+def _icom(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    from ..icom_profile import is_icom_device_type
+
+    gateway = getattr(coordinator, "gateway", None)
+    return is_icom_device_type(getattr(gateway, "device_type", None))
+
+
+def icom_heat_pump(coordinator: BoschBuderusDataUpdateCoordinator | None) -> bool:
+    """An iCom gateway whose plant kind is ``heat_pump``."""
+    if coordinator is None:
+        return False
+    from ..plant_inputs import current_plant
+
+    if not _icom(coordinator):
+        return False
+    plant = current_plant(coordinator)
+    return plant is not None and plant.plant_kind == "heat_pump"
 
 
 def allowed_keys(
@@ -78,7 +109,10 @@ def allowed_keys(
     if coordinator is None:
         return frozenset()
     paths = tuple(_known(coordinator))
-    return frozenset(item.key for item in CLOUD_ONLY if allowed(item, paths))
+    pump = icom_heat_pump(coordinator)
+    return frozenset(
+        item.key for item in CLOUD_ONLY if allowed(item, paths, icom_heat_pump=pump)
+    )
 
 
 def heat_pump_source(

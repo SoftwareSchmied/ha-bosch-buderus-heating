@@ -6,7 +6,8 @@ day and month, and records outdoor and supply temperatures as sums with a
 sample count. The candidate paths come from the local read catalogue (only
 paths without a placeholder); a series exists on a plant only when its path
 answers (``sources``). The heat pump of a hybrid system keeps recordings of
-its own under its heat source (``HEAT_SOURCE_SERIES``).
+its own under its heat source (``HEAT_SOURCE_SERIES``); the heat pump behind an
+iCom gateway under the energy monitoring (``ICOM_HEAT_PUMP_SERIES``).
 """
 
 from __future__ import annotations
@@ -92,6 +93,9 @@ class Series:
     # The heat source (``hs2``) whose own recording this is; ``None`` for
     # the gateway's series.
     heat_source: str | None = None
+    # Read for the diagnostics only (its state and unit): never a ledger, an
+    # entity or a statistic.
+    diagnostic: bool = False
 
     @property
     def mean(self) -> bool:
@@ -145,6 +149,38 @@ LOCAL_PATHS: Final = tuple(item.path for item in SERIES)
 # paths than a heat pump's.
 REQUIRES_SOFTENER: Final = "softener"
 REQUIRES_BOILER: Final = "boiler"
+# The heat pump behind an iCom gateway records its energy under other paths
+# than a heat pump of a K30 or K40 gateway: heat produced, compressor and
+# electric heater for the total. They are read instead of the boiler series
+# for an iCom gateway whose plant kind is ``heat_pump`` (``gating``), from the
+# cloud only. They are taken in the minute form as the energy monitoring's
+# consumed energy (``minute_sums``). The solar yield of the first solar
+# circuit is read on such a plant for the diagnostics only (state and unit).
+REQUIRES_ICOM_HEAT_PUMP: Final = "icom_heat_pump"
+_MONITORING: Final = "/recordings/heatSources/total/energyMonitoring/"
+ICOM_HEAT_PUMP_SERIES: Final = tuple(
+    Series(
+        f"monitoring_total_{_KINDS[kind][0]}",
+        f"{_MONITORING}{kind}",
+        "total",
+        kind,
+        Quantity.ENERGY,
+        cloud_only=True,
+        requires=REQUIRES_ICOM_HEAT_PUMP,
+        minute_sums=True,
+    )
+    for kind in ("outputProduced", "compressor", "eheater")
+)
+SOLAR_YIELD: Final = Series(
+    "sc1_solar_yield",
+    "/recordings/solarCircuits/sc1/solarYield",
+    None,
+    "solarYield",
+    Quantity.ENERGY,
+    cloud_only=True,
+    requires=REQUIRES_ICOM_HEAT_PUMP,
+    diagnostic=True,
+)
 CLOUD_ONLY: Final = (
     Series(
         "water",
@@ -183,6 +219,8 @@ CLOUD_ONLY: Final = (
         requires=REQUIRES_BOILER,
         minute_sums=True,
     ),
+    *ICOM_HEAT_PUMP_SERIES,
+    SOLAR_YIELD,
 )
 # A hybrid system's heat pump keeps recordings of its own under its heat
 # source: heat and compressor per total, heating and hot water (it has no
@@ -229,6 +267,12 @@ BY_KEY: Final = {item.key: item for item in ALL_SERIES}
 def electricity_parts(mode: str) -> tuple[str, str]:
     """The series keys whose sum is the electricity of a mode."""
     return f"{mode}_compressor", f"{mode}_eheater"
+
+
+def kind_slug(kind: str) -> str | None:
+    """The slug of a kind of energy path (``outputProduced`` is ``heat``)."""
+    found = _KINDS.get(kind)
+    return found[0] if found is not None else None
 
 
 def unit_factor(quantity: Quantity, unit: str | None) -> float | None:
