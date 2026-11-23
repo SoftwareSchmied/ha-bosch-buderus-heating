@@ -3005,7 +3005,56 @@
         "name": "Seuraava loma"
       },
       "heat_generator": {
-        "name": "Lämmönlähde"
+        "name": "Lämmönlähde",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Rajapinnan versio"
+          },
+          "state_basis": {
+            "name": "Tilan peruste",
+            "state": {
+              "product_name": "Tuotenimi",
+              "component_type": "Komponentin tyyppi"
+            }
+          },
+          "plant_kind": {
+            "name": "Laitteistotyyppi",
+            "state": {
+              "heat_pump": "Lämpöpumppu",
+              "hybrid": "Hybridilaitteisto",
+              "boiler": "Kattila",
+              "ventilation": "Ilmanvaihto",
+              "none": "Ei lämmönlähdettä"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Laitteistotyypin perusteet"
+          },
+          "fuel": {
+            "name": "Polttoaine",
+            "state": {
+              "gas": "Kaasu",
+              "oil": "Öljy",
+              "unknown": "Tuntematon"
+            }
+          },
+          "cascade": {
+            "name": "Kaskadi"
+          },
+          "components": {
+            "name": "Komponentit"
+          },
+          "components_source": {
+            "name": "Komponenttien lähde",
+            "state": {
+              "cloud": "Pilvi",
+              "local": "Paikallinen yhteys"
+            }
+          },
+          "components_table_version": {
+            "name": "Komponenttitaulukon versio"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Ulkoyksikön ohjelmistoversio"

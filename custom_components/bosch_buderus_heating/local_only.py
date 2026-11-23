@@ -22,7 +22,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from decimal import Decimal
 from functools import lru_cache
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
@@ -1680,15 +1680,28 @@ _HEAT_SOURCE_TYPE = re.compile(r"/heatSources(?:/hs[^/]+)?/type")
 _NOT_LETTER = re.compile(r"[^a-z]")
 
 
-def hybrid_evidence(readings: Iterable[tuple[str, object]]) -> tuple[str, ...]:
+# Evidence of the plant model (``plant_detection``) that also marks a hybrid
+# system: a hybrid manager at the hybrid place under its fixed rule, and a
+# heat pump type next to a boiler type. Both only add to the evidence above.
+PLANT_HYBRID_EVIDENCE: Final = (
+    "hybrid_manager_component",
+    "heat_source_types_combined",
+)
+
+
+def hybrid_evidence(
+    readings: Iterable[tuple[str, object]], plant_evidence: Iterable[str] = ()
+) -> tuple[str, ...]:
     """Why a system counts as a hybrid system, as fixed codes (sorted).
 
     Evidence is a hybrid manager's signal, a resource of the hybrid control
     or a system or heat source type that names a hybrid system; never a
     product name or a guess from other readings. ``readings`` are paths
-    with their current value (``None`` without one).
+    with their current value (``None`` without one). ``plant_evidence`` is
+    the evidence of the plant model's result; of it only the codes of
+    ``PLANT_HYBRID_EVIDENCE`` count, and they only add to the rest.
     """
-    found: set[str] = set()
+    found: set[str] = {code for code in plant_evidence if code in PLANT_HYBRID_EVIDENCE}
     for path, value in readings:
         if path.startswith(HYBRID_MANAGER_SIGNALS):
             found.add("hybrid_manager_signals")

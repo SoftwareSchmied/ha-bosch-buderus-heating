@@ -3005,7 +3005,56 @@
         "name": "Další dovolená"
       },
       "heat_generator": {
-        "name": "Zdroj tepla"
+        "name": "Zdroj tepla",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Verze rozhraní"
+          },
+          "state_basis": {
+            "name": "Základ stavu",
+            "state": {
+              "product_name": "Název produktu",
+              "component_type": "Typ komponenty"
+            }
+          },
+          "plant_kind": {
+            "name": "Druh soustavy",
+            "state": {
+              "heat_pump": "Tepelné čerpadlo",
+              "hybrid": "Hybridní soustava",
+              "boiler": "Kotel",
+              "ventilation": "Větrání",
+              "none": "Bez zdroje tepla"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Doklady druhu soustavy"
+          },
+          "fuel": {
+            "name": "Palivo",
+            "state": {
+              "gas": "Plyn",
+              "oil": "Topný olej",
+              "unknown": "Neznámé"
+            }
+          },
+          "cascade": {
+            "name": "Kaskáda"
+          },
+          "components": {
+            "name": "Komponenty"
+          },
+          "components_source": {
+            "name": "Zdroj komponent",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Místní přístup"
+            }
+          },
+          "components_table_version": {
+            "name": "Verze tabulky komponent"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Verze softwaru venkovní jednotky"

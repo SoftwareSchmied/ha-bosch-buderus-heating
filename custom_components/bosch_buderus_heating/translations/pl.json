@@ -3005,7 +3005,56 @@
         "name": "Następny urlop"
       },
       "heat_generator": {
-        "name": "Źródło ciepła"
+        "name": "Źródło ciepła",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Wersja interfejsu"
+          },
+          "state_basis": {
+            "name": "Podstawa stanu",
+            "state": {
+              "product_name": "Nazwa produktu",
+              "component_type": "Typ komponentu"
+            }
+          },
+          "plant_kind": {
+            "name": "Rodzaj instalacji",
+            "state": {
+              "heat_pump": "Pompa ciepła",
+              "hybrid": "Instalacja hybrydowa",
+              "boiler": "Kocioł",
+              "ventilation": "Wentylacja",
+              "none": "Brak źródła ciepła"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Dowody rodzaju instalacji"
+          },
+          "fuel": {
+            "name": "Paliwo",
+            "state": {
+              "gas": "Gaz",
+              "oil": "Olej opałowy",
+              "unknown": "Nieznane"
+            }
+          },
+          "cascade": {
+            "name": "Kaskada"
+          },
+          "components": {
+            "name": "Komponenty"
+          },
+          "components_source": {
+            "name": "Źródło komponentów",
+            "state": {
+              "cloud": "Chmura",
+              "local": "Dostęp lokalny"
+            }
+          },
+          "components_table_version": {
+            "name": "Wersja tabeli komponentów"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Wersja oprogramowania jednostki zewnętrznej"

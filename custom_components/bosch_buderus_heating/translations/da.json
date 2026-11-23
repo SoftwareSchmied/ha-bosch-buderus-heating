@@ -3005,7 +3005,56 @@
         "name": "Næste ferie"
       },
       "heat_generator": {
-        "name": "Varmekilde"
+        "name": "Varmekilde",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Grænsefladeversion"
+          },
+          "state_basis": {
+            "name": "Grundlag for tilstanden",
+            "state": {
+              "product_name": "Produktnavn",
+              "component_type": "Komponenttype"
+            }
+          },
+          "plant_kind": {
+            "name": "Anlægstype",
+            "state": {
+              "heat_pump": "Varmepumpe",
+              "hybrid": "Hybridanlæg",
+              "boiler": "Kedel",
+              "ventilation": "Ventilation",
+              "none": "Ingen varmekilde"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Belæg for anlægstypen"
+          },
+          "fuel": {
+            "name": "Brændstof",
+            "state": {
+              "gas": "Gas",
+              "oil": "Olie",
+              "unknown": "Ukendt"
+            }
+          },
+          "cascade": {
+            "name": "Kaskade"
+          },
+          "components": {
+            "name": "Komponenter"
+          },
+          "components_source": {
+            "name": "Kilde til komponenterne",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Lokal adgang"
+            }
+          },
+          "components_table_version": {
+            "name": "Version af komponenttabellen"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Udedelens softwareversion"

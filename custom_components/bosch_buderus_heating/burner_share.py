@@ -11,7 +11,12 @@ a value that could be wrong is not shown: it is unknown, with the attribute
 The share counts as present when the energy collection reports a burner
 part above zero, or when a hybrid manager is detected (its signals, the
 hybrid control resources, or a system or heat source type that names a
-hybrid system). A plant with a heat pump only is not affected.
+hybrid system). The plant model adds two pieces of evidence: a hybrid
+manager at the hybrid place of the component list under its fixed rule, and
+a heat source that reports a heat pump next to one that reports a boiler.
+They only add to the evidence above; without a result of the plant model
+(before its stored row is read) everything is as before. A plant with a
+heat pump only is not affected.
 """
 
 from __future__ import annotations
@@ -77,7 +82,18 @@ def _hybrid_detected(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
             continue
         reading = read(coordinator, path)
         readings.append((path, reading.value if reading is not None else None))
-    return bool(hybrid_evidence(readings))
+    return bool(hybrid_evidence(readings, _plant_evidence(coordinator)))
+
+
+def _plant_evidence(coordinator: object) -> tuple[str, ...]:
+    """The evidence of the plant model's result; none without a result."""
+    from .plant_inputs import current_plant
+
+    try:
+        plant = current_plant(coordinator)
+    except Exception:  # the plant model never changes the rule by failing
+        return ()
+    return plant.evidence if plant is not None else ()
 
 
 def burner_share(

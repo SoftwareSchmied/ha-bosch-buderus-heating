@@ -3005,7 +3005,56 @@
         "name": "Nächster Urlaub"
       },
       "heat_generator": {
-        "name": "Wärmeerzeuger"
+        "name": "Wärmeerzeuger",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Schnittstellenversion"
+          },
+          "state_basis": {
+            "name": "Grundlage des Zustands",
+            "state": {
+              "product_name": "Produktname",
+              "component_type": "Komponententyp"
+            }
+          },
+          "plant_kind": {
+            "name": "Anlagenart",
+            "state": {
+              "heat_pump": "Wärmepumpe",
+              "hybrid": "Hybridanlage",
+              "boiler": "Kessel",
+              "ventilation": "Lüftung",
+              "none": "Kein Wärmeerzeuger"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Belege der Anlagenart"
+          },
+          "fuel": {
+            "name": "Brennstoff",
+            "state": {
+              "gas": "Gas",
+              "oil": "Öl",
+              "unknown": "Unbekannt"
+            }
+          },
+          "cascade": {
+            "name": "Kaskade"
+          },
+          "components": {
+            "name": "Komponenten"
+          },
+          "components_source": {
+            "name": "Quelle der Komponenten",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Lokaler Zugang"
+            }
+          },
+          "components_table_version": {
+            "name": "Version der Komponententabelle"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Außeneinheit – Softwareversion"

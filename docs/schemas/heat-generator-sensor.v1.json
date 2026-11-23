@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "heat-generator-sensor.v1.json",
+  "title": "Attributes of the heat generator sensor <gateway>:heat_generator, contract 1",
+  "description": "The interface for cards. Every key below is always present; lists can be empty and values null. The keys of 0.9.1 to 0.9.3-beta.5 keep their meaning. New keys and new values can appear without a new contract version; consumers ignore what they do not know. Removing or changing a key, or changing what the state means, raises contract_version. Never versions, serial numbers or the gateway's own rows.",
+  "type": "object",
+  "required": [
+    "heat_generators",
+    "primary",
+    "outdoor_unit",
+    "source",
+    "table_version",
+    "known",
+    "heat_source_type",
+    "contract_version",
+    "state_basis",
+    "plant_kind",
+    "plant_kind_evidence",
+    "fuel",
+    "cascade",
+    "components",
+    "components_source",
+    "components_table_version"
+  ],
+  "properties": {
+    "heat_generators": {
+      "description": "One entry per module with a product name, sorted by role and product name.",
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/heat_generator"
+      }
+    },
+    "primary": {
+      "description": "The main heat generator; every value null without a module with a product name.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "construction",
+        "power_kw",
+        "brand_family",
+        "outdoor_power_kw"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/short_text"
+        },
+        "construction": {
+          "enum": [
+            "monobloc",
+            "split",
+            "compact",
+            null
+          ]
+        },
+        "power_kw": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "brand_family": {
+          "$ref": "#/$defs/short_text"
+        },
+        "outdoor_power_kw": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "outdoor_unit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "source": {
+      "description": "The access that supplied heat_generators.",
+      "enum": [
+        "cloud",
+        "local",
+        null
+      ]
+    },
+    "table_version": {
+      "description": "Version of the model table heat_generator_models.json.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "known": {
+      "type": "boolean"
+    },
+    "heat_source_type": {
+      "enum": [
+        "air",
+        "brine",
+        "water",
+        null
+      ]
+    },
+    "contract_version": {
+      "const": 1
+    },
+    "state_basis": {
+      "description": "product_name: the state is a module's product name; component_type: no module has a product name and the state is the name of the component at the heat generator's place; null: neither.",
+      "enum": [
+        "product_name",
+        "component_type",
+        null
+      ]
+    },
+    "plant_kind": {
+      "enum": [
+        "heat_pump",
+        "hybrid",
+        "boiler",
+        "ventilation",
+        "none",
+        null
+      ]
+    },
+    "plant_kind_evidence": {
+      "description": "The evidence of plant_kind as fixed codes. The code stored (an input taken from the stored row) appears in the diagnostics only.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "enum": [
+          "reported_system_type",
+          "reported_heat_source_type",
+          "reported_heat_pump_type",
+          "reported_outdoor_status",
+          "hybrid_manager_component",
+          "heat_source_types_combined",
+          "hybrid_resources",
+          "hybrid_manager_signals"
+        ]
+      }
+    },
+    "fuel": {
+      "enum": [
+        "gas",
+        "oil",
+        "unknown",
+        null
+      ]
+    },
+    "cascade": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "components": {
+      "description": "The components of the system without the gateway's own rows and rows without a valid type, sorted by place number, type number and product name.",
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    "components_source": {
+      "description": "The access that supplied components.",
+      "enum": [
+        "cloud",
+        "local",
+        null
+      ]
+    },
+    "components_table_version": {
+      "description": "Version of the component table system_components.json; null without a valid table.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    }
+  },
+  "$defs": {
+    "short_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "heat_generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "product_name",
+        "hardware_type",
+        "family",
+        "construction",
+        "power_kw"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "heat_source",
+            "boiler",
+            "outdoor_unit",
+            "hybrid_manager",
+            "other"
+          ]
+        },
+        "product_name": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "hardware_type": {
+          "$ref": "#/$defs/short_text"
+        },
+        "family": {
+          "$ref": "#/$defs/short_text"
+        },
+        "construction": {
+          "enum": [
+            "monobloc",
+            "split",
+            "compact",
+            null
+          ]
+        },
+        "power_kw": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "place",
+        "place_number",
+        "type_number",
+        "type_name",
+        "role",
+        "basis",
+        "product_name"
+      ],
+      "properties": {
+        "place": {
+          "description": "Place key of the component table; null for a place it does not know.",
+          "enum": [
+            "heat_generator_control",
+            "basic_controller",
+            "system_controller",
+            "pool",
+            "remote_hc1_legacy",
+            "remote_hc2_legacy",
+            "remote_hc3_legacy",
+            "remote_hc4_legacy",
+            "fresh_water",
+            "solar",
+            "remote_hc1",
+            "remote_hc2",
+            "remote_hc3",
+            "remote_hc4",
+            "gateway",
+            "gateway_service",
+            "radio",
+            "ventilation",
+            "hybrid_manager",
+            null
+          ]
+        },
+        "place_number": {
+          "description": "The place as reported (Tok).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "type_number": {
+          "description": "The type number as reported (Id); never 0.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "type_name": {
+          "description": "Name of the type in the component table; null without an entry or a name.",
+          "$ref": "#/$defs/short_text"
+        },
+        "role": {
+          "description": "Role from an entry whose basis is not a name; null otherwise.",
+          "enum": [
+            "heat_source",
+            "outdoor_unit",
+            "hybrid_manager",
+            "system_controller",
+            "gateway",
+            null
+          ]
+        },
+        "basis": {
+          "description": "How the type's entry is known; act only on rule, observed or documented.",
+          "enum": [
+            "name",
+            "rule",
+            "observed",
+            "documented",
+            null
+          ]
+        },
+        "product_name": {
+          "description": "Product name of the same row; null without one.",
+          "$ref": "#/$defs/short_text"
+        }
+      }
+    }
+  }
+}

@@ -3005,7 +3005,56 @@
         "name": "An chéad saoire eile"
       },
       "heat_generator": {
-        "name": "Foinse teasa"
+        "name": "Foinse teasa",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Leagan comhéadain"
+          },
+          "state_basis": {
+            "name": "Bunús an staid",
+            "state": {
+              "product_name": "Ainm an táirge",
+              "component_type": "Cineál comhpháirte"
+            }
+          },
+          "plant_kind": {
+            "name": "Cineál córais",
+            "state": {
+              "heat_pump": "Teaschaidéal",
+              "hybrid": "Córas hibrideach",
+              "boiler": "Coire",
+              "ventilation": "Aerú",
+              "none": "Gan foinse teasa"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Fianaise ar chineál an chórais"
+          },
+          "fuel": {
+            "name": "Breosla",
+            "state": {
+              "gas": "Gás",
+              "oil": "Ola",
+              "unknown": "Anaithnid"
+            }
+          },
+          "cascade": {
+            "name": "Cascáid"
+          },
+          "components": {
+            "name": "Comhpháirteanna"
+          },
+          "components_source": {
+            "name": "Foinse na gcomhpháirteanna",
+            "state": {
+              "cloud": "Néal",
+              "local": "Rochtain áitiúil"
+            }
+          },
+          "components_table_version": {
+            "name": "Leagan de thábla na gcomhpháirteanna"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Leagan bogearraí an aonaid lasmuigh"

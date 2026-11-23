@@ -3005,7 +3005,56 @@
         "name": "Επόμενες διακοπές"
       },
       "heat_generator": {
-        "name": "Πηγή θερμότητας"
+        "name": "Πηγή θερμότητας",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Έκδοση διεπαφής"
+          },
+          "state_basis": {
+            "name": "Βάση της κατάστασης",
+            "state": {
+              "product_name": "Όνομα προϊόντος",
+              "component_type": "Τύπος εξαρτήματος"
+            }
+          },
+          "plant_kind": {
+            "name": "Είδος εγκατάστασης",
+            "state": {
+              "heat_pump": "Αντλία θερμότητας",
+              "hybrid": "Υβριδική εγκατάσταση",
+              "boiler": "Λέβητας",
+              "ventilation": "Αερισμός",
+              "none": "Χωρίς πηγή θερμότητας"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Ενδείξεις για το είδος εγκατάστασης"
+          },
+          "fuel": {
+            "name": "Καύσιμο",
+            "state": {
+              "gas": "Αέριο",
+              "oil": "Πετρέλαιο",
+              "unknown": "Άγνωστο"
+            }
+          },
+          "cascade": {
+            "name": "Κασκάδα"
+          },
+          "components": {
+            "name": "Εξαρτήματα"
+          },
+          "components_source": {
+            "name": "Προέλευση των εξαρτημάτων",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Τοπική πρόσβαση"
+            }
+          },
+          "components_table_version": {
+            "name": "Έκδοση πίνακα εξαρτημάτων"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Έκδοση λογισμικού εξωτερικής μονάδας"

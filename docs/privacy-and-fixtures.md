@@ -30,7 +30,8 @@ numbers, UUIDs, country data, and sanitized system information are disabled by
 default in Home Assistant and must never be copied into issues, fixtures, logs,
 or diagnostic exports without explicit redaction. The `Tok` field of system
 information is the place number of a component on the bus, not a secret; it
-appears with the type number in the diagnostics block `plant`. The serial
+appears with the type number in the diagnostics block `plant` and in the
+attribute `components` of the heat generator sensor. The serial
 number fields of system information (`No`, `ProductSerialNumber`,
 `ModuleSerialNumber`) and `ProductUuid` are never exposed.
 

@@ -108,6 +108,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 )
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.heat_generator_contract import check_contract
 from tests.helpers.managed_runtime import wait_for_sources
 from tests.helpers.rrc_cloud import (
     FIXTURES,
@@ -129,7 +130,33 @@ UPDATE = os.environ.get("X40_GOLDEN_UPDATE") == "1"
 # ----------------------------------------------------------------- allowances
 # Empty on the baseline. Extend only with what the plant model is meant to
 # change (see above).
-NEW_ATTRIBUTES: dict[str, frozenset[str]] = {}
+# Contract 1 of the heat generator sensor (S2): the new keys, and the keys of
+# 0.9.1 to 0.9.3-beta.5 where a sensor without a named module showed only
+# ``heat_source_type`` and ``known`` (contract 1 always has every key; a
+# key that was there keeps its value).
+HEAT_GENERATOR_CONTRACT_KEYS: frozenset[str] = frozenset(
+    {
+        "contract_version",
+        "state_basis",
+        "plant_kind",
+        "plant_kind_evidence",
+        "fuel",
+        "cascade",
+        "components",
+        "components_source",
+        "components_table_version",
+        "heat_generators",
+        "primary",
+        "outdoor_unit",
+        "source",
+        "table_version",
+        "known",
+        "heat_source_type",
+    }
+)
+NEW_ATTRIBUTES: dict[str, frozenset[str]] = {
+    r".*:heat_generator": HEAT_GENERATOR_CONTRACT_KEYS,
+}
 WRITE_DELTAS: dict[str, dict[str, int]] = {}
 EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {}
 POSITION_FREE: frozenset[str] = frozenset({"/system/info"})
@@ -1144,6 +1171,10 @@ async def test_the_plant_matches_the_state_before_the_plant_model(
     expected = json.loads(_path(name).read_text(encoding="utf-8"))
     found = differences(name, expected, actual)
     assert not found, f"{name}:\n" + "\n".join(found)
+    # Every heat generator sensor of every plant keeps to contract 1.
+    for key, state in actual["states"].items():
+        if key.endswith(":heat_generator"):
+            check_contract(state["attributes"])
 
 
 def test_every_plant_has_its_golden_file_and_nothing_else() -> None:
@@ -1160,7 +1191,8 @@ def test_the_k40_plants_never_get_new_entities_or_requests() -> None:
 
 
 def test_the_allowances_start_empty_or_name_planned_keys() -> None:
-    """Only the keys the plant model adds to the heat generator sensor."""
+    """Only the keys the plant model adds to the heat generator sensor, and
+    the keys of 0.9.1 to 0.9.3-beta.5 its contract 1 always shows."""
     planned = {
         "contract_version",
         "state_basis",
@@ -1171,6 +1203,15 @@ def test_the_allowances_start_empty_or_name_planned_keys() -> None:
         "components",
         "components_source",
         "components_table_version",
+        # Contract 1 always has every key: a sensor without a named module
+        # showed only heat_source_type and known before.
+        "heat_generators",
+        "primary",
+        "outdoor_unit",
+        "source",
+        "table_version",
+        "known",
+        "heat_source_type",
     }
     for pattern, keys in NEW_ATTRIBUTES.items():
         assert pattern == r".*:heat_generator", pattern
@@ -1214,7 +1255,9 @@ def test_the_comparison_finds_each_kind_of_difference() -> None:
     changed["writes"]["sensor gw:a"] = {"setup": 2}
     changed["requests"]["cloud"]["setup"]["reads"]["/c"] = 1
     changed["devices"][0]["name"] = "Other"
-    found = differences("k40_cloud", base, changed)
+    # The comparison itself, without the allowances of the plant model.
+    with patch.dict(NEW_ATTRIBUTES, {}, clear=True):
+        found = differences("k40_cloud", base, changed)
     assert "entity gone: sensor gw:a" in found
     assert "new attributes: sensor gw:heat_generator: plant_kind" in found
     assert "state changed: sensor gw:heat_generator: 'X' -> 'Y'" in found

@@ -3005,7 +3005,56 @@
         "name": "Next holiday"
       },
       "heat_generator": {
-        "name": "Heat generator"
+        "name": "Heat generator",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Interface version"
+          },
+          "state_basis": {
+            "name": "State basis",
+            "state": {
+              "product_name": "Product name",
+              "component_type": "Component type"
+            }
+          },
+          "plant_kind": {
+            "name": "Plant kind",
+            "state": {
+              "heat_pump": "Heat pump",
+              "hybrid": "Hybrid system",
+              "boiler": "Boiler",
+              "ventilation": "Ventilation",
+              "none": "No heat generator"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Plant kind evidence"
+          },
+          "fuel": {
+            "name": "Fuel",
+            "state": {
+              "gas": "Gas",
+              "oil": "Oil",
+              "unknown": "Unknown"
+            }
+          },
+          "cascade": {
+            "name": "Cascade"
+          },
+          "components": {
+            "name": "Components"
+          },
+          "components_source": {
+            "name": "Components source",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Local access"
+            }
+          },
+          "components_table_version": {
+            "name": "Component table version"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Outdoor unit software version"

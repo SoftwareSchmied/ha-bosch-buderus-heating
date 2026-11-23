@@ -3005,7 +3005,56 @@
         "name": "Volgende vakantie"
       },
       "heat_generator": {
-        "name": "Warmteopwekker"
+        "name": "Warmteopwekker",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Interfaceversie"
+          },
+          "state_basis": {
+            "name": "Basis van de status",
+            "state": {
+              "product_name": "Productnaam",
+              "component_type": "Componenttype"
+            }
+          },
+          "plant_kind": {
+            "name": "Installatietype",
+            "state": {
+              "heat_pump": "Warmtepomp",
+              "hybrid": "Hybride installatie",
+              "boiler": "Ketel",
+              "ventilation": "Ventilatie",
+              "none": "Geen warmteopwekker"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Aanwijzingen voor het installatietype"
+          },
+          "fuel": {
+            "name": "Brandstof",
+            "state": {
+              "gas": "Gas",
+              "oil": "Olie",
+              "unknown": "Onbekend"
+            }
+          },
+          "cascade": {
+            "name": "Cascade"
+          },
+          "components": {
+            "name": "Componenten"
+          },
+          "components_source": {
+            "name": "Bron van de componenten",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Lokale toegang"
+            }
+          },
+          "components_table_version": {
+            "name": "Versie van de componententabel"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Softwareversie buitenunit"

@@ -504,11 +504,14 @@ default and belongs to the system device.
 
 The sensor sends no request of its own. It reads the module list that the
 cloud (`/system/info`) and the local access (`/system/basicInfo`) already
-read, and it writes its state only when what it shows changes. Of each
-module only the product name and the hardware type are read; serial
-numbers, tokens, versions and type numbers are never shown, stored or
-logged. Rows without a product name (the gateway, the user interface) do
-not count.
+read, and it writes its state only when what it shows changes. It shows the
+product name, the hardware type, the type number and the place of the
+modules (see [System components](system-components.md)). Versions are kept
+only in the diagnostics and in the private stored row of the plant model,
+never in the sensor's attributes or the log; serial numbers are never read,
+shown, stored or logged. Rows without a product name (the gateway, the user
+interface) do not count as heat generators; since 0.9.3-beta.6 the
+components among them appear in `components`.
 
 The unique ID is `<gateway>:heat_generator`. It does not depend on the
 position of a module, on the source or on the language, so the entity stays
@@ -518,7 +521,7 @@ are fixed English keys; their values are never translated.
 
 | Attribute | Content |
 |---|---|
-| state | Product name of the main heat generator: the first module with the role `heat_source`, otherwise `boiler`, otherwise the first module of the list; at most 255 characters without control characters; `unknown` before the first module list |
+| state | Product name of the main heat generator: the first module with the role `heat_source`, otherwise `boiler`, otherwise the first module of the list; at most 255 characters without control characters. Without a module with a product name (since 0.9.3-beta.6): the name of the component at the heat generator's place (place 8), see `state_basis` below. `unknown` without either |
 | `heat_generators` | One entry per module with `role`, `product_name`, `hardware_type`, `family`, `construction` and `power_kw`, sorted by role and then by product name (at most 16 entries). Cascades and hybrid systems give several entries. |
 | `primary` | `family`, `construction`, `power_kw` and `brand_family` of the main heat generator, and `outdoor_power_kw`: the `power_kw` of its outdoor unit (with several outdoor units, for example in a cascade, the first one in the order of `heat_generators`), otherwise `null`; for simple card queries |
 | `outdoor_unit` | Product name of the (first) outdoor unit, otherwise `null` |
@@ -601,11 +604,92 @@ source it was shown with, so an answer of the other access alone writes no
 new state. When they disagree, the list shown last stays, and the diagnostics
 report the disagreement (`heat_generator.conflict`). Every gateway follows
 the same rules, iCom gateways included; a module whose hardware type has no
-table entry gets the role `other`. Without a module with a product name (an
-empty list, older firmware) there is no entity and no log message. Room
-controllers never get the entity; their module list names no heat
-generator. A start from the stored inventory, which keeps no module list,
-keeps the last state of an existing entity.
+table entry gets the role `other`. The entity is created once a module with
+a product name, evidence of the heat source type, a component at the heat
+generator's place (place 8) or a known plant kind (`heat_pump`, `hybrid`,
+`boiler`) is there; without any of them there is no entity and no log
+message. Room controllers never get the entity; their module list names no
+heat generator. A start from the stored inventory, which keeps no module
+list, keeps the last state of an existing entity; the plant model's stored
+row gives the new attributes at once, so a restart writes no new state.
+
+#### Interface for cards (contract 1)
+
+Since 0.9.3-beta.6 the sensor states the version of its interface in
+`contract_version` (now `1`). Contract 1 keeps every key of 0.9.1 to
+0.9.3-beta.5 with the same values and meaning and only adds keys. A sensor
+without `contract_version` is an older version and has the keys of the table
+above without the new ones. Every key of contract 1 is always present; lists
+can be empty and values `null`. A sensor without a module with a product
+name has `heat_generators: []`, `known: false`, `source: null`,
+`outdoor_unit: null` and every value of `primary` `null`. The schema is
+published as [`schemas/heat-generator-sensor.v1.json`](schemas/heat-generator-sensor.v1.json).
+
+- New keys and new values (a new place, role, basis, plant kind or evidence
+  code) can appear without a new version. Ignore keys and values you do not
+  know.
+- Within a version a key keeps its name, type and meaning. Removing or
+  renaming a key, changing its type or changing what the state means raises
+  the version; the old keys then stay for at least one stable release.
+- Act only on component entries whose `basis` is `rule`, `observed` or
+  `documented`. An entry with the basis `name` is for display; its name
+  never tells what a component does.
+- Read the other attributes only while the state is a real value (not
+  `unknown` or `unavailable`), as the Heat Pump Hydraulic Card does.
+
+| Attribute | Content |
+|---|---|
+| `contract_version` | `1` |
+| `state_basis` | `product_name` when the state is a module's product name; `component_type` when no module has a product name and the state is the name of the component at the heat generator's place (for example `CUHP`); `null` without either |
+| `plant_kind` | `heat_pump`, `hybrid`, `boiler`, `ventilation`, `none` or `null` (see [plant kind](system-components.md#plant-kind)) |
+| `plant_kind_evidence` | The evidence of `plant_kind` as fixed codes, for example `reported_heat_source_type` or `hybrid_manager_component` (list on the same page). The code `stored` (an input taken from the stored row after a restart) appears in the diagnostics only, so a restart does not change the sensor. |
+| `fuel` | `gas`, `oil` or `unknown` for a boiler or a hybrid system, otherwise `null` |
+| `cascade` | `true` for a heat pump cascade, `false` for a single heat pump system, `null` when the system type does not tell |
+| `components` | One entry per component, sorted by place number, type number and product name (at most 32): `place` (place key, `null` for an unknown place), `place_number` (the place as reported), `type_number` (the type number as reported), `type_name` (the name in the component table, `null` without one), `role` (only from an entry with the basis `rule`, `observed` or `documented`, otherwise `null`), `basis` and `product_name` (`null` without one). The gateway's own rows (place 72 or 75, type 17) and rows without a valid type (0) are left out. No versions, no serial numbers. This attribute is not recorded in the history. |
+| `components_source` | `cloud` or `local`: which access supplied `components`; `null` without a list or without a valid component table |
+| `components_table_version` | Version of the component table `system_components.json`; `null` when the table is missing or faulty (then `components` stays empty and the state is never a component name) |
+
+A plant that names no heat generator module, for example an iCom heat pump,
+gets the sensor as well. Its state is then the name of the component at the
+heat generator's place; with several, one with a role comes first, then the
+smallest type number. An iCom heat pump that reports its heat source as a
+heat pump shows (shortened):
+
+```yaml
+state: CUHP
+heat_generators: []
+known: false
+heat_source_type: null
+contract_version: 1
+state_basis: component_type
+plant_kind: heat_pump
+plant_kind_evidence: [reported_heat_source_type]
+fuel: null
+cascade: null
+components:
+  - place: heat_generator_control
+    place_number: 8
+    type_number: 172
+    type_name: CUHP
+    role: null
+    basis: name
+    product_name: null
+  - place: system_controller
+    place_number: 16
+    type_number: 158
+    type_name: MID
+    role: null
+    basis: name
+    product_name: null
+components_source: cloud
+components_table_version: 1
+```
+
+On the installation of the example above, the new keys read
+`contract_version: 1`, `state_basis: product_name`, `plant_kind: heat_pump`
+with the evidence `reported_heat_pump_type`, `reported_heat_source_type` and
+`reported_system_type`, `cascade: false`, and three components: the indoor
+unit and the outdoor unit at place 8 and the system controller at place 16.
 
 ### Firmware update
 
@@ -1650,8 +1734,10 @@ statistics on request; see [Plant recordings](recordings.md).
 
 Serial number, gateway UUID, country, and sanitized system information are
 created as diagnostic entities disabled by default. They appear only when the
-user deliberately enables them. Internal token fields from `/system/info`
-are never included. Wi-Fi data, SSIDs, IP and MAC addresses, license text,
+user deliberately enables them. The System information entity never
+includes the place fields (`Tok`) of `/system/info`; the place and type
+number of each component appear only in the attribute `components` of the
+heat generator sensor. Wi-Fi data, SSIDs, IP and MAC addresses, license text,
 terms of use, and additional administrative data remain completely excluded.
 Container resources are used only for dynamic discovery.
 

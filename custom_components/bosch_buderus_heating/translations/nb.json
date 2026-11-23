@@ -3005,7 +3005,56 @@
         "name": "Neste ferie"
       },
       "heat_generator": {
-        "name": "Varmekilde"
+        "name": "Varmekilde",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Grensesnittversjon"
+          },
+          "state_basis": {
+            "name": "Grunnlag for tilstanden",
+            "state": {
+              "product_name": "Produktnavn",
+              "component_type": "Komponenttype"
+            }
+          },
+          "plant_kind": {
+            "name": "Anleggstype",
+            "state": {
+              "heat_pump": "Varmepumpe",
+              "hybrid": "Hybridanlegg",
+              "boiler": "Kjel",
+              "ventilation": "Ventilasjon",
+              "none": "Ingen varmekilde"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Belegg for anleggstypen"
+          },
+          "fuel": {
+            "name": "Brensel",
+            "state": {
+              "gas": "Gass",
+              "oil": "Olje",
+              "unknown": "Ukjent"
+            }
+          },
+          "cascade": {
+            "name": "Kaskade"
+          },
+          "components": {
+            "name": "Komponenter"
+          },
+          "components_source": {
+            "name": "Kilde for komponentene",
+            "state": {
+              "cloud": "Sky",
+              "local": "Lokal tilgang"
+            }
+          },
+          "components_table_version": {
+            "name": "Versjon av komponenttabellen"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Programvareversjon utedel"

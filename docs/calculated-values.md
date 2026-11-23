@@ -314,12 +314,21 @@ defrosts, so the heat taken back from the water is netted.
 - Below 0.1 kWh electricity or above 15 a factor is unknown.
 - **Burner share:** a factor divides heat by the electricity of the heat
   pump. If the plant reports burner energy above zero in the counter
-  collection, or a hybrid manager is detected (its signals, the hybrid
-  control resources, or a system or heat source type that names a hybrid
-  system), it is not known which share of the produced heat comes from the
-  boiler, so the factor is unknown with the attribute `reason:
-  burner_share` instead of a value that may be too high. The counters stay
-  in the attributes. The rule looks at the burner counter of the collection
+  collection, or a hybrid system is detected, it is not known which share of
+  the produced heat comes from the boiler, so the factor is unknown with the
+  attribute `reason: burner_share` instead of a value that may be too high.
+  The counters stay in the attributes. A hybrid system is detected by the
+  signals of a hybrid manager, the resources of the hybrid control, a system
+  or heat source type that names a hybrid system, and since 0.9.3-beta.6 by
+  the [plant kind](system-components.md#plant-kind): a hybrid manager at the
+  hybrid place of the component list (type 248 from version 06.01 on or
+  type 16, on a K30 gateway from firmware 08.02.02 or a K40 gateway from
+  firmware 11.00.00 on), or one heat source that reports a heat pump next to
+  one that reports a boiler. These two only add to the evidence; a component
+  name never counts, and until the plant model's stored row is read after a
+  start the evidence is the one used before. Such a hybrid system without a
+  burner counter gets the factors and the recordings of its heat pump when
+  the heat pump reports counters of its own (see below). The rule looks at the burner counter of the collection
   (since commissioning), not at a single period: once a plant has reported
   burner energy, its factors stay unknown. A heat pump without a burner
   share is not affected.
@@ -418,10 +427,23 @@ Ein unbekannter Wert kommt nicht in die Langzeitstatistik. Die Arbeitszahlen der
 Zeiträume behalten ihre Grenze von 15.
 
 Meldet die Anlage Brennerenergie über null in der Zähler-Sammlung oder wird
-ein Hybrid-Manager erkannt, sind Arbeitszahlen und Umweltenergie unbekannt
+eine Hybridanlage erkannt, sind Arbeitszahlen und Umweltenergie unbekannt
 (`reason: burner_share`), weil nicht bekannt ist, welcher Wärmeanteil vom Kessel
 stammt. Die Regel betrachtet den Brennerzähler seit der Inbetriebnahme, nicht
-den einzelnen Zeitraum. Eine reine Wärmepumpe ist nicht betroffen.
+den einzelnen Zeitraum. Eine reine Wärmepumpe ist nicht betroffen. Eine
+Hybridanlage erkennt die Integration an den Signalen eines Hybrid-Managers, an
+den Ressourcen der Hybridsteuerung, an einem System- oder Wärmequellentyp, der
+eine Hybridanlage nennt, und seit 0.9.3-beta.6 an der
+[Anlagenart](system-components.md#anlagenart): an einem Hybrid-Manager am
+Hybridplatz der Komponentenliste (Typ 248 ab Version 06.01 oder Typ 16, auf
+einem K30-Gateway ab Firmware 08.02.02 oder einem K40-Gateway ab Firmware
+11.00.00) oder an einer Wärmequelle, die eine Wärmepumpe meldet, neben einer,
+die einen Kessel meldet. Diese beiden Belege kommen nur hinzu; ein
+Komponentenname zählt nie, und bis die gespeicherte Zeile des Anlagenmodells
+nach einem Start gelesen ist, gelten die bisherigen Belege. Eine solche
+Hybridanlage ohne Brennerzähler erhält die Arbeitszahlen und die
+Aufzeichnungen ihrer Wärmepumpe, wenn die Wärmepumpe eigene Zähler meldet
+(siehe unten).
 
 Meldet die Wärmepumpe eines Hybridsystems eigene Zähler unter ihrer
 Wärmequelle (zum Beispiel `/heatSources/hs2/emon/totalConsumption` mit

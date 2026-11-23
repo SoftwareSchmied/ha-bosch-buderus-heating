@@ -3005,7 +3005,56 @@
         "name": "Nästa semester"
       },
       "heat_generator": {
-        "name": "Värmekälla"
+        "name": "Värmekälla",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Gränssnittsversion"
+          },
+          "state_basis": {
+            "name": "Grund för tillståndet",
+            "state": {
+              "product_name": "Produktnamn",
+              "component_type": "Komponenttyp"
+            }
+          },
+          "plant_kind": {
+            "name": "Anläggningstyp",
+            "state": {
+              "heat_pump": "Värmepump",
+              "hybrid": "Hybridanläggning",
+              "boiler": "Panna",
+              "ventilation": "Ventilation",
+              "none": "Ingen värmekälla"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Belägg för anläggningstypen"
+          },
+          "fuel": {
+            "name": "Bränsle",
+            "state": {
+              "gas": "Gas",
+              "oil": "Olja",
+              "unknown": "Okänd"
+            }
+          },
+          "cascade": {
+            "name": "Kaskad"
+          },
+          "components": {
+            "name": "Komponenter"
+          },
+          "components_source": {
+            "name": "Källa för komponenterna",
+            "state": {
+              "cloud": "Moln",
+              "local": "Lokal åtkomst"
+            }
+          },
+          "components_table_version": {
+            "name": "Version av komponenttabellen"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Utomhusdelens programvaruversion"

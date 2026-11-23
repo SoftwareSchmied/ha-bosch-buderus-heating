@@ -187,7 +187,10 @@ section, which holds no values, paths, names or identifiers:
   `evidence` lists why, as fixed codes: `hybrid_manager_signals` (signals of
   a hybrid manager), `hybrid_resources` (resources of the hybrid control),
   `system_type` or `heat_source_type` (the reported type names a hybrid
-  system). Product names and other readings are never used.
+  system), and since 0.9.3-beta.6 `hybrid_manager_component` and
+  `heat_source_types_combined` from the plant kind (see
+  [plant model](#plant-model)). Product names and other readings are never
+  used.
   `volume_flow_readings` counts the volume flow readings of the system.
   `volume_flow` is `unverified` on a hybrid system and `as_reported`
   otherwise: volume flows are always shown as reported and never rescaled;

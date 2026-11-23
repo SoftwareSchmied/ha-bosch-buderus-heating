@@ -280,9 +280,16 @@ controller HMI800 HP Light, for which the holiday rules of iCom gateways in
 ### Plant kind
 
 From the reported type values and the component list, the integration works
-out what kind of plant a gateway runs. In this release the plant kind is
-shown in the diagnostics only; it changes no entity, name, control or
-request.
+out what kind of plant a gateway runs. The heat generator sensor shows it in
+its attribute `plant_kind` (see [heat generator sensor](#heat-generator-sensor)).
+The plant kind adds evidence of a hybrid system: a hybrid manager at the
+hybrid place and a heat pump reported next to a boiler count as a hybrid
+system, and the performance factors, the environmental energy and the
+recordings of the heat pump of a hybrid system follow that (see
+[Calculated values](calculated-values.md#performance-factors)). The plant
+kind may also start additional reads (targeted reads, recordings). It never
+changes a name or a control; entities only come from data the plant
+answers.
 
 | Value | Meaning |
 |---|---|
@@ -324,6 +331,18 @@ Conflicts (shown in the diagnostics only):
 
 Component names never decide anything. Only entries whose basis is
 `rule`, `observed` or `documented` can give a component a role.
+
+### Heat generator sensor
+
+The heat generator sensor of each gateway shows the plant kind with its
+evidence, the fuel and whether the heat pumps form a cascade, and the
+components of the list with place, type number, type name, role, basis and
+product name. The gateway's own rows, rows without a valid type, versions
+and serial numbers are not part of it. A plant without a product name in its
+list, for example an iCom heat pump, gets the sensor too, with the name of
+the component at the heat generator's place as its state. The attributes are
+a versioned interface for cards, see
+[interface for cards (contract 1)](entities.md#interface-for-cards-contract-1).
 
 ### Stored data
 
@@ -459,9 +478,17 @@ unter [ältere Urlaubsformate](legacy-holidays.md) gelten.
 ### Anlagenart
 
 Aus den gemeldeten Typwerten und der Komponentenliste bestimmt die
-Integration, welche Art von Anlage an einem Gateway hängt. In diesem Release
-erscheint die Anlagenart nur in der Diagnose; sie ändert keine Entität,
-keinen Namen, kein Bedienelement und keine Anfrage.
+Integration, welche Art von Anlage an einem Gateway hängt. Der
+Wärmeerzeuger-Sensor zeigt sie im Attribut `plant_kind` (siehe
+[Wärmeerzeuger-Sensor](#wärmeerzeuger-sensor)). Die Anlagenart liefert
+zusätzliche Belege für eine Hybridanlage: Ein Hybrid-Manager am Hybridplatz
+und eine Wärmepumpe neben einem Kessel zählen als Hybridanlage, und danach
+richten sich die Arbeitszahlen, die Umweltenergie und die Aufzeichnungen der
+Wärmepumpe einer Hybridanlage (siehe
+[berechnete Werte](calculated-values.md#deutsch-leistungszahl-und-arbeitszahlen)).
+Die Anlagenart darf außerdem zusätzliche Lesungen auslösen (gezielte
+Lesungen, Aufzeichnungen). Namen und Bedienelemente ändert sie nie;
+Entitäten entstehen nur aus Daten, die die Anlage beantwortet.
 
 | Wert | Bedeutung |
 |---|---|
@@ -503,6 +530,19 @@ Widersprüche (nur in der Diagnose):
 
 Namen von Komponenten entscheiden nie etwas. Nur Einträge mit der Basis
 `rule`, `observed` oder `documented` können einer Komponente eine Rolle geben.
+
+### Wärmeerzeuger-Sensor
+
+Der Wärmeerzeuger-Sensor jedes Gateways zeigt die Anlagenart mit ihren
+Belegen, den Brennstoff und ob die Wärmepumpen eine Kaskade bilden, dazu die
+Komponenten der Liste mit Platz, Typnummer, Typname, Rolle, Grundlage und
+Produktname. Die Zeilen des Gateways selbst, Zeilen ohne gültigen Typ,
+Versionen und Seriennummern gehören nicht dazu. Eine Anlage ohne Produktnamen
+in ihrer Liste, zum Beispiel eine iCom-Wärmepumpe, erhält den Sensor ebenfalls,
+mit dem Namen der Komponente am Platz des Wärmeerzeugers als Zustand. Die
+Attribute sind eine versionierte Schnittstelle für Karten, siehe
+[Interface for cards (contract 1)](entities.md#interface-for-cards-contract-1)
+(englisch).
 
 ### Gespeicherte Daten
 

@@ -3005,7 +3005,56 @@
         "name": "Prossima vacanza"
       },
       "heat_generator": {
-        "name": "Generatore di calore"
+        "name": "Generatore di calore",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Versione dell'interfaccia"
+          },
+          "state_basis": {
+            "name": "Base dello stato",
+            "state": {
+              "product_name": "Nome del prodotto",
+              "component_type": "Tipo di componente"
+            }
+          },
+          "plant_kind": {
+            "name": "Tipo di impianto",
+            "state": {
+              "heat_pump": "Pompa di calore",
+              "hybrid": "Impianto ibrido",
+              "boiler": "Caldaia",
+              "ventilation": "Ventilazione",
+              "none": "Nessun generatore di calore"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Indizi del tipo di impianto"
+          },
+          "fuel": {
+            "name": "Combustibile",
+            "state": {
+              "gas": "Gas",
+              "oil": "Gasolio",
+              "unknown": "Sconosciuto"
+            }
+          },
+          "cascade": {
+            "name": "Cascata"
+          },
+          "components": {
+            "name": "Componenti"
+          },
+          "components_source": {
+            "name": "Origine dei componenti",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Accesso locale"
+            }
+          },
+          "components_table_version": {
+            "name": "Versione della tabella dei componenti"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Versione software dell'unità esterna"

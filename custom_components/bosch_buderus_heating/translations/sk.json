@@ -3005,7 +3005,56 @@
         "name": "Nasledujúca dovolenka"
       },
       "heat_generator": {
-        "name": "Zdroj tepla"
+        "name": "Zdroj tepla",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Verzia rozhrania"
+          },
+          "state_basis": {
+            "name": "Základ stavu",
+            "state": {
+              "product_name": "Názov produktu",
+              "component_type": "Typ komponentu"
+            }
+          },
+          "plant_kind": {
+            "name": "Druh sústavy",
+            "state": {
+              "heat_pump": "Tepelné čerpadlo",
+              "hybrid": "Hybridná sústava",
+              "boiler": "Kotol",
+              "ventilation": "Vetranie",
+              "none": "Bez zdroja tepla"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Doklady druhu sústavy"
+          },
+          "fuel": {
+            "name": "Palivo",
+            "state": {
+              "gas": "Plyn",
+              "oil": "Vykurovací olej",
+              "unknown": "Neznáme"
+            }
+          },
+          "cascade": {
+            "name": "Kaskáda"
+          },
+          "components": {
+            "name": "Komponenty"
+          },
+          "components_source": {
+            "name": "Zdroj komponentov",
+            "state": {
+              "cloud": "Cloud",
+              "local": "Lokálny prístup"
+            }
+          },
+          "components_table_version": {
+            "name": "Verzia tabuľky komponentov"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Verzia softvéru vonkajšej jednotky"

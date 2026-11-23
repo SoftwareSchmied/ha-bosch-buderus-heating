@@ -3005,7 +3005,56 @@
         "name": "Следваща ваканция"
       },
       "heat_generator": {
-        "name": "Топлинен източник"
+        "name": "Топлинен източник",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Версия на интерфейса"
+          },
+          "state_basis": {
+            "name": "Основа на състоянието",
+            "state": {
+              "product_name": "Име на продукта",
+              "component_type": "Тип компонент"
+            }
+          },
+          "plant_kind": {
+            "name": "Вид на инсталацията",
+            "state": {
+              "heat_pump": "Термопомпа",
+              "hybrid": "Хибридна инсталация",
+              "boiler": "Котел",
+              "ventilation": "Вентилация",
+              "none": "Без топлинен източник"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Доказателства за вида на инсталацията"
+          },
+          "fuel": {
+            "name": "Гориво",
+            "state": {
+              "gas": "Газ",
+              "oil": "Нафта",
+              "unknown": "Неизвестно"
+            }
+          },
+          "cascade": {
+            "name": "Каскада"
+          },
+          "components": {
+            "name": "Компоненти"
+          },
+          "components_source": {
+            "name": "Източник на компонентите",
+            "state": {
+              "cloud": "Облак",
+              "local": "Локален достъп"
+            }
+          },
+          "components_table_version": {
+            "name": "Версия на таблицата с компоненти"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Версия на софтуера на външното тяло"

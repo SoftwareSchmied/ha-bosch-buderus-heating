@@ -3005,7 +3005,56 @@
         "name": "Naslednje počitnice"
       },
       "heat_generator": {
-        "name": "Vir toplote"
+        "name": "Vir toplote",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Različica vmesnika"
+          },
+          "state_basis": {
+            "name": "Osnova stanja",
+            "state": {
+              "product_name": "Ime izdelka",
+              "component_type": "Vrsta komponente"
+            }
+          },
+          "plant_kind": {
+            "name": "Vrsta sistema",
+            "state": {
+              "heat_pump": "Toplotna črpalka",
+              "hybrid": "Hibridni sistem",
+              "boiler": "Kotel",
+              "ventilation": "Prezračevanje",
+              "none": "Brez vira toplote"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Dokazi o vrsti sistema"
+          },
+          "fuel": {
+            "name": "Gorivo",
+            "state": {
+              "gas": "Plin",
+              "oil": "Kurilno olje",
+              "unknown": "Neznano"
+            }
+          },
+          "cascade": {
+            "name": "Kaskada"
+          },
+          "components": {
+            "name": "Komponente"
+          },
+          "components_source": {
+            "name": "Vir komponent",
+            "state": {
+              "cloud": "Oblak",
+              "local": "Lokalni dostop"
+            }
+          },
+          "components_table_version": {
+            "name": "Različica tabele komponent"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Različica programske opreme zunanje enote"

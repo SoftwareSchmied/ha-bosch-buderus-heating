@@ -3005,7 +3005,56 @@
         "name": "Sljedeći odmor"
       },
       "heat_generator": {
-        "name": "Izvor topline"
+        "name": "Izvor topline",
+        "state_attributes": {
+          "contract_version": {
+            "name": "Verzija sučelja"
+          },
+          "state_basis": {
+            "name": "Osnova stanja",
+            "state": {
+              "product_name": "Naziv proizvoda",
+              "component_type": "Vrsta komponente"
+            }
+          },
+          "plant_kind": {
+            "name": "Vrsta sustava",
+            "state": {
+              "heat_pump": "Dizalica topline",
+              "hybrid": "Hibridni sustav",
+              "boiler": "Kotao",
+              "ventilation": "Ventilacija",
+              "none": "Bez izvora topline"
+            }
+          },
+          "plant_kind_evidence": {
+            "name": "Dokazi o vrsti sustava"
+          },
+          "fuel": {
+            "name": "Gorivo",
+            "state": {
+              "gas": "Plin",
+              "oil": "Lož-ulje",
+              "unknown": "Nepoznato"
+            }
+          },
+          "cascade": {
+            "name": "Kaskada"
+          },
+          "components": {
+            "name": "Komponente"
+          },
+          "components_source": {
+            "name": "Izvor komponenti",
+            "state": {
+              "cloud": "Oblak",
+              "local": "Lokalni pristup"
+            }
+          },
+          "components_table_version": {
+            "name": "Verzija tablice komponenti"
+          }
+        }
       },
       "outdoor_unit_software_version": {
         "name": "Verzija softvera vanjske jedinice"

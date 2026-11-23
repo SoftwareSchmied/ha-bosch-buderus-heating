@@ -68,7 +68,7 @@ from .observations import (
     pair_summary,
 )
 from .performance_history import performance_diagnostics
-from .plant_inputs import plant_diagnostics, plant_has_values
+from .plant_inputs import current_plant, plant_diagnostics, plant_has_values
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .program_names import config_issue, is_name_path
@@ -546,11 +546,18 @@ def _hybrid_volume_flow(
     reports = []
     for target_key, number in targets.items():
         readings: list[tuple[str, object]] = []
+        plant_evidence: list[str] = []
         for binding_key, binding in snapshot.bindings.items():
             if binding.target_id != target_key:
                 continue
             value = state.source_data(binding_key)
             if isinstance(value, BoschBuderusDataUpdateCoordinator):
+                try:
+                    plant = current_plant(value)
+                except Exception:  # the plant model never stops a report
+                    plant = None
+                if plant is not None:
+                    plant_evidence.extend(plant.evidence)
                 data = value.data or {}
                 for path, resource in value.resources.items():
                     current = data[path].resource if path in data else resource
@@ -566,7 +573,7 @@ def _hybrid_volume_flow(
                     )
         if not readings:
             continue
-        evidence = hybrid_evidence(readings)
+        evidence = hybrid_evidence(readings, plant_evidence)
         reports.append(
             {
                 "target": number,

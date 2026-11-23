@@ -1037,10 +1037,13 @@ async def test_heat_generator_sensor_from_evidence_alone(
     sensor = added[0]
     sensor._refresh()
     assert sensor.native_value is None
-    assert sensor.extra_state_attributes == {
-        "heat_source_type": "brine",
-        "known": False,
-    }
+    attributes = sensor.extra_state_attributes
+    assert attributes["heat_source_type"] == "brine"
+    assert attributes["known"] is False
+    # Contract 1 always has every key; without a named module they are empty.
+    assert attributes["heat_generators"] == []
+    assert attributes["state_basis"] is None
+    assert attributes["contract_version"] == 1
     report = heat_generator_diagnostics(plant.coordinator)
     assert report is not None
     assert report["heat_source_type"] == "brine"
