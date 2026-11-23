@@ -55,7 +55,9 @@ The manifest declares `_hvac-open-api._tcp.local.`. Home Assistant dispatches th
 announcements; this integration creates no separate scanner. Hints are bounded
 to 64 service records and expire after ten minutes. Advertised ports and addresses
 are checked by the shared parser. TXT properties and service names are not device
-identity. The address field also accepts manual input when discovery is absent.
+identity. The address field also accepts manual input when discovery is absent;
+an address copied from a browser (`https://…`, a closing slash) or typed with
+one of the ports 80, 443, 9442 or 9443 is taken as the address alone.
 
 ## Authentication and trust
 
@@ -65,8 +67,11 @@ inspects that port's certificate, obtains explicit confirmation and asks for the
 physical release. Device login and password are neither saved nor returned as
 form defaults. The login field shows what is typed; the pass field is masked
 with its show switch. Spaces and line breaks at the edges of both are removed
-before the check; a value with other characters a label does not have, such as
-a space inside it, is refused without a request. The blue-signal switch is a
+before the check, and the pass may be typed in groups: spaces inside it are
+left out like its dashes. A value with other characters a label does not have,
+such as a space inside the login, is refused without a request. A pasted token
+is taken without spaces or line breaks at its ends and without a leading
+`Bearer`. The blue-signal switch is a
 user action, not proof that the gateway has accepted the physical release.
 If the switch was left off, or the input was refused before sending, the page
 shows the message at the top and next to the switch and keeps Login and Pass
@@ -89,7 +94,12 @@ trust applies only to the same address and port role with the exact full leaf
 fingerprint. Every certificate change needs confirmation. No switch is turned on
 in advance. The transport checks the binding again before transmitting credentials.
 
-The read check verifies the three base resources, then the trusted provider must
+The read check verifies the three base resources. A gateway that still collects
+its system information (for some minutes after a start) is asked again by the
+check itself every 20 seconds, for about five minutes; only then does the
+dialog name the cause. The brand is optional and the firmware version is read
+by its numbers (see [local setup evidence](local-setup-probe.md)). Then the
+trusted provider must
 supply an identity contract for this exact owner, target and gateway. Missing
 evidence is explained; the form has no override field or inferred global contract.
 Confirmation of the result triggers fresh reads and the guarded native handover.

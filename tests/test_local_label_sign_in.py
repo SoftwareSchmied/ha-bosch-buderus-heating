@@ -99,19 +99,21 @@ async def test_spaces_and_line_breaks_at_the_edges_are_removed(
 async def test_a_space_inside_a_value_is_an_input_error_and_sends_nothing(
     hass, supported, journal, auth_gateway, monkeypatch
 ):
+    # A space inside the pass is left out (it may be typed in groups); one
+    # inside the login is still an input error.
     entry, manager, result, forms = await _to_auth(hass, monkeypatch, auth_gateway)
-    broken = LABEL.password[:3] + " " + LABEL.password[3:]
+    broken = LABEL.login[:3] + " " + LABEL.login[3:]
     result = await submit(
         hass,
         manager,
         result,
-        {"login": LABEL.login, "password": broken, "unlocked": True},
+        {"login": broken, "password": LABEL.password, "unlocked": True},
     )
     assert result["step_id"] == "local_auth"
     assert result["errors"] == {"base": "local_invalid_label_format"}
     # What was typed stays, so only the faulty value has to be corrected.
-    assert _suggested(result, "login") == LABEL.login
-    assert _suggested(result, "password") == broken
+    assert _suggested(result, "login") == broken
+    assert _suggested(result, "password") == LABEL.password
     assert forms == []
     await hass.async_block_till_done()
     (attempt,) = await local_setup_history(hass, entry.entry_id).async_attempts()

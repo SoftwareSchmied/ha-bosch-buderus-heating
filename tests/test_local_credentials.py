@@ -108,11 +108,16 @@ def test_invalid_tokens_have_no_sensitive_error(value):
         "open_api.read " + "a" * 2048,
     ],
 )
-def test_created_response_requires_documented_read_scope(scope):
-    with pytest.raises(LocalCredentialError):
-        created_local_token(
-            {"access_token": PRIVATE_TOKEN, "token_type": "Bearer", "scope": scope}
-        )
+def test_a_created_token_with_another_scope_is_kept_without_a_scope(scope):
+    # The token exists on the gateway once it was answered; the read check
+    # shows whether it may read. Its scope is kept as not reported.
+    credentials = created_local_token(
+        {"access_token": PRIVATE_TOKEN, "token_type": "Bearer", "scope": scope}
+    )
+    assert credentials.token == PRIVATE_TOKEN
+    assert credentials.origin == TokenOrigin.CREATED
+    assert credentials.reported_scope is None
+    assert credentials.to_data()["reported_scope"] is None
 
 
 @pytest.mark.parametrize(
@@ -154,7 +159,6 @@ def test_unknown_response_fields_cannot_claim_token_ownership_or_enable_writes()
     [
         ("imported", None),
         (TokenOrigin.IMPORTED, ("open_api.read",)),
-        (TokenOrigin.CREATED, None),
         (TokenOrigin.CREATED, ["open_api.read"]),
         (TokenOrigin.CREATED, (1,)),
     ],

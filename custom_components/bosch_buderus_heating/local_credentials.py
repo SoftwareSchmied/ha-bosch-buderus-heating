@@ -65,7 +65,7 @@ class LocalCredentials:
         if self.origin == TokenOrigin.IMPORTED:
             if self.reported_scope is not None:
                 raise LocalCredentialError("imported_scope_unproven")
-        elif (
+        elif self.reported_scope is not None and (
             not isinstance(self.reported_scope, tuple)
             or not all(isinstance(s, str) for s in self.reported_scope)
             or _scope(" ".join(self.reported_scope)) != self.reported_scope
@@ -84,7 +84,16 @@ class LocalCredentials:
         }
 
 
+_BEARER = re.compile(r"bearer\s+", re.IGNORECASE)
+
+
 def import_local_token(token: object) -> LocalCredentials:
+    """A token as pasted: spaces and line breaks at its ends and a leading
+    ``Bearer`` (as in a request header) are left out; inside nothing changes."""
+    if isinstance(token, str):
+        token = token.strip()
+        if match := _BEARER.match(token):
+            token = token[match.end() :].strip()
     return LocalCredentials(validate_local_token(token), TokenOrigin.IMPORTED, None)
 
 
@@ -93,16 +102,25 @@ def created_local_token(payload: object) -> LocalCredentials:
 
     Unknown fields, including an uncontracted token_id, do not establish token
     ownership. HTTP status, TLS and request provenance belong to that caller.
+    The token is kept whenever the answer holds one: a missing token type
+    counts as a bearer token, and a missing or unusual scope is kept as not
+    reported (the read check then shows whether the token may read).
     """
     if not isinstance(payload, Mapping):
         raise LocalCredentialError("invalid_token_response")
     token_type = payload.get("token_type")
-    if not isinstance(token_type, str) or token_type.lower() != "bearer":
+    if token_type is not None and (
+        not isinstance(token_type, str) or token_type.strip().lower() != "bearer"
+    ):
         raise LocalCredentialError("invalid_token_type")
+    try:
+        scope: tuple[str, ...] | None = _scope(payload.get("scope"))
+    except LocalCredentialError:
+        scope = None
     return LocalCredentials(
         validate_local_token(payload.get("access_token")),
         TokenOrigin.CREATED,
-        _scope(payload.get("scope")),
+        scope,
     )
 
 

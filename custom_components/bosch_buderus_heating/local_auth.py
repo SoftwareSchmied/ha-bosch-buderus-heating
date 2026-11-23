@@ -157,11 +157,11 @@ async def _response(response: aiohttp.ClientResponse) -> AuthOutcome:
         problem=AuthProblem.RESPONSE_UNCERTAIN,
         retry_after_seconds=delay,
     )
+    # The media type and character set are not checked: the body itself must
+    # be a JSON object in UTF-8 with a token, which the parser checks.
     if (
         response.status != 200
-        or response.content_type != "application/json"
         or response.headers.get("Content-Encoding", "identity").lower() != "identity"
-        or (response.charset is not None and response.charset.lower() != "utf-8")
         or (
             response.content_length is not None
             and response.content_length > MAX_AUTH_BODY

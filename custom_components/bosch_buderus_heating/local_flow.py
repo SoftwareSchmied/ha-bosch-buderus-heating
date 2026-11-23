@@ -53,6 +53,7 @@ from .local_probe import LocalEndpoint, LocalProbeError, ProbeContext
 from .local_setup import (
     LocalSetupEdit,
     LocalSetupProbeError,
+    VerifiedLocalSetup,
     begin_local_setup,
     is_new_local_plant,
     new_local_plant_id,
@@ -92,6 +93,11 @@ _INTERMEDIATE_STEPS = frozenset(
 )
 # The unique ID of a discovery notice (never of an entry that holds an access).
 DISCOVERY_UNIQUE_ID_PREFIX = "local_discovery_"
+# A gateway still collecting its system information (for some minutes after
+# a start) is asked again by the read check itself: this often, with this
+# wait between two checks, before the dialog shows the cause.
+INCOMPLETE_SYSTEM_CHECKS = 16
+INCOMPLETE_SYSTEM_WAIT_SECONDS = 20.0
 
 
 def local_error(error: object) -> str:
@@ -962,9 +968,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             self._local_wait = None
         if user_input is not None:
             # Spaces and line breaks at the edges come from copying; the label
-            # itself has none. Inside a value nothing is changed.
+            # itself has none. The pass may be typed in groups: spaces inside
+            # it are left out too (like its dashes). The login is unchanged.
             login = str(user_input.get("login", "")).strip()
-            password = str(user_input.get("password", "")).strip()
+            password = "".join(str(user_input.get("password", "")).split())
             if user_input.get("unlocked") is not True:
                 # Shown at the top as well: the switch is easy to overlook.
                 errors["base"] = "local_unlock_confirm_required"
@@ -1179,15 +1186,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         )
         management = self._local_management()
         try:
-            proof = await verify_local_setup(
-                self._local_edit,
-                self._local_record.credentials,
-                self._local_resource_pin,
-                authentication_binding=self._local_auth_pin,
-                current=management.current,
-                is_active=self._local_active,
-                budget=await self._local_budget(),
-            )
+            proof = await self._local_read_check(management)
         except LocalSetupProbeError as error:
             if error.retry_after_seconds is not None or str(error) in (
                 "rate_limited",
@@ -1261,6 +1260,44 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             dismiss_configured_discoveries(self.hass)
         else:
             self._local_phase = "local_result"
+
+    async def _local_read_check(
+        self, management: ConfigurationManagement
+    ) -> VerifiedLocalSetup:
+        """The read check; a gateway still collecting its system information
+        is asked again after a wait, as often as INCOMPLETE_SYSTEM_CHECKS."""
+        assert (
+            self._local_edit is not None
+            and self._local_resource_pin is not None
+            and self._local_record is not None
+            and self._local_record.credentials is not None
+        )
+        checks = 0
+        while True:
+            checks += 1
+            try:
+                return await verify_local_setup(
+                    self._local_edit,
+                    self._local_record.credentials,
+                    self._local_resource_pin,
+                    authentication_binding=self._local_auth_pin,
+                    current=management.current,
+                    is_active=self._local_active,
+                    budget=await self._local_budget(),
+                )
+            except LocalSetupProbeError as error:
+                if (
+                    str(error) != "system_information_incomplete"
+                    or checks >= INCOMPLETE_SYSTEM_CHECKS
+                ):
+                    raise
+            _LOGGER.debug(
+                "The gateway is still collecting its system information; "
+                "read check %d of %d follows",
+                checks + 1,
+                INCOMPLETE_SYSTEM_CHECKS,
+            )
+            await asyncio.sleep(INCOMPLETE_SYSTEM_WAIT_SECONDS)
 
     async def async_step_local_result(
         self, user_input: dict[str, Any] | None = None

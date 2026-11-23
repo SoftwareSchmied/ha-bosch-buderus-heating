@@ -26,8 +26,13 @@ strict UTF-8 JSON validation and the existing structure limits.
 An already running atomic disk write is allowed to finish after cancellation;
 these network budgets do not bound filesystem latency.
 
-A successful response must report a Bearer token and `open_api.read`. The
-resource port and appliance identity still require separate verification.
+A successful response must be a JSON object with an access token. A token
+type, when reported, must be Bearer. The media type and character set of the
+answer are not checked; the body itself must be UTF-8 JSON. A missing or
+unusual scope is kept as not reported: the token exists on the gateway once
+it was answered, and the following read check shows whether it may read (a
+token without read access is refused there with its own message). The resource
+port and appliance identity still require separate verification.
 
 | Result | Meaning |
 | --- | --- |

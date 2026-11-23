@@ -17,6 +17,7 @@ from custom_components.bosch_buderus_heating.local_auth import (
     LabelCredentials,
     request_local_token,
 )
+from custom_components.bosch_buderus_heating.local_credentials import TokenOrigin
 from custom_components.bosch_buderus_heating.local_probe import (
     LocalEndpoint,
     TransportFailure,
@@ -181,7 +182,6 @@ async def test_ambiguous_response_and_redirect_do_not_repeat(auth_gateway, statu
         (b"\xff", {}),
         (b"[]", {}),
         (b'{"access_token":"a","access_token":"b"}', {}),
-        (json.dumps({**PAYLOAD, "scope": "unknown"}).encode(), {}),
         (json.dumps({**PAYLOAD, "access_token": "bad\ntoken"}).encode(), {}),
         (b"[" * 1200 + b"]" * 1200, {}),
         (json.dumps(PAYLOAD).encode()[:-1] + b',"extra":NaN}', {}),
@@ -196,11 +196,8 @@ async def test_ambiguous_response_and_redirect_do_not_repeat(auth_gateway, statu
             {},
         ),
         (b"x" * (auth.MAX_AUTH_BODY + 1), {}),
-        (json.dumps(PAYLOAD).encode(), {"Content-Type": "text/html"}),
-        (
-            json.dumps(PAYLOAD).encode(),
-            {"Content-Type": "application/json; charset=latin-1"},
-        ),
+        (json.dumps({**PAYLOAD, "token_type": "mac"}).encode(), {}),
+        (b'{"token_type":"Bearer","scope":"open_api.read"}', {}),
         (json.dumps(PAYLOAD).encode(), {"Content-Encoding": "gzip"}),
     ],
 )
@@ -213,6 +210,59 @@ async def test_invalid_success_body_keeps_creation_uncertain(
 
     calls, _, binding = await auth_gateway(reply)
     assert (await request(binding)).state == AuthState.UNCERTAIN
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("body", "headers", "scope"),
+    [
+        (json.dumps({**PAYLOAD, "scope": "unknown"}).encode(), {}, None),
+        (json.dumps({**PAYLOAD, "scope": None}).encode(), {}, None),
+        (
+            json.dumps({k: v for k, v in PAYLOAD.items() if k != "scope"}).encode(),
+            {},
+            None,
+        ),
+        (
+            json.dumps(
+                {k: v for k, v in PAYLOAD.items() if k != "token_type"}
+            ).encode(),
+            {},
+            ("open_api.read",),
+        ),
+        (
+            json.dumps(PAYLOAD).encode(),
+            {"Content-Type": "text/html"},
+            ("open_api.read",),
+        ),
+        (
+            json.dumps(PAYLOAD).encode(),
+            {"Content-Type": "application/json; charset=latin-1"},
+            ("open_api.read",),
+        ),
+        (
+            json.dumps(PAYLOAD).encode(),
+            {"Content-Type": "application/vnd.api+json"},
+            ("open_api.read",),
+        ),
+    ],
+)
+async def test_a_token_in_another_answer_form_is_kept(
+    auth_gateway, body, headers, scope
+):
+    # The token exists on the gateway once it answers with one: another
+    # media type, a missing token type or an unusual scope never discards it.
+    # Whether the token may read is shown by the read check.
+    async def reply(head, form, writer):
+        writer.write(wire_reply(body, headers=headers))
+        await writer.drain()
+
+    calls, _, binding = await auth_gateway(reply)
+    outcome = await request(binding)
+    assert outcome.state == AuthState.RECEIVED
+    assert outcome.credentials.token == PAYLOAD["access_token"]
+    assert outcome.credentials.origin == TokenOrigin.CREATED
+    assert outcome.credentials.reported_scope == scope
     assert len(calls) == 1
 
 

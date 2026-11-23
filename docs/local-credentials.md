@@ -12,7 +12,7 @@ The local credential record distinguishes two sources:
 
 | Source | Reported scope | Additional evidence |
 | --- | --- | --- |
-| Token returned by device-label login | Parsed from the successful authentication response; it must include `open_api.read` | Confirmed certificate bindings for authentication and resources, followed by the complete resource probe |
+| Token returned by device-label login | Parsed from the successful authentication response when it reports a usable scope, otherwise `null` | Confirmed certificate bindings for authentication and resources, followed by the complete resource probe |
 | Existing token supplied by the user | `null`, because a successful GET does not report the token's scope | Confirmed resource certificate and the complete resource probe |
 
 Both records use Bearer authentication. Tokens, scope contents, fingerprints and
