@@ -4890,7 +4890,7 @@
    ],
    "setup_calls": {
     "bulk": 21,
-    "single": 7
+    "single": 8
    },
    "setup_requests": [
     "/devices",
@@ -5186,6 +5186,7 @@
     "/system/holidayModes",
     "/system/iSRC/installationStatus",
     "/system/iSRC/supportStatus",
+    "/system/info",
     "/system/lowNoise/duration",
     "/system/lowNoise/mode",
     "/system/powerGuard/active",
@@ -8970,6 +8971,7 @@
     "/pv",
     "/solarCircuits",
     "/system",
+    "/system/info",
     "/ventilation",
     "/zones",
     "/zones/configuration",

@@ -112,6 +112,57 @@ important leaves of all devices. A room controller answers HTTP 500 for a
 leaf it does not have; for optional probes and zone detail leaves I take such
 an answer in a batch as "missing" without a single read of its own.
 
+## Targeted reads
+
+Some areas of a plant are not listed by the gateway, or their container
+refuses the read, although the component list (`/system/info`) or a reported
+value shows them. After every other path of the start-up discovery (and of a
+discovery after a firmware change, a requested search or a start from the
+inventory), I read a few known paths of such an area, by fixed rules:
+
+| Rule | Shown by | Read |
+|---|---|---|
+| R1 hybrid | the first heat source is a boiler and the outdoor status of the hybrid control is `CONNECTED`, or a hybrid manager at place 83 (type 248 or 16), or the system type `eHybrid`; never with the outdoor status `NOT_CONNECTED` | defrost state, starts and energy counters of `hs2`, `/heatSources/systemPressureRange`, `/heatSources/actualHeatDemand` |
+| R2 pool | a component at place 17, `/pool` not readable | `/pool/enabled`, `currentTemp`, `setpointTemp`, `additionalHeater/poolMode` |
+| R3 ventilation | a component at place 81, `/ventilation` not readable or without `zone1` | nine values of `/ventilation/zone1` |
+| R4 solar | a component at place 48, `/solarCircuits` not readable or without `sc1` | five values of `/solarCircuits/sc1` |
+| R5 hot water | a heat source or heating circuit is listed, the hot water list names no circuit (empty, refused or missing) | `/dhwCircuits/dhw1/operationMode` and `dhw2/operationMode`; a circuit that answers is then read like a refused circuit |
+| R6 cascade | the system type `heatpump_cascade` with 2 to 6 refrigerant circuits | refrigerant status, compressor speed, starts and working time of each `hs1` to `hsN` the gateway does not list |
+
+- Only components whose place or role in the [component table](system-components.md)
+  has a basis other than a name count. Remote controls (places 56 to 59)
+  and mixing modules lead to no read.
+- A path is read only when the discovery has neither read nor planned it,
+  at most once per discovery, never one of the paths the integration never
+  reads, and at most 48 paths per discovery (the read policy
+  `module_probe_limit` in the diagnostics marks any beyond that). They are
+  optional reads: they come after every other path in batches of their own,
+  so no other read changes its batch, and they may use the allowance beyond
+  the 512 paths.
+- Nothing is read on iCom gateways, room controllers and water softeners,
+  and nothing in the search for missing parts after the start.
+- The number of refrigerant circuits is read once after the discovery; R6
+  uses the value read last (or the one the inventory keeps), so on a new
+  plant it applies from the next discovery on.
+- An error of a targeted read (HTTP 5xx, 429, 428, a timeout) never ends the
+  discovery and never makes a reading unavailable: ten single reads in a row
+  that answer HTTP 5xx, a rate limit or a timeout end only the targeted
+  reads (the rate limit pauses the cloud access as usual), and a 428 answer
+  raises no repair.
+- A path that answers becomes an entity like any discovered path; an
+  unknown path stays a diagnostic. The results of the last run are kept for
+  the diagnostics only and never skip a read.
+- `/system/info` is read in the first batch, right after the roots, so the
+  components are known early, also when `/system` itself cannot be listed.
+  Every other path keeps its batch.
+
+On my own K40 no rule applies: the same paths are read, each as often and in
+the same batches; only `/system/info` moves to the first batch. Tested with
+synthetic plants and the cloud capture of my own K40. Not yet confirmed on a
+real hybrid system without a listed heat pump (#138), a hot water circuit
+without a list (#131), a cascade, or ventilation, pool and solar found
+through their place.
+
 ## Recovery after startup
 
 Recovery uses existing coordinator wake-ups. It does not add a separate timer

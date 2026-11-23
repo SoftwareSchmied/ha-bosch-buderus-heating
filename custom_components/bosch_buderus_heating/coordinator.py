@@ -162,6 +162,7 @@ from .rrc_write import (
 from .season_paths import is_season_dependent
 from .start_counters import is_start_counter_path
 from .startup_data import (
+    CIRCUIT_COUNT_PATH,
     LICENSE_PATH,
     STARTUP_BUDGET_SECONDS,
     StartupSession,
@@ -3759,6 +3760,7 @@ class BoschBuderusDataUpdateCoordinator(
                 # Optional probes may go on outside the shared budget (#131).
                 maximum_extra_probes=MAX_EXTRA_PROBES,
                 on_progress=self._discovery_progress,
+                known_values=_known_probe_values(self),
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err
@@ -3773,6 +3775,8 @@ class BoschBuderusDataUpdateCoordinator(
             # would name the category of an earlier outage.
             self.last_failed_refresh.cycle_failure(_pointt_result(err))
             raise UpdateFailed("The cloud resources could not be discovered") from err
+        finally:
+            _keep_module_probes(self)
         if not resources:
             if self.discovery_diagnostics.precondition_required():
                 self._note_precondition_refused()
@@ -5228,6 +5232,48 @@ def _rejection_token(err: WriteValidationError) -> str:
     if isinstance(err, RrcWritePending):
         return "pending"
     return "validation"
+
+
+def _known_probe_values(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, Resource]:
+    """The values of the targeted reads' rules that the discovery itself does
+    not read: the number of refrigerant circuits, read once after the
+    discovery; the last value read, else the one the inventory keeps."""
+    found: dict[str, Resource] = {}
+    try:
+        cached = {
+            read.path: read.resource for read in coordinator.startup_data.cached_reads()
+        }
+        stored = (
+            coordinator.inventory.resources(coordinator.gateway.gateway_id)
+            if coordinator.inventory is not None
+            else {}
+        )
+        for path in (CIRCUIT_COUNT_PATH,):
+            resource = (
+                cached.get(path) or coordinator.resources.get(path) or stored.get(path)
+            )
+            if resource is not None and resource.has_value:
+                found[path] = resource
+    except Exception:  # a value the rules miss only means no targeted read
+        _LOGGER.debug("Values for targeted reads not available", exc_info=True)
+    return found
+
+
+def _keep_module_probes(coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+    """The results of a discovery's targeted reads go into the plant model's
+    stored row (diagnostics only; they never decide a read)."""
+    report = getattr(coordinator, "discovery_diagnostics", None)
+    results = getattr(report, "module_probe_results", None)
+    if results is None:
+        return
+    try:
+        from .plant_inputs import set_probe_results
+
+        set_probe_results(coordinator, results)
+    except Exception:  # the stored row never disturbs a discovery
+        _LOGGER.debug("Results of targeted reads not kept", exc_info=True)
 
 
 def _pointt_result(error: PointTError | None) -> str:

@@ -13,7 +13,9 @@ circuits, heat sources, solar circuits, ventilation zones and zones), this
 module plans direct reads of the known children instead: the children a
 readable sibling container lists, and the children named in the catalogs of
 the integration. Nothing is planned for a container the controller does not
-have (HTTP 404) or for a circuit it does not advertise. The planned paths are
+have (HTTP 404) or for a circuit it does not advertise, except a hot water
+circuit whose operation mode a targeted read found (``module_probes``, R5):
+its known children are read as optional reads. The planned paths are
 ordinary discovery reads within its request budget; a 403 or 404 answer to
 one of them is kept like any other.
 """
@@ -239,6 +241,19 @@ class ContainerProbes:
         self._incomplete[container] = reason
         return self._fill(container, reason)
 
+    def probe_answered(self, container: str, depth: int) -> list[ContainerProbe]:
+        """A targeted read showed a circuit the gateway does not list (its
+        operation mode answered): read its known children like those of a
+        refused container, as optional reads (reason ``probe_answered``)."""
+        if family_of(container) is None:
+            return []
+        if container in self._listings or container in self._incomplete:
+            return []
+        reason = "probe_answered"
+        self._register(container, depth)
+        self._incomplete[container] = reason
+        return self._fill(container, reason, core=False)
+
     def listed(
         self, container: str, resource: Resource, depth: int
     ) -> list[ContainerProbe]:
@@ -293,7 +308,9 @@ class ContainerProbes:
                 )
         return probes
 
-    def _fill(self, container: str, reason: str) -> list[ContainerProbe]:
+    def _fill(
+        self, container: str, reason: str, *, core: bool = True
+    ) -> list[ContainerProbe]:
         """Known children of the kind, then those its siblings list."""
         family = family_of(container)
         assert family is not None
@@ -313,7 +330,7 @@ class ContainerProbes:
             reason,
             (*known, *(f"{container}{child}" for child in listed)),
             references=siblings,
-            core=True,
+            core=core,
         )
 
     def _plan(

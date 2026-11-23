@@ -158,7 +158,51 @@ NEW_ATTRIBUTES: dict[str, frozenset[str]] = {
     r".*:heat_generator": HEAT_GENERATOR_CONTRACT_KEYS,
 }
 WRITE_DELTAS: dict[str, dict[str, int]] = {}
-EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {}
+# Targeted reads (module_probes): a fixture tree whose /system does not list
+# /system/info reads it once in the first batch, and a heating plant whose hot
+# water list names no circuit asks for the operation mode of dhw1 and dhw2 (R5).
+_SYSTEM_INFO: tuple[str, ...] = (r"/system/info",)
+_HOT_WATER: tuple[str, ...] = (r"/dhwCircuits/dhw[12]/operationMode",)
+EXPECTED_NEW: dict[str, dict[str, tuple[str, ...]]] = {
+    **{
+        name: {"requests": _SYSTEM_INFO}
+        for name in (
+            "connectkey_programs_ab",
+            "connectkey_variable_tariff",
+            "connectkey_ventilation_program",
+            "connectkey_zone_controls",
+            "connectkey_zone_programs",
+            "holidays_legacy",
+            "icom_readings",
+            "icom_season_circuit",
+            "icom_tbso",
+            "icom_temperature_levels",
+            "rrc_ct200",
+            "rrc_device_settings",
+            "rrc_dhw",
+            "rrc_dhw_week_program",
+            "rrc_extras",
+            "rrc_readings",
+            "rrc_tc100",
+            "rrc_zone_climate",
+            "rrc_zones_programs",
+            "wddw2_readings",
+            "wddw2_switch_program",
+        )
+    },
+    **{
+        name: {"requests": (*_SYSTEM_INFO, *_HOT_WATER)}
+        for name in (
+            "connectkey_cooling_programs",
+            "connectkey_programs_absolute",
+            "connectkey_readings",
+            "rrc_absence",
+            "rrc_circuit",
+            "rrc_system",
+        )
+    },
+    "connectkey_zone_climate": {"requests": _HOT_WATER},
+}
 POSITION_FREE: frozenset[str] = frozenset({"/system/info"})
 
 # Measured with the real clock of the test run, never the same twice.

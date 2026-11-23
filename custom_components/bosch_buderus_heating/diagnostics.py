@@ -1517,8 +1517,10 @@ def _discovery_diagnostics(
         counters["fallback_attempts"] += item.fallback_reason is not None
         counters["fallback_successes"] += item.fallback_result == "success"
         counters["fallback_failures"] += item.fallback_result not in (None, "success")
+    snapshot = report.snapshot()
+    snapshot["module_probes"] = _module_probes(coordinator, report.module_probes)
     return {
-        **report.snapshot(),
+        **snapshot,
         "groups": {
             path: dict(sorted(counters.items()))
             for path, counters in sorted(groups.items())
@@ -1539,6 +1541,30 @@ def _discovery_diagnostics(
             )
         ],
     }
+
+
+def _module_probes(
+    coordinator: BoschBuderusDataUpdateCoordinator, current: dict[str, object] | None
+) -> dict[str, object] | None:
+    """The targeted reads of this start's discovery; before one ran (a start
+    from the inventory), the results of the last run kept in the plant
+    model's stored row (``restored: true``)."""
+    if current is not None:
+        return current
+    from .plant_inputs import existing_tracker
+
+    tracker = existing_tracker(coordinator)
+    if tracker is None or not tracker.loaded or not tracker.probes:
+        return None
+    now = int(time())
+    results: list[dict[str, object]] = []
+    for item in tracker.probes:
+        entry = {key: item[key] for key in ("path", "rule", "result") if key in item}
+        at = item.get("at")
+        if isinstance(at, int) and not isinstance(at, bool):
+            entry["seconds_ago"] = max(0, now - at)
+        results.append(entry)
+    return {"restored": True, "results": results}
 
 
 def _startup_diagnostics(

@@ -275,7 +275,8 @@ async def test_discovery_recovers_all_bounded_roots_without_a_global_fallback_ca
     )
 
 
-@pytest.mark.parametrize("maximum_resources", [6, 512])
+# 7: the roots, /system/info (read in the first batch) and the circuits.
+@pytest.mark.parametrize("maximum_resources", [7, 512])
 async def test_discovery_prioritizes_circuits_before_optional_fallbacks(
     maximum_resources: int,
 ) -> None:
@@ -347,7 +348,7 @@ async def test_discovery_prioritizes_circuits_before_optional_fallbacks(
         "gateway", hc2, fallback_reason="gateway_5xx"
     )
     assert client.get_resources_bulk.await_args_list[:3] == [
-        call("gateway", ("/system", "/heatingCircuits")),
+        call("gateway", ("/system", "/heatingCircuits", "/system/info")),
         call("gateway", (hc1, hc2)),
         call("gateway", (hc1_mode, hc2_mode)),
     ]

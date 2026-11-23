@@ -107,6 +107,11 @@ _MAX_HEAT_SOURCES: Final = 16
 _PROBE_TEXT: Final = re.compile(r"[A-Za-z0-9_./{}%:-]{1,96}")
 
 _TRACKERS: WeakKeyDictionary[object, PlantTracker] = WeakKeyDictionary()
+# Results of targeted reads handed over before the gateway's model started
+# (the first discovery runs before the platforms are set up).
+_PENDING_PROBES: WeakKeyDictionary[object, tuple[Mapping[str, object], ...]] = (
+    WeakKeyDictionary()
+)
 
 
 def safe_token(value: object) -> str | None:
@@ -582,6 +587,25 @@ def _probe_value(item: object) -> bool:
     return isinstance(item, str) and _PROBE_TEXT.fullmatch(item) is not None
 
 
+def _same_times(
+    previous: Sequence[Mapping[str, object]], current: Sequence[Mapping[str, object]]
+) -> tuple[Mapping[str, object], ...]:
+    """The current results, each with the time (``at``) of an earlier result
+    that is otherwise equal: an unchanged run changes nothing in the row."""
+
+    def without_time(item: Mapping[str, object]) -> tuple[tuple[str, object], ...]:
+        return tuple(sorted((key, value) for key, value in item.items() if key != "at"))
+
+    earlier = {without_time(item): item.get("at") for item in previous}
+    kept: list[Mapping[str, object]] = []
+    for item in current:
+        at = earlier.get(without_time(item))
+        if at is not None and "at" in item:
+            item = {**item, "at": at}
+        kept.append(item)
+    return tuple(kept)
+
+
 def _probes(value: object) -> tuple[Mapping[str, object], ...] | None:
     if not isinstance(value, Sequence) or isinstance(value, str | bytes):
         return None
@@ -731,6 +755,8 @@ class PlantTracker:
         self.writes = 0
         self.changes = 0
         self.probes: tuple[Mapping[str, object], ...] = ()
+        # Results handed over before the stored row was read.
+        self._fresh_probes: tuple[Mapping[str, object], ...] | None = None
         self._components: dict[str, dict[str, str | None]] = {}
         self._updated_at: datetime | None = None
 
@@ -783,6 +809,9 @@ class PlantTracker:
                 key: dict(value) for key, value in self._stored.components.items()
             }
             self._updated_at = self._stored.updated_at
+        if self._fresh_probes is not None:
+            self.probes = _same_times(self.probes, self._fresh_probes)
+            self._fresh_probes = None
         self._loaded = True
         self.refresh()
 
@@ -1049,8 +1078,11 @@ class PlantTracker:
         probes = _probes(results)
         if probes is None:
             return False
-        self.probes = probes
-        if self._loaded and self.result is not None:
+        if not self._loaded:
+            self._fresh_probes = probes
+            return True
+        self.probes = _same_times(self.probes, probes)
+        if self.result is not None:
             self._save()
         return True
 
@@ -1118,6 +1150,9 @@ def track_plant(
         except Exception:  # the plant model never stops a setup
             _LOGGER.debug("Plant model not started", exc_info=True)
             return None
+        pending = _PENDING_PROBES.pop(coordinator, None)
+        if pending is not None:
+            tracker.set_probes(pending)
         coordinator.hass.async_create_task(tracker.async_load(), eager_start=True)
     tracker.subscribe(entry)
     return tracker
@@ -1159,9 +1194,22 @@ def set_probe_results(
     coordinator: object, results: Sequence[Mapping[str, object]]
 ) -> bool:
     """Keep the results of targeted reads in the stored row (at most 48
-    entries of safe texts, numbers and flags); False if not kept."""
+    entries of safe texts, numbers and flags); False if not kept.
+
+    Results handed over before the gateway's model started are kept until
+    it starts. An entry equal to a stored one keeps the stored time.
+    """
     tracker = existing_tracker(coordinator)
-    return tracker.set_probes(results) if tracker is not None else False
+    if tracker is not None:
+        return tracker.set_probes(results)
+    probes = _probes(results)
+    if probes is None:
+        return False
+    try:
+        _PENDING_PROBES[coordinator] = probes
+    except TypeError:  # not weakly referable
+        return False
+    return True
 
 
 # ------------------------------------------------------------ diagnostics

@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import re
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from time import monotonic, time
 
 from . import rrc_contracts
 from .discovery_containers import (
@@ -30,6 +31,13 @@ from .legacy_holidays import (
     ICOM_HOLIDAY_ROOT,
     WDDW2_HOLIDAY_PATH,
     is_icom_slot,
+)
+from .module_probes import (
+    LIMIT_POLICY,
+    MAX_MODULE_PROBES,
+    SYSTEM_INFO_PATH,
+    ModuleProbes,
+    result_class,
 )
 from .pointt import (
     AuthenticationError,
@@ -69,6 +77,7 @@ from .rrc import (
 )
 from .rrc_contract_absence import EVENT_LISTS
 from .startup_data import LICENSE_PATH, StartupGatewayData, is_startup_path
+from .system_components import load_table
 from .variable_tariff import ICOM_TARIFF_PATHS
 from .water_softener import (
     SOFTENER_CAPABILITIES,
@@ -180,10 +189,27 @@ class DiscoveryDiagnostics:
     # The failed bulk items; kept over a rediscovery (see reset), because a
     # gateway that refuses every discovery is seen only through repeats.
     item_errors: ItemErrorLog = field(default_factory=ItemErrorLog)
+    # The targeted reads (``module_probes``): what the rules saw and read,
+    # and the results kept for the diagnostics (None before they ran).
+    module_probes: dict[str, object] | None = None
+    module_probe_results: tuple[dict[str, object], ...] | None = None
+    # Per container the circuits it lists or how its read failed.
+    listing_refs: dict[str, object] = field(default_factory=dict)
+    # Components at a place that stands for an area, and whether it was found.
+    area_check: dict[str, object] = field(default_factory=dict)
+    # The batch (1 = first) in which ``/system/info`` was requested.
+    system_info_bulk: int | None = None
+    duration_seconds: float | None = None
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
         self.paths.clear()
+        self.module_probes = None
+        self.module_probe_results = None
+        self.listing_refs = {}
+        self.area_check = {}
+        self.system_info_bulk = None
+        self.duration_seconds = None
         self.direct_probes.clear()
         self.direct_probes_over_limit = 0
         self.extra_probe_limit = 0
@@ -210,6 +236,8 @@ class DiscoveryDiagnostics:
         self.bulk_calls += 1
         for path in paths:
             self.paths[path].bulk_result = "pending"
+        if SYSTEM_INFO_PATH in paths and self.system_info_bulk is None:
+            self.system_info_bulk = self.bulk_calls
 
     def bulk_failed(self, paths: tuple[str, ...], error: PointTError) -> None:
         """Record a request-wide error for exactly the submitted batch."""
@@ -318,6 +346,11 @@ class DiscoveryDiagnostics:
                 )
             ),
             **self._direct_probe_snapshot(),
+            "duration_seconds": self.duration_seconds,
+            "system_info_bulk": self.system_info_bulk,
+            "listing_refs": dict(self.listing_refs),
+            "area_check": dict(self.area_check),
+            "module_probes": self.module_probes,
         }
 
     def _direct_probe_snapshot(self) -> dict[str, object]:
@@ -393,6 +426,7 @@ _NOT_READ_POLICIES = frozenset(
         "rrc_device_setting_limit",
         "rrc_event_entry",
         "optional_5xx_assumed_missing",
+        LIMIT_POLICY,
     }
 )
 
@@ -686,6 +720,87 @@ async def async_discover_resources(
     rrc_evidence: tuple[str, ...] = (),
     maximum_extra_probes: int = 0,
     on_progress: Callable[[dict[str, Resource]], None] | None = None,
+    module_probe_limit: int = MAX_MODULE_PROBES,
+    known_values: Mapping[str, Resource] | None = None,
+) -> dict[str, Resource]:
+    """Follow PointT references without escaping configured safety bounds.
+
+    See ``_async_discover`` for the parameters. ``known_values``: values
+    read outside the discovery that the targeted reads use (the number of
+    refrigerant circuits is read once after the discovery). Afterwards, also
+    after an error, the report holds the targeted reads (``module_probes``),
+    the lists of the containers, the area check and the duration.
+    """
+    report = diagnostics or DiscoveryDiagnostics()
+    probes = ModuleProbes(
+        load_table(), never_read=is_never_read, limit=module_probe_limit
+    )
+    for path, resource in (known_values or {}).items():
+        probes.observe(path, resource, None)
+    started = monotonic()
+    try:
+        return await _async_discover(
+            client,
+            gateway_id,
+            roots=roots,
+            maximum_depth=maximum_depth,
+            maximum_resources=maximum_resources,
+            report=report,
+            startup_data=startup_data,
+            gateway=gateway,
+            rediscovery=rediscovery,
+            rrc_evidence=rrc_evidence,
+            maximum_extra_probes=maximum_extra_probes,
+            on_progress=on_progress,
+            probes=probes,
+        )
+    finally:
+        _finish_module_probes(report, probes, monotonic() - started)
+
+
+def _finish_module_probes(
+    report: DiscoveryDiagnostics, probes: ModuleProbes, duration: float
+) -> None:
+    """Keep what the targeted reads saw and read in the report."""
+
+    def outcome(path: str) -> str:
+        item = report.paths.get(path)
+        if item is None:
+            return "skipped"
+        return result_class(
+            item.bulk_result, item.fallback_result, item.discovered, item.read_policy
+        )
+
+    def found(area: str) -> bool:
+        return any(
+            item.discovered and (path == area or path.startswith(f"{area}/"))
+            for path, item in report.paths.items()
+        )
+
+    report.module_probes = probes.snapshot(outcome)
+    report.module_probe_results = (
+        probes.results(outcome, int(time())) if probes.evaluated else None
+    )
+    report.listing_refs = probes.listing_refs()
+    report.area_check = probes.area_check(found)
+    report.duration_seconds = round(duration, 1)
+
+
+async def _async_discover(
+    client: PointTClient,
+    gateway_id: str,
+    *,
+    roots: tuple[str, ...],
+    maximum_depth: int,
+    maximum_resources: int,
+    report: DiscoveryDiagnostics,
+    startup_data: StartupGatewayData | None,
+    gateway: Gateway | None,
+    rediscovery: bool,
+    rrc_evidence: tuple[str, ...],
+    maximum_extra_probes: int,
+    on_progress: Callable[[dict[str, Resource]], None] | None,
+    probes: ModuleProbes,
 ) -> dict[str, Resource]:
     """Follow PointT references without escaping configured safety bounds.
 
@@ -699,15 +814,22 @@ async def async_discover_resources(
     only once ``maximum_resources`` is used up.
     ``on_progress`` is called with the resources found so far after each
     answered block of reads; it must not change them.
+    ``probes``: the targeted reads (``module_probes``); they are read after
+    every other path, and ``/system/info`` is read in the first batch.
     """
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
 
-    report = diagnostics or DiscoveryDiagnostics()
     report.reset()
     report.extra_probe_limit = max(0, maximum_extra_probes)
     discovered: dict[str, Resource] = {}
     softener_profile = is_water_softener(gateway, discovered)
+    if softener_profile:
+        probes.deactivate("water_softener")
+    if is_icom_gateway(gateway):
+        probes.deactivate("icom")
+    if rediscovery:
+        probes.deactivate("search_for_missing_parts")
     # A known family changes probes, not the permission to follow advertised
     # references. Unknown gateways may advertise a softener circuit as well.
     allowed_roots = roots if rediscovery else (*roots, SOFTENER_ROOT)
@@ -736,6 +858,14 @@ async def async_discover_resources(
         optional_pending,
         device_pending,
     )
+    # ``/system/info`` is read in the first batch, right after the roots, so
+    # the components are known early. Its later place among the references
+    # stays empty (``info_slot``): every other path keeps its batch.
+    first_batch: set[str] = set()
+    info_slot = False
+    # The targeted reads are being read: an error then ends only them.
+    probe_phase = False
+    probe_stop: str | None = None
     device_settings: set[str] = set()
 
     def outside_device_scope(path: str) -> bool:
@@ -816,6 +946,15 @@ async def async_discover_resources(
                 path, depth, advertised=source is DiscoveryPathSource.REFERENCE
             )
             return
+        if (
+            path == SYSTEM_INFO_PATH
+            and path in first_batch
+            and path in processed
+            and source is DiscoveryPathSource.REFERENCE
+            and not info_slot
+        ):
+            hold_info_slot(depth)
+            return
         if path in processed or path in identical.skipped:
             return
         depth = min(depth, *(queue.get(path, depth) for queue in queues))
@@ -828,6 +967,8 @@ async def async_discover_resources(
         target = (
             priority_pending
             if path in priority_paths or path in zone_sides
+            else referenced_pending
+            if path in first_batch
             else device_pending
             if path in device_settings
             else queues[1 + _source_priority(report.paths[path].source)]
@@ -836,6 +977,33 @@ async def async_discover_resources(
             if queue is not target:
                 queue.pop(path, None)
         target[path] = depth
+
+    def hold_info_slot(depth: int) -> None:
+        nonlocal info_slot
+        info_slot = True
+        referenced_pending[SYSTEM_INFO_PATH] = depth
+
+    def schedule_module_probes() -> bool:
+        """Plan the targeted reads once every other path is read (so they
+        never take the place of another read); True when new ones were
+        queued."""
+        nonlocal probe_phase
+        if any(queues[:-1]):
+            return False
+        new = probes.plan(report.paths.__contains__)
+        if new:
+            probe_phase = True
+        for over in probes.over_limit:
+            if over not in report.paths:
+                report.scheduled(over, DiscoveryPathSource.OPTIONAL)
+                report.paths[over].read_policy = LIMIT_POLICY
+        for planned in new:
+            schedule(
+                planned.path,
+                planned.path.count("/") - 1,
+                DiscoveryPathSource.OPTIONAL,
+            )
+        return any(queues)
 
     def schedule_direct(probes: list[ContainerProbe]) -> None:
         """#130: children of a container read without its directory."""
@@ -867,6 +1035,7 @@ async def async_discover_resources(
         if rrc_profile:
             return
         rrc_profile = True
+        probes.deactivate("room_controller")
         priority_paths = RRC_PRIORITY_PATHS
         if not softener_profile:
             report.device_profile = "rrc2"
@@ -960,6 +1129,9 @@ async def async_discover_resources(
         enable_rrc_profile(evidence, 1)
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
+    if "/system" in roots and not softener_profile and not rediscovery:
+        first_batch.add(SYSTEM_INFO_PATH)
+        schedule(SYSTEM_INFO_PATH, 1, DiscoveryPathSource.OPTIONAL)
     if is_icom_gateway(gateway) and not rediscovery:
         # The variable tariff of an iCom gateway: two leaves, probed once.
         for tariff_path in ICOM_TARIFF_PATHS:
@@ -971,7 +1143,7 @@ async def async_discover_resources(
     extra_reads = 0
     # #131: the shared budget is used up; only the extra allowance reads.
     extra_mode = False
-    while any(queues):
+    while any(queues) or schedule_module_probes():
         # W6: the setting leaves of listed devices come after every other path
         # and have their own cap (MAX_RRC_DEVICE_SETTING_PROBES, applied when
         # they are scheduled) instead of a share of the overall budget, so a
@@ -1022,6 +1194,11 @@ async def async_discover_resources(
                 )
             elif device_frontier:
                 frontier_entries = admitted(device_pending, capacity)
+        if SYSTEM_INFO_PATH in frontier_entries and SYSTEM_INFO_PATH in processed:
+            # The empty place of ``/system/info``, read in the first batch.
+            del frontier_entries[SYSTEM_INFO_PATH]
+            for queue in queues:
+                queue.pop(SYSTEM_INFO_PATH, None)
         if not frontier_entries:
             continue  # only paths an identical device was refused left
         # SYSTEM-12: a batch of probes that the 5xx rule may take as missing
@@ -1086,12 +1263,19 @@ async def async_discover_resources(
             )
         except PointTError as err:
             report.bulk_failed(frontier, err)
+            if probe_phase and not isinstance(err, AuthenticationError):
+                # Only the targeted reads stop; what was found stays.
+                probe_stop = _error_category(err)
+                break
             raise
         for result in results:
             report.bulk_result(result)
         if any(result.status == 429 for result in results):
             report.stop_reason = "rate_limited"
-            raise RateLimited(retry_after=None)
+            if not probe_phase:
+                raise RateLimited(retry_after=None)
+            probe_stop = "rate_limited"
+            results = tuple(result for result in results if result.status != 429)
         answering: bool | None = None
         if sentinel is not None:
             answering = any(
@@ -1099,22 +1283,34 @@ async def async_discover_resources(
                 for result in results
             )
             results = tuple(result for result in results if result.path != sentinel)
+        elif probe_phase:
+            # Every other path was read: the cloud answers (the rule for
+            # optional paths, ten 5xx answers in a row, applies).
+            answering = True
         if any(result.resource is not None for result in results):
             # A bulk answer with resources shows that the cloud is answering.
             consecutive_5xx = 0
-        results, consecutive_5xx = await _recover_invalid_bulk_results(
-            client,
-            gateway_id,
-            results,
-            diagnostics=report,
-            consecutive_5xx=consecutive_5xx,
-            rrc_profile=rrc_profile,
-            answering=answering,
-        )
+        try:
+            results, consecutive_5xx = await _recover_invalid_bulk_results(
+                client,
+                gateway_id,
+                results,
+                diagnostics=report,
+                consecutive_5xx=consecutive_5xx,
+                rrc_profile=rrc_profile,
+                answering=answering,
+            )
+        except PointTError as err:
+            if not probe_phase or isinstance(err, AuthenticationError):
+                raise
+            # Only the targeted reads stop; the batch's own answers stay.
+            probe_stop = _error_category(err)
+            results = tuple(result for result in results if result.resource is not None)
         for result in results:
             depth = frontier_entries[result.path]
             resource = result.resource
             identical.answered(result.path, result.status)
+            probes.observe(result.path, resource, result.status)
             if resource is None:
                 schedule_direct(containers.refused(result.path, result.status, depth))
                 _LOGGER.debug(
@@ -1131,6 +1327,9 @@ async def async_discover_resources(
             discovered[result.path] = resource
             if extra_mode and not device_frontier:
                 extra_parents.add(result.path)
+            if (circuit := probes.circuit_answered(result.path)) is not None:
+                # R5: a hot water circuit the gateway does not list answers.
+                schedule_direct(containers.probe_answered(circuit, depth - 1))
             if resource.path == ZONE_LIST and listed_ids(resource) is not None:
                 enable_rrc_profile("zones", depth + 1)
                 enable_rrc_lists(depth + 1)
@@ -1159,6 +1358,7 @@ async def async_discover_resources(
             ):
                 softener_profile = True
                 report.device_profile = "water_softener"
+                probes.deactivate("water_softener")
                 schedule(SOFTENER_ROOT, 0, DiscoveryPathSource.CATALOG)
                 schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
             schedule_children(result.path, depth)
@@ -1177,9 +1377,19 @@ async def async_discover_resources(
             schedule_direct(containers.listed(result.path, resource, depth))
         if on_progress is not None:
             on_progress(discovered)
+        if probe_stop is not None:
+            break
     else:
         report.completed = not report.depth_limit_reached
         report.stop_reason = "complete" if report.completed else "depth_limit"
+    if probe_stop is None and probe_phase and report.stop_reason == "resource_limit":
+        probe_stop = "resource_limit"
+    if probe_stop is not None:
+        # Every other path was read; only the targeted reads stopped.
+        report.resource_limit_scope = None
+        report.completed = not report.depth_limit_reached
+        report.stop_reason = "complete" if report.completed else "depth_limit"
+        probes.interrupt(probe_stop)
     return discovered
 
 

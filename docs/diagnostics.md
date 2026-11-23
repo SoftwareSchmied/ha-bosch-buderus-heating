@@ -1081,7 +1081,10 @@ rest of the report stays complete.
 - `stored`, `restored` and `stored_age_seconds`: whether a stored plant row
   exists, whether the result rests on it, and the age of its last change;
   `changes`: how often a new reading changed the plant kind;
-- `probes`: the results of targeted reads (empty for now).
+- `probes`: the results of the last run of targeted reads (per path the
+  rule, the result class and the time; at most 48), see
+  [targeted reads](#targeted-reads-in-the-discovery). They are written only
+  when they change.
 
 A version, hardware type, software identifier or article number equal to a
 serial number of the same row is left out, as is a name field that holds a
@@ -1392,6 +1395,45 @@ URLs, resource paths, gateway IDs, payloads, and response values are not stored
 in `request_metrics`. The recent-request log is memory-only, bounded, and cleared
 when Home Assistant restarts. Its sequence number and age are local diagnostic
 values, not cloud identifiers or wall-clock timestamps.
+
+### Targeted reads in the discovery
+
+The `discovery` section also shows how the discovery used the component list
+and the reported values (see [request behavior](request-behavior.md#targeted-reads)).
+These fields are separate from the `plant` block:
+
+- `system_info_bulk`: the batch (1 = first) in which `/system/info` was
+  requested; `duration_seconds`: how long the discovery took.
+- `listing_refs`: per container (`heatingCircuits`, `dhwCircuits`,
+  `heatSources`, `solarCircuits`, `ventilation`, `pool`) the circuits it
+  lists, for example `["hc1", "hc2"]`, or how its read failed (`http_403`,
+  `http_404`); a container that was not read is missing. This tells "the
+  gateway does not offer it" from "not read".
+- `area_check` (display only, nothing follows from it): `components` (rows
+  of the component list), per component at place 17, 42, 48, 81 or 83 its
+  `token`, `id`, `place`, the `area` that place stands for and whether it
+  was `found`; `remote_places` (components at places 56 to 59) and
+  `heating_circuits_listed`.
+- `module_probes`: `active` and `inactive_reason` (`icom`,
+  `room_controller`, `water_softener`, `search_for_missing_parts`),
+  `limit` (48), `planned`, `over_limit`, `never_read`; per rule (`R1` to
+  `R6`) in `rules` its `area`, the `evidence` (`outdoor_status_connected`,
+  `tok83_id248`, `tok83_id16`, `system_type_ehybrid`, `tok17`, `tok48`,
+  `tok81`, `no_hot_water_circuit_listed`, `system_type_cascade:<N>`),
+  `planned`, `found`, `results` (count per result class) and
+  `over_limit`; `conflicts` (`outdoor_status_not_connected`: a hybrid hint
+  that the outdoor status contradicts, nothing read); `stopped` (why the
+  targeted reads ended early, for example `rate_limited`, `timeout`,
+  `service_unavailable` or `resource_limit`; the discovery itself stays
+  complete); `results` with `path`, `rule` and `result` (`ok`, `404`,
+  `403`, `5xx`, `429`, `skipped` for not read, `other` for 428, a timeout
+  or an unusable answer); `restored: false`.
+- Before a discovery ran since the start (a start from the inventory),
+  `module_probes` shows the last run kept in the stored plant row:
+  `restored: true` and `results` with `seconds_ago` instead of the time.
+  Without such a run it is `null`.
+- A path planned beyond the limit has the read policy `module_probe_limit`
+  and is counted in `paths_not_read`.
 
 ### Simple overview
 
