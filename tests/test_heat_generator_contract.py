@@ -87,6 +87,7 @@ from custom_components.bosch_buderus_heating.system_components import (
     ROLE_VALUES,
     load_table,
 )
+from tests import test_derived_values
 from tests.ha_test_helpers import mock_restore_cache_with_extra_data
 from tests.helpers.heat_generator_contract import check_contract, schema
 from tests.system_components_variants import (
@@ -121,6 +122,15 @@ async def _stop_engines(hass: HomeAssistant) -> AsyncGenerator[None]:
     yield
     for engine in hass.data.get(performance_history._ENGINES, {}).values():
         engine.stop()
+
+
+@pytest.fixture(autouse=True)
+async def _stop_plant_coordinators() -> AsyncGenerator[None]:
+    """Stop the coordinators that ``Plant`` of the derived value tests
+    creates (their refresh timers outlive the test otherwise)."""
+    yield
+    while test_derived_values._COORDINATORS:
+        await test_derived_values._COORDINATORS.pop().async_shutdown()
 
 
 # ---------------------------------------------------------------- helpers
@@ -1014,6 +1024,7 @@ async def test_without_a_component_table_the_sensor_is_as_before(
         system_components.load_table()
 
 
+@pytest.mark.usefixtures("enable_custom_integrations")
 async def test_a_k40_entry_starts_without_a_component_table(
     hass: HomeAssistant,
     freezer: FrozenDateTimeFactory,

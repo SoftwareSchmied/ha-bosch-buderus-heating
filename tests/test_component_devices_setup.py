@@ -333,8 +333,9 @@ async def test_component_devices_show_no_privacy_marker(
     hass_storage: dict[str, Any],
 ) -> None:
     """I7 with the option on: the marked module lists (``PRIVACYMARK`` in
-    every identifying field) reach no device, device diagnostics, log or
-    stored file through the component devices."""
+    every identifying field) reach no state, attribute, restore data,
+    device, device diagnostics, log or stored file through the component
+    devices."""
     import logging
     from contextlib import ExitStack
 
@@ -343,6 +344,8 @@ async def test_component_devices_show_no_privacy_marker(
         assert_no_markers,
         device_rows,
         diagnostics_channels,
+        restore_channel,
+        state_channels,
         storage_channel,
         system_info,
     )
@@ -371,6 +374,8 @@ async def test_component_devices_show_no_privacy_marker(
         found = _components(hass, entry.entry_id)
         assert len(found) >= 3
         channels = {
+            **state_channels(hass),
+            "restore": await restore_channel(hass, hass_storage),
             "devices": json.dumps(device_rows(hass, entry.entry_id)),
             **await diagnostics_channels(hass, entry),
         }

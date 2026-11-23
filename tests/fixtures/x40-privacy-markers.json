@@ -6,7 +6,7 @@
   "capture_date": null,
   "basis": "constructed",
   "reference": "K40-class heat pump gateway: module list of the cloud (/system/info) and of the local access (/system/basicInfo)",
-  "note": "Every identifying field carries the marker PRIVACYMARK: serial numbers, module numbers, the product UUID, the gateway ID of the local answer, a product name that is the row's serial number, a version that is an identifier of the same row, and software and article identifiers with unsafe characters. Product names, hardware types and plain versions are constructed values in the shape of a real list."
+  "note": "Every identifying field carries the marker PRIVACYMARK: serial numbers, module numbers, the product UUID, the gateway ID of the local answer, a product name that is the row's serial number, a version that is an identifier of the same row (the module or serial number, the number in other letter case, the product UUID), a version with a control character, and software and article identifiers with unsafe characters. Product names, hardware types and plain versions are constructed values in the shape of a real list."
  },
  "marker": "PRIVACYMARK",
  "system_info": {
@@ -81,6 +81,39 @@
     "Ver": "2.0.0",
     "ProductName": "PRIVACYMARK-PSN-SECOND-2",
     "ProductSerialNumber": "PRIVACYMARK-PSN-SECOND-2"
+   },
+   {
+    "Id": "165",
+    "Tok": "56",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-REMOTE-1",
+    "No": "PRIVACYMARK-NO-REMOTE-1",
+    "Ver": "privacymark-no-remote-1"
+   },
+   {
+    "Id": "165",
+    "Tok": "57",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-REMOTE-2",
+    "ProductUuid": "PRIVACYMARK-UUID-REMOTE-2",
+    "Ver": "PRIVACYMARK-UUID-REMOTE-2"
+   },
+   {
+    "Id": "165",
+    "Tok": "58",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-REMOTE-3",
+    "ProductSerialNumber": "PRIVACYMARK-PSN-REMOTE-3",
+    "Ver": "PRIVACYMARK-PSN-REMOTE-3"
+   },
+   {
+    "Id": "165",
+    "Tok": "59",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-REMOTE-4",
+    "Ver": "PRIVACYMARK-VER-REMOTE-4\u0000"
+   },
+   {
+    "Id": "72",
+    "Tok": "24",
+    "ModuleSerialNumber": "PRIVACYMARK-MSN-MIXER-5",
+    "Ver": "PRIVACYMARK-VER-MIXER-5\u001b"
    }
   ]
  },

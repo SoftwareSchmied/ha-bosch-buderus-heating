@@ -100,6 +100,32 @@ def test_the_fixture_marks_every_identifying_field() -> None:
     # identifier of the same row.
     assert any(row.get("ProductName") == row.get("ProductSerialNumber") for row in rows)
     assert any(row.get("Ver") == row.get("ModuleSerialNumber") for row in rows)
+    # A version equal to the module number in other letter case, to the
+    # product UUID and to the product serial number of its row.
+    assert any(
+        MARKER in row["No"]
+        and row.get("Ver") != row["No"]
+        and str(row.get("Ver")).casefold() == row["No"].casefold()
+        for row in rows
+        if "No" in row
+    )
+    for field in ("ProductUuid", "ProductSerialNumber"):
+        assert any(
+            MARKER in row[field] and row.get("Ver") == row[field]
+            for row in rows
+            if field in row
+        ), field
+    # A marked version followed by a NUL and by another control character.
+    versions = [str(row.get("Ver", "")) for row in rows]
+    assert any(
+        version.startswith(MARKER) and version.endswith("\x00") for version in versions
+    )
+    assert any(
+        version.startswith(MARKER)
+        and not version[-1].isprintable()
+        and version[-1] not in "\x00 \t\n\r"
+        for version in versions
+    )
     # Unsafe characters in the software and article identifiers.
     assert any(
         any(not char.isalnum() and char not in "-_.:" for char in row["SwIdenStr"])
