@@ -2,15 +2,20 @@
 
 Every program kind the integration reads is listed once in ``KINDS``: its
 path, the kind of its setpoints, the shape of the body it is written with
-and whether the last point of a day carries over into the next one. The
-reading is strict: a program whose form does not match is not supported, and
-nothing about it is guessed (no program IDs, no limits, no levels).
+and whether the last point of a day carries over into the next one. A
+program is read tolerantly but changed only in its clean form: a point that
+cannot be read at all hides the program, while further fields or keys,
+another number or time form, repeated points or limits above the ones a
+change keeps to leave it shown and not changeable (``read_only``). Nothing
+about a program is guessed (no program IDs, no levels).
 
 The heating circuit programs ``A``/``B`` and the hot water programs keep the
-strict form reviewed since 0.9.0: the limits and the level reference must be
-reported. A heating program whose points all carry numbers is an absolute
-program. The further kinds (cooling, zones, ventilation and the WDDW2 hot
-water program) have no confirmed reading yet: a program whose points can be
+form reviewed since 0.9.0: the limits must be reported. A heating program
+whose points all carry numbers is an absolute program; without a reported
+range or step it takes 5 to 30 °C in steps of 0.5
+(``HEATING_RANGE_DEFAULT``), and the read-back of a change confirms what the
+circuit keeps. The further kinds (cooling, zones, ventilation and the WDDW2
+hot water program) have no confirmed reading yet: a program whose points can be
 read is shown, also without limits; whether it may be changed is decided by
 ``switch_program_edit`` from the reported metadata alone. The programs of an
 air conditioner on a PointT gateway carry a mode, a temperature and a fan
@@ -22,7 +27,7 @@ from __future__ import annotations
 
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Final, Literal
 
 from .aircon_program_rules import bounded_int, parse_point
@@ -33,13 +38,17 @@ MINUTES_PER_DAY = 24 * 60
 MAX_SWITCH_POINTS = 168
 MAX_SWITCH_POINTS_PER_DAY = 48
 _LEVEL_KEY = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
-_LEGACY_LEVEL_KEY = re.compile(r"^[a-z][a-z0-9]{0,31}$")
+# A reported limit above this is not believed (a count of switch points).
+_LIMIT_SANITY = 10_000
 # A number as text, as the app writes it (``String.valueOf(float)``).
 _DECIMAL_TEXT = re.compile(r"^-?[0-9]{1,3}\.[0-9]{1,2}$")
 _INTEGER_TEXT = re.compile(r"^-?[0-9]{1,3}$")
 _POINT_FIELDS = frozenset({"dayOfWeek", "time", "setpoint"})
 # Range fields an absolute program may report with its limits.
 RANGE_FIELDS: Final = ("switchPointMin", "switchPointMax", "switchPointResolution")
+# A heating circuit's absolute program without a reported range or step:
+# 5 to 30 °C in steps of 0.5. The read-back of a change confirms it.
+HEATING_RANGE_DEFAULT: Final = (5.0, 30.0, 0.5)
 
 ValueType = Literal["level", "absolute", "degrees", "aircon"]
 
@@ -192,6 +201,9 @@ class SwitchProgramAssessment:
     carry_over: bool = True
     # Diagnostic tokens about the form, never values.
     notes: tuple[str, ...] = ()
+    # A program shown in a form that is not written back: why it cannot be
+    # changed here (a token), ``None`` for a clean form.
+    read_only: str | None = None
 
     @property
     def levels(self) -> tuple[str, ...]:
@@ -279,16 +291,35 @@ def assess_switch_program(resource: Resource) -> SwitchProgramAssessment:
         or resource.references
         or resource.has_value
         or resource.has_values
-        or resource.unknown_fields
     ):
         return SwitchProgramAssessment(False, "unsupported_schema")
-    if kind.legacy:
-        return _assess_legacy(resource, kind)
-    return _assess_further(resource, kind)
+    assessment = (
+        _assess_legacy(resource, kind)
+        if kind.legacy
+        else _assess_further(resource, kind)
+    )
+    if (
+        assessment.supported
+        and assessment.read_only is None
+        and resource.unknown_fields
+    ):
+        # Fields not known here would be lost by a change: shown only.
+        return replace(
+            assessment,
+            read_only="unknown_fields",
+            notes=(*assessment.notes, "unknown_fields"),
+        )
+    return assessment
 
 
 def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssessment:
-    """Heating ``A``/``B`` and hot water: the form reviewed since 0.9.0."""
+    """Heating ``A``/``B`` and hot water: the form reviewed since 0.9.0.
+
+    Read tolerantly, changed only in the clean form: another level reference,
+    a range on a level program, points with further keys or another number
+    form, duplicate points or more points than are changed here leave the
+    program shown with ``read_only`` set. An empty program is shown empty.
+    """
     fields = resource.program_fields
     match = kind.pattern.fullmatch(resource.path)
     assert match is not None
@@ -297,10 +328,8 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
     reference_ok = (
         isinstance(reference, dict) and reference.get("id") == expected_levels
     )
-    max_points = _bounded_int(fields.get("maxNbOfSwitchPoints"), MAX_SWITCH_POINTS)
-    max_per_day = _bounded_int(
-        fields.get("maxNbOfSwitchPointsPerDay"), MAX_SWITCH_POINTS_PER_DAY
-    )
+    device_points = _reported_count(fields.get("maxNbOfSwitchPoints"))
+    device_per_day = _reported_count(fields.get("maxNbOfSwitchPointsPerDay"))
     raster = _bounded_int(fields.get("switchPointTimeRaster"), 60)
     raw_points = fields.get("switchPoints")
     absolute = (
@@ -310,6 +339,7 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
         and all(_numeric_setpoint(item) for item in raw_points)
     )
     notes: list[str] = []
+    read_only: list[str] = []
     if absolute:
         # TP-13: the level reference of an absolute program is not known; it
         # may name the levels or be missing. Only reported, never required.
@@ -320,32 +350,44 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
         else:
             notes.append("setpoint_property_other")
     elif not reference_ok:
-        return SwitchProgramAssessment(False, "unsupported_setpoint_property")
+        read_only.append("unsupported_setpoint_property")
     elif any(key in fields for key in RANGE_FIELDS):
-        # A level program never carries a range; such a form is not known.
-        return SwitchProgramAssessment(False, "unsupported_schema")
+        # A level program carries no range; such a form is only shown.
+        read_only.append("unsupported_schema")
     if (
-        max_points is None
-        or max_per_day is None
+        device_points is None
+        or device_per_day is None
         or raster is None
         or MINUTES_PER_DAY % raster
     ):
         return SwitchProgramAssessment(False, "invalid_limits")
     if not isinstance(raw_points, list):
         return SwitchProgramAssessment(False, "missing_switch_points")
-    if not raw_points:
-        return SwitchProgramAssessment(False, "no_switch_points")
-    if len(raw_points) > max_points:
+    if len(raw_points) > device_points:
         return SwitchProgramAssessment(False, "too_many_switch_points")
     value_type: ValueType = "absolute" if absolute else "level"
     parsed = _parse_points(raw_points, raster, value_type, legacy=True)
     if isinstance(parsed, str):
         return SwitchProgramAssessment(False, parsed)
-    points, as_text = parsed
-    if any(count > max_per_day for count in _per_day(points)):
+    points, as_text, irregular = parsed
+    read_only.extend(irregular)
+    if any(count > device_per_day for count in _per_day(points)):
         return SwitchProgramAssessment(False, "too_many_switch_points")
+    max_points = min(device_points, MAX_SWITCH_POINTS)
+    max_per_day = min(device_per_day, MAX_SWITCH_POINTS_PER_DAY)
+    if (max_points, max_per_day) != (device_points, device_per_day):
+        # Larger limits of the device: changes keep to these.
+        notes.append("program_limits_capped")
+    if len(points) > max_points or any(
+        count > max_per_day for count in _per_day(points)
+    ):
+        read_only.append("program_over_limit")
+    if not points:
+        notes.append("program_empty")
     minimum, maximum, step, range_notes = (
-        _range(fields) if absolute else (None, None, None, ())
+        _range(fields, HEATING_RANGE_DEFAULT if kind.key == "heating" else None)
+        if absolute
+        else (None, None, None, ())
     )
     return SwitchProgramAssessment(
         True,
@@ -360,7 +402,8 @@ def _assess_legacy(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
         maximum=maximum,
         step=step,
         carry_over=kind.carry_over,
-        notes=(*notes, *range_notes),
+        notes=tuple(dict.fromkeys((*notes, *read_only, *range_notes))),
+        read_only=read_only[0] if read_only else None,
     )
 
 
@@ -394,7 +437,8 @@ def _assess_further(resource: Resource, kind: ProgramKind) -> SwitchProgramAsses
     parsed = _parse_points(raw_points, raster or 1, value_type, legacy=False)
     if isinstance(parsed, str):
         return SwitchProgramAssessment(False, parsed)
-    points, as_text = parsed
+    points, as_text, irregular = parsed
+    notes.extend(irregular)
     if not points:
         notes.append("program_empty")
     if max_points is not None and len(points) > max_points:
@@ -420,6 +464,7 @@ def _assess_further(resource: Resource, kind: ProgramKind) -> SwitchProgramAsses
         step=step,
         carry_over=kind.carry_over,
         notes=tuple(dict.fromkeys((*notes, *range_notes))),
+        read_only=irregular[0] if irregular else None,
     )
 
 
@@ -489,15 +534,30 @@ def _assess_aircon(resource: Resource, kind: ProgramKind) -> SwitchProgramAssess
 
 def _parse_points(
     raw_points: list[JsonValue], raster: int, value_type: ValueType, *, legacy: bool
-) -> tuple[tuple[SwitchPoint, ...], bool | None] | str:
-    """The points, and whether numbers were text; a reason token on failure."""
+) -> tuple[tuple[SwitchPoint, ...], bool | None, tuple[str, ...]] | str:
+    """The points, whether numbers were text and the forms that are only
+    shown (tokens); a reason token when a point cannot be read at all.
+
+    Read tolerantly: further keys in a point, a time such as ``360.0``, a
+    number in another form (``"21"``, ``"21.50"``, a JSON number) and a
+    repeated point are read; such a program is only shown. A repeated point
+    with the same setpoint counts once; with another one the first is kept.
+    """
     points: list[SwitchPoint] = []
-    seen: set[tuple[int, int]] = set()
+    seen: dict[tuple[int, int], str] = {}
     text_forms: set[bool] = set()
+    irregular: list[str] = []
     for item in raw_points:
-        if not isinstance(item, dict) or set(item) != _POINT_FIELDS:
+        if not isinstance(item, dict) or not set(item) >= _POINT_FIELDS:
             return "invalid_switch_point"
+        if set(item) != _POINT_FIELDS:
+            irregular.append("point_extra_keys")
         day, minute, setpoint = item["dayOfWeek"], item["time"], item["setpoint"]
+        if isinstance(minute, float) and not isinstance(minute, bool):
+            if not math.isfinite(minute) or not minute.is_integer():
+                return "invalid_switch_point"
+            irregular.append("time_as_number")
+            minute = int(minute)
         if (
             not isinstance(day, str)
             or day not in DAYS
@@ -507,6 +567,10 @@ def _parse_points(
         ):
             return "invalid_switch_point"
         level = _setpoint(setpoint, value_type, legacy=legacy)
+        if level is None and value_type == "absolute":
+            level = _tolerant_number(setpoint)
+            if level is not None:
+                irregular.append("setpoint_form_other")
         if level is None:
             return (
                 "mixed_setpoints"
@@ -516,21 +580,26 @@ def _parse_points(
         if value_type != "level" and level != "off":
             # The form numbers are read in (text or JSON number).
             text_forms.add(isinstance(setpoint, str))
-        if (DAYS.index(day), minute) in seen:
-            return "duplicate_switch_point"
-        seen.add((DAYS.index(day), minute))
-        points.append(SwitchPoint(DAYS.index(day), minute, level))
+        key = (DAYS.index(day), minute)
+        if key in seen:
+            if seen[key] != level:
+                irregular.append("duplicate_switch_point")
+            else:
+                irregular.append("duplicate_switch_point_same")
+            continue
+        seen[key] = level
+        points.append(SwitchPoint(key[0], minute, level))
     if len(text_forms) > 1:
-        # Numbers as text and as JSON numbers in one program: not known.
-        return "mixed_setpoints"
-    return tuple(points), (next(iter(text_forms)) if text_forms else None)
+        # Numbers as text and as JSON numbers in one program: only shown.
+        irregular.append("mixed_setpoints")
+    as_text = next(iter(text_forms)) if len(text_forms) == 1 else None
+    return tuple(points), as_text, tuple(dict.fromkeys(irregular))
 
 
 def _setpoint(value: object, value_type: ValueType, *, legacy: bool) -> str | None:
     """The canonical text of one setpoint of this type, or ``None``."""
     if value_type == "level":
-        pattern = _LEGACY_LEVEL_KEY if legacy else _LEVEL_KEY
-        return value if isinstance(value, str) and pattern.fullmatch(value) else None
+        return value if isinstance(value, str) and _LEVEL_KEY.fullmatch(value) else None
     if value_type == "degrees":
         if value == "off":
             return "off"
@@ -550,12 +619,12 @@ def _setpoint(value: object, value_type: ValueType, *, legacy: bool) -> str | No
         if not _DECIMAL_TEXT.fullmatch(value):
             return None
         canonical = canonical_number(float(value))
-        # Only the form the app writes (``21.5``, ``20.0``); "21.50" would
-        # not be written back as read.
+        # Only the written form (``21.5``, ``20.0``); "21.50" would not be
+        # written back as read.
         return canonical if canonical == value else None
     if legacy:
-        # A heating circuit's absolute program carries text, as the app
-        # writes it; a JSON number there is a form that was never seen.
+        # A heating circuit's absolute program carries text; a JSON number
+        # there is only read (``_tolerant_number``).
         return None
     if isinstance(value, bool) or not isinstance(value, int | float):
         return None
@@ -564,10 +633,26 @@ def _setpoint(value: object, value_type: ValueType, *, legacy: bool) -> str | No
     return canonical_number(float(value))
 
 
+def _tolerant_number(value: object) -> str | None:
+    """A number setpoint in another form (``"21"``, ``"21.50"``, ``21.5``),
+    as its canonical text; only for reading."""
+    if isinstance(value, str) and (
+        _DECIMAL_TEXT.fullmatch(value) or _INTEGER_TEXT.fullmatch(value)
+    ):
+        return canonical_number(float(value))
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    return canonical_number(float(value)) if math.isfinite(value) else None
+
+
 def _numeric_setpoint(item: object) -> bool:
     if not isinstance(item, dict):
         return False
-    return _setpoint(item.get("setpoint"), "absolute", legacy=True) is not None
+    setpoint = item.get("setpoint")
+    return (
+        _setpoint(setpoint, "absolute", legacy=True) is not None
+        or _tolerant_number(setpoint) is not None
+    )
 
 
 def _known_other(value: object) -> bool:
@@ -585,7 +670,10 @@ def canonical_number(value: float) -> str:
 
 def _range(
     fields: dict[str, JsonValue],
+    default: tuple[float, float, float] | None = None,
 ) -> tuple[float | None, float | None, float | None, tuple[str, ...]]:
+    """Range and step of an absolute program; ``default`` (minimum,
+    maximum, step) stands in for each one that is not reported as a number."""
     values: list[float | None] = []
     for key in RANGE_FIELDS:
         raw = fields.get(key)
@@ -598,9 +686,16 @@ def _range(
         )
     minimum, maximum, step = values
     notes: list[str] = []
+    if default is not None and (minimum is None or maximum is None):
+        notes.append("program_range_default")
+        minimum = default[0] if minimum is None else minimum
+        maximum = default[1] if maximum is None else maximum
     if minimum is None or maximum is None or minimum >= maximum:
         notes.append("program_range_missing")
         minimum = maximum = None
+    if default is not None and (step is None or step <= 0):
+        notes.append("program_step_default")
+        step = default[2]
     if step is None or step <= 0:
         notes.append("program_step_missing")
         step = None
@@ -615,6 +710,11 @@ def _per_day(points: tuple[SwitchPoint, ...]) -> list[int]:
 
 
 def _bounded_int(value: object, maximum: int) -> int | None:
-    if type(value) is not int or not 1 <= value <= maximum:
-        return None
-    return value
+    """A positive whole number up to ``maximum``; ``15.0`` counts as 15."""
+    return bounded_int(value, maximum)
+
+
+def _reported_count(value: object) -> int | None:
+    """A reported number of switch points: a positive whole number (``48.0``
+    counts as 48), also above the limits changes keep to."""
+    return bounded_int(value, _LIMIT_SANITY)

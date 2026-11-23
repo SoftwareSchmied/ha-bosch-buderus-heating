@@ -188,8 +188,9 @@ def test_the_wire_body_is_the_sorted_week_in_the_app_field_order():
     [
         ({"writeable": 0}, "not_writable"),
         ({"available": False}, "unavailable"),
-        ({"switchPoints": []}, "no_switch_points"),
+        ({"switchPoints": {"Mo": []}}, "missing_switch_points"),
         ({"switchPointTimeRaster": 7}, "invalid_limits"),
+        ({"switchPointTimeRaster": 15, "extraField": 1}, "unknown_fields"),
     ],
 )
 def test_programs_that_cannot_be_changed_here(change, issue):

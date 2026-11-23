@@ -101,13 +101,24 @@ def test_two_readable_programs_give_one_selection():
         # The current program is not among the allowed ones.
         {ACTIVE: resource(payload(ACTIVE) | {"value": "C"})},
         {ACTIVE: resource(payload(ACTIVE) | {"writeable": 0})},
-        # Program B cannot be read or fails the strict check.
+        # Program B cannot be read, or is no program.
         {PROGRAM_B: None},
-        {PROGRAM_B: resource(payload(PROGRAM_B) | {"switchPointTimeRaster": 7})},
+        {PROGRAM_B: resource(payload(PROGRAM_B) | {"type": "stringValue"})},
     ],
 )
 def test_no_selection_without_two_valid_programs(changes):
     assert descriptions(readings(**changes)) == ()
+
+
+@pytest.mark.parametrize(
+    "change", [{"switchPointTimeRaster": 7}, {"switchPoints": "unreadable"}]
+)
+def test_a_program_in_a_form_not_shown_here_can_still_be_selected(change):
+    """The gateway runs the selected program on its own."""
+    (description,) = descriptions(
+        readings(**{PROGRAM_B: resource(payload(PROGRAM_B) | change)})
+    )
+    assert description.resource_path == ACTIVE
 
 
 def test_the_real_heat_pump_capture_has_no_selection():

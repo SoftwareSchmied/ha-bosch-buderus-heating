@@ -46,6 +46,7 @@ from custom_components.bosch_buderus_heating.switch_program_service import (
     SwitchProgramService,
 )
 from custom_components.bosch_buderus_heating.switch_programs import (
+    RANGE_FIELDS,
     SwitchPoint,
     assess_switch_program,
     is_switch_program_path,
@@ -167,18 +168,26 @@ def test_new_kinds_are_understood_named_and_polled():
 
 
 @pytest.mark.parametrize("path", [COOLING, VENT])
-def test_extra_point_field_is_not_read(path):
+def test_extra_point_field_is_shown_but_not_changed(path):
     name = "cooling" if path == COOLING else "ventilation"
     item = copy.deepcopy(items(name)[path])
     item["switchPoints"][0]["extra"] = 1
-    assert assess_switch_program(resource(item)).reason == "invalid_switch_point"
-    assert edit_issue(resource(item), {}) == "invalid_switch_point"
+    assert assess_switch_program(resource(item)).read_only == "point_extra_keys"
+    assert edit_issue(resource(item), readings(name)) == "point_extra_keys"
 
 
-def test_extra_program_field_is_not_read():
+def test_extra_program_field_is_shown_but_not_changed():
     item = copy.deepcopy(items("cooling")[COOLING])
     item["somethingNew"] = 1
-    assert assess_switch_program(resource(item)).reason == "unsupported_schema"
+    assessment = assess_switch_program(resource(item))
+    assert assessment.supported and assessment.read_only == "unknown_fields"
+    assert edit_issue(resource(item), readings("cooling")) == "unknown_fields"
+
+
+def test_a_point_without_its_fields_still_hides_the_program():
+    item = copy.deepcopy(items("cooling")[COOLING])
+    del item["switchPoints"][0]["time"]
+    assert assess_switch_program(resource(item)).reason == "invalid_switch_point"
 
 
 def test_missing_limits_keep_the_program_readable_but_not_editable():
@@ -404,13 +413,15 @@ def test_zone_without_step_is_read_only():
     assert edit_issue(data[ZONE2], data) == "program_step_missing"
 
 
-def test_zone_with_mixed_setpoints_is_not_read():
+def test_zone_with_mixed_setpoints_is_not_read_or_not_changed():
     item = copy.deepcopy(items("zone")[ZONE_HEAT])
     item["switchPoints"][0]["setpoint"] = "comfort"
     assert assess_switch_program(resource(item)).reason == "mixed_setpoints"
+    # Numbers as text and as JSON numbers: shown, never changed.
     item = copy.deepcopy(items("zone")[ZONE_HEAT])
     item["switchPoints"][0]["setpoint"] = 21.0
-    assert assess_switch_program(resource(item)).reason == "mixed_setpoints"
+    assessment = assess_switch_program(resource(item))
+    assert assessment.supported and assessment.read_only == "mixed_setpoints"
 
 
 async def test_zone_numbers_keep_the_json_number_form(environment):
@@ -636,21 +647,84 @@ def test_absolute_off_only_where_the_program_has_it():
     assert value_issue("0.0", without) == "off_not_offered"
 
 
-def test_absolute_program_without_range_is_read_only():
+def _without_range(*keys):
     item = copy.deepcopy(items("absolute")[ABS_B])
-    del item["switchPointMin"]
+    for key in keys:
+        item.pop(key, None)
+    return item
+
+
+def test_absolute_program_without_minimum_takes_5():
+    data = readings("absolute", **{ABS_B: _without_range("switchPointMin")})
+    assessment = assess_switch_program(data[ABS_B])
+    reported = items("absolute")[ABS_B]
+    assert assessment.minimum == 5.0
+    assert assessment.maximum == reported["switchPointMax"]
+    assert "program_range_default" in assessment.notes
+    assert edit_issue(data[ABS_B], data, program_mode=data[MODE]) is None
+
+
+def test_absolute_heating_program_without_range_takes_5_to_30_in_half_steps():
+    item = _without_range(*RANGE_FIELDS)
     data = readings("absolute", **{ABS_B: item})
-    assert assess_switch_program(data[ABS_B]).supported
-    assert edit_issue(data[ABS_B], data, program_mode=data[MODE]) == (
-        "program_range_missing"
+    assessment = assess_switch_program(data[ABS_B])
+    assert (assessment.minimum, assessment.maximum, assessment.step) == (
+        5.0,
+        30.0,
+        0.5,
     )
+    assert {"program_range_default", "program_step_default"} <= set(assessment.notes)
+    shown = editable_program(data[ABS_B], data, program_mode=data[MODE])
+    assert shown is not None
+    assert value_issue("5.0", shown) is None
+    assert value_issue("30.0", shown) is None
+    assert value_issue("30.5", shown) == "value_out_of_range"
+    assert value_issue("4.5", shown) == "value_out_of_range"
+    assert value_issue("21.25", shown) == "value_off_step"
 
 
-def test_absolute_heating_program_does_not_accept_json_numbers():
+@pytest.mark.parametrize("level", ["30.5", "4.5", "21.25"])
+async def test_absolute_program_without_range_never_sends_outside_it(
+    environment, level
+):
+    gateway = gateway_for(
+        environment, "absolute", **{ABS_B: _without_range(*RANGE_FIELDS)}
+    )
+    shown = gateway.read(ABS_B)
+    week = shifted(assess_switch_program(shown).points, old=420, level=level)
+    with pytest.raises((ContractRejected, WriteValidationError)):
+        await gateway.coordinator.async_write_switch_program(shown, week)
+    assert gateway.puts == 0
+
+
+async def test_absolute_program_without_range_sends_a_value_within_it(environment):
+    gateway = gateway_for(
+        environment, "absolute", **{ABS_B: _without_range(*RANGE_FIELDS)}
+    )
+    shown = gateway.read(ABS_B)
+    week = shifted(assess_switch_program(shown).points, old=420, level="29.5")
+    await gateway.coordinator.async_write_switch_program(shown, week)
+    ((path, body),) = gateway.raw_puts
+    assert path == ABS_B and body[0]["setpoint"] == "29.5"
+
+
+def test_a_zone_program_without_step_takes_no_default():
+    data = readings("zone")
+    assessment = assess_switch_program(data[ZONE2])
+    assert "program_step_default" not in assessment.notes
+    assert edit_issue(data[ZONE2], data) == "program_step_missing"
+
+
+def test_absolute_heating_program_with_json_numbers_is_shown_but_not_changed():
     item = copy.deepcopy(items("absolute")[ABS_B])
     for point in item["switchPoints"]:
         point["setpoint"] = float(point["setpoint"])
-    assert not assess_switch_program(resource(item)).supported
+    data = readings("absolute", **{ABS_B: item})
+    assessment = assess_switch_program(data[ABS_B])
+    assert assessment.supported and assessment.read_only == "setpoint_form_other"
+    assert edit_issue(data[ABS_B], data, program_mode=data[MODE]) == (
+        "setpoint_form_other"
+    )
 
 
 def test_day_replacement_keeps_other_days():

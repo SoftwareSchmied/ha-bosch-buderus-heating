@@ -53,6 +53,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     _track_resource_sensors,
     build_sensor_descriptions,
 )
+from custom_components.bosch_buderus_heating.switch_program_edit import edit_issue
 from custom_components.bosch_buderus_heating.switch_programs import (
     DAYS,
     SwitchProgramAssessment,
@@ -179,7 +180,6 @@ def test_dhw_paths_are_recognized() -> None:
         (_changed(HEATING, type="stringValue"), "unsupported_schema"),
         (_changed(HEATING, value="A"), "unsupported_schema"),
         (_changed(HEATING, values=[1]), "unsupported_schema"),
-        (_changed(HEATING, extraField=1), "unsupported_schema"),
         (
             _changed(
                 HEATING,
@@ -187,23 +187,14 @@ def test_dhw_paths_are_recognized() -> None:
             ),
             "unsupported_schema",
         ),
-        (_changed(HEATING, setpointProperty=...), "unsupported_setpoint_property"),
-        (
-            _changed(
-                HEATING, setpointProperty={"id": "/dhwCircuits/dhw1/temperatureLevels"}
-            ),
-            "unsupported_setpoint_property",
-        ),
-        (_changed(HEATING, setpointProperty="levels"), "unsupported_setpoint_property"),
         (_changed(HEATING, maxNbOfSwitchPoints=0), "invalid_limits"),
         (_changed(HEATING, maxNbOfSwitchPoints=True), "invalid_limits"),
-        (_changed(HEATING, maxNbOfSwitchPoints=1000), "invalid_limits"),
+        (_changed(HEATING, maxNbOfSwitchPoints=15.5), "invalid_limits"),
         (_changed(HEATING, maxNbOfSwitchPointsPerDay=...), "invalid_limits"),
         (_changed(HEATING, switchPointTimeRaster=7), "invalid_limits"),
-        (_changed(HEATING, switchPointTimeRaster=15.0), "invalid_limits"),
+        (_changed(HEATING, switchPointTimeRaster=120), "invalid_limits"),
         (_changed(HEATING, switchPoints=...), "missing_switch_points"),
         (_changed(HEATING, switchPoints={"Mo": []}), "missing_switch_points"),
-        (_changed(HEATING, switchPoints=[]), "no_switch_points"),
         (_changed(HEATING, maxNbOfSwitchPoints=13), "too_many_switch_points"),
         (_changed(HEATING, maxNbOfSwitchPointsPerDay=1), "too_many_switch_points"),
     ],
@@ -213,11 +204,85 @@ def test_unexpected_shapes_are_not_supported(resource: Resource, reason: str) ->
 
 
 @pytest.mark.parametrize(
+    ("resource", "token"),
+    [
+        (_changed(HEATING, extraField=1), "unknown_fields"),
+        (_changed(HEATING, setpointProperty=...), "unsupported_setpoint_property"),
+        (
+            _changed(
+                HEATING, setpointProperty={"id": "/dhwCircuits/dhw1/temperatureLevels"}
+            ),
+            "unsupported_setpoint_property",
+        ),
+        (_changed(HEATING, setpointProperty="levels"), "unsupported_setpoint_property"),
+        (_changed(HEATING, switchPointMin=5.0), "unsupported_schema"),
+        (
+            _with_point(
+                HEATING, {"dayOfWeek": "Mo", "time": 360, "setpoint": "eco", "x": 1}
+            ),
+            "point_extra_keys",
+        ),
+        (
+            _with_point(HEATING, {"dayOfWeek": "Mo", "time": 360.0, "setpoint": "eco"}),
+            "time_as_number",
+        ),
+    ],
+)
+def test_tolerated_shapes_are_shown_but_not_changed(
+    resource: Resource, token: str
+) -> None:
+    """Read tolerantly, changed only in the clean form."""
+    assessment = assess_switch_program(resource)
+
+    assert assessment.supported
+    assert assessment.read_only == token
+    assert token in assessment.notes
+    assert assessment.points
+    assert edit_issue(resource, {}) == token
+
+
+def test_a_hot_water_level_with_an_underscore_is_read() -> None:
+    """S08: ``eco_plus`` is a hot water level; the program is read and its
+    level is offered where the circuit lists it."""
+    data = copy.deepcopy(HEATING)
+    data["switchPoints"][0]["setpoint"] = "eco_plus"
+    assessment = assess_switch_program(_resource(data))
+    assert assessment.supported and assessment.read_only is None
+    assert "eco_plus" in assessment.levels
+
+
+def test_larger_device_limits_are_read_and_capped_for_changes() -> None:
+    assessment = assess_switch_program(
+        _changed(HEATING, maxNbOfSwitchPoints=1000, maxNbOfSwitchPointsPerDay=96.0)
+    )
+
+    assert assessment.supported and assessment.read_only is None
+    assert assessment.max_switch_points == 168
+    assert assessment.max_switch_points_per_day == 48
+    assert "program_limits_capped" in assessment.notes
+
+
+def test_a_whole_number_raster_as_float_is_the_clean_form() -> None:
+    assessment = assess_switch_program(_changed(HEATING, switchPointTimeRaster=15.0))
+
+    assert assessment.supported and assessment.read_only is None
+    assert assessment.time_raster == 15
+
+
+def test_an_empty_program_is_shown_empty_and_changeable() -> None:
+    assessment = assess_switch_program(_changed(HEATING, switchPoints=[]))
+
+    assert assessment.supported and assessment.read_only is None
+    assert assessment.points == ()
+    assert "program_empty" in assessment.notes
+    assert assessment.active_level(0, 600) is None
+
+
+@pytest.mark.parametrize(
     "point",
     [
         "Mo 06:00",
         {"dayOfWeek": "Mo", "time": 360},
-        {"dayOfWeek": "Mo", "time": 360, "setpoint": "eco", "extra": 1},
         {"dayOfWeek": "Monday", "time": 360, "setpoint": "eco"},
         {"dayOfWeek": 0, "time": 360, "setpoint": "eco"},
         {"dayOfWeek": "Mo", "time": -15, "setpoint": "eco"},
@@ -227,7 +292,7 @@ def test_unexpected_shapes_are_not_supported(resource: Resource, reason: str) ->
         {"dayOfWeek": "Mo", "time": True, "setpoint": "eco"},
         {"dayOfWeek": "Mo", "time": 360, "setpoint": "Eco"},
         {"dayOfWeek": "Mo", "time": 360, "setpoint": "my program"},
-        {"dayOfWeek": "Mo", "time": 360, "setpoint": 1},
+        {"dayOfWeek": "Mo", "time": 360.5, "setpoint": "eco"},
         {"dayOfWeek": "Mo", "time": 360, "setpoint": "x" * 33},
     ],
 )
@@ -237,16 +302,22 @@ def test_invalid_switch_points_are_rejected(point: object) -> None:
     assert assessment == SwitchProgramAssessment(False, "invalid_switch_point")
 
 
-def test_duplicate_switch_points_are_rejected() -> None:
+@pytest.mark.parametrize(
+    ("second", "token"),
+    [("eco", "duplicate_switch_point"), ("comfort2", "duplicate_switch_point_same")],
+)
+def test_duplicate_switch_points_are_shown_once_and_not_changed(
+    second: str, token: str
+) -> None:
     data = copy.deepcopy(HEATING)
     data["switchPoints"] = [
         {"dayOfWeek": "Mo", "time": 360, "setpoint": "comfort2"},
-        {"dayOfWeek": "Mo", "time": 360, "setpoint": "eco"},
+        {"dayOfWeek": "Mo", "time": 360, "setpoint": second},
     ]
+    assessment = assess_switch_program(_resource(data))
 
-    assert assess_switch_program(_resource(data)) == SwitchProgramAssessment(
-        False, "duplicate_switch_point"
-    )
+    assert assessment.supported and assessment.read_only == token
+    assert assessment.schedule() == {"Mo": ["06:00 comfort2"]}
 
 
 def test_unsorted_points_keep_their_meaning() -> None:
@@ -399,7 +470,7 @@ async def test_schema_change_after_creation_hides_attributes(
     hass: HomeAssistant,
 ) -> None:
     sensor = _program_sensor(hass, _resource(HEATING))
-    broken = _changed(HEATING, switchPoints=[])
+    broken = _changed(HEATING, switchPoints=[{"time": 360}])
     sensor.coordinator.data = {
         broken.path: ResourceSnapshot(broken, True, datetime.now(UTC))
     }
@@ -443,7 +514,7 @@ async def test_state_refreshes_at_the_next_switch_point(
 
 
 async def test_invalid_programs_create_no_sensor() -> None:
-    broken = _changed(HEATING, switchPoints=[])
+    broken = _changed(HEATING, switchPoints=[{"time": 360}])
 
     assert build_sensor_descriptions({broken.path: broken}) == ()
 
@@ -503,7 +574,8 @@ async def test_program_registry_settings_survive_invalid_startup_and_recovery(
     )
     previous = registry.async_get(registered.entity_id)
     broken = _changed(
-        HEATING, switchPoints=[] if invalid == "empty" else [{"time": 360}]
+        HEATING,
+        switchPoints={"Mo": []} if invalid == "empty" else [{"time": 360}],
     )
     coordinator.resources = {} if invalid == "missing" else {broken.path: broken}
     coordinator.data = {broken.path: ResourceSnapshot(broken, True, datetime.now(UTC))}

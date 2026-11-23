@@ -94,21 +94,21 @@ def test_an_absolute_heating_program_reports_how_its_level_reference_reads(
     assert note in result.notes
 
 
-def test_a_level_program_with_a_range_is_an_unknown_form():
+def test_a_level_program_with_a_range_is_only_shown():
     result = assess(
         HEATING,
         [point("Mo", 390, "comfort2")],
         setpointProperty=levels_reference(),
         switchPointMin=10.0,
     )
-    assert not result.supported
-    assert result.reason == "unsupported_schema"
+    assert result.supported
+    assert result.read_only == "unsupported_schema"
 
 
-def test_a_level_program_needs_its_level_reference():
+def test_a_level_program_without_its_level_reference_is_only_shown():
     result = assess(HEATING, [point("Mo", 390, "comfort2")])
-    assert not result.supported
-    assert result.reason == "unsupported_setpoint_property"
+    assert result.supported
+    assert result.read_only == "unsupported_setpoint_property"
 
 
 @pytest.mark.parametrize(
@@ -131,10 +131,12 @@ def test_limits_of_a_heating_program_are_enforced_on_reading(fields, reason):
     assert result.reason == reason
 
 
-def test_a_heating_program_without_points_is_refused():
+def test_a_heating_program_without_points_is_shown_empty():
     reference = {"setpointProperty": levels_reference()}
     assert assess(HEATING, None, **reference).reason == "missing_switch_points"
-    assert assess(HEATING, [], **reference).reason == "no_switch_points"
+    empty = assess(HEATING, [], **reference)
+    assert empty.supported and empty.points == () and empty.read_only is None
+    assert "program_empty" in empty.notes
 
 
 # ------------------------------------------------ cooling, zones, WDDW2
@@ -191,7 +193,6 @@ def test_an_empty_program_and_one_over_its_limits_are_shown_with_notes():
         ("21.0", True),
         (21, True),
         (21.5, True),
-        ("21.50", False),
         ("abc", False),
         (True, False),
         (None, False),
@@ -205,10 +206,18 @@ def test_zone_numbers_are_read_only_in_the_form_the_app_writes(setpoint, support
         assert result.reason in {"invalid_switch_point", "mixed_setpoints"}
 
 
-def test_zone_numbers_as_text_and_as_numbers_in_one_program_are_refused():
+@pytest.mark.parametrize("setpoint", ["21.50", "21"])
+def test_zone_numbers_in_another_text_form_are_only_shown(setpoint):
+    result = assess(ZONE, [point("Mo", 360, setpoint)])
+    assert result.supported
+    assert result.read_only == "setpoint_form_other"
+    assert result.points[0].level == "21.5" if setpoint == "21.50" else "21.0"
+
+
+def test_zone_numbers_as_text_and_as_numbers_in_one_program_are_only_shown():
     result = assess(ZONE, [point("Mo", 360, "21.0"), point("Mo", 540, 17.5)])
-    assert not result.supported
-    assert result.reason == "mixed_setpoints"
+    assert result.supported
+    assert result.read_only == "mixed_setpoints"
 
 
 @pytest.mark.parametrize(
@@ -221,13 +230,15 @@ def test_wddw2_degrees_are_whole_numbers_or_off(setpoint, supported):
     assert result.value_type == "degrees" if supported else not result.supported
 
 
-def test_a_heating_program_in_absolute_form_never_takes_json_numbers():
+def test_a_heating_program_in_absolute_form_only_shows_json_numbers():
     result = assess(
         HEATING,
         [point("Mo", 360, 21.0)],
         setpointProperty=levels_reference(),
     )
-    assert not result.supported
+    assert result.supported and result.value_type == "absolute"
+    assert result.read_only == "setpoint_form_other"
+    assert result.points[0].level == "21.0"
 
 
 # ------------------------------------------------------------ air conditioner

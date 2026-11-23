@@ -2,10 +2,12 @@
 
 ``/heatingCircuits/hcN/activeSwitchProgram`` is offered as a selection only
 when the gateway allows at least two of the programs ``A`` and ``B``, the
-current one among them, and every allowed program is readable and passes
-the strict program check (``switch_programs``). A gateway with one program
-gets no selection. The program type (``switchProgramMode``) and the program
-names are never written here.
+current one among them, and every allowed program has been read as a
+program (type ``switchProgram``). The gateway runs the selected program on
+its own, so its form is checked only for showing and changing it
+(``switch_programs``). A gateway with one program gets no selection. The
+program type (``switchProgramMode``) and the program names are never
+written here.
 
 Pure: no Home Assistant import.
 """
@@ -17,7 +19,6 @@ from collections.abc import Mapping
 from typing import Final
 
 from .pointt.models import JsonScalar, Resource
-from .switch_programs import assess_switch_program
 from .write_policies import EnumWritePolicy
 
 ACTIVE_PATTERN: Final = r"^/heatingCircuits/hc[1-9][0-9]?/activeSwitchProgram$"
@@ -42,11 +43,15 @@ def name_path(path: str, program: str) -> str:
 def program_readable(
     path: str, program: object, readings: Mapping[str, Resource]
 ) -> bool:
-    """Whether the program ``program`` has a reading that passes the check."""
+    """Whether the program ``program`` has been read as a program."""
     if not isinstance(program, str) or program not in PROGRAMS:
         return False
     resource = readings.get(program_path(path, program))
-    return resource is not None and assess_switch_program(resource).supported
+    return (
+        resource is not None
+        and resource.metadata.resource_type == "switchProgram"
+        and not resource.references
+    )
 
 
 def _value_check(
@@ -74,7 +79,7 @@ def offered_programs(
     options: tuple[str, ...], path: str, readings: Mapping[str, Resource]
 ) -> tuple[str, ...]:
     """The advertised programs of an eligible selection, in A/B order, or
-    none at all unless every one of them is readable and valid."""
+    none at all unless every one of them has been read as a program."""
     offered = tuple(program for program in PROGRAMS if program in options)
     if len(offered) < 2 or not all(
         program_readable(path, program, readings) for program in offered

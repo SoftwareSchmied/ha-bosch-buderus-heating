@@ -311,6 +311,9 @@ def edit_issue(
     assessment = assess_switch_program(resource)
     if not assessment.supported:
         return assessment.reason or "unsupported"
+    if assessment.read_only is not None:
+        # Shown in a form that a change would not write back.
+        return assessment.read_only
     metadata = resource.metadata
     if not metadata.writable:
         return "not_writable"
