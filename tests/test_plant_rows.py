@@ -154,6 +154,11 @@ def test_a_version_equal_to_an_identifier_is_left_out() -> None:
     [
         "\xff\xff\xff",
         "1.0\x00\x01x",
+        # A control character drops the whole text (as for technical texts),
+        # also where the rest would pass.
+        "1.0\x00",
+        "\x1b12.11.1",
+        "1" + ".2" * 32,  # 65 characters: dropped, never cut
         "abc",
         "1.0 beta",
         "-1.0",
@@ -176,7 +181,6 @@ def test_unsafe_versions(value: object) -> None:
         "V01.012.05",
         "1+build",
         "\xff\xff1.0",
-        "1.0\x00",
         "abc",
         "",
         "x" * 70,

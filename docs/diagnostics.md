@@ -790,9 +790,9 @@ The report of an optional component device (0.9.3-beta.6, see
 [System components](system-components.md#component-devices-optional)) adds
 the block `component`: `place` (place key), `place_number`, `type_number`,
 `type_name` (from the component table), `role`, `basis`, `version` (the
-software version shown at the device: digits and dots only, from the list
-shown, none when two components of the same type at the same place report
-different ones), `reported` (listed now) and `count` (rows of this type at
+software version shown at the device: the whole text the component
+reports in the list shown, none when two components of the same type at the
+same place report different ones), `reported` (listed now) and `count` (rows of this type at
 this place). With a version, the privacy block sets
 `contains_raw_resource_values: true` with
 `raw_resource_values_scope: allowlisted_technical_metadata`.

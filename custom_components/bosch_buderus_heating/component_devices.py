@@ -18,10 +18,13 @@ entity, and no entity ever changes its device.
   of its place with the component name, else with the type number. Model:
   the component name of the table; model ID: the type number. Never a
   serial number.
-- Software version: only from the list shown (one source), only its digits
-  and dots before a first ``-``; none when two components of the same type
-  at the same place report different ones. It never appears in an entity
-  attribute or in the log.
+- Software version: only from the list shown (one source), the whole text
+  the component reports, checked as in the component list
+  (``component_rows.clean_version``: letters, digits and separators with a
+  digit, at most 64 characters, never with a control character and never
+  equal to an identifier of its row); none when two components of the same
+  type at the same place report different ones. It never appears in an
+  entity attribute or in the log.
 - The gateway's device comes first: without it nothing is created; a device
   without its link gets it at the start.
 - At a start, every component listed gets its device. While running, only a
@@ -48,7 +51,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 
-from .component_rows import ComponentRow
+from .component_rows import ComponentRow, clean_version
 from .const import DOMAIN
 from .ha_compat import device_by_identifier, via_device
 from .i18n import localize
@@ -71,8 +74,6 @@ _DATA: Final = f"{DOMAIN}_component_devices"
 _IDENTIFIER: Final = re.compile(
     r"(?P<gateway>.+?):component:(?P<place>[0-9]{1,6}):(?P<type>[0-9]{1,6})"
 )
-# The digits and dots of a software version.
-_VERSION: Final = re.compile(r"[0-9]{1,6}(?:\.[0-9]{1,6}){0,7}")
 # C8: device names never carry the brand (the manufacturer field does).
 _BRAND_WORDS: Final = re.compile(r"\b(?:Bosch|Buderus)\b[\s/]*", re.IGNORECASE)
 _REMOTE: Final = re.compile(r"remote_hc([1-4])(?:_legacy)?")
@@ -132,11 +133,9 @@ def component_identifier(device: dr.DeviceEntry) -> tuple[str, int, int] | None:
 
 
 def software_version(value: str | None) -> str | None:
-    """The digits and dots of a version before a first ``-``, else None."""
-    if value is None:
-        return None
-    head = value.split("-", 1)[0]
-    return head if _VERSION.fullmatch(head) else None
+    """The whole software version a component reports, checked again as in
+    the component list (``clean_version``), else None."""
+    return clean_version(value)
 
 
 def device_components(

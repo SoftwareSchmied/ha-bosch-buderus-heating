@@ -109,7 +109,15 @@ def identifiers(values: Iterable[object]) -> frozenset[str]:
 
 
 def clean_version(value: object, known: frozenset[str] = frozenset()) -> str | None:
-    """A version, or ``None`` for anything else (an identifier included)."""
+    """A version, or ``None`` for anything else (an identifier included).
+
+    A text with a control or other unprintable character (other than plain
+    white space) is dropped as a whole, as in ``clean_token``, and so is a
+    text longer than 64 characters (never shown cut)."""
+    if isinstance(value, str) and (
+        not "".join(value.split()).isprintable() or len(value.strip()) > MAX_TEXT_LENGTH
+    ):
+        return None
     text = clean_text(value, MAX_TEXT_LENGTH)
     if (
         text is None

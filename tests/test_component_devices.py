@@ -124,18 +124,30 @@ def test_gateway_rows_type_zero_and_incomplete_rows_get_no_device() -> None:
     assert found[(8, 65281)].role == "outdoor_unit"
 
 
-def test_versions_show_only_their_digits_and_dots() -> None:
-    assert software_version("12.11.1-2fc9") == "12.11.1"
-    assert software_version("47.12-FIELD") == "47.12"
+def test_versions_are_shown_whole_after_the_technical_check() -> None:
+    assert software_version("12.11.1-2fc9") == "12.11.1-2fc9"
+    assert software_version("47.12-FIELD") == "47.12-FIELD"
     assert software_version("15.00.01") == "15.00.01"
-    for value in (None, "V01.012.05", "abc", "1..2", "1234567", "1.2.3.4.5.6.7.8.9"):
-        assert software_version(value) is None
+    assert software_version("  9.16.0-dab9f463 ") == "9.16.0-dab9f463"
+    assert software_version("V01.012.05") == "V01.012.05"
+    assert software_version("1" + ".2" * 31) == "1" + ".2" * 31  # 63 characters
+    for value in (
+        None,
+        "",
+        "abc",  # no digit
+        "1.2 3",  # a space inside
+        "1.2.3\x00",  # a control character drops the whole text
+        "1.2\u200b.3",  # so does any other unprintable character
+        "1.2;3",
+        "1" + ".2" * 32,  # longer than 64 characters
+    ):
+        assert software_version(value) is None, value
 
 
 def test_duplicates_share_one_device_in_any_order() -> None:
     rows = (
         *ROWS,
-        ComponentRow(65281, 8, "6.7.8-y", "Test outdoor unit"),
+        ComponentRow(65281, 8, "6.7.8-x", "Test outdoor unit"),
         ComponentRow(253, 16, "4.6"),
     )
     results = [
@@ -146,8 +158,13 @@ def test_duplicates_share_one_device_in_any_order() -> None:
     found = results[0]
     assert found[(8, 65281)].count == 2
     # The same version twice: shown.
-    assert found[(8, 65281)].version == "6.7.8"
+    assert found[(8, 65281)].version == "6.7.8-x"
     assert not found[(8, 65281)].versions_differ
+    # The whole text counts: another build of the same version differs.
+    other = device_components(
+        (*ROWS, ComponentRow(65281, 8, "6.7.8-y", "Test outdoor unit"))
+    )
+    assert other[(8, 65281)].version is None and other[(8, 65281)].versions_differ
     # Different versions of one kind at one place: none.
     assert found[(16, 253)].version is None and found[(16, 253)].versions_differ
     assert found[(8, 8)].count == 1
@@ -341,12 +358,12 @@ async def test_on_creates_info_devices_below_the_gateway(hass: HomeAssistant) ->
     system = found[f"{GW}:component:16:253"]
     assert system.name == "System controller HMI800_2_HP"
     assert system.model == "HMI800_2_HP" and system.model_id == "253"
-    assert system.sw_version == "4.5"
+    assert system.sw_version == "4.5-FIELD"
     assert found[f"{GW}:component:8:8"].name == "Testgerät 7"
-    assert found[f"{GW}:component:8:65281"].sw_version == "6.7.8"
-    # Nothing in the registry names a serial number or a version beyond the
-    # digits and dots.
-    assert "abc" not in json.dumps(_registry(hass), default=str)
+    assert found[f"{GW}:component:8:8"].sw_version == "1.2.3-abc"
+    assert found[f"{GW}:component:8:65281"].sw_version == "6.7.8-x"
+    # The gateway's own rows give no device, so their version is nowhere.
+    assert "9.9" not in {device.sw_version for device in found.values()}
 
 
 async def test_on_off_on_restores_names_and_areas(hass: HomeAssistant) -> None:
@@ -697,7 +714,7 @@ async def test_reports_count_and_describe_the_devices(hass: HomeAssistant) -> No
         "type_name": "HMI800_2_HP",
         "role": "system_controller",
         "basis": "observed",
-        "version": "4.5",
+        "version": "4.5-FIELD",
         "reported": True,
         "count": 1,
     }
