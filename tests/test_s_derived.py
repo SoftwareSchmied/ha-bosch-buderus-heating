@@ -252,6 +252,9 @@ async def _calculated_year(hass: HomeAssistant, first: date) -> tuple[Any, Any, 
 
 def _attributes(rec: Any, spec: Any) -> dict[str, Any]:
     sensor = SimpleNamespace(_manager=rec, _spec=spec)
+    sensor._heat_pump_recorded = lambda: RecordingPeriodSensor._heat_pump_recorded(
+        sensor  # type: ignore[arg-type]
+    )
     return RecordingPeriodSensor.extra_state_attributes.fget(sensor)  # type: ignore[attr-defined,no-any-return]
 
 
