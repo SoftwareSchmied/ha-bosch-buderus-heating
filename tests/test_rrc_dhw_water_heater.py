@@ -56,12 +56,19 @@ def test_room_controller_reads_off_and_offers_the_fallback_modes(hass) -> None:
     assert heater.operation_list == ["off", "high", "ownprogram"]
 
 
-def test_other_gateways_keep_their_exact_spelling(hass) -> None:
-    """Regression: "off" is no EMS code, and without options no control."""
+async def test_other_gateways_keep_their_exact_spelling(hass) -> None:
+    """Regression: "off" is no EMS code, and without options no control.
+
+    Since 0.9.3-beta.6 the water heater stays shown with a code that is not
+    known here, without an operation to set."""
     _, coordinator, heater, _ = _room_controller(hass, mode="off")
     coordinator.control_context = lambda: GENERIC_CONTEXT
-    assert not heater.available
+    assert heater.available
     assert heater.operation_list == []
+    assert not heater.supported_features
+    with pytest.raises(ServiceValidationError):
+        await heater.async_set_operation_mode("high")
+    coordinator.client.put_resource_value.assert_not_awaited()
     _, coordinator, heater, _ = _room_controller(hass, mode="high")
     coordinator.control_context = lambda: GENERIC_CONTEXT
     assert heater.current_operation == "high"

@@ -408,7 +408,9 @@ async def test_unused_room_temperature_keeps_the_climate(hass: HomeAssistant) ->
     try:
         state = hass.states.get(climate(hass, 1))
         assert state.state == "heat"
-        assert state.attributes["current_temperature"] is None
+        # Since 0.9.3-beta.6 the measured room temperature is shown also when
+        # the reading reports used false.
+        assert state.attributes["current_temperature"] == 20.5
         assert state.attributes["temperature"] == 21.0
         await set_temperature(hass, climate(hass, 1), temperature=22.5)
         assert fake.written("PUT") == [("PUT", path(1, MANUAL), 22.5)]

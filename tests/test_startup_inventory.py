@@ -738,7 +738,9 @@ async def test_inventory_start_adds_climate_only_where_a_normal_start_would(
     async def body() -> None:
         live = await _normal_start(hass, setup, entry)
         climates = {uid for uid in live if uid.endswith(":climate")}
-        assert len(climates) == 1  # only the heating circuit
+        # The heating circuit and, since 0.9.3-beta.6, the cooling one: it is
+        # shown with every change locked.
+        assert len(climates) == 2
         registry = er.async_get(hass)
         for item in list(_gateway_entities(hass, entry).values()):
             registry.async_remove(item.entity_id)

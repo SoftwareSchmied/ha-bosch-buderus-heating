@@ -92,7 +92,10 @@ def test_the_heat_demand_list_becomes_one_stable_state() -> None:
     assert state("central_heating", "domestic_hot_water") == "ch_dhw"
     assert state("Frost-Protection", "Heating") == "ch_frost"
     assert state(5, None, ["x"], "hot_water") == "dhw"
-    assert state("unknown demand") == "none"
+    # An entry without a state of its own keeps its spelling (shown only when
+    # declared); only an empty list or empty entries mean no demand.
+    assert state("unknown demand") == "unknown_demand"
+    assert state("", " - ") == "none"
 
 
 # ------------------------------------------------------- units and category

@@ -3892,6 +3892,20 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
+     "original_name": "Raum 3 \u2013 Room temperature",
+     "translation_key": null,
+     "unique_id": "gateway-one:zones:zn3:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
      "original_name": "Raum 3 \u2013 Active heating setpoint",
      "translation_key": null,
      "unique_id": "gateway-one:zones:zn3:temperatureHeatingSetpoint",
@@ -4244,6 +4258,20 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
+     "original_name": "Raum 6 \u2013 Room temperature",
+     "translation_key": null,
+     "unique_id": "gateway-one:zones:zn6:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
      "original_name": "Raum 6 \u2013 Active heating setpoint",
      "translation_key": null,
      "unique_id": "gateway-one:zones:zn6:temperatureHeatingSetpoint",
@@ -4586,6 +4614,20 @@
      "translation_key": "rrc_zone_status",
      "unique_id": "gateway-one:zones:zn9:status",
      "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 9 \u2013 Room temperature",
+     "translation_key": null,
+     "unique_id": "gateway-one:zones:zn9:temperatureActual",
+     "unit": "\u00b0C"
     },
     {
      "capabilities": {

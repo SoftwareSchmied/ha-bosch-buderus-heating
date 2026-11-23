@@ -1197,6 +1197,15 @@ async def test_other_gateways_get_nothing_of_the_contract(hass: HomeAssistant) -
                 # controller (test_summer_winter_circuit.py).
                 continue
             for domain in ("number", "select", "switch"):
+                if domain == "switch" and path == "setpointOptimization":
+                    # Since 0.9.3-beta.6 a generic switch of a circuit without
+                    # a room controller when the leaf reads on or off without
+                    # a list (test_hc_controls_extra.py), disabled by default.
+                    entity_id = registry.async_get_entity_id(
+                        domain, DOMAIN, uid(f"{HC1}/{path}")
+                    )
+                    assert registry.async_get(entity_id).disabled_by is not None
+                    continue
                 assert (
                     registry.async_get_entity_id(domain, DOMAIN, uid(f"{HC1}/{path}"))
                     is None

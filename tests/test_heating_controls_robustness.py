@@ -35,7 +35,8 @@ def test_recognized_global_heating_context(hass, value):
 
 
 @pytest.mark.parametrize("failure", ["stale", "type", "unit", "references", "unknown"])
-def test_invalid_global_heating_context_blocks_controls(hass, failure):
+async def test_invalid_global_heating_context_blocks_controls(hass, failure):
+    """An unclear season keeps the climate shown and refuses every change."""
     _, coordinator, entity = setup(hass)
     resource = scalar(STATUS, "heating", writable=False)
     if failure == "type":
@@ -54,7 +55,13 @@ def test_invalid_global_heating_context_blocks_controls(hass, failure):
         datetime.now(UTC),
         freshness=Freshness.STALE if failure == "stale" else Freshness.FRESH,
     )
-    assert not entity.available
+    assert entity.available
+    assert entity.supported_features == ClimateEntityFeature(0)
+    assert entity.extra_state_attributes["write_lock"] == "season"
+    with pytest.raises(ServiceValidationError) as raised:
+        await entity.async_set_temperature(temperature=22)
+    assert raised.value.translation_key == "heating_climate_season_locked"
+    coordinator._write_service.async_write_number.assert_not_awaited()
 
 
 async def test_global_cooling_started_since_last_poll_prevents_put(hass):
@@ -69,7 +76,9 @@ async def test_global_cooling_started_since_last_poll_prevents_put(hass):
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
     coordinator._write_service.async_write_number.assert_not_awaited()
-    assert not entity.available
+    # The climate stays shown in the cooling season, with changes locked.
+    assert entity.available
+    assert entity.extra_state_attributes["write_lock"] == "season"
 
 
 @pytest.mark.parametrize(
