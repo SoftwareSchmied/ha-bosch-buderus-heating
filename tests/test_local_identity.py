@@ -140,6 +140,107 @@ def test_a_system_with_only_unreported_modules_proves_no_identity():
         compare_systems(replace(SYSTEM, modules=(UNREPORTED,)), cloud, "000123")
 
 
+GATEWAY_ROW = SystemModule("72", "17", "15.00.01", "4711", "K40RF", None, None)
+INDOOR = SystemModule("8", "8", "1.0", "000999", "XCU_THH", None, None)
+TOLERANT_LOCAL = replace(SYSTEM, modules=(MODULE, GATEWAY_ROW, INDOOR))
+
+
+def tolerant_cloud(**gateway_row):
+    """A cloud module list in other forms than the local one."""
+    cloud = cloud_system()
+    cloud["values"] += [
+        # The gateway's serial number as a whole number.
+        {
+            "Tok": "72",
+            "Id": "17",
+            "ModuleSerialNumber": 4711,
+            "ModuleHwIdentStr": "K40RF",
+        }
+        | gateway_row,
+        # Another serial number of a module that is not the gateway's.
+        {
+            "Tok": "8",
+            "Id": "8",
+            "ModuleSerialNumber": "000111",
+            "ModuleHwIdentStr": "XCU_THH",
+        },
+        # Two rows with the same place and type say nothing.
+        {"Tok": "9", "Id": "9", "ModuleSerialNumber": "1", "ModuleHwIdentStr": "a"},
+        {"Tok": "9", "Id": "9", "ModuleSerialNumber": "2", "ModuleHwIdentStr": "b"},
+        # Rows without place or type, and no row at all.
+        {"Id": "5", "ModuleSerialNumber": "3"},
+        {"Tok": None, "Id": "6"},
+        "not a module",
+        None,
+    ]
+    return cloud
+
+
+def test_unusable_rows_are_left_out_and_one_match_is_enough():
+    compare_systems(TOLERANT_LOCAL, tolerant_cloud(), "000123")
+
+
+def test_a_serial_number_is_compared_by_its_digits():
+    cloud = cloud_system()
+    cloud["values"][0]["ModuleSerialNumber"] = " " + MODULE.serial_number + " "
+    compare_systems(SYSTEM, cloud, "000123")
+    number = replace(MODULE, serial_number=int(MODULE.serial_number))
+    compare_systems(replace(SYSTEM, modules=(number,)), cloud_system(), "000123")
+
+
+@pytest.mark.parametrize(
+    "gateway_row",
+    [{"ModuleSerialNumber": 4712}, {"ModuleHwIdentStr": "MX300"}],
+)
+def test_another_gateway_row_is_another_gateway_whatever_else_matches(gateway_row):
+    with pytest.raises(ConfigurationError, match="local_identity_conflict"):
+        compare_systems(TOLERANT_LOCAL, tolerant_cloud(**gateway_row), "000123")
+
+
+def test_a_place_and_type_reported_twice_compare_nothing():
+    # Which of two rows with the same key is the local one cannot be told:
+    # neither confirms nor contradicts; another module still matches.
+    cloud = cloud_system()
+    cloud["values"] += [
+        {
+            "Tok": "72",
+            "Id": "17",
+            "ModuleSerialNumber": "4711",
+            "ModuleHwIdentStr": "K40RF",
+        },
+        {
+            "Tok": "72",
+            "Id": "17",
+            "ModuleSerialNumber": "4712",
+            "ModuleHwIdentStr": "K40RF",
+        },
+    ]
+    compare_systems(TOLERANT_LOCAL, cloud, "000123")
+    twice = replace(
+        SYSTEM, modules=(MODULE, GATEWAY_ROW, replace(GATEWAY_ROW, serial_number="1"))
+    )
+    compare_systems(twice, tolerant_cloud(ModuleSerialNumber=4712), "000123")
+
+
+def test_only_contradicting_modules_are_another_system():
+    cloud = cloud_system()
+    cloud["values"][0]["ModuleSerialNumber"] = "00099999999999999999999999"
+    with pytest.raises(ConfigurationError, match="local_identity_conflict"):
+        compare_systems(SYSTEM, cloud, "000123")
+
+
+@pytest.mark.parametrize(
+    "change", [{"gatewayId": "000124"}, {"status": "in_progress"}, {"id": "/x"}]
+)
+def test_the_gateway_id_and_the_list_itself_stay_strict(change):
+    with pytest.raises(ConfigurationError, match="local_identity_conflict"):
+        compare_systems(TOLERANT_LOCAL, tolerant_cloud() | change, "000123")
+
+
+def test_a_completed_status_in_another_case_is_completed():
+    compare_systems(SYSTEM, cloud_system() | {"status": " Completed "}, "000123")
+
+
 class IdentityBackend(Backend):
     def __init__(self):
         super().__init__()
@@ -263,6 +364,27 @@ async def test_actual_cloud_reads_compare_before_tolerant_parsing_then_reuse_off
         assert await policy.verify(offline, target, offline_proof) == contract
         assert backend.metadata_calls == 1
         assert retained_contract(offline, target, "different") is None
+
+
+@pytest.mark.parametrize("gateway_serial", [4711, 4712])
+async def test_the_cloud_list_in_other_forms_proves_the_same_gateway(
+    hass, monkeypatch, gateway_serial
+):
+    # The actual cloud read: one match is enough; the gateway's own row
+    # must still agree.
+    backend = IdentityBackend()
+    backend.system = tolerant_cloud(ModuleSerialNumber=gateway_serial)
+    async with running(hass, backend, configure=matching_local) as (_, _, owner, _):
+        snapshot, target, proof = await local_proof(owner, monkeypatch)
+        proof = replace(proof, system=TOLERANT_LOCAL)
+        policy = LocalIdentityPolicy(hass)
+        if gateway_serial == 4711:
+            contract = await policy.verify(snapshot, target, proof)
+            assert contract.contract_id == CONTRACT
+        else:
+            with pytest.raises(ConfigurationError, match="local_identity_conflict"):
+                await policy.verify(snapshot, target, proof)
+        assert owner.connections.management.current() == snapshot
 
 
 async def test_conflicting_gateway_alias_is_rejected_before_acceptance(

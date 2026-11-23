@@ -27,25 +27,65 @@ if TYPE_CHECKING:
 CONTRACT = "pointt-local-system-v1"
 
 
-def _module_key(row: Mapping[str, object]) -> tuple[str, str]:
-    key = row.get("Tok"), row.get("Id")
-    if not all(isinstance(v, str) and v and len(v) <= 1024 for v in key):
-        raise ConfigurationError("identity_contract_required")
-    return cast(tuple[str, str], key)
+# The module places of the gateway itself: a contradiction there is
+# another gateway, whatever the other rows show.
+_GATEWAY_PLACES = frozenset({"72", "75"})
+
+
+def _module_text(value: object) -> str | None:
+    """A place, type or hardware name; a whole number counts as its digits."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        value = str(value)
+    if not isinstance(value, str) or not 0 < len(value.strip()) <= 1024:
+        return None
+    return value.strip()
+
+
+def _module_serial(value: object) -> str | None:
+    """A serial number as its digits or text; a number with a fraction, a
+    placeholder of zeros and an empty text identify nothing. Digits are
+    compared without leading zeros, which a number cannot carry."""
+    if isinstance(value, bool) or not isinstance(value, str | int):
+        return None
+    text = str(value).strip()
+    if not text or not text.strip("0") or len(text) > 1024:
+        return None
+    return text.lstrip("0") if text.isascii() and text.isdigit() else text
+
+
+def _unique(
+    keys: list[tuple[tuple[str, str], tuple[str | None, str | None]]],
+) -> dict[tuple[str, str], tuple[str | None, str | None]]:
+    """The rows whose place and type occur once; a repeated key compares
+    nothing (it cannot say which row is which)."""
+    counted: dict[tuple[str, str], int] = {}
+    for key, _ in keys:
+        counted[key] = counted.get(key, 0) + 1
+    return {key: value for key, value in keys if counted[key] == 1}
 
 
 def compare_systems(local: SystemInfo, cloud: object, gateway: str) -> None:
     """Require exact gateway equality and at least one exact module identity.
 
-    Floating-point serial numbers never establish identity. Extra cloud modules
-    are allowed, but duplicate module keys or conflicting comparable identities
-    reject the relationship. Firmware versions and measured values are not IDs.
+    The gateway ID must be the same on both sides. Rows are compared by
+    place and type (Tok, Id); a row without them, a key that occurs more
+    than once and a row without serial number or hardware name on either
+    side are left out. A serial number counts as its digits, whether it is
+    reported as text or as a whole number; a number with a fraction never
+    establishes identity. One matching module is enough. Another serial
+    number or hardware name at the gateway's own place, or only
+    contradicting modules without any match, reject the relationship.
+    Firmware versions and measured values are not IDs.
     """
+    status = cloud.get("status") if isinstance(cloud, Mapping) else None
     if (
         not isinstance(cloud, Mapping)
         or cloud.get("id") != "/system/info"
         or cloud.get("type") != "systeminfo"
-        or cloud.get("status") != "completed"
+        or not isinstance(status, str)
+        or status.strip().lower() != "completed"
         or cloud.get("gatewayId") != gateway
         or local.gateway_id != gateway
         or local.status != "completed"
@@ -58,46 +98,49 @@ def compare_systems(local: SystemInfo, cloud: object, gateway: str) -> None:
         or not 0 < len(local.modules) <= 512
     ):
         raise ConfigurationError("identity_contract_required")
-    cloud_modules = {}
+    cloud_rows = []
     for row in rows:
         if not isinstance(row, Mapping):
-            raise ConfigurationError("identity_contract_required")
-        key = _module_key(row)
-        if key in cloud_modules:
-            raise ConfigurationError("local_identity_conflict")
-        cloud_modules[key] = row
-    seen = set()
-    matched = 0
-    for module in local.modules:
-        key = module.token, module.id
-        if key in seen:
-            raise ConfigurationError("local_identity_conflict")
-        seen.add(key)
-        other = cloud_modules.get(key)
-        if other is None:
             continue
-        serial = other.get("ModuleSerialNumber")
-        if (
-            type(serial) not in (str, int)
-            or not serial
-            or not module.serial_number
-            or not module.hardware
-            or (type(serial) is int and serial <= 0)
-            or (
-                isinstance(serial, str)
-                and (not serial.strip("0") or not serial.strip())
+        place, kind = _module_text(row.get("Tok")), _module_text(row.get("Id"))
+        if place is None or kind is None:
+            continue
+        cloud_rows.append(
+            (
+                (place, kind),
+                (
+                    _module_serial(row.get("ModuleSerialNumber")),
+                    _module_text(row.get("ModuleHwIdentStr")),
+                ),
             )
-        ):
+        )
+    local_rows = []
+    for module in local.modules:
+        place, kind = _module_text(module.token), _module_text(module.id)
+        if place is None or kind is None:
             continue
-        if (
-            type(serial) is not type(module.serial_number)
-            or serial != module.serial_number
-            or other.get("ModuleHwIdentStr") != module.hardware
-        ):
+        local_rows.append(
+            (
+                (place, kind),
+                (_module_serial(module.serial_number), _module_text(module.hardware)),
+            )
+        )
+    cloud_modules, local_modules = _unique(cloud_rows), _unique(local_rows)
+    matched = contradicted = 0
+    for key, (serial, hardware) in local_modules.items():
+        other = cloud_modules.get(key)
+        if other is None or None in (serial, hardware, *other):
+            continue
+        if (serial, hardware) == other:
+            matched += 1
+        elif key[0] in _GATEWAY_PLACES:
             raise ConfigurationError("local_identity_conflict")
-        matched += 1
+        else:
+            contradicted += 1
     if not matched:
-        raise ConfigurationError("identity_contract_required")
+        raise ConfigurationError(
+            "local_identity_conflict" if contradicted else "identity_contract_required"
+        )
 
 
 def retained_contract(
