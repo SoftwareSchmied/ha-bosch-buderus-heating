@@ -692,8 +692,8 @@ components_source: cloud
 components_table_version: 2
 ```
 
-Tested with a test case in the shape of the component list from #467; not
-yet confirmed on a real iCom heat pump (#467).
+Tested with a test case in the shape of the component list of a real iCom
+heat pump; not yet confirmed on a real iCom heat pump.
 
 On the installation of the example above, the new keys read
 `contract_version: 1`, `state_basis: product_name`, `plant_kind: heat_pump`

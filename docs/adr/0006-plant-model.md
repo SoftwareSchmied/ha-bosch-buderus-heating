@@ -83,7 +83,8 @@ gateways keeps its own parser.
   heater); a heat pump type counts only without a type of the first heat
   source.
 - A boiler type of the first heat source (`hs1` or `/heatSources/type`)
-  with the outdoor status `NOT_CONNECTED` is never a hybrid system: every piece of hybrid evidence is overruled (the evidence used
+  with the outdoor status `NOT_CONNECTED` is never a hybrid system: every
+  piece of hybrid evidence is overruled (the evidence used
   before, a heat pump type next to the boiler, the hybrid manager at the
   hybrid place), the plant is a `boiler`, and the conflict
   `hybrid_evidence_vs_outdoor_status` names it. The hybrid detection of the
@@ -110,7 +111,8 @@ gateways keeps its own parser.
   `-`, split at dots, a part that is not a number counts as 0, a missing
   version never passes. Other gateways (iCom, room controllers) show the row
   only. A boiler type of the first heat source with the outdoor status
-  `NOT_CONNECTED` overrules the rule. A role never decides the plant kind: type 172 at place 8 only shows
+  `NOT_CONNECTED` overrules the rule. A role never decides the plant kind:
+  type 172 at place 8 only shows
   a contradiction to a boiler type.
 - Evidence codes: `reported_system_type`, `reported_heat_source_type`,
   `reported_heat_pump_type`, `reported_outdoor_status`,
@@ -241,7 +243,8 @@ as "behave as before".
 
 - Fixed rules R1 to R6 on the component rows and a few reported values plan
   reads of areas the gateway does not list: the heat pump at `hs2` of a
-  hybrid system (never from `eHybrid`), pool, ventilation and solar by their places, the operation
+  hybrid system (never from `eHybrid`), pool, ventilation and solar by
+  their places, the operation
   mode of `dhw1` and `dhw2` without a listed hot water circuit (and the
   known children of a circuit that answers), the heat pumps `hs1` to `hsN`
   of a cascade. Only places and roles with a basis other than `name` count.

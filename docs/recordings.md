@@ -61,10 +61,10 @@ ventilation systems.
      below the regular reads of the integration.
 
    The cloud's pauses and rate limits apply as for every other read; a
-   pause or a rate limit during a run ends it. The manufacturer's app reads
-   the recordings of a whole period at once (`query=all&sampleRate=all`);
-   that form was refused (403) for a real account, so the integration
-   reads one day, month or year per request.
+   pause or a rate limit during a run ends it. Reading the recordings of a
+   whole period at once (`query=all&sampleRate=all`) was refused (403) for
+   a real account, so the integration reads one day, month or year per
+   request.
 3. **Counters of the integration**: where neither recording has a value,
    the period entities use the change of the integration's own counter
    entity over the period (from Home Assistant's long-term statistics).
@@ -186,11 +186,14 @@ The energy monitoring (*Total – Energy consumed*) answers samples of the mean
 power; see [samples of the mean power](#samples-of-the-mean-power).
 
 Expected, untested on a real installation: no answer of a softener or a boiler
-has been seen yet. The paths and the meaning of the values (energy summed per
-hour, day and month, as for the heat pump) follow the recordings the
-manufacturer's app reads; if a plant answers in another form, the series is
-discarded (`unit` or a count mismatch in the diagnostics) rather than shown
-wrongly. Please report such a case on GitHub with the diagnostics.
+has been seen yet. The water and the boiler's heat for heating and hot water
+are sums per hour, day and month, as for the heat pump; the consumed energy
+is read as samples of the mean power (see
+[samples of the mean power](#samples-of-the-mean-power)). If a plant answers
+in another unit, the series is discarded (`unit` in the diagnostics), and a
+slot of a sum whose count does not fit is not taken (`answer_count_form`),
+rather than shown wrongly. Please report such a case on GitHub with the
+diagnostics.
 
 ## The heat pump behind an iCom gateway
 
@@ -216,7 +219,8 @@ them, so there is no *(calculated)* companion. A path that answers 404 is
 asked again once a day; one in a unit other than kWh (in any case, for
 example `KWh`), Wh, MWh, kBtu or kW gives no entity. The diagnostics
 show the unit each of the four answered in, whether it was taken or not.
-All four are read as samples of the mean power (see [the next section](#samples-of-the-mean-power)).
+All four are read as samples of the mean power (see
+[the next section](#samples-of-the-mean-power)).
 
 The consumed energy is the electricity of the heat pump as the gateway counts
 it. It is a measure of its own with its five period entities, disabled by
@@ -240,8 +244,9 @@ is taken. Please report on GitHub with the diagnostics
 
 ## Samples of the mean power
 
-The energy monitoring of an iCom gateway
-(`/recordings/heatSources/total/energyMonitoring/...`) answers each slot as the
+The energy monitoring (`/recordings/heatSources/total/energyMonitoring/...`)
+of an iCom gateway, and the consumed energy of a boiler behind a K30 or K40
+gateway as well, answers each slot as the
 sum `y` of `c` samples of the mean power, for example about 60 per hour and
 about 1,440 per day: a day of 420 from 1,439 samples is 7 kWh. The energy of
 a slot is the mean `y / c` times the hours of the slot, whatever the sample

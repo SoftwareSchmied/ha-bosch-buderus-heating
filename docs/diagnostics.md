@@ -1068,8 +1068,9 @@ rest of the report stays complete.
   `components_vs_outdoor_status`, `heat_pump_component_on_boiler_plant`,
   `hybrid_name_rule_only` (only the names of paths, signals or a type text
   point to a hybrid system), `hybrid_evidence_vs_outdoor_status` (a boiler
-  type of the first heat source with the outdoor status `NOT_CONNECTED`: the hybrid evidence present
-  does not count, the plant is a boiler), `cloud_local_components_differ`,
+  type of the first heat source with the outdoor status `NOT_CONNECTED`:
+  the hybrid evidence present does not count, the plant is a boiler),
+  `cloud_local_components_differ`,
   `unknown_type_value` (a type value outside the known ones; it does not
   count) and `component_rule_skipped` (a row at the hybrid place that the
   rule does not accept, see `gates`);
