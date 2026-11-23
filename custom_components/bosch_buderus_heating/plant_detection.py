@@ -12,18 +12,21 @@ a hybrid manager at the hybrid place.
 Rules (in this order):
 
 1. A bus that is still detecting gives no result.
-2. The plant is a hybrid system when any evidence says so: the system type
-   ``eHybrid``, a heat source type of a hybrid system (``Hybrid``,
-   ``Hybrid_Gas``, ``Hybrid_Oil``), a heat pump type and a boiler type in the
-   same plant, the outdoor status ``CONNECTED``, a hybrid manager at the
-   hybrid place (see below), or the hybrid evidence the integration used
-   before (signals of a hybrid manager, resources of the hybrid control, a
-   type that names a hybrid system). Evidence of the last kind alone is
-   reported as the conflict ``hybrid_name_rule_only``.
+2. The plant is a hybrid system when any evidence says so: a heat source
+   type of a hybrid system (``Hybrid``, ``Hybrid_Gas``, ``Hybrid_Oil``), a
+   heat pump type and a boiler type in the same plant, the outdoor status
+   ``CONNECTED``, a hybrid manager at the hybrid place (see below), or the
+   hybrid evidence the integration used before (signals of a hybrid
+   manager, resources of the hybrid control, a type that names a hybrid
+   system). Evidence of the last kind alone is reported as the conflict
+   ``hybrid_name_rule_only``.
 3. Otherwise the heat source types decide (heat pump or boiler), then the
    system type; if they contradict each other the kind stays unknown.
 4. Heat sources that report no appliance give ``ventilation`` with a
    Modbus bus or a component at the ventilation place, else ``none``.
+
+The system type ``eHybrid`` is a heat pump with an additional heater, not
+a hybrid system: it is no hybrid evidence, and the heat source types decide.
 
 A hybrid manager at the hybrid place counts only for the first row at
 place 83, with the type 248 from version 06.01 on or with the type 16, and
@@ -383,8 +386,6 @@ def resolve(inputs: PlantInputs, table: ComponentTable | None) -> PlantResult:
 
     # 2. Hybrid evidence.
     rule_evidence: set[str] = set()
-    if system_type == "ehybrid":
-        rule_evidence.add("reported_system_type")
     if hybrids:
         rule_evidence.add("reported_heat_source_type")
     if names_heat_pump and boilers:

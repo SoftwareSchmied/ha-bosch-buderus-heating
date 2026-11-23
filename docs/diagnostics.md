@@ -187,7 +187,8 @@ section, which holds no values, paths, names or identifiers:
   `evidence` lists why, as fixed codes: `hybrid_manager_signals` (signals of
   a hybrid manager), `hybrid_resources` (resources of the hybrid control),
   `system_type` or `heat_source_type` (the reported type names a hybrid
-  system), and since 0.9.3-beta.6 `hybrid_manager_component` and
+  system; the system type `eHybrid`, a heat pump with an additional heater,
+  does not), and since 0.9.3-beta.6 `hybrid_manager_component` and
   `heat_source_types_combined` from the plant kind (see
   [plant model](#plant-model)). Product names and other readings are never
   used.
@@ -1436,8 +1437,8 @@ These fields are separate from the `plant` block:
   `room_controller`, `water_softener`, `search_for_missing_parts`, `error`),
   `limit` (48), `planned`, `over_limit`, `never_read`; per rule (`R1` to
   `R6`) in `rules` its `area`, the `evidence` (`outdoor_status_connected`,
-  `tok83_id248`, `tok83_id16`, `system_type_ehybrid`, `tok17`, `tok48`,
-  `tok81`, `no_hot_water_circuit_listed`, `system_type_cascade:<N>`),
+  `tok83_id248`, `tok83_id16`, `tok17`, `tok48`, `tok81`,
+  `no_hot_water_circuit_listed`, `system_type_cascade:<N>`),
   `planned`, `found`, `results` (count per result class) and
   `over_limit`; `conflicts` (`outdoor_status_not_connected`: a hybrid hint
   that the outdoor status contradicts, nothing read); `stopped` (why the

@@ -11,8 +11,10 @@ a value that could be wrong is not shown: it is unknown, with the attribute
 The share counts as present when the energy collection reports a burner
 part above zero, or when a hybrid manager is detected (its signals, the
 hybrid control resources, or a system or heat source type that names a
-hybrid system). The plant model adds two pieces of evidence: a hybrid
-manager at the hybrid place of the component list under its fixed rule, and
+hybrid system; the system type ``eHybrid`` is a heat pump with an
+additional heater and does not count). The plant model adds two pieces of
+evidence: a hybrid manager at the hybrid place of the component list under
+its fixed rule, and
 a heat source that reports a heat pump next to one that reports a boiler.
 They only add to the evidence above; without a result of the plant model
 (before its stored row is read) everything is as before. A plant with a

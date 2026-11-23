@@ -309,7 +309,9 @@ answers.
 A room controller reports the kind of its heat sources as `/heatSources/type`
 with the values `Boiler` (a boiler), `Hybrid`, `Hybrid_Gas` and `Hybrid_Oil`
 (a hybrid system, with gas or oil as its fuel) and `No_Applicance` (no heat
-appliance; the devices write it so).
+appliance; the devices write it so). The system type `eHybrid` is a heat
+pump with an additional heater, not a hybrid system: the heat source types
+decide, and it is no evidence of a hybrid system.
 
 Evidence (why the plant has this kind):
 
@@ -363,9 +365,9 @@ refuses the read, although a component or a reported value shows them. The
 cloud discovery then reads a few known paths of such an area, after every
 other path and at most 48 per discovery:
 
-- a hybrid manager at place 83, the system type `eHybrid`, or a boiler at
-  `hs1` with the outdoor status `CONNECTED`: the heat pump at `hs2`
-  (never with the outdoor status `NOT_CONNECTED`);
+- a hybrid manager at place 83 or a boiler at `hs1` with the outdoor status
+  `CONNECTED`: the heat pump at `hs2` (never with the outdoor status
+  `NOT_CONNECTED`; the system type `eHybrid` does not count);
 - a component at place 17 (pool), 81 (ventilation) or 48 (solar) whose area
   the gateway does not list: the known values of that area;
 - no hot water circuit listed on a heating plant: the operation mode of
@@ -594,7 +596,9 @@ Hybridanlage. `cascade` ist `true`, wenn der Systemtyp `heatpump_cascade` ist.
 Ein Raumregler meldet die Art seiner Wärmequellen als `/heatSources/type` mit
 den Werten `Boiler` (ein Kessel), `Hybrid`, `Hybrid_Gas` und `Hybrid_Oil`
 (eine Hybridanlage, mit Gas oder Öl als Brennstoff) und `No_Applicance` (kein
-Wärmeerzeuger; die Geräte schreiben es so).
+Wärmeerzeuger; die Geräte schreiben es so). Der Systemtyp `eHybrid` ist eine
+Wärmepumpe mit Zusatzheizer, keine Hybridanlage: Es entscheiden die
+Wärmequellentypen, und er ist kein Beleg für eine Hybridanlage.
 
 Belege (warum die Anlage diese Art hat):
 
@@ -649,9 +653,9 @@ verweigert das Lesen, obwohl eine Komponente oder ein gemeldeter Wert sie
 zeigt. Die Cloud-Discovery liest dann einige bekannte Pfade dieses
 Bereichs, nach allen anderen Pfaden und höchstens 48 je Discovery:
 
-- ein Hybrid-Manager an Platz 83, der Systemtyp `eHybrid` oder ein Kessel an
-  `hs1` mit dem Außeneinheit-Status `CONNECTED`: die Wärmepumpe an `hs2`
-  (nie beim Status `NOT_CONNECTED`);
+- ein Hybrid-Manager an Platz 83 oder ein Kessel an `hs1` mit dem
+  Außeneinheit-Status `CONNECTED`: die Wärmepumpe an `hs2` (nie beim Status
+  `NOT_CONNECTED`; der Systemtyp `eHybrid` zählt nicht);
 - eine Komponente an Platz 17 (Pool), 81 (Lüftung) oder 48 (Solar), deren
   Bereich das Gateway nicht listet: die bekannten Werte dieses Bereichs;
 - kein Warmwasserkreis gelistet bei einer Heizungsanlage: die Betriebsart

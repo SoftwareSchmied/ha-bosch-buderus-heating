@@ -1737,10 +1737,12 @@ def hybrid_path_needs_value(path: str) -> bool:
 
 
 def _hybrid_type(value: object) -> bool:
+    """A type that names a hybrid system; ``eHybrid`` is a heat pump with an
+    additional heater, not a hybrid system."""
     if not isinstance(value, str):
         return False
     text = _NOT_LETTER.sub("", value.casefold())
-    return "hybrid" in text or text == "hybman"
+    return text == "hybman" or ("hybrid" in text and text != "ehybrid")
 
 
 def volume_flow_path(path: str) -> bool:

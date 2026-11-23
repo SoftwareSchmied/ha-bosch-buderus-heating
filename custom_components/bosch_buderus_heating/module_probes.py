@@ -10,8 +10,9 @@ it are read in addition, by fixed rules:
 
 - R1 hybrid: the first heat source reports a boiler type and the outdoor
   status of the hybrid control is ``CONNECTED``, or a component at the
-  hybrid place (83) has the role of a hybrid manager, or the system type is
-  ``eHybrid``. Not when the outdoor status is ``NOT_CONNECTED``. Reads
+  hybrid place (83) has the role of a hybrid manager. Not when the outdoor
+  status is ``NOT_CONNECTED``. The system type ``eHybrid`` (a heat pump
+  with an additional heater) is no hybrid evidence. Reads
   the starts, the defrost state and the energy counters of ``hs2`` and two
   values of the heat sources.
 - R2 pool: a component at the pool place (17) while ``/pool`` is not read.
@@ -319,8 +320,6 @@ class ModuleProbes:
         ):
             evidence.append("outdoor_status_connected")
         evidence.extend(f"tok83_id{row.type_id}" for row in self._hybrid_managers()[:1])
-        if normalize(self._values.get(SYSTEM_TYPE_PATH)) == "ehybrid":
-            evidence.append("system_type_ehybrid")
         if evidence and outdoor == "notconnected":
             self._conflicts.add("outdoor_status_not_connected")
         elif evidence:

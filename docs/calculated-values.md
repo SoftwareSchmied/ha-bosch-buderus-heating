@@ -326,7 +326,9 @@ defrosts, so the heat taken back from the water is netted.
   firmware 11.00.00 on), or one heat source that reports a heat pump next to
   one that reports a boiler. These two only add to the evidence; a component
   name never counts, and until the plant model's stored row is read after a
-  start the evidence is the one used before. Such a hybrid system without a
+  start the evidence is the one used before. The system type `eHybrid` is a
+  heat pump with an additional heater and no evidence of a hybrid system.
+  Such a hybrid system without a
   burner counter gets the factors of its heat pump when the heat pump reports
   counters of its own (see below); the recordings of `hs2` are read for a
   hybrid system without them as well (see
@@ -445,7 +447,9 @@ einem K30-Gateway ab Firmware 08.02.02 oder einem K40-Gateway ab Firmware
 11.00.00) oder an einer Wärmequelle, die eine Wärmepumpe meldet, neben einer,
 die einen Kessel meldet. Diese beiden Belege kommen nur hinzu; ein
 Komponentenname zählt nie, und bis die gespeicherte Zeile des Anlagenmodells
-nach einem Start gelesen ist, gelten die bisherigen Belege. Eine solche
+nach einem Start gelesen ist, gelten die bisherigen Belege. Der Systemtyp
+`eHybrid` ist eine Wärmepumpe mit Zusatzheizer und kein Beleg für eine
+Hybridanlage. Eine solche
 Hybridanlage ohne Brennerzähler erhält die Arbeitszahlen ihrer Wärmepumpe,
 wenn die Wärmepumpe eigene Zähler meldet (siehe unten); die Aufzeichnungen
 von `hs2` werden für eine Hybridanlage auch ohne sie gelesen (siehe

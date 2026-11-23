@@ -4,7 +4,7 @@
     "firmware_family": "15",
     "captured": "2026-11-22",
     "method": "constructed from the structure of a diagnostics file",
-    "case": "system type eHybrid"
+    "case": "system type eHybrid: a heat pump with an additional heater"
   },
   "gateway": {
     "device_type": "k40",
@@ -17,11 +17,11 @@
     "/heatSources/hs1/type": "Heatpump"
   },
   "expected": {
-    "plant_kind": "hybrid",
-    "fuel": "unknown",
+    "plant_kind": "heat_pump",
+    "fuel": null,
     "cascade": false,
     "evidence": [
-      "reported_system_type"
+      "reported_heat_source_type"
     ],
     "conflicts": [],
     "gate": "not_applicable"

@@ -68,11 +68,15 @@ gateways keeps its own parser.
   `None`. `None` means: behave as before the plant model.
 - `hybrid` is the effective kind: a plant is hybrid exactly when the hybrid
   evidence the integration used before or a new piece of evidence says so.
-  New evidence: the system type `eHybrid`, a heat source type of a hybrid
-  system (`Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`), a heat pump type and a
-  boiler type in the same plant, the outdoor status `CONNECTED`, a hybrid
-  manager at the hybrid place. `eHybrid`, `hybman` and `hybridBoiler` stay
-  hybrid; `eBoiler` and unknown values do not count.
+  New evidence: a heat source type of a hybrid system (`Hybrid`,
+  `Hybrid_Gas`, `Hybrid_Oil`), a heat pump type and a boiler type in the
+  same plant, the outdoor status `CONNECTED`, a hybrid manager at the hybrid
+  place. `hybman` and `hybridBoiler` stay hybrid; `eBoiler` and unknown
+  values do not count.
+- `eHybrid` is a heat pump with an additional heater, not a hybrid system:
+  it is no hybrid evidence (neither in the model nor in the evidence used
+  before, nor for the targeted reads), and the heat source types decide
+  (`hs1` = `Heatpump` gives `heat_pump`).
 - Heat source types: `Heatpump`, `GasBoiler`, `OilBoiler`, `unknownBoiler`,
   `No_Appliance`, and the values of `/heatSources/type` of a room controller
   `Boiler` (boiler, fuel not stated), `Hybrid`, `Hybrid_Gas`, `Hybrid_Oil`
@@ -219,7 +223,7 @@ as "behave as before".
 
 - Fixed rules R1 to R6 on the component rows and a few reported values plan
   reads of areas the gateway does not list: the heat pump at `hs2` of a
-  hybrid system, pool, ventilation and solar by their places, the operation
+  hybrid system (never from `eHybrid`), pool, ventilation and solar by their places, the operation
   mode of `dhw1` and `dhw2` without a listed hot water circuit (and the
   known children of a circuit that answers), the heat pumps `hs1` to `hsN`
   of a cascade. Only places and roles with a basis other than `name` count.

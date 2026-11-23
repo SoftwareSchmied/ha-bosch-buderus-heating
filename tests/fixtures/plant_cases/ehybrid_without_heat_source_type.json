@@ -1,0 +1,26 @@
+{
+  "header": {
+    "device_class": "k40",
+    "firmware_family": "15",
+    "captured": "2026-11-23",
+    "method": "constructed from the structure of a diagnostics file",
+    "case": "system type eHybrid without a heat source type"
+  },
+  "gateway": {
+    "device_type": "k40",
+    "firmware": "12.34.56"
+  },
+  "cloud": null,
+  "local": null,
+  "values": {
+    "/system/type": "eHybrid"
+  },
+  "expected": {
+    "plant_kind": null,
+    "fuel": null,
+    "cascade": null,
+    "evidence": [],
+    "conflicts": [],
+    "gate": "not_applicable"
+  }
+}

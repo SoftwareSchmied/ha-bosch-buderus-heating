@@ -122,7 +122,7 @@ inventory), I read a few known paths of such an area, by fixed rules:
 
 | Rule | Shown by | Read |
 |---|---|---|
-| R1 hybrid | the first heat source is a boiler and the outdoor status of the hybrid control is `CONNECTED`, or a hybrid manager at place 83 (type 248 or 16), or the system type `eHybrid`; never with the outdoor status `NOT_CONNECTED` | defrost state, starts and energy counters of `hs2`, `/heatSources/systemPressureRange`, `/heatSources/actualHeatDemand` |
+| R1 hybrid | the first heat source is a boiler and the outdoor status of the hybrid control is `CONNECTED`, or a hybrid manager at place 83 (type 248 or 16); never with the outdoor status `NOT_CONNECTED`; the system type `eHybrid` (a heat pump with an additional heater) does not count | defrost state, starts and energy counters of `hs2`, `/heatSources/systemPressureRange`, `/heatSources/actualHeatDemand` |
 | R2 pool | a component at place 17, `/pool` not readable | `/pool/enabled`, `currentTemp`, `setpointTemp`, `additionalHeater/poolMode` |
 | R3 ventilation | a component at place 81, `/ventilation` not readable or without `zone1` | nine values of `/ventilation/zone1` |
 | R4 solar | a component at place 48, `/solarCircuits` not readable or without `sc1` | five values of `/solarCircuits/sc1` |

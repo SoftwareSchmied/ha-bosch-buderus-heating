@@ -124,7 +124,6 @@ def planned(run: ModuleProbes, known: Iterable[str] = ()) -> dict[str, str]:
         ),
         ((info((8, 8), (248, 83, "05.00.00")),), ["tok83_id248"]),
         ((info((16, 83)),), ["tok83_id16"]),
-        ((value("/system/type", "eHybrid"),), ["system_type_ehybrid"]),
         (
             (
                 value("/heatSources/hs1/type", "Boiler"),
@@ -162,6 +161,12 @@ def test_r1_reads_the_heat_pump_of_a_hybrid_system(
         # Another type at the hybrid place, a hybrid manager elsewhere.
         (info((999, 83), (248, 16)),),
         (value("/system/type", "heatpump_single"),),
+        # eHybrid: a heat pump with an additional heater, not a hybrid system.
+        (value("/system/type", "eHybrid"),),
+        (
+            value("/system/type", "eHybrid"),
+            value("/heatSources/hs1/type", "Heatpump"),
+        ),
     ],
 )
 def test_r1_does_not_fire_without_hybrid_evidence(
@@ -184,7 +189,7 @@ def test_a_not_connected_outdoor_unit_overrules_the_hybrid_place() -> None:
 
 def test_r1_reads_only_what_the_discovery_does_not_know() -> None:
     known = ("/heatSources/hs2/defrostActive", "/heatSources/actualHeatDemand")
-    run = probes(*HEATING, value("/system/type", "eHybrid"))
+    run = probes(*HEATING, info((16, 83)))
     assert set(planned(run, known)) == set(HYBRID_PATHS) - set(known)
 
 

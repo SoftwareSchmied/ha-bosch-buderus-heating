@@ -61,11 +61,13 @@ def answers() -> dict[str, Any]:
 @pytest.mark.parametrize(
     ("case", "source"),
     [
-        ("ehybrid", "hs2"),
+        ("hybman", "hs2"),
         ("outdoor_connected", "hs2"),
         ("issue_138_hybrid_manager_new", "hs2"),
         # A heat pump only, an iCom heat pump, no plant kind: not asked.
         ("k40_own", None),
+        # eHybrid is a heat pump with an additional heater: not asked.
+        ("ehybrid", None),
         ("icom_hybrid_place", None),
         ("bus_detecting", None),
     ],
@@ -98,7 +100,7 @@ async def test_an_icom_gateway_never_reads_hs2(
 
 
 async def test_the_six_series_are_read_and_a_404_is_kept(hass: HomeAssistant) -> None:
-    coordinator = await plant(hass, "ehybrid")
+    coordinator = await plant(hass, "hybman")
     clock = Clock(NOW)
     manager, calls = await recordings(hass, coordinator, clock, answers())
     await manager.async_run("start")
@@ -155,7 +157,7 @@ async def test_the_gateways_heat_is_the_boilers_only_with_an_answered_series(
     """Known from its plant kind alone, a hybrid system's gateway heat keeps
     its meaning until a series of the heat pump has answered (every one 404:
     no attribute)."""
-    coordinator = await plant(hass, "ehybrid")
+    coordinator = await plant(hass, "hybman")
     manager, _calls = await recordings(
         hass, coordinator, Clock(NOW), answers() if answered else {}
     )

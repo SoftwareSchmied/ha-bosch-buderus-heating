@@ -325,6 +325,37 @@ def test_a_boiler_and_a_hybrid_type_with_different_fuels() -> None:
     assert (alone.plant_kind, alone.fuel) == ("hybrid", "oil")
 
 
+@pytest.mark.parametrize(
+    ("types", "kind"),
+    [
+        ((("hs1", "Heatpump"),), "heat_pump"),
+        ((("hs1", "GasBoiler"),), "boiler"),
+        ((), None),
+    ],
+)
+def test_ehybrid_is_a_heat_pump_with_an_additional_heater(
+    types: tuple[tuple[str, str], ...], kind: str | None
+) -> None:
+    """``eHybrid`` is no hybrid evidence; the heat source types decide."""
+    result = resolve(PlantInputs(system_type="eHybrid", heat_source_types=types), None)
+    assert result.plant_kind == kind
+    assert not result.hybrid
+    assert "reported_system_type" not in result.evidence
+    assert result.conflicts == ()
+    # The type names of a hybrid system stay hybrid evidence (as before).
+    for name in ("hybman", "hybridBoiler"):
+        other = resolve(
+            PlantInputs(
+                system_type=name,
+                heat_source_types=types,
+                hybrid_evidence=("system_type",),
+            ),
+            None,
+        )
+        assert other.plant_kind == "hybrid"
+        assert other.conflicts == ("hybrid_name_rule_only",)
+
+
 def _without(table: ComponentTable, type_id: int) -> ComponentTable:
     components = dict(table.components)
     components.pop(type_id)

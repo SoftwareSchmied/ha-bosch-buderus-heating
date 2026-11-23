@@ -108,13 +108,17 @@ def test_hybrid_evidence_names_its_reasons() -> None:
     assert hybrid_evidence([("/heatSources/hybrid/activeHeatSource", None)]) == (
         "hybrid_resources",
     )
-    for value in ("eHybrid", "hybman", "hybridBoiler", "hybrid"):
+    for value in ("hybman", "hybridBoiler", "hybrid", "HYB-MAN"):
         assert hybrid_evidence([("/system/type", value)]) == ("system_type",)
+    # eHybrid is a heat pump with an additional heater, not a hybrid system.
+    for value in ("eHybrid", "EHYBRID", "e-Hybrid"):
+        assert hybrid_evidence([("/system/type", value)]) == ()
     for path in ("/heatSources/type", "/heatSources/hs1/type"):
-        assert hybrid_evidence([(path, "Hybrid")]) == ("heat_source_type",)
+        for value in ("Hybrid", "Hybrid_Gas", "Hybrid_Oil"):
+            assert hybrid_evidence([(path, value)]) == ("heat_source_type",)
     assert hybrid_evidence(
         [
-            ("/system/type", "eHybrid"),
+            ("/system/type", "hybman"),
             ("/signals/HYBMAN.PumpOn", "true"),
             ("/signals/HYBMAN.CAN.DefrostActive", "false"),
         ]
@@ -217,7 +221,7 @@ async def test_diagnostics_note_a_hybrid_from_the_cloud(hass) -> None:
 
     hybrid = _coordinator(
         hass,
-        resource("/system/type", "eHybrid"),
+        resource("/system/type", "hybman"),
         resource("/heatSources/hs1/pumpVolumeFlow", 2.0, "l/h", "floatValue"),
     )
     heat_pump = _coordinator(
