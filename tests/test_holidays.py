@@ -439,8 +439,8 @@ def test_datetime_midnight_to_end_of_day_is_exposed_as_all_day() -> None:
 @pytest.mark.parametrize(
     "changed_values",
     [
-        {"date": {"allowedValues": []}},
         {"assignedTo": {"allowedValues": []}},
+        {"assignedTo": None},
     ],
 )
 def test_write_configuration_rejects_unsafe_variants(changed_values: dict) -> None:
@@ -525,15 +525,69 @@ def test_invalid_encoded_name_is_not_exposed() -> None:
     assert parse_holiday_state({HOLIDAY_LIST_PATH: resource}).periods[0].name is None
 
 
+def _configuration(**values):
+    values = {
+        "date": {"allowedValues": ["dateTime"]},
+        "assignedTo": {"allowedValues": ["hc1"]},
+        **values,
+    }
+    return parse_holiday_write_configuration(
+        {
+            HOLIDAY_LIST_PATH: Resource(
+                path=HOLIDAY_LIST_PATH, value=[], has_value=True
+            ),
+            HOLIDAY_CONFIGURATION_PATH: Resource(
+                path=HOLIDAY_CONFIGURATION_PATH,
+                value={"values": values},
+                has_value=True,
+            ),
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "modes"),
+    [
+        ("heatingMode", 42, ("heating_modes", ())),
+        ("heatingMode", {"allowedValues": ["ECO", 42]}, ("heating_modes", ("ECO",))),
+        ("dhwMode", {}, ("dhw_modes", ())),
+        (
+            "ventilationMode",
+            {"allowedValues": ["bad\ncode", "OFF"]},
+            ("ventilation_modes", ("OFF",)),
+        ),
+    ],
+)
+def test_an_unreadable_holiday_option_leaves_the_others(field, value, modes):
+    """S14: options are kept one by one; an unreadable list offers none."""
+    configuration = _configuration(**{field: value})
+    assert configuration is not None
+    name, expected = modes
+    assert getattr(configuration, name) == expected
+
+
+@pytest.mark.parametrize(
+    "date", [None, {"allowedValues": []}, {"allowedValues": ["DATE_TIME"]}, 7]
+)
+def test_without_a_known_date_mode_holidays_use_date_and_time(date):
+    """S14: date and time on the 15-minute grid."""
+    configuration = _configuration(date=date)
+    assert configuration is not None
+    assert configuration.date_time_mode == "dateTime"
+
+
+def test_a_date_only_mode_stays_date():
+    configuration = _configuration(date={"allowedValues": ["date"]})
+    assert configuration is not None and configuration.date_time_mode == "date"
+
+
 @pytest.mark.parametrize(
     "field,value",
     [
-        ("heatingMode", 42),
-        ("heatingMode", {"allowedValues": ["ECO", 42]}),
-        ("dhwMode", {}),
-        ("ventilationMode", {"allowedValues": ["bad\ncode"]}),
         ("fixTemperature", {"minValue": float("nan")}),
         ("fixTemperature", {"maxValue": float("inf")}),
+        ("fixTemperature", {"minValue": 25.0, "maxValue": 10.0}),
+        ("assignedTo", {"allowedValues": ["zone9"]}),
     ],
 )
 def test_malformed_holiday_contract_cannot_be_treated_as_an_omitted_field(field, value):

@@ -379,10 +379,10 @@ def parse_holiday_write_configuration(
     date_modes = _allowed_strings(values.get("date"))
     if "date" in date_modes and "dateTime" not in date_modes:
         date_time_mode = "date"
-    elif "dateTime" in date_modes:
-        date_time_mode = "dateTime"
     else:
-        return None
+        # Also without a known date mode: date and time on the 15-minute
+        # grid, which every period written here keeps to.
+        date_time_mode = "dateTime"
 
     assigned_to = tuple(
         value
@@ -392,34 +392,9 @@ def parse_holiday_write_configuration(
     if not assigned_to:
         return None
 
-    for field in (
-        "heatingmode",
-        "dhwmode",
-        "ventilationmode",
-        "thermaldesinfection",
-        "thermaldisinfection",
-    ):
-        description = values.get(field)
-        if description is None:
-            continue
-        if not isinstance(description, Mapping):
-            return None
-        mode_description = {
-            _normalize_key(key): value for key, value in description.items()
-        }
-        options = mode_description.get("allowedvalues")
-        if (
-            not isinstance(options, list)
-            or len(options) > 64
-            or any(
-                not isinstance(option, str)
-                or not 0 < len(option) <= 64
-                or not option.isprintable()
-                for option in options
-            )
-        ):
-            return None
-
+    # Each mode list keeps only its readable options (``_allowed_string_values``);
+    # an unreadable one leaves the others, and a list that cannot be read
+    # offers none, so only the defaults below are written for it.
     heating_mode_values = _allowed_string_values(values.get("heatingmode"))
     dhw_mode_values = _allowed_string_values(values.get("dhwmode"))
     ventilation_mode_values = _allowed_string_values(values.get("ventilationmode"))

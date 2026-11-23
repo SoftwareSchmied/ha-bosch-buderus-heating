@@ -290,8 +290,27 @@ async def test_unconfirmed_mode_never_retries_put_and_recovers_by_polling(hass):
     await coordinator.async_shutdown()
 
 
+@pytest.mark.parametrize(("code", "shown"), [("newMode", None), ("off", "off")])
+async def test_an_unknown_mode_keeps_the_water_heater_and_offers_nothing(
+    hass, code, shown
+):
+    """S15: the water heater stays with its temperatures; a code not known
+    here shows no operation (another case of a known one shows it) and no
+    operation can be set."""
+    _, coordinator, heater, plant = setup(hass, mode=code, options=(*MODES, code))
+    assert heater.available
+    assert heater.current_operation == shown
+    assert heater.native_current_temperature == 48.5
+    assert heater.operation_list == []
+    assert not heater.supported_features
+    with pytest.raises(ServiceValidationError):
+        await heater.async_set_operation_mode("high")
+    coordinator.client.put_resource_value.assert_not_awaited()
+    assert plant[MODE].value == code
+
+
 async def test_discovery_adds_late_circuits_once_and_recovers_existing_identity(hass):
-    entry, coordinator, _, _ = setup(hass, mode="newMode")
+    entry, coordinator, _, _ = setup(hass, mode="")
     add = Mock()
     track_pointt_water_heaters(entry, coordinator, add)
     add.assert_not_called()

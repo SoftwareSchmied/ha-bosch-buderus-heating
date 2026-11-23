@@ -159,26 +159,45 @@ class PointTWaterHeater(
         return snapshot.resource
 
     @property
-    def _mode(self) -> Resource | None:
+    def _shown_mode(self) -> Resource | None:
+        """The mode reading as shown: any text, also a code not known here
+        (it shows no operation and offers no change)."""
         resource = self._mode_reading()
         if (
             resource is None
             or resource.metadata.resource_type != "stringValue"
             or resource.metadata.unit not in (None, "")
             or not isinstance(resource.value, str)
-            or resource.value not in self._operations
+            or not resource.value.strip()
         ):
             return None
         return resource
 
     @property
+    def _mode(self) -> Resource | None:
+        """The mode reading with a known code: what a change starts from."""
+        resource = self._shown_mode
+        if resource is None or resource.value not in self._operations:
+            return None
+        return resource
+
+    @property
     def available(self) -> bool:
-        return self._mode is not None
+        # The temperatures stay shown while the mode is one not known here.
+        return self._shown_mode is not None
 
     @property
     def current_operation(self) -> str | None:
         mode = self._mode
-        return self._operations[str(mode.value)] if mode is not None else None
+        if mode is not None:
+            return self._operations[str(mode.value)]
+        # Shown only: a known code in another case (``off`` for ``Off``);
+        # an unknown code shows no operation.
+        shown = self._shown_mode
+        if shown is None:
+            return None
+        folded = {raw.casefold(): value for raw, value in self._operations.items()}
+        return folded.get(str(shown.value).strip().casefold())
 
     @property
     def native_current_temperature(self) -> float | None:
