@@ -658,13 +658,10 @@ async def test_new_login_replaces_session_even_without_disabled_devices(hass, mi
 async def test_mqtt_reconnect_keeps_pointt_and_device_access(hass, reason):
     broker = Broker()
     with instant_reconnect_pause() as pauses:
-        await _reconnect_keeps_pointt_and_device_access(hass, broker, reason)
-    # A planned renewal reconnects at once; a lost connection after the
-    # first backoff step.
-    assert pauses == ([] if reason == "token_rotation" else [5.0])
+        await _reconnect_keeps_pointt_and_device_access(hass, broker, reason, pauses)
 
 
-async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason):
+async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason, pauses):
     async with connected(hass, broker) as (_, _, owner, _):
         await eventually(lambda: ready(owner) and source_for(owner, HEAT))
         previous, heating = view(owner), source_for(owner, HEAT)
@@ -709,6 +706,8 @@ async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason):
         else:
             assert len(broker.claims) == 2
             assert (account.renewals, account.reconnects) == (0, 1)
+        # Check before broker teardown can cause unrelated reconnect attempts.
+        assert pauses == ([] if reason == "token_rotation" else [5.0])
 
 
 async def test_membership_loss_and_fresh_recovery_keep_peer_and_identity(hass):
