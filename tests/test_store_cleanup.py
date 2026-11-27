@@ -15,7 +15,9 @@ from custom_components.bosch_buderus_heating.estimated_energy import (
     STORAGE_KEY as ENERGY_KEY,
 )
 from custom_components.bosch_buderus_heating.faults import fault_store_key
-from custom_components.bosch_buderus_heating.icom_reset_store import icom_reset_store_key
+from custom_components.bosch_buderus_heating.icom_reset_store import (
+    icom_reset_store_key,
+)
 from custom_components.bosch_buderus_heating.local_enrollment import (
     JOURNAL_KEY,
     enrollment_journal,

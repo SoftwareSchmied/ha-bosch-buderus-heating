@@ -1262,9 +1262,7 @@ async def test_icom_reset_marker_save_failure_retries(environment):
             "async_save",
             AsyncMock(side_effect=[OSError("disk unavailable"), None]),
         ) as save,
-        patch.object(
-            coordinator._icom_legacy_reset_store, "async_remove", AsyncMock()
-        ),
+        patch.object(coordinator._icom_legacy_reset_store, "async_remove", AsyncMock()),
     ):
         await coordinator._async_remember_icom_reset_marker(RESOURCES)
         assert coordinator.icom_reset_marker == marker
