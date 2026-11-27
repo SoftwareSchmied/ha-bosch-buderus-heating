@@ -101,7 +101,7 @@ def test_holiday_slots_have_five_slots_and_the_app_order_shape() -> None:
     assert len(state.periods) == 1
     booked = icom_write_configuration(RESOURCES, SLOTS[0])
     assert booked is not None
-    assert booked.can_delete is False
+    assert booked.can_delete is True
     assert booked.fix_temperature_min is None
     assert booked.assigned_to == ("hc1", "dhw1")
     # The first free slot is offered for a new holiday.

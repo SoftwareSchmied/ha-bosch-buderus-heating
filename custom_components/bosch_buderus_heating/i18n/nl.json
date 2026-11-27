@@ -23,7 +23,20 @@
       "date": "Datum",
       "time": "Tijd",
       "deleteFailed": "De bevestiging voor het verwijderen kon niet worden geopend. Laad de pagina opnieuw en probeer het nog eens.",
-      "reopen": "Sluit het dialoogvenster en open het opnieuw."
+      "reopen": "Sluit het dialoogvenster en open het opnieuw.",
+      "selectRange": "Datumbereik selecteren",
+      "previousMonth": "Vorige maand",
+      "nextMonth": "Volgende maand",
+      "lastHolidayDay": "Laatste vakantiedag selecteren",
+      "firstHolidayDay": "Eerste vakantiedag selecteren",
+      "cancelRange": "Annuleren",
+      "applyRange": "Toepassen",
+      "selectCircuit": "Selecteer minstens één circuit.",
+      "rangeLabel": "Vakantieperiode",
+      "durationOne": "Vakantieduur: {days} dag",
+      "durationMany": "Vakantieduur: {days} dagen",
+      "resumeHeating": "Normale verwarming hervat op: {date}",
+      "invalidRange": "Selecteer een geldig datumbereik."
     },
     "schedule": {
       "title": "Weekoverzicht",

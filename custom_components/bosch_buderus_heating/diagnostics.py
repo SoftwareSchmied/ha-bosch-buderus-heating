@@ -116,7 +116,7 @@ from .writes import (
 )
 from .zone_climate import zone_climate_diagnostics
 
-DIAGNOSTICS_SCHEMA_VERSION = 48
+DIAGNOSTICS_SCHEMA_VERSION = 54
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -842,6 +842,11 @@ def _gateway_diagnostics(
             "supported_resources": holiday_state.supported_paths,
             "valid_period_count": len(holiday_state.periods),
             "invalid_period_count": holiday_state.invalid_period_count,
+            # Bounded write trace: operation, field names, status codes and
+            # attempts; no private dates or gateway IDs.
+            "icom_last_write": (
+                coordinator._icom_holiday_write_service.last_write_diagnostics or None
+            ),
             "active_status_available": holiday_state.active is not None,
             "timezone_source": holiday_state.timezone_source,
             "calendar_writes_available": parse_holiday_write_configuration(
