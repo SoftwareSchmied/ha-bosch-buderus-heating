@@ -23,7 +23,20 @@
       "date": "Datum",
       "time": "Vrijeme",
       "deleteFailed": "Potvrda brisanja nije se mogla otvoriti. Ponovno učitajte stranicu i pokušajte ponovno.",
-      "reopen": "Zatvorite i ponovno otvorite dijalog."
+      "reopen": "Zatvorite i ponovno otvorite dijalog.",
+      "selectRange": "Odaberite raspon datuma",
+      "previousMonth": "Prethodni mjesec",
+      "nextMonth": "Sljedeći mjesec",
+      "lastHolidayDay": "Odaberite posljednji dan odmora",
+      "firstHolidayDay": "Odaberite prvi dan odmora",
+      "cancelRange": "Odustani",
+      "applyRange": "Primijeni",
+      "selectCircuit": "Odaberite barem jedan krug.",
+      "rangeLabel": "Razdoblje odmora",
+      "durationOne": "Trajanje odmora: {days} dan",
+      "durationMany": "Trajanje odmora (dani): {days}",
+      "resumeHeating": "Nastavak uobičajenog grijanja: {date}",
+      "invalidRange": "Odaberite valjani raspon datuma."
     },
     "schedule": {
       "title": "Tjedni prikaz",

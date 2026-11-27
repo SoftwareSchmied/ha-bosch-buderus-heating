@@ -15,7 +15,14 @@ from .holiday_writes import (
     HolidayWriteNotConfirmed,
     validate_holiday_values,
 )
-from .holidays import HolidayWriteValues, icom_write_configuration, icom_write_values
+from .holidays import (
+    HolidayWriteValues,
+    icom_cached_reset_allowed,
+    icom_delete_command_supported,
+    icom_reset_reference,
+    icom_write_configuration,
+    icom_write_values,
+)
 from .legacy_holidays import (
     HMI800_FIXED_FIELDS,
     ICOM_EMPTY_PERIODS,
@@ -31,6 +38,7 @@ from .pointt import (
     RateLimited,
     RequestTimeout,
     Resource,
+    ResourceNotFound,
     ServiceUnavailable,
     WriteValidationError,
 )
@@ -57,6 +65,8 @@ class IcomHolidayWriteService:
         self.client = client
         self.confirmed: dict[str, Resource] = {}
         self.invalidated: set[str] = set()
+        # Technical assignment fields only; no dates or gateway IDs.
+        self.last_write_diagnostics: dict[str, object] = {}
         self._sleep = sleep
         # I1: an iCom gateway reads back after 1, 2, 3 and 4 seconds; the
         # default stays 0.5, 1 and 2 seconds.
@@ -72,10 +82,31 @@ class IcomHolidayWriteService:
         source_path: str,
         values: HolidayWriteValues | None,
         expected: HolidayWriteValues | None,
+        *,
+        reset_marker: str | None = None,
     ) -> Resource:
-        """Recheck each step, commit dates last and stop on any conflict or failure."""
+        """Recheck each step; initialize dates before assigning new holidays."""
         self.confirmed = {}
         self.invalidated = set()
+        self.last_write_diagnostics = {
+            "operation": operation
+            if operation in ("create", "update", "delete")
+            else "invalid",
+            "slot": source_path.rsplit("/", 1)[-1]
+            if is_icom_slot(source_path)
+            else None,
+            "stage": "preflight",
+            "planned_fields": (),
+            "confirmed_fields": (),
+            "current_field": None,
+            "read_back_attempts": 0,
+            "read_back_not_found_count": 0,
+            "last_missing_field": None,
+            "last_readback_status": None,
+            "date_initialization_changes": [],
+            "skipped_already_matching": [],
+            "partial_creation_status": "not_started",
+        }
         if not is_icom_slot(source_path) or operation not in (
             "create",
             "update",
@@ -89,16 +120,36 @@ class IcomHolidayWriteService:
         )
         if not paths:
             raise WriteValidationError("The legacy holiday was not discovered")
+        reset_reference = None
+        reset_resources: dict[str, Resource] = {}
+        if operation == "delete" and f"{source_path}/delete" not in resources:
+            reference = icom_reset_reference(resources, source_path)
+            if reference is not None:
+                reference_path, marker = reference
+                fresh = await self.client.get_resource(gateway_id, reference_path)
+                if (
+                    fresh.path != reference_path
+                    or not icom_empty(fresh)
+                    or fresh.value != marker
+                ):
+                    raise HolidayChangedError("The empty holiday reference changed")
+                reset_reference = marker
+                reset_resources[reference_path] = fresh
+            elif icom_cached_reset_allowed(resources, reset_marker):
+                reset_reference = reset_marker
         current = await self._read(gateway_id, paths)
         # I2: the component list is not read again; the last fresh reading
         # of the coordinator applies its rules to this transaction.
         system_info = resources.get(SYSTEM_INFO_PATH)
         components = icom_components(system_info)
         configuration = icom_write_configuration(
-            {**current, SYSTEM_INFO_PATH: system_info}
+            {**resources, **reset_resources, **current, SYSTEM_INFO_PATH: system_info}
             if system_info is not None
-            else current,
+            else {**resources, **reset_resources, **current},
             source_path,
+            reset_marker=reset_reference
+            if icom_cached_reset_allowed(resources, reset_reference)
+            else None,
         )
         baseline = icom_write_values(current, source_path)
         if configuration is None or baseline is None:
@@ -118,13 +169,41 @@ class IcomHolidayWriteService:
                 )
             self.invalidated.update(paths)
             self.confirmed.clear()
-            await self._async_put(gateway_id, f"{source_path}/delete", "TRUE")
+            explicit = icom_delete_command_supported(
+                current.get(f"{source_path}/delete")
+            )
+            if not explicit and reset_reference is None:
+                raise WriteValidationError("No verified empty holiday reference")
+            field = "delete" if explicit else "startStop"
+            self.last_write_diagnostics["delete_method"] = (
+                "explicit" if explicit else "reset_start_stop"
+            )
+            self.last_write_diagnostics["planned_fields"] = (field,)
+            self.last_write_diagnostics["current_field"] = field
+            self.last_write_diagnostics["stage"] = "put"
+            await self._async_put(
+                gateway_id,
+                f"{source_path}/{field}",
+                "TRUE" if explicit else reset_reference,
+            )
+            self.last_write_diagnostics["stage"] = "read_back"
             actual = await self._async_read_back(
                 gateway_id,
                 paths,
                 start_path,
-                lambda read: icom_empty(read.get(start_path)),
+                lambda read: (
+                    icom_empty(read.get(start_path))
+                    and (
+                        explicit
+                        or (
+                            not read[f"{source_path}/assignedTo"].has_value
+                            and not read[f"{source_path}/assignedTo"].values
+                        )
+                    )
+                ),
             )
+            self.last_write_diagnostics["confirmed_fields"] = (field,)
+            self.last_write_diagnostics["stage"] = "confirmed"
             return actual[start_path]
         if values is None or values.source_path != source_path:
             raise WriteValidationError("Legacy holiday source changed")
@@ -173,6 +252,15 @@ class IcomHolidayWriteService:
             if f"{source_path}/{field}" in current
             and not _field_matches(field, current[f"{source_path}/{field}"], value)
         ]
+        if operation == "create":
+            # Initialize dates before assigning circuits: iCom can populate
+            # assignments automatically. Updates retain the original order.
+            steps.sort(
+                key=lambda step: {"startStop": 1, "assignedTo": 2}.get(step[0], 0)
+            )
+        self.last_write_diagnostics["planned_fields"] = tuple(
+            field for field, _path, _value in steps
+        )
         if any(not current[path].metadata.writable for _field, path, _ in steps):
             raise WriteValidationError("Legacy holiday field is not writable")
         if components.hmi800_hp_light and any(
@@ -184,7 +272,15 @@ class IcomHolidayWriteService:
             )
         for field, path, value in steps:
             if _field_matches(field, current[path], value):
+                skipped = self.last_write_diagnostics["skipped_already_matching"]
+                if isinstance(skipped, list):
+                    skipped.append(field)
+                previous = self.last_write_diagnostics["confirmed_fields"]
+                if isinstance(previous, tuple):
+                    self.last_write_diagnostics["confirmed_fields"] = (*previous, field)
                 continue
+            if not current[path].metadata.writable:
+                raise WriteValidationError("Legacy holiday field is no longer writable")
             # C38: ``current`` is the complete read just before this step: the
             # initial one or the previous step's read-back, without any wait.
             # Each read-back compares every other field, so a change in the
@@ -192,25 +288,89 @@ class IcomHolidayWriteService:
             # atomic compare-and-set operation.
             self.invalidated.update(paths)
             self.confirmed.clear()
+            self.last_write_diagnostics["current_field"] = field
+            self.last_write_diagnostics["stage"] = "put"
+            if operation == "create" and field == "startStop":
+                self.last_write_diagnostics["partial_creation_status"] = (
+                    "date_write_attempted"
+                )
             if field == "assignedTo":
                 await self._async_put_assignments(
                     gateway_id, source_path, values.assigned_to
                 )
             else:
                 await self._async_put(gateway_id, path, value)
+            self.last_write_diagnostics["stage"] = "read_back"
             before = current
             current = await self._async_read_back(
                 gateway_id,
                 paths,
                 start_path,
                 partial(_field_confirmed, field, path, value),
-                conflict=partial(_other_field_changed, path, before),
+                conflict=(
+                    partial(self._date_initialization_conflict, path, before, value)
+                    if operation == "create" and field == "startStop"
+                    else partial(_other_field_changed, path, before)
+                ),
             )
+            if operation == "create" and field == "startStop":
+                self.last_write_diagnostics["partial_creation_status"] = (
+                    "date_confirmed"
+                )
+            previous = self.last_write_diagnostics["confirmed_fields"]
+            if isinstance(previous, tuple):
+                self.last_write_diagnostics["confirmed_fields"] = (*previous, field)
+        # Re-read every discovered leaf after creation.
+        if operation == "create":
+            self.last_write_diagnostics["stage"] = "final_read"
+            current = await self._read(gateway_id, paths)
         # A full final comparison also covers no-op submissions and slot identity.
         actual_values = icom_write_values(current, source_path)
         if actual_values is None or not _same_values(actual_values, values):
+            self.last_write_diagnostics["stage"] = "final_mismatch"
+            self.last_write_diagnostics["mismatched_fields"] = tuple(
+                field
+                for field, wanted in desired.items()
+                if f"{source_path}/{field}" in current
+                and not _field_matches(field, current[f"{source_path}/{field}"], wanted)
+            )
             raise HolidayWriteNotConfirmed(current.get(start_path))
+        self.last_write_diagnostics["stage"] = "confirmed"
+        if operation == "create":
+            self.last_write_diagnostics["partial_creation_status"] = "complete"
         return current[start_path]
+
+    def _date_initialization_conflict(
+        self,
+        path: str,
+        before: Mapping[str, Resource],
+        wanted: JsonValue,
+        read: Mapping[str, Resource],
+    ) -> bool:
+        """Permit only assignment initialization when the requested dates match."""
+        changed = tuple(
+            other for other in before if other != path and read[other] != before[other]
+        )
+        self.last_write_diagnostics["date_initialization_changes"] = [
+            other.rsplit("/", 1)[-1] for other in changed
+        ]
+        assignment_path = path.rsplit("/", 1)[0] + "/assignedTo"
+        if not changed:
+            return False
+        if changed != (assignment_path,) or not _field_matches(
+            "startStop", read[path], wanted
+        ):
+            return True
+        old, new = before[assignment_path], read[assignment_path]
+        # Only accept initialization of a previously empty assignment. A
+        # changed nonempty assignment could be a concurrent user edit.
+        if old.values or old.has_value or not new.values:
+            return True
+        allowed = old.metadata.allowed_values
+        return not (
+            all(isinstance(item, str) and item in allowed for item in new.values)
+            and len(new.values) == len(set(new.values))
+        )
 
     async def _async_put(self, gateway_id: str, path: str, value: JsonValue) -> None:
         """Send one leaf once; resolve an unknown outcome only by reading."""
@@ -253,19 +413,59 @@ class IcomHolidayWriteService:
         yet updated is read again after 0.5, 1 and 2 seconds (iCom gateways:
         1, 2, 3 and 4 seconds, I1).
         """
-        last_temporary_error: RequestTimeout | ServiceUnavailable | None = None
+        # A real iCom gateway has returned HTTP 404 for assignedTo directly
+        # after accepting a holiday-mode PUT (204), even though its preflight
+        # GETs succeeded. Treat missing *read-back* leaves as potentially
+        # transient; never reinterpret an initial missing resource as writable
+        # and never retry the PUT.
+        last_temporary_error: (
+            RequestTimeout | ResourceNotFound | ServiceUnavailable | None
+        ) = None
         actual: dict[str, Resource] | None = None
-        for delay in self._read_back_delays:
+        for attempt, delay in enumerate(self._read_back_delays, 1):
+            self.last_write_diagnostics["read_back_attempts"] = attempt
             await self._sleep(delay)
             try:
                 actual = await self._read(gateway_id, paths)
-            except (RequestTimeout, ServiceUnavailable) as err:
+            except (RequestTimeout, ResourceNotFound, ServiceUnavailable) as err:
                 last_temporary_error = err
+                if isinstance(err, ResourceNotFound):
+                    count = self.last_write_diagnostics["read_back_not_found_count"]
+                    if isinstance(count, int):
+                        self.last_write_diagnostics["read_back_not_found_count"] = (
+                            count + 1
+                        )
+                    leaf = err.path.rsplit("/", 1)[-1]
+                    self.last_write_diagnostics["last_missing_field"] = (
+                        leaf if leaf in (*ICOM_FIELDS, "delete") else "other"
+                    )
+                    self.last_write_diagnostics["last_readback_status"] = (
+                        "resource_not_found"
+                    )
+                elif isinstance(err, RequestTimeout):
+                    self.last_write_diagnostics["last_readback_status"] = "timeout"
+                else:
+                    self.last_write_diagnostics["last_readback_status"] = "unavailable"
                 continue
+            if self.last_write_diagnostics["operation"] == "create":
+                date_resource = actual.get(start_path)
+                self.last_write_diagnostics["last_observed_date_state"] = (
+                    "valid"
+                    if icom_dates(date_resource) is not None
+                    else "empty"
+                    if icom_empty(date_resource)
+                    else "unknown"
+                )
             if conflict(actual):
+                self.last_write_diagnostics["last_readback_status"] = (
+                    "other_field_changed"
+                )
                 break
             if confirmed(actual):
+                self.last_write_diagnostics["last_readback_status"] = "field_confirmed"
                 return actual
+            self.last_write_diagnostics["last_readback_status"] = "field_mismatch"
+        self.last_write_diagnostics["stage"] = "unconfirmed"
         raise HolidayWriteNotConfirmed(
             actual.get(start_path) if actual is not None else None
         ) from last_temporary_error

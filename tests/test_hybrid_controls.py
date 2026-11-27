@@ -618,7 +618,7 @@ def test_an_old_diagnostics_schema_is_kept():
         DIAGNOSTICS_SCHEMA_VERSION,
     )
 
-    assert DIAGNOSTICS_SCHEMA_VERSION == 48
+    assert DIAGNOSTICS_SCHEMA_VERSION == 54
 
 
 async def test_nothing_is_written_by_building_the_entities(

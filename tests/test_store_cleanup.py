@@ -15,6 +15,9 @@ from custom_components.bosch_buderus_heating.estimated_energy import (
     STORAGE_KEY as ENERGY_KEY,
 )
 from custom_components.bosch_buderus_heating.faults import fault_store_key
+from custom_components.bosch_buderus_heating.icom_reset_store import (
+    icom_reset_store_key,
+)
 from custom_components.bosch_buderus_heating.local_enrollment import (
     JOURNAL_KEY,
     enrollment_journal,
@@ -102,6 +105,9 @@ async def test_removing_an_entry_deletes_its_private_files(
     for gateway in gateways:
         hass_storage[fault_store_key(entry.entry_id, gateway)] = envelope({})
         hass_storage[notification_id(entry.entry_id, gateway)] = envelope({})
+        for legacy in (False, True):
+            key = icom_reset_store_key(entry.entry_id, gateway, legacy=legacy)
+            hass_storage[key] = envelope({})
     history = _storage_key(entry.entry_id, cloud)
     hass_storage[history] = envelope({"events": []})
     other_faults = fault_store_key("another-entry", "000123")
@@ -135,6 +141,9 @@ async def test_removing_an_entry_deletes_its_private_files(
     for gateway in gateways:
         assert fault_store_key(entry.entry_id, gateway) not in hass_storage
         assert notification_id(entry.entry_id, gateway) not in hass_storage
+        for legacy in (False, True):
+            key = icom_reset_store_key(entry.entry_id, gateway, legacy=legacy)
+            assert key not in hass_storage
     assert history not in hass_storage
     assert other_faults in hass_storage
     assert hass_storage[ENERGY_KEY]["data"]["totals"] == {kept: 7.0}
@@ -168,6 +177,8 @@ async def test_start_removes_only_files_of_entries_that_no_longer_exist(
     digest, key = "0" * 16, "a" * 24
     names = {
         f"{DOMAIN}.faults.{known}.{digest}": True,
+        icom_reset_store_key(known, "gateway"): True,
+        icom_reset_store_key(gone, "gateway"): False,
         f"{DOMAIN}.faults.{gone}.{digest}": False,
         f"{DOMAIN}_faults_{known}_{key}": True,
         f"{DOMAIN}_faults_{gone}_{key}": False,

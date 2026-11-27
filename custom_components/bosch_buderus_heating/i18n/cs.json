@@ -23,7 +23,20 @@
       "date": "Datum",
       "time": "Čas",
       "deleteFailed": "Potvrzení odstranění se nepodařilo otevřít. Obnovte prosím stránku a zkuste to znovu.",
-      "reopen": "Zavřete prosím dialog a znovu jej otevřete."
+      "reopen": "Zavřete prosím dialog a znovu jej otevřete.",
+      "selectRange": "Vyberte rozsah dat",
+      "previousMonth": "Předchozí měsíc",
+      "nextMonth": "Následující měsíc",
+      "lastHolidayDay": "Vyberte poslední den dovolené",
+      "firstHolidayDay": "Vyberte první den dovolené",
+      "cancelRange": "Zrušit",
+      "applyRange": "Použít",
+      "selectCircuit": "Vyberte alespoň jeden okruh.",
+      "rangeLabel": "Období dovolené",
+      "durationOne": "Délka dovolené: {days} den",
+      "durationMany": "Délka dovolené (dny): {days}",
+      "resumeHeating": "Obnovení běžného vytápění: {date}",
+      "invalidRange": "Vyberte platný rozsah dat."
     },
     "schedule": {
       "title": "Týdenní přehled",

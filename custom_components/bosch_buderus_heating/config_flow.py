@@ -8,7 +8,7 @@ import math
 import re
 from contextlib import suppress
 from dataclasses import dataclass, replace
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from time import monotonic
 from typing import Any, cast, override
 
@@ -78,6 +78,8 @@ from .enum_translation import writable_enum_options
 from .ha_schema import validation as vol
 from .holiday_ui import (
     DELETE_FIELD,
+    HolidayAssignmentSelector,
+    HolidayDateRangeSelector,
     HolidayDateTimeSelector,
     HolidayDeleteSelector,
     HolidayFormSchema,
@@ -1235,6 +1237,20 @@ class BoschBuderusOptionsFlow(
         mode_choices = self._holiday_mode_choices()
         if not choices and not mode_choices:
             return self.async_abort(reason="no_writable_holidays")
+        # A fresh iCom installation has only one action: create a holiday.
+        # Open the actual date/settings form directly instead of requiring a
+        # single-option selection step. This also avoids a frontend transition
+        # in which the old "holiday_period" input could be submitted against
+        # the new holiday form's schema.
+        if user_input is None and not mode_choices and len(choices) == 1:
+            only_key = next(iter(choices))
+            if only_key.startswith("create:"):
+                self._selected_key = only_key
+                self._displayed_choice = None
+                self._holiday_draft = None
+                self._delete_choice = None
+                self._delete_return_input = None
+                return await self.async_step_new_holiday()
         if not choices and len(mode_choices) == 1 and user_input is None:
             self._selected_key = next(iter(mode_choices))
             return await self.async_step_holiday_mode()
@@ -1359,6 +1375,7 @@ class BoschBuderusOptionsFlow(
                 }
             ),
             errors={"base": "holiday_changed"} if user_input is not None else None,
+            last_step=False,
         )
 
     def _holiday_mode_choices(self) -> dict[str, BoschBuderusDataUpdateCoordinator]:
@@ -1534,6 +1551,8 @@ class BoschBuderusOptionsFlow(
                 if date_only:
                     start = date.fromisoformat(user_input["holiday_start"])
                     end = date.fromisoformat(user_input["holiday_end"])
+                    if choice.configuration.source_path != HOLIDAY_CREATE_PATH:
+                        end += timedelta(days=1)
                 else:
                     start = _holiday_datetime_input(user_input["holiday_start"])
                     end = _holiday_datetime_input(user_input["holiday_end"])
@@ -1598,27 +1617,47 @@ class BoschBuderusOptionsFlow(
                     isinstance(item, str) for item in assigned_to
                 ):
                     raise WriteValidationError("Invalid holiday assignments")
+                if not assigned_to:
+                    raise WriteValidationError("Choose at least one holiday circuit")
+                selected = tuple(item.casefold() for item in assigned_to)
+                modern = choice.configuration.source_path == HOLIDAY_CREATE_PATH
+                heating_selected = modern or any(
+                    item.startswith("hc") for item in selected
+                )
+                dhw_selected = modern or any(
+                    item.startswith("dhw") for item in selected
+                )
+                ventilation_selected = modern or any(
+                    item.startswith("vent") for item in selected
+                )
+                heating_mode = _holiday_mode_from_form(
+                    user_input.get(CONF_HOLIDAY_HEATING_MODE)
+                    if heating_selected
+                    else None,
+                    current.heating_mode,
+                    choice.configuration.heating_modes,
+                )
                 values = configure_holiday_values(
                     replace(displayed.period, write_values=values),
                     choice.configuration,
                     assigned_to=assigned_to,
-                    heating_mode=_holiday_mode_from_form(
-                        user_input.get(CONF_HOLIDAY_HEATING_MODE),
-                        current.heating_mode,
-                        choice.configuration.heating_modes,
-                    ),
+                    heating_mode=heating_mode,
                     dhw_mode=_holiday_mode_from_form(
-                        user_input.get(CONF_HOLIDAY_DHW_MODE),
+                        user_input.get(CONF_HOLIDAY_DHW_MODE) if dhw_selected else None,
                         current.dhw_mode,
                         choice.configuration.dhw_modes,
                     ),
                     ventilation_mode=_holiday_mode_from_form(
-                        user_input.get(CONF_HOLIDAY_VENTILATION_MODE),
+                        user_input.get(CONF_HOLIDAY_VENTILATION_MODE)
+                        if ventilation_selected
+                        else None,
                         current.ventilation_mode,
                         choice.configuration.ventilation_modes,
                     ),
                     thermal_disinfection=_holiday_mode_from_form(
-                        user_input.get(CONF_HOLIDAY_THERMAL_DISINFECTION),
+                        user_input.get(CONF_HOLIDAY_THERMAL_DISINFECTION)
+                        if dhw_selected
+                        else None,
                         current.thermal_disinfection,
                         choice.configuration.thermal_disinfection_modes,
                     ),
@@ -1626,6 +1665,9 @@ class BoschBuderusOptionsFlow(
                         user_input.get(
                             CONF_HOLIDAY_FIX_TEMPERATURE, current.fix_temperature
                         )
+                        if heating_selected
+                        and (modern or heating_mode in ("FIX_TEMP", "FIX_TEMPERATURE"))
+                        else current.fix_temperature
                     ),
                 )
                 holiday_id = holiday_period_id(choice.period)
@@ -1715,7 +1757,9 @@ class BoschBuderusOptionsFlow(
             for period in state.periods:
                 holiday_id = holiday_period_id(period)
                 period_configuration = parse_holiday_write_configuration(
-                    resources, source_path=period.source_path
+                    resources,
+                    source_path=period.source_path,
+                    reset_marker=getattr(coordinator, "icom_reset_marker", None),
                 )
                 if (
                     holiday_id is None
@@ -1798,6 +1842,7 @@ class BoschBuderusOptionsFlow(
                 }
             ),
             errors={"base": error} if error else None,
+            last_step=False,
         )
 
     def _show_holiday_form(
@@ -1822,7 +1867,10 @@ class BoschBuderusOptionsFlow(
             suggestions["holiday_name"] = "" if creating else choice.period.name or ""
         for field in ("holiday_start", "holiday_end"):
             fields[vol.Required(field)] = (
-                DateSelector()
+                HolidayDateRangeSelector(endpoint=field)
+                if configuration.date_time_mode == "date"
+                and configuration.source_path != HOLIDAY_CREATE_PATH
+                else DateSelector()
                 if configuration.date_time_mode == "date"
                 else HolidayDateTimeSelector(creating=creating)
             )
@@ -1832,7 +1880,7 @@ class BoschBuderusOptionsFlow(
             suggestions.update(_holiday_date_suggestions(choice))
         fields[
             vol.Required(CONF_HOLIDAY_ASSIGNED_TO, default=list(current.assigned_to))
-        ] = SelectSelector(
+        ] = HolidayAssignmentSelector(
             SelectSelectorConfig(
                 options=[
                     SelectOptionDict(
@@ -1923,6 +1971,12 @@ def _holiday_date_suggestions(choice: _HolidayChoice) -> dict[str, str]:
         ("holiday_start", choice.period.start),
         ("holiday_end", choice.period.end),
     ):
+        if (
+            field == "holiday_end"
+            and choice.configuration.date_time_mode == "date"
+            and choice.configuration.source_path != HOLIDAY_CREATE_PATH
+        ):
+            value -= timedelta(days=1)
         suggestions[field] = (
             value.date().isoformat()
             if choice.configuration.date_time_mode == "date"
@@ -1992,7 +2046,11 @@ def _holiday_label(
     fallback = localize(language, "Urlaub", "Holiday")
     name = period.name or f"{fallback} {holiday_id}"
     if period.all_day:
-        timespan = f"{period.start:%Y-%m-%d} / {period.end:%Y-%m-%d}"
+        end = period.end
+        if period.source_path != HOLIDAY_CREATE_PATH:
+            end -= timedelta(days=1)
+        fmt = "%d.%m.%Y" if language.startswith("de") else "%Y-%m-%d"
+        timespan = f"{period.start:{fmt}} / {end:{fmt}}"
     else:
         timespan = f"{period.start:%Y-%m-%d %H:%M} / {period.end:%Y-%m-%d %H:%M}"
     gateway = f"{_gateway_label(coordinator.gateway)} · " if multiple_gateways else ""

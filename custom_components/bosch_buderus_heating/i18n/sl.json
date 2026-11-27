@@ -23,7 +23,20 @@
       "date": "Datum",
       "time": "Čas",
       "deleteFailed": "Potrditve brisanja ni bilo mogoče odpreti. Znova naložite stran in poskusite znova.",
-      "reopen": "Zaprite pogovorni okvir in ga znova odprite."
+      "reopen": "Zaprite pogovorni okvir in ga znova odprite.",
+      "selectRange": "Izberite časovno obdobje",
+      "previousMonth": "Prejšnji mesec",
+      "nextMonth": "Naslednji mesec",
+      "lastHolidayDay": "Izberite zadnji dan dopusta",
+      "firstHolidayDay": "Izberite prvi dan dopusta",
+      "cancelRange": "Prekliči",
+      "applyRange": "Uporabi",
+      "selectCircuit": "Izberite vsaj en krog.",
+      "rangeLabel": "Obdobje dopusta",
+      "durationOne": "Trajanje dopusta: {days} dan",
+      "durationMany": "Trajanje dopusta (dnevi): {days}",
+      "resumeHeating": "Nadaljevanje običajnega ogrevanja: {date}",
+      "invalidRange": "Izberite veljavno časovno obdobje."
     },
     "schedule": {
       "title": "Tedenski pogled",

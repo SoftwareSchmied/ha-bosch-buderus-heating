@@ -23,7 +23,20 @@
       "date": "Date",
       "time": "Time",
       "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again.",
-      "reopen": "Please close and reopen the dialog."
+      "reopen": "Please close and reopen the dialog.",
+      "selectRange": "Select date range",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "lastHolidayDay": "Select last holiday day",
+      "firstHolidayDay": "Select first holiday day",
+      "cancelRange": "Cancel",
+      "applyRange": "Apply",
+      "selectCircuit": "Select at least one circuit.",
+      "rangeLabel": "Holiday period",
+      "durationOne": "Holiday duration: {days} day",
+      "durationMany": "Holiday duration: {days} days",
+      "resumeHeating": "Normal heating resumes: {date}",
+      "invalidRange": "Select a valid date range."
     },
     "schedule": {
       "title": "Weekly view",

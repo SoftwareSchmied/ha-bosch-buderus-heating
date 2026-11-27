@@ -23,7 +23,20 @@
       "date": "Fecha",
       "time": "Hora",
       "deleteFailed": "No se pudo abrir la confirmación de eliminación. Recarga la página e inténtalo de nuevo.",
-      "reopen": "Cierra y vuelve a abrir el cuadro de diálogo."
+      "reopen": "Cierra y vuelve a abrir el cuadro de diálogo.",
+      "selectRange": "Seleccionar intervalo de fechas",
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "lastHolidayDay": "Seleccionar el último día de vacaciones",
+      "firstHolidayDay": "Seleccionar el primer día de vacaciones",
+      "cancelRange": "Cancelar",
+      "applyRange": "Aplicar",
+      "selectCircuit": "Selecciona al menos un circuito.",
+      "rangeLabel": "Periodo de vacaciones",
+      "durationOne": "Duración de las vacaciones: {days} día",
+      "durationMany": "Duración de las vacaciones: {days} días",
+      "resumeHeating": "La calefacción normal se reanuda: {date}",
+      "invalidRange": "Selecciona un intervalo válido."
     },
     "schedule": {
       "title": "Vista semanal",

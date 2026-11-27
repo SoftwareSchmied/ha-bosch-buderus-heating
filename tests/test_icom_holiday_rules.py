@@ -177,7 +177,7 @@ async def test_hmi800_rule_also_holds_in_the_transaction_itself(environment) -> 
     coordinator, client, _ = environment
     baseline = icom_write_values(state, SLOT)
 
-    def unrestricted(resources, source_path):
+    def unrestricted(resources, source_path, *, reset_marker=None):
         plain = {k: v for k, v in resources.items() if k != SYSTEM_INFO_PATH}
         return icom_write_configuration(plain, source_path)
 
@@ -202,7 +202,7 @@ async def test_read_only_field_is_found_before_the_first_put(environment) -> Non
     coordinator.data = snapshots(*state.values())
     baseline = icom_write_values(state, SLOT)
 
-    def offered(resources, source_path):
+    def offered(resources, source_path, *, reset_marker=None):
         # A choice offered for a field that the slot reports as read-only.
         writable = {
             path: replace(item, metadata=replace(item.metadata, writable=True))

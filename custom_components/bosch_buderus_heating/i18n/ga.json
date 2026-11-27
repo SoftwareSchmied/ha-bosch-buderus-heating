@@ -23,7 +23,20 @@
       "date": "Dáta",
       "time": "Am",
       "deleteFailed": "Níorbh fhéidir an deimhniú scriosta a oscailt. Athlódáil an leathanach agus déan iarracht arís.",
-      "reopen": "Dún an dialóg agus oscail arís í."
+      "reopen": "Dún an dialóg agus oscail arís í.",
+      "selectRange": "Roghnaigh raon dátaí",
+      "previousMonth": "An mhí roimhe seo",
+      "nextMonth": "An chéad mhí eile",
+      "lastHolidayDay": "Roghnaigh lá deireanach na saoire",
+      "firstHolidayDay": "Roghnaigh an chéad lá saoire",
+      "cancelRange": "Cealaigh",
+      "applyRange": "Cuir i bhfeidhm",
+      "selectCircuit": "Roghnaigh ciorcad amháin ar a laghad.",
+      "rangeLabel": "Tréimhse saoire",
+      "durationOne": "Fad na saoire: {days} lá",
+      "durationMany": "Fad na saoire (laethanta): {days}",
+      "resumeHeating": "Atosaíonn an gnáth-théamh: {date}",
+      "invalidRange": "Roghnaigh raon bailí dátaí."
     },
     "schedule": {
       "title": "Amharc seachtainiúil",

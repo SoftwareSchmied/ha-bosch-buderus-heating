@@ -23,7 +23,20 @@
       "date": "Data",
       "time": "Godzina",
       "deleteFailed": "Nie udało się otworzyć potwierdzenia usunięcia. Odśwież stronę i spróbuj ponownie.",
-      "reopen": "Zamknij okno i otwórz je ponownie."
+      "reopen": "Zamknij okno i otwórz je ponownie.",
+      "selectRange": "Wybierz zakres dat",
+      "previousMonth": "Poprzedni miesiąc",
+      "nextMonth": "Następny miesiąc",
+      "lastHolidayDay": "Wybierz ostatni dzień urlopu",
+      "firstHolidayDay": "Wybierz pierwszy dzień urlopu",
+      "cancelRange": "Anuluj",
+      "applyRange": "Zastosuj",
+      "selectCircuit": "Wybierz co najmniej jeden obieg.",
+      "rangeLabel": "Okres urlopu",
+      "durationOne": "Czas trwania urlopu: {days} dzień",
+      "durationMany": "Czas trwania urlopu: {days} dni",
+      "resumeHeating": "Powrót do normalnego ogrzewania: {date}",
+      "invalidRange": "Wybierz prawidłowy zakres dat."
     },
     "schedule": {
       "title": "Widok tygodniowy",

@@ -23,7 +23,20 @@
       "date": "Dato",
       "time": "Tid",
       "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen.",
-      "reopen": "Luk dialogen, og åbn den igen."
+      "reopen": "Luk dialogen, og åbn den igen.",
+      "selectRange": "Vælg datointerval",
+      "previousMonth": "Forrige måned",
+      "nextMonth": "Næste måned",
+      "lastHolidayDay": "Vælg sidste feriedag",
+      "firstHolidayDay": "Vælg første feriedag",
+      "cancelRange": "Annuller",
+      "applyRange": "Anvend",
+      "selectCircuit": "Vælg mindst én kreds.",
+      "rangeLabel": "Ferieperiode",
+      "durationOne": "Feriens varighed: {days} dag",
+      "durationMany": "Feriens varighed: {days} dage",
+      "resumeHeating": "Normal opvarmning genoptages: {date}",
+      "invalidRange": "Vælg et gyldigt datointerval."
     },
     "schedule": {
       "title": "Ugevisning",

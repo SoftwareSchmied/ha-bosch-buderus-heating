@@ -17,6 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .icom_reset_store import icom_reset_store_key
 from .log_helpers import log_failure
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 # The per-entry stores: the prefix before the entry ID and what follows it.
 _ENTRY_FAMILIES = (
     (f"{DOMAIN}.faults.", r"\.[0-9a-f]{16}"),
+    (f"{DOMAIN}.icom_reset.", r"\.[0-9a-f]{64}"),
     # W5: the energy history import of an RRC controller.
     (f"{DOMAIN}.rrc_energy.", r"\.[0-9a-f]{16}"),
     # The plant's recordings of a gateway (recordings.manager.store_key).
@@ -107,6 +109,16 @@ async def async_remove_entry_stores(
 
     gateways = _entry_gateways(entry)
     for gateway_id in gateways:
+        for legacy in (False, True):
+            try:
+                await Store[dict[str, str | None]](
+                    hass,
+                    1,
+                    icom_reset_store_key(entry.entry_id, gateway_id, legacy=legacy),
+                    private=True,
+                ).async_remove()
+            except Exception:
+                _LOGGER.warning("An iCom holiday reset marker could not be removed")
         await async_remove_fault_store(hass, entry.entry_id, gateway_id)
         await async_remove_notification_store(hass, entry.entry_id, gateway_id)
         await async_remove_energy_store(hass, entry.entry_id, gateway_id)

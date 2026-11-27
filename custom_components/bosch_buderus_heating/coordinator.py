@@ -29,6 +29,7 @@ from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_call_later, async_track_point_in_utc_time
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -75,6 +76,7 @@ from .holidays import (
     HOLIDAY_LIST_PATH,
     HOLIDAY_TIMEZONE_PATH,
     HolidayWriteValues,
+    icom_observed_reset_markers,
     is_holiday_resource_path,
     parse_holiday_write_configuration,
 )
@@ -84,8 +86,9 @@ from .icom_profile import (
     GrowingCircuitPause,
     is_icom_gateway,
 )
+from .icom_reset_store import icom_reset_store_key
 from .legacy_holiday_writes import IcomHolidayWriteService
-from .legacy_holidays import SYSTEM_INFO_PATH, is_icom_slot
+from .legacy_holidays import ICOM_EMPTY_PERIODS, SYSTEM_INFO_PATH, is_icom_slot
 from .live_target import with_live_target
 from .plant_model import PlantModel
 from .pointt import (
@@ -796,6 +799,22 @@ class BoschBuderusDataUpdateCoordinator(
         self._icom_holiday_write_service = IcomHolidayWriteService(
             client, read_back_delays=ICOM_READ_BACK_DELAYS if icom else None
         )
+        self.icom_reset_marker: str | None = None
+        self._icom_reset_dirty = False
+        self._icom_reset_store: Store[dict[str, str | None]] = Store(
+            hass,
+            1,
+            icom_reset_store_key(config_entry.entry_id, gateway.gateway_id),
+            private=True,
+        )
+        self._icom_legacy_reset_store: Store[dict[str, str | None]] = Store(
+            hass,
+            1,
+            icom_reset_store_key(
+                config_entry.entry_id, gateway.gateway_id, legacy=True
+            ),
+            private=True,
+        )
         # Z2: the weekly switch program writes and their value-free counters.
         self._switch_program_service = SwitchProgramService(client)
         self.switch_program_write_stats = RrcWriteStats()
@@ -914,6 +933,39 @@ class BoschBuderusDataUpdateCoordinator(
     async def async_load_fault_state(self) -> None:
         """Load the persisted active-fault baseline before the first refresh."""
         await self.faults.async_load()
+        try:
+            stored = await self._icom_reset_store.async_load()
+            if stored is None:
+                stored = await self._icom_legacy_reset_store.async_load()
+                self._icom_reset_dirty = stored is not None
+        except Exception:
+            # The optional reset cache must never prevent startup.
+            _LOGGER.warning("The iCom holiday reset marker could not be loaded")
+            stored = None
+        marker = stored.get("marker") if isinstance(stored, dict) else None
+        if isinstance(marker, str) and marker in ICOM_EMPTY_PERIODS:
+            self.icom_reset_marker = marker
+
+    async def _async_remember_icom_reset_marker(
+        self, resources: Mapping[str, Resource]
+    ) -> None:
+        """Persist only an unambiguous marker observed on this gateway."""
+        markers = icom_observed_reset_markers(resources)
+        if markers:
+            marker = next(iter(markers)) if len(markers) == 1 else None
+            if marker != self.icom_reset_marker:
+                self.icom_reset_marker = marker
+                self._icom_reset_dirty = True
+        if not self._icom_reset_dirty:
+            return
+        try:
+            await self._icom_reset_store.async_save({"marker": self.icom_reset_marker})
+            await self._icom_legacy_reset_store.async_remove()
+        except Exception:
+            # Retry on a subsequent refresh, even if all slots are occupied.
+            _LOGGER.warning("The iCom holiday reset marker could not be saved")
+        else:
+            self._icom_reset_dirty = False
 
     def _request_reauthentication(self) -> None:
         """Managed sources override this to repair only their owning access."""
@@ -1986,6 +2038,7 @@ class BoschBuderusDataUpdateCoordinator(
         service = self._icom_holiday_write_service
         path = f"{source_path}/startStop"
         resources = holiday_resources_from_snapshots(self.data or {})
+        await self._async_remember_icom_reset_marker(resources)
         try:
             return await service.async_write(
                 self.gateway.gateway_id,
@@ -1994,6 +2047,7 @@ class BoschBuderusDataUpdateCoordinator(
                 source_path,
                 values,
                 expected,
+                reset_marker=self.icom_reset_marker,
             )
         except RateLimited as err:
             self._activate_rate_limit_backoff(err, monotonic())
@@ -2290,6 +2344,9 @@ class BoschBuderusDataUpdateCoordinator(
                     snapshots = await self._async_rescan()
                 else:
                     snapshots = await self._async_update_data_locked()
+                await self._async_remember_icom_reset_marker(
+                    holiday_resources_from_snapshots(snapshots)
+                )
                 self.firmware.observe(
                     firmware_values(
                         {
